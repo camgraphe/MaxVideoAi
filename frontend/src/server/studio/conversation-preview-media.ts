@@ -12,16 +12,16 @@ export async function buildConversationPreviewMedia(userId: string,items: Worksp
       const ref = item.ref;
       const key = JSON.stringify(ref);
       if (!cache.has(key)) cache.set(key,(async () => {
-        const media = await resolve(userId,ref);
+        const media = await resolve(userId,ref,undefined,{distinguishDeleted:true});
         // Preview-only projection: never substitute video bytes for an image or mutate stored clip URLs.
         return createConversationMediaReadAccess(userId,media,{sign: dependencies.sign});
       })());
       const access = await cache.get(key)!;
       return {...item,thumbnailUrl: access.thumbnailUrl,thumbnailAccessUrl: access.thumbnailAccessUrl,mediaAccessRequired: true,mediaAccessError: undefined,mediaAccessUrl: access.url,mediaAccessExpiresAt: access.expires};
     } catch (error) {
-      if (!(error instanceof Error) || error.message !== 'MEDIA_NOT_AVAILABLE') throw error;
+      if (!(error instanceof Error) || (error.message !== 'MEDIA_NOT_AVAILABLE' && error.message !== 'MEDIA_DELETED')) throw error;
       // Preserve position and edit identity, but never project an inaccessible original or thumbnail.
-      return {...item,mediaUrl: undefined,thumbnailUrl: undefined,thumbnailAccessUrl: undefined,mediaAccessUrl: undefined,mediaAccessExpiresAt: undefined,mediaAccessRequired: true,mediaAccessError: 'MEDIA_NOT_AVAILABLE' as const};
+      return {...item,mediaUrl: undefined,thumbnailUrl: undefined,thumbnailAccessUrl: undefined,mediaAccessUrl: undefined,mediaAccessExpiresAt: undefined,mediaAccessRequired: true,mediaAccessError: error.message};
     }
   }));
 }

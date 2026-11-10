@@ -1,4 +1,5 @@
-import { assetProjection, legacyProjection, outputProjection, canonicalLegacyPairsSql, canonicalLegacyMatchesSql, legacyKindSql } from './organization-source-sql';
+import { assetProjection, legacyProjection, outputProjection, canonicalLegacyPairsSql, canonicalLegacyMatchesSql, legacyKindSql, legacyOutputIdSql } from './organization-source-sql';
+import { preparedLibraryMediaSql, retainedLibraryMediaSql } from './prepared-media-sql';
 /** PostgreSQL JSON (not jsonb text) with explicit separators matches JSON.stringify's versioned payload. */
 export const jsonArraySql = (...values: string[]) => `('[' || ${values.map(v => `COALESCE(to_json(${v})::text,'null')`).join(" || ',' || ")} || ']')`;
 export const hashSql = (value: string) => `encode(sha256(convert_to(${value},'UTF8')),'hex')`;
@@ -7,14 +8,14 @@ export const revisionSql = (kind: string, original: string) => `('sr_' || ${hash
  * The relation includes hidden-from-browse sources for identity proof, just as the mutation resolver does. */
 export function libraryIdentityCtes(owner = '$1'): string {
     return `li_raw AS MATERIALIZED (
-    SELECT ${assetProjection} FROM media_assets m WHERE m.user_id=${owner} AND m.deleted_at IS NULL AND m.status='ready'
-    UNION ALL SELECT ${legacyProjection} FROM user_assets u WHERE u.user_id=${owner}
-    UNION ALL SELECT ${outputProjection} FROM job_outputs o JOIN app_jobs j ON j.job_id=o.job_id AND j.user_id=o.user_id
+    SELECT ${assetProjection},${preparedLibraryMediaSql('m.metadata', 'm.kind')} AS internal_source,${retainedLibraryMediaSql('m.metadata')} AS retained_source FROM media_assets m WHERE m.user_id=${owner} AND m.deleted_at IS NULL AND m.status='ready'
+    UNION ALL SELECT ${legacyProjection},${preparedLibraryMediaSql('u.metadata', legacyKindSql())},${retainedLibraryMediaSql('u.metadata')} FROM user_assets u WHERE u.user_id=${owner}
+    UNION ALL SELECT ${outputProjection},false,false FROM job_outputs o JOIN app_jobs j ON j.job_id=o.job_id AND j.user_id=o.user_id
       WHERE o.user_id=${owner} AND o.status='ready' AND j.hidden IS NOT TRUE
   ), li_output_proofs AS MATERIALIZED (
     SELECT ${outputProjection} FROM job_outputs o JOIN app_jobs j ON j.job_id=o.job_id AND j.user_id=o.user_id WHERE o.user_id=${owner}
-  ), li_legacy_rows AS MATERIALIZED (SELECT u.*,${legacyKindSql()} AS inferred_kind FROM user_assets u WHERE u.user_id=${owner}),
-  li_canonical_pairs AS (${canonicalLegacyPairsSql('li_legacy_rows u', 'TRUE', owner)}),
+  ), li_legacy_rows AS MATERIALIZED (SELECT u.*,${legacyKindSql()} AS inferred_kind,${legacyOutputIdSql()} AS resolved_output_id FROM user_assets u WHERE u.user_id=${owner}),
+  li_canonical_pairs AS (${canonicalLegacyPairsSql('li_legacy_rows u', 'TRUE', owner, 'u.resolved_output_id')}),
   li_canonical_matches AS (${canonicalLegacyMatchesSql('li_canonical_pairs')}), li_legacy_links AS MATERIALIZED (
     SELECT u.*,canonical.canonical_id FROM li_raw u LEFT JOIN li_canonical_matches canonical ON canonical.legacy_id=u.id WHERE u.type='legacy'
   ), li_neighborhoods AS (
@@ -30,13 +31,10 @@ export function libraryIdentityCtes(owner = '$1'): string {
     SELECT r.*,COALESCE(a."jobId",r."jobId") AS anchor_job,COALESCE(a."outputId",r."outputId") AS reference_output,COALESCE(a.original,r.original) AS anchor_original
     FROM li_linked r LEFT JOIN li_raw a ON a.type='asset' AND a.id=r.canonical_id AND a.kind=r.kind
   ), li_anchors AS (
-    SELECT r.*,CASE WHEN r.type='job-output' THEN r.id WHEN exact_output.id IS NOT NULL THEN exact_output.id
-        WHEN r.type='legacy' AND r.canonical_id IS NULL THEN unique_output.id END AS anchor_output
+    -- Output provenance is already resolved against every owned version before availability filtering.
+    SELECT r.*,CASE WHEN r.type='job-output' THEN r.id ELSE exact_output.id END AS anchor_output
     FROM li_anchor_basis r LEFT JOIN li_output_proofs exact_output ON exact_output.type='job-output' AND exact_output.kind=r.kind
       AND exact_output.id=r.reference_output AND exact_output."jobId"=r.anchor_job
-    LEFT JOIN LATERAL (SELECT CASE WHEN count(*)=1 THEN min(o.id) END AS id FROM li_raw o
-      WHERE r.type='legacy' AND r.canonical_id IS NULL AND r."jobId" IS NOT NULL AND o.type='job-output' AND o.kind=r.kind AND o."jobId"=r."jobId" AND o.original=r.original
-      AND (r."outputId" IS NULL OR r."outputId"=o.id)) unique_output ON r.type='legacy' AND r.canonical_id IS NULL
   ), li_components AS (
     -- Shared record IDs are a component only through proven canonical correspondence.
     SELECT *,${revisionSql('kind', 'original')} AS revision,
@@ -49,6 +47,7 @@ export function libraryIdentityCtes(owner = '$1'): string {
     FROM li_components
   ), li_grouped AS (
     SELECT *,first_value(id) OVER w AS oldest_id,first_value(revision) OVER w AS oldest_revision,
+      (bool_or(internal_source) OVER(PARTITION BY kind,component) AND NOT bool_or(retained_source) OVER(PARTITION BY kind,component)) AS internal_group,
       count(*) FILTER(WHERE type='legacy' AND identity_proof) OVER(PARTITION BY kind,component) AS legacy_count
     FROM li_proofs WINDOW w AS(PARTITION BY kind,component ORDER BY (neighborhood_size>1000 AND NOT identity_proof),"createdAt"::timestamptz,id COLLATE "C" ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
   ), li_keyed AS (

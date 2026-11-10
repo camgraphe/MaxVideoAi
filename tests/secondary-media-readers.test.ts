@@ -153,6 +153,7 @@ for (const tool of ['angle', 'character'] as const) {
       const url = String(input);
       if(url.includes('/selection/validate'))return Response.json({ok:true,results:JSON.parse(String(init?.body)).candidates.map((candidate:any)=>({reference:candidate.reference}))});
       requests.push(url);
+      if (url.includes('/collections')) return Response.json({ ok: true, items: [], hasMore: false, nextCursor: null });
       return url.includes('cursor=page-2')
         ? Response.json({ ok: true, assets: [secondAsset], hasMore: false, nextCursor: null })
         : Response.json({
@@ -168,14 +169,15 @@ for (const tool of ['angle', 'character'] as const) {
         ? React.createElement(AngleImageLibraryModal, { ...props, copy: DEFAULT_ANGLE_COPY })
         : React.createElement(CharacterReferenceLibraryModal, { ...props, copy: DEFAULT_CHARACTER_COPY });
       await act(async () => f.root.render(React.createElement(SWRConfig, { value: { provider: () => new Map(), dedupingInterval: 0 } }, React.createElement(I18nProvider,{locale:'en',dictionary:{},fallback:{},children:modal}))));
-      assert.deepEqual(requests, ['/api/media-library/assets?limit=30&kind=image']);
+      assert.deepEqual([...requests].sort(), ['/api/media-library/assets?limit=30&kind=image', '/api/media-library/collections?limit=30']);
       assert.equal(f.dom.window.document.querySelectorAll('img').length, 1);
       const loadMore = [...f.dom.window.document.querySelectorAll('button')].find((button) => button.textContent?.trim() === 'Load more');
       assert.ok(loadMore, 'A cursor-backed page exposes the localized load-more control');
       await act(async () => loadMore.click());
-      assert.deepEqual(requests, [
+      assert.deepEqual([...requests].sort(), [
         '/api/media-library/assets?limit=30&kind=image',
         '/api/media-library/assets?limit=30&kind=image&cursor=page-2',
+        '/api/media-library/collections?limit=30',
       ]);
       assert.equal(f.dom.window.document.querySelectorAll('img').length, 2);
       const image = f.dom.window.document.querySelector('img')!;

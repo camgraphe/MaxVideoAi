@@ -35,6 +35,7 @@ export function organizationSourceGroups(rows: OrganizationSource[]): Map<string
         edges.get(sourceIdentity(b))!.add(a);
     };
     const outputById = new Map(active.filter(row => row.type === 'job-output').map(row => [row.id, row]));
+    const allOutputs = rows.filter(row => row.type === 'job-output');
     const assetById = new Map(active.filter(row => row.type === 'asset').map(row => [row.id, row]));
     for (const asset of assetById.values()) {
         const output = asset.outputId ? outputById.get(asset.outputId) : undefined;
@@ -50,8 +51,9 @@ export function organizationSourceGroups(rows: OrganizationSource[]): Map<string
         // Ambiguous legacy projections remain independent instead of selecting the first URL match.
         if (legacy.canonicalId)
             continue;
-        const outputs = [...outputById.values()].filter(row => legacy.kind === row.kind && legacy.jobId === row.jobId && (!legacy.outputId || legacy.outputId === row.id) && legacy.original === row.original);
-        if (outputs.length === 1)
+        // Unavailable siblings still make provenance ambiguous; availability only controls graph edges.
+        const outputs = allOutputs.filter(row => legacy.kind === row.kind && legacy.jobId === row.jobId && (!legacy.outputId || legacy.outputId === row.id) && legacy.original === row.original);
+        if (outputs.length === 1 && outputById.has(outputs[0].id))
             connect(legacy, outputs[0]);
     }
     const groups = new Map<string, OrganizationSource[]>();
@@ -118,12 +120,13 @@ export async function readOrganizationStates(userId: string, keys: string[], exe
         favorite: boolean;
         trashed_at: Date | string | null;
         collection_ids: string[];
-    }>(`SELECT o.key,o.favorite,o.trashed_at,
+        purge_requested_at: string | null;
+    }>(`SELECT o.key,o.favorite,o.trashed_at,to_jsonb(o)->>'purge_requested_at' AS purge_requested_at,
     ARRAY(SELECT m.collection_id FROM library_collection_members m WHERE m.user_id=o.user_id AND m.organization_key=o.key ORDER BY m.collection_id) AS collection_ids
     FROM library_organization o WHERE o.user_id=$1 AND o.key=ANY($2::text[])`, [userId, keys]);
     const states = new Map(keys.map(key => [key, { key, favorite: false, trashedAt: null, collectionIds: [] } as LibraryOrganizationState]));
     for (const row of rows)
-        states.set(row.key, { key: row.key, favorite: row.favorite, trashedAt: row.trashed_at ? new Date(row.trashed_at).toISOString() : null, collectionIds: row.collection_ids });
+        states.set(row.key, { key: row.key, favorite: row.favorite, trashedAt: row.trashed_at ? new Date(row.trashed_at).toISOString() : null, collectionIds: row.collection_ids, ...(row.purge_requested_at ? {purgeRequestedAt:new Date(row.purge_requested_at).toISOString()} : {}) });
     return states;
 }
 export async function materializeOrganizationIdentities(userId: string, identities: OrganizationIdentity[], executor: TransactionQueryExecutor): Promise<void> {

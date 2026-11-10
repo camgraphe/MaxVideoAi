@@ -10,7 +10,7 @@ import {
 
 export type LibraryView = 'all' | 'saved' | 'review';
 export type LibraryKind = 'image' | 'video' | 'audio';
-export type SavedAssetSource = 'all' | 'upload' | 'generated' | 'storyboard' | 'character' | 'angle' | 'upscale';
+export type SavedAssetSource = 'all' | 'upload' | 'generated' | 'storyboard' | 'character' | 'angle' | 'upscale' | 'background-removal';
 
 export type LibraryEntry = {
   view: LibraryView;

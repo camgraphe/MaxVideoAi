@@ -7,12 +7,14 @@ organization state, operations and collection DTOs. References identify an owned
 source; they do not grant access. Internal DELETE IDs, public `ma_` asset IDs,
 exact job/output IDs, original URLs and temporary read grants remain distinct.
 
-Migration `97_media_library_organization.sql` is the deployment prerequisite.
+Migration `97_media_library_organization.sql` provides the organization schema;
+`98_media_library_purge.sql` adds the explicit Trash cleanup lifecycle and storage
+accounting prerequisites described in [deletion lifecycle](media-library-purge.md).
 The explicit `media-library-organization-schema.ts` owner is exported through
 `src/lib/schema.ts` and invoked by application bootstrap and organization writes.
 GET and the standalone resolver never initialize or repair schema. A missing
-organization table fails honestly. No migration was applied to a live database
-while implementing this feature.
+organization table fails honestly. Schema changes are explicit deployment steps,
+rehearsed on an isolated database branch before release.
 
 Six account-scoped sidecar tables own state: `library_organization`,
 `library_organization_aliases`, `library_collections`,
@@ -123,12 +125,34 @@ Restore clears only organization visibility and preserves the key, favorite and
 memberships. It cannot clear physical `deleted_at`, reconstruct a missing source,
 restore bytes, change job status or reacquire deleted storage.
 
-Trash has no purge or retention timer. The writer does not call the old physical
+Moving an item to recoverable Trash has no automatic retention timer. The
+organization writer does not call the old physical
 DELETE, alter media/legacy/output/job rows, revoke grants or release cleanup
 holds. Existing Studio references and Activity keep their independent source
-authorization. Browse/picker readers must apply organization Trash before their
+authorization. Explicit Empty Trash uses the separate guarded
+[deletion lifecycle](media-library-purge.md); accepted purge requests cannot be
+restored, and Studio retains a replaceable deleted-media slot. Browse/picker readers must apply organization Trash before their
 limit and winner ranking; the common browse and compatibility asset/recent list owners apply this filter
 before pagination. Exact Studio resolution and Activity remain outside that filter.
+
+Historical duplicate discovery uses `output-provenance-sql.ts` in both the browse
+relation and the batched organization resolver. An `output:` wrapper resolves only
+against an output of the same owner, job and kind, preferring a real stored ID
+with that prefix. A missing output ID resolves only when exactly one owned output
+of that job/kind has the exact original URL. Different output IDs and original
+versions remain distinct; persisted organization conflicts still fail explicitly.
+Discovery gathers the proven canonical mirrors before locking and organization
+writes, so selecting any mirror has the same favorite, collection and Trash state.
+
+`prepared-media-sql.ts` recognizes recorded video/audio excerpt lineage and creator
+input preparation lineage. Those inputs and their proven legacy mirrors are
+excluded before browse, compatibility listing, collection filtering and frozen
+selection pagination. Filenames never establish preparation or duplicate identity.
+Creator final results and saved character looks remain visible. Hidden preparations
+retain their exact references and stored bytes: this is discovery cleanup, not
+physical deletion or quota relief. `tests/media-library-duplicates-postgres.test.ts`
+covers all three kinds, ambiguous IDs, organization parity, actual Studio resolution
+and unchanged storage accounting for the hidden files.
 
 ## Verification
 
@@ -358,13 +382,45 @@ complete DTO rather than merging first pages or reimplementing local filters.
 prop is `{userId, scope, totalCount, onScopeChange}`. That path lazily loads
 `CompactLibraryBrowser`; existing selection/picker props continue through their
 own insertion owner. The shared `CompactMediaGrid` uses pinned React Aria
-GridList/Virtualizer with grid or audio-list layout, controlled organization keys,
+GridList/Virtualizer with mosaic, grid or list layout, controlled organization keys,
 loaded-range Shift selection, checkboxes and a separate preview action. Enter on
 a focused row opens its source without changing selection. Source/date/details
 and existing action slots remain reachable in the current inspector. Density is
-a small account-scoped local preference. Styling is scoped under
+a small account-scoped local preference, as is the display mode. Pickers keep their
+existing grid default; management defaults to mosaic. `MediaMosaicLayout` computes
+poster height from stored dimensions, with a fixed 24px caption, before scrolling.
+`CompactLibraryFilters`, `CompactLibrarySelection` and `CompactLibraryCollections`
+render contextual command popovers through `CompactLibraryPopup` (React Aria owns
+focus, Escape and dismissal). A 16px checked mark has a 44px hit target. Technical
+filenames use a type/date caption; originals and full names remain in Details.
+Popovers portal into the nearest dialog when present, so native Studio top-layer
+dialogs and existing picker focus boundaries contain their commands. Escape closes
+the command menu and restores its trigger without closing the receiving picker.
+`CompactLibrarySelection` owns only selection-scope commands. Selecting media
+immediately renders `CompactLibrarySelectionActions` with applicable actions;
+single-item Preview and Use in reuse the captured DTO and existing continuation
+owner. Favorites is a direct star action: remove when all captured manual records
+are favorites, add for mixed selections; frozen selections remove only in a Favorites
+scope. Add to collection lists destinations directly and can create then add using
+the confirmed collection ID. Existing mutations and partial-result recovery stay in
+the selection controller. Browsing collections and adding media are separate commands.
+On desktop the heading separates media kinds from a single Tools/origin menu, with
+the active origin visible on its trigger. Mobile moves origin and display settings
+into Filters, which marks an active origin; there are no competing visible source controls.
+Source filtering preserves the chosen all/saved/review scope. The Collections menu
+is always visible; its active collection name replaces the default label. Its All media
+entry clears only organization filters, preserving kind, source and search in both
+the page and the reference picker. Styling is scoped under
 `.compact-library`, loaded after the app shell by `AppRuntime`; it does not import
 the prototype shell or override legacy card classes.
+
+The grid/list/mosaic layouts retain up to 96 recently visible cards for two minutes
+(or the current viewport if larger). `RecentMediaItems` stores only layout keys;
+the existing image nodes survive short return scrolls, so private `no-store` thumbnails
+are not downloaded again. Entries removed from the current collection are retired;
+owner/scope unmounts clear the window. Expiry is pruned on the next layout query.
+There is no persistent byte cache, eager whole-library warmup or HTTP policy change.
+`media-library-management-browser` checks private no-store return scrolling and bounds.
 
 Cards mount no video/audio. A stored thumbnail must be distinct from the original;
 legacy `thumbUrl===url`, missing thumbnails and AV URLs produce a placeholder.
@@ -398,7 +454,7 @@ loaded length or subtracting snapshot successes.
 `useLibraryCollections` owns bounded collection pages and create/rename/delete
 through the existing owned routes. Names are trimmed and validated as 1–120
 Unicode code points; confirmed writes invalidate the initiating account. The
-collection/sidebar and bulk target share SWR keys. No local fake collections or
+collection menu and bulk target share SWR keys. No local fake collections or
 membership store is maintained.
 
 The grid keeps the same scope's placeholder count/audio geometry while revision
@@ -480,7 +536,42 @@ resolution. No Dashboard or additional Uppy focus host is mounted.
 
 ## Contextual picker acceptance
 
+On mobile, `LibraryMediaNavigation` uses a native type selector, including saved
+Characters; desktop keeps the type buttons. The shared media scroller hides its
+mobile scrollbar without changing keyboard/touch scrolling or virtualizer geometry.
+The page keeps two command rows: type, Collections and Import above search and
+Filters. Checkboxes expose contextual actions directly; bulk selection commands
+live inside Filters. Storage keeps one 44px footer next to the bottom navigation.
+The storage estimate remains labeled; quota and measurement detail stay in its popup.
+The results count remains announced and is visible inside mobile Filters. Display
+changes use the same account preference and preserve selection in every layout.
+`useLibraryScrollPagination` reads one next cursor page within 160px of the end of
+the shared virtualizer scroll surface. It waits for new loaded identities before
+requesting again, pauses during loading/mutations, hidden tabs and offline periods,
+and retires callbacks when account, filters or sort change. Resize observation fills
+short viewports without downloading the entire result set. Errors or 15 seconds
+without progress expose manual recovery; the Load more fallback also remains
+keyboard-accessible. Pagination does not replace loaded assets or their selection.
+Subtitles are reached through Tools, where the subtitle workbench links to saved
+documents. They no longer compete with Import in the Media header.
+
+`useLibraryAutoRefresh` revalidates a loaded first page in place every 30 seconds
+while visible and online. It also checks when returning to a visible tab or coming
+back online. It skips outstanding requests, errors and pagination beyond the first
+page; generic SWR focus revalidation stays disabled. Existing mutation invalidation
+still refreshes imports and organization changes. Filters retains a manual Refresh
+fallback. Account/scope retirement cancels timers and stale callbacks; no private
+thumbnail HTTP cache policy is changed. `library-auto-refresh-dom.test.ts` covers
+these boundaries and preservation of displayed media during a pending refresh.
+
 Ordinary media pickers use `CompactMediaGrid` through `ReferenceLibraryPicker`.
+`ReferencePickerToolbar` keeps search, Collections and import on one row. Collections
+opens the shared destination menu directly without a nested disclosure. Source, compatibility,
+and secondary links live in a collapsed Filters disclosure whose
+trigger reports active filters. The default compatible-only admission is unchanged.
+The count shares the title metadata row and help is inside the disclosure. The
+portrait browser suite guards a minimum 68% canvas/modal height at 390 x 844 and
+desktop size, alongside exact selection and full-frame poster contracts.
 The grid owns only keyboard/checkbox/primary/Preview interaction and virtual layout. Its
 optional key/name adapters, single selection and selection-disabled keys preserve
 the page library's defaults. Character entities retain immediate toggles and a
@@ -638,3 +729,31 @@ retirement with retained imports/basket and visible focus. These are fixture
 network/component results, not native playback, production latency or CWV claims.
 
 Generated-video candidate facts are output-scoped: persisted candidates project duration, dimensions and probed audio presence from their exact `job_outputs` row. Aspect ratio is derived from those dimensions. A sibling never inherits the job primary video's facts or thumbnail; missing facts remain null, including when both rows share a URL. Versioned probe facts must bind to the candidate's current original URL; invalid or stale measurements cannot fall back to an unmeasured duration. Historical job-only candidates retain their existing positively proved job-source facts. The shared picker DTO preserves these nullable facts through Audio and Upscale; Audio's existing 10-second eligibility check receives the selected output's duration.
+
+## Media navigation, characters and recorded storage
+
+The authenticated Media page keeps file kinds (all/image/video/audio) separate
+from the visible origin selector. `LibraryCharacters.client.tsx` reads the existing
+account-scoped Character Studio character/looks endpoints, with server pagination
+and literal-name search. It does not create another identity store or infer saved
+characters from generated filenames. Exact original/job pairs use the shared
+`MediaDestinationActions` for Create and Studio. Character Studio and MCP retain
+their existing saved-character integration owner. The `tab=characters&character=ID`
+entry opens that saved identity after draft restoration; the existing library
+request lifetime cancels stale reads. Starting a new character clears that entry.
+
+`GET /api/media-library/storage` is a private, authenticated read of recorded
+original sizes. Its [storage accounting contract](media-library-storage.md) covers
+owner isolation, projection/object deduplication, recoverable Trash, pending and
+failed deletion, shared retention and confirmed physical deletion. Logical
+tombstones do not imply freed bytes. The read performs no bucket scan, HEAD request,
+schema bootstrap or quota reservation. Unknown/conflicting sizes remain unmeasured;
+derivatives remain outside this estimate. `limitBytes: null` / `enforcement: false`
+remain informational. The UI only polls while original deletion is pending.
+
+The inspector's temporary image uses the same 16px contain viewport as its final
+reader; it cannot inherit a portrait's intrinsic minimum height. Failed stored
+posters disappear without fetching full originals in grids. Private thumbnail
+reads require the deployment's `S3_PUBLIC_BASE_URL` to recognize the canonical
+storage host; the library branch preview uses the production CDN hostname with
+the existing owner checks and signing configuration.

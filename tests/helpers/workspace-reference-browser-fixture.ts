@@ -42,7 +42,7 @@ export function referencePickerAuthModules(userId: string, accessToken: string) 
 }
 
 /** Real Composer/CSS with a local synthetic-data boundary; usable by tests and manual preview. */
-export async function startWorkspaceReferenceFixture(options: { source?: string; config?: unknown; assistancePreview?: boolean; assistanceLive?: boolean; perception?:boolean; hostModules?: Record<string, string> } = {}) {
+export async function startWorkspaceReferenceFixture(options: { source?: string; config?: unknown; assistancePreview?: boolean; assistanceLive?: boolean; perception?:boolean; imageCacheControl?:string; hostModules?: Record<string, string> } = {}) {
   const frontend = join(process.cwd(), 'frontend');
   const requireFrontend = createRequire(join(frontend, 'package.json'));
   const source = options.source ?? workspaceReferenceFixtureSource;
@@ -68,7 +68,7 @@ export async function startWorkspaceReferenceFixture(options: { source?: string;
     } else if (/\.(?:mp4|wav|mp3)$/.test(name)) {
       response.writeHead(404); response.end();
     } else if (/\.svg$/.test(name)) {
-      response.writeHead(200, { 'content-type': 'image/svg+xml' });
+      response.writeHead(200, { 'content-type': 'image/svg+xml', ...(options.imageCacheControl ? { 'cache-control': options.imageCacheControl } : {}) });
       response.end(name.includes('portrait')
         ? '<svg xmlns="http://www.w3.org/2000/svg" width="160" height="280"><rect width="160" height="280" fill="#c5a2a3"/><circle cx="80" cy="105" r="45" fill="#f4d8c7"/><path d="M20 280v-45a60 60 0 0 1 120 0v45" fill="#4f4763"/></svg>'
         : `<svg xmlns="http://www.w3.org/2000/svg" width="240" height="160"><rect width="240" height="160" fill="${name.includes('second') ? '#a3c8b4' : '#a9c7de'}"/><circle cx="175" cy="40" r="22" fill="#fae4a6"/><path d="M0 160 75 60 155 160M100 160 180 80 240 160" fill="${name.includes('second') ? '#39785c' : '#456987'}"/></svg>`);

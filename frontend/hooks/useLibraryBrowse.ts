@@ -1,6 +1,7 @@
 'use client';
 import { useLibraryCacheRevision, libraryRevisionKey, useLibraryScopePersistence } from '@/hooks/useLibraryCacheRevision';
 import { useMemo, useCallback } from 'react';
+import { useLibraryAutoRefresh } from '@/hooks/useLibraryAutoRefresh';
 import useSWRInfinite from 'swr/infinite';
 import { buildLibraryBrowseKey, fetchLibraryBrowse } from '@/lib/library-browse-client';
 import type { LibraryBrowseScope, LibraryBrowseResponse } from '@/lib/library-browse';
@@ -17,6 +18,12 @@ export function useLibraryBrowse({ userId, scope, enabled = true }: {
             return null;
         return libraryRevisionKey(buildLibraryBrowseKey({ userId, scope, cursor: index === 0 ? null : previous?.nextCursor }), revision);
     }, fetchLibraryBrowse, { persistSize, keepPreviousData: false, revalidateFirstPage: false, revalidateOnFocus: false, shouldRetryOnError: false });
+    useLibraryAutoRefresh({
+        scopeKey: JSON.stringify([buildLibraryBrowseKey({ userId, scope }), revision]),
+        enabled: enabled && Boolean(userId && query.data?.[0]) && query.size === 1 && !query.error,
+        busy: query.isValidating,
+        refresh: query.mutate,
+    });
     const assets = useMemo(() => {
         if (!enabled || !userId)
             return [];

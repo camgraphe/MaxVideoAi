@@ -27,7 +27,7 @@ export function useLibraryCollections(userId: string) {
     async ([url, owner]: readonly [string, string, number]) => {
       const response = await ownedAuthFetch(url, owner),
         body = await response.json();
-      if (!response.ok || !body.ok) throw new Error(body.error ?? 'COLLECTION_FAILED');
+      if (!response.ok || !body.ok || !Array.isArray(body.items)) throw new Error(body.error ?? 'COLLECTION_FAILED');
       return body;
     },
     {
@@ -57,7 +57,7 @@ export function useLibraryCollections(userId: string) {
     stateRef.current = false;
     setState({ owner: userId, pending: false, error: null });
   }, [userId]);
-  const write = async (method: 'POST' | 'PATCH' | 'DELETE', id?: string, name?: string) => {
+  const write = async (method: 'POST' | 'PATCH' | 'DELETE', id?: string, name?: string, onCreated?: (collection: LibraryCollection) => void) => {
     if (stateRef.current) return false;
     const captured = context.current;
     const isCurrent = () => alive.current && context.current === captured;
@@ -81,6 +81,7 @@ export function useLibraryCollections(userId: string) {
       const body = await response.json();
       if (!response.ok || !body.ok) throw new Error(body.error ?? 'COLLECTION_FAILED');
       invalidateLibraryMedia(userId);
+      if (isCurrent() && method === 'POST' && body.collection?.id) onCreated?.(body.collection);
       return isCurrent();
     } catch (e) {
       if (isCurrent()) setState({ owner: userId, pending: false, error: (e as Error).message });
@@ -99,6 +100,11 @@ export function useLibraryCollections(userId: string) {
     error: state.owner === userId ? (state.error ?? query.error ?? null) : null,
     pending: state.owner === userId && state.pending,
     write,
+    create: async (name: string): Promise<LibraryCollection | null> => {
+      let created: LibraryCollection | null = null;
+      await write('POST', undefined, name, collection => { created = collection; });
+      return created;
+    },
     hasMore: Boolean(last?.hasMore),
     loadMore: () => {
       if (last?.nextCursor && !query.isValidating) void query.setSize((s) => s + 1);

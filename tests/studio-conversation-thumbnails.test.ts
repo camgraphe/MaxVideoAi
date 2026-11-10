@@ -29,11 +29,12 @@ async function timelineMarkup(items: WorkspaceTimelineItem[]) {
     '../../../_shared/_components/viewer/useProgramPlaybackSync':'export const useProgramPlaybackSync=()=>({});',
     '../../../_shared/_components/viewer/ProgramPlaybackLayers':'export const ProgramPlaybackLayers=()=>null;',
     './ConversationExport.client':'export const ConversationExport=()=>null;',
+    './ImageReferenceLibrary.client':'export const ImageReferenceLibrary=()=>null;',
   };
   const bundled=await build({absWorkingDir:frontend,stdin:{contents:"export {ConversationTimeline} from './app/(core)/(workspace)/app/studio/conversation/[projectId]/_components/ConversationTimeline.client';",resolveDir:frontend,loader:'ts'},tsconfig:resolve(frontend,'tsconfig.json'),bundle:true,platform:'node',format:'cjs',write:false,packages:'external',loader:{'.css':'empty'},jsx:'automatic',plugins:[{name:'timeline-fixture',setup(builder){builder.onResolve({filter:/.*/},args=>args.path in stubs?{path:args.path,namespace:'fixture'}:undefined);builder.onLoad({filter:/.*/,namespace:'fixture'},args=>({contents:stubs[args.path],loader:'js'}));}}]});
   const module={exports:{} as any};
   runInNewContext(bundled.outputFiles[0].text,{module,exports:module.exports,fixture:{items},require:createRequire(resolve(frontend,'package.json')),React,console});
-  return renderToStaticMarkup(React.createElement(module.exports.ConversationTimeline,{projectId:'fixture',projectName:'Film',refreshKey:0,onOpenLibrary(){},onExportChange(){}}));
+  return renderToStaticMarkup(React.createElement(module.exports.ConversationTimeline,{accountKey:'owner',projectId:'fixture',projectName:'Film',refreshKey:0,onOpenLibrary(){},onExportChange(){}}));
 }
 
 test('real conversation timeline renders separately signed image and video thumbnails, retaining canonical edit state',async()=>{

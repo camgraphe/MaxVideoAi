@@ -1,0 +1,50 @@
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';
+import {mkdtempSync,rmSync,readFileSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import {join,resolve} from 'node:path';
+import test from 'node:test';
+import {build} from 'esbuild';
+import {MEDIA_LIBRARY_PURGE_SCHEMA} from '../frontend/src/lib/schema/media-library-purge-schema';
+const requireFrontend=createRequire(resolve('frontend/package.json'));
+
+test('purge migration remains the explicit bootstrap source',()=>{
+  assert.equal(readFileSync('neon/migrations/98_media_library_purge.sql','utf8'),MEDIA_LIBRARY_PURGE_SCHEMA);
+});
+test('purge HTTP boundaries authenticate, freeze the owner and require an actual cron secret',async t=>{
+  const folder=mkdtempSync(join(tmpdir(),'purge-routes-'));
+  const fixture={userId:null as string|null,calls:[] as unknown[],error:null as Error|null};
+  const globals=globalThis as typeof globalThis & {__purgeRoutes?:typeof fixture};globals.__purgeRoutes=fixture;
+  const previous={CRON_SECRET:process.env.CRON_SECRET,VERCEL:process.env.VERCEL,VERCEL_DEPLOYMENT_ID:process.env.VERCEL_DEPLOYMENT_ID};
+  t.after(()=>{rmSync(folder,{recursive:true,force:true});delete globals.__purgeRoutes;for(const[key,value]of Object.entries(previous)){if(value===undefined)delete process.env[key];else process.env[key]=value;}});
+  const outfile=join(folder,'routes.cjs');
+  await build({stdin:{loader:'ts',resolveDir:process.cwd(),contents:`export * as empty from './frontend/app/api/media-library/trash/empty/route';export * as cron from './frontend/app/api/cron/media-library-purge/route';export {LibraryOrganizationError} from './frontend/server/media-library/organization-validation';`},outfile,bundle:true,platform:'node',format:'cjs',packages:'external',tsconfig:'frontend/tsconfig.json',plugins:[{name:'boundaries',setup(b){
+    b.onResolve({filter:/^@\/lib\/supabase-ssr$/},()=>({path:'auth',namespace:'fixture'}));
+    b.onResolve({filter:/^@\/server\/media-library\/purge(?:-worker)?$/},a=>({path:a.path.endsWith('worker')?'worker':'queue',namespace:'fixture'}));
+    b.onLoad({filter:/.*/,namespace:'fixture'},a=>({loader:'ts',contents:a.path==='auth'?'export const getRouteAuthContext=async()=>({userId:globalThis.__purgeRoutes.userId});':`export const ${a.path==='worker'?'processLibraryPurgeBatch':'requestLibraryTrashPurge'}=async(input)=>{const f=globalThis.__purgeRoutes;f.calls.push(input);if(f.error)throw f.error;return ${a.path==='worker'?'{selectedCount:0,completedCount:0,pendingCount:0}':'{requestedCount:2,queuedCount:2,alreadyQueuedCount:0}'};};`}));
+    b.onResolve({filter:/^next\/server$/},a=>({path:requireFrontend.resolve(a.path),external:true}));
+  }}]});
+  const routes=requireFrontend(outfile),{NextRequest}=requireFrontend('next/server');
+  const post=(body:unknown)=>new NextRequest('https://app.test/api/media-library/trash/empty',{method:'POST',body:JSON.stringify(body)});
+  assert.equal((await routes.empty.POST(post({}))).status,401);assert.equal(fixture.calls.length,0);
+  fixture.userId='alice';
+  assert.equal((await routes.empty.POST(post({userId:'bob',snapshotId:'x',confirmation:'empty-trash'}))).status,400);assert.equal(fixture.calls.length,0);
+  const response=await routes.empty.POST(post({snapshotId:'frozen-snapshot',confirmation:'empty-trash'}));
+  assert.equal(response.status,202);assert.equal(response.headers.get('cache-control'),'private, no-store');
+  assert.deepEqual(fixture.calls.pop(),{userId:'alice',snapshotId:'frozen-snapshot',confirmation:'empty-trash'});
+  fixture.error=new routes.LibraryOrganizationError('TRASH_CHANGED',409);
+  assert.equal((await routes.empty.POST(post({snapshotId:'snapshot',confirmation:'empty-trash'}))).status,409);
+  fixture.error=new Error('private storage URL must not leak');
+  assert.deepEqual(await (await routes.empty.POST(post({snapshotId:'snapshot',confirmation:'empty-trash'}))).json(),{ok:false,error:'ORGANIZATION_FAILED'});
+  fixture.calls=[];fixture.error=null;
+  delete process.env.CRON_SECRET;process.env.VERCEL='1';process.env.VERCEL_DEPLOYMENT_ID='dpl_expected';
+  const cron=(headers:Record<string,string>={})=>new NextRequest('https://app.test/api/cron/media-library-purge',{headers});
+  assert.equal((await routes.cron.GET(cron({'x-vercel-cron':'1','user-agent':'vercel-cron/1.0'}))).status,503);
+  process.env.CRON_SECRET='fixture-secret';
+  assert.equal((await routes.cron.GET(cron())).status,401);
+  assert.equal((await routes.cron.GET(cron({authorization:'Bearer wrong'}))).status,401);
+  assert.equal((await routes.cron.GET(cron({authorization:'Bearer fixture-secret','x-vercel-deployment-id':'dpl_wrong'}))).status,401);
+  assert.equal(fixture.calls.length,0);
+  assert.equal((await routes.cron.GET(cron({authorization:'Bearer fixture-secret'}))).status,200);
+  assert.deepEqual(fixture.calls,[{limit:20}]);
+});

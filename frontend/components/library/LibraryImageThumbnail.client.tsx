@@ -15,7 +15,8 @@ export function LibraryImageThumbnail({ asset, alt = '', className, posterOnly =
   const { access, refresh, retired } = useLibraryDisplayAccess(asset, false);
   const [failedThumbnail, setFailedThumbnail] = useState<string | null>(null);
   const thumbnail = originalOnly ? null : access.thumbnailAccessUrl || asset.thumbUrl || null;
-  const displaySrc = posterOnly ? thumbnail : thumbnail && thumbnail !== failedThumbnail ? thumbnail : access.accessUrl ?? asset.url;
+  const availableThumbnail = thumbnail !== failedThumbnail ? thumbnail : null;
+  const displaySrc = posterOnly ? availableThumbnail : availableThumbnail ?? access.accessUrl ?? asset.url;
   if (retired || !displaySrc) return null;
 
   return (

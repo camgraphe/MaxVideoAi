@@ -1,0 +1,13 @@
+import { makeAssets, initialCollections } from './fixtures';
+import { startWorkspaceReferenceFixture } from '../../../tests/helpers/workspace-reference-browser-fixture';
+const baselineSource = `import {useState} from 'react';import {createRoot} from 'react-dom/client';import {CompactLibraryBrowser} from './components/library/CompactLibraryBrowser.client';
+function Baseline(){const [scope,setScope]=useState({view:'all',kind:'all',sort:'recent'});return <div style={{height:'100dvh',display:'flex',flexDirection:'column',padding:20}}><CompactLibraryBrowser title="Médias" hideTitle locale="fr" assets={globalThis.fixtureConfig.assets} assetType="image" source="all" availableSources={['all','upload','generated','storyboard','character','angle','upscale']} sourceLabels={{all:'Toutes',upload:'Imports',generated:'Générations',storyboard:'Storyboard',character:'Character',angle:'Angle',upscale:'Upscale'}} onSourceChange={()=>{}} isLoading={false} searchPlaceholder="Rechercher" sourcesTitle="Provenance" emptyLabel="Vide" emptySearchLabel="Aucun résultat" renderAssetActions={()=>null} headerLeadingActions={<>{['Tout','Images','Vidéos','Audio'].map(t=><button key={t}>{t}</button>)}</>} headerActions={<><button>Importer</button><button>Actualiser</button></>} management={{userId:'synthetic-owner',scope,onScopeChange:patch=>setScope(s=>({...s,...patch})),totalCount:globalThis.fixtureConfig.assets.length}}/></div>;}createRoot(document.getElementById('root')).render(<Baseline/>);`;
+const baselineModules = {
+  './useLibraryCollections': `export function useLibraryCollections(){return {items:${JSON.stringify(initialCollections)},write:async()=>true,pending:false,error:null,hasMore:false,refresh:()=>{}};}`,
+  './useLibraryManagementSelection': `import {useState} from 'react';export function useLibraryManagementSelection(){const [keys,change]=useState(new Set());return {keys,change,count:keys.size,pending:false,announcement:'',error:null,outcome:null,globalUnconfirmedCount:0,globalOutcome:null,clear:()=>change(new Set()),selectLoaded:()=>{},selectAllResults:()=>{},run:async()=>{},retry:()=>{}};}`,
+  '@/hooks/useLibraryMediaAccess': `export function useLibraryMediaAccess({asset}){return {retired:false,access:{thumbnailAccessUrl:asset.thumbUrl},refresh:async()=>{}};}export function useLibraryDisplayAccess(asset){return useLibraryMediaAccess({asset});}`,
+};
+
+export async function startBaseline(mediaOrigin: string) {
+ return startWorkspaceReferenceFixture({source:baselineSource,config:{assets:makeAssets(96).filter(a=>!a.trashed).map(a=>({...a,thumbUrl:a.thumbUrl?mediaOrigin+a.thumbUrl:null}))},hostModules:baselineModules});
+}

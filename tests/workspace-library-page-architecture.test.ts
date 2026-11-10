@@ -44,7 +44,9 @@ test('workspace library client delegates data and mutation orchestration', () =>
   assert.doesNotMatch(clientSource, /toolsTitle=|toolsDescription=|toolLinks=/, 'Media should stay focused on browsing and managing media');
   assert.match(clientSource, /hideTitle/, 'the active Media navigation item should replace a duplicate visible page title');
   assert.doesNotMatch(clientSource, /titleActions=/, 'saved and recent media should share the source filter');
-  assert.match(clientSource, /availableSources=\{\[\.\.\.availableSources, 'recent'\]\}/);
+  assert.match(clientSource, /availableSources=\{availableSources\}/);
+  const sourceChange = clientSource.slice(clientSource.indexOf('onSourceChange='), clientSource.indexOf('searchPlaceholder='));
+  assert.doesNotMatch(sourceChange, /setActiveView\('saved'\)/, 'source filters must retain unsaved outputs in All media');
 });
 
 test('workspace library import input stays hidden from keyboard traversal', () => {

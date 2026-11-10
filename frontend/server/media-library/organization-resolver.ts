@@ -18,7 +18,7 @@ export async function resolveLibraryOrganizationReferences(userId: string, refer
     return resolveOrganizationBatch(userId, references, transaction);
 }
 /** Internal set-based owner. Only validated frozen snapshots may exceed the public 500-reference boundary. */
-export async function resolveOrganizationBatch(userId: string, references: readonly LibraryMediaReference[], transaction?: TransactionQueryExecutor): Promise<ResolvedLibraryOrganizationReference[]> {
+export async function resolveOrganizationBatch(userId: string, references: readonly LibraryMediaReference[], transaction?: TransactionQueryExecutor, options: {allowPurging?:boolean;lockSources?:boolean} = {}): Promise<ResolvedLibraryOrganizationReference[]> {
     requireLibraryOwner(userId);
     if (references.length > 10000)
         throw new Error('SELECTION_LIMIT');
@@ -26,11 +26,12 @@ export async function resolveOrganizationBatch(userId: string, references: reado
         throw new Error('TRANSACTION_REQUIRED');
     const executor = transaction ?? { query };
     const valid = references.filter(validateLibraryReference);
-    const { sources, discovered, proofLimitedSourceIds, similarityLimitedSourceIds } = await readOrganizationSourceBatch(userId, valid, executor, transaction);
+    const sourceTransaction = options.lockSources === false ? undefined : transaction;
+    const { sources, discovered, proofLimitedSourceIds, similarityLimitedSourceIds } = await readOrganizationSourceBatch(userId, valid, executor, sourceTransaction);
     const current = new Map(sources.map(source => [referenceIdentity(sourceReference(source)), source]));
     const initial = new Map(discovered.map(source => [referenceIdentity(sourceReference(source)), source]));
     const requestedSources = valid.map(ref => current.get(referenceIdentity(ref))).filter(source => source !== undefined);
-    const unavailable = await unavailableOrganizationSourceUrls(requestedSources, executor, Boolean(transaction));
+    const unavailable = await unavailableOrganizationSourceUrls(requestedSources, executor, Boolean(sourceTransaction));
     const groups = organizationSourceGroups(sources);
     const outputKeys = new Set(sources.filter(source => source.type === 'job-output').map(source => JSON.stringify([source.kind, source.jobId, source.id])));
     const proofLimited = new Set(proofLimitedSourceIds);
@@ -87,7 +88,9 @@ export async function resolveOrganizationBatch(userId: string, references: reado
     }
     const states = await readOrganizationStates(userId, [...new Set(results.flatMap(row => row.key ? [row.key] : []))], executor);
     for (const row of results)
-        if (row.key)
+        if (row.key) {
             row.state = states.get(row.key);
+            if(row.state?.purgeRequestedAt && !options.allowPurging) {row.error='MEDIA_DELETED';delete row.identity;}
+        }
     return results;
 }
