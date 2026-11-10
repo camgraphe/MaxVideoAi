@@ -1,4 +1,5 @@
 'use client';
+import { CompactLibrarySource } from './CompactLibrarySource.client';
 import { useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import type { AssetBrowserAsset, AssetLibraryBrowserProps } from './AssetLibraryBrowser';
@@ -69,7 +70,6 @@ function OwnedCompactLibraryBrowser({
   searchQuery = '',
   onSearchQueryChange,
   searchPlaceholder,
-  sourcesTitle,
   onRetry,
   retryLabel,
   emptyLabel,
@@ -217,14 +217,10 @@ function OwnedCompactLibraryBrowser({
                 placeholder={searchPlaceholder}
               />
             </label>
+            <CompactLibrarySource locale={locale} source={source} availableSources={availableSources} sourceLabels={sourceLabels} onSourceChange={onSourceChange} />
             <CompactLibraryFilters
               {...management}
               locale={locale}
-              source={source}
-              availableSources={availableSources}
-              sourceLabels={sourceLabels}
-              sourcesTitle={sourcesTitle}
-              onSourceChange={onSourceChange}
               density={density}
               setDensity={setDensity}
             />

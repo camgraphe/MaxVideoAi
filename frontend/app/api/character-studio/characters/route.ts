@@ -5,7 +5,7 @@ import { listStudioCharacters, saveStudioCharacterOutput } from '@/server/charac
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export function GET(req: NextRequest) {
-  return studioRoute(req, (userId) => listStudioCharacters(userId, req.nextUrl.searchParams.get('before')));
+  return studioRoute(req, (userId) => listStudioCharacters(userId, req.nextUrl.searchParams.get('before'), undefined, req.nextUrl.searchParams.get('search')?.trim() || undefined));
 }
 export function POST(req: NextRequest) {
   return studioRoute(req, async (userId) => {

@@ -646,3 +646,31 @@ retirement with retained imports/basket and visible focus. These are fixture
 network/component results, not native playback, production latency or CWV claims.
 
 Generated-video candidate facts are output-scoped: persisted candidates project duration, dimensions and probed audio presence from their exact `job_outputs` row. Aspect ratio is derived from those dimensions. A sibling never inherits the job primary video's facts or thumbnail; missing facts remain null, including when both rows share a URL. Versioned probe facts must bind to the candidate's current original URL; invalid or stale measurements cannot fall back to an unmeasured duration. Historical job-only candidates retain their existing positively proved job-source facts. The shared picker DTO preserves these nullable facts through Audio and Upscale; Audio's existing 10-second eligibility check receives the selected output's duration.
+
+## Media navigation, characters and recorded storage
+
+The authenticated Media page keeps file kinds (all/image/video/audio) separate
+from the visible origin selector. `LibraryCharacters.client.tsx` reads the existing
+account-scoped Character Studio character/looks endpoints, with server pagination
+and literal-name search. It does not create another identity store or infer saved
+characters from generated filenames. Exact original/job pairs use the shared
+`MediaDestinationActions` for Create and Studio. Character Studio and MCP retain
+their existing saved-character integration owner. The `tab=characters&character=ID`
+entry opens that saved identity after draft restoration; the existing library
+request lifetime cancels stale reads. Starting a new character clears that entry.
+
+`GET /api/media-library/storage` is a private, authenticated read of recorded
+original sizes, aggregated per owner and exact original URL across `media_assets`,
+`user_assets` and `job_outputs`. It includes recoverable Trash, excludes deleted
+assets, and does not scan S3, issue HEAD requests, initialize schema or reserve a
+quota. Unknown/conflicting sizes remain unmeasured. The UI shows measured-file
+coverage and explicitly excludes unmeasured originals and derivatives from this
+estimate. `limitBytes: null` / `enforcement: false` are informational, not an
+unlimited-storage entitlement or an admission/deletion policy.
+
+The inspector's temporary image uses the same 16px contain viewport as its final
+reader; it cannot inherit a portrait's intrinsic minimum height. Failed stored
+posters disappear without fetching full originals in grids. Private thumbnail
+reads require the deployment's `S3_PUBLIC_BASE_URL` to recognize the canonical
+storage host; the library branch preview uses the production CDN hostname with
+the existing owner checks and signing configuration.

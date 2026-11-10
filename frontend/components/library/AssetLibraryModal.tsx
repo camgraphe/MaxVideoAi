@@ -437,7 +437,7 @@ export function AssetLibraryModal({
         source={source}
         availableSources={[...sourceOptions]}
         sourceLabels={copyAssetLibrary.tabs}
-        onSourceChange={onSourceChange}
+        onSourceChange={(source) => { if (source !== 'background-removal') onSourceChange(source); }}
         onLoadMore={onLoadMore}
         loadMoreLabel={loadMoreLabel}
         searchPlaceholder={searchPlaceholder}

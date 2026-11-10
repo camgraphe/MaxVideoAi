@@ -56,15 +56,11 @@ test('real media browser keeps compact commands, visible selection and contained
       await page.getByRole('button', { name: 'Clear selection', exact: true }).click();
       await expect(page.getByRole('button', { name: 'Select', exact: true })).toBeFocused();
       await expect(rows.first().getByRole('checkbox')).not.toBeChecked();
-      await page.getByRole('button', { name: 'Filters', exact: true }).click();
-      await expect(page.getByRole('dialog', { name: 'Filters' })).toBeVisible();
       await page.getByLabel('Source', { exact: true }).selectOption('upload');
-      await page.keyboard.press('Escape');
-      await expect(page.getByRole('button', { name: 'Filters', exact: true })).toBeFocused();
       await page.getByRole('button', { name: 'All media', exact: true }).click();
       await page.locator('.compact-library-collections').getByRole('button', { name: 'All media', exact: true }).click();
-      await page.getByRole('button', { name: 'Filters', exact: true }).click();
       await expect(page.getByLabel('Source', { exact: true })).toHaveValue('all');
+      await page.getByRole('button', { name: 'Filters', exact: true }).click();
       await expect(page.getByLabel('Library view', { exact: true })).toHaveValue('all');
       await page.keyboard.press('Escape');
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1), false, 'no horizontal page overflow');

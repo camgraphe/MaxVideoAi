@@ -19,6 +19,6 @@ export function referenceContinuationCopy(locale: string) {
 }
 
 export function compactMediaSource(source: string, locale: string, fallback: string) {
-  const labels: Record<string, string> = locale.startsWith('fr') ? { all: 'Toutes', upload: 'Importées', generated: 'Générées', recent: 'Récentes', storyboard: 'Storyboard', character: 'Personnage', angle: 'Angle', upscale: 'Upscale' } : locale.startsWith('es') ? { all: 'Todos', upload: 'Subidos', generated: 'Generados', recent: 'Recientes', storyboard: 'Storyboard', character: 'Personaje', angle: 'Ángulo', upscale: 'Upscale' } : { all: 'All', upload: 'Uploads', generated: 'Generated', recent: 'Recent', storyboard: 'Storyboard', character: 'Character', angle: 'Angle', upscale: 'Upscale' };
+  const labels: Record<string, string> = locale.startsWith('fr') ? { all: 'Toutes', upload: 'Importées', generated: 'Générées', recent: 'Récentes', storyboard: 'Storyboard', character: 'Character Studio', 'background-removal': 'Retrait du fond', angle: 'Angle', upscale: 'Upscale' } : locale.startsWith('es') ? { all: 'Todos', upload: 'Subidos', generated: 'Generados', recent: 'Recientes', storyboard: 'Storyboard', character: 'Character Studio', 'background-removal': 'Quitar fondo', angle: 'Ángulo', upscale: 'Upscale' } : { all: 'All', upload: 'Uploads', generated: 'Generated', recent: 'Recent', storyboard: 'Storyboard', character: 'Character Studio', 'background-removal': 'Background removal', angle: 'Angle', upscale: 'Upscale' };
   return labels[source] ?? fallback;
 }

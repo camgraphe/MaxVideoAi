@@ -1,5 +1,5 @@
 'use client';
-import { memo, useMemo, useRef } from 'react';
+import { memo, useMemo, useRef, useState } from 'react';
 import { Button, Checkbox, GridList, GridListItem, type Selection } from 'react-aria-components';
 import { GridLayout, ListLayout, Size, Virtualizer } from 'react-aria-components/Virtualizer';
 import { Check, Film, ImageIcon, Music2, ScanSearch } from 'lucide-react';
@@ -32,6 +32,7 @@ function thumbnailRole(asset: AssetBrowserAsset) {
 }
 function CompactThumbnail({ asset, userId }: { asset: AssetBrowserAsset; userId: string }) {
   const media = useLibraryMediaAccess({ userId, asset, refreshOnMount: false });
+  const [failedSource, setFailedSource] = useState<string | null>(null);
   const canonical = thumbnailRole(asset);
   const src = media.retired
     ? null
@@ -40,7 +41,7 @@ function CompactThumbnail({ asset, userId }: { asset: AssetBrowserAsset; userId:
       : null;
   const Icon = asset.kind === 'video' ? Film : asset.kind === 'audio' ? Music2 : ImageIcon;
   // Stored private thumbnails must never pass through the public image optimizer.
-  return src ? (
+  return src && src !== failedSource ? (
     // eslint-disable-next-line @next/next/no-img-element
     <img
       src={src}
@@ -51,6 +52,7 @@ function CompactThumbnail({ asset, userId }: { asset: AssetBrowserAsset; userId:
       decoding="async"
       referrerPolicy="no-referrer"
       onError={() => {
+        setFailedSource(src);
         void media.refresh();
       }}
     />

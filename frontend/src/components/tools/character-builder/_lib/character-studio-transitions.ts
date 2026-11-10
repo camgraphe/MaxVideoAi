@@ -74,9 +74,11 @@ export function createStudioDraftTransitions({
       // Old entry intents must not resurrect a snapshot or Recast entry on reload.
       if (typeof window !== 'undefined') {
         const url = new URL(window.location.href);
-        if (url.searchParams.has('job') || url.searchParams.has('mode')) {
+        if (['job', 'mode', 'tab', 'character'].some(key => url.searchParams.has(key))) {
           url.searchParams.delete('job');
           url.searchParams.delete('mode');
+          url.searchParams.delete('tab');
+          url.searchParams.delete('character');
           window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`);
         }
       }

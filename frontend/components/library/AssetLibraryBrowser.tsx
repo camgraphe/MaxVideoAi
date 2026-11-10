@@ -30,7 +30,8 @@ export type AssetLibrarySource =
   | 'storyboard'
   | 'character'
   | 'angle'
-  | 'upscale';
+  | 'upscale'
+  | 'background-removal';
 
 export type AssetBrowserAsset = MediaReadAccess & {
   libraryRef?: LibraryMediaReference;

@@ -1,14 +1,9 @@
 'use client';
 import type { AssetLibraryBrowserProps } from './AssetLibraryBrowser';
 import { compactLibraryCopy } from './compact-library-copy';
-import { compactMediaSource } from './media-action-copy';
 import { CompactLibraryPopup } from './CompactLibraryPopup.client';
 
-type Props = Pick<
-  AssetLibraryBrowserProps,
-  'source' | 'availableSources' | 'sourceLabels' | 'sourcesTitle' | 'onSourceChange'
-> &
-  NonNullable<AssetLibraryBrowserProps['management']> & {
+type Props = NonNullable<AssetLibraryBrowserProps['management']> & {
     locale: string;
     density: number;
     setDensity: (value: number) => void;
@@ -18,17 +13,12 @@ export function CompactLibraryFilters({
   locale,
   scope,
   onScopeChange,
-  source,
-  availableSources,
-  sourceLabels,
-  sourcesTitle,
-  onSourceChange,
   density,
   setDensity,
 }: Props) {
   const copy = compactLibraryCopy(locale);
   return (
-    <CompactLibraryPopup label={copy.filters} active={scope.view !== 'all' || source !== 'all'}>
+    <CompactLibraryPopup label={copy.filters} active={scope.view !== 'all'}>
       <div className="compact-library-filters">
         <label>
           <span>{copy.view}</span>
@@ -44,20 +34,6 @@ export function CompactLibraryFilters({
             <option value="all">{copy.all}</option>
             <option value="saved">{copy.saved}</option>
             <option value="review">{copy.review}</option>
-          </select>
-        </label>
-        <label>
-          <span>{sourcesTitle}</span>
-          <select
-            aria-label={sourcesTitle}
-            value={source}
-            onChange={(event) => onSourceChange(event.target.value as typeof source)}
-          >
-            {availableSources.map((value) => (
-              <option key={value} value={value}>
-                {compactMediaSource(value, locale, sourceLabels[value] ?? value)}
-              </option>
-            ))}
           </select>
         </label>
         <label>
