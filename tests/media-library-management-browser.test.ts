@@ -6,13 +6,16 @@ import { startWorkspaceReferenceFixture, referencePickerAuthModules } from './he
 const source = `import {useState} from 'react';import {createRoot} from 'react-dom/client';
 import {CompactLibraryBrowser} from './components/library/CompactLibraryBrowser.client';
 import {LibraryMediaNavigation} from './components/library/LibraryMediaNavigation.client';
+import {LibraryStorageUsage} from './components/library/LibraryStorageUsage.client';
 function Scene(){const[scope,setScope]=useState({view:'all',kind:'all',source:'all',sort:'recent'});
 return <main style={{height:'100dvh',display:'flex',padding:12}}><CompactLibraryBrowser locale="en" title="Media" hideTitle assets={globalThis.fixtureConfig.assets} assetType="all" isLoading={false}
 management={{userId:'gallery-owner',scope,onScopeChange:patch=>setScope(prev=>({...prev,...patch})),totalCount:200}}
 source={scope.source} availableSources={['all','upload','generated','upscale']} sourceLabels={{all:'All',upload:'Uploads',generated:'Generated',upscale:'Upscale'}} onSourceChange={source=>setScope(prev=>({...prev,source}))}
 searchPlaceholder="Search media" sourcesTitle="Source" emptyLabel="Empty" emptySearchLabel="No match" renderAssetActions={()=>null}
 headerLeadingActions={<LibraryMediaNavigation locale="en" value={scope.kind} charactersEnabled onChange={kind=>setScope(prev=>({...prev,kind}))}/>}
-headerActions={<button>Import</button>} renderContinuation={asset=><button data-destination={asset.id}>Use selected media</button>}/></main>};createRoot(document.getElementById('root')).render(<Scene/>);`;
+headerActions={<button className="compact-library-import" aria-label="Import"><span className="compact-library-import-label">Import</span></button>}
+footerContent={<LibraryStorageUsage userId="gallery-owner" locale="en"/>} hasMore loadMoreLabel="Load more" onLoadMore={()=>{window.loadMoreCount=(window.loadMoreCount??0)+1}}
+renderContinuation={asset=><button data-destination={asset.id}>Use selected media</button>}/></main>};createRoot(document.getElementById('root')).render(<Scene/>);`;
 const assets = Array.from({ length: 200 }, (_, index) => ({
   id: `asset-${index}`, name: `Image ${index}`, kind: 'image', source: 'upload',
   width: index % 2 ? 1600 : 600, height: index % 2 ? 900 : 1000,
@@ -42,6 +45,7 @@ test('real media browser keeps compact commands, visible selection and contained
         const body = route.request().postDataJSON(); mutations.push(body);
         return route.fulfill({json:{ok:true,results:body.references.map((reference:unknown)=>({reference,status:'succeeded'})),succeededCount:body.references.length,failedCount:0,affectedCount:body.references.length}});
       });
+      await page.route('**/api/media-library/storage', route => route.fulfill({json:{ok:true,usage:{recordedBytes:2_000_000_000,measuredFiles:8,totalFiles:10,limitBytes:null,enforcement:false}}}));
       await page.goto(fixture.url);
       if (width === 390) {
         const types = page.getByRole('combobox', { name: 'Media type', exact: true });
@@ -53,6 +57,16 @@ test('real media browser keeps compact commands, visible selection and contained
         const navigation = page.locator('.library-media-navigation');
         assert.ok(await navigation.evaluate(node => node.scrollWidth <= node.clientWidth), 'mobile type navigation does not scroll sideways');
         assert.equal(await page.locator('.compact-media-grid').evaluate(node => getComputedStyle(node).scrollbarWidth), 'none');
+        const heading = await page.locator('.compact-library-heading').boundingBox();
+        const toolbar = await page.locator('.compact-library-toolbar').boundingBox();
+        const footer = await page.locator('.compact-library-footer').boundingBox();
+        assert.ok(heading && heading.height <= 46 && toolbar && toolbar.height <= 44, 'mobile browse commands use two compact rows');
+        assert.ok(footer && footer.height <= 44, 'storage and pagination share one touch-sized row');
+        await page.getByRole('button',{name:'Load more',exact:true}).click();
+        assert.equal(await page.evaluate(()=>window.loadMoreCount),1);
+        await page.getByRole('button',{name:'Storage · 2 GB',exact:true}).click();
+        await expect(page.getByRole('dialog',{name:'Storage · 2 GB',exact:true})).toContainText('No storage quota');
+        await page.keyboard.press('Escape');
       }
       const canvas = page.locator('.compact-media-canvas');
       await expect(canvas).toHaveAttribute('data-layout', 'mosaic');
@@ -78,7 +92,11 @@ test('real media browser keeps compact commands, visible selection and contained
         assert.notEqual(paint.ink, paint.fill, 'the checked icon must contrast with its background');
       }
       for (const [name, mode] of [['List', 'list'], ['Grid', 'grid'], ['Mosaic', 'mosaic']]) {
-        await page.getByRole('button', { name, exact: true }).click();
+        if (width === 390) {
+          await page.getByRole('button', { name: 'Filters', exact: true }).click();
+          await page.getByRole('combobox', { name: 'Display', exact: true }).selectOption(mode);
+          await page.keyboard.press('Escape');
+        } else await page.getByRole('button', { name, exact: true }).click();
         await expect(canvas).toHaveAttribute('data-layout', mode);
         await expect(rows.first().getByRole('checkbox')).toBeChecked();
       }
@@ -106,13 +124,20 @@ test('real media browser keeps compact commands, visible selection and contained
       await expect(page.getByRole('button', { name: 'Select', exact: true })).toBeFocused();
       await expect(rows.first().getByRole('checkbox')).not.toBeChecked();
       await expect(page.getByRole('combobox',{name:'Source',exact:true})).toHaveCount(0);
-      await page.locator('.compact-library-heading').getByRole('button',{name:'Tools',exact:true}).click();
-      await page.getByRole('button',{name:'Upscale',exact:true}).click();
-      await expect(page.locator('.compact-library-tools-trigger')).toHaveText('Upscale');
+      if (width === 390) {
+        await page.getByRole('button', { name: 'Filters', exact: true }).click();
+        await page.getByRole('combobox',{name:'Source',exact:true}).selectOption('upscale');
+        await page.keyboard.press('Escape');
+      } else {
+        await page.locator('.compact-library-heading').getByRole('button',{name:'Tools',exact:true}).click();
+        await page.getByRole('button',{name:'Upscale',exact:true}).click();
+        await expect(page.locator('.compact-library-tools-trigger')).toHaveText('Upscale');
+      }
       await page.getByRole('button', { name: 'Collections', exact: true }).click();
       await page.locator('.compact-library-collections').getByRole('button', { name: 'All media', exact: true }).click();
       await expect(page.locator('.compact-library-tools-trigger')).toHaveText('Upscale');
       await page.getByRole('button', { name: 'Filters', exact: true }).click();
+      if (width === 390) await expect(page.getByRole('combobox',{name:'Source',exact:true})).toHaveValue('upscale');
       await expect(page.getByLabel('Library view', { exact: true })).toHaveValue('all');
       await page.keyboard.press('Escape');
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1), false, 'no horizontal page overflow');
@@ -134,6 +159,7 @@ test('recent thumbnails survive return scrolling without refetching private no-s
       const requests:string[]=[];
       page.on('request',request=>{if(request.url().includes('/poster-')) requests.push(request.url());});
       await page.route('**/api/media-library/collections**',route=>route.fulfill({json:{ok:true,items:[],hasMore:false,nextCursor:null}}));
+      await page.route('**/api/media-library/storage',route=>route.fulfill({json:{ok:true,usage:{recordedBytes:0,measuredFiles:0,totalFiles:0,limitBytes:null,enforcement:false}}}));
       await page.goto(fixture.url);
       await page.getByRole('button',{name:mode,exact:true}).click();
       const first=page.locator('[data-media-key]').first().locator('img');

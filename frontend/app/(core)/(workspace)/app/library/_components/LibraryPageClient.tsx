@@ -173,7 +173,7 @@ function OwnedLibraryPageClient({ user, authLoading }: { user: { id: string } | 
       <HeaderBar />
       <div className="flex min-h-0 flex-1 min-w-0">
         <AppSidebar />
-        <main className="flex-1 min-h-0 min-w-0 overflow-auto p-3 lg:overflow-hidden lg:p-4">
+        <main className="library-page-main flex-1 min-h-0 min-w-0 overflow-auto p-3 lg:overflow-hidden lg:p-4">
           {authLoading ? (
             <div className="w-full animate-pulse rounded-card border border-border bg-surface p-8">
               <div className="h-4 w-24 rounded bg-surface-2" />
@@ -211,6 +211,7 @@ function OwnedLibraryPageClient({ user, authLoading }: { user: { id: string } | 
                 renderContinuation={(asset) => <MediaDestinationActions asset={asset} userId={user?.id} locale={locale} />}
                 title={locale === 'fr' ? 'Médias' : locale === 'es' ? 'Medios' : 'Media'}
                 hideTitle
+                footerContent={<LibraryStorageUsage key={`storage:${user.id}`} userId={user.id} locale={locale} />}
                 assetType={activeKind}
                 management={{ userId: user.id, scope, totalCount, onScopeChange: ({ view, kind, source, q, ...patch }) => {
                   if (view) { setActiveView(view); if (view === 'all' && activeJobId) clearJobFilter(); }
@@ -285,10 +286,12 @@ function OwnedLibraryPageClient({ user, authLoading }: { user: { id: string } | 
                         size="sm"
                         className="compact-library-import !min-h-11 gap-2 rounded-full border-border bg-surface-2 px-3 text-sm text-text-secondary hover:bg-surface-3 hover:text-text-primary"
                         disabled={isImporting}
+                        aria-label={isImporting ? copy.browser.importing : copy.browser.import}
+                        title={isImporting ? copy.browser.importing : copy.browser.import}
                         onClick={() => importInputRef.current?.click()}
                       >
                         <Upload className="h-4 w-4" aria-hidden />
-                        {isImporting ? copy.browser.importing : copy.browser.import}
+                        <span className="compact-library-import-label">{isImporting ? copy.browser.importing : copy.browser.import}</span>
                       </Button>
                   </>}
                 renderAssetMeta={(asset) =>
@@ -341,7 +344,7 @@ function OwnedLibraryPageClient({ user, authLoading }: { user: { id: string } | 
                   ) : null
                 }
               />}
-              <LibraryStorageUsage key={`storage:${user.id}`} userId={user.id} locale={locale} />
+              {charactersOpen ? <LibraryStorageUsage key={`storage:${user.id}`} userId={user.id} locale={locale} /> : null}
             </div>
           )}
         </main>

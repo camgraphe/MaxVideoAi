@@ -404,8 +404,9 @@ are favorites, add for mixed selections; frozen selections remove only in a Favo
 scope. Add to collection lists destinations directly and can create then add using
 the confirmed collection ID. Existing mutations and partial-result recovery stay in
 the selection controller. Browsing collections and adding media are separate commands.
-The heading separates media kinds from a single Tools/origin menu, with the active
-origin visible on its trigger; there is no second Source selector in the toolbar.
+On desktop the heading separates media kinds from a single Tools/origin menu, with
+the active origin visible on its trigger. Mobile moves origin and display settings
+into Filters, which marks an active origin; there are no competing visible source controls.
 Source filtering preserves the chosen all/saved/review scope. The Collections menu
 is always visible; its active collection name replaces the default label. Its All media
 entry clears only organization filters, preserving kind, source and search in both
@@ -538,6 +539,11 @@ resolution. No Dashboard or additional Uppy focus host is mounted.
 On mobile, `LibraryMediaNavigation` uses a native type selector, including saved
 Characters; desktop keeps the type buttons. The shared media scroller hides its
 mobile scrollbar without changing keyboard/touch scrolling or virtualizer geometry.
+The page keeps two command rows: type, Collections and Import above search, Filters
+and Select. Storage and Load more share one 44px footer next to the bottom navigation.
+The storage estimate remains labeled; quota and measurement detail stay in its popup.
+The results count remains announced and is visible inside mobile Filters. Display
+changes use the same account preference and preserve selection in every layout.
 Subtitles are reached through Tools, where the subtitle workbench links to saved
 documents. They no longer compete with Import in the Media header.
 

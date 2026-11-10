@@ -55,6 +55,7 @@ export function LibraryStorageUsage({ userId, locale }: { userId: string; locale
     </CompactLibraryPopup>
     {data?.pendingDeletionFiles ? <span role="status">{trashCopy.pendingFiles(data.pendingDeletionFiles)}</span> : null}
     {data?.sharedDeletionFiles ? <span role="status">{trashCopy.sharedFiles(data.sharedDeletionFiles)}</span> : null}
-    <span>{fr ? 'Estimation · limite inactive' : es ? 'Estimación · límite inactivo' : 'Estimate · limit inactive'}</span>
+    <span className="library-storage-note-long">{fr ? 'Estimation · limite inactive' : es ? 'Estimación · límite inactivo' : 'Estimate · limit inactive'}</span>
+    <span className="library-storage-note-short" aria-label={fr ? 'Estimation' : es ? 'Estimación' : 'Estimate'}>est.</span>
   </div>;
 }

@@ -65,6 +65,7 @@ function OwnedCompactLibraryBrowser({
   headerActions,
   titleActions,
   headingActions,
+  footerContent,
   source,
   availableSources,
   sourceLabels,
@@ -133,6 +134,14 @@ function OwnedCompactLibraryBrowser({
       return 'mosaic';
     }
   });
+  const changeDisplayMode = (mode: MediaDisplayMode) => {
+    setDisplayMode(mode);
+    try {
+      window.localStorage.setItem(`library:display:${userId}`, mode);
+    } catch {
+      /* storage unavailable */
+    }
+  };
   const scopeKey = JSON.stringify([userId, { ...scope, sort: undefined }]);
   // Retired generations never become current again when a previous filter returns.
   const contextRef = useRef({ scopeKey });
@@ -200,6 +209,12 @@ function OwnedCompactLibraryBrowser({
             {headerLeadingActions}
             <CompactLibrarySource locale={locale} source={source} availableSources={availableSources} sourceLabels={sourceLabels} onSourceChange={onSourceChange} />
           </div>
+          <CompactLibraryCollections
+            userId={userId}
+            locale={locale}
+            scope={scope}
+            onScopeChange={onScopeChange}
+          />
           <div className="compact-library-import-actions">{headerActions}</div>
           {onClose ? (
             <button type="button" onClick={onClose}>
@@ -211,13 +226,6 @@ function OwnedCompactLibraryBrowser({
       <div className="compact-library-body">
         <div className="compact-library-main">
           <div className="compact-library-toolbar">
-            <CompactLibraryCollections
-              userId={userId}
-              locale={locale}
-              scope={scope}
-              onScopeChange={onScopeChange}
-            />
-
             <label className="compact-library-search">
               <span className="sr-only">{copy.search}</span>
               <input
@@ -234,6 +242,9 @@ function OwnedCompactLibraryBrowser({
               setDensity={setDensity}
               onRefresh={onRetry}
               refreshLabel={retryLabel}
+              displayMode={displayMode}
+              onDisplayModeChange={changeDisplayMode}
+              sourceOptions={{ source, availableSources, sourceLabels, onSourceChange }}
             />
             <div className="compact-library-display" role="group" aria-label={copy.display}>
               {(
@@ -249,14 +260,7 @@ function OwnedCompactLibraryBrowser({
                   aria-label={copy[mode]}
                   title={copy[mode]}
                   aria-pressed={displayMode === mode}
-                  onClick={() => {
-                    setDisplayMode(mode);
-                    try {
-                      window.localStorage.setItem(`library:display:${userId}`, mode);
-                    } catch {
-                      /* storage unavailable */
-                    }
-                  }}
+                  onClick={() => changeDisplayMode(mode)}
                 >
                   <Icon size={16} aria-hidden />
                 </button>
@@ -368,15 +372,20 @@ function OwnedCompactLibraryBrowser({
               {query ? emptySearchLabel : (emptyContent ?? emptyLabel)}
             </div>
           ) : null}
-          {hasMore && onLoadMore ? (
-            <button
-              type="button"
-              className="compact-library-load"
-              disabled={isLoadingMore || isLoading}
-              onClick={onLoadMore}
-            >
-              {loadMoreLabel ?? copy.selectLoaded}
-            </button>
+          {footerContent || (hasMore && onLoadMore) ? (
+            <footer className="compact-library-footer">
+              {footerContent}
+              {hasMore && onLoadMore ? (
+                <button
+                  type="button"
+                  className="compact-library-load"
+                  disabled={isLoadingMore || isLoading}
+                  onClick={onLoadMore}
+                >
+                  {loadMoreLabel ?? copy.selectLoaded}
+                </button>
+              ) : null}
+            </footer>
           ) : null}
           {toolLinks?.length ? (
             <nav aria-label={toolsTitle}>

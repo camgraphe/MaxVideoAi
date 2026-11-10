@@ -3,6 +3,8 @@ import type { AssetLibraryBrowserProps } from './AssetLibraryBrowser';
 import { compactLibraryCopy } from './compact-library-copy';
 import { CompactLibraryPopup } from './CompactLibraryPopup.client';
 import { RefreshCw } from 'lucide-react';
+import type { MediaDisplayMode } from './CompactMediaGrid.client';
+import { compactMediaSource } from './media-action-copy';
 
 type Props = NonNullable<AssetLibraryBrowserProps['management']> & {
     locale: string;
@@ -10,6 +12,9 @@ type Props = NonNullable<AssetLibraryBrowserProps['management']> & {
     setDensity: (value: number) => void;
     onRefresh?: () => void;
     refreshLabel?: string;
+    displayMode: MediaDisplayMode;
+    onDisplayModeChange: (mode: MediaDisplayMode) => void;
+    sourceOptions: Pick<AssetLibraryBrowserProps, 'source' | 'availableSources' | 'sourceLabels' | 'onSourceChange'>;
   };
 export function CompactLibraryFilters({
   userId,
@@ -20,11 +25,32 @@ export function CompactLibraryFilters({
   setDensity,
   onRefresh,
   refreshLabel,
+  totalCount,
+  displayMode,
+  onDisplayModeChange,
+  sourceOptions,
 }: Props) {
   const copy = compactLibraryCopy(locale);
   return (
-    <CompactLibraryPopup label={copy.filters} active={scope.view !== 'all'}>
+    <CompactLibraryPopup className="compact-library-filters-trigger" label={copy.filters} active={scope.view !== 'all' || sourceOptions.source !== 'all'}>
       <div className="compact-library-filters">
+        <div className="compact-library-mobile-settings">
+          <p>{totalCount.toLocaleString(locale)} {copy.results}</p>
+          <label>
+            <span>{copy.source}</span>
+            <select aria-label={copy.source} value={sourceOptions.source} onChange={event => sourceOptions.onSourceChange(event.target.value as typeof sourceOptions.source)}>
+              {sourceOptions.availableSources.map(value => <option key={value} value={value}>
+                {value === 'all' ? copy.all : compactMediaSource(value, locale, sourceOptions.sourceLabels[value] ?? value)}
+              </option>)}
+            </select>
+          </label>
+          <label>
+            <span>{copy.display}</span>
+            <select aria-label={copy.display} value={displayMode} onChange={event => onDisplayModeChange(event.target.value as MediaDisplayMode)}>
+              {(['mosaic', 'grid', 'list'] as const).map(mode => <option key={mode} value={mode}>{copy[mode]}</option>)}
+            </select>
+          </label>
+        </div>
         <label>
           <span>{copy.view}</span>
           <select

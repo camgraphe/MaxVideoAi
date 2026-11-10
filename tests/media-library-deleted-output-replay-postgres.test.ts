@@ -36,7 +36,9 @@ test('deleted output identities survive provider replay and stale job projection
     await assert.doesNotReject(upsertJobOutputs([{ ...output, url: 'https://storage.googleapis.com/provider-output/replacement.png' }]));
     await assert.doesNotReject(upsertJobOutputs([output]));
     assert.deepEqual((await pg.pool.query('SELECT to_jsonb(o) AS snapshot FROM job_outputs o WHERE id=$1', [output.id])).rows[0].snapshot, before);
-    await assert.rejects(resolveStudioMedia('replay-owner', { type: 'job-output', jobId: output.jobId, outputId: output.id, kind: 'image' }), /MEDIA_DELETED/);
+    const ref = { type: 'job-output', jobId: output.jobId, outputId: output.id, kind: 'image' };
+    await assert.rejects(resolveStudioMedia('replay-owner', ref), /MEDIA_NOT_AVAILABLE/);
+    await assert.rejects(resolveStudioMedia('replay-owner', ref, undefined, { distinguishDeleted: true }), /MEDIA_DELETED/);
     await assert.rejects(upsertJobOutputs([{ ...output, userId: 'foreign-owner' }]), /ownership/);
   });
 
