@@ -32,7 +32,7 @@ export async function resolveStudioMedia(
   userId: string,
   input: unknown,
   execute: StudioMediaExecutor = query,
-  options: { lockAsset?: boolean; completeReferenceFacts?: boolean; referenceFactsSignal?: AbortSignal; headReferenceMetadata?: StudioReferenceMetadataHead } = {},
+  options: { lockAsset?: boolean; distinguishDeleted?: boolean; completeReferenceFacts?: boolean; referenceFactsSignal?: AbortSignal; headReferenceMetadata?: StudioReferenceMetadataHead } = {},
 ): Promise<StudioResolvedMedia> {
   if (!userId) throw new Error('UNAUTHORIZED');
   const ref = toolAssetRefSchema.parse(input);
@@ -52,7 +52,9 @@ export async function resolveStudioMedia(
           AND o.status = 'ready' AND j.hidden IS NOT TRUE LIMIT 1${options.lockAsset ? ' FOR SHARE OF o, j' : ''}`, [userId, ref.jobId, ref.outputId, ref.kind]);
   const rows=await readRows();
   const row = rows[0];
-  if(!row){
+  // Only presentation readers need the deleted placeholder. Keep the established
+  // unavailable-media contract for generation, providers, tools and API adapters.
+  if(!row && options.distinguishDeleted === true){
     const removed=ref.type==='asset'
       ?await execute("SELECT id FROM media_assets WHERE user_id=$1 AND public_id=$2 AND kind=$3 AND (deleted_at IS NOT NULL OR status='deleted') LIMIT 1",[userId,ref.assetId,ref.kind])
       :await execute("SELECT o.id FROM job_outputs o JOIN app_jobs j ON j.job_id=o.job_id AND j.user_id=o.user_id WHERE o.user_id=$1 AND o.job_id=$2 AND o.id=$3 AND o.kind=$4 AND o.status='deleted' LIMIT 1",[userId,ref.jobId,ref.outputId,ref.kind]);

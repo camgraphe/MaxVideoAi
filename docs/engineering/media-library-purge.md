@@ -33,7 +33,9 @@ generation receipts and billing evidence are independent of deleted inputs.
    operations, media analysis and live Studio turns delay
    cleanup. A project merely existing never delays it. Unknown execution outcomes
    require their existing recovery owner to settle before destructive cleanup.
-5. Known deletion becomes `MEDIA_DELETED` in exact Studio resolution. Network or
+5. Studio timeline/reference preview readers opt into `distinguishDeleted` so
+   known deletion becomes `MEDIA_DELETED`. Default resolution preserves the
+   established `MEDIA_NOT_AVAILABLE` contract for tools, providers and API adapters. Network or
    unknown-source failures remain `MEDIA_NOT_AVAILABLE`. Replacement uses the
    existing revisioned timeline command and picker, preserving clip identity and
    interval. Missing references must not prevent healthy previews from rendering.

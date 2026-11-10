@@ -46,10 +46,21 @@ test('Studio resolver uses exact owned rows and owned original objects in a read
       for (const [account, ref] of [['owner-b', assetRef('a')], ['owner-a', assetRef('b')], ['owner-a', assetRef('c')], ['owner-a', { ...recentRef, jobId: 'job-b' }], ['owner-a', { ...recentRef, kind: 'image' }], ['owner-a', { type: 'asset', assetId: 'internal', kind: 'audio' }]] as const) await assert.rejects(resolveStudioMedia(account, ref, execute), /MEDIA_NOT_AVAILABLE/);
       await client.query('ROLLBACK');
     } finally { client.release(); }
-    for (const mutation of ["status = 'pending'", "deleted_at = now()", "mime_type = 'image/png'", "url = 'javascript:alert(1)'"]) {
+    for (const mutation of ["status = 'pending'", "status = 'deleted'", "deleted_at = now()", "mime_type = 'image/png'", "url = 'javascript:alert(1)'"]) {
       await database.pool.query(`UPDATE media_assets SET status='ready', deleted_at=null, mime_type='audio/wav', url='https://media.maxvideoai.com/user-assets/owner-a/source.wav' WHERE id='internal'`);
       await database.pool.query(`UPDATE media_assets SET ${mutation} WHERE id='internal'`);
       await assert.rejects(resolveStudioMedia('owner-a', { type: 'asset', assetId: `ma_${'a'.repeat(32)}`, kind: 'audio' }, async (sql, values) => (await database.pool.query(sql, values)).rows), /MEDIA_NOT_AVAILABLE/);
+      const ref = { type: 'asset', assetId: `ma_${'a'.repeat(32)}`, kind: 'audio' };
+      const execute = async (sql: string, values: string[]) => (await database.pool.query(sql, values)).rows;
+      const knownDeleted = mutation === "status = 'deleted'" || mutation === 'deleted_at = now()';
+      await assert.rejects(resolveStudioMedia('owner-a', ref, execute, { distinguishDeleted: true }), knownDeleted ? /MEDIA_DELETED/ : /MEDIA_NOT_AVAILABLE/);
+      await assert.rejects(resolveStudioMedia('owner-b', ref, execute, { distinguishDeleted: true }), /MEDIA_NOT_AVAILABLE/);
     }
+    await database.pool.query("UPDATE job_outputs SET status='deleted' WHERE id='out-exact'");
+    const deletedOutput = { type: 'job-output', jobId: 'job-a', outputId: 'out-exact', kind: 'audio' };
+    const execute = async (sql: string, values: string[]) => (await database.pool.query(sql, values)).rows;
+    await assert.rejects(resolveStudioMedia('owner-a', deletedOutput, execute), /MEDIA_NOT_AVAILABLE/);
+    await assert.rejects(resolveStudioMedia('owner-a', deletedOutput, execute, { distinguishDeleted: true }), /MEDIA_DELETED/);
+    await assert.rejects(resolveStudioMedia('owner-b', deletedOutput, execute, { distinguishDeleted: true }), /MEDIA_NOT_AVAILABLE/);
   } finally { await database.cleanup(); }
 });

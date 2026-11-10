@@ -75,8 +75,9 @@ test('empty Trash freezes owned media, protects work and retries physical deleti
     assert.equal((await pg.pool.query('SELECT status FROM media_assets WHERE id=$1',[item.id])).rows[0].status,'deleted');
     assert.equal(deleted.length,2);
     const {resolveStudioMedia}=await import('../frontend/src/server/studio/media-resolver');
-    await assert.rejects(resolveStudioMedia(owner,item.ref),/MEDIA_DELETED/);
-    await assert.rejects(resolveStudioMedia('foreign',item.ref),/MEDIA_NOT_AVAILABLE/);
+    await assert.rejects(resolveStudioMedia(owner,item.ref),/MEDIA_NOT_AVAILABLE/);
+    await assert.rejects(resolveStudioMedia(owner,item.ref,undefined,{distinguishDeleted:true}),/MEDIA_DELETED/);
+    await assert.rejects(resolveStudioMedia('foreign',item.ref,undefined,{distinguishDeleted:true}),/MEDIA_NOT_AVAILABLE/);
     await worker(owner);
     assert.equal(deleted.length,2,'completed work is not repeated');
   });

@@ -23,7 +23,7 @@ export async function readConversationReferencePreviews(
   const assets: ConversationReferencePreviewResult[] = [];
   for (const ref of refs) {
     try {
-      const media = await resolveStudioMedia(actor.userId, ref, (sql, values) => execute(sql, values));
+      const media = await resolveStudioMedia(actor.userId, ref, (sql, values) => execute(sql, values), {distinguishDeleted:true});
       const access = await createConversationMediaReadAccess(actor.userId, media, dependencies);
       assets.push({
         assetId: ref.assetId,

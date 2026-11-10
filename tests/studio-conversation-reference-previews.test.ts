@@ -28,8 +28,10 @@ test('reference previews resolve exact owned media in a read-only project scope 
       ['d','other','image',`${base}/user-assets/other/secret.png`,null,'image/png',{},null],
       ['e','owner','image',`${base}/user-assets/other/forged.png`,null,'image/png',{},null],
       ['f','owner','video','https://cdn.maxvideoai.com/video.mp4',`${base}/user-assets/owner/external-thumb.jpg`,'video/mp4',{},null],
+      ['1','owner','image',`${base}/user-assets/owner/deleted.png`,null,'image/png',{},null],
     ];
     for (const [letter,owner,kind,url,thumb,mime,metadata,name] of rows) await database.pool.query('INSERT INTO media_assets VALUES ($1,$2,$3,$4,$5,$6,$7,\'ready\',null,null,null,$8,$9)', [letter,'ma_'+String(letter).repeat(32),owner,kind,url,thumb,mime,JSON.stringify(metadata),name]);
+    await database.pool.query("UPDATE media_assets SET status='deleted',deleted_at=now() WHERE id IN ('1','d')");
     const client = await database.pool.connect();
     try {
       await client.query('BEGIN READ ONLY');
@@ -48,6 +50,9 @@ test('reference previews resolve exact owned media in a read-only project scope 
       assert.equal(assets[2].expiresAt,null);
       assert.doesNotMatch(JSON.stringify(assets),/originalAccess|storageKey|reference-previews-fixture|forged|private\.jpg/);
       assert.deepEqual(signs,['user-assets/owner/image.png','user-assets/owner/thumb.jpg','user-assets/owner/video.mp4']);
+      const deleted = await module.readConversationReferencePreviews({userId:'owner',projectId:'film'},{refs:[ref('1'),ref('a')]},dependencies);
+      assert.deepEqual(deleted[0],{assetId:ref('1').assetId,kind:'image',mediaAccessError:'MEDIA_DELETED'});
+      assert.ok('url' in deleted[1],'A deleted reference keeps healthy references readable.');
       const externalWithPrivatePoster = await module.readConversationReferencePreviews({userId:'owner',projectId:'film'},{refs:[ref('f','video')]},dependencies);
       assert.equal(externalWithPrivatePoster[0].url,'https://cdn.maxvideoai.com/video.mp4');
       assert.equal(externalWithPrivatePoster[0].thumbUrl,'https://grants.test/user-assets%2Fowner%2Fexternal-thumb.jpg?token=read');

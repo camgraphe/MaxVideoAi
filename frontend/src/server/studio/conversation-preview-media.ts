@@ -12,7 +12,7 @@ export async function buildConversationPreviewMedia(userId: string,items: Worksp
       const ref = item.ref;
       const key = JSON.stringify(ref);
       if (!cache.has(key)) cache.set(key,(async () => {
-        const media = await resolve(userId,ref);
+        const media = await resolve(userId,ref,undefined,{distinguishDeleted:true});
         // Preview-only projection: never substitute video bytes for an image or mutate stored clip URLs.
         return createConversationMediaReadAccess(userId,media,{sign: dependencies.sign});
       })());

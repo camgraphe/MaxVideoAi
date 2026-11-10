@@ -28,7 +28,7 @@ test('a missing clip remains editable with no inaccessible URL, while other owne
 test('a positively deleted source keeps its timeline slot without granting media access or treating infrastructure failures as deletion',async () => {
   const {buildConversationPreviewMedia} = await import('../frontend/src/server/studio/conversation-preview-media');
   const original = {...item('deleted'),startSec: 4,durationSec: 3,thumbnailAccessUrl:'https://signed.test/old-thumb'};
-  const [projected] = await buildConversationPreviewMedia('owner',[original],{resolve:async()=>{throw new Error('MEDIA_DELETED');}});
+  const [projected] = await buildConversationPreviewMedia('owner',[original],{resolve:async(_owner,_ref,_execute,options)=>{assert.equal(options?.distinguishDeleted,true);throw new Error('MEDIA_DELETED');}});
   assert.equal(projected.mediaAccessError,'MEDIA_DELETED');
   assert.deepEqual([projected.id,projected.startSec,projected.durationSec,projected.track],['deleted',4,3,'video']);
   for (const key of ['mediaUrl','thumbnailUrl','thumbnailAccessUrl','mediaAccessUrl','mediaAccessExpiresAt'] as const) assert.equal(projected[key],undefined,key);
