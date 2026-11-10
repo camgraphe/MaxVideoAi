@@ -9,6 +9,33 @@ import { startBaseline } from './baseline';
 const evidence = 'output/media-design-evidence';
 const measures: unknown[] = [];
 const appStateErrors: string[] = [];
+function watch(page: Page) {
+  page.on('pageerror',error=>appStateErrors.push(error.message));
+  page.on('console',message=>{if(message.type()==='error')appStateErrors.push(message.text());});
+}
+async function display(page: Page, mode: 'mosaic'|'grid'|'list') {
+  await page.getByRole('button',{name:'Affichage',exact:true}).click();
+  await page.getByRole('button',{name:{mosaic:'Mosaïque',grid:'Grille',list:'Liste'}[mode],exact:true}).click();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('.compact-media-canvas').last()).toHaveAttribute('data-layout',mode);
+}
+async function verifyMosaic(page: Page) {
+  const geometry = await page.locator('.compact-media-canvas[data-layout="mosaic"]').last().evaluate(canvas=>{
+    const cards=[...canvas.querySelectorAll('.compact-media-tile')].map(el=>el.getBoundingClientRect());
+    const overlaps=cards.flatMap((a,i)=>cards.slice(i+1).filter(b=>Math.min(a.right,b.right)-Math.max(a.left,b.left)>1&&Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top)>1));
+    const bounds=canvas.getBoundingClientRect();
+    const coverage=[...canvas.querySelectorAll('.compact-media-cover img')].filter(el=>{
+      const r=el.getBoundingClientRect();return r.bottom>bounds.top&&r.top<bounds.bottom;
+    }).map(el=>{
+      const img=el as HTMLImageElement, r=el.parentElement!.getBoundingClientRect();
+      const scale=Math.min(r.width/img.naturalWidth,r.height/img.naturalHeight);
+      return img.naturalWidth*img.naturalHeight*scale*scale/(r.width*r.height);
+    });
+    return {overlaps:overlaps.length,minCoverage:Math.min(...coverage)};
+  });
+  assert.equal(geometry.overlaps,0,'mosaic cards never overlap');
+  assert.ok(geometry.minCoverage>.98,'native proportions use the poster frame without cropping or empty bars');
+}
 async function settleImages(page: Page) {
   await expect(page.locator('.toast.visible')).toHaveCount(0,{timeout:8000});
   await expect.poll(() => page.locator('img').evaluateAll(images => images.filter(image => {
@@ -40,7 +67,7 @@ async function measure(page: Page, label: string) {
   await page.screenshot({path:`${evidence}/${label}.png`});
   return result;
 }
-test('synthetic media journeys and source baseline', {timeout:180_000}, async()=>{
+test('synthetic media journeys and source baseline', {timeout:360_000}, async()=>{
   assert.ok(process.env.CI, 'Browser execution is restricted to hosted CI for this task');
   await mkdir(evidence,{recursive:true});
   const prototype = await startPrototype();
@@ -50,13 +77,23 @@ test('synthetic media journeys and source baseline', {timeout:180_000}, async()=
     for (const width of [1440,390,320]) {
       const context = await browser.newContext({viewport:{width,height:width>700?1000:844},hasTouch:width<=700});
       const page = await context.newPage();
-      page.on('pageerror',error=>appStateErrors.push(error.message));
+      watch(page);
       const originalRequests: string[] = [];
       page.on('request',request=>{if(request.url().includes('/originals/'))originalRequests.push(request.url());});
       await page.goto(prototype.url);
       await expect(page.locator('.compact-media-tile').first()).toBeVisible();
       const geometry = await measure(page,`01-library-${width}`);
       assert.ok(geometry.domCards < 100,'grid stays bounded');
+      await verifyMosaic(page);
+      // Selection is tied to identities even when cards are recycled into another layout.
+      for(const id of ['demo-1','demo-2'])await page.locator(`[data-media-key="${id}"] .compact-media-check`).click();
+      for(const mode of ['list','grid','mosaic'] as const){
+        await display(page,mode);
+        for(const id of ['demo-1','demo-2'])await expect(page.locator(`[data-media-key="${id}"]`)).toHaveAttribute('aria-selected','true');
+        await expect(page.locator('.selection-summary')).toContainText('2 sélectionnés');
+        await measure(page,`01-${mode}-${width}`);
+      }
+      await page.getByRole('button',{name:'Effacer la sélection',exact:true}).click();
       await page.getByRole('button',{name:'Tous les médias',exact:true}).click();
       await expect(page.getByRole('navigation',{name:'Collections',exact:true})).toBeVisible();
       await measure(page,`02-collections-${width}`);
@@ -75,6 +112,14 @@ test('synthetic media journeys and source baseline', {timeout:180_000}, async()=
       await page.keyboard.press('Escape');
       await expect(page.getByRole('button',{name:'Character Retirer le filtre provenance'})).toBeVisible();
       await page.getByRole('button',{name:'Character Retirer le filtre provenance'}).click();
+      await page.getByRole('button',{name:'Filtres',exact:true}).click();
+      await page.getByRole('combobox',{name:'Modèle',exact:true}).selectOption('Kling 4');
+      await page.getByRole('combobox',{name:'Période',exact:true}).selectOption('7');
+      await page.keyboard.press('Escape');
+      assert.ok((await page.locator('.compact-media-name').allTextContents()).every(name=>name.startsWith('Kling 4')));
+      await measure(page,`03-model-period-${width}`);
+      await page.getByRole('button',{name:'Kling 4 Retirer le filtre modèle'}).click();
+      await page.getByRole('button',{name:'7 jours Retirer le filtre période'}).click();
       await page.getByRole('searchbox',{name:'Rechercher des médias'}).fill('danseuse');
       await expect(page.locator('.compact-media-tile').first()).toContainText('Character');
       await page.getByRole('button',{name:'Effacer la recherche',exact:true}).click();
@@ -86,6 +131,22 @@ test('synthetic media journeys and source baseline', {timeout:180_000}, async()=
       await expect(page.getByRole('dialog',{name:'Aperçu du média'})).toBeVisible();
       await measure(page,`05-viewer-${width}`);
       await page.getByRole('button',{name:'Fermer Aperçu du média'}).click();
+      // A personal label is optional, searchable, and never changes the technical name or ID.
+      await page.locator('[data-media-key="demo-2"] .compact-media-preview').click();
+      const viewer=page.getByRole('dialog',{name:'Aperçu du média'});
+      await expect(viewer.locator('.viewer-prompt')).toContainText('danseuse');
+      await viewer.getByRole('textbox',{name:'Repère personnel · facultatif'}).fill('Plan à garder');
+      await viewer.getByRole('button',{name:'Enregistrer le repère'}).click();
+      await expect(viewer.getByRole('heading',{name:'Plan à garder'})).toBeVisible();
+      await viewer.getByText('Nom technique',{exact:true}).click();
+      await expect(viewer.locator('.technical-name code')).toHaveText('character-output-00000002.png');
+      await viewer.getByRole('button',{name:'Ajouter aux favoris',exact:true}).click();
+      await expect(viewer.getByRole('button',{name:'Retirer des favoris',exact:true})).toHaveAttribute('aria-pressed','true');
+      await page.getByRole('button',{name:'Fermer Aperçu du média'}).click();
+      await page.getByRole('searchbox',{name:'Rechercher des médias'}).fill('Plan à garder');
+      await expect(page.locator('.compact-media-tile')).toHaveCount(1);
+      await expect(page.locator('.compact-media-tile')).toHaveAttribute('data-media-key','demo-2');
+      await page.getByRole('button',{name:'Effacer la recherche',exact:true}).click();
       // On mobile the existing global navigation is intentionally outside this spike.
       await page.getByRole('button',{name:'Scénarios',exact:true}).click();
       await page.getByRole('button',{name:'Tester le sélecteur de références',exact:true}).click();
@@ -116,11 +177,27 @@ test('synthetic media journeys and source baseline', {timeout:180_000}, async()=
       await expect(page.locator('.draft-ref')).toHaveCount(2);
       await expect(page.locator('.draft-ref img').first()).toHaveAttribute('alt',replacementName!);
       await measure(page,`08-create-references-${width}`);
+      await page.getByRole('button',{name:'Retour aux médias'}).click();
+      await page.getByRole('button',{name:'Filtres',exact:true}).click();
+      await page.getByRole('combobox',{name:'Provenance',exact:true}).selectOption('character');
+      await page.keyboard.press('Escape');
+      await page.locator('[data-media-key="demo-2"] .compact-media-check').click();
+      await page.getByRole('button',{name:'Scénarios',exact:true}).click();
+      await page.getByRole('button',{name:'Tester le sélecteur de références',exact:true}).click();
+      await picker.getByRole('button',{name:'Fermer Choisir des références'}).click();
+      await page.getByRole('button',{name:'Retour aux médias'}).click();
+      await expect(page.getByRole('button',{name:'Character Retirer le filtre provenance'})).toBeVisible();
+      await expect(page.locator('[data-media-key="demo-2"]')).toHaveAttribute('aria-selected','true');
+      await expect(page.locator('.selection-summary')).toContainText('1 sélectionné');
+      await display(page,'list');
+      await page.reload();
+      await expect(page.locator('.compact-media-canvas')).toHaveAttribute('data-layout','list');
       assert.deepEqual(originalRequests,[],'grids and previews never fetch fake original URLs');
       await context.close();
     }
     for(const state of ['loading','empty','error','partial']) {
       const page=await browser.newPage({viewport:{width:390,height:844}});
+      watch(page);
       await page.goto(`${prototype.url}/?state=${state}`);
       if(state==='partial'){
         await expect(page.locator('.compact-media-tile').first()).toBeVisible();
@@ -137,12 +214,28 @@ test('synthetic media journeys and source baseline', {timeout:180_000}, async()=
       await measure(page,`10-${state}-390`);await page.close();
     }
     const volume=await browser.newPage({viewport:{width:1440,height:1000}});
+    watch(volume);
     await volume.goto(`${prototype.url}/?count=10000&loaded=all&collections=1000`);
     await expect(volume.locator('.compact-media-tile').first()).toBeVisible();
     const stress = await measure(volume,'11-volume-10000');
     assert.ok(stress.domCards < 120,`10k assets render ${stress.domCards} tiles`);
+    const initialHeight = await volume.locator('.compact-media-grid').evaluate(el=>el.scrollHeight);
     await volume.locator('.compact-media-grid').evaluate(el=>el.scrollTo(0,el.scrollHeight));
-    await expect(volume.locator('.compact-media-tile').last()).toHaveAttribute('data-media-key','demo-9997');
+    // Recycled DOM order is not the collection order. Assert the exact last asset.
+    await expect(volume.locator('[data-media-key="demo-9997"]')).toBeInViewport();
+    await settleImages(volume);
+    assert.equal(await volume.locator('.compact-media-grid').evaluate(el=>el.scrollHeight),initialHeight,'scroll height stays stable after mounting distant posters');
+    await verifyMosaic(volume);
+    await measure(volume,'11-volume-last-mosaic');
+    for(const mode of ['grid','list','mosaic'] as const){
+      await display(volume,mode);
+      await volume.locator('[data-media-key="demo-1"]').press('End');
+      await expect(volume.locator('[data-media-key="demo-9997"]')).toBeFocused();
+      await expect(volume.locator('[data-media-key="demo-9997"]')).toBeInViewport();
+      assert.ok(await volume.locator('.compact-media-tile').count()<120,'virtual DOM stays bounded at the end');
+      await volume.locator('[data-media-key="demo-9997"]').press('Home');
+      await expect(volume.locator('[data-media-key="demo-1"]')).toBeFocused();
+    }
     await volume.getByRole('button',{name:'Tous les médias',exact:true}).click();
     await volume.getByRole('searchbox',{name:'Rechercher une collection'}).fill('1000');
     await expect(volume.getByRole('navigation',{name:'Collections',exact:true}).getByRole('button',{name:'Collection de démonstration 1000',exact:true})).toBeVisible();

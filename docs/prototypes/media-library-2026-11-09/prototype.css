@@ -123,7 +123,8 @@ kbd { font-size:11px; border:1px solid var(--app-line); min-width:20px; text-ali
 .compact-audio-row .compact-media-cover { background:var(--app-accent-soft); color:var(--app-accent); }
 .compact-audio-row .compact-media-name { background:transparent; }
 .compact-audio-row .compact-media-check { padding:8px; width:44px; }
-.compact-mosaic-tile .compact-media-preview { height:auto; }
+.compact-mosaic-tile .compact-media-preview { height:auto; gap:0; }
+.compact-mosaic-tile .compact-media-name { height:24px; flex:none; }
 .compact-mosaic-tile .compact-media-cover { flex:none; aspect-ratio:var(--media-aspect,1); height:auto; }
 .compact-list-row { height:52px; gap:8px; padding:2px 6px; }
 .compact-list-row .compact-media-cover { width:36px; height:36px; flex-basis:36px; }

@@ -33,6 +33,7 @@ const prompts = [
   'Dialogue au café, continuité des regards et caméra stable.',
   'Portrait d’une femme avec un chewing-gum vert, fond rouge et cadrage serré.',
 ];
+const demoNow = Date.now();
 const dayFormatter = new Intl.DateTimeFormat('fr',{day:'numeric',month:'short',timeZone:'Europe/Madrid'});
 const hourFormatter = new Intl.DateTimeFormat('fr',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Madrid'});
 const shortSources:Record<string,string> = {upload:'Import',generated:'Génération',storyboard:'Storyboard',character:'Character',angle:'Angle',upscale:'Upscale'};
@@ -56,7 +57,7 @@ export function makeAssets(count: number): DemoAsset[] {
       durationSec: kind === 'image' ? undefined : kind === 'audio' ? 24 : 8,
       favorite: index % 5 === 0, trashed: index >= count - 3,
       collections: index % 3 === 0 ? ['film'] : index % 3 === 1 ? ['casting'] : ['brand'],
-      saved: index % 4 !== 0, createdAt: new Date(Date.UTC(2026, 10, 9,15,23) - index * 45*60_000).toISOString(),
+      saved: index % 4 !== 0, createdAt: new Date(demoNow - index * 45*60_000).toISOString(),
     };
   });
 }
@@ -70,7 +71,7 @@ export function filterAssets(assets: DemoAsset[], scope: Scope, picker = false) 
     && (scope.source === 'all' || a.source === scope.source)
     && (scope.view === 'all' || (scope.view === 'saved' ? a.saved : !a.saved))
     && (scope.model==='all'||(scope.model==='unknown'?!a.model:a.model===scope.model))
-    && (scope.period==='all'||!a.createdAt||(Date.parse(a.createdAt)>=(scope.period==='today'?Date.UTC(2026,10,8,23):Date.UTC(2026,10,9,22)-Number(scope.period)*86400_000)))
+    && (scope.period==='all'||Boolean(a.createdAt && (scope.period==='today' ? dayFormatter.format(new Date(a.createdAt))===dayFormatter.format(demoNow) : Date.parse(a.createdAt)>=demoNow-Number(scope.period)*86400_000)))
     && (!q || `${a.name} ${a.userLabel??''} ${a.prompt??''} ${a.model??''} ${a.source} ${displayMediaLabel(a)} ${a.width}x${a.height}`.toLocaleLowerCase('fr').includes(q))
     && (!picker || scope.compatibility === 'all' || isEligible(a)))
     .sort((a, b) => scope.sort === 'name' ? (a.userLabel||a.name).localeCompare(b.userLabel||b.name, 'fr') : scope.sort === 'oldest' ? a.createdAt!.localeCompare(b.createdAt!) : b.createdAt!.localeCompare(a.createdAt!));

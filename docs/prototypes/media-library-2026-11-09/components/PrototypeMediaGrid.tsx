@@ -3,7 +3,8 @@
 'use client';
 import { memo, useMemo, useRef } from 'react';
 import { Button, Checkbox, GridList, GridListItem, type Selection } from 'react-aria-components';
-import { GridLayout, ListLayout, WaterfallLayout, Size, Virtualizer } from 'react-aria-components/Virtualizer';
+import { GridLayout, ListLayout, Size, Virtualizer } from 'react-aria-components/Virtualizer';
+import { MediaMosaicLayout, mediaAspect, type MediaGridItem } from './MediaMosaicLayout';
 import { Check, Film, ImageIcon, Music2, ScanSearch } from 'lucide-react';
 import { useLibraryMediaAccess } from '@/hooks/useLibraryMediaAccess';
 import type { AssetBrowserAsset } from '../../../../frontend/components/library/AssetLibraryBrowser';
@@ -108,7 +109,7 @@ export const CompactMediaGrid = memo(function CompactMediaGrid({
   const list = audio || displayMode === 'list';
   const latest = useRef({ onOpen, onPreview, onSelectionChange, assets, selectedKeys });
   latest.current = { onOpen, onPreview, onSelectionChange, assets, selectedKeys };
-  const items = useMemo<{ id: string; asset: AssetBrowserAsset | null; name: string }[]>(
+  const items = useMemo<MediaGridItem[]>(
     () =>
       loading
         ? Array.from({ length: geometry.current.count }, (_, index) => ({
@@ -212,7 +213,7 @@ export const CompactMediaGrid = memo(function CompactMediaGrid({
           data-media-key={item.id}
           data-kind={item.asset?.kind}
           className={`compact-media-tile ${list ? 'compact-audio-row compact-list-row' : displayMode === 'mosaic' ? 'compact-mosaic-tile' : ''}`}
-          style={{'--media-aspect': item.asset?.kind === 'audio' ? 2 : item.asset?.width && item.asset?.height ? item.asset.width / item.asset.height : 1} as React.CSSProperties}
+          style={{'--media-aspect': mediaAspect(item.asset)} as React.CSSProperties}
         >
           {item.asset ? (
             <>
@@ -288,7 +289,7 @@ export const CompactMediaGrid = memo(function CompactMediaGrid({
             {collection}
           </Virtualizer>
         ) : displayMode === 'mosaic' ? (
-          <Virtualizer key="mosaic" layout={WaterfallLayout} layoutOptions={mosaicOptions} shouldObserveItemSize>
+          <Virtualizer key="mosaic" layout={MediaMosaicLayout} layoutOptions={mosaicOptions}>
             {collection}
           </Virtualizer>
         ) : (
