@@ -115,6 +115,7 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
       await page.getByRole('button',{name: 'Open library',exact: true}).click();
       await expect(dialog.getByText('No media here yet',{exact: true})).toBeVisible();
       await expect(dialog.getByRole('button',{name:'Add to conversation',exact:true})).toBeDisabled();
+      await dialog.getByRole('button',{name:'Filters',exact:true}).click();
       await dialog.getByRole('combobox',{name:'Media type',exact:true}).selectOption('audio');
       await expect(dialog.getByRole('combobox',{name:'Media type',exact:true})).toHaveValue('audio');
       await expect(dialog.getByRole('alert')).toHaveCount(0);

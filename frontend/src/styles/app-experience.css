@@ -591,6 +591,7 @@
 .app-experience .app-reference-picker button:disabled, .app-experience .app-reference-picker fieldset:disabled { opacity: .5; cursor: not-allowed; }
 .app-experience .app-picker-toolbar { min-width: 0; flex: none; padding: 6px 12px; border: 0; border-bottom: 1px solid var(--app-line); }
 .app-experience .app-picker-search-row { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.app-experience .app-picker-search-row .compact-library-collections-trigger { flex: none; max-width: 180px; padding: 6px 8px; border: 1px solid var(--app-line); font-size: 12px; }
 .app-experience .app-picker-search-field { position: relative; flex: 1; min-width: 0; }
 .app-experience .app-picker-search-field > svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--app-muted); }
 .app-experience .app-picker-search-field input { width: 100%; min-width: 0; padding: 8px 10px 8px 32px; background: var(--app-canvas); border: 1px solid var(--app-line); font-size: 13px; }
@@ -653,6 +654,10 @@
   .app-experience .app-picker-heading h2 { font-size: 15px; }
   .app-experience .app-picker-toolbar { padding: 6px 8px; }
   .app-experience .app-picker-import-label { display: none; }
+  .app-experience .app-picker-filter-toggle { min-width: 44px; justify-content: center; padding-inline: 8px; }
+  .app-experience .app-picker-filter-toggle > span { display: none; }
+  .app-experience .app-picker-search-row .compact-library-collections-trigger { max-width: 128px; gap: 4px; }
+  .app-experience .app-picker-search-row .compact-library-collections-trigger > svg:first-child { display: none; }
   .app-experience .app-reference-picker .compact-media-inspect { opacity: 1; }
   .app-experience .app-picker-body { padding: 6px; }
   .app-experience .app-picker-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }

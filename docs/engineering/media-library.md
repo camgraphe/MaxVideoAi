@@ -368,17 +368,34 @@ poster height from stored dimensions, with a fixed 24px caption, before scrollin
 `CompactLibraryFilters`, `CompactLibrarySelection` and `CompactLibraryCollections`
 render contextual command popovers through `CompactLibraryPopup` (React Aria owns
 focus, Escape and dismissal). A 16px checked mark has a 44px hit target. Technical
+Popovers portal into the nearest dialog when present, so native Studio top-layer
+dialogs and existing picker focus boundaries contain their commands. Escape closes
+the command menu and restores its trigger without closing the receiving picker.
 filenames use a type/date caption; originals and full names remain in Details.
 `CompactLibrarySelection` owns only selection-scope commands. Selecting media
 immediately renders `CompactLibrarySelectionActions` with applicable actions;
 single-item Preview and Use in reuse the captured DTO and existing continuation
-owner. Batch favorites, collections and Trash keep the same selection controller.
+owner. Favorites is a direct star action: remove when all captured manual records
+are favorites, add for mixed selections; frozen selections remove only in a Favorites
+scope. Add to collection lists destinations directly and can create then add using
+the confirmed collection ID. Existing mutations and partial-result recovery stay in
+the selection controller. Browsing collections and adding media are separate commands.
 The heading separates media kinds from a single Tools/origin menu, with the active
 origin visible on its trigger; there is no second Source selector in the toolbar.
-Source filtering preserves the chosen all/saved/review scope. The All media menu
-entry clears source, kind, search and organization filters together. Styling is scoped under
+Source filtering preserves the chosen all/saved/review scope. The Collections menu
+is always visible; its active collection name replaces the default label. Its All media
+entry clears only organization filters, preserving kind, source and search in both
+the page and the reference picker. Styling is scoped under
 `.compact-library`, loaded after the app shell by `AppRuntime`; it does not import
 the prototype shell or override legacy card classes.
+
+The grid/list/mosaic layouts retain up to 96 recently visible cards for two minutes
+(or the current viewport if larger). `RecentMediaItems` stores only layout keys;
+the existing image nodes survive short return scrolls, so private `no-store` thumbnails
+are not downloaded again. Entries removed from the current collection are retired;
+owner/scope unmounts clear the window. Expiry is pruned on the next layout query.
+There is no persistent byte cache, eager whole-library warmup or HTTP policy change.
+`media-library-management-browser` checks private no-store return scrolling and bounds.
 
 Cards mount no video/audio. A stored thumbnail must be distinct from the original;
 legacy `thumbUrl===url`, missing thumbnails and AV URLs produce a placeholder.
@@ -495,8 +512,9 @@ resolution. No Dashboard or additional Uppy focus host is mounted.
 ## Contextual picker acceptance
 
 Ordinary media pickers use `CompactMediaGrid` through `ReferenceLibraryPicker`.
-`ReferencePickerToolbar` keeps search and import on one row. Source, compatibility,
-collections and secondary links live in a collapsed Filters disclosure whose
+`ReferencePickerToolbar` keeps search, Collections and import on one row. Collections
+opens the shared destination menu directly without a nested disclosure. Source, compatibility,
+and secondary links live in a collapsed Filters disclosure whose
 trigger reports active filters. The default compatible-only admission is unchanged.
 The count shares the title metadata row and help is inside the disclosure. The
 portrait browser suite guards a minimum 68% canvas/modal height at 390 x 844 and

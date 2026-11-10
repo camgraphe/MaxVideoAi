@@ -1,13 +1,14 @@
 'use client';
 import { memo, useMemo, useRef, useState } from 'react';
 import { Button, Checkbox, GridList, GridListItem, type Selection } from 'react-aria-components';
-import { GridLayout, ListLayout, Size, Virtualizer } from 'react-aria-components/Virtualizer';
+import { Size, Virtualizer } from 'react-aria-components/Virtualizer';
 import { Check, Film, ImageIcon, Music2, ScanSearch } from 'lucide-react';
 import { useLibraryMediaAccess } from '@/hooks/useLibraryMediaAccess';
 import type { AssetBrowserAsset } from './AssetLibraryBrowser';
 import { compactLibraryCopy } from './compact-library-copy';
 import { compactMediaSource } from './media-action-copy';
 import { MediaMosaicLayout, mediaAspect } from './MediaMosaicLayout';
+import { MediaGridLayout, MediaListLayout } from './MediaRetainedLayouts';
 export type MediaDisplayMode = 'mosaic' | 'grid' | 'list';
 const defaultAssetKey = (asset: AssetBrowserAsset) => asset.organization?.key ?? asset.id;
 const audioOptions = { rowSize: 64, gap: 4 };
@@ -330,15 +331,15 @@ export const CompactMediaGrid = memo(function CompactMediaGrid({
     >
       {virtualized ? (
         list ? (
-          <Virtualizer key="audio" layout={ListLayout} layoutOptions={audioOptions}>
+          <Virtualizer key={`audio:${userId}`} layout={MediaListLayout} layoutOptions={audioOptions}>
             {collection}
           </Virtualizer>
         ) : mosaic ? (
-          <Virtualizer key="mosaic" layout={MediaMosaicLayout} layoutOptions={layoutOptions}>
+          <Virtualizer key={`mosaic:${userId}`} layout={MediaMosaicLayout} layoutOptions={layoutOptions}>
             {collection}
           </Virtualizer>
         ) : (
-          <Virtualizer key="grid" layout={GridLayout} layoutOptions={layoutOptions}>
+          <Virtualizer key={`grid:${userId}`} layout={MediaGridLayout} layoutOptions={layoutOptions}>
             {collection}
           </Virtualizer>
         )

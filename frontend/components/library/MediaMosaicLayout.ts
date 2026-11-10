@@ -1,4 +1,5 @@
-import { Size, WaterfallLayout } from 'react-aria-components/Virtualizer';
+import { Size, WaterfallLayout, type LayoutInfo, type Rect } from 'react-aria-components/Virtualizer';
+import { RecentMediaItems } from '@/lib/recent-media-items';
 import type { AssetBrowserAsset } from './AssetLibraryBrowser';
 
 export type MediaGridItem = {
@@ -19,6 +20,12 @@ export function mediaAspect(asset: AssetBrowserAsset | null) {
  * The fixed 24px caption and two 1px borders match .compact-mosaic-tile in CSS.
  */
 export class MediaMosaicLayout extends WaterfallLayout<MediaGridItem> {
+  private recent = new RecentMediaItems<LayoutInfo>();
+  getVisibleLayoutInfos(rect: Rect) {
+    return this.recent.include(super.getVisibleLayoutInfos(rect), key =>
+      this.virtualizer?.collection.getItem(key) ? this.getLayoutInfo(key) : null,
+    ).sort((a, b) => a.rect.y - b.rect.y || a.rect.x - b.rect.x);
+  }
   update(context: Parameters<WaterfallLayout<MediaGridItem>['update']>[0]) {
     super.update(context);
     let changed = false;

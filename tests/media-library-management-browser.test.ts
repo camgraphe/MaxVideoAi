@@ -30,7 +30,14 @@ test('real media browser keeps compact commands, visible selection and contained
       const errors: string[] = [], originals: string[] = [], mutations: any[] = [];
       page.on('pageerror', error => errors.push(error.message));
       page.on('request', request => { if (request.url().includes('/original-')) originals.push(request.url()); });
-      await page.route('**/api/media-library/collections**', route => route.fulfill({ json: { ok: true, items: [], hasMore: false, nextCursor: null } }));
+      const collections = [{id:'lc-project',name:'Project launch'}];
+      await page.route('**/api/media-library/collections**', route => {
+        if(route.request().method()==='POST') {
+          const collection={id:'lc-new',name:route.request().postDataJSON().name}; collections.push(collection);
+          return route.fulfill({json:{ok:true,collection}});
+        }
+        return route.fulfill({ json: { ok: true, items: collections, hasMore: false, nextCursor: null } });
+      });
       await page.route('**/api/media-library/organization', route => {
         const body = route.request().postDataJSON(); mutations.push(body);
         return route.fulfill({json:{ok:true,results:body.references.map((reference:unknown)=>({reference,status:'succeeded'})),succeededCount:body.references.length,failedCount:0,affectedCount:body.references.length}});
@@ -67,11 +74,22 @@ test('real media browser keeps compact commands, visible selection and contained
       await rows.nth(1).locator('.compact-media-check').click();
       await expect(actions).toContainText('2 selected');
       await expect(actions.getByRole('button',{name:'Preview',exact:true})).toHaveCount(0);
-      await actions.getByRole('button',{name:'Favorites',exact:true}).click();
-      await page.getByRole('button',{name:'Favorite',exact:true}).click();
+      await actions.getByRole('button',{name:'Add to favorites',exact:true}).click();
       await expect(actions).toHaveCount(0);
       assert.equal(mutations.length,1); assert.equal(mutations[0].operation,'favorite');
       assert.deepEqual(mutations[0].references,assets.slice(0,2).map(asset=>({...asset.libraryRef,sourceRevision:asset.sourceRevision})));
+      await rows.first().locator('.compact-media-check').click();
+      await actions.getByRole('button',{name:'Add to collection',exact:true}).click();
+      await page.getByRole('button',{name:'Project launch',exact:true}).click();
+      await expect(actions).toHaveCount(0);
+      assert.equal(mutations[1].operation,'add-to-collection'); assert.equal(mutations[1].collectionId,'lc-project');
+      await rows.first().locator('.compact-media-check').click();
+      await actions.getByRole('button',{name:'Add to collection',exact:true}).click();
+      await page.getByRole('button',{name:'New collection',exact:true}).click();
+      await page.getByLabel('Collection name',{exact:true}).fill('Scene references');
+      await page.getByRole('button',{name:'Create and add',exact:true}).click();
+      await expect(actions).toHaveCount(0);
+      assert.equal(mutations[2].operation,'add-to-collection'); assert.equal(mutations[2].collectionId,'lc-new');
       await rows.first().locator('.compact-media-check').click();
       await actions.getByRole('button', { name: 'Clear selection', exact: true }).click();
       await expect(page.getByRole('button', { name: 'Select', exact: true })).toBeFocused();
@@ -80,9 +98,9 @@ test('real media browser keeps compact commands, visible selection and contained
       await page.locator('.compact-library-heading').getByRole('button',{name:'Tools',exact:true}).click();
       await page.getByRole('button',{name:'Upscale',exact:true}).click();
       await expect(page.locator('.compact-library-tools-trigger')).toHaveText('Upscale');
-      await page.getByRole('button', { name: 'All media', exact: true }).click();
+      await page.getByRole('button', { name: 'Collections', exact: true }).click();
       await page.locator('.compact-library-collections').getByRole('button', { name: 'All media', exact: true }).click();
-      await expect(page.locator('.compact-library-tools-trigger')).toHaveText('Tools');
+      await expect(page.locator('.compact-library-tools-trigger')).toHaveText('Upscale');
       await page.getByRole('button', { name: 'Filters', exact: true }).click();
       await expect(page.getByLabel('Library view', { exact: true })).toHaveValue('all');
       await page.keyboard.press('Escape');
@@ -94,4 +112,35 @@ test('real media browser keeps compact commands, visible selection and contained
       await page.close();
     }
   } finally { await browser.close(); await fixture.close(); }
+});
+
+test('recent thumbnails survive return scrolling without refetching private no-store images and remain bounded', {timeout:90000}, async () => {
+  const fixture=await startWorkspaceReferenceFixture({source,config:{assets},imageCacheControl:'private,no-store',hostModules:referencePickerAuthModules('gallery-owner','fixture-only')});
+  const browser=await chromium.launch();
+  try {
+    for(const mode of ['List','Grid','Mosaic']) {
+      const page=await browser.newPage({viewport:{width:1111,height:844}});
+      const requests:string[]=[];
+      page.on('request',request=>{if(request.url().includes('/poster-')) requests.push(request.url());});
+      await page.route('**/api/media-library/collections**',route=>route.fulfill({json:{ok:true,items:[],hasMore:false,nextCursor:null}}));
+      await page.goto(fixture.url);
+      await page.getByRole('button',{name:mode,exact:true}).click();
+      const first=page.locator('[data-media-key]').first().locator('img');
+      await expect.poll(()=>first.evaluate((image:HTMLImageElement)=>image.complete && image.naturalWidth>0)).toBe(true);
+      const firstUrl=await first.getAttribute('src');
+      const before=requests.filter(url=>url.endsWith(firstUrl!)).length;
+      const canvas=page.locator('.compact-media-grid');
+      await canvas.evaluate(element=>element.scrollTop=element.clientHeight*2);
+      await expect.poll(()=>canvas.evaluate(element=>element.scrollTop)).toBeGreaterThan(0);
+      await expect(page.locator('[data-media-key]')).not.toHaveCount(200);
+      await canvas.evaluate(element=>element.scrollTop=0);
+      await expect(first).toBeVisible();
+      await expect.poll(()=>first.evaluate((image:HTMLImageElement)=>image.complete)).toBe(true);
+      assert.equal(requests.filter(url=>url.endsWith(firstUrl!)).length,before,`${mode}: no repeated private thumbnail request`);
+      await canvas.evaluate(element=>element.scrollTop=element.scrollHeight);
+      await expect.poll(()=>page.locator('[data-media-key]').count()).toBeLessThanOrEqual(96);
+      assert.equal(requests.some(url=>url.includes('/original-')),false);
+      await page.close();
+    }
+  } finally {await browser.close();await fixture.close();}
 });

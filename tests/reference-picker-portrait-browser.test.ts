@@ -18,7 +18,7 @@ const assets = [[90, 160], [160, 90], [120, 120], [90, 160], [90, 160]].map(([wi
   };
 });
 const source = `
-  import { useState } from 'react';
+  import { useEffect, useRef, useState } from 'react';
   import { createRoot } from 'react-dom/client';
   import { ReferenceLibraryPicker } from './components/library/ReferenceLibraryPicker.client';
   import { AudioGeneratedVideoPickerModal } from './app/(core)/(workspace)/app/audio/_components/audio-generated-video-picker';
@@ -26,12 +26,14 @@ const source = `
   const select = asset => { globalThis.selectedOriginal = asset.url; globalThis.selectedReference = asset.ref; };
   function DensePicker() {
     const [source,setSource]=useState('all');
-    return <div className="app-experience app-library-picker-layer"><ReferenceLibraryPicker
+    const dialog=useRef(null);const Host=config.native?'dialog':'div';
+    useEffect(()=>{if(config.native)dialog.current.showModal();},[]);
+    return <Host ref={dialog} className="app-experience app-library-picker-layer"><ReferenceLibraryPicker
       title="Select reference image" subtitle="Images · Maximum 30" assets={config.assets} assetType="image"
       source={source} availableSources={['all','upload','character']} sourceLabels={{all:'All',upload:'Uploads',character:'Character Studio'}}
       onSourceChange={setSource} onClose={()=>{}} isLoading={false} emptyLabel="Empty" emptySearchLabel="No match"
       headerActions={<button type="button">Refresh</button>} hasMore onLoadMore={()=>{}} renderAssetActions={()=>null}
-      selection={{scope:'compact',onConfirm:select,onConfirmMany:()=>{},getEligibility:()=>({status:'usable'})}} /></div>;
+      selection={{scope:'compact',ownerId:config.owner,onConfirm:select,onConfirmMany:()=>{},getEligibility:()=>({status:'usable'})}} /></Host>;
   }
   createRoot(document.getElementById('root')).render(config.reader === 'audio'
     ? <AudioGeneratedVideoPickerModal open userId={config.owner} videos={config.assets.slice(0,4).map(a=>({...a,jobId:a.id,label:a.name,createdAt:'2026-01-01T00:00:00Z'}))}
@@ -68,13 +70,45 @@ test('reference picker reserves most mobile height for media and keeps secondary
       await page.getByRole('combobox',{name:'Compatibility',exact:true}).selectOption('all');
       await expect(page.getByRole('button',{name:'Refresh',exact:true})).toBeVisible();
       await expect(page.getByRole('link',{name:'Character Studio',exact:true})).toHaveAttribute('href','/app/tools/character-builder');
-      await page.getByRole('button',{name:'Filters · 2',exact:true}).click();
+      await page.getByRole('button',{name:'Filters',exact:true}).click();
       await expect(page.getByRole('combobox',{name:'Source',exact:true})).toBeHidden();
       await page.getByRole('row').nth(0).locator('label.compact-media-check').click();
       await expect(page.getByRole('button',{name:'Add 1 reference',exact:true})).toBeEnabled();
       assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
       await page.close();
     }
+  } finally {await browser.close();await fixture.close();}
+});
+
+test('Collections opens directly inside a native picker and preserves the receiving media filters', async () => {
+  const fixture=await startWorkspaceReferenceFixture({source,config:{reader:'dense',native:true,owner,assets},hostModules:referencePickerAuthModules(owner,token)});
+  const browser=await chromium.launch();
+  try {
+    const page=await browser.newPage({viewport:{width:390,height:844}});
+    const requests:URL[]=[];
+    await page.route('**/api/media-library/collections**',route=>route.fulfill({json:{ok:true,items:[{id:'lc-project',name:'Project references'}],hasMore:false,nextCursor:null}}));
+    await page.route('**/api/media-library/browse**',route=>{requests.push(new URL(route.request().url()));return route.fulfill({json:{ok:true,assets:[{...assets[4],organization:{key:'org-image',favorite:false,collectionIds:['lc-project'],trashedAt:null}}],totalCount:1,hasMore:false,nextCursor:null}});});
+    await page.goto(fixture.url);
+    await page.getByRole('button',{name:'Filters',exact:true}).click();
+    await page.getByRole('combobox',{name:'Source',exact:true}).selectOption('character');
+    await page.getByRole('button',{name:'Filters',exact:true}).click();
+    await page.getByRole('button',{name:'Collections',exact:true}).click();
+    await expect(page.locator('dialog .compact-library-popover')).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.locator('dialog')).toHaveAttribute('open','');
+    await expect(page.locator('.compact-library-popover')).toHaveCount(0);
+    await page.getByRole('button',{name:'Collections',exact:true}).click();
+    await page.getByRole('button',{name:'Project references',exact:true}).click();
+    await expect(page.locator('.compact-library-collections-trigger')).toHaveText('Project references');
+    await expect.poll(()=>requests.length).toBeGreaterThan(0);
+    assert.equal(requests.at(-1)!.searchParams.get('kind'),'image');
+    assert.equal(requests.at(-1)!.searchParams.get('source'),'character');
+    assert.equal(requests.at(-1)!.searchParams.get('collectionId'),'lc-project');
+    await page.getByRole('button',{name:'Project references',exact:true}).click();
+    await page.getByRole('button',{name:'All media',exact:true}).click();
+    await page.getByRole('button',{name:'Filters',exact:true}).click();
+    await expect(page.getByRole('combobox',{name:'Source',exact:true})).toHaveValue('character');
+    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
   } finally {await browser.close();await fixture.close();}
 });
 

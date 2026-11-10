@@ -12,6 +12,8 @@
 .compact-library-selection-actions > strong { padding: 0 4px; white-space: nowrap; }
 .compact-library-selection-actions button { display: inline-flex; align-items: center; gap: 5px; }
 .compact-library-selection-actions .compact-library-clear { margin-left: auto; }
+.compact-library-selection-actions button[data-trash] { margin-left: auto; }
+.compact-library-selection-actions button[data-trash] + .compact-library-clear { margin-left: 0; }
 .compact-library-collection-actions { display: grid; gap: 6px; }
 .compact-library-use-actions .app-media-destinations { display: grid; gap: 6px; }
 .library-storage-usage { display: flex; flex: none; flex-wrap: wrap; align-items: center; gap: 6px; min-height: 30px; padding-top: 4px; color: var(--app-muted); font-size: 11px; }
@@ -476,7 +478,7 @@
   padding: 10px;
   background: var(--app-panel);
   box-shadow: 0 12px 32px #0003;
-  z-index: 100;
+  z-index: 10070;
 }
 .compact-library-popover [role="dialog"] {
   outline: none;
@@ -506,7 +508,16 @@
 }
 .compact-library-collections nav button {
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
+.compact-library-collections nav button > span { flex: 1; overflow: hidden; text-overflow: ellipsis; }
+.compact-library-collections svg, .compact-library-menu-trigger > svg { flex: none; }
+.compact-library-collection-hint { color: var(--app-muted); font-size: 12px; padding: 6px; }
+.compact-library-collection-create { border-top: 1px solid var(--compact-line); padding-top: 8px; margin-top: 6px; }
+.compact-library-collection-create > button { display: flex; align-items: center; gap: 8px; width: 100%; }
+.compact-library-collection-create form { padding-top: 8px; }
 .compact-library-collections h3 {
   margin: 12px 10px 4px;
 }

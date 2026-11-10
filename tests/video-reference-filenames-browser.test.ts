@@ -84,7 +84,9 @@ test('Video common Media filenames survive refresh, server search and pagination
     await expect(cards).toHaveCount(2);
     await expect(cards.first()).toContainText('watch-static.png');
     await expect(cards.nth(1)).toContainText('Images 2');
+    await page.getByRole('button', { name: 'Filters', exact: true }).click();
     await page.getByRole('button', { name: 'Refresh', exact: true }).click();
+    await page.getByRole('button', { name: 'Filters', exact: true }).click();
     await expect.poll(() => requests.length).toBe(2);
     await expect(cards.first()).toContainText('watch-static.png');
     await page.getByRole('searchbox').fill('watch-static.png');

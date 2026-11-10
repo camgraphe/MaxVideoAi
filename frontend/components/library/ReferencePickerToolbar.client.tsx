@@ -10,8 +10,8 @@ import { referencePickerCopy } from './reference-picker-copy';
 /** Secondary controls share one disclosure so the reference canvas keeps its height. */
 export function ReferencePickerToolbar({
   locale, busy, query, onQueryChange, source, sourceLabels, availableSources, onSourceChange,
-  compatibility, onCompatibilityChange, collectionsAvailable, collectionsOpen, onCollectionsToggle,
-  organizationActive, headerActions, showCharacterStudio, selectionGuidance, hint, children,
+  compatibility, onCompatibilityChange, collections,
+  headerActions, showCharacterStudio, selectionGuidance, hint, children,
 }: Pick<AssetLibraryBrowserProps, 'source' | 'sourceLabels' | 'availableSources' | 'onSourceChange' | 'headerActions' | 'selectionGuidance'> & {
   locale: string;
   busy: boolean;
@@ -19,10 +19,7 @@ export function ReferencePickerToolbar({
   onQueryChange: (query: string) => void;
   compatibility?: string;
   onCompatibilityChange: (value: string) => void;
-  collectionsAvailable: boolean;
-  collectionsOpen: boolean;
-  onCollectionsToggle: () => void;
-  organizationActive: boolean;
+  collections?: ReactNode;
   showCharacterStudio: boolean;
   hint?: string;
   children?: ReactNode;
@@ -33,7 +30,7 @@ export function ReferencePickerToolbar({
   const sourceId = useId();
   const compatibilityId = useId();
   const filtersLabel = locale.startsWith('fr') ? 'Filtres' : locale.startsWith('es') ? 'Filtros' : 'Filters';
-  const activeCount = Number(source !== 'all') + Number(compatibility === 'all') + Number(organizationActive);
+  const activeCount = Number(source !== 'all') + Number(compatibility === 'all');
   return (
     <fieldset className="app-picker-toolbar" disabled={busy}>
       <div className="app-picker-search-row">
@@ -42,11 +39,9 @@ export function ReferencePickerToolbar({
           <input type="search" aria-label={copy.search} value={query}
             onChange={(event) => onQueryChange(event.target.value.slice(0, 200))} placeholder={copy.search} />
         </div>
-        <button type="button" className="app-picker-filter-toggle" aria-expanded={expanded} aria-controls={panelId}
-          data-active={activeCount > 0 || undefined} onClick={() => {
-            if (expanded && collectionsOpen) onCollectionsToggle();
-            setExpanded((value) => !value);
-          }}>
+        {collections}
+        <button type="button" className="app-picker-filter-toggle" aria-label={filtersLabel} title={filtersLabel} aria-expanded={expanded} aria-controls={panelId}
+          data-active={activeCount > 0 || undefined} onClick={() => setExpanded((value) => !value)}>
           <SlidersHorizontal size={16} aria-hidden /><span>{filtersLabel}{activeCount ? ` · ${activeCount}` : ''}</span>
         </button>
         {children}
@@ -74,9 +69,6 @@ export function ReferencePickerToolbar({
           </div>
         ) : null}
         <div className="app-picker-secondary-actions">
-          {collectionsAvailable ? <button type="button" aria-expanded={collectionsOpen} onClick={onCollectionsToggle}>
-            {locale.startsWith('es') ? 'Colecciones' : 'Collections'}
-          </button> : null}
           {headerActions}
           {showCharacterStudio ? <a className="app-picker-character-link" href="/app/tools/character-builder" target="_blank" rel="noopener noreferrer">
             Character Studio <ExternalLink size={14} aria-hidden />

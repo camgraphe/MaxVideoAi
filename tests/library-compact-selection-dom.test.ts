@@ -318,7 +318,9 @@ test('collection CRUD persists through owned transport, publishes confirmed chan
   };
   try {
     await w.fx.act(async () => w.fx.render());
-    await w.fx.act(async () => w.c.write('POST', undefined, '  Project  '));
+    let created: any;
+    await w.fx.act(async () => { created = await w.c.create('  Project  '); });
+    assert.equal(created?.id, 'lc-first', 'create returns the confirmed collection for direct add');
     await settle(() => w.c.items[0]?.name === 'Project');
     assert.equal(w.fx.revision(), 1);
     await w.fx.act(async () => w.c.write('PATCH', 'lc-first', 'Renamed'));
@@ -339,10 +341,46 @@ test('collection CRUD persists through owned transport, publishes confirmed chan
     });
     assert.equal(w.c.items.length, 0);
     assert.equal(w.c.error, null);
+    let finish: (response: any) => void = () => {};
+    w.fetch = async (_url: string, init: RequestInit = {}) => init.method === 'POST'
+      ? new Promise(resolve => { finish = resolve; })
+      : {ok:true,json:async()=>({ok:true,items:[],hasMore:false,nextCursor:null})};
+    let late: Promise<unknown>;
+    await w.fx.act(async () => { late = w.c.create('Late B collection'); });
+    await w.fx.act(async () => { w.owner = 'C'; w.fx.render(); });
+    let retired: unknown;
+    await w.fx.act(async () => {
+      finish({ok:true,json:async()=>({ok:true,collection:{id:'lc-late',name:'Late B collection'}})});
+      retired = await late;
+    });
+    assert.equal(retired, null, 'retired account creation never continues into a new selection');
+    assert.equal(w.c.items.length, 0);
   } finally {
     await w.fx.act(async () => w.fx.unmount());
     dom.window.close();
   }
+});
+
+test('favorite is a direct action for single, mixed and frozen selections', async () => {
+  const bundle=await bundleClientFlow(`import React,{act}from'react';import{createRoot}from'react-dom/client';import{CompactLibrarySelectionActions}from'./components/library/CompactLibrarySelectionActions.client';function Scene(){return <CompactLibrarySelectionActions userId="A" locale="en" scope={window.scope} selection={{count:window.records.length,pending:false,selection:{records:new Map(window.records.map(r=>[r.organization.key,r])),snapshot:window.snapshot},run:operation=>window.operations.push(operation)}} onOpen={()=>{}} onClear={()=>{}}/>}const root=createRoot(document.getElementById('root'));window.IS_REACT_ACT_ENVIRONMENT=true;window.fx={act,render:()=>root.render(<Scene/>),unmount:()=>root.unmount()};`,{
+    './useLibraryCollections':`export const useLibraryCollections=()=>({items:[],pending:false});`,
+  });
+  const dom=createClientFlowDom('/app/library'),w=dom.window as any;
+  w.operations=[];w.scope={};w.records=[row(1)];w.eval(bundle);
+  try {
+    for(const [favorites,snapshot,scopeFavorite,operation] of [
+      [[false],false,false,'favorite'], [[true],false,false,'unfavorite'],
+      [[true,false],false,false,'favorite'], [[true],true,false,'favorite'], [[true],true,true,'unfavorite'],
+    ] as const) {
+      w.records=favorites.map((favorite,index)=>({...row(index),organization:{...row(index).organization,favorite}}));
+      w.snapshot=snapshot?{id:'snapshot'}:null;w.scope={favorite:scopeFavorite};
+      await w.fx.act(async()=>w.fx.render());
+      const button=[...w.document.querySelectorAll('button')].find((b:any)=>/favorites/.test(b.textContent));
+      assert.ok(button);assert.equal(button.hasAttribute('aria-expanded'),false,'no favorites menu');
+      assert.equal(button.getAttribute('aria-pressed'),String(operation==='unfavorite'));
+      await w.fx.act(async()=>button.click());assert.equal(w.operations.at(-1),operation);
+    }
+  } finally {await w.fx.act(async()=>w.fx.unmount());dom.window.close();}
 });
 
 test('real organization hook uses frozen snapshot/exclusions, retains failed sources and never physical-deletes', async () => {
@@ -455,7 +493,7 @@ test('production compact browser preserves slots, exact totals and independent v
     assert.ok(w.document.querySelector('[data-type-slot]'));
     assert.ok(w.document.querySelector('[data-header-slot]'));
     assert.match(w.document.body.textContent, /91 results/);
-    for (const label of ['Filters', 'All media', 'Select']) {
+    for (const label of ['Filters', 'Collections', 'Select']) {
       const trigger = [...w.document.querySelectorAll('.compact-library-menu-trigger')].find((button: any) => button.textContent === label);
       assert.equal(trigger?.getAttribute('aria-expanded'), 'false', 'commands are collapsed until requested');
     }

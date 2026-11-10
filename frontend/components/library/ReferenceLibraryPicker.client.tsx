@@ -77,7 +77,6 @@ function OwnedReferenceLibraryPicker(props: AssetLibraryBrowserProps & { selecti
   const [localQuery, setLocalQuery] = useState('');
   const query = props.searchQuery ?? localQuery;
   const setQuery = props.onSearchQueryChange ?? setLocalQuery;
-  const [collectionsOpen, setCollectionsOpen] = useState(false);
   const [organizationScope, setOrganizationScope] = useState<Partial<LibraryBrowseScope>>({});
   const { assets, organized, usingServerBrowse, browseScope } = useReferencePickerBrowse(props, query, organizationScope);
   const picker = useReferencePickerSelection({ selection, assets, locale });
@@ -274,9 +273,10 @@ function OwnedReferenceLibraryPicker(props: AssetLibraryBrowserProps & { selecti
           locale={locale} busy={busy} query={query} onQueryChange={setQuery}
           source={source} sourceLabels={sourceLabels} availableSources={availableSources} onSourceChange={onSourceChange}
           compatibility={selection.getEligibility ? compatibility : undefined} onCompatibilityChange={setCompatibility}
-          collectionsAvailable={Boolean(owner && !selection.onToggle && selection.allowOrganizationBrowse !== false)}
-          collectionsOpen={collectionsOpen} onCollectionsToggle={() => setCollectionsOpen((value) => !value)}
-          organizationActive={Boolean(organizationScope.favorite || organizationScope.collectionId)}
+          collections={owner && !selection.onToggle && selection.allowOrganizationBrowse !== false ? <CompactLibraryCollections
+            key={owner} userId={owner} locale={locale} scope={browseScope} picker
+            onScopeChange={(patch) => setOrganizationScope((previous) => ({ ...previous, ...patch }))}
+          /> : undefined}
           headerActions={headerActions} showCharacterStudio={!immediate && availableSources.includes('character')}
           selectionGuidance={props.selectionGuidance} hint={!immediate ? (selection.onConfirmMany ? copy.multipleHint : copy.clickHint) : undefined}
         >
@@ -317,14 +317,6 @@ function OwnedReferenceLibraryPicker(props: AssetLibraryBrowserProps & { selecti
               </div>
             ) : null}
         </ReferencePickerToolbar>
-        {collectionsOpen && owner ? (
-          <CompactLibraryCollections
-            userId={owner}
-            locale={locale}
-            scope={browseScope}
-            onScopeChange={(patch) => setOrganizationScope((previous) => ({ ...previous, ...patch }))}
-          />
-        ) : null}
         <div className={`app-picker-body app-scroll-surface ${immediate ? '' : 'app-picker-collection-body'}`}>
           {browseError || failure ? (
             <p role="alert" className="app-picker-error">
