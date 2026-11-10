@@ -5,6 +5,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { chromium, expect, type Page } from '@playwright/test';
 import { startPrototype } from './server.mjs';
 import { startBaseline } from './baseline';
+import { verifyActivityJourneys } from './activity-journeys';
 
 const evidence = 'output/media-design-evidence';
 const measures: unknown[] = [];
@@ -279,6 +280,13 @@ test('synthetic media journeys and source baseline', {timeout:360_000}, async()=
       assert.ok(result.domCards<100,'mobile volume stays virtualized');
     }
     await mobileVolume.close();
+    for(const width of [1440,390,320]) {
+      const page=await browser.newPage({viewport:{width,height:width>700?1000:844},hasTouch:width<=700});
+      watch(page);
+      await page.goto(prototype.url);
+      await verifyActivityJourneys(page,width,measure);
+      await page.close();
+    }
     for(const width of [1440,390]) {
       const page=await browser.newPage({viewport:{width,height:width>700?1000:844}});
       // Resolve thumbnails to the same local public assets used by the proposed layout.

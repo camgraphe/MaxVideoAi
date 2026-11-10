@@ -1,6 +1,6 @@
 # Bibliothèque et références — proposition interactive
 
-> **V2 compacte.** Lire [IDENTIFICATION.md](IDENTIFICATION.md) pour le constat sur les noms, la stratégie de repérage et les contrats serveur à préparer. Les résultats sur `70463ad1` concernent uniquement la V1 ; les validations V2 doivent correspondre au candidat courant.
+> **V2 compacte, avec journal Activité.** Lire [IDENTIFICATION.md](IDENTIFICATION.md) pour le constat sur les noms, et [ORGANISATION.md](ORGANISATION.md) pour les rôles de Médias/Activité et les parcours Créer, outils, Studio et MCP. Les résultats sur `70463ad1` concernent uniquement la V1 ; les validations V2 doivent correspondre au candidat courant.
 
 Prototype jetable, sans modification applicative. Branche `codex/media-library-design`, synchronisée avec le `main` vérifié le 10 novembre 2026 (`86b598f8`), incluant la PR 638 fusionnée. La vérification de sa livraison reste sous la responsabilité du chat d’origine. Aucun déploiement ni fusion n’est prévu ici.
 
@@ -15,7 +15,9 @@ node docs/prototypes/media-library-2026-11-09/server.mjs
 
 Ouvrir <http://127.0.0.1:4176/>. Le serveur écoute exclusivement sur l’interface locale. Il accepte seulement GET/HEAD et ne connaît aucune API de production. Les données, imports, collections et actions groupées sont fictifs et remis à zéro au rechargement. Les médias de démonstration viennent des ressources publiques existantes du dépôt. La lecture audio/vidéo est manuelle ; les téléchargements et passages aux outils sont explicitement simulés.
 
-Le menu **Scénarios** permet de tester les états normal, vide, chargement, erreur, échec partiel et 10 000 médias. Le parcours **Créer → Choisir une référence → Choisir depuis les médias** ouvre le sélecteur. Le même accès est proposé dans Scénarios sur mobile, puisque le shell mobile complet n’appartient pas à cette exploration.
+Le menu **Scénarios** permet de tester les états normal, vide, chargement, erreur, échec partiel et 10 000 médias. Le parcours **Créer → Choisir une référence → Choisir depuis les médias** ouvre le sélecteur. Le menu **Navigation** en haut à droite sur mobile donne accès aux mêmes rubriques ; il illustre l’accès, sans remplacer le shell mobile du produit.
+
+**Activité** propose une liste de 24 générations à la fois, sans lecteurs ni vignettes permanentes. Le groupe Storyboard à deux résultats ouvre une vue limitée à ces deux médias ; leur fiche permet de retrouver la génération. Les états en cours/échec, la reprise d’un prompt/modèle dans Créer, l’origine MCP, l’outil d’origine et le projet Studio sont simulés. Les actions depuis un média conservent le record choisi dans le brouillon ou le panneau de destination. Elles ne certifient pas un transfert authentifié ni une restauration complète des réglages.
 
 Liens de test : `/?picker=1`, `/?state=error`, `/?count=10000&loaded=all&collections=1000`. Le gros volume est un jeu de données en mémoire pour éprouver le rendu virtualisé ; il ne mesure pas les requêtes SQL, la pagination réseau, les accès signés ni les performances de production.
 
