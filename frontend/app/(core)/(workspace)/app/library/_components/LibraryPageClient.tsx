@@ -5,9 +5,9 @@ import { LibraryImportDialog } from '@/components/library/LibraryImportQueue.cli
 
 import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
-import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import deepmerge from 'deepmerge';
-import { AudioWaveform, Clapperboard, Images, CheckCircle2, Plus, RefreshCw, Upload, X } from 'lucide-react';
+import { CheckCircle2, Plus, Upload, X } from 'lucide-react';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { Button } from '@/components/ui/Button';
@@ -16,13 +16,13 @@ import { MediaVisitorIntro } from '@/components/library/MediaVisitorIntro.client
 import { MediaEmptyState } from '@/components/library/MediaEmptyState';
 import { AssetLibraryBrowser } from '@/components/library/AssetLibraryBrowser';
 import { FEATURES } from '@/content/feature-flags';
-import { isCreatorToolPublic } from '@/lib/toolbox/creator-availability';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { buildAuthReturnTarget } from '@/lib/auth-entry-href';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useLibraryAssetMutations } from '../_hooks/useLibraryAssetMutations';
 import type { LibraryBrowseScope } from '@/lib/library-browse';
-import { compactLibraryCopy } from '@/components/library/compact-library-copy';
+import { LibraryMediaNavigation } from '@/components/library/LibraryMediaNavigation.client';
+import { LibraryStorageUsage } from '@/components/library/LibraryStorageUsage.client';
 import { useLibraryPageData } from '../_hooks/useLibraryPageData';
 import {
   DEFAULT_LIBRARY_COPY,
@@ -34,6 +34,7 @@ import {
   type SavedAssetSource,
 } from '../_lib/library-page-helpers';
 
+const LibraryCharacters = dynamic(() => import('@/components/library/LibraryCharacters.client').then(module => module.LibraryCharacters));
 export function LibraryPageClient() {
   const { user, loading: authLoading } = useRequireAuth({ redirectIfLoggedOut: false });
   return <OwnedLibraryPageClient key={user?.id ?? 'guest'} user={user} authLoading={authLoading} />;
@@ -51,7 +52,7 @@ function OwnedLibraryPageClient({ user, authLoading }: { user: { id: string } | 
   const [activeView, setActiveView] = useState<LibraryView>(libraryEntry.view);
   const [activeKind, setActiveKind] = useState<LibraryKind | 'all'>(libraryEntry.kind);
   const [organizationScope, setOrganizationScope] = useState<Pick<LibraryBrowseScope, 'favorite' | 'trash' | 'collectionId' | 'sort'>>({ sort: 'recent' });
-  const compactCopy = compactLibraryCopy(locale);
+  const [charactersOpen, setCharactersOpen] = useState(() => toolsEnabled && searchParams?.get('section') === 'characters');
   const [activeSource, setActiveSource] = useState<SavedAssetSource>('all');
 
   const {
@@ -99,12 +100,12 @@ function OwnedLibraryPageClient({ user, authLoading }: { user: { id: string } | 
   });
   const availableSources = useMemo(
     () =>
-      activeKind === 'all' ? (toolsEnabled ? (['all', 'upload', 'generated', 'storyboard', 'character', 'angle', 'upscale'] as const) : (['all', 'upload', 'generated'] as const)) : activeKind === 'video'
+      activeKind === 'all' ? (toolsEnabled ? (['all', 'upload', 'generated', 'storyboard', 'character', 'angle', 'upscale', 'background-removal'] as const) : (['all', 'upload', 'generated'] as const)) : activeKind === 'video'
         ? (['all', 'upload', 'generated', 'upscale'] as const)
         : activeKind === 'audio'
           ? (['all', 'upload', 'generated'] as const)
         : toolsEnabled
-          ? (['all', 'upload', 'generated', 'storyboard', 'character', 'angle', 'upscale'] as const)
+          ? (['all', 'upload', 'generated', 'storyboard', 'character', 'angle', 'upscale', 'background-removal'] as const)
           : (['all', 'upload', 'generated'] as const),
     [activeKind, toolsEnabled]
   );
@@ -157,13 +158,22 @@ function OwnedLibraryPageClient({ user, authLoading }: { user: { id: string } | 
     }
   }, [activeSource, availableSources]);
 
+  const mediaNavigation = <LibraryMediaNavigation locale={locale} value={charactersOpen ? 'characters' : activeKind} charactersEnabled={toolsEnabled} onChange={(value) => {
+    setCharactersOpen(value === 'characters');
+    if (value !== 'characters') setActiveKind(value);
+    const url = new URL(window.location.href);
+    if (value === 'characters') url.searchParams.set('section', 'characters');
+    else url.searchParams.delete('section');
+    window.history.replaceState(window.history.state, '', url);
+  }} />;
+
 
   return (
     <div className="flex h-[calc(100dvh-var(--app-bottom-nav-height,0px))] min-h-0 flex-col bg-bg">
       <HeaderBar />
       <div className="flex min-h-0 flex-1 min-w-0">
         <AppSidebar />
-        <main className="flex-1 min-h-0 min-w-0 overflow-auto p-3 lg:overflow-hidden lg:p-7">
+        <main className="library-page-main flex-1 min-h-0 min-w-0 overflow-auto p-3 lg:overflow-hidden lg:p-4">
           {authLoading ? (
             <div className="w-full animate-pulse rounded-card border border-border bg-surface p-8">
               <div className="h-4 w-24 rounded bg-surface-2" />
@@ -195,14 +205,21 @@ function OwnedLibraryPageClient({ user, authLoading }: { user: { id: string } | 
                   </Button>
                 </div>
               ) : null}
-              <AssetLibraryBrowser
+              {charactersOpen ? <LibraryCharacters key={`characters:${user.id}`} userId={user.id} locale={locale} navigation={mediaNavigation} /> : <AssetLibraryBrowser
                 layout="page"
                 locale={locale}
                 renderContinuation={(asset) => <MediaDestinationActions asset={asset} userId={user?.id} locale={locale} />}
                 title={locale === 'fr' ? 'Médias' : locale === 'es' ? 'Medios' : 'Media'}
                 hideTitle
+                footerContent={<LibraryStorageUsage key={`storage:${user.id}`} userId={user.id} locale={locale} />}
                 assetType={activeKind}
-                management={{ userId: user.id, scope, totalCount, onScopeChange: ({ view, ...patch }) => { if (view) { setActiveView(view); setActiveSource('all'); } setOrganizationScope((previous) => ({ ...previous, ...patch })); } }}
+                management={{ userId: user.id, scope, totalCount, onScopeChange: ({ view, kind, source, q, ...patch }) => {
+                  if (view) { setActiveView(view); if (view === 'all' && activeJobId) clearJobFilter(); }
+                  if (kind) setActiveKind(kind);
+                  if (source) setActiveSource(source as SavedAssetSource);
+                  if (q !== undefined) setSearchQuery(q);
+                  setOrganizationScope((previous) => ({ ...previous, ...patch }));
+                } }}
                 assets={currentAssets}
                 isLoading={
                   activeView === 'review'
@@ -221,9 +238,9 @@ function OwnedLibraryPageClient({ user, authLoading }: { user: { id: string } | 
                       ? copy.assets.loadError
                       : null)
                 }
-                source={activeView === 'review' ? 'recent' : activeSource}
-                availableSources={[...availableSources, 'recent']}
-                sourceLabels={activeKind === 'all' ? { ...sourceLabels, all: compactCopy.saved } : sourceLabels}
+                source={activeSource}
+                availableSources={availableSources}
+                sourceLabels={sourceLabels}
                 onSourceChange={(source) => {
                   clearMutationErrors();
                   if (source === 'recent') {
@@ -233,7 +250,6 @@ function OwnedLibraryPageClient({ user, authLoading }: { user: { id: string } | 
                     setImportError(null);
                     return;
                   }
-                  setActiveView('saved');
                   setSaveError(null);
                   setActiveSource(source as SavedAssetSource);
                   resetSourceMutationState();
@@ -261,78 +277,22 @@ function OwnedLibraryPageClient({ user, authLoading }: { user: { id: string } | 
                   void (activeView === 'review' ? mutateRecentOutputs() : mutateAssets());
                 }}
                 retryLabel={copy.browser.refresh}
-                headerLeadingActions={
-                  <>
-                    <Button type="button" variant={activeKind === 'all' ? 'primary' : 'outline'} aria-pressed={activeKind === 'all'} size="sm" className="!min-h-11 rounded-full px-3 text-sm" onClick={() => setActiveKind('all')}>{compactCopy.all}</Button>
-                    <Button
-                      type="button"
-                      variant={activeKind === 'image' ? 'primary' : 'outline'}
-                      aria-pressed={activeKind === 'image'}
-                      size="sm"
-                      className="!min-h-11 rounded-full px-3 text-sm"
-                      onClick={() => setActiveKind('image')}
-                    >
-                      <Images className="h-[18px] w-[18px]" aria-hidden />
-                      {copy.media.images}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant={activeKind === 'video' ? 'primary' : 'outline'}
-                      aria-pressed={activeKind === 'video'}
-                      size="sm"
-                      className="!min-h-11 rounded-full px-3 text-sm"
-                      onClick={() => setActiveKind('video')}
-                    >
-                      <Clapperboard className="h-[18px] w-[18px]" aria-hidden />
-                      {copy.media.videos}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant={activeKind === 'audio' ? 'primary' : 'outline'}
-                      aria-pressed={activeKind === 'audio'}
-                      size="sm"
-                      className="!min-h-11 rounded-full px-3 text-sm"
-                      onClick={() => setActiveKind('audio')}
-                    >
-                      <AudioWaveform className="h-[18px] w-[18px]" aria-hidden />
-                      {copy.media.audio}
-                    </Button>
-                  </>
-                }
+                headerLeadingActions={mediaNavigation}
                 headerActions={<>
                   {importQueue.getSnapshot().files.length > 0 ? <button type="button" onClick={() => setImportQueueOpen(true)}>{locale.startsWith('fr') ? 'Imports' : locale.startsWith('es') ? 'Importaciones' : 'Imports'}</button> : null}
-                    {isCreatorToolPublic('subtitles') ? <Link href="/app/library/subtitles" prefetch={false} className="inline-flex min-h-11 items-center rounded-full border border-border px-4 text-sm">
-                      {locale.startsWith('fr') ? 'Sous-titres' : locale.startsWith('es') ? 'Subtítulos' : 'Subtitles'}
-                    </Link> : null}
                     <Button
                         type="button"
                         variant="outline"
                         size="sm"
-                        className="!min-h-11 gap-2 rounded-full border-border bg-surface-2 px-3 text-sm text-text-secondary hover:bg-surface-3 hover:text-text-primary"
+                        className="compact-library-import !min-h-11 gap-2 rounded-full border-border bg-surface-2 px-3 text-sm text-text-secondary hover:bg-surface-3 hover:text-text-primary"
                         disabled={isImporting}
+                        aria-label={isImporting ? copy.browser.importing : copy.browser.import}
+                        title={isImporting ? copy.browser.importing : copy.browser.import}
                         onClick={() => importInputRef.current?.click()}
                       >
                         <Upload className="h-4 w-4" aria-hidden />
-                        {isImporting ? copy.browser.importing : copy.browser.import}
+                        <span className="compact-library-import-label">{isImporting ? copy.browser.importing : copy.browser.import}</span>
                       </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="!min-h-11 !h-11 !w-11 rounded-lg border-border bg-surface-2 !p-0 text-text-secondary"
-                      title={copy.browser.refresh}
-                      onClick={() => {
-                        clearMutationErrors();
-                        if (activeView === 'review') {
-                          void mutateRecentOutputs();
-                        } else {
-                          void mutateAssets();
-                        }
-                      }}
-                    >
-                      <RefreshCw className="h-4 w-4" aria-hidden />
-                      <span className="sr-only">{copy.browser.refresh}</span>
-                    </Button>
                   </>}
                 renderAssetMeta={(asset) =>
                   asset.createdAt ? <span className="text-text-muted">{new Date(asset.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}</span> : null
@@ -383,7 +343,8 @@ function OwnedLibraryPageClient({ user, authLoading }: { user: { id: string } | 
                     </>
                   ) : null
                 }
-              />
+              />}
+              {charactersOpen ? <LibraryStorageUsage key={`storage:${user.id}`} userId={user.id} locale={locale} /> : null}
             </div>
           )}
         </main>

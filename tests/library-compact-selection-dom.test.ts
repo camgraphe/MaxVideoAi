@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { existsSync } from 'node:fs';
 import { bundleClientFlow, createClientFlowDom } from './helpers/client-flow-dom';
+import { installMediaGridGeometry } from './helpers/media-grid-dom';
 
 // Catches lost captured identities on page replacement, wrong snapshot membership,
 // client truncation and accidental reprocessing of confirmed chunks.
@@ -317,7 +318,9 @@ test('collection CRUD persists through owned transport, publishes confirmed chan
   };
   try {
     await w.fx.act(async () => w.fx.render());
-    await w.fx.act(async () => w.c.write('POST', undefined, '  Project  '));
+    let created: any;
+    await w.fx.act(async () => { created = await w.c.create('  Project  '); });
+    assert.equal(created?.id, 'lc-first', 'create returns the confirmed collection for direct add');
     await settle(() => w.c.items[0]?.name === 'Project');
     assert.equal(w.fx.revision(), 1);
     await w.fx.act(async () => w.c.write('PATCH', 'lc-first', 'Renamed'));
@@ -338,10 +341,46 @@ test('collection CRUD persists through owned transport, publishes confirmed chan
     });
     assert.equal(w.c.items.length, 0);
     assert.equal(w.c.error, null);
+    let finish: (response: any) => void = () => {};
+    w.fetch = async (_url: string, init: RequestInit = {}) => init.method === 'POST'
+      ? new Promise(resolve => { finish = resolve; })
+      : {ok:true,json:async()=>({ok:true,items:[],hasMore:false,nextCursor:null})};
+    let late: Promise<unknown>;
+    await w.fx.act(async () => { late = w.c.create('Late B collection'); });
+    await w.fx.act(async () => { w.owner = 'C'; w.fx.render(); });
+    let retired: unknown;
+    await w.fx.act(async () => {
+      finish({ok:true,json:async()=>({ok:true,collection:{id:'lc-late',name:'Late B collection'}})});
+      retired = await late;
+    });
+    assert.equal(retired, null, 'retired account creation never continues into a new selection');
+    assert.equal(w.c.items.length, 0);
   } finally {
     await w.fx.act(async () => w.fx.unmount());
     dom.window.close();
   }
+});
+
+test('favorite is a direct action for single, mixed and frozen selections', async () => {
+  const bundle=await bundleClientFlow(`import React,{act}from'react';import{createRoot}from'react-dom/client';import{CompactLibrarySelectionActions}from'./components/library/CompactLibrarySelectionActions.client';function Scene(){return <CompactLibrarySelectionActions userId="A" locale="en" scope={window.scope} selection={{count:window.records.length,pending:false,selection:{records:new Map(window.records.map(r=>[r.organization.key,r])),snapshot:window.snapshot},run:operation=>window.operations.push(operation)}} onOpen={()=>{}} onClear={()=>{}}/>}const root=createRoot(document.getElementById('root'));window.IS_REACT_ACT_ENVIRONMENT=true;window.fx={act,render:()=>root.render(<Scene/>),unmount:()=>root.unmount()};`,{
+    './useLibraryCollections':`export const useLibraryCollections=()=>({items:[],pending:false});`,
+  });
+  const dom=createClientFlowDom('/app/library'),w=dom.window as any;
+  w.operations=[];w.scope={};w.records=[row(1)];w.eval(bundle);
+  try {
+    for(const [favorites,snapshot,scopeFavorite,operation] of [
+      [[false],false,false,'favorite'], [[true],false,false,'unfavorite'],
+      [[true,false],false,false,'favorite'], [[true],true,false,'favorite'], [[true],true,true,'unfavorite'],
+    ] as const) {
+      w.records=favorites.map((favorite,index)=>({...row(index),organization:{...row(index).organization,favorite}}));
+      w.snapshot=snapshot?{id:'snapshot'}:null;w.scope={favorite:scopeFavorite};
+      await w.fx.act(async()=>w.fx.render());
+      const button=[...w.document.querySelectorAll('button')].find((b:any)=>/favorites/.test(b.textContent));
+      assert.ok(button);assert.equal(button.hasAttribute('aria-expanded'),false,'no favorites menu');
+      assert.equal(button.getAttribute('aria-pressed'),String(operation==='unfavorite'));
+      await w.fx.act(async()=>button.click());assert.equal(w.operations.at(-1),operation);
+    }
+  } finally {await w.fx.act(async()=>w.fx.unmount());dom.window.close();}
 });
 
 test('real organization hook uses frozen snapshot/exclusions, retains failed sources and never physical-deletes', async () => {
@@ -439,58 +478,8 @@ test('production compact browser preserves slots, exact totals and independent v
     loading: false,
     total: 91,
   });
-  w.ResizeObserver = class {
-    cb: any;
-    constructor(cb: any) {
-      this.cb = cb;
-    }
-    observe(target: any) {
-      Promise.resolve().then(() =>
-        this.cb([
-          {
-            target,
-            contentRect: { width: 900, height: 600 },
-            borderBoxSize: [{ inlineSize: 900, blockSize: 600 }],
-          },
-        ])
-      );
-    }
-    unobserve() {}
-    disconnect() {}
-  };
-  Object.defineProperties(w.HTMLElement.prototype, {
-    clientWidth: {
-      get() {
-        return 900;
-      },
-    },
-    clientHeight: {
-      get() {
-        return 600;
-      },
-    },
-    offsetWidth: {
-      get() {
-        return 900;
-      },
-    },
-    offsetHeight: {
-      get() {
-        return 600;
-      },
-    },
-  });
-  w.HTMLElement.prototype.getBoundingClientRect = () => ({
-    width: 900,
-    height: 600,
-    top: 0,
-    left: 0,
-    right: 900,
-    bottom: 600,
-  });
-  w.HTMLElement.prototype.getClientRects = function () {
-    return [this.getBoundingClientRect()];
-  };
+  installMediaGridGeometry(w);
+  w.CSS.supports = () => false;
   w.getSession = async () => ({
     data: { session: { user: { id: w.owner }, access_token: 'token' } },
   });
@@ -504,43 +493,31 @@ test('production compact browser preserves slots, exact totals and independent v
     assert.ok(w.document.querySelector('[data-type-slot]'));
     assert.ok(w.document.querySelector('[data-header-slot]'));
     assert.match(w.document.body.textContent, /91 results/);
-    for (const area of ['filters','collections','selection']) {
-      const toggle=w.document.querySelector(`.compact-library-${area} > .compact-library-disclosure-toggle`);
-      assert.ok(toggle, `${area} has a mobile disclosure`);
-      assert.equal(toggle.getAttribute('aria-expanded'),'false');
-      assert.ok(w.document.getElementById(toggle.getAttribute('aria-controls')));
+    for (const label of ['Filters', 'Collections']) {
+      const trigger = [...w.document.querySelectorAll('.compact-library-menu-trigger')].find((button: any) => button.textContent === label);
+      assert.equal(trigger?.getAttribute('aria-expanded'), 'false', 'commands are collapsed until requested');
     }
-    const filters=w.document.querySelector('.compact-library-filters > button');
-    filters.focus(); await w.fx.act(async()=>filters.click());
-    assert.equal(filters.getAttribute('aria-expanded'),'true');
-    assert.ok(w.document.querySelector('.compact-library-filters select[aria-label="Sort"]'));
-    assert.ok(w.document.querySelector('.compact-library-filters input[type="range"]'));
-    await w.fx.act(async()=>filters.click());assert.equal(w.document.activeElement,filters);
-    await w.fx.act(async()=>w.document.querySelector('.compact-library-selection > button').click());
-
-    const select = [...w.document.querySelectorAll('button')].find(
-      (b: any) => b.textContent === 'Select loaded'
-    );
-    assert.ok(select);
-    await w.fx.act(async () => select.click());
-    assert.match(w.document.body.textContent, /1 selected/);
-    assert.equal(w.document.querySelector('.compact-library-selection > button').getAttribute('aria-expanded'),'true');
-    await w.fx.act(async () => { w.locale = "fr"; w.fx.render(); });
-    assert.equal(w.document.querySelector(".compact-library-selection .compact-library-disclosure-content > span")?.textContent, "1 sélectionné");
-    await w.fx.act(async () => { w.locale = "en"; w.fx.render(); });
-    const mediaMatch = w.matchMedia;
-    w.matchMedia = (query: string) => mediaMatch?.(query) ?? { matches: query === '(max-width: 767px)', addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {} };
-    const clear = [...w.document.querySelectorAll('button')].find((b: any) => b.textContent === 'Clear selection');
-    clear.focus();
-    await w.fx.act(async () => clear.click());
-    assert.ok(w.document.activeElement === w.document.querySelector('.compact-library-selection > button'), 'cleared mobile command returns focus to Select');
-    assert.equal(w.document.activeElement.getAttribute('aria-expanded'), 'false');
-    await w.fx.act(async () => select.click());
-    filters.focus();
-    await w.fx.act(async () => clear.click());
-    assert.ok(w.document.activeElement === filters, 'a different focused control keeps focus');
-    await w.fx.act(async () => select.click());
-    const preview = w.document.querySelector('[aria-label="Preview first"]');
+    assert.equal(w.document.querySelector('.compact-library-selection-trigger'), null, 'checkboxes open actions without a redundant Select trigger');
+    assert.equal(w.document.querySelector('[data-layout]')?.getAttribute('data-layout'), 'mosaic');
+    await w.fx.act(async () => w.document.querySelector('.compact-media-check input').click());
+    assert.ok(w.document.querySelector('.compact-media-check[data-selected] .compact-media-check-mark svg'));
+    assert.match(w.document.querySelector('.compact-library-selection-actions')?.textContent, /1 selected/);
+    assert.ok(w.document.querySelector('.compact-library-selection-actions button[data-preview]'), 'selection immediately exposes preview without opening a menu');
+    assert.ok(w.document.querySelector('.compact-library-selection-actions button[data-trash]'), 'bulk actions are visible beside the selection');
+    await w.fx.act(async () => { w.locale = 'fr'; w.fx.render(); });
+    assert.match(w.document.querySelector('.compact-library-selection-actions')?.textContent, /1 sélectionné/);
+    await w.fx.act(async () => { w.locale = 'en'; w.fx.render(); });
+    for (const mode of ['List', 'Grid', 'Mosaic']) {
+      await w.fx.act(async () => w.document.querySelector(`[aria-label="${mode}"]`).click());
+      assert.equal(w.document.querySelector('[data-layout]')?.getAttribute('data-layout'), mode.toLowerCase());
+      assert.equal(w.document.querySelector('.compact-media-check input')?.checked, true, 'view changes preserve selection');
+    }
+    await w.fx.act(async () => w.document.querySelector('.compact-library-clear').click());
+    assert.equal(Boolean(w.document.querySelector('.compact-library-selection-actions')), false, 'clearing selection removes its action bar');
+    assert.equal(w.document.querySelector('.compact-media-check input')?.checked, false);
+    await w.fx.act(async () => w.document.querySelector('.compact-media-check input').click());
+    assert.equal(w.document.querySelectorAll('.compact-library-selection-actions').length, 1, 'reselecting mounts exactly one action bar');
+    const preview = w.document.querySelector('.compact-library-selection-actions button[data-preview]');
     assert.ok(preview, 'virtualized actual browser mounts visible card');
     await w.fx.act(async () => preview.click());
     assert.equal(w.document.querySelector('[data-save]')?.getAttribute('data-save'), 'row-1');
@@ -567,6 +544,7 @@ test('production compact browser preserves slots, exact totals and independent v
       w.fx.render();
     });
     assert.equal(w.document.querySelector('[role=dialog]'), null);
+    assert.equal(Boolean(w.document.querySelector('.compact-library-selection-actions')), false, 'retiring the selection removes its commands as well as its checkmarks');
     assert.match(w.document.body.textContent, /Selection cleared/);
   } finally {
     await w.fx.act(async () => w.fx.unmount());

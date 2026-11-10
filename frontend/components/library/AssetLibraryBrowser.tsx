@@ -30,7 +30,8 @@ export type AssetLibrarySource =
   | 'storyboard'
   | 'character'
   | 'angle'
-  | 'upscale';
+  | 'upscale'
+  | 'background-removal';
 
 export type AssetBrowserAsset = MediaReadAccess & {
   libraryRef?: LibraryMediaReference;
@@ -94,6 +95,8 @@ export interface AssetLibraryBrowserProps {
   headerLeadingActions?: ReactNode;
   titleActions?: ReactNode;
   headingActions?: ReactNode;
+  /** Page-level usage summary beside pagination in the managed library. */
+  footerContent?: ReactNode;
   searchPlaceholder: string;
   searchQuery?: string;
   onSearchQueryChange?: (query: string) => void;

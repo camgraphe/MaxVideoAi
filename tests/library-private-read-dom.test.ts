@@ -49,7 +49,7 @@ test('library card previews and reference-picker posters use read grants without
   await w.fx.act(async()=>w.document.querySelector('.app-library-asset').dispatchEvent(new w.MouseEvent('mouseover',{bubbles:true})));
   assert.equal(w.document.querySelector('video').src,access);assert.equal(w.document.querySelector('video').poster,poster);
   await w.fx.act(async()=>w.document.querySelector('img').dispatchEvent(new w.Event('error')));
-  assert.notEqual(w.document.querySelector('img').src,access,'video bytes never become an image fallback');
+  assert.equal(w.document.querySelector('img'),null,'a failed poster is removed; video bytes never become an image fallback');
   w.picker=true;await w.fx.act(async()=>w.fx.render());
   assert.equal(w.document.querySelector('.app-picker-cover img').src,poster);
   await w.fx.act(async()=>w.document.querySelector('.app-picker-card').click());

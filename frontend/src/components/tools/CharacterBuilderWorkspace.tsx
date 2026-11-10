@@ -1,4 +1,5 @@
 'use client';
+import { useCharacterLibraryEntry } from './character-builder/_hooks/useCharacterLibraryEntry';
 
 /* eslint-disable @next/next/no-img-element */
 
@@ -113,8 +114,8 @@ function CharacterBuilderAccountWorkspace({
     url.searchParams.set('mode', studioMode);
     window.history.replaceState(window.history.state, '', url);
   }, [studioMode]);
-  const [showMobileResults, setShowMobileResults] = useState(false);
-  const [studioTab, setStudioTab] = useState<StudioTab>('explore');
+  const [showMobileResults, setShowMobileResults] = useState(() => searchParams?.get('tab') === 'characters');
+  const [studioTab, setStudioTab] = useState<StudioTab>(() => searchParams?.get('tab') === 'characters' ? 'characters' : 'explore');
   const [editorKey, setEditorKey] = useState(0);
   const [recastSelection, setRecastSelection] = useState<StudioRecastSelection | null>(null);
   const libraryCopy = getStudioLibraryCopy(locale);
@@ -145,6 +146,7 @@ function CharacterBuilderAccountWorkspace({
   const [error, setError] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
+  useCharacterLibraryEntry({ characterId: searchParams?.get('character') ?? null, hydrated, active: studioTab === 'characters', openCharacter: library.openCharacter });
   const identityFileRef = useRef<HTMLInputElement | null>(null);
   const styleFileRef = useRef<HTMLInputElement | null>(null);
   const loginRedirectTarget = useMemo(() => {

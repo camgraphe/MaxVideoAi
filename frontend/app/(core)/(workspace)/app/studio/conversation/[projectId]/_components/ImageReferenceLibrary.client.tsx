@@ -21,12 +21,13 @@ type Props = {
   mediaEnabled?: boolean;
   characterProjectId?: string;
   locale?: ConversationLocale | 'es';
-  purpose?: 'reference' | 'timeline';
+  purpose?: 'reference' | 'timeline' | 'replacement';
+  mediaKinds?: readonly MediaKind[];
   returnFocusTo?: HTMLElement | null;
 };
 /** Queue survives presentation close/reopen; only account/project/purpose retires it. */
 export function ImageReferenceLibrary(props: Props) {
-  const context = JSON.stringify([props.accountKey, props.characterProjectId, props.purpose ?? 'reference']);
+  const context = JSON.stringify([props.accountKey, props.characterProjectId, props.purpose ?? 'reference',props.mediaKinds]);
   const imports = useLibraryImportQueue(props.accountKey, context);
   return props.open === false ? null : <OwnedImageReferenceLibrary key={context} {...props} queue={imports.queue} />;
 }
@@ -39,6 +40,7 @@ function OwnedImageReferenceLibrary({
   characterProjectId,
   locale = 'en',
   purpose = 'reference',
+  mediaKinds,
   returnFocusTo,
   queue,
 }: Props & { queue: LibraryImportQueueController }) {
@@ -48,7 +50,7 @@ function OwnedImageReferenceLibrary({
   const titleId = useId();
   const [query, setQuery] = useState(''),
     [source, setSource] = useState<'all' | 'recent'>('all'),
-    [kind, setKind] = useState<MediaKind>('image');
+    [kind, setKind] = useState<MediaKind>(mediaKinds?.[0] ?? 'image');
   const [showCharacters, setShowCharacters] = useState(false),
     [assets, setAssets] = useState<AssetBrowserAsset[]>([]);
   const [cursor, setCursor] = useState<string | null>(null),
@@ -275,7 +277,7 @@ function OwnedImageReferenceLibrary({
                 value={kind}
                 onChange={(event) => setKind(event.target.value as MediaKind)}
               >
-                {(['image', 'video', 'audio'] as const).map((value) => (
+                {(mediaKinds ?? ['image', 'video', 'audio'] as const).map((value) => (
                   <option key={value}>{value}</option>
                 ))}
               </select>
@@ -283,7 +285,9 @@ function OwnedImageReferenceLibrary({
           }
           selection={{
             confirmLabel:
-              purpose === 'timeline'
+              purpose === 'replacement'
+                ? t('Replace clip','Remplacer le clip','Reemplazar clip')
+                : purpose === 'timeline'
                 ? t('Add to timeline', 'Ajouter à la timeline', 'Añadir a la línea de tiempo')
                 : t('Add to conversation', 'Ajouter à la conversation', 'Añadir a la conversación'),
             ownerId: accountKey,

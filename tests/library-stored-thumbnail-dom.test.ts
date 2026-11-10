@@ -29,6 +29,10 @@ test('stored signed and unknown-host thumbnails retain exact URLs, lazy loading 
       assert.equal(img.getAttribute('src'), asset.url);
       assert.equal(asset.thumbUrl, thumbUrl, 'display fallback must not change selection identity');
     }
+    const poster = { url: 'https://private.example/full-video.mp4', thumbUrl: 'https://private.example/missing-poster.jpg' };
+    await act(async () => root.render(React.createElement(LibraryImageThumbnail, { asset: poster, posterOnly: true })));
+    await act(async () => dom.window.document.querySelector('img')!.dispatchEvent(new dom.window.Event('error')));
+    assert.equal(dom.window.document.querySelectorAll('img').length, 0, 'a failed poster disappears without fetching the full video as an image');
   } finally {
     await act(async () => root.unmount()); dom.window.close();
     for (const [key, descriptor] of saved) { if (descriptor) Object.defineProperty(globalThis, key, descriptor); else Reflect.deleteProperty(globalThis, key); }

@@ -190,6 +190,26 @@ When required model/source facts are known, prepare by Response 3; optional `pro
 
 The visible timeline edits canonical sequence state with revision and ownership checks. It reuses pure frame-aware operations for clipping, source bounds and linked audio. Library selection does not automatically insert every new generation into the timeline. Preview media uses transient stored grants; signed URLs and private originals must not leak into journal/tool projections or saved command payloads.
 
+Missing sources remain as neutral timeline slots. `MEDIA_DELETED` is reserved for
+positive owned deletion evidence; `MEDIA_NOT_AVAILABLE` covers an otherwise
+unavailable reference. Preview projections strip inaccessible URLs while retaining
+the clip identity, position and duration. Reference previews return these outcomes
+per asset so one missing reference does not hide readable ones; infrastructure and
+signing errors retain their operational failure meaning. Missing reference cards
+disable source reuse and keep detaching an existing attachment available.
+
+The missing clip's Replace action opens the existing owned library picker. Selection
+is staged until its explicit Replace confirmation and canonical library validation.
+It then submits the existing revisioned `replace` command with only the selected
+source identity and zero source-in frame. The command retains the exact clip ID,
+interval, track, transform, transition, audio mix and linked peers, checks source
+bounds and track locks, and detaches captions for the old source. It performs no
+generation or billing. A changed project revision requires reopening the selection;
+a measured source that is too short stays in the picker without a timeline edit.
+`studio-missing-media-dom`, `studio-conversation-preview`,
+`studio-conversation-reference-previews` and the replacement cases in
+`studio-conversation-edit-command-postgres` cover this boundary.
+
 `workspace-audio-provenance.ts` owns clip audio mixing support for both revisioned
 edits and read-only timeline facts. Probe `hasAudio` remains tri-state: missing
 evidence is unknown, never silence. An explicit zero gain can mute an unknown

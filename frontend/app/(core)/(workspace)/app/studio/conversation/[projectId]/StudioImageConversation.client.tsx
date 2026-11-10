@@ -422,7 +422,7 @@ function StudioImageConversationWorkspace({
         </ConversationMobilePanel>
       </div>
       {editingEnabled && <ConversationMobilePanel mobile={mobile} open={mobilePanel === 'film'} title={t('Film tools', 'Outils du film')} closeLabel={t('Close film tools', 'Fermer les outils du film')} kind="film" trigger={filmTrigger} onClose={() => setMobilePanel(null)}>
-        <ConversationTimeline visible={!mobile || mobilePanel === 'film'} projectId={projectId} projectName={studio.conversation.projectName} refreshKey={studio.conversation} insertion={timelineInsertion} onOpenLibrary={trigger => {libraryOpener.current=trigger;setLibraryPurpose('timeline');setLibrary(true);}} exportAvailable={exportAvailable} exportPending={exports.working} exportJobs={exports.jobs} onExportChange={exports.refresh}/>
+        <ConversationTimeline accountKey={accountKey} visible={!mobile || mobilePanel === 'film'} projectId={projectId} projectName={studio.conversation.projectName} refreshKey={studio.conversation} insertion={timelineInsertion} onOpenLibrary={trigger => {libraryOpener.current=trigger;setLibraryPurpose('timeline');setLibrary(true);}} exportAvailable={exportAvailable} exportPending={exports.working} exportJobs={exports.jobs} onExportChange={exports.refresh}/>
       </ConversationMobilePanel>}
       {help && <ConversationHelp locale={locale} editingEnabled={editingEnabled} onClose={() => setHelp(false)} trigger={helpTrigger}/>}
       <ImageReferenceLibrary

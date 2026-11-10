@@ -1,7 +1,7 @@
 'use client';
 import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
 import {useRouter} from 'next/navigation';
-import {Plus,Play,Pause,X,ChevronUp,ChevronDown,Trash2,PanelBottomClose,PanelBottomOpen} from 'lucide-react';
+import {Plus,Play,Pause,X,ChevronUp,ChevronDown,Trash2,PanelBottomClose,PanelBottomOpen,Replace} from 'lucide-react';
 import {useI18n} from '@/lib/i18n/I18nProvider';
 import {resolveStudioCopy} from '../../../_lib/studio-copy';
 import {useConversationTimeline} from '../_hooks/useConversationTimeline';
@@ -16,9 +16,12 @@ import {ConversationSubtitlePicker,ConversationSubtitlePreview,ConversationSeque
 import {ConversationExport} from './ConversationExport.client';
 import {consumeConversationMediaRenewal} from '@/lib/studio/conversation-preview-access';
 import type {StudioProjectTimelineExport} from '@/server/timeline-exports/contracts';
+import {readMediaFacts} from '@/lib/media-identity';
+import {isWorkspaceTimelineAudioTrack} from '../../../_shared/_lib/workspace-timeline-tracks';
+import {ImageReferenceLibrary} from './ImageReferenceLibrary.client';
 
 type Drag = {clip: WorkspaceTimelineItem;edge: 'start'|'end'|null;x: number;edit?: ConversationTimelineEdit};
-export function ConversationTimeline({projectId,projectName,refreshKey,onOpenLibrary,insertion,exportAvailable = false,exportPending = false,exportJobs = [],onExportChange,visible = true}: {projectId: string;projectName: string;refreshKey: unknown;onOpenLibrary: (trigger: HTMLButtonElement) => void;insertion?: {key: string;asset: ImageLibraryAsset} | null;exportAvailable?: boolean;exportPending?: boolean;exportJobs?: StudioProjectTimelineExport[];onExportChange: () => void;visible?: boolean}) {
+export function ConversationTimeline({accountKey,projectId,projectName,refreshKey,onOpenLibrary,insertion,exportAvailable = false,exportPending = false,exportJobs = [],onExportChange,visible = true}: {accountKey: string;projectId: string;projectName: string;refreshKey: unknown;onOpenLibrary: (trigger: HTMLButtonElement) => void;insertion?: {key: string;asset: ImageLibraryAsset} | null;exportAvailable?: boolean;exportPending?: boolean;exportJobs?: StudioProjectTimelineExport[];onExportChange: () => void;visible?: boolean}) {
   const router = useRouter();
   const {dictionary,locale} = useI18n();
   const t = useCallback((en: string,fr: string) => locale === 'fr' ? fr : en,[locale]);
@@ -33,6 +36,8 @@ export function ConversationTimeline({projectId,projectName,refreshKey,onOpenLib
   const [creating,setCreating] = useState(false);
   const [localError,setLocalError] = useState<string | null>(null);
   const [trimEdge,setTrimEdge] = useState<'start'|'end'>('end');
+  const [replacement,setReplacement] = useState<{clipId:string;revision:number}|null>(null);
+  const replacementTrigger = useRef<HTMLButtonElement|null>(null);
   const drag = useRef<Drag | null>(null);
   const starterKey = useRef<string | null>(null);
   const handledInsertion = useRef<string | null>(null);
@@ -50,11 +55,13 @@ export function ConversationTimeline({projectId,projectName,refreshKey,onOpenLib
   useEffect(() => {
     if (!monitor || !unavailablePlayingClip) return;
     stopPlayback();setMonitor(false);
-    setLocalError(t('Media unavailable. You can remove this clip.','Média indisponible. Vous pouvez retirer ce clip.'));
+    setLocalError(unavailablePlayingClip.mediaAccessError === 'MEDIA_DELETED' ? t('Media deleted. Replace or remove this clip.','Média supprimé. Remplacez ou retirez ce clip.') : t('Media unavailable. Replace or remove this clip.','Média indisponible. Remplacez ou retirez ce clip.'));
   },[monitor,unavailablePlayingClip,stopPlayback,t]);
   const pixelsPerSecond = 34;
   const width = Math.max(520,duration*pixelsPerSecond+40);
   const chosen = items.find(item => item.id === selected);
+  const chosenLocked = !!chosen && !!view?.data.lockedTracks?.includes(chosen.track);
+  const replacementClip = view?.items.find(item => item.id === replacement?.clipId);
   const tracks = ['video',...Array.from(new Set(items.filter(item => item.track !== 'video').map(item => item.track))).sort()];
   useEffect(() => {
     if (!insertion || handledInsertion.current === insertion.key || !view) return;
@@ -69,6 +76,17 @@ export function ConversationTimeline({projectId,projectName,refreshKey,onOpenLib
   function openMonitor() {setExpanded(true);if (!monitor) {renewalAttempts.current.clear();setLocalError(null);}setMonitor(true);}
   function seek(second: number) {playback.stopTimelinePlayback();playback.setPlayheadSec(Math.max(0,Math.min(duration,Math.round(second*fps)/fps)));openMonitor();}
   function closeMonitor() {playback.stopTimelinePlayback();setMonitor(false);renewalAttempts.current.clear();}
+  function replaceFromLibrary(asset:ImageLibraryAsset):true|string {
+    if (!replacement || !view || !replacementClip || view.data.revision !== replacement.revision) return t('The film changed. Close the library and select the clip again.','Le film a changé. Fermez la bibliothèque et sélectionnez à nouveau le clip.');
+    if (timeline.busy || view.data.lockedTracks?.includes(replacementClip.track)) return t('This track is locked or saving. Try again when it is available.','Cette piste est verrouillée ou en cours d’enregistrement. Réessayez lorsqu’elle sera disponible.');
+    const kind = asset.kind ?? 'image';
+    if (isWorkspaceTimelineAudioTrack(replacementClip.track) !== (kind === 'audio')) return t('Choose audio for an audio track, or an image or video for a visual track.','Choisissez un audio pour une piste audio, ou une image ou vidéo pour une piste visuelle.');
+    const facts = readMediaFacts(asset.mediaFacts);
+    if (kind !== 'image' && facts?.source === 'probe' && typeof facts.durationSec === 'number' && Math.floor(facts.durationSec*fps+1e-6) < Math.round(replacementClip.durationSec*fps)) return t('This media is too short for the selected clip. Choose a longer source.','Ce média est trop court pour le clip sélectionné. Choisissez une source plus longue.');
+    setLocalError(null);setReplacement(null);
+    void edit({kind:'replace',clipId:replacementClip.id,ref:{type:'asset',assetId:asset.assetId,kind},sourceInFrame:0});
+    return true;
+  }
   useEffect(() => {
     if (!visible) {playback.stopTimelinePlayback();setMonitor(false);renewalAttempts.current.clear();}
   }, [visible, playback.stopTimelinePlayback]);
@@ -85,7 +103,7 @@ export function ConversationTimeline({projectId,projectName,refreshKey,onOpenLib
     if (chosen && Number(input.value) !== (chosen.audioMix?.volume ?? 100)) void timeline.edit({kind: 'gain',clipId: chosen.id,volume: Number(input.value)});
   }
   function startDrag(event: React.PointerEvent<HTMLButtonElement>,clip: WorkspaceTimelineItem,edge: Drag['edge']) {
-    if (timeline.busy) return;
+    if (timeline.busy || view?.data.lockedTracks?.includes(clip.track)) return;
     setInspecting(true);event.stopPropagation();event.currentTarget.setPointerCapture(event.pointerId);setSelected(clip.id);seek(clip.startSec);drag.current = {clip,edge,x: event.clientX};
   }
   function moveDrag(event: React.PointerEvent<HTMLButtonElement>) {
@@ -126,8 +144,8 @@ export function ConversationTimeline({projectId,projectName,refreshKey,onOpenLib
       <div className={styles.tracks} style={{width}} onClick={event => {if (items.length) seek((event.clientX-event.currentTarget.getBoundingClientRect().left)/pixelsPerSecond);}}>
         <div className={styles.ruler}>{Array.from({length: Math.ceil(width/(pixelsPerSecond*5))},(_,index) => <span key={index} style={{left: index*pixelsPerSecond*5}}>{index*5}s</span>)}</div>
         {tracks.map(track => <div key={track} className={styles.track} aria-label={track}>
-          {items.filter(item => item.track === track).map(item => {const thumbnailUrl = item.mediaAccessRequired ? item.thumbnailAccessUrl : item.thumbnailUrl;return <div key={item.id} className={styles.clip} data-timeline-item={item.id} data-timeline-start={item.startSec} data-timeline-duration={item.durationSec} data-selected={selected === item.id} data-kind={item.mediaKind} style={{left: item.startSec*pixelsPerSecond,width: Math.max(30,item.durationSec*pixelsPerSecond)}}>
-            <button className={styles.clipBody} disabled={timeline.busy} aria-label={`${t('Select clip','Sélectionner le clip')} ${item.title}`} onPointerDown={event => startDrag(event,item,null)} onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={() => {drag.current = null;setPreview(null);}} onClick={event => {event.stopPropagation();setInspecting(true);setSelected(item.id);seek(item.startSec);}}>{thumbnailUrl && item.mediaKind !== 'audio' ? <img src={thumbnailUrl} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer"/> : null}<span>{item.title}</span></button>
+          {items.filter(item => item.track === track).map(item => {const thumbnailUrl = item.mediaAccessError ? undefined : item.mediaAccessRequired ? item.thumbnailAccessUrl : item.thumbnailUrl;return <div key={item.id} className={styles.clip} data-timeline-item={item.id} data-timeline-start={item.startSec} data-timeline-duration={item.durationSec} data-selected={selected === item.id} data-kind={item.mediaKind} data-unavailable={!!item.mediaAccessError} style={{left: item.startSec*pixelsPerSecond,width: Math.max(30,item.durationSec*pixelsPerSecond)}}>
+            <button className={styles.clipBody} disabled={timeline.busy} aria-label={`${t('Select clip','Sélectionner le clip')} ${item.title}`} onPointerDown={event => startDrag(event,item,null)} onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={() => {drag.current = null;setPreview(null);}} onClick={event => {event.stopPropagation();setInspecting(true);setSelected(item.id);if(!item.mediaAccessError)seek(item.startSec);else closeMonitor();}}>{thumbnailUrl && item.mediaKind !== 'audio' ? <img src={thumbnailUrl} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer"/> : null}<span>{item.mediaAccessError ? item.mediaAccessError === 'MEDIA_DELETED' ? t('Media deleted','Média supprimé') : t('Media unavailable','Média indisponible') : item.title}</span></button>
             {(['start','end'] as const).map(edge => <button key={edge} className={styles.handle} data-edge={edge} aria-label={`${t('Trim','Couper')} ${edge} · ${item.title}`} disabled={timeline.busy} onPointerDown={event => startDrag(event,item,edge)} onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={() => {drag.current = null;setPreview(null);}} onClick={event => event.stopPropagation()}/>) }
           </div>;})}
         </div>)}
@@ -142,9 +160,10 @@ export function ConversationTimeline({projectId,projectName,refreshKey,onOpenLib
       <input key={`${chosen.id}:${chosen.durationSec}`} type="number" min="1" step={1/fps} defaultValue={chosen.durationSec} aria-label={t('Clip duration in seconds','Durée du clip en secondes')} disabled={timeline.busy} onBlur={event => {const seconds = Number(event.target.value);if (Number.isFinite(seconds) && seconds >= 1 && seconds !== chosen.durationSec) void timeline.edit({kind: 'trim',clipId: chosen.id,edge: trimEdge,durationFrames: Math.round(seconds*fps)});}}/>
       <small>s</small>
       {(chosen.mediaKind === 'audio' || chosen.hasEmbeddedAudio) && <input key={`${chosen.id}:${chosen.audioMix?.volume}`} type="range" min="0" max="100" defaultValue={chosen.audioMix?.volume ?? 100} aria-label={t('Audio volume','Volume audio')} disabled={timeline.busy} onPointerUp={event => saveVolume(event.currentTarget)} onKeyUp={event => {if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Home','End','PageUp','PageDown'].includes(event.key)) saveVolume(event.currentTarget);}} onBlur={event => saveVolume(event.currentTarget)}/>}
-      {chosen.mediaAccessError && <small role="alert">{t('Media unavailable. You can remove this clip.','Média indisponible. Vous pouvez retirer ce clip.')}</small>}
-      <button disabled={timeline.busy} aria-label={t('Remove selected clip','Retirer le clip sélectionné')} onClick={() => {void timeline.edit({kind: 'remove',clipId: chosen.id});setSelected(null);}}><Trash2 size={15}/></button>
+      {chosen.mediaAccessError && <><small>{chosen.mediaAccessError === 'MEDIA_DELETED' ? t('Media deleted','Média supprimé') : t('Media unavailable','Média indisponible')}</small><button disabled={timeline.busy || chosenLocked} aria-label={t('Replace selected clip','Remplacer le clip sélectionné')} onClick={event => {if(view){replacementTrigger.current=event.currentTarget;closeMonitor();setReplacement({clipId:chosen.id,revision:view.data.revision});}}}><Replace size={15}/>{t('Replace','Remplacer')}</button></>}
+      <button disabled={timeline.busy || chosenLocked} aria-label={t('Remove selected clip','Retirer le clip sélectionné')} onClick={() => {void timeline.edit({kind: 'remove',clipId: chosen.id});setSelected(null);}}><Trash2 size={15}/></button>
     </div>}
+    {replacement && <ImageReferenceLibrary accountKey={accountKey} characterProjectId={projectId} purpose="replacement" mediaEnabled mediaKinds={replacementClip && isWorkspaceTimelineAudioTrack(replacementClip.track) ? ['audio'] : replacementClip?.mediaKind === 'image' ? ['image','video'] : ['video','image']} locale={locale} returnFocusTo={replacementTrigger.current} onClose={() => setReplacement(null)} onSelect={replaceFromLibrary}/>}
     {(timeline.error || localError) && <p className={styles.error} role="alert">{timeline.error === 'STUDIO_REVISION_CONFLICT' ? t('The film changed. Your latest edit has been kept; try again on the updated timeline.','Le film a changé. La dernière modification est conservée ; réessayez sur la timeline actualisée.') : timeline.error ?? localError}</p>}
   </footer>;
 }

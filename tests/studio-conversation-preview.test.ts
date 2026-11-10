@@ -25,6 +25,16 @@ test('a missing clip remains editable with no inaccessible URL, while other owne
   assert.equal(result[1].mediaAccessUrl,'https://media.maxvideoai.com/ready');
   await assert.rejects(() => module.buildConversationPreviewMedia('owner',clips,{resolve: async () => {throw new Error('DATABASE_UNAVAILABLE');}}),/DATABASE_UNAVAILABLE/,'infrastructure errors must not masquerade as missing assets');
 });
+test('a positively deleted source keeps its timeline slot without granting media access or treating infrastructure failures as deletion',async () => {
+  const {buildConversationPreviewMedia} = await import('../frontend/src/server/studio/conversation-preview-media');
+  const original = {...item('deleted'),startSec: 4,durationSec: 3,thumbnailAccessUrl:'https://signed.test/old-thumb'};
+  const [projected] = await buildConversationPreviewMedia('owner',[original],{resolve:async(_owner,_ref,_execute,options)=>{assert.equal(options?.distinguishDeleted,true);throw new Error('MEDIA_DELETED');}});
+  assert.equal(projected.mediaAccessError,'MEDIA_DELETED');
+  assert.deepEqual([projected.id,projected.startSec,projected.durationSec,projected.track],['deleted',4,3,'video']);
+  for (const key of ['mediaUrl','thumbnailUrl','thumbnailAccessUrl','mediaAccessUrl','mediaAccessExpiresAt'] as const) assert.equal(projected[key],undefined,key);
+  assert.equal(original.mediaUrl,'https://media.maxvideoai.com/deleted','Projection must not alter canonical source history.');
+  await assert.rejects(buildConversationPreviewMedia('owner',[original],{resolve:async()=>{throw new Error('SIGNING_TIMEOUT');}}),/SIGNING_TIMEOUT/);
+});
 test('a signed source gets one automatic renewal per monitor opening, and permanent/external failures reach stable error',async () => {
   const module = await import('../frontend/lib/studio/conversation-preview-access').catch(() => null);assert.ok(module?.consumeConversationMediaRenewal);
   const attempts = new Set<string>();assert.equal(module.consumeConversationMediaRenewal(item('video'),attempts),true);assert.equal(module.consumeConversationMediaRenewal(item('video'),attempts),false);

@@ -1,0 +1,28 @@
+name: Media design prototype
+on:
+  pull_request:
+    paths:
+      - 'docs/prototypes/media-library-2026-11-09/**'
+      - '.github/workflows/media-design-prototype.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  prototype:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./.github/actions/setup-project
+      - name: Typecheck the isolated prototype
+        run: |
+          ln -s ../../../frontend/node_modules docs/prototypes/media-library-2026-11-09/node_modules
+          pnpm --dir frontend exec tsc -p ../docs/prototypes/media-library-2026-11-09/tsconfig.json
+      - run: pnpm exec playwright install --with-deps chromium
+      - name: Verify synthetic desktop and mobile journeys
+        run: pnpm exec tsx --tsconfig frontend/tsconfig.json --test docs/prototypes/media-library-2026-11-09/verify.browser.ts
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: media-design-evidence
+          path: output/media-design-evidence/

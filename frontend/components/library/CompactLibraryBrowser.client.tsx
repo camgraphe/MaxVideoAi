@@ -1,16 +1,21 @@
 'use client';
+import { CompactLibrarySource } from './CompactLibrarySource.client';
 import { useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import type { AssetBrowserAsset, AssetLibraryBrowserProps } from './AssetLibraryBrowser';
 import { compactLibraryCopy } from './compact-library-copy';
-import { CompactMediaGrid } from './CompactMediaGrid.client';
-import { CompactLibraryDisclosure } from './CompactLibraryDisclosure.client';
+import { CompactMediaGrid, type MediaDisplayMode } from './CompactMediaGrid.client';
+import { Columns3, Grid2X2, List } from 'lucide-react';
+import { libraryMediaCaption } from './library-media-caption';
+import { compactMediaSource } from './media-action-copy';
+import { CompactLibraryFilters } from './CompactLibraryFilters.client';
+import { CompactLibrarySelectionActions } from './CompactLibrarySelectionActions.client';
 import { CompactLibraryCollections } from './CompactLibraryCollections.client';
-import { useLibraryCollections } from './useLibraryCollections';
 import { useLibraryManagementSelection } from './useLibraryManagementSelection';
 import { MediaActionPanel } from './MediaActionPanel.client';
+import { LibraryEmptyTrash } from './LibraryEmptyTrash.client';
+import { useLibraryScrollPagination } from './useLibraryScrollPagination';
 import type { ManagedLibraryAsset } from '@/lib/library-management-selection';
-import { compactMediaSource } from './media-action-copy';
 function isManaged(asset: AssetBrowserAsset): asset is ManagedLibraryAsset {
   return Boolean(asset.organization && asset.libraryRef && asset.sourceRevision);
 }
@@ -60,14 +65,13 @@ function OwnedCompactLibraryBrowser({
   headerActions,
   titleActions,
   headingActions,
+  footerContent,
   source,
   availableSources,
   sourceLabels,
   onSourceChange,
   searchQuery = '',
   onSearchQueryChange,
-  searchPlaceholder,
-  sourcesTitle,
   onRetry,
   retryLabel,
   emptyLabel,
@@ -86,13 +90,22 @@ function OwnedCompactLibraryBrowser({
   toolsDescription,
   toolLinks,
   className,
-}: AssetLibraryBrowserProps & { management: NonNullable<AssetLibraryBrowserProps['management']> }) {
+}: AssetLibraryBrowserProps & {
+  management: NonNullable<AssetLibraryBrowserProps['management']>;
+}) {
   const { userId, scope, onScopeChange, totalCount } = management,
     copy = compactLibraryCopy(locale);
   const managed = useMemo(() => assets.filter(isManaged), [assets]);
-  const selection = useLibraryManagementSelection({ userId, scope, assets: managed });
-  const collections = useLibraryCollections(userId);
-  const [targetCollection, setTargetCollection] = useState('');
+  const selection = useLibraryManagementSelection({
+    userId,
+    scope,
+    assets: managed,
+  });
+  const root = useRef<HTMLElement>(null);
+  const scrollRoot = useRef<HTMLDivElement>(null);
+  const actionAsset = selection.count === 1
+    ? [...selection.selection.records.values()][0] ?? managed.find(asset => selection.keys.has(asset.organization.key))
+    : undefined;
   const [localQuery, setLocalQuery] = useState('');
   const query = onSearchQueryChange ? searchQuery : localQuery;
   const visible = useMemo(
@@ -108,12 +121,38 @@ function OwnedCompactLibraryBrowser({
     if (typeof window === 'undefined') return 128;
     try {
       const n = Number(window.localStorage.getItem(`library:density:${userId}`));
-      return n >= 88 && n <= 184 ? n : window.innerWidth <= 600 ? 104 : 128;
+      return n >= 88 && n <= 184 ? n : 128;
     } catch {
       return 128;
     }
   });
+  const [displayMode, setDisplayMode] = useState<MediaDisplayMode>(() => {
+    try {
+      const stored = window.localStorage.getItem(`library:display:${userId}`);
+      return stored === 'grid' || stored === 'list' ? stored : 'mosaic';
+    } catch {
+      return 'mosaic';
+    }
+  });
+  const changeDisplayMode = (mode: MediaDisplayMode) => {
+    setDisplayMode(mode);
+    try {
+      window.localStorage.setItem(`library:display:${userId}`, mode);
+    } catch {
+      /* storage unavailable */
+    }
+  };
   const scopeKey = JSON.stringify([userId, { ...scope, sort: undefined }]);
+  const pagination = useLibraryScrollPagination({
+    scrollRef: scrollRoot,
+    scopeKey: JSON.stringify([userId, scope]),
+    progress: JSON.stringify([assets.length, assets.at(-1)?.organization?.key ?? assets.at(-1)?.id]),
+    layoutKey: `${displayMode}:${density}`,
+    enabled: Boolean(hasMore && onLoadMore),
+    busy: Boolean(isLoading || isLoadingMore || selection.pending),
+    failed: Boolean(error),
+    onLoadMore,
+  });
   // Retired generations never become current again when a previous filter returns.
   const contextRef = useRef({ scopeKey });
   if (contextRef.current.scopeKey !== scopeKey) contextRef.current = { scopeKey };
@@ -159,6 +198,7 @@ function OwnedCompactLibraryBrowser({
   };
   return (
     <section
+      ref={root}
       className={`compact-library ${className ?? ''}`}
       aria-busy={isLoading || selection.pending}
     >
@@ -175,7 +215,16 @@ function OwnedCompactLibraryBrowser({
         <div className="compact-library-heading-actions">
           {titleActions}
           {headingActions}
-          <div className="compact-library-kind-actions">{headerLeadingActions}</div>
+          <div className="compact-library-kind-actions">
+            {headerLeadingActions}
+            <CompactLibrarySource locale={locale} source={source} availableSources={availableSources} sourceLabels={sourceLabels} onSourceChange={onSourceChange} />
+          </div>
+          <CompactLibraryCollections
+            userId={userId}
+            locale={locale}
+            scope={scope}
+            onScopeChange={onScopeChange}
+          />
           <div className="compact-library-import-actions">{headerActions}</div>
           {onClose ? (
             <button type="button" onClick={onClose}>
@@ -185,12 +234,6 @@ function OwnedCompactLibraryBrowser({
         </div>
       </header>
       <div className="compact-library-body">
-        <CompactLibraryCollections
-          userId={userId}
-          locale={locale}
-          scope={scope}
-          onScopeChange={onScopeChange}
-        />
         <div className="compact-library-main">
           <div className="compact-library-toolbar">
             <label className="compact-library-search">
@@ -199,156 +242,61 @@ function OwnedCompactLibraryBrowser({
                 type="search"
                 value={query}
                 onChange={(event) => (onSearchQueryChange ?? setLocalQuery)(event.target.value)}
-                placeholder={searchPlaceholder}
+                placeholder={copy.search}
               />
             </label>
-            <CompactLibraryDisclosure className="compact-library-filters" label={copy.filters}>
-            <label>
-              <span className="sr-only">{copy.view}</span>
-              <select
-                aria-label={copy.view}
-                value={scope.view}
-                onChange={(event) =>
-                  onScopeChange({ view: event.target.value as typeof scope.view })
-                }
-              >
-                <option value="all">{copy.all}</option>
-                <option value="saved">{copy.saved}</option>
-                <option value="review">{copy.review}</option>
-              </select>
-            </label>
-            <label>
-              <span className="sr-only">{sourcesTitle}</span>
-              <select
-                aria-label={sourcesTitle}
-                value={source}
-                onChange={(event) => onSourceChange(event.target.value as typeof source)}
-              >
-                {availableSources.map((value) => (
-                  <option key={value} value={value}>
-                    {compactMediaSource(value, locale, sourceLabels[value] ?? value)}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              <span className="sr-only">{copy.sort}</span>
-              <select
-                aria-label={copy.sort}
-                value={scope.sort}
-                onChange={(event) =>
-                  onScopeChange({ sort: event.target.value as typeof scope.sort })
-                }
-              >
-                <option value="recent">{copy.recent}</option>
-                <option value="oldest">{copy.oldest}</option>
-                <option value="name">{copy.name}</option>
-              </select>
-            </label>
-            <label className="compact-library-density">
-              <span className="sr-only">{copy.density}</span>
-              <input
-                aria-label={copy.density}
-                type="range"
-                min={88}
-                max={184}
-                step={8}
-                value={density}
-                onChange={(event) => {
-                  const n = Number(event.target.value);
-                  setDensity(n);
-                  try {
-                    window.localStorage.setItem(`library:density:${userId}`, String(n));
-                  } catch {
-                    /* storage unavailable */
-                  }
-                }}
-              />
-            </label>
-            </CompactLibraryDisclosure>
+            <CompactLibraryFilters
+              {...management}
+              locale={locale}
+              density={density}
+              setDensity={setDensity}
+              onRefresh={onRetry}
+              refreshLabel={retryLabel}
+              displayMode={displayMode}
+              onDisplayModeChange={changeDisplayMode}
+              sourceOptions={{ source, availableSources, sourceLabels, onSourceChange }}
+              selection={selection}
+              isLoading={isLoading}
+            />
+            <div className="compact-library-display" role="group" aria-label={copy.display}>
+              {(
+                [
+                  ['mosaic', Columns3],
+                  ['grid', Grid2X2],
+                  ['list', List],
+                ] as const
+              ).map(([mode, Icon]) => (
+                <button
+                  key={mode}
+                  type="button"
+                  aria-label={copy[mode]}
+                  title={copy[mode]}
+                  aria-pressed={displayMode === mode}
+                  onClick={() => changeDisplayMode(mode)}
+                >
+                  <Icon size={16} aria-hidden />
+                </button>
+              ))}
+            </div>
             <span className="compact-library-total" role="status">
               {isLoading
                 ? copy.countPending
                 : `${totalCount.toLocaleString(locale)} ${copy.results}`}
             </span>
           </div>
-          <CompactLibraryDisclosure className="compact-library-selection" label={selection.count ? `${selection.count.toLocaleString(locale)} ${selection.count === 1 ? copy.selectedSingular : copy.selected}` : copy.select} reveal={selection.count > 0}>
-            <span>
-              {selection.count.toLocaleString(locale)} {selection.count === 1 ? copy.selectedSingular : copy.selected}
-            </span>
-            <button
-              type="button"
-              disabled={isLoading || selection.pending}
-              onClick={selection.selectLoaded}
-            >
-              {copy.selectLoaded}
-            </button>
-            <button
-              type="button"
-              disabled={isLoading || selection.pending}
-              onClick={() => void selection.selectAllResults()}
-            >
-              {copy.selectResults}
-            </button>
-            <button
-              type="button"
-              disabled={!selection.count || selection.pending}
-              onClick={selection.clear}
-            >
-              {copy.clear}
-            </button>
-            <fieldset disabled={!selection.count || selection.pending}>
-              {scope.trash ? (
-                <button type="button" onClick={() => void selection.run('restore')}>
-                  {copy.restore}
-                </button>
-              ) : (
-                <>
-                  <button type="button" onClick={() => void selection.run('favorite')}>
-                    {copy.favorite}
-                  </button>
-                  <button type="button" onClick={() => void selection.run('unfavorite')}>
-                    {copy.unfavorite}
-                  </button>
-                  <select
-                    aria-label={copy.chooseCollection}
-                    value={targetCollection}
-                    onChange={(event) => setTargetCollection(event.target.value)}
-                  >
-                    <option value="">{copy.chooseCollection}</option>
-                    {collections.items.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name}
-                      </option>
-                    ))}
-                  </select>
-                  {collections.hasMore ? (
-                    <button type="button" onClick={collections.loadMore}>
-                      {copy.moreCollections}
-                    </button>
-                  ) : null}
-                  <button
-                    type="button"
-                    disabled={!targetCollection}
-                    onClick={() => void selection.run('add-to-collection', targetCollection)}
-                  >
-                    {copy.addCollection}
-                  </button>
-                  <button
-                    type="button"
-                    disabled={!scope.collectionId}
-                    onClick={() => void selection.run('remove-from-collection', scope.collectionId)}
-                  >
-                    {copy.removeCollection}
-                  </button>
-                  <button type="button" onClick={() => void selection.run('trash')}>
-                    {copy.trash}
-                  </button>
-                </>
-              )}
-            </fieldset>
-          </CompactLibraryDisclosure>
-          <p className="compact-library-announcement" role="status">
+          {scope.trash ? <LibraryEmptyTrash userId={userId} locale={locale} disabled={selection.pending}
+            onRequested={() => { selection.clear(); setViewer(null); }} /> : null}
+          {selection.count > 0 ? <CompactLibrarySelectionActions
+            key={`actions:${scopeKey}`}
+            userId={userId} locale={locale} scope={scope} selection={selection}
+            asset={actionAsset} onOpen={asset => setViewer({ context, asset })}
+            renderContinuation={renderContinuation}
+            onClear={() => {
+              selection.clear();
+              root.current?.querySelector<HTMLButtonElement>('.compact-library-filters-trigger')?.focus();
+            }}
+          /> : null}
+          <p className={`compact-library-announcement${selection.announcement === 'SELECTION_RESET' && !selection.pending ? ' sr-only' : ''}`} role="status">
             {selection.pending ? copy.pending : announcementText(selection.announcement, copy)}
           </p>
           {selection.error ? <p role="alert">{managementError(selection.error, copy)}</p> : null}
@@ -412,6 +360,7 @@ function OwnedCompactLibraryBrowser({
             </p>
           ) : null}
           <CompactMediaGrid
+            scrollRef={scrollRoot}
             key={scopeKey}
             userId={userId}
             assets={visible}
@@ -419,6 +368,8 @@ function OwnedCompactLibraryBrowser({
             onSelectionChange={selection.change}
             onOpen={(asset) => setViewer({ context, asset })}
             density={density}
+            displayMode={displayMode}
+            getAssetName={(asset) => libraryMediaCaption(asset, locale)}
             locale={locale}
             disabled={selection.pending}
             loading={isLoading}
@@ -429,15 +380,22 @@ function OwnedCompactLibraryBrowser({
               {query ? emptySearchLabel : (emptyContent ?? emptyLabel)}
             </div>
           ) : null}
-          {hasMore && onLoadMore ? (
-            <button
-              type="button"
-              className="compact-library-load"
-              disabled={isLoadingMore || isLoading}
-              onClick={onLoadMore}
-            >
-              {loadMoreLabel ?? copy.selectLoaded}
-            </button>
+          {footerContent || (hasMore && onLoadMore) ? (
+            <footer className="compact-library-footer">
+              {footerContent}
+              {isLoadingMore ? <span className="compact-library-load-status" role="status">{copy.loading}</span> : null}
+              {hasMore && onLoadMore ? (
+                <button
+                  type="button"
+                  className="compact-library-load"
+                  data-auto-load={!pagination.manualRequired || undefined}
+                  disabled={isLoadingMore || isLoading || selection.pending}
+                  onClick={error ? onRetry ?? onLoadMore : onLoadMore}
+                >
+                  {error ? copy.retry : loadMoreLabel ?? copy.selectLoaded}
+                </button>
+              ) : null}
+            </footer>
           ) : null}
           {toolLinks?.length ? (
             <nav aria-label={toolsTitle}>
@@ -456,7 +414,7 @@ function OwnedCompactLibraryBrowser({
         <MediaActionPanel
           asset={selected}
           neighbors={visible}
-          onNavigateAsset={asset => setViewer({ context, asset })}
+          onNavigateAsset={(asset) => setViewer({ context, asset })}
           locale={locale}
           onClose={() => setViewer(null)}
           details={

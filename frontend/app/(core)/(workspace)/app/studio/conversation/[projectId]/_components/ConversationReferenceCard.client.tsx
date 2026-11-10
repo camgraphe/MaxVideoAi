@@ -6,7 +6,7 @@ import {getReleasedCreatorToolIds} from '@/lib/toolbox/creator-availability';
 const CreatorToolLinks=dynamic(()=>import('@/components/library/CreatorToolLinks.client').then(module=>module.CreatorToolLinks));
 import {ArrowUpLeft, Check, Expand, Film, Image as ImageIcon, Music2, RefreshCw, ListVideo} from 'lucide-react';
 import type {ConversationLocale} from '@/lib/studio/conversation-quote-presentation';
-import type {ConversationReferencePreview} from '@/lib/studio/conversation-reference-previews';
+import type {ConversationReferencePreview,ConversationReferencePreviewResult} from '@/lib/studio/conversation-reference-previews';
 import {MEDIA_SHELF_DRAG_TYPE,shelfTimelineAsset, type ShelfMedia} from '../_lib/conversation-media-shelf';
 import type {ImageLibraryAsset} from '@/lib/studio/image-library';
 import {ConversationReferenceLightbox} from './ConversationReferenceLightbox.client';
@@ -20,6 +20,7 @@ export function ConversationReferenceCard({projectId, item, active, compact, att
   const t = (en: string, fr: string) => locale === 'fr' ? fr : en;
   const [preview, setPreview] = useState<ConversationReferencePreview | null>(null);
   const [failed, setFailed] = useState(false), [retry, setRetry] = useState(0), [loading, setLoading] = useState(true);
+  const [mediaAccessError,setMediaAccessError] = useState<'MEDIA_DELETED'|'MEDIA_NOT_AVAILABLE'|null>(null);
   const [lightbox, setLightbox] = useState(false), [ratio, setRatio] = useState(1.25);
   const access = useRef<ConversationReferencePreview | null>(null);
   const card = useRef<HTMLElement>(null);
@@ -35,9 +36,15 @@ export function ConversationReferenceCard({projectId, item, active, compact, att
       method: 'POST', headers: {'content-type': 'application/json'}, cache: 'no-store', signal: controller.signal,
       body: JSON.stringify({refs: [{type: 'asset', assetId: item.assetId, kind}]}),
     }).then(async response => {
-      const data = await response.json(), asset = data.assets?.[0];
-      if (!response.ok || !data.ok || asset?.assetId !== item.assetId || !asset.url) throw new Error('PREVIEW_UNAVAILABLE');
-      if (!controller.signal.aborted) {access.current = asset; setPreview(asset);}
+      const data = await response.json(), asset = data.assets?.[0] as ConversationReferencePreviewResult | undefined;
+      if (!response.ok || !data.ok || asset?.assetId !== item.assetId || asset.kind !== kind) throw new Error('PREVIEW_UNAVAILABLE');
+      if ('mediaAccessError' in asset) {
+        if (!['MEDIA_DELETED','MEDIA_NOT_AVAILABLE'].includes(asset.mediaAccessError)) throw new Error('PREVIEW_UNAVAILABLE');
+        if (!controller.signal.aborted) {access.current = null;setPreview(null);setLightbox(false);setMediaAccessError(asset.mediaAccessError);}
+        return;
+      }
+      if (!asset.url) throw new Error('PREVIEW_UNAVAILABLE');
+      if (!controller.signal.aborted) {access.current = asset; setPreview(asset);setMediaAccessError(null);}
     }).catch(() => {if (!controller.signal.aborted) setFailed(true);})
       .finally(() => {if (!controller.signal.aborted) setLoading(false);});
     return () => controller.abort();
@@ -54,25 +61,26 @@ export function ConversationReferenceCard({projectId, item, active, compact, att
   function failPreview() {access.current = null; setFailed(true);}
   const icon = kind === 'video' ? <Film size={22}/> : kind === 'audio' ? <Music2 size={22}/> : <ImageIcon size={22}/>;
   const mediaName = preview?.name ?? item.name;
-  const imageUrl = preview && (preview.thumbUrl || (kind === 'image' ? preview.url : null));
+  const missingLabel = mediaAccessError === 'MEDIA_DELETED' ? t('Media deleted','Média supprimé') : t('Media unavailable','Média indisponible');
+  const imageUrl = !mediaAccessError && preview && (preview.thumbUrl || (kind === 'image' ? preview.url : null));
   const showPlayer = active && !compact && preview && !failed && !loading && kind !== 'image';
   return <article ref={card} className={styles.card} data-media-card={item.assetId} data-selected={active} data-compact={compact}>
     <div className={styles.surface} style={{aspectRatio: Math.min(1.85, Math.max(.78, ratio))}} aria-busy={loading}>
       {showPlayer ? kind === 'video' ? <video key={preview.url} ref={node => {player.current = node;}} src={preview.url} poster={preview.thumbUrl ?? undefined} controls playsInline preload="none" aria-label={item.label} onError={failPreview}/> : <div className={styles.audio}>{icon}<audio key={preview.url} ref={node => {player.current = node;}} src={preview.url} controls preload="none" aria-label={item.label} onError={failPreview}/></div> :
-        <button className={styles.select} aria-label={t('Preview ', 'Aperçu de ') + item.label} aria-pressed={active} onClick={onSelect} draggable
+        <button className={styles.select} aria-label={t('Preview ', 'Aperçu de ') + item.label} aria-pressed={active} onClick={onSelect} draggable={!mediaAccessError}
           onDragStart={event => {event.dataTransfer.effectAllowed = 'copy'; event.dataTransfer.setData(MEDIA_SHELF_DRAG_TYPE, item.assetId);}}>
-          {imageUrl && !failed ? <img src={imageUrl} alt={mediaName ?? item.label} draggable={false} onLoad={event => {const image = event.currentTarget; if (image.naturalHeight) setRatio(image.naturalWidth / image.naturalHeight);}} onError={failPreview}/> : <span className={styles.placeholder}>{icon}{!compact && <small>{loading ? t('Opening…', 'Ouverture…') : failed ? t('Preview unavailable', 'Aperçu indisponible') : item.label}</small>}</span>}
+          {imageUrl && !failed ? <img src={imageUrl} alt={mediaName ?? item.label} draggable={false} onLoad={event => {const image = event.currentTarget; if (image.naturalHeight) setRatio(image.naturalWidth / image.naturalHeight);}} onError={failPreview}/> : <span className={styles.placeholder}>{icon}{(!compact || mediaAccessError) && <small>{mediaAccessError ? missingLabel : loading ? t('Opening…', 'Ouverture…') : failed ? t('Preview unavailable', 'Aperçu indisponible') : item.label}</small>}</span>}
         </button>}
       {attached && <span className={styles.attachedMark} aria-label={t('Attached', 'Joint')}><Check size={11}/></span>}
     </div>
     {!compact && <div className={styles.caption}>
       <span className={styles.captionLabel} title={mediaName}>{item.label}</span>
       {active && <div className={styles.actions}>
-        <button onClick={onMention} aria-label={t('Mention in message', 'Citer dans le message')} title={t('Mention in message', 'Citer dans le message')}><ArrowUpLeft size={16}/></button>
-        {onInsert&&<button onClick={()=>onInsert(shelfTimelineAsset(item,preview))} aria-label={t('Add to timeline','Ajouter à la timeline')} title={t('Add to timeline','Ajouter à la timeline')}><ListVideo size={16}/></button>}
+        <button disabled={!!mediaAccessError} onClick={onMention} aria-label={t('Mention in message', 'Citer dans le message')} title={t('Mention in message', 'Citer dans le message')}><ArrowUpLeft size={16}/></button>
+        {onInsert&&<button disabled={!!mediaAccessError} onClick={()=>onInsert(shelfTimelineAsset(item,preview))} aria-label={t('Add to timeline','Ajouter à la timeline')} title={t('Add to timeline','Ajouter à la timeline')}><ListVideo size={16}/></button>}
         {kind === 'image' && preview && !failed && <button ref={enlargeTrigger} onClick={() => setLightbox(true)} aria-label={t('Enlarge ', 'Agrandir ') + item.label} title={t('Enlarge', 'Agrandir')}><Expand size={14}/></button>}
-        <button aria-pressed={attached} aria-label={t('Include in next message', 'Joindre au prochain message')} title={t('Include in next message', 'Joindre au prochain message')} onClick={attached ? onDetach : onAttach}><Check size={15}/></button>
-        {failed && <button onClick={() => {access.current = null; setRetry(value => value + 1);}} aria-label={t('Try again', 'Réessayer')}><RefreshCw size={14}/></button>}
+        <button disabled={!!mediaAccessError&&!attached} aria-pressed={attached} aria-label={t('Include in next message', 'Joindre au prochain message')} title={t('Include in next message', 'Joindre au prochain message')} onClick={attached ? onDetach : onAttach}><Check size={15}/></button>
+        {(failed || mediaAccessError==='MEDIA_NOT_AVAILABLE') && <button onClick={() => {access.current = null; setRetry(value => value + 1);}} aria-label={t('Try again', 'Réessayer')}><RefreshCw size={14}/></button>}
       </div>}
     </div>}
     {active && !compact && preview && !failed && getReleasedCreatorToolIds().length > 0 ? <CreatorToolLinks key={item.assetId} locale={locale} asset={{id:item.assetId,kind,url:preview.url,thumbUrl:preview.thumbUrl}}/> : null}

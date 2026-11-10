@@ -115,6 +115,7 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
       await page.getByRole('button',{name: 'Open library',exact: true}).click();
       await expect(dialog.getByText('No media here yet',{exact: true})).toBeVisible();
       await expect(dialog.getByRole('button',{name:'Add to conversation',exact:true})).toBeDisabled();
+      await dialog.getByRole('button',{name:'Filters',exact:true}).click();
       await dialog.getByRole('combobox',{name:'Media type',exact:true}).selectOption('audio');
       await expect(dialog.getByRole('combobox',{name:'Media type',exact:true})).toHaveValue('audio');
       await expect(dialog.getByRole('alert')).toHaveCount(0);
@@ -379,7 +380,8 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
     await expect(page.locator('[data-timeline-item]')).toHaveCount(2);
     await openFilm();
     await page.getByRole('button',{name: 'Select clip Pattern B',exact: true}).click();
-    await expect(page.getByText('Media unavailable. You can remove this clip.',{exact: true}).first()).toBeVisible();
+    await expect(page.getByText('Media deleted. Replace or remove this clip.',{exact: true}).first()).toBeVisible();
+    await expect(page.getByRole('button',{name: 'Replace selected clip',exact: true})).toBeEnabled();
     await expect(page.getByLabel('Film monitor',{exact: true})).toHaveCount(0);
     await page.getByRole('button',{name: 'Remove selected clip',exact: true}).click();
     await expect(page.getByLabel('Film timeline',{exact: true})).toHaveAttribute('data-revision','3');
