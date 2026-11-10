@@ -368,10 +368,10 @@ poster height from stored dimensions, with a fixed 24px caption, before scrollin
 `CompactLibraryFilters`, `CompactLibrarySelection` and `CompactLibraryCollections`
 render contextual command popovers through `CompactLibraryPopup` (React Aria owns
 focus, Escape and dismissal). A 16px checked mark has a 44px hit target. Technical
+filenames use a type/date caption; originals and full names remain in Details.
 Popovers portal into the nearest dialog when present, so native Studio top-layer
 dialogs and existing picker focus boundaries contain their commands. Escape closes
 the command menu and restores its trigger without closing the receiving picker.
-filenames use a type/date caption; originals and full names remain in Details.
 `CompactLibrarySelection` owns only selection-scope commands. Selecting media
 immediately renders `CompactLibrarySelectionActions` with applicable actions;
 single-item Preview and Use in reuse the captured DTO and existing continuation
