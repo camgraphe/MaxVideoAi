@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 import { normalizeCheckoutInteractionEventPayload } from '../frontend/server/checkout-events';
-import { classifyCheckoutAbandonmentSignal } from '../frontend/server/checkout-report';
+import { classifyCheckoutAbandonmentSignal, summarizeCheckoutWalletLoads, summarizeRecentWalletFollowups } from '../frontend/server/checkout-report';
 
 const hostedCheckoutEventNames = [
   'hosted_checkout_requested',
@@ -107,4 +107,63 @@ assert.equal(
   classifyCheckoutAbandonmentSignal([{ eventName: 'express_checkout_unavailable', metadata: { reason: 'no_available_methods' } }]),
   'passive_open',
   'a device without an eligible wallet is not a technical payment error'
+);
+
+assert.equal(
+  classifyCheckoutAbandonmentSignal([
+    { eventName: 'express_checkout_unavailable', metadata: { reason: 'ready_timeout' } },
+    { eventName: 'express_checkout_ready', metadata: { recoveredAfterTimeout: true } },
+    { eventName: 'express_checkout_cancelled' },
+  ]),
+  'user_cancelled',
+  'a recovered load must not hide the subsequent wallet sheet cancellation'
+);
+
+const timeout = { eventName: 'express_checkout_unavailable', createdAt: '2026-11-10T10:52:33Z' };
+const ready = { eventName: 'express_checkout_ready', createdAt: '2026-11-10T10:52:38Z' };
+assert.deepEqual(
+  summarizeCheckoutWalletLoads([
+    { ...ready, metadata: { loadId: 'load-a', recoveredAfterTimeout: true, elementReadyMs: 14_000 } },
+    { ...timeout, metadata: { loadId: 'load-a', reason: 'ready_timeout' } },
+    { ...timeout, metadata: { loadId: 'load-b', reason: 'ready_timeout' } },
+  ]).map(load => [load.id, load.status, load.elementReadyMs]),
+  [['load-a', 'recovered', 14_000], ['load-b', 'no_ready', null]],
+  'out-of-order beacons must not let a ready from one mount clear a different mount timeout'
+);
+assert.equal(
+  summarizeCheckoutWalletLoads([
+    { ...timeout, metadata: { reason: 'ready_timeout' } },
+    { ...ready, metadata: { recoveredAfterTimeout: true } },
+  ])[0]?.status,
+  'recovered',
+  'historical events with an explicit recovery flag must remain readable'
+);
+assert.equal(
+  summarizeCheckoutWalletLoads([
+    { ...timeout, metadata: { reason: 'ready_timeout' } },
+    { ...ready, metadata: null },
+  ])[0]?.status,
+  'no_ready',
+  'historical events without a recovery flag must not be paired across unknown mounts'
+);
+
+const delayedLoad = summarizeCheckoutWalletLoads([{ ...timeout, metadata: { reason: 'ready_timeout' } }]);
+const nativeAttempt = (userId: string) => ({
+  userId, mode: 'express_checkout' as const, hasReceipt: false, events: [], walletLoads: delayedLoad,
+});
+const hostedAttempt = (userId: string, createdAt: string, hasReceipt: boolean, eventName = 'hosted_checkout_redirecting') => ({
+  userId, mode: 'hosted' as const, hasReceipt, walletLoads: [], events: [{ eventName, createdAt, metadata: null }],
+});
+assert.deepEqual(
+  summarizeRecentWalletFollowups([
+    nativeAttempt('first'), nativeAttempt('first'), nativeAttempt('second'), nativeAttempt('third'),
+    hostedAttempt('first', '2026-11-10T10:53:14Z', false),
+    hostedAttempt('first', '2026-11-10T10:55:14Z', true),
+    hostedAttempt('second', '2026-11-10T10:54:14Z', false),
+    hostedAttempt('second', '2026-11-10T10:54:14Z', true, 'hosted_checkout_requested'),
+    hostedAttempt('third', '2026-11-10T11:13:14Z', true),
+    hostedAttempt('unrelated', '2026-11-10T10:55:14Z', true),
+  ]),
+  { delayedAccounts: 3, hostedAfterDelay: 2, hostedPaidAfterDelay: 1 },
+  'count distinct accounts and require an observed redirect followed by a receipt on the matched hosted attempt'
 );

@@ -52,6 +52,7 @@ export type CheckoutReportRecentAttempt = {
   createdAt: string;
   abandonmentSignal: CheckoutAbandonmentSignal;
   events: CheckoutReportInteractionEvent[];
+  walletLoads: CheckoutWalletLoad[];
 };
 
 export type CheckoutReportInteractionEvent = {
@@ -60,11 +61,23 @@ export type CheckoutReportInteractionEvent = {
   metadata: Record<string, unknown> | null;
 };
 
+export type CheckoutWalletLoad = {
+  id: string | null;
+  status: 'prepared' | 'ready' | 'recovered' | 'no_ready' | 'error' | 'no_methods';
+  timeoutAt: string | null;
+  phase: string | null;
+  elapsedMs: number | null;
+  sessionPreparationMs: number | null;
+  stripeJsWaitMs: number | null;
+  elementReadyMs: number | null;
+};
+
 export type CheckoutReport = {
   range: CheckoutReportRange;
   summary: CheckoutReportSummary;
   reasons: CheckoutReportReason[];
   recent: CheckoutReportRecentAttempt[];
+  recentWalletFollowups: { delayedAccounts: number; hostedAfterDelay: number; hostedPaidAfterDelay: number };
 };
 
 type CheckoutReportAggregateRow = {
@@ -107,6 +120,7 @@ type CheckoutReportRecentRow = {
 };
 
 type CheckoutReportEventRow = {
+  user_id: string;
   checkout_attempt_id: number | string | null;
   stripe_checkout_session_id: string | null;
   event_name: string;
@@ -187,8 +201,7 @@ export function classifyCheckoutAbandonmentSignal(
   if (hasReceipt) return 'none';
   const eventNames = new Set(events.map((event) => event.eventName));
   if (
-    eventNames.has('express_checkout_loaderror') ||
-    events.some((event) => event.eventName === 'express_checkout_unavailable' && event.metadata?.reason !== 'no_available_methods') ||
+    events.some(isExplicitWalletLoadError) ||
     eventNames.has('express_checkout_confirm_failed')
   ) {
     return 'technical_error';
@@ -211,6 +224,112 @@ export function classifyCheckoutAbandonmentSignal(
     return 'passive_open';
   }
   return 'none';
+}
+
+function isExplicitWalletLoadError(event: { eventName: string; metadata?: Record<string, unknown> | null }): boolean {
+  return event.eventName === 'express_checkout_loaderror' ||
+    (event.eventName === 'express_checkout_unavailable' &&
+      event.metadata?.reason !== 'ready_timeout' && event.metadata?.reason !== 'no_available_methods');
+}
+
+export function summarizeCheckoutWalletLoads(events: CheckoutReportInteractionEvent[]): CheckoutWalletLoad[] {
+  const groups = new Map<string | null, CheckoutReportInteractionEvent[]>();
+  for (const event of events) {
+    if (!['express_checkout_session_ready', 'express_checkout_ready', 'express_checkout_unavailable',
+      'express_checkout_loaderror'].includes(event.eventName)) continue;
+    const id = typeof event.metadata?.loadId === 'string' ? event.metadata.loadId : null;
+    const group = groups.get(id) ?? [];
+    group.push(event);
+    groups.set(id, group);
+  }
+
+  const loads: CheckoutWalletLoad[] = [];
+  for (const [id, group] of groups) {
+    const error = group.findLast(isExplicitWalletLoadError);
+    const timeout = group.findLast(event => event.metadata?.reason === 'ready_timeout');
+    const prepared = group.findLast(event => event.eventName === 'express_checkout_session_ready');
+    const recovered = group.findLast(event =>
+      event.eventName === 'express_checkout_ready' && event.metadata?.recoveredAfterTimeout === true);
+    const ready = group.findLast(event => event.eventName === 'express_checkout_ready');
+    const noMethods = group.findLast(event => event.metadata?.reason === 'no_available_methods');
+    const latePreparation = prepared?.metadata?.readyTimeoutBeforePreparation === true;
+    const recoveryMatches = recovered && (id !== null ||
+      group.filter(event => event.metadata?.reason === 'ready_timeout').length <= 1);
+
+    const timeoutAt = timeout?.createdAt ?? (latePreparation ? prepared?.createdAt : recovered?.createdAt) ?? null;
+    let status: CheckoutWalletLoad['status'] = 'prepared';
+    let measurement = prepared;
+    if (error) {
+      status = 'error';
+      measurement = error;
+    } else if (recoveryMatches) {
+      status = 'recovered';
+      measurement = recovered;
+    } else if (timeoutAt && !(id && noMethods)) {
+      status = 'no_ready';
+      measurement = timeout ?? prepared;
+    } else if (noMethods) {
+      status = 'no_methods';
+      measurement = noMethods;
+    } else if (ready) {
+      status = 'ready';
+      measurement = ready;
+    }
+    if (id === null && (status === 'prepared' || status === 'ready' || status === 'no_methods')) continue;
+
+    const metadata = measurement?.metadata;
+    const duration = (key: string) => {
+      const value = metadata?.[key];
+      return typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : null;
+    };
+    loads.push({
+      id,
+      status,
+      timeoutAt,
+      phase: typeof metadata?.loadPhase === 'string' ? metadata.loadPhase : null,
+      elapsedMs: duration('elapsedMs'),
+      sessionPreparationMs: duration('sessionPreparationMs'),
+      stripeJsWaitMs: duration('stripeJsWaitMs'),
+      elementReadyMs: duration('elementReadyMs'),
+    });
+  }
+  return loads;
+}
+
+export function summarizeRecentWalletFollowups(
+  attempts: Array<Pick<CheckoutReportRecentAttempt, 'userId' | 'mode' | 'hasReceipt' | 'events' | 'walletLoads'>>,
+): CheckoutReport['recentWalletFollowups'] {
+  const delaysByUser = new Map<string, number[]>();
+  for (const attempt of attempts) {
+    if (attempt.mode !== 'express_checkout') continue;
+    for (const load of attempt.walletLoads) {
+      if (!load.timeoutAt) continue;
+      const times = delaysByUser.get(attempt.userId) ?? [];
+      times.push(new Date(load.timeoutAt).getTime());
+      delaysByUser.set(attempt.userId, times);
+    }
+  }
+
+  const hostedUsers = new Set<string>();
+  const paidUsers = new Set<string>();
+  for (const attempt of attempts) {
+    if (attempt.mode !== 'hosted') continue;
+    const delays = delaysByUser.get(attempt.userId);
+    if (!delays) continue;
+    const redirectedAfterDelay = attempt.events.some(event => {
+      if (event.eventName !== 'hosted_checkout_redirecting') return false;
+      const redirectedAt = new Date(event.createdAt).getTime();
+      return delays.some(delay => redirectedAt > delay && redirectedAt - delay <= 15 * 60_000);
+    });
+    if (!redirectedAfterDelay) continue;
+    hostedUsers.add(attempt.userId);
+    if (attempt.hasReceipt) paidUsers.add(attempt.userId);
+  }
+  return {
+    delayedAccounts: delaysByUser.size,
+    hostedAfterDelay: hostedUsers.size,
+    hostedPaidAfterDelay: paidUsers.size,
+  };
 }
 
 function checkoutStatusSql() {
@@ -325,6 +444,34 @@ export async function fetchCheckoutReport(rangeInput?: string | string[] | null)
     summary[row.status] = Number(row.count ?? 0);
   }
 
+  const recent: CheckoutReportRecentAttempt[] = recentRows.map((row) => {
+    const id = Number(row.id);
+    const events = eventsByAttempt.get(id) ?? [];
+    return {
+      id,
+      userId: row.user_id,
+      amountCents: Number(row.amount_cents ?? 0),
+      paymentCurrency: /^[a-z]{3}$/i.test(row.payment_currency ?? '') ? row.payment_currency!.toUpperCase() : null,
+      mode: row.mode,
+      outcome: row.outcome,
+      status: row.status,
+      reason: row.reason,
+      captchaRequired: Boolean(row.captcha_required),
+      captchaPassed: Boolean(row.captcha_passed),
+      stripeCheckoutSessionId: row.stripe_checkout_session_id,
+      hasReceipt: Boolean(row.has_receipt),
+      canExpireCheckoutSession: canExpireCheckoutSessionFromReport({
+        hasReceipt: Boolean(row.has_receipt),
+        status: row.status,
+        stripeCheckoutSessionId: row.stripe_checkout_session_id,
+      }),
+      createdAt: row.created_at,
+      abandonmentSignal: classifyCheckoutAbandonmentSignal(events, Boolean(row.has_receipt)),
+      events,
+      walletLoads: row.mode === 'express_checkout' ? summarizeCheckoutWalletLoads(events) : [],
+    };
+  });
+
   return {
     range,
     summary,
@@ -332,32 +479,8 @@ export async function fetchCheckoutReport(rangeInput?: string | string[] | null)
       reason: row.reason ?? 'none',
       count: Number(row.count ?? 0),
     })),
-    recent: recentRows.map((row) => {
-      const id = Number(row.id);
-      const events = eventsByAttempt.get(id) ?? [];
-      return {
-        id,
-        userId: row.user_id,
-        amountCents: Number(row.amount_cents ?? 0),
-        paymentCurrency: /^[a-z]{3}$/i.test(row.payment_currency ?? '') ? row.payment_currency!.toUpperCase() : null,
-        mode: row.mode,
-        outcome: row.outcome,
-        status: row.status,
-        reason: row.reason,
-        captchaRequired: Boolean(row.captcha_required),
-        captchaPassed: Boolean(row.captcha_passed),
-        stripeCheckoutSessionId: row.stripe_checkout_session_id,
-        hasReceipt: Boolean(row.has_receipt),
-        canExpireCheckoutSession: canExpireCheckoutSessionFromReport({
-          hasReceipt: Boolean(row.has_receipt),
-          status: row.status,
-          stripeCheckoutSessionId: row.stripe_checkout_session_id,
-        }),
-        createdAt: row.created_at,
-        abandonmentSignal: classifyCheckoutAbandonmentSignal(events, Boolean(row.has_receipt)),
-        events,
-      };
-    }),
+    recent,
+    recentWalletFollowups: summarizeRecentWalletFollowups(recent),
   };
 }
 
@@ -371,6 +494,7 @@ async function fetchRecentCheckoutEvents(recentRows: CheckoutReportRecentRow[]):
 
   return query<CheckoutReportEventRow>(
     `SELECT
+       user_id,
        checkout_attempt_id,
        stripe_checkout_session_id,
        event_name,
@@ -389,7 +513,9 @@ function groupCheckoutEventsByAttempt(
   eventRows: CheckoutReportEventRow[]
 ): Map<number, CheckoutReportInteractionEvent[]> {
   const sessionToAttempt = new Map<string, number>();
+  const attemptOwners = new Map<number, string>();
   for (const row of recentRows) {
+    attemptOwners.set(Number(row.id), row.user_id);
     if (row.stripe_checkout_session_id) {
       sessionToAttempt.set(row.stripe_checkout_session_id, Number(row.id));
     }
@@ -403,7 +529,7 @@ function groupCheckoutEventsByAttempt(
         : row.stripe_checkout_session_id
           ? sessionToAttempt.get(row.stripe_checkout_session_id)
           : null;
-    if (!attemptId || !Number.isFinite(attemptId)) continue;
+    if (!attemptId || attemptOwners.get(attemptId) !== row.user_id) continue;
     const events = grouped.get(attemptId) ?? [];
     events.push({
       eventName: row.event_name,
