@@ -159,6 +159,16 @@
         }
       },
       "compare": {
+        "sections": {
+          "platforms": {
+            "title": "Compare platforms",
+            "items": {
+              "platform-guide": "AI video platform guide",
+              "higgsfield-alternative": "MaxVideoAI vs Higgsfield",
+              "openart-alternative": "MaxVideoAI vs OpenArt"
+            }
+          }
+        },
         "items": {
           "ltx-2-3-pro-vs-ltx-2-5-pro": "LTX 2.3 Pro vs LTX 2.5 Pro",
           "wan-2-6-vs-wan-3": "Wan 2.6 vs Wan 3",

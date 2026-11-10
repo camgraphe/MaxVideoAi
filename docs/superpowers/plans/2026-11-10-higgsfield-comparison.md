@@ -98,3 +98,18 @@ HTTP/SEO checks, independent review and prepared distribution texts. No addition
 paid generation was requested for this extension; every displayed asset has a
 known source and distinct role. Recheck current prices and account eligibility
 before release, then follow the repository PR and Quality CI policy.
+
+## Authorized preproduction and site entry points
+
+The user approved advancing to preproduction after reviewing the page batch.
+Integrate current main into this isolated branch, open a review PR and verify its
+Git-backed Vercel Preview. This approval does not include merging to production
+or posting the prepared outreach messages.
+
+The existing Compare dropdown gains a separate platform section with the general
+guide and the two dedicated comparisons. Keep the current model comparisons and
+Best-For links. The footer links to the general guide; Pricing links to the budget
+article from its rendered credits/refunds section. These entries complement the
+existing PAYG, blog index and inter-page links without adding another home hero
+or top-level navigation item. Resolve translated blog slugs before rendering the
+desktop, mobile and footer links, and verify all three languages in Preview.

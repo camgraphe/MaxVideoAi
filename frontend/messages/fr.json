@@ -199,6 +199,14 @@
           "seedance-2-0-vs-seedance-2-0-fast": "Seedance 2.0 vs Fast"
         },
         "sections": {
+          "platforms": {
+            "title": "Comparer les plateformes",
+            "items": {
+              "platform-guide": "Guide des plateformes vidéo IA",
+              "higgsfield-alternative": "MaxVideoAI et Higgsfield",
+              "openart-alternative": "MaxVideoAI et OpenArt"
+            }
+          },
           "useCaseGuides": {
             "items": {
               "best-for": "Meilleurs modèles par usage",

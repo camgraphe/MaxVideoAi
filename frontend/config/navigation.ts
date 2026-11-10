@@ -274,6 +274,17 @@ const MARKETING_COMPARE_DECISION_GUIDES_SECTION: MarketingNavSection = {
   items: [{ ...MARKETING_NAV_BEST_FOR_HUB, emphasized: true }, ...MARKETING_NAV_BEST_FOR_USE_CASES],
 };
 
+const MARKETING_COMPARE_PLATFORMS_SECTION: MarketingNavSection = {
+  key: 'platforms',
+  titleKey: 'nav.dropdown.compare.sections.platforms.title',
+  titleFallback: 'Compare platforms',
+  items: [
+    { key: 'platform-guide', label: 'AI video platform guide', href: '/blog/compare-ai-video-platforms' },
+    { key: 'higgsfield-alternative', label: 'MaxVideoAI vs Higgsfield', href: '/higgsfield-alternative' },
+    { key: 'openart-alternative', label: 'MaxVideoAI vs OpenArt', href: '/openart-alternative' },
+  ],
+};
+
 export const MARKETING_NAV_TOOLS: MarketingNavItem[] = [
   { key: 'studio', icon: 'cinema', label: 'Studio', href: '/studio', emphasized: true, description: 'Your creative workspace with AI.' },
   { key: 'character-builder', icon: 'character', label: 'Character Studio', href: toolLink('character-builder') },
@@ -353,7 +364,7 @@ export const MARKETING_NAV_DROPDOWNS: Partial<Record<string, MarketingNavDropdow
     items: MARKETING_NAV_COMPARE,
     heading: 'Two models. A clearer choice.',
     intro: 'Compare scores, video examples, capabilities and costs.',
-    sections: [MARKETING_COMPARE_DECISION_GUIDES_SECTION],
+    sections: [MARKETING_COMPARE_DECISION_GUIDES_SECTION, MARKETING_COMPARE_PLATFORMS_SECTION],
     allHref: { pathname: '/ai-video-engines' },
     allLabelKey: 'nav.dropdown.allComparisons',
     allLabelFallback: 'All comparisons',

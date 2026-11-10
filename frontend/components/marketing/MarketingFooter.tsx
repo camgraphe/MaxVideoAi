@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { getPathname, Link, type LocalizedLinkHref } from '@/i18n/navigation';
 import { useI18n } from '@/lib/i18n/I18nProvider';
+import { localizeMarketingHref } from '@/lib/i18n/marketing-locale-switch';
 import { MarketingFooterAssistants } from '@/components/marketing/MarketingFooterAssistants';
 import { LanguageToggle } from '@/components/marketing/LanguageToggle';
 import type { MarketingFooterNavigation } from '@/config/public-marketing-navigation';
@@ -67,6 +68,11 @@ function FooterContent({ navigation }: { navigation: MarketingFooterNavigation }
   const comparisonLinks: FooterLink[] = [
     ...FOOTER_COMPARISONS.map(item => ({ ...item, label: labelFor(`nav.dropdown.compare.items.${item.key}`, item.label) })),
     { key: 'all-comparisons', label: labelFor('nav.dropdown.allComparisons', 'All comparisons'), href: '/ai-video-engines' },
+    {
+      key: 'platform-guide',
+      label: labelFor('nav.dropdown.compare.sections.platforms.items.platform-guide', 'AI video platform guide'),
+      href: localizeMarketingHref('/blog/compare-ai-video-platforms', locale),
+    },
   ];
 
   const useCaseLinks: FooterLink[] = [

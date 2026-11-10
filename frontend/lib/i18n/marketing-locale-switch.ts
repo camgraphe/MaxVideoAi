@@ -1,5 +1,6 @@
 import localizedSlugConfig from '../../config/localized-slugs.json';
 import { resolveBlogCanonicalSlug, resolveLocalizedBlogSlug } from '../../config/blog-slugs';
+import type { LocalizedLinkHref } from '../../i18n/navigation';
 import type { Locale } from './types';
 import { marketingPageFallback } from './marketing-page-fallback';
 
@@ -96,6 +97,11 @@ export function localizeMarketingHref(href: string, targetLocale: Locale): strin
   const pathname = suffixStart < 0 ? href : href.slice(0, suffixStart);
   const suffix = suffixStart < 0 ? '' : href.slice(suffixStart);
   return `${localizeMarketingPathname(pathname, targetLocale)}${suffix}`;
+}
+
+// Dynamic blog parameters do not translate through next-intl's path compiler.
+export function localizeMarketingNavHref(href: LocalizedLinkHref, locale: Locale): LocalizedLinkHref {
+  return typeof href === 'string' && href.startsWith('/blog/') ? localizeMarketingHref(href, locale) : href;
 }
 
 export function buildMarketingLocaleSwitchHref({

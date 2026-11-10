@@ -5,7 +5,7 @@ import { memo, useEffect, useRef } from 'react';
 import { ArrowUpRight, ChevronDown } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 import type { AppLocale } from '@/i18n/locales';
-import { localizeMarketingPathname } from '@/lib/i18n/marketing-locale-switch';
+import { localizeMarketingNavHref, localizeMarketingPathname } from '@/lib/i18n/marketing-locale-switch';
 import { MarketingNavEntryContent } from '@/components/marketing/MarketingNavEntryContent';
 import type { MarketingHeaderNavigation } from '@/config/public-marketing-navigation';
 
@@ -14,6 +14,7 @@ type Props = {
   dropdowns: MarketingHeaderNavigation['dropdowns'];
   desktopDropdownOpen: string | null;
   links: MarketingHeaderNavigation['links'];
+  locale: AppLocale;
   pathname: string | null;
   t: MarketingTranslate;
   onCloseDesktopDropdown: (delay?: number) => void;
@@ -41,7 +42,7 @@ export function MarketingDesktopSectionLinks({ links, dropdowns, pathname, local
 // Mobile/account state must not rebuild the unchanged, CSS-hidden desktop menus.
 // Keep all links server-rendered; actual desktop, route and locale changes still render.
 // Decorative DOM waits until the panel becomes visible.
-export const MarketingDesktopNav = memo(function MarketingDesktopNav({ desktopDropdownOpen, dropdowns, links, pathname, t, onCloseDesktopDropdown, onOpenDesktopDropdown }: Props) {
+export const MarketingDesktopNav = memo(function MarketingDesktopNav({ desktopDropdownOpen, dropdowns, links, locale, pathname, t, onCloseDesktopDropdown, onOpenDesktopDropdown }: Props) {
   const navRef = useRef<HTMLElement>(null);
   const closeRef = useRef(onCloseDesktopDropdown);
   closeRef.current = onCloseDesktopDropdown;
@@ -96,7 +97,7 @@ export const MarketingDesktopNav = memo(function MarketingDesktopNav({ desktopDr
             </div>
             {dropdown.sections?.length ? <aside className="marketing-mega-aside">{dropdown.sections.map(section => <div key={section.key}>
               {!section.hideTitle ? <p className="marketing-menu-caption">{section.titleKey ? t(section.titleKey, section.titleFallback) : section.titleFallback}</p> : null}
-              {section.items.map(entry => <Link key={entry.key} href={entry.href} prefetch={false} onClick={() => onCloseDesktopDropdown(0)} className={clsx('marketing-aside-link', entry.emphasized && 'font-semibold text-text-primary')}>
+              {section.items.map(entry => <Link key={entry.key} href={localizeMarketingNavHref(entry.href, locale)} prefetch={false} onClick={() => onCloseDesktopDropdown(0)} className={clsx('marketing-aside-link', entry.emphasized && 'font-semibold text-text-primary')}>
                 <MarketingNavEntryContent entry={entry} label={t<string>(`nav.dropdown.${item.key}.sections.${section.key}.items.${entry.key}`, entry.label) ?? entry.label} showModelLogo={false} showDecoration={isOpen} />{isOpen ? <ArrowUpRight size={13} aria-hidden="true" /> : null}
               </Link>)}
             </div>)}</aside> : null}

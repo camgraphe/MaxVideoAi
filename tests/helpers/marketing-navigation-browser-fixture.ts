@@ -24,7 +24,11 @@ const boundaries: Record<string, string> = {
       let path = typeof href === 'string' ? href : href.pathname;
       for (const [key,value] of Object.entries(href.params ?? {})) path=path.replace('['+key+']',value);
       const [basePath,search=''] = path.split('?');
-      const target = buildMarketingLocaleSwitchHref({pathname:basePath,targetLocale:locale}).split('?')[0]+(search?'?'+search:'');
+      // next-intl prefixes dynamic blog routes but keeps the supplied slug.
+      const localizedPath = basePath.startsWith('/blog/')
+        ? (locale === 'en' ? '' : '/' + locale) + basePath
+        : buildMarketingLocaleSwitchHref({pathname:basePath,targetLocale:locale}).split('?')[0];
+      const target = localizedPath+(search?'?'+search:'');
       return <a {...props} ref={ref} href={target} onClick={event=>{
         onClick?.(event);
         if (!event.defaultPrevented && event.button===0 && !event.metaKey && !event.ctrlKey && target.startsWith('/')) {

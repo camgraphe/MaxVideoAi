@@ -298,6 +298,7 @@ export function MarketingNav({ navigation: { links, dropdowns }, initialEmail = 
           {/* Keep the SSR desktop links independent of a first touch on the mobile menu. */}
           <Suspense fallback={<MarketingDesktopSectionLinks links={links} dropdowns={dropdowns} pathname={pathname} locale={locale} t={t} />}>
             <MarketingDesktopNav
+              locale={locale}
               desktopDropdownOpen={desktopDropdownOpen}
               dropdowns={dropdowns}
               links={links}

@@ -79,6 +79,10 @@ hreflang and Article schema; their route-local server components own the rich
 guide and static budget table. Only the attempt selector is a Client Component.
 Other articles retain their existing presentation. Register translated slugs in
 `frontend/config/blog-slugs.ts` for the browser language selector as well as MDX.
+The existing Compare navigation exposes a separate platform section. Its blog
+destination uses `localizeMarketingNavHref` before the localized Link, since
+dynamic blog slugs are not translated by the route compiler. Footer and Pricing
+use the same underlying locale-path resolver for their guide and budget links.
 
 `frontend/lib/marketing/project-cost-example.ts` owns the dated editorial
 scenario reused by the Higgsfield page and both articles. It is arithmetic from

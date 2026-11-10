@@ -164,6 +164,7 @@ type PricingHubCopy = {
     finalExport: string;
   };
   creditsRefunds: {
+    projectBudgetLink: string;
     creditNotes: { title: string; items: Array<{ title: string; body: string }>; links: { termsHref: string; terms: string; refunds: string; support: string; studio: string } };
     title: string;
     intro: string;
@@ -371,6 +372,7 @@ const en: PricingHubCopy = {
         "studio": "Studio assistance"
       }
     },
+    projectBudgetLink: 'Plan your AI video budget',
     title: 'Credits, live quotes and refunds',
     intro: 'Pricing tables are preset references. The app remains the source for job-level live quotes before launch.',
     cards: [
@@ -591,6 +593,7 @@ const fr: PricingHubCopy = {
         "studio": "Assistance Studio"
       }
     },
+    projectBudgetLink: 'Prévoir le budget d’un projet vidéo IA',
     title: 'Crédits, devis live et remboursements',
     intro: 'Les tableaux sont des références par scénario. L’app reste la source du devis exact par job avant lancement.',
     cards: [
@@ -811,6 +814,7 @@ const es: PricingHubCopy = {
         "studio": "Asistencia de Studio"
       }
     },
+    projectBudgetLink: 'Planificar el presupuesto de un vídeo con IA',
     title: 'Créditos, precios vivos y reembolsos',
     intro: 'Las tablas son referencias por escenario. La app sigue siendo la fuente del precio exacto por job antes de lanzar.',
     cards: [
