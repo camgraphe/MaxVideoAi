@@ -347,8 +347,9 @@ test('service uploads, records, mirrors, and returns the exact public projection
     previewUrl: 'https://cdn.example.com/reference-thumb.webp',
   });
   assert.deepEqual(calls.map(([name]) => name), ['upload', 'thumbnail', 'record', 'mirror']);
-  const { beforeUpload, signal, ...uploadParams } = calls[0][1];
+  const { beforeUpload, resolveContentAddressedKey, signal, ...uploadParams } = calls[0][1];
   assert.equal(typeof beforeUpload, 'function');
+  assert.equal(typeof resolveContentAddressedKey, 'function');
   assert.equal(signal.aborted, false);
   assert.deepEqual(uploadParams, {
     data: normalized,

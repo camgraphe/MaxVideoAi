@@ -2,6 +2,9 @@
 import { ImmediateReferenceGrid } from './ImmediateReferenceGrid.client';
 import { CompactMediaGrid } from './CompactMediaGrid.client';
 import { CompactLibraryCollections } from './CompactLibraryCollections.client';
+import { compactLibraryCopy } from './compact-library-copy';
+import { libraryMediaCaption } from './library-media-caption';
+import { useLibraryScrollPagination } from './useLibraryScrollPagination';
 import { useReferencePickerBrowse } from './useReferencePickerBrowse';
 import type { LibraryBrowseScope } from '@/lib/library-browse';
 import { ReferenceLibraryManage } from './ReferenceLibraryManage.client';
@@ -110,12 +113,22 @@ function OwnedReferenceLibraryPicker(props: AssetLibraryBrowserProps & { selecti
     () => emptyImports,
   );
   const [preview, setPreview] = useState<AssetBrowserAsset | null>(null);
+  const scrollRoot = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (props.active === false) { setPreview(null); setManaging(false); }
   }, [props.active]);
   const eligibility = new Map(assets.map((asset) => [asset, selection.getEligibility?.(asset)]));
-  const displayName = (asset: AssetBrowserAsset, index: number) =>
-    asset.name?.trim() || `${workspaceReferenceCopy(locale).kinds[asset.kind]} ${index + 1}`;
+  const displayName = (asset: AssetBrowserAsset, index: number) => {
+    // Keep authored import and Character names; only known generated media use
+    // the same technical-filename fallback as the management library.
+    const generated = !immediate && asset.source !== 'upload' && (
+      asset.jobId || asset.sourceOutputId || asset.libraryRef?.type === 'job-output' ||
+      ['generated', 'recent', 'saved_job_output', 'storyboard', 'character', 'angle', 'upscale', 'background-removal'].includes(asset.source ?? '')
+    );
+    return generated
+      ? libraryMediaCaption(asset, locale)
+      : asset.name?.trim() || `${workspaceReferenceCopy(locale).kinds[asset.kind]} ${index + 1}`;
+  };
   const indexedNames = new Map(assets.map((asset, index) => [asset, displayName(asset, index)]));
   const filtered = assets.filter(
     (asset, index) =>
@@ -137,21 +150,37 @@ function OwnedReferenceLibraryPicker(props: AssetLibraryBrowserProps & { selecti
   const more = usingServerBrowse ? organized.loadMore : onLoadMore;
   const loadingMore = usingServerBrowse ? organized.isLoadingMore : isLoadingMore;
   const loading = usingServerBrowse ? organized.isLoading : isLoading;
+  const hasNextPage = usingServerBrowse ? organized.hasMore : hasMore;
+  const libraryCopy = compactLibraryCopy(locale);
+  const pagination = useLibraryScrollPagination({
+    scrollRef: scrollRoot,
+    scopeKey: JSON.stringify([owner, selection.scope, usingServerBrowse, browseScope, compatibility]),
+    // A page hidden by compatibility/local search must not drain the library.
+    // Another automatic page requires progress in the actual visible collection.
+    progress: JSON.stringify([filtered.length, filtered.length ? picker.keyFor(filtered[filtered.length - 1]) : null]),
+    layoutKey: props.assetType,
+    enabled: Boolean(!immediate && props.active !== false && !preview && !importing && hasNextPage && more),
+    busy: Boolean(busy || loading || loadingMore),
+    failed: Boolean(browseError),
+    onLoadMore: more,
+  });
   const loadMoreControl =
-    (usingServerBrowse ? organized.hasMore : hasMore) && more ? (
+    hasNextPage && more ? (
       <div className="app-picker-load-more">
         {query.trim() && !usingServerBrowse ? (
           <p role="status" className="text-center text-xs text-text-secondary">
             {copy.searchMore}
           </p>
         ) : null}
+        {loadingMore ? <span role="status" className="text-xs text-text-secondary">{libraryCopy.loading}</span> : null}
         <button
           type="button"
-          className="rounded-full border border-border bg-surface px-4 py-2 text-sm text-text-secondary hover:bg-surface-2 hover:text-text-primary disabled:cursor-not-allowed disabled:opacity-60"
-          disabled={busy || loadingMore}
-          onClick={more}
+          className={`rounded-full border border-border bg-surface px-4 py-2 text-sm text-text-secondary hover:bg-surface-2 hover:text-text-primary disabled:cursor-not-allowed disabled:opacity-60 ${!immediate && !pagination.manualRequired ? 'sr-only focus:not-sr-only' : ''}`}
+          data-auto-load={!immediate && !pagination.manualRequired || undefined}
+          disabled={busy || loading || loadingMore}
+          onClick={browseError ? usingServerBrowse ? () => void organized.revalidate() : props.onRetry ?? more : more}
         >
-          {loadingMore ? copy.busy : loadMoreLabel}
+          {browseError ? props.retryLabel ?? libraryCopy.retry : loadMoreLabel}
         </button>
       </div>
     ) : null;
@@ -343,6 +372,7 @@ function OwnedReferenceLibraryPicker(props: AssetLibraryBrowserProps & { selecti
               ) : null}
               {!immediate ? (
                 <CompactMediaGrid
+                  scrollRef={scrollRoot}
                   loading={loading}
                   assets={filtered}
                   userId={owner ?? ''}

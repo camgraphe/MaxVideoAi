@@ -10,7 +10,7 @@ import { groupJobsIntoSummaries } from '../frontend/lib/job-groups';
 import type { Job } from '../frontend/types/jobs';
 
 test('Activity exposes every supported source and filters real grouped status without changing order', () => {
-  assert.deepEqual([...JOBS_SOURCES], ['all', 'video', 'image', 'audio', 'storyboard', 'character', 'angle', 'upscale', 'background-removal']);
+  assert.deepEqual([...JOBS_SOURCES], ['all', 'video', 'image', 'audio', 'storyboard', 'character', 'angle', 'upscale', 'background-removal', 'tool']);
   const jobs = ['pending', 'completed', 'failed'].map((status, index) => ({ jobId: `job-${index}`, engineLabel: 'Test', durationSec: 4, prompt: '', createdAt: `2026-09-07T12:0${index}:00Z`, status, videoUrl: status === 'completed' ? 'https://example.invalid/output.mp4' : undefined })) as Job[];
   const { groups } = groupJobsIntoSummaries(jobs, { includeSinglesAsGroups: true });
   assert.equal(filterActivityGroups(groups, 'all'), groups);
