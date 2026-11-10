@@ -271,7 +271,7 @@ function OwnedCompactLibraryBrowser({
             </span>
           </div>
           {selection.count > 0 ? <CompactLibrarySelectionActions
-            key={scopeKey}
+            key={`actions:${scopeKey}`}
             userId={userId} locale={locale} scope={scope} selection={selection}
             asset={actionAsset} onOpen={asset => setViewer({ context, asset })}
             renderContinuation={renderContinuation}

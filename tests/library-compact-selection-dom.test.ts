@@ -473,6 +473,11 @@ test('production compact browser preserves slots, exact totals and independent v
       assert.equal(w.document.querySelector('[data-layout]')?.getAttribute('data-layout'), mode.toLowerCase());
       assert.equal(w.document.querySelector('.compact-media-check input')?.checked, true, 'view changes preserve selection');
     }
+    await w.fx.act(async () => w.document.querySelector('.compact-library-clear').click());
+    assert.equal(Boolean(w.document.querySelector('.compact-library-selection-actions')), false, 'clearing selection removes its action bar');
+    assert.equal(w.document.querySelector('.compact-media-check input')?.checked, false);
+    await w.fx.act(async () => w.document.querySelector('.compact-media-check input').click());
+    assert.equal(w.document.querySelectorAll('.compact-library-selection-actions').length, 1, 'reselecting mounts exactly one action bar');
     const preview = w.document.querySelector('.compact-library-selection-actions button[data-preview]');
     assert.ok(preview, 'virtualized actual browser mounts visible card');
     await w.fx.act(async () => preview.click());
@@ -500,6 +505,7 @@ test('production compact browser preserves slots, exact totals and independent v
       w.fx.render();
     });
     assert.equal(w.document.querySelector('[role=dialog]'), null);
+    assert.equal(Boolean(w.document.querySelector('.compact-library-selection-actions')), false, 'retiring the selection removes its commands as well as its checkmarks');
     assert.match(w.document.body.textContent, /Selection cleared/);
   } finally {
     await w.fx.act(async () => w.fx.unmount());
