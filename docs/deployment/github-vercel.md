@@ -97,6 +97,12 @@ the intended preview branch/environment, rebuild through Git, then inspect the
 actual Create interface and its media picker. Do not copy production secrets or
 claim paid assistant/generation execution from this UI smoke test.
 
+The connected Studio walkthrough also requires `STUDIO_IMAGE_CONVERSATION_ENABLED`,
+`STUDIO_CONVERSATION_ACTIONS_ENABLED` and `STUDIO_CONVERSATION_EDITING_ENABLED` to
+match production. Otherwise `/app/studio` deliberately renders unavailable before
+opening its media picker. Check all three together and scope any parity repair to
+the intended Preview branch; library/reference QA never implies a paid Milo request.
+
 ## Build guard and limits
 
 `frontend` prebuild calls `scripts/check-production-git.mjs` after the existing
