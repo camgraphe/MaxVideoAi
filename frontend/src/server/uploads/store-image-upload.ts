@@ -9,6 +9,7 @@ import { ensureAssetSchema } from '@/lib/schema';
 import { ensureReusableAsset } from '@/server/media-library';
 import { recordUserAsset, StorageUploadError, uploadImageToStorage } from '@/server/storage';
 import { createUploadImageThumbnail } from '@/server/upload-thumbnails';
+import { createImageUploadProducer, imageUploadProducerDependencies } from './image-upload-producer';
 
 const DEFAULT_MAX_IMAGE_MB = 25;
 const DEFAULT_MAX_IMAGE_PIXELS = 40_000_000;
@@ -52,6 +53,7 @@ export type ImageUploadLogCode =
   | 'IMAGE_UPLOAD_STORAGE_FAILED'
   | 'IMAGE_UPLOAD_MIRROR_FAILED'
   | 'IMAGE_UPLOAD_RECORD_FAILED'
+  | 'IMAGE_UPLOAD_PRODUCER_RELEASE_FAILED'
   | 'IMAGE_UPLOAD_PROJECTION_FAILED'
   | 'IMAGE_UPLOAD_UNEXPECTED_FAILURE';
 
@@ -117,7 +119,7 @@ export type StoredImageUploadRouteAsset = {
   imageDisplay?: ImageDisplay;
 };
 
-type ImageUploadServiceDependencies = {
+type ImageUploadServiceDependencies = typeof imageUploadProducerDependencies & {
   decodeImageUpload: (params: {
     fileName: string;
     declaredMime: string | null;
@@ -366,6 +368,7 @@ export function createImageUploadContentHash(bytes: Buffer): string {
 }
 
 const defaultDependencies: ImageUploadServiceDependencies = {
+  ...imageUploadProducerDependencies,
   decodeImageUpload,
   ensureAssetSchema,
   query,
@@ -452,120 +455,134 @@ export function createStoreImageUploadService(
       };
     }
 
-    let uploadResult: Awaited<ReturnType<typeof uploadImageToStorage>>;
+    const producer = createImageUploadProducer(params.signal, dependencies);
+    let persisted = false;
     try {
-      uploadResult = await dependencies.uploadImageToStorage({
-        data: normalized.bytes,
-        mime: normalized.mimeType,
-        fileName: normalized.fileName,
-        userId: params.userId,
-        prefix: 'user-assets',
-        contentAddressed: true,
-        ...(params.storageAcl !== undefined ? { acl: params.storageAcl } : {}),
-        ...(params.storageCacheControl !== undefined ? { cacheControl: params.storageCacheControl } : {}),
-        ...(params.cleanupObjects ? {
-          beforeUpload: (objectKey: string) => params.cleanupObjects!.beforeUpload({ objectRole: 'final', objectKey, safeToDelete: true }),
-        } : {}),
-        ...(params.signal ? { signal: params.signal } : {}),
-      });
-    } catch (error) {
-      dependencies.logImageUploadEvent(
-        'error',
-        error instanceof StorageUploadError && error.context.stage === 'before-upload'
-          ? 'IMAGE_UPLOAD_STORE_PREPARE_FAILED'
-          : 'IMAGE_UPLOAD_STORAGE_FAILED'
-      );
-      throw new ImageUploadError('UPLOAD_FAILED', 'Failed to upload the image.', error);
-    }
-
-    try {
-      let cleanupThumbnailKey: string | null = null;
-      const imageThumbUrl = await dependencies.createUploadImageThumbnail({
-        data: normalized.bytes,
-        userId: params.userId,
-        fileName: normalized.fileName,
-        ...(params.storageAcl !== undefined ? { acl: params.storageAcl } : {}),
-        ...(params.storageCacheControl !== undefined ? { cacheControl: params.storageCacheControl } : {}),
-        ...(params.cleanupObjects ? {
-          beforeUpload: async (objectKey: string) => {
-            await params.cleanupObjects!.beforeUpload({ objectRole: 'thumbnail', objectKey, safeToDelete: true });
-            cleanupThumbnailKey = objectKey;
-          },
-        } : {}),
-        ...(params.signal ? { signal: params.signal } : {}),
-      });
-      const cleanupDisplayKeys: string[] = [];
-      // An explicitly injected old thumbnail owner retains its historical no-extra-I/O contract.
-      const display = (!overrides.createUploadImageThumbnail || overrides.prepareImageRenditions)
-        ? await dependencies.prepareImageRenditions({
-          data: normalized.bytes, imageUrl: uploadResult.url, jobId: 'upload', index: 0,
-          userId: params.userId, prefix: 'user-asset-thumbs', thumbUrl: imageThumbUrl,
+      let uploadResult: Awaited<ReturnType<typeof uploadImageToStorage>>;
+      try {
+        uploadResult = await dependencies.uploadImageToStorage({
+          data: normalized.bytes,
+          mime: normalized.mimeType,
+          fileName: normalized.fileName,
+          userId: params.userId,
+          prefix: 'user-assets',
+          contentAddressed: true,
           ...(params.storageAcl !== undefined ? { acl: params.storageAcl } : {}),
           ...(params.storageCacheControl !== undefined ? { cacheControl: params.storageCacheControl } : {}),
-          ...(params.cleanupObjects ? { beforeUpload: async (objectKey: string) => {
-            await params.cleanupObjects!.beforeUpload({ objectRole: 'thumbnail', objectKey, safeToDelete: true });
-            cleanupDisplayKeys.push(objectKey);
-          } } : {}), signal: params.signal,
-        }).catch(() => ({})) : {};
-      params.signal?.throwIfAborted();
-      const width = uploadResult.width ?? normalized.width;
-      const height = uploadResult.height ?? normalized.height;
-      const sizeBytes = numericSize(uploadResult.size, normalized.bytes.length);
-      const mimeType = uploadResult.mime || normalized.mimeType;
-      const assetId = await dependencies.recordUserAsset({
-        userId: params.userId,
-        url: uploadResult.url,
-        mime: mimeType,
-        width,
-        height,
-        size: sizeBytes,
-        source: 'upload',
-        metadata: {
-          originalName: params.fileName,
-          originalMime: params.declaredMime,
-          normalizedFromMime: normalized.normalizedFromMime,
-          contentSha256,
-          thumbUrl: imageThumbUrl,
-          ...display,
-        },
-      });
-
-      await dependencies
-        .ensureReusableAsset({
-          userId: params.userId,
-          url: uploadResult.url,
-          kind: 'image',
-          source: 'upload',
-          mimeType,
-          width,
-          height,
-          sizeBytes,
-          thumbUrl: imageThumbUrl,
-          ...display,
-          metadata: { ...display, originalName: params.fileName, mediaFacts: { source: 'probe', width, height } },
-        })
-        .catch(() => {
-          dependencies.logImageUploadEvent('warn', 'IMAGE_UPLOAD_MIRROR_FAILED');
+          beforeUpload: async (objectKey: string) => {
+            await producer.acquire(objectKey);
+            await params.cleanupObjects?.beforeUpload({ objectRole: 'final', objectKey, safeToDelete: false });
+            producer.signal.throwIfAborted();
+          },
+          signal: producer.signal,
         });
-
-      if (params.cleanupObjects) {
-        await params.cleanupObjects.retain(uploadResult.key);
-        if (cleanupThumbnailKey) await params.cleanupObjects.retain(cleanupThumbnailKey);
-        if ('imageDisplay' in display && display.imageDisplay) for (const key of cleanupDisplayKeys) await params.cleanupObjects.retain(key);
+      } catch (error) {
+        dependencies.logImageUploadEvent(
+          'error',
+          error instanceof StorageUploadError && error.context.stage === 'before-upload'
+            ? 'IMAGE_UPLOAD_STORE_PREPARE_FAILED'
+            : 'IMAGE_UPLOAD_STORAGE_FAILED'
+        );
+        throw new ImageUploadError('UPLOAD_FAILED', 'Failed to upload the image.', error);
       }
 
-      return {
-        assetId,
-        width,
-        height,
-        mimeType,
-        sizeBytes,
-        previewUrl: imageThumbUrl ?? uploadResult.url,
-      };
-    } catch (error) {
-      if (error instanceof ImageUploadError) throw error;
-      dependencies.logImageUploadEvent('error', 'IMAGE_UPLOAD_RECORD_FAILED');
-      throw new ImageUploadError('STORE_FAILED', 'Failed to record the image asset.', error);
+      try {
+        let cleanupThumbnailKey: string | null = null;
+        const imageThumbUrl = await dependencies.createUploadImageThumbnail({
+          data: normalized.bytes,
+          userId: params.userId,
+          fileName: normalized.fileName,
+          ...(params.storageAcl !== undefined ? { acl: params.storageAcl } : {}),
+          ...(params.storageCacheControl !== undefined ? { cacheControl: params.storageCacheControl } : {}),
+          ...(params.cleanupObjects ? {
+            beforeUpload: async (objectKey: string) => {
+              await params.cleanupObjects!.beforeUpload({ objectRole: 'thumbnail', objectKey, safeToDelete: true });
+              cleanupThumbnailKey = objectKey;
+            },
+          } : {}),
+          signal: producer.signal,
+        });
+        const cleanupDisplayKeys: string[] = [];
+        // An explicitly injected old thumbnail owner retains its historical no-extra-I/O contract.
+        const display = (!overrides.createUploadImageThumbnail || overrides.prepareImageRenditions)
+          ? await dependencies.prepareImageRenditions({
+            data: normalized.bytes, imageUrl: uploadResult.url, jobId: 'upload', index: 0,
+            userId: params.userId, prefix: 'user-asset-thumbs', thumbUrl: imageThumbUrl,
+            ...(params.storageAcl !== undefined ? { acl: params.storageAcl } : {}),
+            ...(params.storageCacheControl !== undefined ? { cacheControl: params.storageCacheControl } : {}),
+            ...(params.cleanupObjects ? { beforeUpload: async (objectKey: string) => {
+              await params.cleanupObjects!.beforeUpload({ objectRole: 'thumbnail', objectKey, safeToDelete: true });
+              cleanupDisplayKeys.push(objectKey);
+            } } : {}), signal: producer.signal,
+          }).catch(() => ({})) : {};
+        await producer.checkpoint();
+        const width = uploadResult.width ?? normalized.width;
+        const height = uploadResult.height ?? normalized.height;
+        const sizeBytes = numericSize(uploadResult.size, normalized.bytes.length);
+        const mimeType = uploadResult.mime || normalized.mimeType;
+        const assetId = await dependencies.recordUserAsset({
+          userId: params.userId,
+          url: uploadResult.url,
+          mime: mimeType,
+          width,
+          height,
+          size: sizeBytes,
+          source: 'upload',
+          metadata: {
+            originalName: params.fileName,
+            originalMime: params.declaredMime,
+            normalizedFromMime: normalized.normalizedFromMime,
+            contentSha256,
+            thumbUrl: imageThumbUrl,
+            ...display,
+          },
+        });
+        persisted = true;
+        await producer.checkpoint();
+
+        await dependencies
+          .ensureReusableAsset({
+            userId: params.userId,
+            url: uploadResult.url,
+            kind: 'image',
+            source: 'upload',
+            mimeType,
+            width,
+            height,
+            sizeBytes,
+            thumbUrl: imageThumbUrl,
+            ...display,
+            metadata: { ...display, originalName: params.fileName, mediaFacts: { source: 'probe', width, height } },
+          })
+          .catch(() => {
+            dependencies.logImageUploadEvent('warn', 'IMAGE_UPLOAD_MIRROR_FAILED');
+          });
+
+        await producer.checkpoint();
+
+        if (params.cleanupObjects) {
+          await params.cleanupObjects.retain(uploadResult.key);
+          if (cleanupThumbnailKey) await params.cleanupObjects.retain(cleanupThumbnailKey);
+          if ('imageDisplay' in display && display.imageDisplay) for (const key of cleanupDisplayKeys) await params.cleanupObjects.retain(key);
+        }
+
+        return {
+          assetId,
+          width,
+          height,
+          mimeType,
+          sizeBytes,
+          previewUrl: imageThumbUrl ?? uploadResult.url,
+        };
+      } catch (error) {
+        if (error instanceof ImageUploadError) throw error;
+        dependencies.logImageUploadEvent('error', 'IMAGE_UPLOAD_RECORD_FAILED');
+        throw new ImageUploadError('STORE_FAILED', 'Failed to record the image asset.', error);
+      }
+    } finally {
+      await producer.release(persisted ? 'persisted' : 'abandoned').catch(() => {
+        dependencies.logImageUploadEvent('warn', 'IMAGE_UPLOAD_PRODUCER_RELEASE_FAILED');
+      });
     }
   };
 }

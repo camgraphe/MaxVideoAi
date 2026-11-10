@@ -69,6 +69,10 @@ function makeServiceDependencies(overrides: Record<string, unknown> = {}) {
     createUploadImageThumbnail: async () => 'https://cdn.example.com/reference-thumb.webp',
     recordUserAsset: async () => 'asset_new',
     ensureReusableAsset: async () => {},
+    claimStorageObjectProducer: async ({ objectKey }: { objectKey: string }) => ({ objectKey, claimId: 'test-claim', leaseExpiresAt: new Date(Date.now() + 300_000) }),
+    renewStorageObjectProducer: async ({ claim }: { claim: unknown }) => claim,
+    settleStorageObjectProducer: async () => {},
+    scheduleProducerHeartbeat: () => () => {},
     ...overrides,
   };
 }
@@ -343,7 +347,10 @@ test('service uploads, records, mirrors, and returns the exact public projection
     previewUrl: 'https://cdn.example.com/reference-thumb.webp',
   });
   assert.deepEqual(calls.map(([name]) => name), ['upload', 'thumbnail', 'record', 'mirror']);
-  assert.deepEqual(calls[0][1], {
+  const { beforeUpload, signal, ...uploadParams } = calls[0][1];
+  assert.equal(typeof beforeUpload, 'function');
+  assert.equal(signal.aborted, false);
+  assert.deepEqual(uploadParams, {
     data: normalized,
     mime: 'image/webp',
     fileName: 'reference.webp',

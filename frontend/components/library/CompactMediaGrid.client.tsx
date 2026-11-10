@@ -277,7 +277,8 @@ export const CompactMediaGrid = memo(function CompactMediaGrid({
                   className="compact-media-cover"
                   style={mosaic ? { aspectRatio: mediaAspect(item.asset) } : undefined}
                 >
-                  <CompactThumbnail asset={item.asset} userId={userId} />
+                  {/* Virtualizer rows are recycled; a different media must get its own image decoder. */}
+                  <CompactThumbnail key={item.id} asset={item.asset} userId={userId} />
                 </span>
                 <span className="compact-media-name" title={item.name}>
                   {item.name}

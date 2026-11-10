@@ -421,6 +421,11 @@ are not downloaded again. Entries removed from the current collection are retire
 owner/scope unmounts clear the window. Expiry is pruned on the next layout query.
 There is no persistent byte cache, eager whole-library warmup or HTTP policy change.
 `media-library-management-browser` checks private no-store return scrolling and bounds.
+When pagination exceeds the retained window, React Aria can recycle a row wrapper
+for another media. `CompactThumbnail` is keyed by the media identity so its image
+decoder and failed-read state are recreated for that new media; a retained media
+keeps its existing node and healthy signed source. `media-gallery-pagination-dom`
+and the paginated management browser fixture cover append and return scrolling.
 
 Cards mount no video/audio. A stored thumbnail must be distinct from the original;
 legacy `thumbUrl===url`, missing thumbnails and AV URLs produce a placeholder.
@@ -528,6 +533,15 @@ upserts never clear Trash. Failed Restore returns an error instead of false
 success. Existing upload transports, server deduplication, private cleanup and
 authorization stay with their original owners. See media-delivery.md for
 preparation, private grant and bodyless presign contracts.
+
+Image uploads acquire the existing content-object producer lease before writing
+their original, just like video/audio imports. `image-upload-producer.ts` owns
+heartbeat renewal, abort on lease loss and release after persistence or failure.
+A completed deletion can therefore be followed by an explicit reimport; an active
+deletion still blocks the PUT. The storage fence and canonical persistence guards
+remain enabled. Existing live content is deduplicated before acquiring a producer.
+`tests/image-upload-reimport-postgres.test.ts` exercises these boundaries against
+the deployed fence and library purge migrations with storage writes isolated.
 
 The Uppy declaration bridge in `types/uppy-core.d.ts` uses the installed package's
 actual class declarations because this application currently uses TypeScript's
