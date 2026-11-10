@@ -92,7 +92,7 @@ export function OpenArtSources({ copy, labels }: { copy: OpenArtCopy['evidence']
       <ol>
         {openArtSources.map(({ id, publisher, url }) => (
           <li key={id} id={`openart-source-${id}`}>
-            <a href={url}>{publisher} · {labels[id]} <ArrowUpRight size={14} aria-hidden="true" /></a>
+            <a href={url} rel={publisher === 'MaxVideoAI' ? undefined : 'nofollow'}>{publisher} · {labels[id]} <ArrowUpRight size={14} aria-hidden="true" /></a>
           </li>
         ))}
       </ol>

@@ -11,7 +11,12 @@ export function BlogProjectBudget({ locale }: { locale: AppLocale }) {
   const copy = getProjectBudgetCopy(locale);
   const path = (value: string) => localizePathFromEnglish(locale, value);
   const money = new Intl.NumberFormat(locale, { style: 'currency', currency: 'USD' });
-  const sourceUrls = [path('/pricing'), path('/pay-as-you-go-ai-video-generator'), 'https://higgsfield.ai/creator-hub/help-center/credits/how-credit-packs-work', 'https://openart.ai/help/'];
+  const sources = [
+    { href: path('/pricing') },
+    { href: path('/pay-as-you-go-ai-video-generator') },
+    { href: 'https://higgsfield.ai/creator-hub/help-center/credits/how-credit-packs-work', rel: 'nofollow' },
+    { href: 'https://openart.ai/help/', rel: 'nofollow' },
+  ];
   return <div className={styles.page}>
     <section className={styles.opening} aria-labelledby="project-budget-title">
       <h2 id="project-budget-title">{copy.title}</h2><p>{copy.intro}</p>
@@ -29,6 +34,6 @@ export function BlogProjectBudget({ locale }: { locale: AppLocale }) {
     <section className={styles.method} aria-labelledby="cost-method-title"><h2 id="cost-method-title">{copy.stepsTitle}</h2><ol>{copy.steps.map((item, i) => <li key={item.title}><span aria-hidden="true">0{i + 1}</span><div><h3>{item.title}</h3><p>{item.text}</p></div></li>)}</ol></section>
     <aside className={styles.fair}><h2>{copy.fitTitle}</h2><p>{copy.fit}</p></aside>
     <section className={styles.next}><div><h2>{copy.nextTitle}</h2><p>{copy.nextBody}</p></div><div><Link className={styles.action} href="/app" prefetch={false} data-analytics-event="cta_click" data-analytics-cta-name="project_cost_configure" data-analytics-cta-location="project_cost_article" data-analytics-target-family="workspace">{copy.action}<ArrowRight size={18} aria-hidden="true" /></Link><Link className={styles.secondary} href={path('/blog/compare-ai-video-platforms')}>{copy.secondary}<ArrowUpRight size={16} aria-hidden="true" /></Link></div></section>
-    <section className={styles.sources} aria-labelledby="cost-sources-title"><h2 id="cost-sources-title">{copy.sourcesTitle}</h2><p>{copy.sourcesNote}</p><ul>{sourceUrls.map((url, i) => <li key={url}><a href={url}>{copy.links[i]}<ArrowUpRight size={14} aria-hidden="true" /></a></li>)}</ul></section>
+    <section className={styles.sources} aria-labelledby="cost-sources-title"><h2 id="cost-sources-title">{copy.sourcesTitle}</h2><p>{copy.sourcesNote}</p><ul>{sources.map(({ href, rel }, i) => <li key={href}><a href={href} rel={rel}>{copy.links[i]}<ArrowUpRight size={14} aria-hidden="true" /></a></li>)}</ul></section>
   </div>;
 }

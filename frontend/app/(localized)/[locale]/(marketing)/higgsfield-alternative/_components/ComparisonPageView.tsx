@@ -100,7 +100,7 @@ export function ComparisonPageView({ copy, locale, canonical }: Props) {
             </details>
           ))}</div>
         </section>
-        <section className={styles.evidence} id="sources" aria-labelledby="sources-title"><div className={styles.evidenceHead}><h2 id="sources-title">{copy.evidence.title}</h2><p>{copy.evidence.publisher}</p></div><p>{copy.evidence.scope} <time dateTime={COMPARISON_CHECKED}>{copy.evidence.date}</time></p><ol>{comparisonSources.map((source) => <li key={source.id} id={`source-${source.id}`}><a href={source.url}><strong>{source.publisher}</strong><span>{source.label}<ArrowUpRight size={14} aria-hidden="true" /></span></a></li>)}</ol><p>{copy.evidence.correction} <Link className={styles.inlineLink} href={path('/contact')}>{copy.evidence.contact}<ArrowUpRight size={16} aria-hidden="true" /></Link></p></section>
+        <section className={styles.evidence} id="sources" aria-labelledby="sources-title"><div className={styles.evidenceHead}><h2 id="sources-title">{copy.evidence.title}</h2><p>{copy.evidence.publisher}</p></div><p>{copy.evidence.scope} <time dateTime={COMPARISON_CHECKED}>{copy.evidence.date}</time></p><ol>{comparisonSources.map((source) => <li key={source.id} id={`source-${source.id}`}><a href={source.url} rel={source.publisher === 'MaxVideoAI' ? undefined : 'nofollow'}><strong>{source.publisher}</strong><span>{source.label}<ArrowUpRight size={14} aria-hidden="true" /></span></a></li>)}</ol><p>{copy.evidence.correction} <Link className={styles.inlineLink} href={path('/contact')}>{copy.evidence.contact}<ArrowUpRight size={16} aria-hidden="true" /></Link></p></section>
       </div>
     </article>
   );

@@ -16,7 +16,7 @@ function Sources({ sources, platform, locale }: { sources: GuideSource[]; platfo
   return (
     <div className={styles.sources}>
       {sources.map(({ href, label }) => (
-        <a key={href} href={href} aria-label={platformEvidence[platform].name + ' · ' + labels[label]}>
+        <a key={href} href={href} rel={platform === 'maxvideoai' ? undefined : 'nofollow'} aria-label={platformEvidence[platform].name + ' · ' + labels[label]}>
           {labels[label]} <ArrowUpRight size={12} aria-hidden="true" />
         </a>
       ))}
