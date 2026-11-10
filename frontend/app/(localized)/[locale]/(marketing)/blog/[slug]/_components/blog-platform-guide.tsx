@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowDownRight, ArrowUpRight } from 'lucide-react';
+import { ArrowDownRight, ArrowRight, ArrowUpRight } from 'lucide-react';
 import type { AppLocale } from '@/i18n/locales';
 import { localizePathFromEnglish } from '@/lib/i18n/paths';
 import { projectAttemptBudget, projectCostExample } from '@/lib/marketing/project-cost-example';
@@ -171,6 +171,7 @@ export function BlogPlatformGuide({ locale }: { locale: AppLocale }) {
         </dl>
         <p className={styles.budgetNote}>{copy.budget.note} {copy.budget.checked} <time dateTime={projectCostExample.checked}>{date.format(new Date(projectCostExample.checked))}</time>.</p>
         <div className={styles.budgetLinks}>
+          <Link className={styles.budgetAction} href="/app" prefetch={false} data-analytics-event="cta_click" data-analytics-cta-name="platform_guide_configure" data-analytics-cta-location="platform_guide_budget" data-analytics-target-family="workspace">{copy.budget.action}<ArrowRight size={17} aria-hidden="true" /></Link>
           <Link href={pricingHref} prefetch={false}>{copy.budget.price}<ArrowUpRight size={15} aria-hidden="true" /></Link>
           <Link href={localized('/blog/ai-video-project-cost')} prefetch={false}>{copy.budget.details}<ArrowUpRight size={15} aria-hidden="true" /></Link>
           <Link href={localized('/higgsfield-alternative')} prefetch={false}>{copy.budget.comparison}<ArrowUpRight size={15} aria-hidden="true" /></Link>

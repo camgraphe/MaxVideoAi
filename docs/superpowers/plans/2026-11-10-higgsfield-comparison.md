@@ -113,3 +113,29 @@ article from its rendered credits/refunds section. These entries complement the
 existing PAYG, blog index and inter-page links without adding another home hero
 or top-level navigation item. Resolve translated blog slugs before rendering the
 desktop, mobile and footer links, and verify all three languages in Preview.
+
+## Commercial and SEO/GEO review — 10 November 2026
+
+The user requested a sharper MaxVideoAI acquisition argument, specifically removing
+the invitation to explore Higgsfield Cinema Studio. Replace that action with the
+MaxVideoAI project-budget guide. Keep official competitor links as evidence, and
+describe their documented workflows without calls to choose or try them.
+
+Lead comparison headings and article introductions with no subscription, the
+pre-generation quote and retained purchased media balance. Reframe universal-price
+and everything-free FAQs as useful purchase questions; keep their visible answers
+and JSON-LD synchronized. Preserve material limits, paid attempts, the dated budget,
+trial eligibility, Web/API scope and separate assistant/media costs. No claim of
+universal price superiority, exclusive free MCP or quality superiority is added.
+
+The platform guide now offers a measured workspace action after its budget example;
+the budget article offers one directly after its simulation. Their identifiers stay
+in the bounded analytics allowlist. The broad platform-conditions link now opens the
+general guide rather than only the Higgsfield page. No additional page family,
+schema type, model-specific campaign or paid visual is introduced.
+
+Media PR #640 retains delivery priority. Incorporate its merged source in this
+branch without changing its implementation or touching the production release.
+Recheck the changed localized HTML, metadata, FAQ, exports and actions on the new
+Preview. Crawl permissions and readable evidence establish technical readiness;
+search traffic, AI citations and paid conversions must be measured after launch.

@@ -71,6 +71,11 @@ folders. Keep Web subscriptions, external assistant access and developer API
 billing distinct; a missing public price is not a zero price. Each claim should
 link to its applicable official source. `PlatformComparisonLinks` provides
 shared, localized navigation between the comparisons and their supporting guides.
+These are MaxVideoAI acquisition pages: primary and contextual actions stay on
+MaxVideoAI. Competitor URLs remain verifiable source citations, not promotional
+calls to try another service. Lead with the supported customer benefit; keep
+material purchase conditions alongside the claim and consolidate repeated caveats
+in the methodology/FAQ. Maintain visible-copy and structured-data parity.
 
 The canonical blog slugs `compare-ai-video-platforms` and
 `ai-video-project-cost` opt into the scoped acquisition shell in

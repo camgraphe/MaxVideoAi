@@ -324,11 +324,23 @@
 .budgetLinks {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: .35rem 1rem;
   margin-top: .6rem;
   color: var(--bronze);
   font-size: .88rem;
 }
+
+.budgetLinks .budgetAction {
+  min-height: 44px;
+  padding: .7rem 1rem;
+  border-radius: .4rem;
+  color: #fff;
+  background: var(--ink);
+  text-decoration: none;
+}
+
+.budgetLinks .budgetAction:hover { background: var(--bronze); }
 
 @media (min-width: 761px) {
   .angleImages { grid-template-columns: 1fr; }

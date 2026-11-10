@@ -12,21 +12,21 @@ export const budgetExample = {
 
 const copy = {
   en: {
-    label: 'A MaxVideoAI example',
+    label: 'MaxVideoAI · one-clip budget',
     settings: 'LTX 2.5 Pro · text to video · 10 s · 720p · audio off · no references',
-    note: 'Starting with an empty media wallet and one completed render at the price checked on 10 November 2026. USD amounts; local checkout adjustments excluded. Other settings or another attempt require a new quote. This is a budget example, not the cost of the product image.',
+    note: 'Simulation for one completed LTX clip, starting with an empty wallet. Price checked on 10 November 2026, in USD, before checkout taxes or conversion. Change the settings to get a new quote.',
     link: 'Check the price for these settings',
   },
   fr: {
-    label: 'Un exemple chez MaxVideoAI',
+    label: 'MaxVideoAI · le budget d’un clip',
     settings: 'LTX 2.5 Pro · texte vers vidéo · 10 s · 720p · sans son · sans référence',
-    note: 'Portefeuille média initialement vide, avec un rendu terminé au prix relevé le 10 novembre 2026. Montants en USD, hors ajustements du paiement local. D’autres réglages ou un nouvel essai nécessitent un nouveau devis. Cet exemple de budget ne représente pas le coût de l’image produit.',
+    note: 'Simulation pour un clip LTX terminé, avec un portefeuille initialement vide. Tarif relevé le 10 novembre 2026 en USD, hors taxes et conversion au paiement. Modifiez les réglages pour obtenir un nouveau devis.',
     link: 'Vérifier le prix de ces réglages',
   },
   es: {
-    label: 'Un ejemplo en MaxVideoAI',
+    label: 'MaxVideoAI · presupuesto de un clip',
     settings: 'LTX 2.5 Pro · texto a vídeo · 10 s · 720p · sin sonido · sin referencias',
-    note: 'Saldo de generación inicialmente vacío y un render completado al precio consultado el 10 de noviembre de 2026. Importes en USD, sin ajustes del pago local. Otros ajustes u otro intento requieren un nuevo presupuesto. Este ejemplo de presupuesto no representa el coste de la imagen del producto.',
+    note: 'Simulación de un clip LTX completado con saldo inicial vacío. Precio consultado el 10 de noviembre de 2026 en USD, antes de impuestos y conversión. Cambia los ajustes para obtener un nuevo precio.',
     link: 'Consultar el precio de estos ajustes',
   },
 } satisfies Record<AppLocale, { label: string; settings: string; note: string; link: string }>;

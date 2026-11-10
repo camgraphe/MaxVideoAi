@@ -121,6 +121,7 @@ type GuideCopy = {
     labels: [string, string, string];
     note: string;
     price: string;
+    action: string;
     details: string;
     comparison: string;
   };
@@ -168,19 +169,19 @@ export const platformGuideCopy: Record<AppLocale, GuideCopy> = {
           id: 'openart-vs-krea',
           title: 'OpenArt vs Krea',
           picks: [
-            { platform: 'openart', description: 'Look at Director when your brief needs to become a multi-scene project with voices and music.' },
-            { platform: 'krea', description: 'Look at Realtime and Nodes when you need to explore a look live or rerun a visual process with different inputs.' },
+            { platform: 'openart', description: 'Director assembles multi-scene projects with voices and music.' },
+            { platform: 'krea', description: 'Realtime and Nodes support live visual exploration and reusable processes with different inputs.' },
           ],
-          check: 'Try one brief through the final export or the reusable graph. Confirm which tools your plan includes.',
+          check: 'For individual clips without a monthly plan, MaxVideoAI offers another route: choose the model, review the quote and keep the unused media balance.',
         },
         {
           id: 'higgsfield-vs-openart',
           title: 'Higgsfield vs OpenArt',
           picks: [
-            { platform: 'higgsfield', description: 'Look at Cinema Studio when the job depends on how you set the camera, lens or light in a particular shot.' },
-            { platform: 'openart', description: 'Look at Director when the work is bringing several scenes, characters and audio together in one project.' },
+            { platform: 'higgsfield', description: 'Cinema Studio offers camera, lens and lighting controls for a shot.' },
+            { platform: 'openart', description: 'Director brings several scenes, characters and audio together in an assembled project.' },
           ],
-          check: 'Check the controls or assembly you need in that workflow. For a cost comparison, match the exact model and settings.',
+          check: 'If your priority is the budget of each clip, MaxVideoAI shows its price before generation, with no platform subscription. Match the model and settings when comparing prices.',
         },
       ],
     },
@@ -191,6 +192,7 @@ export const platformGuideCopy: Record<AppLocale, GuideCopy> = {
       labels: ['Media top-up', 'One completed render', 'Media balance left'],
       note: 'Example with an empty MaxVideoAI wallet and one completed render. Amounts in USD. Taxes or currency conversion may affect the payment.',
       price: 'See the preset price',
+      action: 'Price my video on MaxVideoAI',
       details: 'Compare the cost of one, three or six attempts',
       comparison: 'Compare MaxVideoAI and Higgsfield for an occasional project',
     },
@@ -236,19 +238,19 @@ export const platformGuideCopy: Record<AppLocale, GuideCopy> = {
           id: 'openart-vs-krea',
           title: 'OpenArt ou Krea',
           picks: [
-            { platform: 'openart', description: 'Regardez Director si votre brief doit aboutir à un projet multi-scènes avec voix et musique.' },
-            { platform: 'krea', description: 'Regardez Realtime et Nodes pour explorer un style en direct ou rejouer un processus visuel avec d’autres entrées.' },
+            { platform: 'openart', description: 'Director assemble un projet multi-scènes avec voix et musique.' },
+            { platform: 'krea', description: 'Realtime et Nodes servent à explorer un style en direct ou à rejouer un processus visuel avec d’autres entrées.' },
           ],
-          check: 'Menez un brief jusqu’à l’export final ou au graphe réutilisable. Vérifiez les outils inclus dans votre forfait.',
+          check: 'Pour des clips sans forfait mensuel, MaxVideoAI offre une autre voie : choisissez le modèle, validez le devis et conservez le solde média inutilisé.',
         },
         {
           id: 'higgsfield-vs-openart',
           title: 'Higgsfield ou OpenArt',
           picks: [
-            { platform: 'higgsfield', description: 'Regardez Cinema Studio si votre plan dépend d’un réglage précis de caméra, d’objectif ou de lumière.' },
-            { platform: 'openart', description: 'Regardez Director si vous devez assembler plusieurs scènes, personnages et éléments audio dans un projet.' },
+            { platform: 'higgsfield', description: 'Cinema Studio propose des réglages de caméra, d’objectif et de lumière pour un plan.' },
+            { platform: 'openart', description: 'Director réunit plusieurs scènes, personnages et éléments audio dans un projet assemblé.' },
           ],
-          check: 'Vérifiez les contrôles ou l’assemblage dans le parcours prévu. Pour comparer les coûts, alignez le modèle exact et ses réglages.',
+          check: 'Si votre priorité est le budget de chaque clip, MaxVideoAI affiche son prix avant génération, sans abonnement à la plateforme. Alignez le modèle et les réglages pour comparer les coûts.',
         },
       ],
     },
@@ -259,6 +261,7 @@ export const platformGuideCopy: Record<AppLocale, GuideCopy> = {
       labels: ['Recharge média', 'Un rendu terminé', 'Solde média restant'],
       note: 'Exemple avec un portefeuille MaxVideoAI vide et un rendu terminé. Montants en USD. Le paiement peut varier selon les taxes et la conversion.',
       price: 'Voir le tarif du réglage',
+      action: 'Chiffrer ma vidéo sur MaxVideoAI',
       details: 'Comparer le coût d’un, de trois ou de six essais',
       comparison: 'Comparer MaxVideoAI et Higgsfield pour un projet ponctuel',
     },
@@ -304,19 +307,19 @@ export const platformGuideCopy: Record<AppLocale, GuideCopy> = {
           id: 'openart-vs-krea',
           title: 'OpenArt vs Krea',
           picks: [
-            { platform: 'openart', description: 'Considera Director si quieres convertir un brief en un proyecto con varias escenas, voces y música.' },
-            { platform: 'krea', description: 'Considera Realtime y Nodes para explorar un estilo en directo o repetir un proceso visual con otras entradas.' },
+            { platform: 'openart', description: 'Director ensambla proyectos con varias escenas, voces y música.' },
+            { platform: 'krea', description: 'Realtime y Nodes permiten explorar estilos en directo y repetir procesos visuales con otras entradas.' },
           ],
-          check: 'Lleva un brief hasta la exportación final o el grafo reutilizable. Comprueba qué herramientas incluye tu plan.',
+          check: 'Para clips sin plan mensual, MaxVideoAI ofrece otra vía: elige el modelo, aprueba el precio y conserva el saldo sin usar.',
         },
         {
           id: 'higgsfield-vs-openart',
           title: 'Higgsfield vs OpenArt',
           picks: [
-            { platform: 'higgsfield', description: 'Considera Cinema Studio si tu plano depende de ajustar la cámara, el objetivo o la iluminación.' },
-            { platform: 'openart', description: 'Considera Director si tienes que unir varias escenas, personajes y audio en un proyecto.' },
+            { platform: 'higgsfield', description: 'Cinema Studio ofrece controles de cámara, objetivo e iluminación para un plano.' },
+            { platform: 'openart', description: 'Director reúne varias escenas, personajes y audio en un proyecto montado.' },
           ],
-          check: 'Comprueba los controles o el montaje que necesitas. Para comparar costes, usa el mismo modelo con los mismos ajustes.',
+          check: 'Si tu prioridad es el presupuesto de cada clip, MaxVideoAI muestra su precio antes de generar sin suscripción a la plataforma. Usa el mismo modelo y ajustes al comparar costes.',
         },
       ],
     },
@@ -327,6 +330,7 @@ export const platformGuideCopy: Record<AppLocale, GuideCopy> = {
       labels: ['Recarga', 'Un render completado', 'Saldo restante'],
       note: 'Ejemplo con un saldo MaxVideoAI inicial de cero y un render completado. Importes en USD. El pago puede variar con los impuestos y la conversión.',
       price: 'Ver el precio de estos ajustes',
+      action: 'Calcular mi vídeo en MaxVideoAI',
       details: 'Comparar el coste de uno, tres o seis intentos',
       comparison: 'Comparar MaxVideoAI y Higgsfield para un proyecto puntual',
     },

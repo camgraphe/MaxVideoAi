@@ -2,31 +2,31 @@ import type { OpenArtCopy } from './types';
 
 export const en = {
   meta: {
-    title: 'OpenArt alternative for a few shots — MaxVideoAI',
-    description: 'Compare MaxVideoAI and OpenArt Director for individual video shots or a finished film. See how subscriptions, credits, free chat and MCP work.',
+    title: 'OpenArt alternative with no subscription — MaxVideoAI',
+    description: 'Create video shots on MaxVideoAI without a subscription. See the price before rendering, keep unused purchased credits and compare with OpenArt Director.',
   },
   hero: {
-    title: 'An OpenArt alternative\nfor the shots you need.',
-    lead: 'Generate the clips you want to cut yourself. See the price before each render, and fund your project without a MaxVideoAI subscription.',
+    title: 'An OpenArt alternative.\nPay as you go.',
+    lead: 'With MaxVideoAI, choose the model, duration and sound for your clip. See the price before each render. Unused media credits you buy stay in your wallet for future projects.',
     action: 'Price a shot',
     compare: 'Compare both workflows',
-    note: 'Media top-ups start at US$10. Each approved generation uses your wallet balance.',
+    note: 'Media top-ups start at US$10, with no MaxVideoAI subscription.',
     imageAlt: 'Six storyboard panels of a runner crossing a rainy city at night',
     imageCaption: 'Storyboard artwork from MaxVideoAI Studio',
   },
   decision: {
     label: 'The deliverable comes first',
-    title: 'A few clips or an assembled film?',
+    title: 'Stay in control of every shot.',
     options: [
       {
         title: 'Generate shots for your own edit',
-        text: 'Choose MaxVideoAI when you have a shot list and want to set the model, duration and budget for each clip.',
-        steps: ['Choose a shot', 'Review the quote', 'Download the clip'],
+        text: 'Shape your idea with Milo in Studio. Pick the model, duration and sound, then download the clip for your edit.',
+        steps: ['Plan the shot', 'Review the quote', 'Download the clip'],
       },
       {
-        title: 'Start from a brief and get a film',
-        text: 'Choose OpenArt Director when you want one workflow to build the storyboard, scenes and sound and deliver an assembled video.',
-        steps: ['Describe the film', 'Direct the scenes', 'Get the assembled video'],
+        title: 'An assembled video from a brief',
+        text: 'OpenArt Director builds the storyboard and scenes, then assembles a video with sound.',
+        steps: ['Film brief', 'Storyboard and scenes', 'Assembled video'],
       },
     ],
   },
@@ -34,7 +34,7 @@ export const en = {
     title: 'Compare access, credits and delivery',
     caption: 'MaxVideoAI and OpenArt offer comparison',
     criterion: 'What matters',
-    note: 'The prices shown are in US dollars. OpenArt lists US$14 per seat per month for Starter before the discount displayed at the time of review. Check the billing term, current price and eligibility before buying.',
+    note: 'At the time of review, OpenArt listed Starter at US$14 per seat per month before discounts. Check the billing term and the price available to your account.',
     sources: 'Read the official sources',
   },
   rows: {
@@ -55,8 +55,8 @@ export const en = {
     },
     chat: {
       label: 'Native assistant',
-      max: 'Use Milo Lite for planning at no extra assistance cost, within request and availability limits. Advanced assistance and media generation have separate credits.',
-      openart: 'Chat Mode is free for conversation. Generations and edits spend credits. Turn on Ask First to review the model, settings and cost before running.',
+      max: 'Plan shots with Milo Lite for free within usage and availability limits. Advanced assistance and media generation have separate credits.',
+      openart: 'Chat Mode is free for conversation. Generations and edits spend credits. Ask First shows the model, settings and cost for review before running.',
     },
     mcp: {
       label: 'External assistants',
@@ -82,7 +82,7 @@ export const en = {
     mcp: 'See compatible assistants',
   },
   budget: {
-    title: 'Budget for the shots you will keep.',
+    title: 'Budget for your shots and retakes.',
     intro: 'Use the same shot brief, model version, duration, resolution and sound setting when comparing prices. Price the delivery you need on each platform.',
     items: [
       { title: 'Cash to start', text: 'Check the first top-up or subscription payment and the term you are buying.' },
@@ -94,12 +94,12 @@ export const en = {
   },
   closing: {
     title: 'Bring one shot. See what it costs.',
-    text: 'Try your actual settings and review the quote before you decide whether to render.',
+    text: 'Choose your settings and see the price before signing in.',
     action: 'Price a shot',
     guide: 'Compare AI video platforms',
   },
   faq: {
-    title: 'Questions about OpenArt and MaxVideoAI',
+    title: 'Questions about MaxVideoAI and OpenArt',
     items: [
       {
         question: 'Can I buy extra OpenArt credits without a subscription?',
@@ -107,26 +107,26 @@ export const en = {
       },
       {
         question: 'Do unused OpenArt credits carry over?',
-        answer: 'Monthly plan credits reset every billing cycle. OpenArt says unused add-on credits carry forward while the subscription is active. Check the billing terms and credit type before buying.',
+        answer: 'On MaxVideoAI, purchased media credits stay available between projects without a subscription. OpenArt’s monthly plan allowance resets each billing cycle. Unused add-on credits carry forward while the subscription is active.',
       },
       {
         question: 'Are OpenArt Chat Mode and MCP free?',
-        answer: 'Chat Mode conversation is free. Media generations and edits spend credits. MCP has no extra OpenArt fee and is included from Starter. The Claude and ChatGPT guides also advertise the trial for new accounts. Check your assistant host’s access rules and fees separately.',
+        answer: 'Chat Mode conversation is free. Media generations and edits spend credits. MCP has no extra OpenArt fee and is included from Starter. The Claude and ChatGPT guides also advertise the trial for new accounts. The assistant host may have its own access rules and fees.',
       },
       {
-        question: 'When should I choose OpenArt Director?',
-        answer: 'Director is designed for a multi-scene video assembled with a storyboard and sound. OpenArt lists up to five minutes. Choose MaxVideoAI if you want to plan, price and generate individual clips to assemble in your own edit.',
+        question: 'What’s the difference between MaxVideoAI and OpenArt Director?',
+        answer: 'MaxVideoAI helps you plan a shot with Milo, check its price and generate a clip for your edit. OpenArt Director builds a storyboard and assembles several scenes with sound. OpenArt advertises videos of up to five minutes.',
       },
       {
-        question: 'Is MaxVideoAI always cheaper than OpenArt?',
-        answer: 'The total depends on your model settings, number of paid attempts and use of a subscription allowance. Compare the first payment, media cost and remaining balance separately. OpenArt Director and individual clips are different deliverables.',
+        question: 'How do I compare clip costs on MaxVideoAI and OpenArt?',
+        answer: 'MaxVideoAI media top-ups start at US$10 without a subscription, and you see the price before each render. With matching settings, compare the first payment, completed attempts, remaining balance and how much of any plan allowance you use. Budget separately for an individual clip and a film assembled with Director.',
       },
     ],
   },
   evidence: {
     title: 'Sources and scope',
     date: 'November 10, 2026',
-    note: 'Published by MaxVideoAI. We reviewed the official public pages. Prices, plan eligibility and host access can change. The comparison covers documented features and credit terms.',
+    note: 'Published by MaxVideoAI. The official public sources document the features and credit terms shown here.',
   },
   sourceLabels: {
     'openart-pricing': 'Plans and Starter allowance',

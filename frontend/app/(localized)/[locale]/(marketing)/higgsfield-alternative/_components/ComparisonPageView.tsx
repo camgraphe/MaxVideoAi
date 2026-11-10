@@ -44,7 +44,7 @@ export function ComparisonPageView({ copy, locale, canonical }: Props) {
         <div className={styles.sectionHead}><h2 id="terms-title">{copy.matrix.title}</h2><p>{copy.matrix.scope} · <time dateTime={COMPARISON_CHECKED}>{copy.matrix.checked}</time><a href="#sources">{copy.matrix.sources}<ArrowDown size={16} aria-hidden="true" /></a></p></div>
         <ComparisonTable rows={copy.matrix.rows} copy={copy.matrix} caption={copy.matrix.caption} />
         <p className={styles.scopeNote}>{copy.matrix.note} <a href="#source-higgs-api">[13]</a></p>
-        <aside className={styles.fair} id="competitor-fit"><h3>{copy.matrix.fairTitle}</h3><div><p>{copy.matrix.fairText}</p><a className={styles.inlineLink} href="https://higgsfield.ai/blog/cinema-studio-4-0-complete-guide">{copy.matrix.fairLink}<ArrowUpRight size={16} aria-hidden="true" /></a></div></aside>
+        <aside className={styles.fair} id="competitor-fit"><h3>{copy.matrix.fairTitle}</h3><div><p>{copy.matrix.fairText}</p><Link className={styles.inlineLink} href={path('/blog/ai-video-project-cost')} prefetch={false}>{copy.matrix.fairLink}<ArrowRight size={16} aria-hidden="true" /></Link></div></aside>
       </section>
 
       <section className={styles.workflow} aria-labelledby="workflow-title">

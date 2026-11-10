@@ -2,31 +2,31 @@ import type { OpenArtCopy } from './types';
 
 export const fr = {
   meta: {
-    title: 'Alternative à OpenArt pour vos plans vidéo — MaxVideoAI',
-    description: 'Comparez MaxVideoAI et OpenArt Director pour créer quelques plans ou un film monté. Abonnements, crédits, conversation gratuite et connexion MCP.',
+    title: 'Alternative à OpenArt sans abonnement — MaxVideoAI',
+    description: 'Créez vos plans vidéo sans abonnement avec MaxVideoAI. Prix avant le rendu, crédits conservés et comparaison avec OpenArt Director.',
   },
   hero: {
-    title: 'Une alternative à OpenArt\npour vos plans vidéo.',
-    lead: 'Générez les clips que vous souhaitez monter vous-même. Consultez le prix avant chaque rendu et financez votre projet sans abonnement MaxVideoAI.',
+    title: 'Une alternative à OpenArt.\nPayez à l’usage.',
+    lead: 'Avec MaxVideoAI, choisissez le modèle, la durée et le son de votre clip. Le prix s’affiche avant chaque génération. Le solde de vos crédits média achetés reste disponible pour vos prochains projets.',
     action: 'Chiffrer un plan',
     compare: 'Comparer les deux parcours',
-    note: 'Recharges média à partir de 10 USD. Chaque génération approuvée utilise le solde de votre portefeuille.',
+    note: 'Recharges média dès 10 USD, sans abonnement MaxVideoAI.',
     imageAlt: 'Six cases de storyboard montrant une course dans une ville sous la pluie, de nuit',
     imageCaption: 'Planche de storyboard issue de MaxVideoAI Studio',
   },
   decision: {
     label: 'Partir du résultat attendu',
-    title: 'Quelques plans ou un film monté ?',
+    title: 'Gardez la main sur chaque plan.',
     options: [
       {
         title: 'Créer des plans pour votre montage',
-        text: 'Choisissez MaxVideoAI si vous avez un découpage et souhaitez régler le modèle, la durée et le budget de chaque clip.',
-        steps: ['Choisir un plan', 'Vérifier le devis', 'Télécharger le clip'],
+        text: 'Préparez votre idée avec Milo dans Studio. Choisissez le modèle, la durée et le son, puis téléchargez le clip pour votre montage.',
+        steps: ['Préparer le plan', 'Vérifier le devis', 'Télécharger le clip'],
       },
       {
-        title: 'Partir d’un brief pour obtenir un film',
-        text: 'Choisissez OpenArt Director pour réunir le storyboard, les scènes et le son dans un même parcours qui livre une vidéo montée.',
-        steps: ['Décrire le film', 'Diriger les scènes', 'Récupérer la vidéo montée'],
+        title: 'Une vidéo assemblée à partir d’un brief',
+        text: 'OpenArt Director prépare le storyboard et les scènes, puis assemble une vidéo avec du son.',
+        steps: ['Brief du film', 'Storyboard et scènes', 'Vidéo montée'],
       },
     ],
   },
@@ -34,7 +34,7 @@ export const fr = {
     title: 'Comparer l’accès, les crédits et la livraison',
     caption: 'Comparatif des offres MaxVideoAI et OpenArt',
     criterion: 'Critère',
-    note: 'Les montants sont en dollars américains. Le tarif Starter affiché par OpenArt est de 14 USD par siège et par mois avant la remise visible lors du relevé. Vérifiez la période facturée, le prix et l’éligibilité avant achat.',
+    note: 'Au relevé, OpenArt affichait Starter à 14 USD par siège et par mois avant remise. Vérifiez la période facturée et le tarif applicable à votre compte.',
     sources: 'Consulter les sources officielles',
   },
   rows: {
@@ -55,8 +55,8 @@ export const fr = {
     },
     chat: {
       label: 'Assistant intégré',
-      max: 'Planifiez avec Milo Lite sans supplément d’assistance, sous limites de requêtes et de disponibilité. L’assistance avancée et la génération média utilisent des crédits distincts.',
-      openart: 'La conversation avec Chat Mode est gratuite. Les générations et retouches consomment des crédits. Activez Ask First pour revoir le modèle, les réglages et le coût avant le lancement.',
+      max: 'Préparez vos plans avec Milo Lite, gratuit dans ses limites d’usage et de disponibilité. L’assistance avancée et la génération média utilisent des crédits distincts.',
+      openart: 'La conversation avec Chat Mode est gratuite. Les générations et retouches consomment des crédits. Ask First permet de revoir le modèle, les réglages et le coût avant le lancement.',
     },
     mcp: {
       label: 'Assistants externes',
@@ -82,7 +82,7 @@ export const fr = {
     mcp: 'Voir les assistants compatibles',
   },
   budget: {
-    title: 'Chiffrer les plans que vous garderez.',
+    title: 'Chiffrez vos plans et leurs reprises.',
     intro: 'Comparez à brief, version du modèle, durée, résolution et son identiques. Chiffrez ensuite le résultat dont vous avez besoin sur chaque plateforme.',
     items: [
       { title: 'Somme à avancer', text: 'Regardez le premier paiement de la recharge ou de l’abonnement et la période qu’il couvre.' },
@@ -94,12 +94,12 @@ export const fr = {
   },
   closing: {
     title: 'Apportez un plan. Voyez ce qu’il coûte.',
-    text: 'Essayez vos réglages et vérifiez le devis avant de décider de lancer le rendu.',
+    text: 'Choisissez vos réglages et consultez le prix avant de vous connecter.',
     action: 'Chiffrer un plan',
     guide: 'Comparer les plateformes vidéo IA',
   },
   faq: {
-    title: 'Questions sur OpenArt et MaxVideoAI',
+    title: 'Questions sur MaxVideoAI et OpenArt',
     items: [
       {
         question: 'Puis-je acheter des crédits OpenArt sans abonnement ?',
@@ -107,26 +107,26 @@ export const fr = {
       },
       {
         question: 'Les crédits OpenArt non utilisés sont-ils reportés ?',
-        answer: 'Les crédits mensuels du plan sont remis à zéro à chaque cycle. Selon OpenArt, les crédits supplémentaires non utilisés se reportent tant que l’abonnement est actif. Vérifiez le type de crédit et les conditions de facturation avant achat.',
+        answer: 'Sur MaxVideoAI, vos crédits média achetés restent disponibles entre deux projets sans abonnement. Sur OpenArt, le quota mensuel se remet à zéro à chaque cycle. Les crédits supplémentaires non utilisés se reportent tant que l’abonnement est actif.',
       },
       {
         question: 'Chat Mode et le MCP d’OpenArt sont-ils gratuits ?',
-        answer: 'La conversation dans Chat Mode est gratuite. Les générations et retouches consomment des crédits. Le MCP est inclus dès Starter sans supplément OpenArt. Les guides Claude et ChatGPT annoncent aussi l’essai pour les nouveaux comptes. Vérifiez séparément l’accès et les tarifs de l’assistant externe.',
+        answer: 'La conversation dans Chat Mode est gratuite. Les générations et retouches consomment des crédits. Le MCP est inclus dès Starter sans supplément OpenArt. Les guides Claude et ChatGPT annoncent aussi l’essai pour les nouveaux comptes. L’assistant externe peut avoir ses propres conditions d’accès et tarifs.',
       },
       {
-        question: 'Dans quel cas choisir OpenArt Director ?',
-        answer: 'Director est conçu pour obtenir une vidéo montée avec plusieurs scènes, un storyboard et du son. OpenArt annonce jusqu’à cinq minutes. Choisissez MaxVideoAI pour préparer, chiffrer et générer des clips à assembler dans votre propre montage.',
+        question: 'Quelle différence entre MaxVideoAI et OpenArt Director ?',
+        answer: 'MaxVideoAI vous aide à préparer un plan avec Milo, à le chiffrer et à générer le clip pour votre montage. OpenArt Director prépare un storyboard et assemble plusieurs scènes avec du son. OpenArt annonce des vidéos allant jusqu’à cinq minutes.',
       },
       {
-        question: 'MaxVideoAI revient-il toujours moins cher qu’OpenArt ?',
-        answer: 'Le total dépend des réglages du modèle, du nombre d’essais payants et de l’utilisation d’un éventuel quota. Comparez séparément le premier paiement, le coût des rendus et le solde restant. Director et la génération de clips livrent des résultats différents.',
+        question: 'Comment comparer le coût d’un clip sur MaxVideoAI et OpenArt ?',
+        answer: 'Sur MaxVideoAI, les recharges média commencent à 10 USD sans abonnement et le prix s’affiche avant chaque rendu. À réglages identiques, comparez le paiement initial, les essais terminés, le solde restant et la part du quota utilisée si vous avez un forfait. Chiffrez séparément un clip et un film assemblé avec Director.',
       },
     ],
   },
   evidence: {
     title: 'Sources et périmètre',
     date: '10 novembre 2026',
-    note: 'Comparatif publié par MaxVideoAI à partir des pages officielles publiques. Les prix, l’éligibilité des offres et l’accès via un assistant peuvent changer. Le périmètre couvre les fonctions et les règles de crédits documentées.',
+    note: 'Comparatif publié par MaxVideoAI. Les sources publiques officielles documentent les fonctions et les conditions de crédits présentées.',
   },
   sourceLabels: {
     'openart-pricing': 'Offres et quota Starter',

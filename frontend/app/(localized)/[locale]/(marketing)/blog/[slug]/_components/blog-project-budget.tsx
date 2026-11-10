@@ -20,6 +20,7 @@ export function BlogProjectBudget({ locale }: { locale: AppLocale }) {
       <div className={styles.scenarioHead}><p><time dateTime={projectCostExample.checked}>{copy.scenario}</time></p><p>{copy.settings}</p></div>
       <ProjectBudgetReceipt locale={locale} />
       <Link className={styles.sourceLink} href={`${path(projectCostExample.pricePath)}#${projectCostExample.priceFragment}`}>{copy.source}<ArrowUpRight size={17} aria-hidden="true" /></Link>
+      <p><Link className={styles.action} href="/app" prefetch={false} data-analytics-event="cta_click" data-analytics-cta-name="project_cost_configure" data-analytics-cta-location="project_cost_scenario" data-analytics-target-family="workspace">{copy.action}<ArrowRight size={18} aria-hidden="true" /></Link></p>
     </section>
     <section className={styles.scenarios} aria-labelledby="all-budgets-title">
       <div><h2 id="all-budgets-title">{copy.allTitle}</h2><p>{copy.allDescription}</p></div>
@@ -27,7 +28,7 @@ export function BlogProjectBudget({ locale }: { locale: AppLocale }) {
     </section>
     <section className={styles.method} aria-labelledby="cost-method-title"><h2 id="cost-method-title">{copy.stepsTitle}</h2><ol>{copy.steps.map((item, i) => <li key={item.title}><span aria-hidden="true">0{i + 1}</span><div><h3>{item.title}</h3><p>{item.text}</p></div></li>)}</ol></section>
     <aside className={styles.fair}><h2>{copy.fitTitle}</h2><p>{copy.fit}</p></aside>
-    <section className={styles.next}><div><h2>{copy.nextTitle}</h2><p>{copy.nextBody}</p></div><div><Link className={styles.action} href="/app" prefetch={false} data-analytics-event="cta_click" data-analytics-cta-name="project_cost_configure" data-analytics-cta-location="project_cost_article" data-analytics-target-family="workspace">{copy.action}<ArrowRight size={18} aria-hidden="true" /></Link><Link className={styles.secondary} href={path('/higgsfield-alternative')}>{copy.secondary}<ArrowUpRight size={16} aria-hidden="true" /></Link></div></section>
+    <section className={styles.next}><div><h2>{copy.nextTitle}</h2><p>{copy.nextBody}</p></div><div><Link className={styles.action} href="/app" prefetch={false} data-analytics-event="cta_click" data-analytics-cta-name="project_cost_configure" data-analytics-cta-location="project_cost_article" data-analytics-target-family="workspace">{copy.action}<ArrowRight size={18} aria-hidden="true" /></Link><Link className={styles.secondary} href={path('/blog/compare-ai-video-platforms')}>{copy.secondary}<ArrowUpRight size={16} aria-hidden="true" /></Link></div></section>
     <section className={styles.sources} aria-labelledby="cost-sources-title"><h2 id="cost-sources-title">{copy.sourcesTitle}</h2><p>{copy.sourcesNote}</p><ul>{sourceUrls.map((url, i) => <li key={url}><a href={url}>{copy.links[i]}<ArrowUpRight size={14} aria-hidden="true" /></a></li>)}</ul></section>
   </div>;
 }

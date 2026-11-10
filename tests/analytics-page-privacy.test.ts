@@ -113,6 +113,8 @@ test('OpenArt and project-budget CTAs retain their bounded names and public land
     ['/openart-alternative', 'openart_price_shot', 'openart_hero', '/openart-alternative'],
     ['/fr/openart-alternative', 'openart_price_shot', 'openart_footer', '/openart-alternative'],
     ['/es/blog/coste-proyecto-video-ia', 'project_cost_configure', 'project_cost_article', '/blog'],
+    ['/fr/blog/cout-projet-video-ia', 'project_cost_configure', 'project_cost_scenario', '/blog'],
+    ['/fr/blog/comparer-plateformes-video-ia', 'platform_guide_configure', 'platform_guide_budget', '/blog'],
   ] as const;
   for (const [path, name, location, surface] of entries) {
     withPage(`https://maxvideoai.com${path}?${comparisonCampaign}&prompt=private-query`, () => {
