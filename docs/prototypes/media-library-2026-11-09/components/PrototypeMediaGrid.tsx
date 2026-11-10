@@ -218,7 +218,7 @@ export const CompactMediaGrid = memo(function CompactMediaGrid({
           {item.asset ? (
             <>
               <Checkbox slot="selection" aria-label={`${copy.select} ${item.name}`} className="compact-media-check">
-                {({ isSelected }) => <span>{isSelected && <Check size={12} aria-hidden />}</span>}
+                {({ isSelected }) => <span className="compact-media-check-mark">{isSelected && <Check size={12} aria-hidden />}</span>}
               </Checkbox>
               <Button
                 type="button"

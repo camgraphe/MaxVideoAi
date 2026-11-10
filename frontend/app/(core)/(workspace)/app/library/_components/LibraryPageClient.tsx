@@ -163,7 +163,7 @@ function OwnedLibraryPageClient({ user, authLoading }: { user: { id: string } | 
       <HeaderBar />
       <div className="flex min-h-0 flex-1 min-w-0">
         <AppSidebar />
-        <main className="flex-1 min-h-0 min-w-0 overflow-auto p-3 lg:overflow-hidden lg:p-7">
+        <main className="flex-1 min-h-0 min-w-0 overflow-auto p-3 lg:overflow-hidden lg:p-4">
           {authLoading ? (
             <div className="w-full animate-pulse rounded-card border border-border bg-surface p-8">
               <div className="h-4 w-24 rounded bg-surface-2" />
@@ -202,7 +202,13 @@ function OwnedLibraryPageClient({ user, authLoading }: { user: { id: string } | 
                 title={locale === 'fr' ? 'Médias' : locale === 'es' ? 'Medios' : 'Media'}
                 hideTitle
                 assetType={activeKind}
-                management={{ userId: user.id, scope, totalCount, onScopeChange: ({ view, ...patch }) => { if (view) { setActiveView(view); setActiveSource('all'); } setOrganizationScope((previous) => ({ ...previous, ...patch })); } }}
+                management={{ userId: user.id, scope, totalCount, onScopeChange: ({ view, kind, source, q, ...patch }) => {
+                  if (view) { setActiveView(view); if (view === 'all' && activeJobId) clearJobFilter(); }
+                  if (kind) setActiveKind(kind);
+                  if (source) setActiveSource(source as SavedAssetSource);
+                  if (q !== undefined) setSearchQuery(q);
+                  setOrganizationScope((previous) => ({ ...previous, ...patch }));
+                } }}
                 assets={currentAssets}
                 isLoading={
                   activeView === 'review'
@@ -221,9 +227,9 @@ function OwnedLibraryPageClient({ user, authLoading }: { user: { id: string } | 
                       ? copy.assets.loadError
                       : null)
                 }
-                source={activeView === 'review' ? 'recent' : activeSource}
-                availableSources={[...availableSources, 'recent']}
-                sourceLabels={activeKind === 'all' ? { ...sourceLabels, all: compactCopy.saved } : sourceLabels}
+                source={activeSource}
+                availableSources={availableSources}
+                sourceLabels={sourceLabels}
                 onSourceChange={(source) => {
                   clearMutationErrors();
                   if (source === 'recent') {
@@ -233,7 +239,6 @@ function OwnedLibraryPageClient({ user, authLoading }: { user: { id: string } | 
                     setImportError(null);
                     return;
                   }
-                  setActiveView('saved');
                   setSaveError(null);
                   setActiveSource(source as SavedAssetSource);
                   resetSourceMutationState();
@@ -263,13 +268,13 @@ function OwnedLibraryPageClient({ user, authLoading }: { user: { id: string } | 
                 retryLabel={copy.browser.refresh}
                 headerLeadingActions={
                   <>
-                    <Button type="button" variant={activeKind === 'all' ? 'primary' : 'outline'} aria-pressed={activeKind === 'all'} size="sm" className="!min-h-11 rounded-full px-3 text-sm" onClick={() => setActiveKind('all')}>{compactCopy.all}</Button>
+                    <Button type="button" variant={activeKind === 'all' ? 'primary' : 'outline'} aria-pressed={activeKind === 'all'} size="sm" className="!min-h-9 rounded-md px-3 text-xs" onClick={() => setActiveKind('all')}>{compactCopy.allKinds}</Button>
                     <Button
                       type="button"
                       variant={activeKind === 'image' ? 'primary' : 'outline'}
                       aria-pressed={activeKind === 'image'}
                       size="sm"
-                      className="!min-h-11 rounded-full px-3 text-sm"
+                      className="!min-h-9 rounded-md px-3 text-xs"
                       onClick={() => setActiveKind('image')}
                     >
                       <Images className="h-[18px] w-[18px]" aria-hidden />
@@ -280,7 +285,7 @@ function OwnedLibraryPageClient({ user, authLoading }: { user: { id: string } | 
                       variant={activeKind === 'video' ? 'primary' : 'outline'}
                       aria-pressed={activeKind === 'video'}
                       size="sm"
-                      className="!min-h-11 rounded-full px-3 text-sm"
+                      className="!min-h-9 rounded-md px-3 text-xs"
                       onClick={() => setActiveKind('video')}
                     >
                       <Clapperboard className="h-[18px] w-[18px]" aria-hidden />
@@ -291,7 +296,7 @@ function OwnedLibraryPageClient({ user, authLoading }: { user: { id: string } | 
                       variant={activeKind === 'audio' ? 'primary' : 'outline'}
                       aria-pressed={activeKind === 'audio'}
                       size="sm"
-                      className="!min-h-11 rounded-full px-3 text-sm"
+                      className="!min-h-9 rounded-md px-3 text-xs"
                       onClick={() => setActiveKind('audio')}
                     >
                       <AudioWaveform className="h-[18px] w-[18px]" aria-hidden />
@@ -301,7 +306,7 @@ function OwnedLibraryPageClient({ user, authLoading }: { user: { id: string } | 
                 }
                 headerActions={<>
                   {importQueue.getSnapshot().files.length > 0 ? <button type="button" onClick={() => setImportQueueOpen(true)}>{locale.startsWith('fr') ? 'Imports' : locale.startsWith('es') ? 'Importaciones' : 'Imports'}</button> : null}
-                    {isCreatorToolPublic('subtitles') ? <Link href="/app/library/subtitles" prefetch={false} className="inline-flex min-h-11 items-center rounded-full border border-border px-4 text-sm">
+                    {isCreatorToolPublic('subtitles') ? <Link href="/app/library/subtitles" prefetch={false} className="inline-flex min-h-9 items-center rounded-md border border-border px-3 text-xs">
                       {locale.startsWith('fr') ? 'Sous-titres' : locale.startsWith('es') ? 'Subtítulos' : 'Subtitles'}
                     </Link> : null}
                     <Button

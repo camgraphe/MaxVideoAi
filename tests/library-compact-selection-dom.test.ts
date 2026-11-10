@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { existsSync } from 'node:fs';
 import { bundleClientFlow, createClientFlowDom } from './helpers/client-flow-dom';
+import { installMediaGridGeometry } from './helpers/media-grid-dom';
 
 // Catches lost captured identities on page replacement, wrong snapshot membership,
 // client truncation and accidental reprocessing of confirmed chunks.
@@ -439,58 +440,8 @@ test('production compact browser preserves slots, exact totals and independent v
     loading: false,
     total: 91,
   });
-  w.ResizeObserver = class {
-    cb: any;
-    constructor(cb: any) {
-      this.cb = cb;
-    }
-    observe(target: any) {
-      Promise.resolve().then(() =>
-        this.cb([
-          {
-            target,
-            contentRect: { width: 900, height: 600 },
-            borderBoxSize: [{ inlineSize: 900, blockSize: 600 }],
-          },
-        ])
-      );
-    }
-    unobserve() {}
-    disconnect() {}
-  };
-  Object.defineProperties(w.HTMLElement.prototype, {
-    clientWidth: {
-      get() {
-        return 900;
-      },
-    },
-    clientHeight: {
-      get() {
-        return 600;
-      },
-    },
-    offsetWidth: {
-      get() {
-        return 900;
-      },
-    },
-    offsetHeight: {
-      get() {
-        return 600;
-      },
-    },
-  });
-  w.HTMLElement.prototype.getBoundingClientRect = () => ({
-    width: 900,
-    height: 600,
-    top: 0,
-    left: 0,
-    right: 900,
-    bottom: 600,
-  });
-  w.HTMLElement.prototype.getClientRects = function () {
-    return [this.getBoundingClientRect()];
-  };
+  installMediaGridGeometry(w);
+  w.CSS.supports = () => false;
   w.getSession = async () => ({
     data: { session: { user: { id: w.owner }, access_token: 'token' } },
   });
@@ -504,42 +455,22 @@ test('production compact browser preserves slots, exact totals and independent v
     assert.ok(w.document.querySelector('[data-type-slot]'));
     assert.ok(w.document.querySelector('[data-header-slot]'));
     assert.match(w.document.body.textContent, /91 results/);
-    for (const area of ['filters','collections','selection']) {
-      const toggle=w.document.querySelector(`.compact-library-${area} > .compact-library-disclosure-toggle`);
-      assert.ok(toggle, `${area} has a mobile disclosure`);
-      assert.equal(toggle.getAttribute('aria-expanded'),'false');
-      assert.ok(w.document.getElementById(toggle.getAttribute('aria-controls')));
+    for (const label of ['Filters', 'All media', 'Select']) {
+      const trigger = [...w.document.querySelectorAll('.compact-library-menu-trigger')].find((button: any) => button.textContent === label);
+      assert.equal(trigger?.getAttribute('aria-expanded'), 'false', 'commands are collapsed until requested');
     }
-    const filters=w.document.querySelector('.compact-library-filters > button');
-    filters.focus(); await w.fx.act(async()=>filters.click());
-    assert.equal(filters.getAttribute('aria-expanded'),'true');
-    assert.ok(w.document.querySelector('.compact-library-filters select[aria-label="Sort"]'));
-    assert.ok(w.document.querySelector('.compact-library-filters input[type="range"]'));
-    await w.fx.act(async()=>filters.click());assert.equal(w.document.activeElement,filters);
-    await w.fx.act(async()=>w.document.querySelector('.compact-library-selection > button').click());
-
-    const select = [...w.document.querySelectorAll('button')].find(
-      (b: any) => b.textContent === 'Select loaded'
-    );
-    assert.ok(select);
-    await w.fx.act(async () => select.click());
-    assert.match(w.document.body.textContent, /1 selected/);
-    assert.equal(w.document.querySelector('.compact-library-selection > button').getAttribute('aria-expanded'),'true');
-    await w.fx.act(async () => { w.locale = "fr"; w.fx.render(); });
-    assert.equal(w.document.querySelector(".compact-library-selection .compact-library-disclosure-content > span")?.textContent, "1 sélectionné");
-    await w.fx.act(async () => { w.locale = "en"; w.fx.render(); });
-    const mediaMatch = w.matchMedia;
-    w.matchMedia = (query: string) => mediaMatch?.(query) ?? { matches: query === '(max-width: 767px)', addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {} };
-    const clear = [...w.document.querySelectorAll('button')].find((b: any) => b.textContent === 'Clear selection');
-    clear.focus();
-    await w.fx.act(async () => clear.click());
-    assert.ok(w.document.activeElement === w.document.querySelector('.compact-library-selection > button'), 'cleared mobile command returns focus to Select');
-    assert.equal(w.document.activeElement.getAttribute('aria-expanded'), 'false');
-    await w.fx.act(async () => select.click());
-    filters.focus();
-    await w.fx.act(async () => clear.click());
-    assert.ok(w.document.activeElement === filters, 'a different focused control keeps focus');
-    await w.fx.act(async () => select.click());
+    assert.equal(w.document.querySelector('[data-layout]')?.getAttribute('data-layout'), 'mosaic');
+    await w.fx.act(async () => w.document.querySelector('.compact-media-check input').click());
+    assert.ok(w.document.querySelector('.compact-media-check[data-selected] .compact-media-check-mark svg'));
+    assert.match(w.document.querySelector('.compact-library-selection-trigger')?.textContent, /1 selected/);
+    await w.fx.act(async () => { w.locale = 'fr'; w.fx.render(); });
+    assert.equal(w.document.querySelector('.compact-library-selection-trigger')?.textContent, '1 sélectionné');
+    await w.fx.act(async () => { w.locale = 'en'; w.fx.render(); });
+    for (const mode of ['List', 'Grid', 'Mosaic']) {
+      await w.fx.act(async () => w.document.querySelector(`[aria-label="${mode}"]`).click());
+      assert.equal(w.document.querySelector('[data-layout]')?.getAttribute('data-layout'), mode.toLowerCase());
+      assert.equal(w.document.querySelector('.compact-media-check input')?.checked, true, 'view changes preserve selection');
+    }
     const preview = w.document.querySelector('[aria-label="Preview first"]');
     assert.ok(preview, 'virtualized actual browser mounts visible card');
     await w.fx.act(async () => preview.click());

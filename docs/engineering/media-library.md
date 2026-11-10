@@ -358,11 +358,19 @@ complete DTO rather than merging first pages or reimplementing local filters.
 prop is `{userId, scope, totalCount, onScopeChange}`. That path lazily loads
 `CompactLibraryBrowser`; existing selection/picker props continue through their
 own insertion owner. The shared `CompactMediaGrid` uses pinned React Aria
-GridList/Virtualizer with grid or audio-list layout, controlled organization keys,
+GridList/Virtualizer with mosaic, grid or list layout, controlled organization keys,
 loaded-range Shift selection, checkboxes and a separate preview action. Enter on
 a focused row opens its source without changing selection. Source/date/details
 and existing action slots remain reachable in the current inspector. Density is
-a small account-scoped local preference. Styling is scoped under
+a small account-scoped local preference, as is the display mode. Pickers keep their
+existing grid default; management defaults to mosaic. `MediaMosaicLayout` computes
+poster height from stored dimensions, with a fixed 24px caption, before scrolling.
+`CompactLibraryFilters`, `CompactLibrarySelection` and `CompactLibraryCollections`
+render contextual command popovers through `CompactLibraryPopup` (React Aria owns
+focus, Escape and dismissal). A 16px checked mark has a 44px hit target. Technical
+filenames use a type/date caption; originals and full names remain in Details.
+Source filtering preserves the chosen all/saved/review scope. The All media menu
+entry clears source, kind, search and organization filters together. Styling is scoped under
 `.compact-library`, loaded after the app shell by `AppRuntime`; it does not import
 the prototype shell or override legacy card classes.
 
@@ -398,7 +406,7 @@ loaded length or subtracting snapshot successes.
 `useLibraryCollections` owns bounded collection pages and create/rename/delete
 through the existing owned routes. Names are trimmed and validated as 1–120
 Unicode code points; confirmed writes invalidate the initiating account. The
-collection/sidebar and bulk target share SWR keys. No local fake collections or
+collection menu and bulk target share SWR keys. No local fake collections or
 membership store is maintained.
 
 The grid keeps the same scope's placeholder count/audio geometry while revision
