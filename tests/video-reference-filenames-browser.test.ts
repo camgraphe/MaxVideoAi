@@ -51,6 +51,10 @@ test('Video common Media filenames survive refresh, server search and pagination
   try {
     const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
     const requests: string[] = [], legacyRequests: string[] = [], errors: string[] = [], proofs: unknown[] = [];
+    const browseRequests = () => requests.map(path => {
+      const query = new URL(path, 'http://fixture.test').searchParams;
+      return [query.get('q'), query.get('cursor')];
+    });
     page.on('pageerror', error => errors.push(error.message));
     page.on('request', request => { if (/\/api\/media-library\/(assets|recent-outputs)\?/.test(request.url())) legacyRequests.push(request.url()); });
     const browseAsset = (asset: typeof staticAsset) => ({ ...asset, libraryRef: asset.ref, sourceRevision: 'sr_' + asset.id,
@@ -61,6 +65,8 @@ test('Video common Media filenames survive refresh, server search and pagination
       requests.push(url.pathname + url.search);
       assert.equal(url.searchParams.get('view'), 'all');
       assert.equal(url.searchParams.get('kind'), 'image');
+      assert.equal(url.searchParams.get('source'), null);
+      assert.equal(url.searchParams.get('sort'), 'recent');
       const q = url.searchParams.get('q');
       return route.fulfill({ json: q
         ? { ok: true, assets: [browseAsset(q === 'watch-static.png' ? staticAsset : motionAsset)], totalCount: 1, hasMore: false, nextCursor: null }
@@ -81,13 +87,16 @@ test('Video common Media filenames survive refresh, server search and pagination
     await page.goto(fixture.url);
     await page.getByRole('button', { name: 'Open Video references' }).click();
     const cards = page.getByRole('row');
-    await expect(cards).toHaveCount(2);
+    // The short first page fills automatically before refresh preserves both visited pages.
+    await expect(cards).toHaveCount(3);
+    await expect.poll(browseRequests).toEqual([[null, null], [null, 'page-2']]);
     await expect(cards.first()).toContainText('watch-static.png');
     await expect(cards.nth(1)).toContainText('Images 2');
     await page.getByRole('button', { name: 'Filters', exact: true }).click();
     await page.getByRole('button', { name: 'Refresh', exact: true }).click();
     await page.getByRole('button', { name: 'Filters', exact: true }).click();
-    await expect.poll(() => requests.length).toBe(2);
+    await expect.poll(browseRequests).toEqual([[null, null], [null, 'page-2'], [null, null], [null, 'page-2']]);
+    await expect(cards).toHaveCount(3);
     await expect(cards.first()).toContainText('watch-static.png');
     await page.getByRole('searchbox').fill('watch-static.png');
     await expect(cards).toHaveCount(1);
@@ -98,7 +107,6 @@ test('Video common Media filenames survive refresh, server search and pagination
     await expect(staticChoice).toHaveAttribute('aria-label','Select watch-static.png');
     await expect(staticChoice).toHaveAccessibleName('Select watch-static.png watch-static.png');
     await page.getByRole('searchbox').fill('');
-    await page.getByRole('button', { name: 'Load more', exact: true }).click();
     await expect(cards).toHaveCount(3);
     await page.getByRole('searchbox').fill('watch-motion-poster.png');
     await expect(cards).toHaveCount(1);
@@ -123,10 +131,11 @@ test('Video common Media filenames survive refresh, server search and pagination
     assert.deepEqual(selected.selected.ref, motionAsset.ref);
     assert.equal(selected.label, 'Image 1');
     assert.equal(proofs.length,1,'Confirmation passes typed validation once');
-    const queries = requests.map(path => new URL(path, 'http://fixture.test').searchParams);
-    assert.ok(queries.some(query => query.get('q') === 'watch-static.png'));
-    assert.ok(queries.some(query => query.get('q') === 'watch-motion-poster.png'));
-    assert.equal(queries.filter(query => query.get('cursor') === 'page-2').length, 1);
+    assert.deepEqual(browseRequests(), [
+      [null, null], [null, 'page-2'], // Initial short-page fill.
+      [null, null], [null, 'page-2'], // Refresh retains both visited pages.
+      ['watch-static.png', null], ['watch-motion-poster.png', null],
+    ], 'returning from search reuses the complete cached listing without duplicate reads');
     assert.deepEqual(legacyRequests, [], 'the common browser must not duplicate the retired saved-only listing');
     assert.deepEqual(errors, []);
   } finally {
