@@ -36,7 +36,7 @@ const QUERY_PARAM_ALLOWLISTS = {
 const APP_NOINDEX_PREFIXES = ['/app', '/generate', '/dashboard', '/jobs', '/billing', '/settings', '/account', '/connect'];
 
 function shouldStripQueryParams(pathWithoutLocale: string): boolean {
-  if (pathWithoutLocale === '/') {
+  if (['/', '/higgsfield-alternative', '/openart-alternative'].includes(pathWithoutLocale)) {
     return true;
   }
   return QUERY_PARAM_STRIP_PREFIXES.some((prefix) => pathWithoutLocale.startsWith(prefix));

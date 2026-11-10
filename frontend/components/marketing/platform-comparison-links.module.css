@@ -1,0 +1,2 @@
+.nav{border-top:1px solid #d5d0c7;padding:28px 0;margin:28px 0;color:#232323}.nav p{font-size:16px;font-weight:500;margin:0 0 17px}.nav ul{display:flex;flex-wrap:wrap;list-style:none;padding:0;margin:0;gap:14px 36px}.nav a{font-size:14px;color:#805126;display:inline-flex;gap:8px;align-items:center;min-height:44px;text-decoration:underline;text-underline-offset:4px}.nav a:focus-visible{outline:3px solid #805126;outline-offset:4px}
+@media(max-width:600px){.nav ul{flex-direction:column;gap:3px}}

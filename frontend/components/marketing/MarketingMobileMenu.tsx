@@ -13,6 +13,7 @@ import { MarketingNavEntryContent } from '@/components/marketing/MarketingNavEnt
 import type { MarketingHeaderNavigation } from '@/config/public-marketing-navigation';
 import { buildLoginHref } from '@/lib/auth-entry-href';
 import { useI18n } from '@/lib/i18n/I18nProvider';
+import { localizeMarketingNavHref } from '@/lib/i18n/marketing-locale-switch';
 const MENU_ICONS: Record<string, LucideIcon> = { models: Boxes, examples: Clapperboard, compare: Scale, tools: Wrench, pricing: WalletCards, connect: Plug };
 type MarketingTranslate = <T = unknown>(key: string, fallback?: T) => T | undefined;
 type MarketingMobileMenuProps = {
@@ -71,7 +72,6 @@ export function MarketingMobileMenu({
   }, [menuRef]);
   const { locale } = useI18n();
   const loginHref = buildLoginHref({ mode: 'signin', nextPath: '/app', locale });
-
   return (
     <div id={menuId} ref={menuRef} popover="auto" className="marketing-menu-overlay fixed inset-0 z-50 overflow-y-auto overscroll-y-contain lg:hidden">
       <button type="button" tabIndex={-1} aria-hidden="true" className="marketing-menu-backdrop" {...{ popovertarget: menuId, popovertargetaction: 'hide' }} />
@@ -181,7 +181,7 @@ export function MarketingMobileMenu({
                           {section.items.map((entry) => (
                             <Link prefetch={false}
                               key={entry.key}
-                              href={entry.href}
+                              href={localizeMarketingNavHref(entry.href, locale)}
                               onClick={onClose}
                               className={clsx(
                                 'block rounded-input px-2 py-2 transition hover:bg-surface-2 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',

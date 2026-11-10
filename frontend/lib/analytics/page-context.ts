@@ -77,8 +77,9 @@ export function buildAnalyticsPageContext(href: unknown, referrer: unknown = '')
     else if (route.family === 'marketing' && !path.startsWith('/v/')) {
       // Keep public locale/slug identity, never arbitrary paths or encoded identifiers.
       const publicPath = url.pathname.replace(/\/$/, '') || '/';
-      const segments = publicPath.replace(/^\/(?:fr|es)(?=\/|$)/, '').split('/').filter(Boolean);
-      const allowed = segments.length === 0 || (
+      const publicRoute = publicPath.replace(/^\/(?:fr|es)(?=\/|$)/, '');
+      const segments = publicRoute.split('/').filter(Boolean);
+      const allowed = ['/higgsfield-alternative', '/openart-alternative'].includes(publicRoute) || segments.length === 0 || (
         PUBLIC_ROOTS.has(segments[0])
         && segments.length <= 4
         && segments.every(segment => /^[a-z0-9][a-z0-9-]{0,139}$/.test(segment))

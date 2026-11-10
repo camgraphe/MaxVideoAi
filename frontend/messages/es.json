@@ -199,6 +199,14 @@
           "seedance-2-0-vs-seedance-2-0-fast": "Seedance 2.0 vs Fast"
         },
         "sections": {
+          "platforms": {
+            "title": "Comparar plataformas",
+            "items": {
+              "platform-guide": "Guía de plataformas de vídeo con IA",
+              "higgsfield-alternative": "MaxVideoAI e Higgsfield",
+              "openart-alternative": "MaxVideoAI y OpenArt"
+            }
+          },
           "useCaseGuides": {
             "items": {
               "best-for": "Mejores modelos por objetivo",
@@ -8348,7 +8356,8 @@
         "looksBody": "Parte de un personaje guardado y cambia su ropa o escenario. Elige un estilo, describe tu vestuario o añade una imagen de referencia.",
         "identity": "Identidad guardada",
         "newLook": "Nuevo look",
-        "looksNote": "Dixie Trouble · dos generaciones reales. Revisa el rostro y los detalles antes de guardar un look.",
+        "looksNote": "El retrato guardado de Dixie Trouble y el look Dixie Pop son dos generaciones de Character Studio. Revisa el rostro y la ropa antes de reutilizar un look.",
+        "looksRecastCta": "Ver a Dixie en movimiento",
         "outputsTitle": "La referencia adecuada para el próximo plano.",
         "outputsBody": "Elige Retrato o Ficha de personaje, el formato y la resolución. El precio de generación se actualiza antes de confirmar.",
         "portrait": "Retrato",

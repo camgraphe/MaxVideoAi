@@ -1,3 +1,5 @@
+import type { PaygSubscriptionComparison } from './subscription-comparison';
+
 export const PAYG_ICON_IDS = [
   'model', 'engine', 'preview', 'video', 'refund', 'duration', 'resolution', 'audio', 'credits',
 ] as const;
@@ -106,11 +108,7 @@ export type PayAsYouGoContent = {
   meaning: { compare: string; title: string; body: string; bullets: string[] };
   noSubscription: { title: string; body: string; cards: PaygCard[] };
   audienceFit: { cards: Array<PaygCard & { bullets: string[] }> };
-  subscriptionComparison: {
-    header: PaygHeaderCopy;
-    columns: [string, string, string];
-    rows: Array<{ label: string; payg: string; subscription: string }>;
-  };
+  subscriptionComparison: PaygSubscriptionComparison;
   workflow: { workspace: { capture: string; phoneHeight: number; alt: string; caption: string; open: string }; header: PaygHeaderCopy; items: Array<PaygCard & { icon: PaygIconId }>; assistance: { milo: PaygCard; studio: PaygCard } };
   mcpPlanning: { title: string; body: string };
   quoteFactors: { header: PaygHeaderCopy; items: Array<PaygCard & { icon: PaygIconId }> };

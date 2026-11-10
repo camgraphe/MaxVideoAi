@@ -115,6 +115,9 @@ export const frPayAsYouGoContent = {
     ],
   },
   subscriptionComparison: {
+    higgsfieldLinkLabel: 'Comparer MaxVideoAI et Higgsfield',
+    openartLinkLabel: 'Comparer MaxVideoAI et OpenArt',
+    budgetLink: { label: 'Prévoir le budget des essais', slug: 'cout-projet-video-ia' },
     header: {
       eyebrow: 'Aucun abonnement requis',
       title: 'Paiement à l’usage ou abonnement',

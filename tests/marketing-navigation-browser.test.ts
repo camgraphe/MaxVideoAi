@@ -356,3 +356,39 @@ test('shared navigation popover keeps viewport geometry and focus outside market
     assert.deepEqual(await page.evaluate(()=>(window as any).__fixtureHydrationErrors),[]);
   } finally {await browser.close();await fixture.close()}
 });
+
+test('localized platform comparisons appear in the desktop and mobile Compare sections', async () => {
+  const fixture = await createMarketingNavigationBrowserFixture();
+  const browser = await chromium.launch();
+  try {
+    fixture.releaseHydration();
+    const page = await browser.newPage();
+    const cases = [
+      { path: '/', title: 'Compare platforms', guide: '/blog/compare-ai-video-platforms', prefix: '' },
+      { path: '/fr', title: 'Comparer les plateformes', guide: '/fr/blog/comparer-plateformes-video-ia', prefix: '/fr' },
+      { path: '/es', title: 'Comparar plataformas', guide: '/es/blog/comparar-plataformas-video-ia', prefix: '/es' },
+    ];
+    for (const { path, title, guide, prefix } of cases) {
+      await page.setViewportSize({ width: 1440, height: 900 });
+      const response = await page.goto(new URL(path, fixture.url).href);
+      assert.ok((await response!.text()).includes('href="' + guide + '"'), 'desktop HTML carries the localized guide href');
+      await page.waitForFunction(() => !!(window as any).__fixtureHydrated);
+      await page.locator('button[aria-controls="marketing-compare-dropdown"]').click();
+      const desktop = page.locator('#marketing-compare-dropdown');
+      const desktopSection = desktop.getByText(title, { exact: true }).locator('..');
+      const expected = [guide, prefix + '/higgsfield-alternative', prefix + '/openart-alternative'];
+      assert.deepEqual(await desktopSection.locator('a').evaluateAll(links => links.map(link => link.getAttribute('href'))), expected);
+
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.locator('header button[popovertarget]').click();
+      const mobile = page.locator('details[data-menu-section="compare"]');
+      await mobile.locator('summary').click();
+      const mobileSection = mobile.getByText(title, { exact: true }).locator('..');
+      await mobileSection.waitFor();
+      assert.deepEqual(await mobileSection.locator('a').evaluateAll(links => links.map(link => link.getAttribute('href'))), expected);
+    }
+  } finally {
+    await browser.close();
+    await fixture.close();
+  }
+});

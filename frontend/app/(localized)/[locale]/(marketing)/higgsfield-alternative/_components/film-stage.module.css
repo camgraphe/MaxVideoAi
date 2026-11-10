@@ -1,0 +1,275 @@
+.stage {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  min-height: 460px;
+  margin: 0;
+  border-radius: 10px;
+  background: #161513;
+  color: #fcf8f1;
+}
+
+.video,
+.poster {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.video,
+.poster img {
+  object-fit: cover;
+  object-position: center;
+}
+
+.stage[data-film='vesper'] :is(.video, .poster img) {
+  object-fit: contain;
+  object-position: center;
+}
+
+.poster {
+  pointer-events: none;
+}
+
+.stage[data-film='vesper'] .poster {
+  animation: poster-in 180ms ease-out;
+}
+
+@keyframes poster-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.stage:fullscreen {
+  border-radius: 0;
+}
+
+.stage:fullscreen :is(.video, .poster img) {
+  object-fit: contain;
+  object-position: center;
+}
+
+.centerPlay {
+  position: absolute;
+  top: 43%;
+  left: 50%;
+  display: grid;
+  width: 62px;
+  height: 62px;
+  place-items: center;
+  padding: 0;
+  transform: translate(-50%, -50%);
+  border: 1px solid #f4ebdeaa;
+  border-radius: 50%;
+  background: #17151294;
+  color: #fcf8f1;
+  cursor: pointer;
+  transition: background 150ms ease, border-color 150ms ease;
+}
+
+.centerPlay:hover {
+  border-color: #f4ebde;
+  background: #171512e5;
+}
+
+.centerPlay svg {
+  width: 23px;
+  height: 23px;
+}
+
+.status {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.status:not(:empty) {
+  right: auto;
+  max-width: calc(100% - 24px);
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: #171512ed;
+  font-size: 12px;
+}
+
+.controls {
+  position: absolute;
+  inset: auto 0 0;
+  display: grid;
+  gap: 6px;
+  padding: 48px 16px 14px;
+  background: linear-gradient(transparent, #110f0de8 43%, #110f0d);
+}
+
+.caption,
+.transport {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.caption {
+  justify-content: space-between;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.caption a {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 4px;
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.transport button,
+.selectors button {
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: inherit;
+  cursor: pointer;
+  transition: background 150ms ease, border-color 150ms ease;
+}
+
+.transport button {
+  display: grid;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  padding: 0;
+  background: transparent;
+}
+
+.transport button svg {
+  width: 17px;
+  height: 17px;
+}
+
+.transport button:hover:not(:disabled),
+.selectors button:hover {
+  background: #fcf8f11c;
+}
+
+.transport button:disabled,
+.scrubber:disabled {
+  opacity: .5;
+  cursor: default;
+}
+
+.scrubber {
+  flex: 1;
+  min-width: 32px;
+  height: 26px;
+  accent-color: #edd9bf;
+  cursor: pointer;
+}
+
+.time {
+  min-width: 65px;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.selectors {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.selectors button {
+  display: flex;
+  min-height: 40px;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 9px;
+  border-color: #f8f3ed45;
+  background: #15131194;
+  font-size: 12px;
+  line-height: 1.25;
+  text-align: left;
+}
+
+.selectors button > span {
+  color: #dfc2a2;
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+.selectors button[aria-pressed='true'] {
+  border-color: #e6c7a3;
+  background: #6f4b307a;
+}
+
+.stage :is(button, a, input):focus-visible {
+  outline: 2px solid #ffe4c4;
+  outline-offset: 2px;
+}
+
+@media (max-width: 767px) {
+  .stage {
+    height: auto;
+    min-height: 0;
+    aspect-ratio: 16 / 9;
+  }
+
+  .centerPlay {
+    top: 30%;
+    width: 42px;
+    height: 42px;
+  }
+
+  .centerPlay svg {
+    width: 17px;
+    height: 17px;
+  }
+
+  .controls {
+    gap: 3px;
+    padding: 24px 8px 8px;
+  }
+
+  .caption,
+  .time,
+  .selectors button {
+    font-size: 10px;
+  }
+
+  .transport {
+    gap: 4px;
+  }
+
+  .transport button {
+    width: 36px;
+    height: 36px;
+  }
+
+  .selectors button {
+    min-height: 34px;
+  }
+}
+
+@media (max-width: 360px) {
+  .centerPlay {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stage[data-film='vesper'] .poster {
+    animation: none;
+  }
+
+  .stage button {
+    transition: none;
+  }
+}

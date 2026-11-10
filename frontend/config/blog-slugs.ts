@@ -66,6 +66,16 @@ export const BLOG_SLUGS_BY_CANONICAL = {
     fr: 'comment-comparer-les-moteurs-video-dia-sora-vs-veo-vs-pika',
     es: 'como-comparar-motores-de-video-con-ia-sora-vs-veo-vs-pika',
   },
+  'compare-ai-video-platforms': {
+    en: 'compare-ai-video-platforms',
+    fr: 'comparer-plateformes-video-ia',
+    es: 'comparar-plataformas-video-ia',
+  },
+  'ai-video-project-cost': {
+    en: 'ai-video-project-cost',
+    fr: 'cout-projet-video-ia',
+    es: 'coste-proyecto-video-ia',
+  },
   'how-to-create-consistent-ai-characters': {
     en: 'how-to-create-consistent-ai-characters',
     fr: 'comment-creer-des-personnages-ia-coherents-dans-les-images-et-la-video',

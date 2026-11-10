@@ -15,6 +15,7 @@ import {
 import { AdminNotice } from '@/components/admin-system/feedback/AdminNotice';
 import { CheckoutGuardPolicy } from './_components/CheckoutGuardPolicy';
 import { CheckoutSessionExpireButton } from './_components/CheckoutSessionExpireButton.client';
+import { CheckoutWalletLoadDetails } from './_components/CheckoutWalletLoadDetails';
 import {
   type CheckoutAbandonmentSignal,
   type CheckoutReportRange,
@@ -145,6 +146,14 @@ export default async function CheckoutReportPage(props: PageProps) {
         title="Recent attempts"
         action={<Link href="/admin/transactions" prefetch={false} className="inline-flex items-center gap-1 text-xs font-semibold text-brand transition hover:text-brand-hover">Transactions <ArrowRight className="h-3.5 w-3.5" /></Link>}
       >
+        {report.recentWalletFollowups.delayedAccounts > 0 && (
+          <p className="mb-3 text-xs text-text-secondary">
+            Among these attempts, {formatNumber(report.recentWalletFollowups.delayedAccounts)} accounts reached the wallet
+            loading timeout. Within 15 minutes, {formatNumber(report.recentWalletFollowups.hostedAfterDelay)} of those
+            accounts redirected to hosted Checkout and {formatNumber(report.recentWalletFollowups.hostedPaidAfterDelay)} had
+            a receipt for that hosted session. Matches are based on account and time.
+          </p>
+        )}
         {report.recent.length ? (
           <div className="overflow-x-auto">
             <table className="min-w-[1160px] w-full text-left text-sm">
@@ -175,7 +184,10 @@ export default async function CheckoutReportPage(props: PageProps) {
                     <td className="px-3 py-3">{attempt.mode === 'express_checkout' ? 'Native wallet' : 'Hosted'}</td>
                     <td className="px-3 py-3 font-semibold text-text-primary">{formatAmount(attempt.amountCents)} credits<span className="block text-xs font-normal text-text-secondary">Payment: {attempt.paymentCurrency ?? 'Unknown (legacy)'}</span></td>
                     <td className="px-3 py-3">{formatReason(attempt.reason ?? attempt.outcome)}</td>
-                    <td className="px-3 py-3 text-xs">{formatEventTrail(attempt.events.map((event) => event.eventName))}</td>
+                    <td className="px-3 py-3 text-xs">
+                      {formatEventTrail(attempt.events.map((event) => event.eventName))}
+                      <CheckoutWalletLoadDetails loads={attempt.walletLoads} />
+                    </td>
                     <td className="px-3 py-3 font-mono text-xs">{truncateId(attempt.userId)}</td>
                     <td className="px-3 py-3 font-mono text-xs">{attempt.stripeCheckoutSessionId ? truncateId(attempt.stripeCheckoutSessionId) : '—'}</td>
                     <td className="px-3 py-3">

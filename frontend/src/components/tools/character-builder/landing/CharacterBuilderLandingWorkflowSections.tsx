@@ -16,7 +16,13 @@ export function CharacterBuilderOutputsWorkflowSection({ content, films = [], lo
         <div><div className={styles.lookImage}><Image src={art.dixie} alt={`Dixie Trouble — ${c.identity}`} fill sizes="(max-width: 700px) 44vw, 26vw" className={styles.cover} loading="lazy" /></div><p>{c.identity}</p></div>
         <ArrowRight className={styles.lookArrow} size={22} aria-hidden="true" />
         <div><div className={styles.lookImage}><Image src={art.dixiePop} alt={`Dixie Trouble — ${c.newLook}`} fill sizes="(max-width: 700px) 44vw, 26vw" className={styles.cover} loading="lazy" /></div><p>{c.newLook}</p></div>
-      </div><figcaption className={styles.note}>{c.looksNote}</figcaption></figure>
+      </div>
+        <figcaption className={styles.note}>
+          {c.looksNote}
+          <br />
+          <a className={styles.textLink} href="#recast">{c.looksRecastCta}<ArrowRight size={17} aria-hidden="true" /></a>
+        </figcaption>
+      </figure>
     </div></section>
     <section className={styles.section} id="outputs"><div className={styles.container}>
       <header className={styles.sectionHeading}><p className={styles.eyebrow}>03 / {c.nav[2]}</p><h2>{c.outputsTitle}</h2><p>{c.outputsBody}</p></header>

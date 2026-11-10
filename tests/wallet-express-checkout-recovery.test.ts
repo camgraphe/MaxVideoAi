@@ -13,6 +13,13 @@ test('slow wallets recover and deliberate retries reuse the same guarded session
     .map(key => [key, Object.getOwnPropertyDescriptor(globalThis, key)] as const);
   const timers = new Map<number, { delay: number; callback: () => void }>();
   let timerId = 0, requests = 0, tokensTaken = 0, confirmations = 0;
+  let clockMs = 0;
+  const telemetry: Array<Promise<{
+    eventName: string;
+    checkoutAttemptId?: number | null;
+    metadata: Record<string, unknown>;
+  }>> = [];
+  Object.defineProperty(dom.window.performance, 'now', { value: () => clockMs });
   let resolvePreparation: (response: Response) => void = () => {};
   let holdPreparation = true;
   dom.window.setTimeout = ((callback: () => void, delay: number) => {
@@ -21,7 +28,10 @@ test('slow wallets recover and deliberate retries reuse the same guarded session
   dom.window.clearTimeout = (id: number) => { timers.delete(id); };
   const values = {
     window: dom.window, document: dom.window.document, React, IS_REACT_ACT_ENVIRONMENT: true,
-    navigator: { sendBeacon: () => true },
+    navigator: { sendBeacon: (_url: string, body: Blob) => {
+      telemetry.push(body.text().then(text => JSON.parse(text)));
+      return true;
+    } },
     fetch: async () => {
       requests++;
       if (holdPreparation) return new Promise<Response>(resolve => { resolvePreparation = resolve; });
@@ -67,6 +77,7 @@ test('slow wallets recover and deliberate retries reuse the same guarded session
     await React.act(async () => { root.render(React.createElement(WalletExpressCheckout, props)); });
     await runTimer(300);
     assert.equal(requests, 1);
+    clockMs = 10_000;
     await runTimer(10_000);
     assert.doesNotMatch(dom.window.document.body.textContent ?? '', /Loading secure payment options/);
     const slowRetry = dom.window.document.querySelector('button')!;
@@ -74,6 +85,7 @@ test('slow wallets recover and deliberate retries reuse the same guarded session
     await runTimer(300);
     assert.equal(requests, 1, 'retry during preparation must share the in-flight request');
     assert.equal(tokensTaken, 1);
+    clockMs = 10_200;
     holdPreparation = false;
     await React.act(async () => { resolvePreparation(response()); });
     assert.equal(elements.length, 1, 'a slow preparation must still mount its original session');
@@ -91,12 +103,26 @@ test('slow wallets recover and deliberate retries reuse the same guarded session
     assert.equal(elements[0].destroyed, true);
     assert.equal(requests, 1, 'retry must not create a new payable session or reset card-failure limits');
     assert.equal(tokensTaken, 1, 'retrying a prepared session must not consume another CAPTCHA token');
+    clockMs = 20_200;
     await runTimer(10_000);
     assert.equal(elements[1].destroyed, false, 'a loading timeout must not destroy the pending wallet');
+    clockMs = 20_850;
     await React.act(async () => { elements[1].listeners.ready({ availablePaymentMethods: { applePay: true, link: true } }); });
     assert.doesNotMatch(dom.window.document.body.textContent ?? '', /taking longer|Connection interrupted/i);
     assert.equal(dom.window.document.querySelector('[aria-label]')?.classList.contains('hidden'), false);
     await React.act(async () => { await elements[1].listeners.confirm({ paymentFailed() {} }); });
+    const observations = await Promise.all(telemetry);
+    const prepareTimeout = observations.find(event => event.metadata.reason === 'ready_timeout' && event.checkoutAttemptId === null);
+    const mountTimeout = observations.find(event => event.metadata.reason === 'ready_timeout' && event.checkoutAttemptId === 17);
+    const lateReady = observations.find(event => event.eventName === 'express_checkout_ready' && event.metadata.recoveredAfterTimeout === true);
+    assert.equal(prepareTimeout?.metadata.loadPhase, 'session_preparation');
+    assert.equal(mountTimeout?.metadata.loadPhase, 'element_ready');
+    assert.equal(typeof mountTimeout?.metadata.loadId, 'string');
+    assert.equal(lateReady?.metadata.loadId, mountTimeout?.metadata.loadId, 'late readiness belongs to the same mount');
+    assert.notEqual(prepareTimeout?.metadata.loadId, mountTimeout?.metadata.loadId, 'reusing the session starts a distinct mount');
+    assert.equal(lateReady?.metadata.sessionPreparationMs, 0);
+    assert.equal(lateReady?.metadata.stripeJsWaitMs, 0);
+    assert.equal(lateReady?.metadata.elementReadyMs, 10_650);
     assert.equal(confirmations, 1, 'a recovered wallet must still accept a deliberate payment confirmation');
     assert.equal(requests, 1);
     let sdkReloads = 0;

@@ -49,6 +49,7 @@ const APPROVED_UTM_TOUCHES: readonly ApprovedUtmTouch[] = [
   { source: 'google', medium: 'cpc', campaign: 'claude_desktop_clip_20261005', contents: ADS_READINESS_DRAFT_CONTENTS },
   { source: 'youtube', medium: 'paid_video', campaign: 'claude_desktop_clip_20261005', contents: ADS_READINESS_DRAFT_CONTENTS },
   { source: 'newsletter', medium: 'email' },
+  { source: 'reddit', medium: 'organic_social', campaign: 'community_pilot', contents: ['mcp_quote'] },
   {
     source: 'github', medium: 'repository', campaign: 'maxvideoai_product',
     contents: ['hero_try', 'models', 'plugin_callout'],
@@ -93,6 +94,7 @@ const ANALYTICS_WORKSPACE_SECTIONS = new Set([
 const SAFE_MARKETING_LANDING_SURFACES = new Set([
   '/', '/about', '/ai-video-prompt-generator', '/ai-video-engines', '/benchmarks', '/best-for', '/blog', '/changelog',
   '/company', '/compare', '/contact', '/docs', '/editorial-standards', '/examples',
+  '/higgsfield-alternative', '/openart-alternative',
   ...getMcpPublicIntegrationPaths(), '/legal',
   '/legal/acceptable-use', '/legal/cookies', '/legal/cookies-list', '/legal/mentions',
   '/legal/privacy', '/legal/subprocessors', '/legal/takedown', '/legal/terms', '/mcp',
@@ -615,6 +617,8 @@ const CTA_NAMES = new Set([
   'milo_try', 'home_milo', 'studio_open', 'mcp_setup_guide', 'mcp_choose_integration',
   'reuse_example', 'view_example_details',
   'pricing_scenario',
+  'higgsfield_price_project', 'higgsfield_download_comparison',
+  'openart_price_shot', 'project_cost_configure', 'platform_guide_configure', 'higgsfield_character_studio',
   'marketing_nav_login', 'marketing_nav_start_app', 'homepage_ai_video_plugin', 'all_comparisons',
   'all_examples', 'all_models', 'browse_tools', 'open_workspace', 'view_pricing', 'compare_engines',
   'see_examples', 'start_render', 'best-for-hub', 'angle_hub_hero_secondary',
@@ -628,6 +632,8 @@ const CTA_LOCATIONS = new Set([
   'examples_hero', 'examples_gallery', 'watch_hero', 'watch_sidebar',
   'pricing_hero',
   'marketing_nav_mobile', 'marketing_nav_desktop', 'home_assistant_workflow', 'comparison_intro',
+  'comparison_hero', 'comparison_footer', 'comparison_share',
+  'openart_hero', 'openart_footer', 'project_cost_article', 'project_cost_scenario', 'platform_guide_budget', 'comparison_character_proof',
   'comparison_scorecard', 'comparison_preview', 'reference_workflow', 'toolbox', 'toolbox_cta', 'transparent_pricing',
   'home_hero', 'examples_preview', 'examples_preview_cta', 'examples_preview_featured_model',
   'examples_preview_header', 'examples_preview_model', 'shot_type_hub_cta', 'shot_type_selector',

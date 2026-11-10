@@ -115,6 +115,9 @@ export const esPayAsYouGoContent = {
     ],
   },
   subscriptionComparison: {
+    higgsfieldLinkLabel: 'Comparar MaxVideoAI y Higgsfield',
+    openartLinkLabel: 'Comparar MaxVideoAI y OpenArt',
+    budgetLink: { label: 'Prever el coste de los intentos', slug: 'coste-proyecto-video-ia' },
     header: {
       eyebrow: 'Sin suscripción obligatoria',
       title: 'Pago por uso vs. suscripción',

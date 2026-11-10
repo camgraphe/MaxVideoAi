@@ -351,6 +351,8 @@ for (const locale of locales) {
     assert.ok(semantic.links.some((link) => link.href === expected.pricingHref));
     assert.ok(semantic.links.some((link) => link.href === expected.modelHref));
     assert.ok(semantic.links.some((link) => link.href === expected.comparisonHref));
+    const higgsfieldHref = locale === 'en' ? '/higgsfield-alternative' : `/${locale}/higgsfield-alternative`;
+    assert.ok(semantic.links.some((link) => link.href === higgsfieldHref));
     assert.ok(semantic.links.some((link) => link.href === expected.lookupHref));
     assert.equal(semantic.showcasePresent, false);
     assert.ok(!semantic.headings.includes(expected.showcase.title));

@@ -2,6 +2,7 @@ import { CreditPurchaseNotes } from '@/components/marketing/CreditPurchaseNotes'
 import { BadgeDollarSign, CreditCard, Eye, RotateCcw } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 import type { AppLocale } from '@/i18n/locales';
+import { localizeMarketingHref } from '@/lib/i18n/marketing-locale-switch';
 import { getPricingHubCopy } from '../_lib/pricingHubCopy';
 
 const creditCardIcons = [BadgeDollarSign, Eye, RotateCcw, CreditCard] as const;
@@ -34,7 +35,17 @@ export function PricingCreditsRefundsSection({ locale }: { locale: AppLocale }) 
         })}
       </div>
       <CreditPurchaseNotes copy={copy.creditsRefunds.creditNotes} />
-      <Link href="/ai-video-prompt-generator" locale={locale} prefetch={false} className="mt-4 inline-flex text-sm underline underline-offset-4">{locale === 'fr' ? 'Comprendre les niveaux et crédits Milo →' : locale === 'es' ? 'Conocer los niveles y créditos de Milo →' : 'Understand Milo levels and credits →'}</Link>
+      <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-sm">
+        <Link href="/ai-video-prompt-generator" locale={locale} prefetch={false} className="underline underline-offset-4">{locale === 'fr' ? 'Comprendre les niveaux et crédits Milo →' : locale === 'es' ? 'Conocer los niveles y créditos de Milo →' : 'Understand Milo levels and credits →'}</Link>
+        <Link
+          href={localizeMarketingHref('/blog/ai-video-project-cost', locale)}
+          currentLocale={locale}
+          prefetch={false}
+          className="underline underline-offset-4"
+        >
+          {copy.creditsRefunds.projectBudgetLink}
+        </Link>
+      </div>
     </section>
   );
 }

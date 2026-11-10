@@ -159,6 +159,16 @@
         }
       },
       "compare": {
+        "sections": {
+          "platforms": {
+            "title": "Compare platforms",
+            "items": {
+              "platform-guide": "AI video platform guide",
+              "higgsfield-alternative": "MaxVideoAI vs Higgsfield",
+              "openart-alternative": "MaxVideoAI vs OpenArt"
+            }
+          }
+        },
         "items": {
           "ltx-2-3-pro-vs-ltx-2-5-pro": "LTX 2.3 Pro vs LTX 2.5 Pro",
           "wan-2-6-vs-wan-3": "Wan 2.6 vs Wan 3",
@@ -8328,7 +8338,8 @@
         "looksBody": "Start from a saved character, then change the wardrobe or setting. Use a style preset, describe your own outfit or add a clothing reference.",
         "identity": "Saved identity",
         "newLook": "New look",
-        "looksNote": "Dixie Trouble · two actual generations. Check the face and details before saving a look.",
+        "looksNote": "Dixie Trouble’s saved portrait and the Dixie Pop look are two Character Studio generations. Review the face and outfit before reusing a look.",
+        "looksRecastCta": "See Dixie in motion",
         "outputsTitle": "The right reference for the next shot.",
         "outputsBody": "Choose Portrait or Character sheet, then the format and resolution. The generation price updates before you confirm.",
         "portrait": "Portrait",

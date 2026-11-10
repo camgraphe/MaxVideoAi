@@ -99,6 +99,17 @@ export function PayAsYouGoSubscriptionComparisonSection({ data }: PayAsYouGoPage
             </tbody>
           </table>
         </div>
+        <div className="mt-4 flex flex-wrap gap-x-7 gap-y-1">
+        <Link href="/higgsfield-alternative" prefetch={false} className="inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-brand underline underline-offset-4 hover:text-text-primary">
+          {data.subscriptionComparison.higgsfieldLinkLabel}<ArrowUpRight aria-hidden className="h-4 w-4" />
+        </Link>
+        <Link href="/openart-alternative" prefetch={false} className="inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-brand underline underline-offset-4 hover:text-text-primary">
+          {data.subscriptionComparison.openartLinkLabel}<ArrowUpRight aria-hidden className="h-4 w-4" />
+        </Link>
+        <Link href={{ pathname: '/blog/[slug]', params: { slug: data.subscriptionComparison.budgetLink.slug } }} prefetch={false} className="inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-brand underline underline-offset-4 hover:text-text-primary">
+          {data.subscriptionComparison.budgetLink.label}<ArrowUpRight aria-hidden className="h-4 w-4" />
+        </Link>
+        </div>
       </div>
     </section>
   );
