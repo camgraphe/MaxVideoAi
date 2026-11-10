@@ -52,6 +52,10 @@ test('real media browser keeps compact commands, visible selection and contained
         await expect(canvas).toHaveAttribute('data-layout', mode);
         await expect(rows.first().getByRole('checkbox')).toBeChecked();
       }
+      await page.getByRole('button', { name: '1 selected', exact: true }).click();
+      await page.getByRole('button', { name: 'Clear selection', exact: true }).click();
+      await expect(page.getByRole('button', { name: 'Select', exact: true })).toBeFocused();
+      await expect(rows.first().getByRole('checkbox')).not.toBeChecked();
       await page.getByRole('button', { name: 'Filters', exact: true }).click();
       await expect(page.getByRole('dialog', { name: 'Filters' })).toBeVisible();
       await page.getByLabel('Source', { exact: true }).selectOption('upload');

@@ -3,6 +3,7 @@
   --compact-line: var(--app-line, var(--color-border, #d5d9df));
   display: flex;
   flex: 1;
+  min-width: 0;
   min-height: 0;
   flex-direction: column;
   color: var(--app-ink);
