@@ -1,8 +1,8 @@
 # Bibliothèque et références — proposition interactive
 
-> **Itération V2 en cours.** Lire [REPRISE.md](REPRISE.md) avant de continuer. Les résultats complets sur `70463ad1` décrivent la V1, pas les derniers ajouts de mosaïque, liste et identification sans noms fiables.
+> **V2 compacte.** Lire [IDENTIFICATION.md](IDENTIFICATION.md) pour le constat sur les noms, la stratégie de repérage et les contrats serveur à préparer. Les résultats sur `70463ad1` concernent uniquement la V1 ; les validations V2 doivent correspondre au candidat courant.
 
-Prototype jetable, sans modification applicative. Branche `codex/media-library-design`, basée sur le `main` vérifié le 9 novembre 2026 (`b08af8a3f`). La PR 638 reste sous la responsabilité du chat de livraison. Aucun déploiement ni fusion n’est prévu ici.
+Prototype jetable, sans modification applicative. Branche `codex/media-library-design`, synchronisée avec le `main` vérifié le 10 novembre 2026 (`86b598f8`), incluant la PR 638 fusionnée. La vérification de sa livraison reste sous la responsabilité du chat d’origine. Aucun déploiement ni fusion n’est prévu ici.
 
 ## Ouvrir
 
@@ -38,12 +38,12 @@ La référence visuelle générée par `baseline.ts` monte les vrais composants 
 - Distinguer le choix d’une collection de sa gestion. Le menu « Gérer » ouvre une fiche dédiée ; supprimer une collection conserve ses médias.
 - Garder la recherche visible. Provenance et état d’enregistrement restent dans Filtres, avec des puces visibles quand ils sont actifs. Trier et Affichage ont chacun un contrôle nommé.
 - Faire apparaître les actions groupées après sélection. Les commandes sélectionner les médias chargés / tous les résultats restent accessibles dans Plus d’options.
-- Sur desktop, réunir emplacement, types et import sur une même ligne. Conserver les onglets sur leur propre ligne lorsque la largeur manque. Densité initiale 128 px sur desktop, 136 px sur mobile ; le curseur garde toute la plage actuelle 88–184 px par pas de 8.
+- Sur desktop, réunir emplacement, types et import sur une même ligne. Conserver les onglets sur leur propre ligne lorsque la largeur manque. Mosaïque aux proportions connues par défaut, grille régulière ou liste de 52 px au choix. Densité initiale 128 px sur desktop, 136 px sur mobile ; le curseur garde toute la plage actuelle 88–184 px par pas de 8.
 - Afficher les médias entiers avec `object-fit: contain`, une géométrie fixe, des miniatures paresseuses et aucun lecteur vidéo dans la grille. Le prototype contient de vrais posters publics 16:9 et 9:16.
 - Dans le sélecteur : vignette = ajout direct, aperçu = bouton distinct, cases = panier ordonné à confirmer. Le panier compact devient détaillé à la demande. Le remplacement reste limité à l’emplacement occupé.
 - Préserver les références sélectionnées au changement de filtre dans le sélecteur ; conserver l’effacement annoncé de la sélection de gestion lorsque son périmètre change.
 
-Le prototype réutilise une copie isolée de la grille du candidat 638 (`449014a5`) afin de montrer ses interactions sans réimplémenter ni modifier son correctif dans le produit. Après la fusion de 638, une éventuelle intégration doit revenir à la grille partagée du dernier main.
+Le prototype réutilise une copie isolée de la grille du candidat 638 (`449014a5`) afin de montrer ses interactions sans réimplémenter ni modifier son correctif dans le produit. La PR 638 est maintenant fusionnée ; une éventuelle intégration doit revenir à la grille partagée du dernier main.
 
 La recherche de collections parmi 1 000 entrées est locale dans la démo. Le GET actuel `/api/media-library/collections` prend `limit` et `cursor`, sans recherche globale. L’intégration devra définir une recherche serveur paginée, ou annoncer clairement une recherche limitée aux collections déjà chargées ; ne pas charger arbitrairement toutes les collections du compte pour reproduire le prototype.
 
@@ -69,7 +69,7 @@ La recherche de collections parmi 1 000 entrées est locale dans la démo. Le GE
 
 Les parcours navigateur sont dans `verify.browser.ts` et le workflow manuel/PR **Media design prototype**. Ils s’exécutent seulement en CI hébergée. Aucun navigateur Playwright local ne doit être lancé pour cette tâche. Les vérifications interactives locales passent par le navigateur interne Codex.
 
-Le script produit des captures ordonnées, un comparatif avec le composant actuel, les dimensions de grille, le nombre de cartes dans le DOM, le débordement horizontal et les petites cibles visibles. Il parcourt desktop 1440 px, mobile 390/320 px, collections, filtres, sélection groupée, aperçu, panier, changement d’ordre et remplacement ciblé. Il éprouve aussi les états dégradés et 10 000 médias/1 000 collections.
+La V2 vérifie aussi la stabilité du défilement jusqu’au dernier média, le changement de disposition sans perdre les identités, la recherche dans les prompts, les repères personnels et le retour au contexte de gestion après un sélecteur. Sur mobile, le compteur et le chargement suivant partagent une seule commande. La recherche et l’ajout groupé parmi 1 000 collections ont une fenêtre initiale de 30 choix. Le script produit des captures ordonnées, un comparatif avec le composant actuel, les dimensions de grille, le nombre de cartes dans le DOM, le débordement horizontal et les petites cibles visibles. Il parcourt desktop 1440 px, mobile 390/320 px, collections, filtres, sélection groupée, aperçu, panier, changement d’ordre et remplacement ciblé. Il éprouve aussi les états dégradés et 10 000 médias/1 000 collections.
 
 Les statuts réels et les limites de vérification doivent être consignés dans le rapport d’évidence avant toute affirmation de réussite. Ce prototype français ne certifie ni la parité EN/ES, ni l’authentification, ni les erreurs réseau réelles, ni le lecteur de production, ni les performances de terrain. Ces contrôles restent nécessaires à l’intégration.
 

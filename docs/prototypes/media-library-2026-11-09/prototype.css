@@ -38,6 +38,7 @@ h1, h2, h3, p { margin: 0; }
 .collection-trigger { font-size:18px; font-weight:600; padding-left:0; max-width:min(65vw,420px); }
 .collection-trigger > span { text-overflow:ellipsis; overflow:hidden; }
 .collection-trigger svg:first-child { color:var(--app-accent); flex:none; }
+.mobile-load { display:none; }
 .library-count { color:var(--app-muted); font-size:11px; white-space:nowrap; }
 .library-heading .import-main { margin-left:auto; border-color:var(--app-line); background:var(--white); }
 .control { border-color:var(--app-line); background:var(--app-panel); }
@@ -72,7 +73,7 @@ kbd { font-size:11px; border:1px solid var(--app-line); min-width:20px; text-ali
 .dark .primary { color:#231c12; }
 .danger { color:#a63729; }
 .popover { border:1px solid var(--app-line); border-radius:13px; box-shadow:0 14px 48px #17230d20, 0 3px 8px #17230d10; width:310px; max-width:calc(100vw - 24px); z-index:30; overflow:hidden; }
-.popover .react-aria-Dialog { outline:none; }
+.popover .react-aria-Dialog { outline:none; max-height:min(80dvh,var(--available-height,80dvh)); overflow:auto; overscroll-behavior:contain; }
 .menu-options, .filter-menu { display:flex; flex-direction:column; gap:3px; padding:8px; }
 .menu-options > button { justify-content:space-between; text-align:left; min-height:40px; white-space:normal; }
 .menu-options > button[aria-pressed='true'] { color:var(--app-accent); background:var(--app-accent-soft); }
@@ -94,6 +95,9 @@ kbd { font-size:11px; border:1px solid var(--app-line); min-width:20px; text-ali
 .collection-menu nav button { justify-content:flex-start; text-align:left; width:100%; min-height:40px; }
 .collection-menu nav button[aria-current] { color:var(--app-accent); background:var(--app-accent-soft); }
 .collection-list { max-height:min(35dvh,300px); overflow:auto; overscroll-behavior:contain; }
+.collection-count { display:flex; justify-content:space-between; align-items:center; padding:4px 8px; color:var(--app-muted); font-size:11px; }
+.bulk-collection-list { display:flex; flex-direction:column; max-height:35dvh; overflow:auto; }
+.bulk-collection-list > button { justify-content:flex-start; text-align:left; white-space:normal; flex:none; }
 .collection-row { display:flex; min-width:0; align-items:center; }
 .collection-row > button:first-child { flex:1; min-width:0; }
 .collection-row > button > span { overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
@@ -247,6 +251,9 @@ kbd { font-size:11px; border:1px solid var(--app-line); min-width:20px; text-ali
   .collection-trigger { font-size:15px; max-width:calc(100vw - 164px); gap:6px; }
   .collection-trigger > svg:first-child { display:none; }
   .library-count { font-size:10px; }
+  .mobile-load { display:inline-flex; min-width:44px; min-height:44px; padding:4px; gap:3px; font-size:10px; }
+  .library-heading:has(.mobile-load) > .library-count { display:none; }
+  .library:not(.in-picker) > .results-caption { display:none; }
   .import-main { width:44px; min-width:44px; padding:8px; }
   .import-main > span { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); }
   .kind-hint { display:none; }

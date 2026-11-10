@@ -1,28 +1,36 @@
-# Reprise — itération compacte en cours
+# Reprise — galerie compacte V2
 
-Cette PR reste une **proposition interactive en brouillon**, pas une intégration applicative. L’utilisateur reprend la même tâche Codex après changement de compte.
+Même tâche Codex, reprise après changement de compte. La proposition reste un
+prototype local ; aucun module applicatif ni environnement de production n’est
+modifié par cette PR.
 
-Le dossier local de reprise détaillé (non publié, avec les preuves privées de production) est :
+- Checkout : `/Users/adrienmillot/.codex/worktrees/media-library-design/MaxVideoAi V2`.
+- Branche : `codex/media-library-design` ; PR brouillon https://github.com/camgraphe/MaxVideoAi/pull/639.
+- Main intégré : `86b598f88706cd23a685292d5675939e0cd09c8a`, avec la PR 638 fusionnée.
+- Démarrage : `node docs/prototypes/media-library-2026-11-09/server.mjs`, port local 4176.
+- Stratégie et contrats à préparer : [IDENTIFICATION.md](IDENTIFICATION.md).
+- Instructions de vérification : [README.md](README.md).
 
-`/Users/adrienmillot/Documents/MaxVideoAI-investigations/2026-11-09-media-library-design/REPRISE.md`
+La V2 propose mosaïque, grille et liste ; identifications factuelles et repère
+personnel facultatif ; contexte de gestion distinct du panier de références ;
+recherche et affichage progressif des collections. Le layout de mosaïque utilise
+les dimensions connues pour conserver un défilement stable sur 10 000 médias.
+Le chargement suivant et le compteur partagent une seule commande sur mobile.
 
-## État du travail
+La première V2 corrigée (`ec07fe3c9`) a passé le workflow
+https://github.com/camgraphe/MaxVideoAi/actions/runs/42725120101 : 47 captures,
+aucun débordement sur les tailles testées, aucun JS error capturé. Les derniers
+ajustements de collections/mobile ont leurs cas dans `verify.browser.ts` ; lire
+le résultat du workflow correspondant au HEAD avant de les déclarer validés.
+Les anciens résultats V1 ne constituent pas une validation V2.
 
-- Checkout isolé : `/Users/adrienmillot/.codex/worktrees/media-library-design/MaxVideoAi V2`.
-- Branche : `codex/media-library-design`, PR https://github.com/camgraphe/MaxVideoAi/pull/639.
-- Base main contrôlée : `b08af8a3f59a6a4e9378088ebcceb8e56fe59f0c`.
-- Dernière V1 intégralement vérifiée : `70463ad1072e6d09a7ea01e8cc4e04c29cc76ee9`, workflow https://github.com/camgraphe/MaxVideoAi/actions/runs/42711815139.
-- Le commit WIP de reprise conserve la V2 : mosaïque native virtualisée, grille conservée, liste compacte, cases visuellement plus petites avec cibles 44 px, barres resserrées, noms techniques volontairement faibles, libellés factuels modèle/provenance/date, recherche dans des prompts fictifs, filtres modèle/période et repère personnel simulé.
-- La mosaïque et la première liste ont été inspectées nativement. Les derniers changements de contexte et de filtres ne sont pas encore validés de bout en bout. Les tests de capture ont reçu seulement une adaptation minimale aux noms faibles ; compléter la QA V2 avant toute annonce de maturité.
+Le dossier de reprise local contient les pointeurs de candidat, les captures et
+les résultats les plus récents :
+`/Users/adrienmillot/Documents/MaxVideoAI-investigations/2026-11-09-media-library-design/`.
 
-## Priorités
-
-1. Lire la fiche locale détaillée, les guides du dépôt et le diff. Conserver la V2 en cours.
-2. Vérifier le boot et les interactions après redémarrage du serveur local (compilation au démarrage, pas de hot reload).
-3. Ne pas fonder l’UX sur de beaux noms fictifs : les libellés de générations peuvent être absents en production. Utiliser des faits disponibles, le visuel et le prompt, sans inventer de titre.
-4. Tester les modes, la sélection et les références sur desktop/mobile et 10 000 éléments. Les noms ne sont jamais des identités.
-5. Distinguer simulation et capacités serveur : contexte modèle/prompt, recherche de collections, modèle/période et repères personnels demandent leurs contrats d’intégration. Ne pas brancher directement les nouveaux filtres mock sur les APIs existantes.
-6. Préserver toutes les actions produit, y compris celles encore non simulées (Sous-titres, partage, actions vidéo).
-7. **Aucune intégration produit avant vérification de la fusion de 638 et fetch du dernier main.** Le chat d’origine garde seul la responsabilité de la fusion et du déploiement de 638. Son checkout de livraison et le Desktop restent intacts.
-
-Chrome reste réservé à l’utilisateur. Seulement IAB Codex et CI navigateur hébergée, sans lancement de Playwright local. Aucune génération payante, aucun média/collection de client modifié, aucun secret/flag/protection changé. Les preuves de prod restent privées hors du dépôt.
+Les contrôles navigateur automatisés restent en CI hébergée ; utiliser seulement
+IAB Codex pour les contrôles interactifs locaux. Ne pas utiliser Chrome, lancer
+un navigateur Playwright local, modifier le checkout du chat de livraison ou
+le Desktop. Les captures de production sont privées et restent hors du dépôt.
+Les nouveautés de recherche/contexte modèle/période/repère sont simulées :
+leurs contrats serveur sont décrits, sans être implémentés dans le produit.

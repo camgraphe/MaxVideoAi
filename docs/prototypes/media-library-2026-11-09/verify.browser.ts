@@ -85,6 +85,11 @@ test('synthetic media journeys and source baseline', {timeout:360_000}, async()=
       const geometry = await measure(page,`01-library-${width}`);
       assert.ok(geometry.domCards < 100,'grid stays bounded');
       await verifyMosaic(page);
+      if(width<=700){
+        await page.getByRole('button',{name:'Charger 60 médias de plus',exact:true}).click();
+        await expect(page.locator('.mobile-load')).toHaveCount(0);
+        await expect(page.locator('.library-count')).toContainText('93 médias');
+      }
       // Selection is tied to identities even when cards are recycled into another layout.
       for(const id of ['demo-1','demo-2'])await page.locator(`[data-media-key="${id}"] .compact-media-check`).click();
       for(const mode of ['list','grid','mosaic'] as const){
@@ -237,12 +242,43 @@ test('synthetic media journeys and source baseline', {timeout:360_000}, async()=
       await expect(volume.locator('[data-media-key="demo-1"]')).toBeFocused();
     }
     await volume.getByRole('button',{name:'Tous les médias',exact:true}).click();
+    await expect(volume.locator('.collection-row')).toHaveCount(30);
+    await volume.getByRole('button',{name:'Afficher 30 de plus',exact:true}).click();
+    await expect(volume.locator('.collection-row')).toHaveCount(60);
     await volume.getByRole('searchbox',{name:'Rechercher une collection'}).fill('1000');
     await expect(volume.getByRole('navigation',{name:'Collections',exact:true}).getByRole('button',{name:'Collection de démonstration 1000',exact:true})).toBeVisible();
     await measure(volume,'12-collection-search-1000');
     await volume.keyboard.press('Escape');
+    await volume.locator('[data-media-key="demo-1"] .compact-media-check').click();
+    await volume.locator('.bulk-actions').getByRole('button',{name:'Collections',exact:true}).click();
+    await expect(volume.locator('.bulk-collection-list > button')).toHaveCount(30);
+    await volume.getByRole('searchbox',{name:'Rechercher une collection de destination'}).fill('1000');
+    await expect(volume.locator('.bulk-collection-list > button')).toHaveCount(1);
+    await volume.getByRole('button',{name:'Collection de démonstration 1000',exact:true}).click();
+    await expect(volume.locator('.selection-summary')).toHaveCount(0);
+    await volume.getByRole('button',{name:'Tous les médias',exact:true}).click();
+    await volume.getByRole('navigation',{name:'Collections',exact:true}).getByRole('button',{name:'Collection de démonstration 1000',exact:true}).click();
+    await expect(volume.locator('.compact-media-tile')).toHaveCount(1);
+    await expect(volume.locator('.compact-media-tile')).toHaveAttribute('data-media-key','demo-1');
+    await volume.getByRole('button',{name:'Collection de démonstration 1000',exact:true}).click();
+    await volume.getByRole('button',{name:'Tous les médias',exact:true}).click();
     await volume.getByRole('button',{name:'Changer le thème',exact:true}).click();
     await measure(volume,'13-dark-desktop');await volume.close();
+    const mobileVolume=await browser.newPage({viewport:{width:390,height:844},hasTouch:true});
+    watch(mobileVolume);
+    await mobileVolume.goto(`${prototype.url}/?count=10000&loaded=all`);
+    for(const mode of ['mosaic','grid','list'] as const){
+      await display(mobileVolume,mode);
+      const height=await mobileVolume.locator('.compact-media-grid').evaluate(el=>el.scrollHeight);
+      await mobileVolume.locator('.compact-media-grid').evaluate(el=>el.scrollTo(0,el.scrollHeight));
+      await expect(mobileVolume.locator('[data-media-key="demo-9997"]')).toBeInViewport();
+      await settleImages(mobileVolume);
+      assert.equal(await mobileVolume.locator('.compact-media-grid').evaluate(el=>el.scrollHeight),height);
+      if(mode==='mosaic')await verifyMosaic(mobileVolume);
+      const result=await measure(mobileVolume,`14-volume-mobile-${mode}`);
+      assert.ok(result.domCards<100,'mobile volume stays virtualized');
+    }
+    await mobileVolume.close();
     for(const width of [1440,390]) {
       const page=await browser.newPage({viewport:{width,height:width>700?1000:844}});
       // Resolve thumbnails to the same local public assets used by the proposed layout.
@@ -255,7 +291,7 @@ test('synthetic media journeys and source baseline', {timeout:360_000}, async()=
     }
     assert.deepEqual(appStateErrors,[],'no prototype JS errors across tested states');
   } finally {
-    await writeFile(`${evidence}/measurements.json`,JSON.stringify({base:'b08af8a3f59a6a4e9378088ebcceb8e56fe59f0c',synthetic:true,measures,appStateErrors},null,2));
+    await writeFile(`${evidence}/measurements.json`,JSON.stringify({base:'86b598f88706cd23a685292d5675939e0cd09c8a',synthetic:true,measures,appStateErrors},null,2));
     await browser.close();await prototype.close();await baseline.close();
   }
 });
