@@ -9,10 +9,10 @@ import {LibraryMediaNavigation} from './components/library/LibraryMediaNavigatio
 function Scene(){const[scope,setScope]=useState({view:'all',kind:'all',source:'all',sort:'recent'});
 return <main style={{height:'100dvh',display:'flex',padding:12}}><CompactLibraryBrowser locale="en" title="Media" hideTitle assets={globalThis.fixtureConfig.assets} assetType="all" isLoading={false}
 management={{userId:'gallery-owner',scope,onScopeChange:patch=>setScope(prev=>({...prev,...patch})),totalCount:200}}
-source={scope.source} availableSources={['all','upload','generated']} sourceLabels={{all:'All',upload:'Uploads',generated:'Generated'}} onSourceChange={source=>setScope(prev=>({...prev,source}))}
+source={scope.source} availableSources={['all','upload','generated','upscale']} sourceLabels={{all:'All',upload:'Uploads',generated:'Generated',upscale:'Upscale'}} onSourceChange={source=>setScope(prev=>({...prev,source}))}
 searchPlaceholder="Search media" sourcesTitle="Source" emptyLabel="Empty" emptySearchLabel="No match" renderAssetActions={()=>null}
 headerLeadingActions={<LibraryMediaNavigation locale="en" value="all" charactersEnabled onChange={()=>{}}/>}
-headerActions={<button>Import</button>}/></main>};createRoot(document.getElementById('root')).render(<Scene/>);`;
+headerActions={<button>Import</button>} renderContinuation={asset=><button data-destination={asset.id}>Use selected media</button>}/></main>};createRoot(document.getElementById('root')).render(<Scene/>);`;
 const assets = Array.from({ length: 200 }, (_, index) => ({
   id: `asset-${index}`, name: `Image ${index}`, kind: 'image', source: 'upload',
   width: index % 2 ? 1600 : 600, height: index % 2 ? 900 : 1000,
@@ -27,10 +27,14 @@ test('real media browser keeps compact commands, visible selection and contained
   try {
     for (const width of [1440, 390]) {
       const page = await browser.newPage({ viewport: { width, height: 900 } });
-      const errors: string[] = [], originals: string[] = [];
+      const errors: string[] = [], originals: string[] = [], mutations: any[] = [];
       page.on('pageerror', error => errors.push(error.message));
       page.on('request', request => { if (request.url().includes('/original-')) originals.push(request.url()); });
       await page.route('**/api/media-library/collections**', route => route.fulfill({ json: { ok: true, items: [], hasMore: false, nextCursor: null } }));
+      await page.route('**/api/media-library/organization', route => {
+        const body = route.request().postDataJSON(); mutations.push(body);
+        return route.fulfill({json:{ok:true,results:body.references.map((reference:unknown)=>({reference,status:'succeeded'})),succeededCount:body.references.length,failedCount:0,affectedCount:body.references.length}});
+      });
       await page.goto(fixture.url);
       const canvas = page.locator('.compact-media-canvas');
       await expect(canvas).toHaveAttribute('data-layout', 'mosaic');
@@ -39,6 +43,13 @@ test('real media browser keeps compact commands, visible selection and contained
       assert.ok(await rows.count() < 200, 'bounded virtualization');
       await rows.first().locator('.compact-media-check').click();
       await expect(rows.first().getByRole('checkbox')).toBeChecked();
+      const actions = page.getByRole('group', {name:'Selection actions',exact:true});
+      await expect(actions).toBeVisible();
+      await expect(actions.getByRole('button',{name:'Preview',exact:true})).toBeVisible();
+      await expect(actions.getByRole('button',{name:'Trash',exact:true})).toBeVisible();
+      await actions.getByRole('button',{name:'Use in…',exact:true}).click();
+      await expect(page.locator('[data-destination]')).toHaveAttribute('data-destination','asset-0');
+      await page.keyboard.press('Escape');
       const mark = rows.first().locator('.compact-media-check-mark');
       await expect(mark.locator('svg')).toBeVisible();
       const hit = await rows.first().locator('.compact-media-check').boundingBox();
@@ -53,14 +64,25 @@ test('real media browser keeps compact commands, visible selection and contained
         await expect(canvas).toHaveAttribute('data-layout', mode);
         await expect(rows.first().getByRole('checkbox')).toBeChecked();
       }
-      await page.getByRole('button', { name: '1 selected', exact: true }).click();
-      await page.getByRole('button', { name: 'Clear selection', exact: true }).click();
+      await rows.nth(1).locator('.compact-media-check').click();
+      await expect(actions).toContainText('2 selected');
+      await expect(actions.getByRole('button',{name:'Preview',exact:true})).toHaveCount(0);
+      await actions.getByRole('button',{name:'Favorites',exact:true}).click();
+      await page.getByRole('button',{name:'Favorite',exact:true}).click();
+      await expect(actions).toHaveCount(0);
+      assert.equal(mutations.length,1); assert.equal(mutations[0].operation,'favorite');
+      assert.deepEqual(mutations[0].references,assets.slice(0,2).map(asset=>({...asset.libraryRef,sourceRevision:asset.sourceRevision})));
+      await rows.first().locator('.compact-media-check').click();
+      await actions.getByRole('button', { name: 'Clear selection', exact: true }).click();
       await expect(page.getByRole('button', { name: 'Select', exact: true })).toBeFocused();
       await expect(rows.first().getByRole('checkbox')).not.toBeChecked();
-      await page.getByLabel('Source', { exact: true }).selectOption('upload');
+      await expect(page.getByRole('combobox',{name:'Source',exact:true})).toHaveCount(0);
+      await page.locator('.compact-library-heading').getByRole('button',{name:'Tools',exact:true}).click();
+      await page.getByRole('button',{name:'Upscale',exact:true}).click();
+      await expect(page.locator('.compact-library-tools-trigger')).toHaveText('Upscale');
       await page.getByRole('button', { name: 'All media', exact: true }).click();
       await page.locator('.compact-library-collections').getByRole('button', { name: 'All media', exact: true }).click();
-      await expect(page.getByLabel('Source', { exact: true })).toHaveValue('all');
+      await expect(page.locator('.compact-library-tools-trigger')).toHaveText('Tools');
       await page.getByRole('button', { name: 'Filters', exact: true }).click();
       await expect(page.getByLabel('Library view', { exact: true })).toHaveValue('all');
       await page.keyboard.press('Escape');

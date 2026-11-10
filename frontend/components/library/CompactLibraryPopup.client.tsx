@@ -10,11 +10,13 @@ export function CompactLibraryPopup({
   children,
   active = false,
   className = '',
+  disabled = false,
 }: {
   label: string;
   children: ReactNode | ((close: () => void) => ReactNode);
   active?: boolean;
   className?: string;
+  disabled?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   return (
@@ -22,6 +24,7 @@ export function CompactLibraryPopup({
       <Button
         className={`compact-library-menu-trigger ${className}`}
         data-active={active || undefined}
+        isDisabled={disabled}
       >
         <span>{label}</span>
         <ChevronDown size={14} aria-hidden />

@@ -369,6 +369,12 @@ poster height from stored dimensions, with a fixed 24px caption, before scrollin
 render contextual command popovers through `CompactLibraryPopup` (React Aria owns
 focus, Escape and dismissal). A 16px checked mark has a 44px hit target. Technical
 filenames use a type/date caption; originals and full names remain in Details.
+`CompactLibrarySelection` owns only selection-scope commands. Selecting media
+immediately renders `CompactLibrarySelectionActions` with applicable actions;
+single-item Preview and Use in reuse the captured DTO and existing continuation
+owner. Batch favorites, collections and Trash keep the same selection controller.
+The heading separates media kinds from a single Tools/origin menu, with the active
+origin visible on its trigger; there is no second Source selector in the toolbar.
 Source filtering preserves the chosen all/saved/review scope. The All media menu
 entry clears source, kind, search and organization filters together. Styling is scoped under
 `.compact-library`, loaded after the app shell by `AppRuntime`; it does not import
@@ -489,6 +495,12 @@ resolution. No Dashboard or additional Uppy focus host is mounted.
 ## Contextual picker acceptance
 
 Ordinary media pickers use `CompactMediaGrid` through `ReferenceLibraryPicker`.
+`ReferencePickerToolbar` keeps search and import on one row. Source, compatibility,
+collections and secondary links live in a collapsed Filters disclosure whose
+trigger reports active filters. The default compatible-only admission is unchanged.
+The count shares the title metadata row and help is inside the disclosure. The
+portrait browser suite guards a minimum 68% canvas/modal height at 390 x 844 and
+desktop size, alongside exact selection and full-frame poster contracts.
 The grid owns only keyboard/checkbox/primary/Preview interaction and virtual layout. Its
 optional key/name adapters, single selection and selection-disabled keys preserve
 the page library's defaults. Character entities retain immediate toggles and a

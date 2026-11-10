@@ -26,6 +26,7 @@ test('selection is portal-scoped with a single visible heading and owner-control
   assert.match(picker,/useReferencePickerSelection/);
   assert.match(picker,/useReferencePickerBrowse/);
   assert.match(picker,/ReferencePickerFooter/);
+  assert.match(picker,/ReferencePickerToolbar/);
   assert.ok(picker.split('\n').length<=500);
   assert.match(selection, /await live\.onConfirm/);
   assert.match(selection,/validateLibraryPickerSelection/);

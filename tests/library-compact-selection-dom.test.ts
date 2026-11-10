@@ -462,16 +462,18 @@ test('production compact browser preserves slots, exact totals and independent v
     assert.equal(w.document.querySelector('[data-layout]')?.getAttribute('data-layout'), 'mosaic');
     await w.fx.act(async () => w.document.querySelector('.compact-media-check input').click());
     assert.ok(w.document.querySelector('.compact-media-check[data-selected] .compact-media-check-mark svg'));
-    assert.match(w.document.querySelector('.compact-library-selection-trigger')?.textContent, /1 selected/);
+    assert.match(w.document.querySelector('.compact-library-selection-actions')?.textContent, /1 selected/);
+    assert.ok(w.document.querySelector('.compact-library-selection-actions button[data-preview]'), 'selection immediately exposes preview without opening a menu');
+    assert.ok(w.document.querySelector('.compact-library-selection-actions button[data-trash]'), 'bulk actions are visible beside the selection');
     await w.fx.act(async () => { w.locale = 'fr'; w.fx.render(); });
-    assert.equal(w.document.querySelector('.compact-library-selection-trigger')?.textContent, '1 sélectionné');
+    assert.match(w.document.querySelector('.compact-library-selection-actions')?.textContent, /1 sélectionné/);
     await w.fx.act(async () => { w.locale = 'en'; w.fx.render(); });
     for (const mode of ['List', 'Grid', 'Mosaic']) {
       await w.fx.act(async () => w.document.querySelector(`[aria-label="${mode}"]`).click());
       assert.equal(w.document.querySelector('[data-layout]')?.getAttribute('data-layout'), mode.toLowerCase());
       assert.equal(w.document.querySelector('.compact-media-check input')?.checked, true, 'view changes preserve selection');
     }
-    const preview = w.document.querySelector('[aria-label="Preview first"]');
+    const preview = w.document.querySelector('.compact-library-selection-actions button[data-preview]');
     assert.ok(preview, 'virtualized actual browser mounts visible card');
     await w.fx.act(async () => preview.click());
     assert.equal(w.document.querySelector('[data-save]')?.getAttribute('data-save'), 'row-1');

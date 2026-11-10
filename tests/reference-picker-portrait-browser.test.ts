@@ -18,22 +18,65 @@ const assets = [[90, 160], [160, 90], [120, 120], [90, 160], [90, 160]].map(([wi
   };
 });
 const source = `
+  import { useState } from 'react';
   import { createRoot } from 'react-dom/client';
   import { ReferenceLibraryPicker } from './components/library/ReferenceLibraryPicker.client';
   import { AudioGeneratedVideoPickerModal } from './app/(core)/(workspace)/app/audio/_components/audio-generated-video-picker';
   const config = globalThis.fixtureConfig;
   const select = asset => { globalThis.selectedOriginal = asset.url; globalThis.selectedReference = asset.ref; };
+  function DensePicker() {
+    const [source,setSource]=useState('all');
+    return <div className="app-experience app-library-picker-layer"><ReferenceLibraryPicker
+      title="Select reference image" subtitle="Images · Maximum 30" assets={config.assets} assetType="image"
+      source={source} availableSources={['all','upload','character']} sourceLabels={{all:'All',upload:'Uploads',character:'Character Studio'}}
+      onSourceChange={setSource} onClose={()=>{}} isLoading={false} emptyLabel="Empty" emptySearchLabel="No match"
+      headerActions={<button type="button">Refresh</button>} hasMore onLoadMore={()=>{}} renderAssetActions={()=>null}
+      selection={{scope:'compact',onConfirm:select,onConfirmMany:()=>{},getEligibility:()=>({status:'usable'})}} /></div>;
+  }
   createRoot(document.getElementById('root')).render(config.reader === 'audio'
     ? <AudioGeneratedVideoPickerModal open userId={config.owner} videos={config.assets.slice(0,4).map(a=>({...a,jobId:a.id,label:a.name,createdAt:'2026-01-01T00:00:00Z'}))}
         isLoading={false} error={null} locale="en" onClose={()=>{}} onSelect={select}
         copy={{picker:{title:'Choose video',close:'Close',search:'Search',empty:'No videos',error:'Could not select'},source:{durationPending:'Duration pending'}}}/>
-    : <div className="app-experience app-library-picker-layer"><ReferenceLibraryPicker
+    : config.reader === 'dense' ? <DensePicker /> : <div className="app-experience app-library-picker-layer"><ReferenceLibraryPicker
         title="Select reference video" assets={config.assets} assetType="video" source="all" availableSources={['all']}
         sourceLabels={{all:'All'}} onSourceChange={()=>{}} onClose={()=>{}} isLoading={false}
         searchPlaceholder="Search" sourcesTitle="Source" emptyLabel="No videos" emptySearchLabel="No match"
         renderAssetActions={()=>null} renderAssetMeta={()=><span>Choose a section up to 15 s after adding.</span>}
         selection={{ownerId:config.owner,scope:'portrait-test',onConfirm:select}}/></div>);
 `;
+
+test('reference picker reserves most mobile height for media and keeps secondary filters accessible', async () => {
+  const fixture=await startWorkspaceReferenceFixture({source});
+  const browser=await chromium.launch();
+  try {
+    for(const width of [390,1440]) {
+      const page=await browser.newPage({viewport:{width,height:844}});
+      await page.goto(fixture.url);
+      await page.evaluate(config=>{(globalThis as PortraitFixtureGlobal).fixtureConfig=config;},{reader:'dense',assets});
+      await page.addScriptTag({url:`${fixture.url}/${fixture.script}`});
+      await expect(page.getByRole('row')).toHaveCount(5);
+      const geometry=await page.evaluate(()=>({
+        modal:document.querySelector('.app-reference-picker')!.getBoundingClientRect().height,
+        canvas:document.querySelector('.compact-media-canvas')!.getBoundingClientRect().height,
+        overflow:document.documentElement.scrollWidth>innerWidth+1,
+      }));
+      assert.ok(geometry.canvas/geometry.modal>=.68,JSON.stringify(geometry));
+      assert.equal(geometry.overflow,false);
+      await expect(page.getByRole('combobox',{name:'Source',exact:true})).toBeHidden();
+      await page.getByRole('button',{name:'Filters',exact:true}).click();
+      await page.getByRole('combobox',{name:'Source',exact:true}).selectOption('character');
+      await page.getByRole('combobox',{name:'Compatibility',exact:true}).selectOption('all');
+      await expect(page.getByRole('button',{name:'Refresh',exact:true})).toBeVisible();
+      await expect(page.getByRole('link',{name:'Character Studio',exact:true})).toHaveAttribute('href','/app/tools/character-builder');
+      await page.getByRole('button',{name:'Filters · 2',exact:true}).click();
+      await expect(page.getByRole('combobox',{name:'Source',exact:true})).toBeHidden();
+      await page.getByRole('row').nth(0).locator('label.compact-media-check').click();
+      await expect(page.getByRole('button',{name:'Add 1 reference',exact:true})).toBeEnabled();
+      assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
+      await page.close();
+    }
+  } finally {await browser.close();await fixture.close();}
+});
 
 test('portrait video posters stay centered and uncropped in both reference selectors on Chromium and WebKit', async () => {
   const fixture = await startWorkspaceReferenceFixture({ source,hostModules:referencePickerAuthModules(owner,token) });

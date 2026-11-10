@@ -10,6 +10,7 @@ import { libraryMediaCaption } from './library-media-caption';
 import { compactMediaSource } from './media-action-copy';
 import { CompactLibraryFilters } from './CompactLibraryFilters.client';
 import { CompactLibrarySelection } from './CompactLibrarySelection.client';
+import { CompactLibrarySelectionActions } from './CompactLibrarySelectionActions.client';
 import { CompactLibraryCollections } from './CompactLibraryCollections.client';
 import { useLibraryManagementSelection } from './useLibraryManagementSelection';
 import { MediaActionPanel } from './MediaActionPanel.client';
@@ -99,6 +100,10 @@ function OwnedCompactLibraryBrowser({
     scope,
     assets: managed,
   });
+  const root = useRef<HTMLElement>(null);
+  const actionAsset = selection.count === 1
+    ? [...selection.selection.records.values()][0] ?? managed.find(asset => selection.keys.has(asset.organization.key))
+    : undefined;
   const [localQuery, setLocalQuery] = useState('');
   const query = onSearchQueryChange ? searchQuery : localQuery;
   const visible = useMemo(
@@ -173,6 +178,7 @@ function OwnedCompactLibraryBrowser({
   };
   return (
     <section
+      ref={root}
       className={`compact-library ${className ?? ''}`}
       aria-busy={isLoading || selection.pending}
     >
@@ -189,7 +195,10 @@ function OwnedCompactLibraryBrowser({
         <div className="compact-library-heading-actions">
           {titleActions}
           {headingActions}
-          <div className="compact-library-kind-actions">{headerLeadingActions}</div>
+          <div className="compact-library-kind-actions">
+            {headerLeadingActions}
+            <CompactLibrarySource locale={locale} source={source} availableSources={availableSources} sourceLabels={sourceLabels} onSourceChange={onSourceChange} />
+          </div>
           <div className="compact-library-import-actions">{headerActions}</div>
           {onClose ? (
             <button type="button" onClick={onClose}>
@@ -217,7 +226,6 @@ function OwnedCompactLibraryBrowser({
                 placeholder={searchPlaceholder}
               />
             </label>
-            <CompactLibrarySource locale={locale} source={source} availableSources={availableSources} sourceLabels={sourceLabels} onSourceChange={onSourceChange} />
             <CompactLibraryFilters
               {...management}
               locale={locale}
@@ -252,9 +260,7 @@ function OwnedCompactLibraryBrowser({
               ))}
             </div>
             <CompactLibrarySelection
-              userId={userId}
               locale={locale}
-              scope={scope}
               selection={selection}
               isLoading={isLoading}
             />
@@ -264,6 +270,16 @@ function OwnedCompactLibraryBrowser({
                 : `${totalCount.toLocaleString(locale)} ${copy.results}`}
             </span>
           </div>
+          {selection.count > 0 ? <CompactLibrarySelectionActions
+            key={scopeKey}
+            userId={userId} locale={locale} scope={scope} selection={selection}
+            asset={actionAsset} onOpen={asset => setViewer({ context, asset })}
+            renderContinuation={renderContinuation}
+            onClear={() => {
+              selection.clear();
+              root.current?.querySelector<HTMLButtonElement>('.compact-library-selection-trigger')?.focus();
+            }}
+          /> : null}
           <p className="compact-library-announcement" role="status">
             {selection.pending ? copy.pending : announcementText(selection.announcement, copy)}
           </p>

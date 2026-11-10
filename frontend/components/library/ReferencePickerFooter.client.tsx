@@ -108,9 +108,7 @@ export function ReferencePickerFooter({
                 {copy.clear}
               </button>
             </>
-          ) : (
-            <span>{copy.empty}</span>
-          )}
+          ) : null}
         </div>
         <div className="app-picker-footer-actions">
           <button type="button" disabled={busy} onClick={onClose}>

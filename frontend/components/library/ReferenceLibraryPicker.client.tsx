@@ -7,13 +7,13 @@ import type { LibraryBrowseScope } from '@/lib/library-browse';
 import { ReferenceLibraryManage } from './ReferenceLibraryManage.client';
 import { ReferencePickerFooter } from './ReferencePickerFooter.client';
 import { useReferencePickerSelection } from './useReferencePickerSelection';
-import { ChevronDown, ExternalLink } from 'lucide-react';
+import { Upload } from 'lucide-react';
+import { ReferencePickerToolbar } from './ReferencePickerToolbar.client';
 import { LibraryImportQueue } from './LibraryImportQueue.client';
 import type { LibraryImportQueueController } from '@/lib/library-import-queue';
 
-import { useCallback, useEffect, useId, useRef, useState, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { MediaActionContent } from './MediaActionPanel.client';
-import { compactMediaSource } from './media-action-copy';
 import { workspaceReferenceCopy } from '@/components/composer/workspace-reference-copy';
 import type { AssetBrowserAsset, AssetLibraryBrowserProps } from './AssetLibraryBrowser';
 import type { MediaInputEligibility } from '@/lib/media-input-eligibility';
@@ -114,9 +114,6 @@ function OwnedReferenceLibraryPicker(props: AssetLibraryBrowserProps & { selecti
   useEffect(() => {
     if (props.active === false) { setPreview(null); setManaging(false); }
   }, [props.active]);
-  const searchId = useId();
-  const sourceId = useId();
-  const compatibilityId = useId();
   const eligibility = new Map(assets.map((asset) => [asset, selection.getEligibility?.(asset)]));
   const displayName = (asset: AssetBrowserAsset, index: number) =>
     asset.name?.trim() || `${workspaceReferenceCopy(locale).kinds[asset.kind]} ${index + 1}`;
@@ -143,7 +140,7 @@ function OwnedReferenceLibraryPicker(props: AssetLibraryBrowserProps & { selecti
   const loading = usingServerBrowse ? organized.isLoading : isLoading;
   const loadMoreControl =
     (usingServerBrowse ? organized.hasMore : hasMore) && more ? (
-      <div className="flex flex-col items-center gap-2 pt-4">
+      <div className="app-picker-load-more">
         {query.trim() && !usingServerBrowse ? (
           <p role="status" className="text-center text-xs text-text-secondary">
             {copy.searchMore}
@@ -258,7 +255,10 @@ function OwnedReferenceLibraryPicker(props: AssetLibraryBrowserProps & { selecti
         <header className="app-picker-heading">
           <div>
             <h2 id={props.headingId}>{title}</h2>
-            {subtitle ? <p>{subtitle}</p> : null}
+            {subtitle || usingServerBrowse ? <p className="app-picker-summary">
+              {subtitle ? <span>{subtitle}</span> : null}
+              {usingServerBrowse && !loading && !browseError ? <span role="status">{organized.totalCount} {locale.startsWith('fr') ? 'médias' : locale.startsWith('es') ? 'medios' : 'media'}</span> : null}
+            </p> : null}
           </div>
           <button
             type="button"
@@ -270,67 +270,18 @@ function OwnedReferenceLibraryPicker(props: AssetLibraryBrowserProps & { selecti
             <span aria-hidden>×</span>
           </button>
         </header>
-        <fieldset className="app-picker-filters" disabled={busy}>
-          <div className="app-picker-field app-picker-search-field">
-            <label htmlFor={searchId}>{copy.search}</label>
-            <input
-            id={searchId}
-            type="search"
-            value={query}
-            onChange={(event) => setQuery(event.target.value.slice(0, 200))}
-            placeholder={copy.search}
-          />
-          </div>
-          <div className="app-picker-field">
-            <label htmlFor={sourceId}>{copy.source}</label>
-            <div className="app-picker-select">
-              <select
-            id={sourceId}
-            value={source}
-            onChange={(event) => onSourceChange(event.target.value as typeof source)}
-          >
-            {availableSources.map((option) => (
-              <option key={option} value={option}>
-                {compactMediaSource(option, locale, sourceLabels[option] ?? option)}
-              </option>
-            ))}
-              </select>
-              <ChevronDown size={16} aria-hidden />
-            </div>
-          </div>
-          {selection.getEligibility ? (
-            <div className="app-picker-field">
-              <label htmlFor={compatibilityId}>
-                {copy.compatibility}
-              </label>
-              <div className="app-picker-select">
-                <select
-                id={compatibilityId}
-                data-compatibility-filter
-                value={compatibility}
-                onChange={(event) => setCompatibility(event.target.value)}
-              >
-                <option value="compatible">{copy.compatible}</option>
-                <option value="all">{copy.allMedia}</option>
-                </select>
-                <ChevronDown size={16} aria-hidden />
-              </div>
-            </div>
-          ) : null}
-          <div className="app-picker-import">
-            {owner && !selection.onToggle && selection.allowOrganizationBrowse !== false ? (
-              <button type="button" onClick={() => setCollectionsOpen((value) => !value)}>
-                {locale.startsWith('fr') ? 'Collections' : locale.startsWith('es') ? 'Colecciones' : 'Collections'}
-              </button>
-            ) : null}
-            {headerActions}
-            {!immediate && availableSources.includes('character') ? (
-              <a className="app-picker-character-link" href="/app/tools/character-builder" target="_blank" rel="noopener noreferrer">
-                Character Studio <ExternalLink size={14} aria-hidden />
-              </a>
-            ) : null}
+        <ReferencePickerToolbar
+          locale={locale} busy={busy} query={query} onQueryChange={setQuery}
+          source={source} sourceLabels={sourceLabels} availableSources={availableSources} onSourceChange={onSourceChange}
+          compatibility={selection.getEligibility ? compatibility : undefined} onCompatibilityChange={setCompatibility}
+          collectionsAvailable={Boolean(owner && !selection.onToggle && selection.allowOrganizationBrowse !== false)}
+          collectionsOpen={collectionsOpen} onCollectionsToggle={() => setCollectionsOpen((value) => !value)}
+          organizationActive={Boolean(organizationScope.favorite || organizationScope.collectionId)}
+          headerActions={headerActions} showCharacterStudio={!immediate && availableSources.includes('character')}
+          selectionGuidance={props.selectionGuidance} hint={!immediate ? (selection.onConfirmMany ? copy.multipleHint : copy.clickHint) : undefined}
+        >
             {selection.importQueue ? (
-              <>
+              <div className="app-picker-import">
                 <input
                   ref={importInput}
                   tabIndex={-1}
@@ -349,11 +300,11 @@ function OwnedReferenceLibraryPicker(props: AssetLibraryBrowserProps & { selecti
                     }
                   }}
                 />
-                <button type="button" onClick={(event) => {
+                <button type="button" aria-label={locale.startsWith('fr') ? 'Importer' : locale.startsWith('es') ? 'Importar' : 'Import'} onClick={(event) => {
                   returnFocus.current = event.currentTarget;
                   importInput.current?.click();
                 }}>
-                  {locale.startsWith('fr') ? 'Importer' : locale.startsWith('es') ? 'Importar' : 'Import'}
+                  <Upload size={16} aria-hidden /><span className="app-picker-import-label">{locale.startsWith('fr') ? 'Importer' : locale.startsWith('es') ? 'Importar' : 'Import'}</span>
                 </button>
                 {imports.files.length ? (
                   <button type="button" onClick={(event) => {
@@ -363,16 +314,9 @@ function OwnedReferenceLibraryPicker(props: AssetLibraryBrowserProps & { selecti
                     {imports.files.length} · {copy.source}
                   </button>
                 ) : null}
-              </>
+              </div>
             ) : null}
-          </div>
-        </fieldset>
-        {!immediate ? (
-          <p className="app-picker-instructions">
-            {selection.onConfirmMany ? copy.multipleHint : copy.clickHint}
-            {usingServerBrowse && !loading && !browseError ? <span role="status">{organized.totalCount} {locale.startsWith('fr') ? 'médias' : locale.startsWith('es') ? 'medios' : 'media'}</span> : null}
-          </p>
-        ) : null}
+        </ReferencePickerToolbar>
         {collectionsOpen && owner ? (
           <CompactLibraryCollections
             userId={owner}
@@ -382,12 +326,6 @@ function OwnedReferenceLibraryPicker(props: AssetLibraryBrowserProps & { selecti
           />
         ) : null}
         <div className={`app-picker-body app-scroll-surface ${immediate ? '' : 'app-picker-collection-body'}`}>
-          {props.selectionGuidance ? (
-            <details className="app-picker-guidance">
-              <summary>{workspaceReferenceCopy(locale).details}</summary>
-              <p>{props.selectionGuidance}</p>
-            </details>
-          ) : null}
           {browseError || failure ? (
             <p role="alert" className="app-picker-error">
               {failure ?? browseError}
