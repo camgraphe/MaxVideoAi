@@ -61,3 +61,40 @@ Use descriptive Web-credit and MCP section headings, and send the hero compariso
 The roadmap keeps five volume-documented competitors as the primary audit scope: Higgsfield, OpenArt, Magnific/Freepik, Kling and InVideo. Krea supplies another useful comparison-page reference; a separate own-offer audit now exists in OUTREACH. This is not a global top-five market ranking. Unresolved dictated names remain outside the priority scope until identified and supported by volume evidence.
 
 Model availability and exact current versions are a secondary reassurance criterion requested by the user. Record the model, version, mode, access tier and check date before adding it to any comparison. Do not imply every new model is always available on release day. Keep the current seven public criteria unchanged until that evidence exists.
+
+## Authorized extension: complete the review batch
+
+The user subsequently asked to implement the other pages and guide in the isolated
+worktree, then review the complete result together. This supersedes the earlier
+roadmap-only boundary for the following units; release and external messages remain
+separate actions.
+
+- Higgsfield gains a compact Character Studio chapter with real Dixie identity and
+  look images, its own localized CTA and a sourced FAQ. The existing Character
+  Studio page links saved looks to the existing Recast demonstration.
+- `/openart-alternative` compares occasional shots with Director's assembled-film
+  workflow, in EN/FR/ES. It uses distinct Studio storyboard artwork and six sourced
+  criteria, including the recurring Plus/Pro/Wonder add-on terms.
+- `/blog/compare-ai-video-platforms` and its translated slugs compare seven
+  platforms by deliverable, Web credit terms and assistants. Two genuine decisions
+  cover OpenArt vs Krea and Higgsfield vs OpenArt. Angle source/reverse artwork
+  illustrates a different task from the dedicated comparison heroes.
+- `/blog/ai-video-project-cost` and its translated slugs expose a 1/3/6-attempt
+  budget selector and an SSR table. The LTX scenario is shared with Higgsfield and
+  the platform guide through `project-cost-example.ts`. It remains an illustrative
+  budget, not an observed multi-attempt production receipt.
+- Contextual links connect both comparisons, both articles, PAYG and existing
+  Character Studio. Locale routing, blog language-switch mappings, safe analytics
+  keys, query handling, llms and the explicit public training allowlist include
+  the new destinations. Sitemap inclusion is verified from the normal readers.
+
+A matched Seedance 2.5 quote investigation remains in OUTREACH. Competitor credit
+figures lack a confirmed matching audio setting, so no three-way per-render price
+claim is published. The broader commercial proposition remains project funding
+and disclosed terms, not blanket price superiority.
+
+The final delivery archive records the compiled preview, responsive captures,
+HTTP/SEO checks, independent review and prepared distribution texts. No additional
+paid generation was requested for this extension; every displayed asset has a
+known source and distinct role. Recheck current prices and account eligibility
+before release, then follow the repository PR and Quality CI policy.

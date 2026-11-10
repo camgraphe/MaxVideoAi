@@ -18,6 +18,9 @@ import { BlogAuthorByline, BlogAuthorCard } from './blog-author-byline';
 import { BlogPostJsonLdScripts } from './blog-post-jsonld-scripts';
 import { BlogWalkthrough } from './blog-walkthrough';
 import { BlogCharacterStudioActions, BlogCharacterStudioPortraits, BlogCharacterStudioProof, isCharacterStudioArticle } from './blog-character-studio-proof';
+import { BlogProjectBudget } from './blog-project-budget';
+import { BlogPlatformGuide } from './blog-platform-guide';
+import acquisitionStyles from './blog-acquisition-shell.module.css';
 
 type BlogPostViewProps = {
   articleCopy: BlogArticleCopy;
@@ -49,16 +52,18 @@ export function BlogPostView({
   relatedPosts,
 }: BlogPostViewProps) {
   const characterArticle = isCharacterStudioArticle(getCanonicalBlogSlug(post));
+  const canonicalSlug = getCanonicalBlogSlug(post);
+  const acquisitionArticle = ['compare-ai-video-platforms', 'ai-video-project-cost'].includes(canonicalSlug);
   return (
-    <div className={post.editorial ? 'editorial-blog-page section' : `container-page max-w-5xl section${characterArticle ? ' !pt-6 sm:!pt-10' : ''}`}>
+    <div className={post.editorial ? 'editorial-blog-page section' : `container-page section ${acquisitionArticle ? acquisitionStyles.shell : 'max-w-5xl'}${characterArticle ? ' !pt-6 sm:!pt-10' : ''}`}>
       <div className="stack-gap-lg">
         <TextLink href="/blog" className="text-sm" linkComponent={Link}>
           {articleCopy.backLink}
         </TextLink>
 
-        {post.editorial ? <PublicEditorialArticleView article={post.editorial} byline={<BlogAuthorByline copy={editorialCopy} locale={locale} modifiedLabel={modifiedLabel} profile={editorialProfile} publishedLabel={publishedLabel} />} /> : <article className="blog-editorial-article overflow-hidden rounded-[28px] border border-hairline bg-surface/90 shadow-card backdrop-blur">
-          <header className="relative border-b border-hairline bg-gradient-to-br from-surface to-bg/60">
-            {post.walkthrough ? null : post.image ? (
+        {post.editorial ? <PublicEditorialArticleView article={post.editorial} byline={<BlogAuthorByline copy={editorialCopy} locale={locale} modifiedLabel={modifiedLabel} profile={editorialProfile} publishedLabel={publishedLabel} />} /> : <article className={acquisitionArticle ? acquisitionStyles.article : 'blog-editorial-article overflow-hidden rounded-[28px] border border-hairline bg-surface/90 shadow-card backdrop-blur'}>
+          <header className={acquisitionArticle ? acquisitionStyles.header : 'relative border-b border-hairline bg-gradient-to-br from-surface to-bg/60'}>
+            {post.walkthrough || acquisitionArticle ? null : post.image ? (
               <div className="relative h-64 w-full overflow-hidden bg-bg sm:h-80">
                 <Image
                   src={post.image}
@@ -105,8 +110,10 @@ export function BlogPostView({
 
           {post.walkthrough ? <BlogWalkthrough content={post.walkthrough} locale={locale} /> : null}
           <BlogCharacterStudioProof canonicalSlug={getCanonicalBlogSlug(post)} locale={locale} />
+          {canonicalSlug === 'compare-ai-video-platforms' ? <BlogPlatformGuide locale={locale} /> : null}
+          {canonicalSlug === 'ai-video-project-cost' ? <BlogProjectBudget locale={locale} /> : null}
 
-          <div className="blog-prose px-6 py-10 sm:px-10" dangerouslySetInnerHTML={{ __html: demotedContent }} />
+          <div className={acquisitionArticle ? `blog-prose ${acquisitionStyles.prose}` : 'blog-prose px-6 py-10 sm:px-10'} dangerouslySetInnerHTML={{ __html: demotedContent }} />
         </article>}
 
         <BlogAuthorCard copy={editorialCopy} locale={locale} profile={editorialProfile} />

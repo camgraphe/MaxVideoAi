@@ -17,5 +17,8 @@ export const comparisonSources = [
   { id: 'higgs-api', publisher: 'Higgsfield', label: 'Separate developer API billing', url: 'https://higgsfield.ai/creator-hub/help-center/integrations/what-is-the-higgsfield-api' },
   { id: 'higgs-supercomputer-guide', publisher: 'Higgsfield', label: 'Supercomputer Free, Smart and Manual credit rules', url: 'https://geo.higgsfield.ai/blog/recommended/which-ai-tool-best-automates-daily-content-across-channels-8660c3' },
   { id: 'higgs-render-billing', publisher: 'Higgsfield', label: 'Completed renders, failures and credits', url: 'https://higgsfield.ai/blog/higgsfield-pricing-explained#how-are-credits-spent-on-higgsfield' },
+  { id: 'max-character-studio', publisher: 'MaxVideoAI', label: 'Character Studio, saved looks and Recast', url: 'https://maxvideoai.com/tools/character-builder' },
+  { id: 'higgs-ai-influencer', publisher: 'Higgsfield', label: 'AI Influencer creation, library and Motion', url: 'https://higgsfield.ai/ai-influencer' },
+  { id: 'higgs-soul-id', publisher: 'Higgsfield', label: 'Soul ID training requirements', url: 'https://higgsfield.ai/creator-hub/help-center/ai-models/how-do-i-create-and-use-a-soul-id-character' },
 ] as const;
 export function sourceNumber(id: string) { return comparisonSources.findIndex((source) => source.id === id) + 1; }

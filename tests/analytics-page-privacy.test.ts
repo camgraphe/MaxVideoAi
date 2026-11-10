@@ -74,6 +74,7 @@ test('Higgsfield comparison page views and CTAs retain only bounded attribution 
     ['higgsfield_price_project', 'comparison_hero'],
     ['higgsfield_price_project', 'comparison_footer'],
     ['higgsfield_download_comparison', 'comparison_share'],
+    ['higgsfield_character_studio', 'comparison_character_proof'],
   ] as const;
   for (const locale of ['en', 'fr', 'es']) {
     const pagePath = `${locale === 'en' ? '' : `/${locale}`}/higgsfield-alternative`;
@@ -103,6 +104,29 @@ test('Higgsfield comparison page views and CTAs retain only bounded attribution 
       const stored = window.localStorage.getItem(ANALYTICS_JOURNEY_STORAGE_KEY);
       assert.ok(stored);
       assert.doesNotMatch(JSON.stringify(calls) + stored, /private-query|private-hash|private-referrer/);
+    });
+  }
+});
+
+test('OpenArt and project-budget CTAs retain their bounded names and public landing owner', () => {
+  const entries = [
+    ['/openart-alternative', 'openart_price_shot', 'openart_hero', '/openart-alternative'],
+    ['/fr/openart-alternative', 'openart_price_shot', 'openart_footer', '/openart-alternative'],
+    ['/es/blog/coste-proyecto-video-ia', 'project_cost_configure', 'project_cost_article', '/blog'],
+  ] as const;
+  for (const [path, name, location, surface] of entries) {
+    withPage(`https://maxvideoai.com${path}?${comparisonCampaign}&prompt=private-query`, () => {
+      const events = prepareBrowserAnalyticsEvents('cta_click', { route_family: 'marketing', cta_name: name, cta_location: location });
+      const calls: Record<string, unknown>[] = [];
+      sendPreparedAnalyticsEvents((_command, event, payload) => {
+        if (event === 'cta_click') calls.push(payload as Record<string, unknown>);
+      }, events);
+      assert.equal(calls.length, 1);
+      assert.equal(calls[0].cta_name, name);
+      assert.equal(calls[0].cta_location, location);
+      assert.equal(calls[0].landing_surface, surface);
+      assert.equal(calls[0].campaign_source, 'reddit');
+      assert.doesNotMatch(JSON.stringify(calls), /private-query/);
     });
   }
 });

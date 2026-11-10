@@ -1,12 +1,13 @@
 import type { AppLocale } from '@/i18n/locales';
+import { projectCostExample, projectAttemptBudget } from '@/lib/marketing/project-cost-example';
 
 // Dated public-price observation, not a live quote or a competing-platform price.
 // Verified against /pricing#ltx-2-5-pro-pricing and the PAYG 10s/720p example.
 export const budgetExample = {
-  checked: '2026-11-10',
-  amountsCents: [1000, 156, 844],
-  pricePath: '/pricing',
-  priceFragment: 'ltx-2-5-pro-pricing',
+  checked: projectCostExample.checked,
+  amountsCents: [projectCostExample.initialFundingCents, projectCostExample.unitCents, projectAttemptBudget(1).remainingCents],
+  pricePath: projectCostExample.pricePath,
+  priceFragment: projectCostExample.priceFragment,
 } as const;
 
 const copy = {

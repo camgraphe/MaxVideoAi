@@ -7,6 +7,7 @@
     "es": "pay-as-you-go-ai-video-generator"
   },
   "higgsfieldAlternative": { "en": "higgsfield-alternative", "fr": "higgsfield-alternative", "es": "higgsfield-alternative" },
+  "openartAlternative": { "en": "openart-alternative", "fr": "openart-alternative", "es": "openart-alternative" },
   "tools": { "en": "tools", "fr": "outils", "es": "herramientas" },
   "gallery": { "en": "examples", "fr": "galerie", "es": "galeria" },
   "compare": { "en": "ai-video-engines", "fr": "comparatif", "es": "comparativa" },

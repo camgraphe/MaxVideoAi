@@ -9,7 +9,7 @@ export const en: ComparisonCopy = {
     title: 'A Higgsfield alternative.\nAt your own pace.',
     description: 'No monthly commitment. See the price, approve the render, keep your unused purchased media credits for your next project.',
     action: 'Price my next video', compare: 'Compare the terms',
-    note: 'No MaxVideoAI subscription. Media top-ups from US$10.',
+    note: 'No MaxVideoAI subscription. Media top-ups from US$10. Choose your settings in the video workspace to see the price.',
     film: 'The Uncrowned · FLUX 3 Max · 18 seconds', watch: 'Watch the film',
     imageAlt: 'An armoured queen crosses a sunlit stone hall in The Uncrowned, a FLUX 3 Max film published on MaxVideoAI.',
   },
@@ -86,6 +86,11 @@ export const en: ComparisonCopy = {
       { question: 'Is everything free on MaxVideoAI?', answer: 'No. Milo Lite provides free assistance within limits. Standard media generation is paid from your wallet; eligible promotions have their own terms. Milo Standard and Max use a separate assistance allowance and optional packs. A US$10 media top-up is funding you can spend on renders, not a promise of a free film.' },
       { question: 'Does Higgsfield have pay-as-you-go access?', answer: 'Its developer API has separate pay-as-you-go dollar billing. This page compares the consumer web Credit Packs, which require an active subscription, and the standard MCP setup. Trial and Unlimited offers may change the comparison for eligible users.' },
       { question: 'What should I compare for a 20-second video?', answer: 'Confirm the same model version and a supported 20-second output, with the same mode, resolution, aspect ratio, audio and references, including reference-video duration. Compare the quoted render cost, money needed to start, and unused balance separately. Two shorter clips are not automatically equivalent to one native 20-second output.' },
+      {
+        question: 'How does Higgsfield AI Influencer compare with Character Studio?',
+        answer: 'Higgsfield AI Influencer lets you create a character from scratch or from a photo, save it to a library and animate it with Genjutsu. The 20–80 photos apply to separate Soul ID training. MaxVideoAI Character Studio creates a portrait or an eight-view sheet and keeps saved looks. Recast generates a new clip from references, with a separate quote. Identity and motion can vary.',
+        sources: ['higgs-ai-influencer', 'higgs-soul-id', 'max-character-studio'],
+      },
     ],
   },
   evidence: {

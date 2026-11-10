@@ -63,6 +63,37 @@ Use the shared `PublicVideoPlayer` (manual play, `preload="none"`) and reserved
 sequence, not evidence of a controlled benchmark; distinguish recorded prompts
 from suggested prompts in the authored article.
 
+### Platform acquisition pages and budget articles
+
+`higgsfield-alternative` and `openart-alternative` keep localized offer copy,
+dated public evidence, schema builders and visual sections in their own route
+folders. Keep Web subscriptions, external assistant access and developer API
+billing distinct; a missing public price is not a zero price. Each claim should
+link to its applicable official source. `PlatformComparisonLinks` provides
+shared, localized navigation between the comparisons and their supporting guides.
+
+The canonical blog slugs `compare-ai-video-platforms` and
+`ai-video-project-cost` opt into the scoped acquisition shell in
+`blog-post-view.tsx`. Their MDX frontmatter still owns the title, canonical,
+hreflang and Article schema; their route-local server components own the rich
+guide and static budget table. Only the attempt selector is a Client Component.
+Other articles retain their existing presentation. Register translated slugs in
+`frontend/config/blog-slugs.ts` for the browser language selector as well as MDX.
+
+`frontend/lib/marketing/project-cost-example.ts` owns the dated editorial
+scenario reused by the Higgsfield page and both articles. It is arithmetic from
+one published tariff, not a live quote, a production receipt or a cross-platform
+price benchmark. Changing the model, settings or price requires rechecking the
+public tariff and updating its verification date. Keep the first payment,
+consumed media balance and remaining balance visibly separate.
+
+Discovery checks live in `competitive-acquisition-discovery.test.ts`,
+`higgsfield-alternative-discovery.test.ts` and
+`openart-alternative-content.test.ts`; bounded CTA attribution is checked in
+`analytics-page-privacy.test.ts`. Public routes must also be connected to locale
+routing, safe-query handling and explicit crawler policy. New content must not
+open private app routes to crawlers or analytics URLs.
+
 ## Server Page Pattern
 
 Use this for marketing, SEO, model, comparison, docs, examples, legal, and admin server pages.

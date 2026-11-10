@@ -22,7 +22,7 @@ export type ComparisonCopy = {
     reuse: string; attribution: string;
   };
   methodology: { title: string; intro: string; items: { title: string; text: string }[] };
-  faq: { title: string; items: { question: string; answer: string }[] };
+  faq: { title: string; items: { question: string; answer: string; sources?: string[] }[] };
   evidence: { title: string; publisher: string; scope: string; date: string; correction: string; contact: string };
   final: { title: string; description: string; action: string; secondary: string };
 };

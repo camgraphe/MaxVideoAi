@@ -19,7 +19,7 @@ const PRIVATE_PREFIXES = [
 ];
 const ENGLISH_FAMILIES = [
   'about', 'ai-video-engines', 'benchmarks', 'blog', 'changelog', 'company',
-  'contact', 'docs', 'editorial-standards', 'examples', 'higgsfield-alternative', 'integrations', 'mcp',
+  'contact', 'docs', 'editorial-standards', 'examples', 'higgsfield-alternative', 'openart-alternative', 'integrations', 'mcp',
   'models', 'pay-as-you-go-ai-video-generator', 'pricing', 'status', 'studio',
   'tools', 'workflows',
 ];

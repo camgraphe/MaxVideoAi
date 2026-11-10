@@ -79,7 +79,7 @@ export function buildAnalyticsPageContext(href: unknown, referrer: unknown = '')
       const publicPath = url.pathname.replace(/\/$/, '') || '/';
       const publicRoute = publicPath.replace(/^\/(?:fr|es)(?=\/|$)/, '');
       const segments = publicRoute.split('/').filter(Boolean);
-      const allowed = publicRoute === '/higgsfield-alternative' || segments.length === 0 || (
+      const allowed = ['/higgsfield-alternative', '/openart-alternative'].includes(publicRoute) || segments.length === 0 || (
         PUBLIC_ROOTS.has(segments[0])
         && segments.length <= 4
         && segments.every(segment => /^[a-z0-9][a-z0-9-]{0,139}$/.test(segment))

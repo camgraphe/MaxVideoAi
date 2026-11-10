@@ -9,7 +9,7 @@ export const fr: ComparisonCopy = {
     title: 'Une alternative à Higgsfield.\nÀ votre rythme.',
     description: 'Sans engagement mensuel. Consultez le prix, validez la génération et gardez vos crédits média achetés inutilisés pour votre prochain projet.',
     action: 'Voir le prix de ma vidéo', compare: 'Comparer les conditions',
-    note: 'Sans abonnement MaxVideoAI. Recharges média dès 10 USD.',
+    note: 'Sans abonnement MaxVideoAI. Recharges média dès 10 USD. Choisissez vos réglages dans l’atelier vidéo pour voir le prix.',
     film: 'The Uncrowned · FLUX 3 Max · 18 secondes', watch: 'Voir le film',
     imageAlt: 'Une reine en armure traverse une salle de pierre éclairée par le soleil dans The Uncrowned, un film FLUX 3 Max publié sur MaxVideoAI.',
   },
@@ -86,6 +86,11 @@ export const fr: ComparisonCopy = {
       { question: 'Tout est-il gratuit sur MaxVideoAI ?', answer: 'Milo Lite offre une assistance gratuite dans les limites d’usage. Les générations média standard sont payées depuis votre portefeuille. Les promotions suivent leurs propres conditions d’éligibilité. Milo Standard et Max utilisent une enveloppe d’assistance distincte et des packs facultatifs. Une recharge média de 10 USD alimente le portefeuille pour les rendus que vous choisissez de lancer.' },
       { question: 'Higgsfield propose-t-il du paiement à l’usage ?', answer: 'Son API développeur propose une facturation distincte à l’usage, en dollars. Ce comparatif porte sur les packs de crédits de l’offre Web grand public, qui exigent un abonnement actif, et sur la configuration MCP standard. Les essais et offres Unlimited peuvent changer la comparaison pour les utilisateurs éligibles.' },
       { question: 'Que comparer pour une vidéo de 20 secondes ?', answer: 'Vérifiez d’abord que les deux services proposent la même version du modèle et prennent en charge une sortie de 20 secondes avec le même mode, la même résolution, le même ratio d’image, les mêmes réglages audio et les mêmes références, dont la durée des vidéos de référence. Comparez séparément le devis du rendu, la somme à verser au départ et le solde inutilisé. Deux clips plus courts peuvent donner un résultat différent d’une génération native de 20 secondes.' },
+      {
+        question: 'Que proposent AI Influencer de Higgsfield et Character Studio ?',
+        answer: 'AI Influencer permet de créer un personnage de zéro ou à partir d’une photo, de l’enregistrer dans sa bibliothèque et de l’animer avec Genjutsu. Les 20 à 80 photos concernent l’entraînement distinct de Soul ID. Character Studio crée un portrait ou une planche à huit vues et conserve les looks enregistrés. Recast génère une nouvelle vidéo à partir de références, avec un devis distinct. L’identité et le mouvement peuvent varier.',
+        sources: ['higgs-ai-influencer', 'higgs-soul-id', 'max-character-studio'],
+      },
     ],
   },
   evidence: {

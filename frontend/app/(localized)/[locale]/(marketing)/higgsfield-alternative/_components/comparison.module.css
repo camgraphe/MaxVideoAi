@@ -114,6 +114,70 @@
 .methodology summary{font-size:16px;font-weight:500;cursor:pointer;padding-block:11px;min-height:48px}
 .methodology details p{font-size:12px;line-height:1.75;color:#625e58;margin:3px 0 15px}
 .budgetHeading{margin-top:24px;padding-top:20px;border-top:1px solid var(--rule)}.budgetHeading h3{font-size:16px;letter-spacing:-.01em}.budgetHeading p{font-size:11px;color:#625e58;line-height:1.65;margin-top:7px}.budgetHeading+ol{margin-top:17px}.methodology summary{position:relative;padding-right:110px}.budgetAmount{position:absolute;right:0;top:10px;font-size:22px;line-height:1.35;font-weight:500;font-variant-numeric:tabular-nums;letter-spacing:-.025em;color:var(--ink)}.methodology li:last-child .budgetAmount{color:var(--green)}.budgetNote{font-size:10px;line-height:1.7;color:#716e69;margin-top:15px!important}.budgetLink{display:inline-flex;align-items:center;gap:9px;min-height:44px;font-size:12px;color:var(--bronze);text-decoration:underline;text-underline-offset:4px}
+.characterProof {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  align-items: center;
+  gap: clamp(22px, 4vw, 56px);
+  padding-block: 26px;
+  margin-bottom: 34px;
+  border-block: 1px solid var(--rule);
+}
+.characterLabel {
+  display: block;
+  margin-bottom: 12px;
+  color: var(--bronze);
+  font-size: 11px;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+}
+.characterProof h2 {
+  font-size: clamp(29px, 3vw, 42px);
+}
+.characterCopy > p {
+  max-width: 48ch;
+  margin-block: 15px 4px;
+  color: #625e58;
+  font-size: 14px;
+  line-height: 1.65;
+}
+.characterPair {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: start;
+  gap: 10px;
+  width: min(100%, 440px);
+  justify-self: end;
+}
+.characterPair > svg {
+  align-self: center;
+  color: var(--bronze);
+}
+.characterImage {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  border-radius: 7px;
+  background: #e9e5de;
+}
+.characterImage > img {
+  object-fit: cover;
+}
+.characterPair figcaption {
+  margin-top: 8px;
+  color: #625e58;
+  font-size: 11px;
+  line-height: 1.5;
+}
+@media (max-width: 760px) {
+  .characterProof {
+    grid-template-columns: minmax(0, 1fr);
+    margin-bottom: 28px;
+  }
+  .characterPair {
+    justify-self: start;
+  }
+}
 .share{display:grid;grid-template-columns:1fr auto;gap:10px 30px;padding:25px 28px 20px;border:1px solid #c9c0b1;background:#eee9e0;border-radius:8px;margin-block:0 44px}
 .share h2{font-size:25px;line-height:1.1;letter-spacing:-.025em}.share p{font-size:12px;color:#625e58;margin-top:8px}
 .shareActions{display:flex;gap:10px;align-items:center}.shareLinks{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:22px;margin-top:3px}

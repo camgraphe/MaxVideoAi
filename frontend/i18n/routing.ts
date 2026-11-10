@@ -43,6 +43,11 @@ export const routing = defineRouting({
       fr: '/higgsfield-alternative',
       es: '/higgsfield-alternative',
     },
+    '/openart-alternative': {
+      en: '/openart-alternative',
+      fr: '/openart-alternative',
+      es: '/openart-alternative',
+    },
     '/tools': {
       en: '/tools',
       fr: '/outils',

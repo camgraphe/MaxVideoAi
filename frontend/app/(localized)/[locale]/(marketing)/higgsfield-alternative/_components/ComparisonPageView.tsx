@@ -1,12 +1,14 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { PlatformComparisonLinks } from '@/components/marketing/PlatformComparisonLinks';
 import { ArrowDown, ArrowRight, ArrowUpRight, Link2, Wallet, Layers3, Clock3 } from 'lucide-react';
 import type { AppLocale } from '@/i18n/locales';
 import { localizePathFromEnglish } from '@/lib/i18n/paths';
 import type { ComparisonCopy } from '../_content/types';
 import { getExperienceCopy } from '../_content/experience';
 import { budgetExample, getBudgetExampleCopy } from '../_content/budget-example';
-import { comparisonSources, COMPARISON_CHECKED } from '../_lib/evidence';
+import { comparisonSources, COMPARISON_CHECKED, sourceNumber } from '../_lib/evidence';
+import { ComparisonCharacterProof } from './ComparisonCharacterProof';
 import { ComparisonTable } from './ComparisonTable';
 import { ComparisonFilmStage } from './ComparisonFilmStage.client';
 import { ProductionPace } from './ProductionPace.client';
@@ -78,9 +80,26 @@ export function ComparisonPageView({ copy, locale, canonical }: Props) {
             <Link className={styles.budgetLink} href={`${path(budgetExample.pricePath)}#${budgetExample.priceFragment}`} prefetch={false}>{budget.link}<ArrowUpRight size={16} aria-hidden="true" /></Link>
           </div>
         </section>
+        <ComparisonCharacterProof locale={locale} />
         <ShareComparison copy={copy.share} locale={locale} canonical={canonical} />
+        <PlatformComparisonLinks locale={locale} current="/higgsfield-alternative" />
         <section className={styles.final}><div><h2>{copy.final.title}</h2><p>{copy.final.description}</p></div><div className={styles.finalActions}><QuoteLink location="comparison_footer">{copy.final.action}</QuoteLink><Link className={styles.textLink} href={path('/pay-as-you-go-ai-video-generator')}>{copy.final.secondary}<ArrowUpRight size={18} aria-hidden="true" /></Link></div></section>
-        <section className={styles.faq} id="questions" aria-labelledby="questions-title"><h2 id="questions-title">{copy.faq.title}</h2><div>{copy.faq.items.map((item) => <details key={item.question}><summary>{item.question}</summary><p>{item.answer}</p></details>)}</div></section>
+        <section className={styles.faq} id="questions" aria-labelledby="questions-title">
+          <h2 id="questions-title">{copy.faq.title}</h2>
+          <div>{copy.faq.items.map((item) => (
+            <details key={item.question}>
+              <summary>{item.question}</summary>
+              <p>
+                {item.answer}
+                {item.sources ? (
+                  <span className={styles.references}>
+                    {item.sources.map((id) => <a key={id} href={`#source-${id}`}>[{sourceNumber(id)}]</a>)}
+                  </span>
+                ) : null}
+              </p>
+            </details>
+          ))}</div>
+        </section>
         <section className={styles.evidence} id="sources" aria-labelledby="sources-title"><div className={styles.evidenceHead}><h2 id="sources-title">{copy.evidence.title}</h2><p>{copy.evidence.publisher}</p></div><p>{copy.evidence.scope} <time dateTime={COMPARISON_CHECKED}>{copy.evidence.date}</time></p><ol>{comparisonSources.map((source) => <li key={source.id} id={`source-${source.id}`}><a href={source.url}><strong>{source.publisher}</strong><span>{source.label}<ArrowUpRight size={14} aria-hidden="true" /></span></a></li>)}</ol><p>{copy.evidence.correction} <Link className={styles.inlineLink} href={path('/contact')}>{copy.evidence.contact}<ArrowUpRight size={16} aria-hidden="true" /></Link></p></section>
       </div>
     </article>

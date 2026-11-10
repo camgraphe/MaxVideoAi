@@ -6,6 +6,10 @@ type ExperienceCopy = {
   maxTimeline: [string, string, string]; higgsTimeline: [string, string, string];
   timelineLabel: string; details: string; assistantLink: string;
   workflowLabel: string; workflowDetails: [string, string, string];
+  characterProof: {
+    title: string; description: string; link: string;
+    portraitCaption: string; portraitAlt: string; lookCaption: string; lookAlt: string;
+  };
 };
 
 const copy: Record<AppLocale, ExperienceCopy> = {
@@ -22,6 +26,15 @@ const copy: Record<AppLocale, ExperienceCopy> = {
     timelineLabel: 'Standard web credit journey', details: 'Details and conditions', assistantLink: 'Compare assistant access',
     workflowLabel: 'Inside Studio, with Milo',
     workflowDetails: ['Bring a reference, a goal and a creative direction. Milo helps shape the brief.', 'Choose a model and settings. Check the media price before launching a generation.', 'Approve the media generation when you are ready. Each paid render uses your media wallet.'],
+    characterProof: {
+      title: 'One character.\nA new look.',
+      description: 'Start from a saved character and change the wardrobe or setting. Recast can use that look as a reference for a new clip, with its own video quote.',
+      link: 'See Dixie in Character Studio',
+      portraitCaption: 'Dixie Trouble · saved portrait',
+      portraitAlt: 'Dixie Trouble in a coral and navy vest',
+      lookCaption: 'Dixie Pop · new look',
+      lookAlt: 'Dixie Pop in a pink top and white skirt',
+    },
   },
   fr: {
     pace: 'Choisissez votre rythme de création.', occasional: 'Un projet ponctuel', regular: 'Une production régulière',
@@ -36,6 +49,15 @@ const copy: Record<AppLocale, ExperienceCopy> = {
     timelineLabel: 'Parcours standard des crédits Web', details: 'Détails et conditions', assistantLink: 'Comparer l’accès aux assistants',
     workflowLabel: 'Dans Studio, avec Milo',
     workflowDetails: ['Apportez une référence, un objectif et une direction créative. Milo vous aide à préciser le brief.', 'Choisissez un modèle et ses réglages. Consultez le prix du média avant de lancer une génération.', 'Validez la génération quand vous êtes prêt. Chaque rendu payant utilise votre portefeuille média.'],
+    characterProof: {
+      title: 'Le même personnage.\nUn nouveau look.',
+      description: 'Repartez d’un personnage enregistré pour changer sa tenue ou son décor. Recast peut utiliser ce look comme référence pour une nouvelle vidéo, avec son propre devis.',
+      link: 'Voir Dixie dans Character Studio',
+      portraitCaption: 'Dixie Trouble · portrait enregistré',
+      portraitAlt: 'Dixie Trouble porte un gilet corail et bleu marine',
+      lookCaption: 'Dixie Pop · nouveau look',
+      lookAlt: 'Dixie Pop porte un haut rose et une jupe blanche',
+    },
   },
   es: {
     pace: 'Elige tu ritmo de creación.', occasional: 'Un proyecto puntual', regular: 'Una producción constante',
@@ -50,6 +72,15 @@ const copy: Record<AppLocale, ExperienceCopy> = {
     timelineLabel: 'Recorrido estándar de los créditos web', details: 'Detalles y condiciones', assistantLink: 'Comparar acceso a asistentes',
     workflowLabel: 'En Studio, con Milo',
     workflowDetails: ['Aporta una referencia, un objetivo y una dirección creativa. Milo te ayuda a concretar el brief.', 'Elige un modelo y sus ajustes. Consulta el precio del contenido antes de iniciar una generación.', 'Aprueba la generación cuando quieras. Cada render de pago utiliza tu saldo de generación.'],
+    characterProof: {
+      title: 'El mismo personaje.\nUn look nuevo.',
+      description: 'Parte de un personaje guardado para cambiar su vestuario o su entorno. Recast puede usar ese look como referencia para un nuevo video, con su propio precio antes de generar.',
+      link: 'Ver a Dixie en Character Studio',
+      portraitCaption: 'Dixie Trouble · retrato guardado',
+      portraitAlt: 'Dixie Trouble lleva un chaleco coral y azul marino',
+      lookCaption: 'Dixie Pop · nuevo look',
+      lookAlt: 'Dixie Pop lleva un top rosa y una falda blanca',
+    },
   },
 };
 
