@@ -211,3 +211,90 @@ test('recent thumbnails survive return scrolling without refetching private no-s
     }
   } finally {await browser.close();await fixture.close();}
 });
+
+const paginatedSource = `import {createRoot} from 'react-dom/client';
+import {CompactLibraryBrowser} from './components/library/CompactLibraryBrowser.client';
+import {SWRProvider} from './components/swr/SWRProvider';
+import {useLibraryBrowse} from './hooks/useLibraryBrowse';
+const scope={view:'all',kind:'all',source:'all',sort:'recent'};
+function Scene(){const library=useLibraryBrowse({userId:'gallery-owner',scope});
+return <main data-loaded={library.assets.length} style={{height:'100dvh',display:'flex',padding:12}}>
+<CompactLibraryBrowser locale="en" title="Media" assets={library.assets} assetType="all"
+ management={{userId:'gallery-owner',scope,onScopeChange:()=>{},totalCount:library.totalCount}}
+ isLoading={library.isLoading} isLoadingMore={library.isLoadingMore} hasMore={library.hasMore}
+ onLoadMore={library.loadMore} error={library.error?.message} onRetry={library.revalidate}
+ searchPlaceholder="Search media" sourcesTitle="Source" emptyLabel="Empty" emptySearchLabel="No match"
+ renderAssetActions={()=>null}/></main>}
+createRoot(document.getElementById('root')).render(<SWRProvider><Scene/></SWRProvider>);`;
+
+test('automatic cursor pages keep mosaic card identity while recycled image and video posters receive fresh decoders', {timeout:90000}, async () => {
+  const paginatedAssets = assets.slice(0, 180).map((asset, index) => index % 3 === 1
+    ? {...asset, kind:'video', url:asset.url.replace('.png', '.mp4'), libraryRef:{...asset.libraryRef, kind:'video'}}
+    : asset);
+  const fixture = await startWorkspaceReferenceFixture({
+    source:paginatedSource, config:{}, imageCacheControl:'private,no-store',
+    hostModules:{...referencePickerAuthModules('gallery-owner','fixture-only'),
+      'next/navigation':"export const usePathname=()=>'/app/library';"},
+  });
+  const browser = await chromium.launch();
+  try {
+    for (const width of [1111, 390]) {
+      const page = await browser.newPage({viewport:{width,height:844}});
+      const errors:string[] = [], originals:string[] = [], cursors:number[] = [];
+      page.on('pageerror', error => errors.push(error.message));
+      page.on('request', request => {if(request.url().includes('/original-')) originals.push(request.url());});
+      await page.route('**/api/media-library/collections**', route => route.fulfill({json:{ok:true,items:[],hasMore:false,nextCursor:null}}));
+      await page.route('**/api/media-library/browse**', route => {
+        const offset = Number(new URL(route.request().url()).searchParams.get('cursor') ?? 0);
+        cursors.push(offset);
+        const next = offset + 30;
+        return route.fulfill({json:{ok:true,assets:paginatedAssets.slice(offset,next),
+          totalCount:paginatedAssets.length,hasMore:next<paginatedAssets.length,
+          nextCursor:next<paginatedAssets.length?String(next):null}});
+      });
+      await page.goto(fixture.url);
+      await expect(page.locator('main')).toHaveAttribute('data-loaded','30');
+      await expect(page.locator('[data-media-key="canonical-0"] img')).toBeVisible();
+      await page.evaluate(() => {window.galleryImageOwners = new WeakMap();});
+      const remember = async () => {
+        const result = await page.evaluate(() => {
+          const errors:string[] = [];
+          const cards = [...document.querySelectorAll<HTMLElement>('[data-media-key]')];
+          for (const card of cards) {
+            const key = card.dataset.mediaKey!, image = card.querySelector('img');
+            if(!image) continue;
+            const previous = window.galleryImageOwners.get(image);
+            if(previous && previous !== key) errors.push(previous+' became '+key);
+            window.galleryImageOwners.set(image,key);
+            const expected='/poster-'+key.slice('canonical-'.length)+'.svg';
+            if(new URL(image.src).pathname !== expected) errors.push(key+' has the wrong poster');
+            if(image.complete && image.currentSrc && new URL(image.currentSrc).pathname !== expected) errors.push(key+' has a stale decoded poster');
+          }
+          return {errors,count:cards.length};
+        });
+        assert.deepEqual(result.errors, [], 'a recycled row must never inherit another media image decoder');
+        assert.ok(result.count <= 96, 'recent cards remain bounded across appended pages');
+      };
+      await remember();
+      const canvas = page.locator('.compact-media-grid');
+      for(let count=60;count<=180;count+=30) {
+        await canvas.evaluate(element => {element.scrollTop=element.scrollHeight;});
+        await expect(page.locator('main')).toHaveAttribute('data-loaded',String(count));
+        await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+        await remember();
+      }
+      assert.deepEqual(cursors,[0,30,60,90,120,150], 'scroll loads each cursor once and stops at the final page');
+      for(const fraction of [0,0.2,0.4,0.6,0.8,1,0]) {
+        await canvas.evaluate((element,fraction) => {element.scrollTop=(element.scrollHeight-element.clientHeight)*fraction;},fraction);
+        await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+        await remember();
+      }
+      await expect(page.locator('[data-media-key="canonical-0"] img')).toBeVisible();
+      await expect.poll(()=>page.locator('[data-media-key="canonical-0"] img').evaluate((image:HTMLImageElement)=>image.complete && image.naturalWidth>0)).toBe(true);
+      await remember();
+      assert.deepEqual(originals, [], 'image and video browsing requests only their stored posters');
+      assert.deepEqual(errors, []);
+      await page.close();
+    }
+  } finally {await browser.close();await fixture.close();}
+});
