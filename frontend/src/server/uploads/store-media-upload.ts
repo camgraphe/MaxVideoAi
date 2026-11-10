@@ -1,4 +1,5 @@
 import { ensureReusableAsset } from '@/server/media-library';
+import { resolveExplicitUploadObjectKey } from '@/server/media-library/upload-incarnation';
 import type { MediaFacts } from '@/lib/media-identity';
 import { createHash } from 'node:crypto';
 import { probeMediaBuffer } from '@/server/media/detect-has-audio';
@@ -158,6 +159,7 @@ function createStoreMediaUploadService(
       ...(typeof probe.hasAudio === 'boolean' ? { hasAudio: probe.hasAudio } : {}) };
 
     let upload: Awaited<ReturnType<typeof uploadFileBuffer>>;
+    let reincarnatedKey: string | null = null;
     let producerClaim: StorageObjectProducerClaim | null = null;
     const producerController = new AbortController();
     if (input.signal?.aborted) producerController.abort(input.signal.reason);
@@ -198,6 +200,13 @@ function createStoreMediaUploadService(
         privateStorageScope: input.privateStorageScope,
         contentAddressed: true,
         ...(input.contentAddressedNamespace ? { contentAddressedNamespace: input.contentAddressedNamespace } : {}),
+        ...(!input.contentAddressedNamespace && !input.privateStorageScope ? {
+          resolveContentAddressedKey: async (originalKey: string) => {
+            const key = await resolveExplicitUploadObjectKey(input.userId, originalKey);
+            if (key !== originalKey) reincarnatedKey = key;
+            return key;
+          },
+        } : {}),
         ...(input.storageAcl !== undefined ? { acl: input.storageAcl } : {}),
         ...(input.storageCacheControl !== undefined ? { cacheControl: input.storageCacheControl } : {}),
         beforeUpload: async (objectKey: string) => {
@@ -264,7 +273,7 @@ function createStoreMediaUploadService(
         ...(previewUrl ? { thumbUrl: previewUrl } : {}),
       };
       const legacyAssetId = await dependencies.recordUserAsset({
-        assetId: `ua_${createHash('sha256').update(`${input.userId}:${mediaKind}:${input.contentAddressedNamespace ? `prepared:${input.contentAddressedNamespace}:` : ''}`).update(input.bytes).digest('hex').slice(0, 32)}`,
+        assetId: `ua_${createHash('sha256').update(`${input.userId}:${mediaKind}:${input.contentAddressedNamespace ? `prepared:${input.contentAddressedNamespace}:` : ''}`).update(input.bytes).update(reincarnatedKey ? `:reimport:${reincarnatedKey}` : '').digest('hex').slice(0, 32)}`,
         userId: input.userId,
         url: upload.url,
         mime: probe.canonicalMime,

@@ -18,6 +18,7 @@ export function useJobsCopy(): JobsCopy {
         ...(rawCopy.activity ?? {}),
         sources: { ...DEFAULT_JOBS_COPY.activity.sources, ...(rawCopy.activity?.sources ?? {}) },
         statuses: { ...DEFAULT_JOBS_COPY.activity.statuses, ...(rawCopy.activity?.statuses ?? {}) },
+        destinations: { ...DEFAULT_JOBS_COPY.activity.destinations, ...(rawCopy.activity?.destinations ?? {}) },
       },
       sections: {
         ...DEFAULT_JOBS_COPY.sections,

@@ -179,6 +179,7 @@ export async function uploadImageToStorage(params: {
   fileName?: string | null;
   prefix?: string;
   contentAddressed?: boolean;
+  resolveContentAddressedKey?: (key: string) => Promise<string>;
   acl?: string | null;
   cacheControl?: string;
   privateStorageScope?: PrivateMediaStorageScope;
@@ -187,7 +188,7 @@ export async function uploadImageToStorage(params: {
 }): Promise<UploadResult> {
   const client = getS3Client();
   const safeMime = params.mime && params.mime.startsWith('image/') ? params.mime : 'image/png';
-  const key = params.contentAddressed
+  let key = params.contentAddressed
     ? buildObjectKey({
         prefix: `${params.prefix ?? 'uploads'}/by-content`,
         userId: createHash('sha256').update(params.userId ?? 'anonymous').digest('hex').slice(0, 32),
@@ -198,6 +199,8 @@ export async function uploadImageToStorage(params: {
         userId: params.userId,
         leafName: privateMediaStorageLeaf(buildStorageLeafName({ mime: safeMime, fileName: params.fileName }), params.privateStorageScope),
       });
+
+  if (params.contentAddressed && params.resolveContentAddressedKey) key = await params.resolveContentAddressedKey(key);
 
   if (params.privateStorageScope && privateMediaStorageScopeForKey(key) !== params.privateStorageScope) {
     throw new Error('Unsupported private media storage path.');
@@ -218,6 +221,11 @@ export async function uploadImageToStorage(params: {
 
   try {
     await params.beforeUpload?.(key);
+    // The explicit importer now holds the producer lease. A purge may have
+    // completed since the initial lookup; never PUT to that retired incarnation.
+    if (params.contentAddressed && params.resolveContentAddressedKey && await params.resolveContentAddressedKey(key) !== key) {
+      throw new Error('Upload source was deleted; retry with its current incarnation.');
+    }
   } catch {
     throw new StorageUploadError('Failed to prepare image storage.', {
       stage: 'before-upload',
@@ -449,12 +457,13 @@ export async function uploadFileBuffer(params: {
   acl?: string | null;
   contentAddressed?: boolean;
   contentAddressedNamespace?: string;
+  resolveContentAddressedKey?: (key: string) => Promise<string>;
   privateStorageScope?: PrivateMediaStorageScope;
   beforeUpload?: (key: string) => Promise<void>;
   signal?: AbortSignal;
 }): Promise<{ key: string; url: string }> {
   const client = getS3Client();
-  const key = params.contentAddressed
+  let key = params.contentAddressed
     ? buildObjectKey({
         prefix: `${params.prefix ?? 'files'}/by-content`,
         userId: createHash('sha256').update(params.userId ?? 'anonymous').digest('hex').slice(0, 32),
@@ -465,6 +474,8 @@ export async function uploadFileBuffer(params: {
         userId: params.userId ?? 'anonymous',
         leafName: privateMediaStorageLeaf(buildStorageLeafName({ mime: params.mime || 'application/octet-stream', fileName: params.fileName }), params.privateStorageScope),
       });
+
+  if (params.contentAddressed && params.resolveContentAddressedKey) key = await params.resolveContentAddressedKey(key);
 
   if (params.privateStorageScope && privateMediaStorageScopeForKey(key) !== params.privateStorageScope) {
     throw new Error('Unsupported private media storage path.');
@@ -486,6 +497,9 @@ export async function uploadFileBuffer(params: {
 
   try {
     await params.beforeUpload?.(key);
+    if (params.contentAddressed && params.resolveContentAddressedKey && await params.resolveContentAddressedKey(key) !== key) {
+      throw new Error('Upload source was deleted; retry with its current incarnation.');
+    }
     await client.send(command, { abortSignal: params.signal });
   } catch {
     throw new StorageUploadError('Failed to upload file to storage.', {

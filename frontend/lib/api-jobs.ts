@@ -47,11 +47,12 @@ function normalizeJobFromApi(job: Job): Job {
 
 type JobFeedType = 'video' | 'image' | 'all';
 type JobFeedSurface = JobSurface | 'all';
+type JobsFeedOptions = { type?: JobFeedType; surface?: JobFeedSurface; includeActivityOrigin?: boolean };
 
 async function fetchJobsPage(
   limit: number,
   cursor?: string | null,
-  options?: { type?: JobFeedType; surface?: JobFeedSurface }
+  options?: JobsFeedOptions
 ): Promise<JobsPage> {
   const params = new URLSearchParams({ limit: String(limit) });
   if (cursor) params.set('cursor', cursor);
@@ -60,6 +61,7 @@ async function fetchJobsPage(
   } else if (options?.type && options.type !== 'all') {
     params.set('type', options.type);
   }
+  if (options?.includeActivityOrigin) params.set('includeActivityOrigin', '1');
   const response = await authFetch(`/api/jobs?${params.toString()}`);
 
   const payload = (await response.json().catch(() => null)) as (Partial<JobsPage> & { error?: string }) | null;
@@ -82,9 +84,9 @@ async function fetchJobsPage(
   };
 }
 
-type JobsKey = readonly ['jobs', string, number, string | null, JobFeedType, JobFeedSurface];
+type JobsKey = readonly ['jobs', string, number, string | null, JobFeedType, JobFeedSurface, boolean];
 
-export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType; surface?: JobFeedSurface }) {
+export function useInfiniteJobs(pageSize = 12, options?: JobsFeedOptions) {
   // Keep the server render and the first client render identical. Reading the
   // browser-only identity in the state initializer made SWR start immediately
   // on the client while the server rendered the idle state, which caused
@@ -104,7 +106,8 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType; s
     options?.surface === 'tool'
       ? options.surface
       : 'all';
-  const feedScope = JSON.stringify([cacheKey, pageSize, feedType, feedSurface]);
+  const includeActivityOrigin = options?.includeActivityOrigin === true;
+  const feedScope = JSON.stringify([cacheKey, pageSize, feedType, feedSurface, includeActivityOrigin]);
   const lastRevalidateRef = useRef<number>(0);
   const pollingOwner = useRef<ReturnType<typeof createJobStatusPollingOwner> | null>(null);
   const lastKnownUserIdRef = useRef<string | null>(typeof window === 'undefined' ? null : readLastKnownUserId());
@@ -193,12 +196,12 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType; s
       return null;
     }
     const cursor = index === 0 ? null : previousPage?.nextCursor ?? null;
-    return ['jobs', cacheKey, pageSize, cursor, feedType, feedSurface];
+    return ['jobs', cacheKey, pageSize, cursor, feedType, feedSurface, includeActivityOrigin];
   };
 
   const fetchJobs = async (key: JobsKey) => {
-    const [, , limit, cursor, type, surface] = key;
-    return fetchJobsPage(limit, cursor, { type, surface });
+    const [, , limit, cursor, type, surface, includeActivityOrigin] = key;
+    return fetchJobsPage(limit, cursor, { type, surface, includeActivityOrigin });
   };
 
   const swr = useSWRInfinite<JobsPage, Error>(getJobsKey, fetchJobs, { keepPreviousData: false, persistSize: false });

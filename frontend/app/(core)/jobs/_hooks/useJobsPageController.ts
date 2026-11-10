@@ -1,14 +1,13 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { getJobStatus, hideJob, saveAssetToLibrary, useEngines, useInfiniteJobs } from '@/lib/api';
+import { getJobStatus, hideJob, saveAssetToLibrary, useInfiniteJobs } from '@/lib/api';
 import { groupJobsIntoSummaries } from '@/lib/job-groups';
 import { normalizeGroupSummaries, normalizeGroupSummary } from '@/lib/normalize-group-summary';
 import { adaptGroupSummary } from '@/lib/video-group-adapter';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useResultProvider } from '@/hooks/useResultProvider';
 import type { MediaLightboxEntry } from '@/components/MediaLightbox';
-import type { EngineCaps } from '@/types/engines';
 import type { GroupSummary } from '@/types/groups';
 import { activityLoadedJobs } from '../_lib/jobs-activity';
 import { useJobsCopy } from './useJobsCopy';
@@ -24,11 +23,10 @@ const JOBS_PAGE_SIZE = 24;
 
 export function useJobsPageController() {
   const copy = useJobsCopy();
-  const { data: enginesData } = useEngines('all', { includeAverages: false });
   const [source, setSource] = useState<JobsSource>('all');
   const [status, setStatus] = useState<JobsStatus>('all');
   const { data, stableJobs, error, isLoading, setSize, isValidating, mutate } =
-    useInfiniteJobs(JOBS_PAGE_SIZE, { surface: source });
+    useInfiniteJobs(JOBS_PAGE_SIZE, { surface: source, includeActivityOrigin: true });
   const { user } = useRequireAuth({ redirectIfLoggedOut: false });
   const actions = useJobsActionFeedback(user?.id ?? null, source);
   const hasMore = Boolean(data?.length && data[data.length - 1].nextCursor);
@@ -42,14 +40,6 @@ export function useJobsPageController() {
     window.addEventListener('jobs:hidden', handleHidden);
     return () => window.removeEventListener('jobs:hidden', handleHidden);
   }, [mutate]);
-
-  const engineLookupById = useMemo(() => {
-    const byId = new Map<string, EngineCaps>();
-    (enginesData?.engines ?? []).forEach((engine) => {
-      byId.set(engine.id, engine);
-    });
-    return byId;
-  }, [enginesData?.engines]);
 
   const provider = useResultProvider();
   const summaryMap = useMemo(() => {
@@ -186,7 +176,6 @@ export function useJobsPageController() {
     onRetry: () => { void mutate(); },
     onLoadMore: () => { if (hasMore && !isValidating) void setSize((size) => size + 1); },
     copy,
-    engineLookupById,
     hasCuratedVideo,
     onCloseViewer: () => setActiveGroupId(null),
     onGroupAction: handleGroupAction,

@@ -13,6 +13,8 @@ import {
   readOwnedGenerationRecordsByIds,
   readRecentGenerationRecordsForWeb,
 } from '@/server/generations/recent-generations';
+import { readActivityOrigins } from '@/server/generations/activity-origin';
+import type { ActivityOrigin } from '@/types/jobs';
 import { expireStaleAudioJob, isStaleAudioJob } from './_lib/jobs-stale-audio';
 import { refreshStaleFalJobs } from './_lib/jobs-fal-refresh';
 import { createJobsRouteTiming } from './_lib/jobs-route-timing';
@@ -57,6 +59,7 @@ export async function GET(req: NextRequest) {
   const typeParam = url.searchParams.get('type');
   const feedType = typeParam === 'image' || typeParam === 'video' ? typeParam : 'all';
   const requestedSurface = normalizeJobSurface(url.searchParams.get('surface'));
+  const includeActivityOrigin = url.searchParams.get('includeActivityOrigin') === '1';
   const shouldRefreshStaleFalJobs =
     url.searchParams.get('refreshStale') === '1' || url.searchParams.get('refreshStale') === 'true';
   const { userId } = await timing.measure('auth', () => getRouteAuthContext(req));
@@ -165,16 +168,27 @@ export async function GET(req: NextRequest) {
     let mapped = items.map(mapRecentGenerationRecordToWeb);
 
     if (mapped.length) {
-      mapped = await timing.measure('outputs', async () => {
-        try {
-          const jobIds = mapped.map((job) => job.jobId);
-          const outputMap = await listJobOutputsByJobIds(jobIds, { ensureSchema: false });
-          return mapped.map((job) => applyOutputsToJobPayload(job, outputMap.get(job.jobId)));
-        } catch (error) {
-          console.warn('[api/jobs] media output enrichment failed', error);
-          return mapped;
-        }
-      });
+      const jobIds = mapped.map((job) => job.jobId);
+      const [withOutputs, origins] = await Promise.all([
+        timing.measure('outputs', async () => {
+          try {
+            const outputMap = await listJobOutputsByJobIds(jobIds, { ensureSchema: false });
+            return mapped.map((job) => applyOutputsToJobPayload(job, outputMap.get(job.jobId)));
+          } catch (error) {
+            console.warn('[api/jobs] media output enrichment failed', error);
+            return mapped;
+          }
+        }),
+        includeActivityOrigin
+          ? readActivityOrigins(userId, jobIds).catch((error) => {
+              console.warn('[api/jobs] activity origin enrichment failed', error);
+              return new Map<string, ActivityOrigin>();
+            })
+          : Promise.resolve(null),
+      ]);
+      mapped = origins
+        ? withOutputs.map((job) => ({ ...job, activityOrigin: origins.get(job.jobId) ?? null }))
+        : withOutputs;
     }
 
     if (!mapped.length && shouldUseStarterFallback(feedType, cursor, requestedSurface)) {
