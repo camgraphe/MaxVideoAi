@@ -283,18 +283,19 @@ function buildHostAllowList(): Set<string> {
   return hosts;
 }
 
-async function deleteObjectFromStorage(key: string): Promise<void> {
+async function deleteObjectFromStorage(key: string, options?: { abortSignal?: AbortSignal }): Promise<void> {
   if (!S3_BUCKET) return;
   const client = getS3Client();
   const command = new DeleteObjectCommand({
     Bucket: S3_BUCKET,
     Key: key,
   });
-  await client.send(command);
+  await client.send(command, options);
 }
 
-export async function deleteStorageObjectKey(key: string): Promise<void> {
-  await deleteObjectFromStorage(key);
+export async function deleteStorageObjectKey(key: string, options?: { abortSignal?: AbortSignal }): Promise<void> {
+  if (!S3_BUCKET) throw new Error('S3_BUCKET is missing');
+  await deleteObjectFromStorage(key, options);
 }
 
 async function listStorageObjectKeys(prefix: string, limit: number): Promise<string[]> {

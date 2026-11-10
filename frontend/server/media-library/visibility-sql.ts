@@ -3,7 +3,9 @@
 export function activeLibrarySourceSql(type: string, id: string, kind: string, owner = '$1'): string {
     return `NOT EXISTS(SELECT 1 FROM library_identities li LEFT JOIN library_organization org ON org.user_id=${owner} AND org.key=li.organization_key
     WHERE li.type='${type}' AND li.id=${id} AND li.kind=${kind}
-      AND CASE WHEN li.identity_error IS NOT NULL THEN li.identity_error::integer=0 ELSE org.trashed_at IS NOT NULL END)`;
+      AND (li.internal_group OR li.organization_key=ANY(ARRAY(
+        SELECT purged.key FROM library_organization purged WHERE purged.user_id=${owner} AND to_jsonb(purged)->>'purge_requested_at' IS NOT NULL
+      )) OR CASE WHEN li.identity_error IS NOT NULL THEN li.identity_error::integer=0 ELSE org.trashed_at IS NOT NULL END))`;
 }
 
 /** A job-only facade can correspond to an already saved exact owned projection.

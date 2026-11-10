@@ -130,6 +130,25 @@ authorization. Browse/picker readers must apply organization Trash before their
 limit and winner ranking; the common browse and compatibility asset/recent list owners apply this filter
 before pagination. Exact Studio resolution and Activity remain outside that filter.
 
+Historical duplicate discovery uses `output-provenance-sql.ts` in both the browse
+relation and the batched organization resolver. An `output:` wrapper resolves only
+against an output of the same owner, job and kind, preferring a real stored ID
+with that prefix. A missing output ID resolves only when exactly one owned output
+of that job/kind has the exact original URL. Different output IDs and original
+versions remain distinct; persisted organization conflicts still fail explicitly.
+Discovery gathers the proven canonical mirrors before locking and organization
+writes, so selecting any mirror has the same favorite, collection and Trash state.
+
+`prepared-media-sql.ts` recognizes recorded video/audio excerpt lineage and creator
+input preparation lineage. Those inputs and their proven legacy mirrors are
+excluded before browse, compatibility listing, collection filtering and frozen
+selection pagination. Filenames never establish preparation or duplicate identity.
+Creator final results and saved character looks remain visible. Hidden preparations
+retain their exact references and stored bytes: this is discovery cleanup, not
+physical deletion or quota relief. `tests/media-library-duplicates-postgres.test.ts`
+covers all three kinds, ambiguous IDs, organization parity, actual Studio resolution
+and unchanged storage accounting for the hidden files.
+
 ## Verification
 
 The organization PG17 suite exercises real schema, migrations, transactions,
@@ -705,13 +724,13 @@ entry opens that saved identity after draft restoration; the existing library
 request lifetime cancels stale reads. Starting a new character clears that entry.
 
 `GET /api/media-library/storage` is a private, authenticated read of recorded
-original sizes, aggregated per owner and exact original URL across `media_assets`,
-`user_assets` and `job_outputs`. It includes recoverable Trash, excludes deleted
-assets, and does not scan S3, issue HEAD requests, initialize schema or reserve a
-quota. Unknown/conflicting sizes remain unmeasured. The UI shows measured-file
-coverage and explicitly excludes unmeasured originals and derivatives from this
-estimate. `limitBytes: null` / `enforcement: false` are informational, not an
-unlimited-storage entitlement or an admission/deletion policy.
+original sizes. Its [storage accounting contract](media-library-storage.md) covers
+owner isolation, projection/object deduplication, recoverable Trash, pending and
+failed deletion, shared retention and confirmed physical deletion. Logical
+tombstones do not imply freed bytes. The read performs no bucket scan, HEAD request,
+schema bootstrap or quota reservation. Unknown/conflicting sizes remain unmeasured;
+derivatives remain outside this estimate. `limitBytes: null` / `enforcement: false`
+remain informational. The UI only polls while original deletion is pending.
 
 The inspector's temporary image uses the same 16px contain viewport as its final
 reader; it cannot inherit a portrait's intrinsic minimum height. Failed stored

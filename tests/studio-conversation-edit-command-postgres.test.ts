@@ -234,6 +234,33 @@ test('replacement preserves one exact clip interval, rejects short/foreign/locke
   assert.deepEqual(restored,clips,'A reverse replacement restores the source without moving any timeline clip.');
 });
 
+test('a deleted original can be replaced in its exact slot without reading it or mutating neighboring clips',async t=>{
+  const {editStudioConversationTimeline}=await import('../frontend/src/server/studio/conversation-edit-command');
+  const {resolveStudioMedia}=await import('../frontend/src/server/studio/media-resolver');
+  const {buildConversationPreviewMedia}=await import('../frontend/src/server/studio/conversation-preview-media');
+  const {pg,actor,deps,project,assembly}=await videoQualificationFixture(t);
+  const initial=assembly([STUDIO_CONNECTED_ASSET_IDS.a,STUDIO_CONNECTED_ASSET_IDS.b]);
+  initial.edit.clips=initial.edit.clips.map((clip,index)=>({...clip,startFrame:120+index*60,durationFrames:60}));
+  await editStudioConversationTimeline(actor,initial,deps);
+  const read=()=>readStudioWorkspace(actor,project.projectId,deps);
+  const before=await read();
+  const clips=(before.sequences[0].timelineState as {timelineItems:WorkspaceTimelineItem[]}).timelineItems;
+  await pg.pool.query("UPDATE media_assets SET deleted_at=now(),status='deleted' WHERE public_id=$1",[STUDIO_CONNECTED_ASSET_IDS.a]);
+  const execute=async<T>(sql:string,values:readonly unknown[]=[]) => (await pg.pool.query(sql,[...values])).rows as T[];
+  const preview=await buildConversationPreviewMedia(actor.userId,clips,{resolve:(owner,ref)=>resolveStudioMedia(owner,ref,execute)});
+  assert.ok(preview[0].mediaAccessError);assert.equal(preview[0].mediaUrl,undefined);
+  const command={projectId:project.projectId,sequenceId:project.sequenceId,expectedRevision:1,idempotencyKey:randomUUID(),edit:{kind:'replace' as const,clipId:clips[0].id,ref:{type:'asset' as const,assetId:STUDIO_CONNECTED_ASSET_IDS.b,kind:'video' as const},sourceInFrame:0}};
+  await editStudioConversationTimeline(actor,command,deps);
+  const saved=await read();
+  const after=(saved.sequences[0].timelineState as {timelineItems:WorkspaceTimelineItem[]}).timelineItems;
+  assert.equal(saved.project.revision,2);assert.equal(after.length,2);assert.deepEqual(after[1],clips[1]);
+  for(const key of ['id','startSec','durationSec','track','transform','audioMix'] as const)assert.deepEqual(after[0][key],clips[0][key],key);
+  assert.deepEqual(after[0].ref,command.edit.ref);
+  const restored=await buildConversationPreviewMedia(actor.userId,after,{resolve:(owner,ref)=>resolveStudioMedia(owner,ref,execute)});
+  assert.equal(restored[0].mediaAccessError,undefined);assert.ok(restored[0].mediaAccessUrl);
+  assert.equal((await pg.pool.query('SELECT status FROM media_assets WHERE public_id=$1',[STUDIO_CONNECTED_ASSET_IDS.a])).rows[0].status,'deleted');
+});
+
 test('replacement qualifies its owned source outside locks and rechecks revision and ownership before saving',async t=>{
   const {editStudioConversationTimeline}=await import('../frontend/src/server/studio/conversation-edit-command');
   for(const scenario of ['success','manual-revision','owner-change'] as const){

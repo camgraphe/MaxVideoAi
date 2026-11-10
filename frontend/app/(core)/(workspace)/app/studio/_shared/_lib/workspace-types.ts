@@ -562,7 +562,7 @@ export type WorkspaceTimelineItem = {
   thumbnailAccessUrl?: string;
   mediaAccessExpiresAt?: string | null;
   mediaAccessRequired?: boolean;
-  mediaAccessError?: 'MEDIA_NOT_AVAILABLE';
+  mediaAccessError?: 'MEDIA_NOT_AVAILABLE' | 'MEDIA_DELETED';
   montageSource?: {
     commandKind: 'create_studio_montage';
     commandVersion: 1;

@@ -3,7 +3,7 @@ import { buildStoredImageRenderEntries, parseStoredImageRenders, type ImageRende
 import { libraryIdentityCtes } from './browse-identity-sql';
 import { activeLibrarySourceSql } from './visibility-sql';
 import { applicationJobSql } from '../app-job-origin';
-import { query, isTransactionQueryExecutor, type TransactionQueryExecutor } from '@/lib/db';
+import { query, withDbTransaction, isTransactionQueryExecutor, type TransactionQueryExecutor } from '@/lib/db';
 import { ensureMediaLibrarySchema } from '@/lib/schema';
 import {
   mapLegacyJobRowToOutputs,
@@ -22,11 +22,30 @@ import {
 } from './pagination';
 
 export async function upsertJobOutputs(outputs: JobOutputRecord[], options: { executor?: TransactionQueryExecutor } = {}): Promise<void> {
-  if (!outputs.length) return;
+  await persistAvailableJobOutputs(outputs, options);
+}
+
+async function persistAvailableJobOutputs(outputs: JobOutputRecord[], options: { executor?: TransactionQueryExecutor } = {}): Promise<JobOutputRecord[]> {
+  if (!outputs.length) return [];
   if (options.executor && !isTransactionQueryExecutor(options.executor)) throw new Error('Active transaction required for job outputs.');
   if (!options.executor) await ensureMediaLibrarySchema();
-  const execute = options.executor ? options.executor.query.bind(options.executor) : query;
+  const persist = async (executor: TransactionQueryExecutor) => {
+  const execute = executor.query.bind(executor), available: JobOutputRecord[] = [];
+  // Lock existing slots in purge order before INSERT: even a no-op conflict runs
+  // storage/source triggers, and mixed-kind callbacks must not invert these locks.
+  const stored = await execute<{ job_id: string; kind: string; position: number; status: string; user_id: string | null; job_user_id: string | null }>(
+    `WITH wanted AS (
+       SELECT DISTINCT * FROM jsonb_to_recordset($1::jsonb) AS x("jobId" text,kind text,position integer)
+     ) SELECT o.job_id,o.kind,o.position,o.status,o.user_id,j.user_id AS job_user_id FROM job_outputs o
+       JOIN wanted w ON o.job_id=w."jobId" AND o.kind=w.kind AND o.position=w.position
+       JOIN app_jobs j ON j.job_id=o.job_id ORDER BY o.id FOR UPDATE OF o`,
+    [JSON.stringify(outputs.map(({ jobId, kind, position }) => ({ jobId, kind, position })))]);
+  const existingBySlot = new Map(stored.map(row => [JSON.stringify([row.job_id, row.kind, row.position]), row]));
   for (const output of outputs) {
+    // A provider replay acknowledges a tombstone without touching its bytes or identity.
+    const existing = existingBySlot.get(JSON.stringify([output.jobId, output.kind, output.position]));
+    if (existing && (existing.user_id !== output.userId || existing.job_user_id !== output.userId)) throw new Error('Job output ownership does not match the owning job.');
+    if (existing?.status === 'deleted') continue;
     const persisted = await execute<{ id: string }>(
       `INSERT INTO job_outputs (
          id, job_id, user_id, kind, url, storage_url, thumb_url, preview_url, mime_type, width, height,
@@ -54,7 +73,7 @@ export async function upsertJobOutputs(outputs: JobOutputRecord[], options: { ex
                           THEN COALESCE(job_outputs.metadata, '{}'::jsonb)
                           ELSE COALESCE(job_outputs.metadata, '{}'::jsonb) - 'mediaFacts' - 'inheritedOutputDurationSec' END) || EXCLUDED.metadata,
          updated_at = NOW()
-       WHERE job_outputs.user_id IS NOT DISTINCT FROM EXCLUDED.user_id
+       WHERE job_outputs.user_id IS NOT DISTINCT FROM EXCLUDED.user_id AND job_outputs.status <> 'deleted'
        RETURNING id`,
       [
         output.id,
@@ -77,14 +96,18 @@ export async function upsertJobOutputs(outputs: JobOutputRecord[], options: { ex
     if (persisted.length !== 1) {
       throw new Error('Job output ownership does not match the owning job.');
     }
+    available.push(output);
   }
+  return available;
+  };
+  return options.executor ? persist(options.executor) : withDbTransaction(persist);
 }
 
 export async function upsertLegacyJobOutputs(row: LegacyJobMediaRow, options: {
   requireMcpPromotion?: boolean; promoteMcpOutputsFn?: typeof promoteCompletedMcpJobOutputs;
 } = {}): Promise<void> {
-  const outputs = mapLegacyJobRowToOutputs(row);
-  await upsertJobOutputs(outputs);
+  const outputs = await persistAvailableJobOutputs(mapLegacyJobRowToOutputs(row));
+  if (!outputs.length) return;
   const promote = options.promoteMcpOutputsFn ?? promoteCompletedMcpJobOutputs;
   if (options.requireMcpPromotion) {
     const result = await promote(outputs);
@@ -117,7 +140,6 @@ export async function listJobOutputsByJobIds(
             duration_sec, position, status, metadata, created_at
        FROM job_outputs
       WHERE job_id = ANY($1::text[])
-        AND status <> 'deleted'
       ORDER BY job_id ASC, kind ASC, position ASC`,
     [ids]
   );
@@ -133,6 +155,8 @@ export async function listJobOutputsByJobIds(
 export function applyOutputsToJobPayload<T extends {
   jobId: string;
   thumbUrl?: string | null;
+  previewFrame?: string | null;
+  heroRenderId?: string | null;
   videoUrl?: string | null;
   audioUrl?: string | null;
   previewVideoUrl?: string | null;
@@ -143,10 +167,17 @@ export function applyOutputsToJobPayload<T extends {
   imageRenders?: ImageRenderEntry[];
 }>(job: T, outputs: JobOutputRecord[] | undefined): T {
   if (!outputs?.length) return job;
-  const videos = outputs.filter((output) => output.kind === 'video').sort((a, b) => a.position - b.position);
-  const audios = outputs.filter((output) => output.kind === 'audio').sort((a, b) => a.position - b.position);
-  const images = outputs.filter((output) => output.kind === 'image' && output.metadata.role !== 'last_frame').sort((a, b) => a.position - b.position);
-  const lastFrame = outputs.find(output => output.kind === 'image' && output.metadata.role === 'last_frame');
+  // Missing historical rows retain their fallback; explicit tombstones retire it.
+  const visible = outputs.filter(output => output.status !== 'deleted');
+  const removed = outputs.filter(output => output.status === 'deleted');
+  const removedVideo = removed.some(output => output.kind === 'video');
+  const removedAudio = removed.some(output => output.kind === 'audio');
+  const removedImages = removed.some(output => output.kind === 'image' && output.metadata.role !== 'last_frame');
+  const removedFrame = removed.some(output => output.metadata.role === 'last_frame');
+  const videos = visible.filter((output) => output.kind === 'video').sort((a, b) => a.position - b.position);
+  const audios = visible.filter((output) => output.kind === 'audio').sort((a, b) => a.position - b.position);
+  const images = visible.filter((output) => output.kind === 'image' && output.metadata.role !== 'last_frame').sort((a, b) => a.position - b.position);
+  const lastFrame = visible.find(output => output.kind === 'image' && output.metadata.role === 'last_frame');
   const firstVideo = videos[0];
   const firstAudio = audios[0];
   const imageEntries = images.map((output) => ({
@@ -159,17 +190,21 @@ export function applyOutputsToJobPayload<T extends {
     mimeType: output.mimeType,
   }));
   const renderEntries = buildStoredImageRenderEntries(imageEntries);
+  const retireCover = removedVideo || removedImages;
+  const thumbUrl = firstVideo?.thumbUrl ?? images[0]?.thumbUrl ?? (retireCover ? images[0]?.url ?? null : job.thumbUrl);
   return {
     ...job,
-    videoUrl: firstVideo?.url ?? job.videoUrl,
-    previewVideoUrl: firstVideo?.previewUrl ?? job.previewVideoUrl,
-    ...(typeof firstVideo?.metadata.playbackVideoUrl === 'string' ? { playbackVideoUrl: firstVideo.metadata.playbackVideoUrl } : {}),
-    ...(lastFrame ? { lastFrameUrl: lastFrame.url } : {}),
-    audioUrl: firstAudio?.url ?? job.audioUrl,
-    thumbUrl: firstVideo?.thumbUrl ?? images[0]?.thumbUrl ?? job.thumbUrl,
-    renderIds: images.length ? images.map((output) => output.url) : job.renderIds,
-    imageRenders: renderEntries.length ? parseStoredImageRenders(renderEntries).entries : job.imageRenders,
-    renderThumbUrls: renderEntries.length ? renderEntries.map((entry) => entry.thumb_url) : job.renderThumbUrls,
+    videoUrl: firstVideo?.url ?? (removedVideo ? null : job.videoUrl),
+    previewVideoUrl: firstVideo?.previewUrl ?? (removedVideo ? null : job.previewVideoUrl),
+    ...(typeof firstVideo?.metadata.playbackVideoUrl === 'string' ? { playbackVideoUrl: firstVideo.metadata.playbackVideoUrl } : removedVideo ? { playbackVideoUrl: null } : {}),
+    ...(lastFrame ? { lastFrameUrl: lastFrame.url } : removedFrame || removedVideo ? { lastFrameUrl: null } : {}),
+    audioUrl: firstAudio?.url ?? (removedAudio ? null : job.audioUrl),
+    thumbUrl,
+    ...(retireCover ? { previewFrame: thumbUrl ?? null } : {}),
+    ...(removedImages ? { heroRenderId: images[0]?.id ?? null } : {}),
+    renderIds: images.length || removedImages ? images.map((output) => output.url) : job.renderIds,
+    imageRenders: renderEntries.length || removedImages ? parseStoredImageRenders(renderEntries).entries : job.imageRenders,
+    renderThumbUrls: renderEntries.length || removedImages ? renderEntries.map((entry) => entry.thumb_url) : job.renderThumbUrls,
   };
 }
 

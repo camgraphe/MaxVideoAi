@@ -14,6 +14,7 @@ import { CompactLibrarySelectionActions } from './CompactLibrarySelectionActions
 import { CompactLibraryCollections } from './CompactLibraryCollections.client';
 import { useLibraryManagementSelection } from './useLibraryManagementSelection';
 import { MediaActionPanel } from './MediaActionPanel.client';
+import { LibraryEmptyTrash } from './LibraryEmptyTrash.client';
 import type { ManagedLibraryAsset } from '@/lib/library-management-selection';
 function isManaged(asset: AssetBrowserAsset): asset is ManagedLibraryAsset {
   return Boolean(asset.organization && asset.libraryRef && asset.sourceRevision);
@@ -272,6 +273,8 @@ function OwnedCompactLibraryBrowser({
                 : `${totalCount.toLocaleString(locale)} ${copy.results}`}
             </span>
           </div>
+          {scope.trash ? <LibraryEmptyTrash userId={userId} locale={locale} disabled={selection.pending}
+            onRequested={() => { selection.clear(); setViewer(null); }} /> : null}
           {selection.count > 0 ? <CompactLibrarySelectionActions
             key={`actions:${scopeKey}`}
             userId={userId} locale={locale} scope={scope} selection={selection}

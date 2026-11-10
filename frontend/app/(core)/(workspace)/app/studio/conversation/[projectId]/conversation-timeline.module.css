@@ -20,6 +20,7 @@
 .clip {position:absolute;top:0;height:40px;border-radius:5px;overflow:hidden;border:1px solid var(--studio-line);background:var(--studio-panel);color:var(--studio-text);}
 .clip[data-selected="true"] {border-color:var(--studio-accent);}
 .clip[data-kind="audio"] {background:color-mix(in srgb,var(--studio-accent) 18%,var(--studio-bg));}
+.clip[data-unavailable="true"] {background:var(--studio-panel);color:var(--studio-muted);border-style:dashed;}
 .footer .clipBody {position:absolute;inset:0;min-height:0;min-width:0;width:100%;height:100%;border:0;border-radius:0;padding:0 12px;font-size:11px;touch-action:none;text-align:left;overflow:hidden;cursor:grab;}
 .clipBody span {position:relative;z-index:1;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;display:block;}
 .clipBody img {position:absolute;inset:0;object-fit:cover;width:100%;height:100%;opacity:.45;}

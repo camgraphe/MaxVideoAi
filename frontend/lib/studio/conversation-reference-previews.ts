@@ -21,3 +21,10 @@ export type ConversationReferencePreview = {
   durationSec: number | null;
   mediaFacts: MediaFacts | null;
 };
+
+/** Missing-source status is explicit; operational or playback failures do not imply deletion. */
+export type ConversationReferencePreviewResult = ConversationReferencePreview | {
+  assetId: string;
+  kind: 'image' | 'video' | 'audio';
+  mediaAccessError: 'MEDIA_DELETED' | 'MEDIA_NOT_AVAILABLE';
+};

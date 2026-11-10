@@ -30,6 +30,7 @@ export function libraryBrowseCtes(toolsEnabled: boolean = FEATURES.workflows.too
     SELECT c.*,saved.saved_asset_id,COALESCE(${['label', 'fileName', 'filename', 'originalName'].map(key => `CASE WHEN jsonb_typeof(c.metadata->'${key}')='string' THEN NULLIF(BTRIM(c.metadata->>'${key}'),'') END`).join(',')},'') AS display_name
     FROM browse_candidates c JOIN browse_saved saved USING(organization_key)
     WHERE ${toolsEnabled ? 'true' : "COALESCE(c.source,'') NOT IN ('storyboard','character','angle')"}
+      AND NOT c.internal_group
       AND ($2::jsonb->>'kind'='all' OR c.kind=$2::jsonb->>'kind')
       AND ($2::jsonb->>'source' IS NULL OR c.source=$2::jsonb->>'source')
       AND ($2::jsonb->>'view'='all' OR ($2::jsonb->>'view'='saved' AND c.type<>'job-output') OR ($2::jsonb->>'view'='review' AND c.type='job-output'))
@@ -41,12 +42,17 @@ export function libraryBrowseCtes(toolsEnabled: boolean = FEATURES.workflows.too
       bool_or($3::text IS NULL OR concat_ws(' ',metadata->>'label',metadata->>'fileName',metadata->>'filename',metadata->>'originalName',"jobId",job_prompt,id) ILIKE $3 ESCAPE '\\') OVER(PARTITION BY organization_key) AS matches_search,
       first_value(NULLIF(metadata->>'originalName','')) OVER(PARTITION BY organization_key ORDER BY (NULLIF(metadata->>'originalName','') IS NULL),priority DESC,created_at DESC,id) AS original_name
       FROM browse_source_filtered c
+  ), browse_purge_keys AS MATERIALIZED (
+    -- JSON keeps old fixtures readable; materialization evaluates it only once per owned state row.
+    SELECT org.key FROM library_organization org
+    WHERE org.user_id=$1 AND to_jsonb(org)->>'purge_requested_at' IS NOT NULL
   ), browse_filtered AS MATERIALIZED (
     SELECT c.*,COALESCE(o.favorite,false) AS favorite,o.trashed_at,
       ARRAY(SELECT m.collection_id FROM library_collection_members m WHERE m.user_id=$1 AND m.organization_key=c.organization_key ORDER BY m.collection_id) AS collection_ids,
       lower(COALESCE(NULLIF(c.display_name,''),c.original_name,'')) COLLATE "C" AS sort_name
     FROM browse_ranked c LEFT JOIN library_organization o ON o.user_id=$1 AND o.key=c.organization_key
     WHERE c.rank=1 AND c.matches_search
+      AND NOT EXISTS(SELECT 1 FROM browse_purge_keys purged WHERE purged.key=c.organization_key)
       AND (COALESCE(($2::jsonb->>'favorite')::boolean,false)=false OR o.favorite)
       AND ((o.trashed_at IS NOT NULL)=COALESCE(($2::jsonb->>'trash')::boolean,false))
       AND ($2::jsonb->>'collectionId' IS NULL OR EXISTS(SELECT 1 FROM library_collection_members m WHERE m.user_id=$1 AND m.organization_key=c.organization_key AND m.collection_id=$2::jsonb->>'collectionId'))

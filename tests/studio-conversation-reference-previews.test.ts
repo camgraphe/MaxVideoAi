@@ -53,7 +53,12 @@ test('reference previews resolve exact owned media in a read-only project scope 
       assert.equal(externalWithPrivatePoster[0].thumbUrl,'https://grants.test/user-assets%2Fowner%2Fexternal-thumb.jpg?token=read');
       assert.equal(externalWithPrivatePoster[0].expiresAt,'2026-10-03T12:05:00.000Z','A private poster expires even when its original is external.');
       for (const projectId of ['foreign','deleted','missing']) await assert.rejects(module.readConversationReferencePreviews({userId:'owner',projectId},{refs:[ref('a')]},dependencies),/STUDIO_PROJECT_NOT_FOUND/);
-      for (const asset of [ref('d'),ref('e'),ref('a','video')]) await assert.rejects(module.readConversationReferencePreviews({userId:'owner',projectId:'film'},{refs:[asset]},dependencies),/MEDIA_NOT_AVAILABLE/);
+      for (const asset of [ref('d'),ref('e'),ref('a','video')]) {
+        const results = await module.readConversationReferencePreviews({userId:'owner',projectId:'film'},{refs:[asset,ref('a')]},dependencies);
+        assert.deepEqual(results[0],{assetId:asset.assetId,kind:asset.kind,mediaAccessError:'MEDIA_NOT_AVAILABLE'});
+        assert.equal(results[1].assetId,ref('a').assetId,'One missing reference cannot hide the readable references.');
+        assert.ok('url' in results[1]);
+      }
       await assert.rejects(module.readConversationReferencePreviews({userId:'owner',projectId:'film'},{refs:[ref('a')]},{...dependencies,sign:async()=>{throw new Error('Signing service failed with private key');}}),/Signing service failed/);
       const thumbnailFailure = await module.readConversationReferencePreviews({userId:'owner',projectId:'film'},{refs:[ref('a')]},{...dependencies,sign:async(key,options)=>{if(key.endsWith('thumb.jpg'))throw new Error('No thumbnail');return dependencies.sign(key,options);}});
       assert.equal(thumbnailFailure[0].thumbUrl,thumbnailFailure[0].url,'An image may fall back only to its readable original.');

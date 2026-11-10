@@ -21,6 +21,7 @@ export type LibraryOrganizationState = {
     favorite: boolean;
     trashedAt: string | null;
     collectionIds: string[];
+    purgeRequestedAt?: string;
 };
 export type LibraryOrganizationOperation = 'favorite' | 'unfavorite' | 'trash' | 'restore' | 'add-to-collection' | 'remove-from-collection';
 export type LibraryOrganizationResult = {

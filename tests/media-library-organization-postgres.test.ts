@@ -346,13 +346,15 @@ test('organization preserves owned source versions and commits truthful bounded 
         const gate = new Promise<void>(resolve => { unlock = resolve; });
         let deleted!: () => void;
         const reached = new Promise<void>(resolve => { deleted = resolve; });
-        const deletion = deleteLibraryAsset({ userId: 'alice', assetId: 'bulk-1' }, { ensureSchema: async () => { }, withTransaction: callback => db.withDbTransaction(async (executor) => { const result = await callback(executor); deleted(); await gate; return result; }) });
+        let deletionPid = 0;
+        const deletion = deleteLibraryAsset({ userId: 'alice', assetId: 'bulk-1' }, { ensureSchema: async () => { }, withTransaction: callback => db.withDbTransaction(async (executor) => { deletionPid = (await executor.query<{ pid: number }>('SELECT pg_backend_pid() AS pid'))[0].pid; const result = await callback(executor); deleted(); await gate; return result; }) });
         await reached;
         const restoration = run('restore', [ref]);
         try {
             let waiting = false;
             for (let i = 0; i < 80 && !waiting; i++) {
-                waiting = (await pg.pool.query("SELECT count(*)::int AS n FROM pg_stat_activity WHERE datname=current_database() AND wait_event_type='Lock' AND query LIKE '%FROM media_assets%'")).rows[0].n > 0;
+                // pg_stat_activity truncates query text; observe the held transaction's blocker instead.
+                waiting = (await pg.pool.query("SELECT count(*)::int AS n FROM pg_stat_activity WHERE datname=current_database() AND wait_event_type='Lock' AND $1::int=ANY(pg_blocking_pids(pid))", [deletionPid])).rows[0].n > 0;
                 if (!waiting)
                     await new Promise(resolve => setTimeout(resolve, 10));
             }
