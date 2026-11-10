@@ -57,7 +57,8 @@ export function makeAssets(count: number): DemoAsset[] {
       durationSec: kind === 'image' ? undefined : kind === 'audio' ? 24 : 8,
       favorite: index % 5 === 0, trashed: index >= count - 3,
       collections: index % 3 === 0 ? ['film'] : index % 3 === 1 ? ['casting'] : ['brand'],
-      saved: index % 4 !== 0, createdAt: new Date(demoNow - index * 45*60_000).toISOString(),
+      // The two storyboard outputs belong to the same synthetic run.
+      saved: index % 4 !== 0, createdAt: new Date(demoNow - (index===16?3:index) * 45*60_000).toISOString(),
     };
   });
 }

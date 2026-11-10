@@ -32,9 +32,11 @@ aucun débordement sur les tailles testées, aucun JS error capturé. Les dernie
 ajustements de collections/mobile (`9897fa2dd`) ont passé le workflow
 https://github.com/camgraphe/MaxVideoAi/actions/runs/42725923198 : 50 captures,
 aucun JS error capturé, début de galerie mobile à 251 px. Le candidat Activité
-`47b50060a` a son workflow https://github.com/camgraphe/MaxVideoAi/actions/runs/42728187743 ;
-lire son résultat avant de le déclarer validé. Les modifications de documentation
-ultérieures n’établissent pas à elles seules la réussite d’un nouveau candidat.
+`47b50060a` a passé son workflow https://github.com/camgraphe/MaxVideoAi/actions/runs/42728187743.
+Les derniers ajustements alignent les dates des deux sorties d’une génération,
+enlèvent les métadonnées de génération de l’import simulé et adaptent le raccourci
+de recherche à Activité. Le scénario import → absence de nouvelle génération a
+été ajouté. Lire le workflow du dernier HEAD avant de le déclarer validé.
 Les anciens résultats V1 ne constituent pas une validation V2.
 
 Le dossier de reprise local contient les pointeurs de candidat, les captures et

@@ -88,4 +88,18 @@ export async function verifyActivityJourneys(page:Page,width:number,measure:(pag
   await expect(page.getByRole('button',{name:'Modification simulée'})).toBeVisible();
   await measure(page,`19-media-studio-${width}`);
   await page.getByRole('button',{name:'Fermer Studio'}).click();
+
+  // Importing a file does not invent an engine, prompt or generation history entry.
+  await navigate('Activité');
+  await page.getByRole('combobox',{name:'Origine des générations'}).selectOption('all');
+  const historyCount=await page.locator('.activity-footnote').textContent();
+  await navigate('Médias');
+  await page.getByRole('button',{name:'Importer',exact:true}).click();
+  await page.getByRole('button',{name:'Simuler un import'}).click();
+  await page.locator('.compact-media-tile[data-media-key^="demo-import-"] .compact-media-preview').click();
+  await expect(page.getByRole('dialog',{name:'Aperçu du média'})).toContainText('Aucun prompt disponible pour ce média.');
+  await expect(page.getByRole('button',{name:'Retrouver la génération'})).toHaveCount(0);
+  await page.getByRole('button',{name:'Fermer Aperçu du média'}).click();
+  await navigate('Activité');
+  await expect(page.locator('.activity-footnote')).toHaveText(historyCount!);
 }
