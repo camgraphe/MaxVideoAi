@@ -7,10 +7,14 @@ const source = `import {useState} from 'react';import {createRoot} from 'react-d
 import {CompactLibraryBrowser} from './components/library/CompactLibraryBrowser.client';
 import {LibraryMediaNavigation} from './components/library/LibraryMediaNavigation.client';
 import {LibraryStorageUsage} from './components/library/LibraryStorageUsage.client';
+import {invalidateLibraryMedia} from './hooks/useLibraryCacheRevision';
+window.refreshStorage=()=>invalidateLibraryMedia('gallery-owner');
 function Scene(){const[scope,setScope]=useState({view:'all',kind:'all',source:'all',sort:'recent'});
+const[failed,setFailed]=useState(false); window.failBrowse=()=>setFailed(true);
 return <main style={{height:'100dvh',display:'flex',padding:12}}><CompactLibraryBrowser locale="en" title="Media" hideTitle assets={globalThis.fixtureConfig.assets} assetType="all" isLoading={false}
 management={{userId:'gallery-owner',scope,onScopeChange:patch=>setScope(prev=>({...prev,...patch})),totalCount:200}}
 source={scope.source} availableSources={['all','upload','generated','upscale']} sourceLabels={{all:'All',upload:'Uploads',generated:'Generated',upscale:'Upscale'}} onSourceChange={source=>setScope(prev=>({...prev,source}))}
+error={failed?'Paging unavailable':null} onRetry={()=>{setFailed(false);window.retryCount=(window.retryCount??0)+1}}
 searchPlaceholder="Search media" sourcesTitle="Source" emptyLabel="Empty" emptySearchLabel="No match" renderAssetActions={()=>null}
 headerLeadingActions={<LibraryMediaNavigation locale="en" value={scope.kind} charactersEnabled onChange={kind=>setScope(prev=>({...prev,kind}))}/>}
 headerActions={<button className="compact-library-import" aria-label="Import"><span className="compact-library-import-label">Import</span></button>}
@@ -45,7 +49,8 @@ test('real media browser keeps compact commands, visible selection and contained
         const body = route.request().postDataJSON(); mutations.push(body);
         return route.fulfill({json:{ok:true,results:body.references.map((reference:unknown)=>({reference,status:'succeeded'})),succeededCount:body.references.length,failedCount:0,affectedCount:body.references.length}});
       });
-      await page.route('**/api/media-library/storage', route => route.fulfill({json:{ok:true,usage:{recordedBytes:2_000_000_000,measuredFiles:8,totalFiles:10,limitBytes:null,enforcement:false}}}));
+      const usage={recordedBytes:2_000_000_000,measuredFiles:8,totalFiles:10,limitBytes:null,enforcement:false,pendingDeletionFiles:0,sharedDeletionFiles:0};
+      await page.route('**/api/media-library/storage', route => route.fulfill({json:{ok:true,usage}}));
       await page.goto(fixture.url);
       if (width === 390) {
         const types = page.getByRole('combobox', { name: 'Media type', exact: true });
@@ -62,8 +67,13 @@ test('real media browser keeps compact commands, visible selection and contained
         const footer = await page.locator('.compact-library-footer').boundingBox();
         assert.ok(heading && heading.height <= 46 && toolbar && toolbar.height <= 44, 'mobile browse commands use two compact rows');
         assert.ok(footer && footer.height <= 44, 'storage and pagination share one touch-sized row');
-        await page.getByRole('button',{name:'Load more',exact:true}).click();
-        assert.equal(await page.evaluate(()=>window.loadMoreCount),1);
+        const scroll = page.locator('.compact-media-grid');
+        assert.equal(await page.evaluate(()=>window.loadMoreCount??0),0,'browsing does not download the entire library upfront');
+        await scroll.evaluate(node=>node.scrollTop=node.scrollHeight);
+        await expect.poll(()=>page.evaluate(()=>window.loadMoreCount)).toBe(1);
+        await scroll.evaluate(node=>node.dispatchEvent(new Event('scroll')));
+        assert.equal(await page.evaluate(()=>window.loadMoreCount),1,'repeated end events do not queue duplicate pages');
+        await scroll.evaluate(node=>node.scrollTop=0);
         await page.getByRole('button',{name:'Storage · 2 GB',exact:true}).click();
         await expect(page.getByRole('dialog',{name:'Storage · 2 GB',exact:true})).toContainText('No storage quota');
         await page.keyboard.press('Escape');
@@ -121,7 +131,8 @@ test('real media browser keeps compact commands, visible selection and contained
       assert.equal(mutations[2].operation,'add-to-collection'); assert.equal(mutations[2].collectionId,'lc-new');
       await rows.first().locator('.compact-media-check').click();
       await actions.getByRole('button', { name: 'Clear selection', exact: true }).click();
-      await expect(page.getByRole('button', { name: 'Select', exact: true })).toBeFocused();
+      await expect(page.getByRole('button', { name: 'Filters', exact: true })).toBeFocused();
+      await expect(page.getByRole('button', { name: 'Select', exact: true })).toHaveCount(0);
       await expect(rows.first().getByRole('checkbox')).not.toBeChecked();
       await expect(page.getByRole('combobox',{name:'Source',exact:true})).toHaveCount(0);
       if (width === 390) {
@@ -139,11 +150,30 @@ test('real media browser keeps compact commands, visible selection and contained
       await page.getByRole('button', { name: 'Filters', exact: true }).click();
       if (width === 390) await expect(page.getByRole('combobox',{name:'Source',exact:true})).toHaveValue('upscale');
       await expect(page.getByLabel('Library view', { exact: true })).toHaveValue('all');
-      await page.keyboard.press('Escape');
+      await page.getByRole('button',{name:'Select loaded',exact:true}).click();
+      await expect(actions).toContainText('200 selected');
+      await actions.getByRole('button',{name:'Clear selection',exact:true}).click();
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1), false, 'no horizontal page overflow');
       assert.equal(await page.locator('main').evaluate(element => element.scrollWidth > element.clientWidth + 1), false, 'no clipped origin selector or inner horizontal scrollbar');
       assert.equal(await page.locator('.compact-media-grid').evaluate(element => element.scrollWidth > element.clientWidth + 1), false, 'no virtual canvas overflow');
       assert.deepEqual(originals, [], 'browsing never downloads originals');
+      if (width === 390) {
+        usage.pendingDeletionFiles=12; usage.sharedDeletionFiles=3;
+        await page.evaluate(()=>window.refreshStorage());
+        await expect(page.locator('.library-storage-usage')).toContainText('12 pending deletion');
+        await expect(page.locator('.library-storage-usage')).toContainText('3 shared files retained');
+        await page.evaluate(()=>window.failBrowse());
+        for (const narrowWidth of [390,360]) {
+          await page.setViewportSize({width:narrowWidth,height:900});
+          assert.ok(await page.locator('.compact-library-footer').evaluate(node=>node.scrollWidth<=node.clientWidth), 'cleanup state wraps inside the compact footer');
+          const retry=page.locator('.compact-library-footer').getByRole('button',{name:'Retry',exact:true});
+          await expect(retry).toBeVisible();
+          const more=await retry.boundingBox();
+          assert.ok(more && more.x>=0 && more.x+more.width<=narrowWidth, 'pagination remains visible during pending/shared cleanup');
+        }
+        await page.locator('.compact-library-footer').getByRole('button',{name:'Retry',exact:true}).click();
+        assert.equal(await page.evaluate(()=>window.retryCount),1,'automatic pagination retains an explicit recovery action');
+      }
       assert.deepEqual(errors, []);
       await page.close();
     }

@@ -539,11 +539,19 @@ resolution. No Dashboard or additional Uppy focus host is mounted.
 On mobile, `LibraryMediaNavigation` uses a native type selector, including saved
 Characters; desktop keeps the type buttons. The shared media scroller hides its
 mobile scrollbar without changing keyboard/touch scrolling or virtualizer geometry.
-The page keeps two command rows: type, Collections and Import above search, Filters
-and Select. Storage and Load more share one 44px footer next to the bottom navigation.
+The page keeps two command rows: type, Collections and Import above search and
+Filters. Checkboxes expose contextual actions directly; bulk selection commands
+live inside Filters. Storage keeps one 44px footer next to the bottom navigation.
 The storage estimate remains labeled; quota and measurement detail stay in its popup.
 The results count remains announced and is visible inside mobile Filters. Display
 changes use the same account preference and preserve selection in every layout.
+`useLibraryScrollPagination` reads one next cursor page within 160px of the end of
+the shared virtualizer scroll surface. It waits for new loaded identities before
+requesting again, pauses during loading/mutations, hidden tabs and offline periods,
+and retires callbacks when account, filters or sort change. Resize observation fills
+short viewports without downloading the entire result set. Errors or 15 seconds
+without progress expose manual recovery; the Load more fallback also remains
+keyboard-accessible. Pagination does not replace loaded assets or their selection.
 Subtitles are reached through Tools, where the subtitle workbench links to saved
 documents. They no longer compete with Import in the Media header.
 

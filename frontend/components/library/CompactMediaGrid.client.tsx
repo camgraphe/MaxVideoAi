@@ -1,5 +1,5 @@
 'use client';
-import { memo, useMemo, useRef, useState } from 'react';
+import { memo, useMemo, useRef, useState, type Ref } from 'react';
 import { Button, Checkbox, GridList, GridListItem, type Selection } from 'react-aria-components';
 import { Size, Virtualizer } from 'react-aria-components/Virtualizer';
 import { Check, Film, ImageIcon, Music2, ScanSearch } from 'lucide-react';
@@ -84,7 +84,9 @@ export const CompactMediaGrid = memo(function CompactMediaGrid({
   selectionMode = 'multiple',
   selectionDisabledKeys,
   displayMode = 'grid',
+  scrollRef,
 }: {
+  scrollRef?: Ref<HTMLDivElement>;
   displayMode?: MediaDisplayMode;
   assets: AssetBrowserAsset[];
   selectedKeys: ReadonlySet<string>;
@@ -204,6 +206,7 @@ export const CompactMediaGrid = memo(function CompactMediaGrid({
 
   const collection = (
     <GridList
+      ref={scrollRef}
       aria-label={copy.all}
       items={items}
       selectionMode={selectionMode}

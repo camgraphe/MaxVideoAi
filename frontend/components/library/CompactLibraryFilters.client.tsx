@@ -5,6 +5,8 @@ import { CompactLibraryPopup } from './CompactLibraryPopup.client';
 import { RefreshCw } from 'lucide-react';
 import type { MediaDisplayMode } from './CompactMediaGrid.client';
 import { compactMediaSource } from './media-action-copy';
+import { CompactLibrarySelection } from './CompactLibrarySelection.client';
+import type { useLibraryManagementSelection } from './useLibraryManagementSelection';
 
 type Props = NonNullable<AssetLibraryBrowserProps['management']> & {
     locale: string;
@@ -15,6 +17,8 @@ type Props = NonNullable<AssetLibraryBrowserProps['management']> & {
     displayMode: MediaDisplayMode;
     onDisplayModeChange: (mode: MediaDisplayMode) => void;
     sourceOptions: Pick<AssetLibraryBrowserProps, 'source' | 'availableSources' | 'sourceLabels' | 'onSourceChange'>;
+    selection: ReturnType<typeof useLibraryManagementSelection>;
+    isLoading: boolean;
   };
 export function CompactLibraryFilters({
   userId,
@@ -29,11 +33,13 @@ export function CompactLibraryFilters({
   displayMode,
   onDisplayModeChange,
   sourceOptions,
+  selection,
+  isLoading,
 }: Props) {
   const copy = compactLibraryCopy(locale);
   return (
     <CompactLibraryPopup className="compact-library-filters-trigger" label={copy.filters} active={scope.view !== 'all' || sourceOptions.source !== 'all'}>
-      <div className="compact-library-filters">
+      {close => <div className="compact-library-filters">
         <div className="compact-library-mobile-settings">
           <p>{totalCount.toLocaleString(locale)} {copy.results}</p>
           <label>
@@ -103,8 +109,9 @@ export function CompactLibraryFilters({
             }}
           />
         </label>
+        <CompactLibrarySelection locale={locale} selection={selection} isLoading={isLoading} onClose={close} />
         {onRefresh ? <button type="button" onClick={onRefresh}><RefreshCw size={15} aria-hidden /> {refreshLabel ?? copy.retry}</button> : null}
-      </div>
+      </div>}
     </CompactLibraryPopup>
   );
 }

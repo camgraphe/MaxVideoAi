@@ -9,12 +9,12 @@ import { Columns3, Grid2X2, List } from 'lucide-react';
 import { libraryMediaCaption } from './library-media-caption';
 import { compactMediaSource } from './media-action-copy';
 import { CompactLibraryFilters } from './CompactLibraryFilters.client';
-import { CompactLibrarySelection } from './CompactLibrarySelection.client';
 import { CompactLibrarySelectionActions } from './CompactLibrarySelectionActions.client';
 import { CompactLibraryCollections } from './CompactLibraryCollections.client';
 import { useLibraryManagementSelection } from './useLibraryManagementSelection';
 import { MediaActionPanel } from './MediaActionPanel.client';
 import { LibraryEmptyTrash } from './LibraryEmptyTrash.client';
+import { useLibraryScrollPagination } from './useLibraryScrollPagination';
 import type { ManagedLibraryAsset } from '@/lib/library-management-selection';
 function isManaged(asset: AssetBrowserAsset): asset is ManagedLibraryAsset {
   return Boolean(asset.organization && asset.libraryRef && asset.sourceRevision);
@@ -72,7 +72,6 @@ function OwnedCompactLibraryBrowser({
   onSourceChange,
   searchQuery = '',
   onSearchQueryChange,
-  searchPlaceholder,
   onRetry,
   retryLabel,
   emptyLabel,
@@ -103,6 +102,7 @@ function OwnedCompactLibraryBrowser({
     assets: managed,
   });
   const root = useRef<HTMLElement>(null);
+  const scrollRoot = useRef<HTMLDivElement>(null);
   const actionAsset = selection.count === 1
     ? [...selection.selection.records.values()][0] ?? managed.find(asset => selection.keys.has(asset.organization.key))
     : undefined;
@@ -143,6 +143,16 @@ function OwnedCompactLibraryBrowser({
     }
   };
   const scopeKey = JSON.stringify([userId, { ...scope, sort: undefined }]);
+  const pagination = useLibraryScrollPagination({
+    scrollRef: scrollRoot,
+    scopeKey: JSON.stringify([userId, scope]),
+    progress: JSON.stringify([assets.length, assets.at(-1)?.organization?.key ?? assets.at(-1)?.id]),
+    layoutKey: `${displayMode}:${density}`,
+    enabled: Boolean(hasMore && onLoadMore),
+    busy: Boolean(isLoading || isLoadingMore || selection.pending),
+    failed: Boolean(error),
+    onLoadMore,
+  });
   // Retired generations never become current again when a previous filter returns.
   const contextRef = useRef({ scopeKey });
   if (contextRef.current.scopeKey !== scopeKey) contextRef.current = { scopeKey };
@@ -232,7 +242,7 @@ function OwnedCompactLibraryBrowser({
                 type="search"
                 value={query}
                 onChange={(event) => (onSearchQueryChange ?? setLocalQuery)(event.target.value)}
-                placeholder={searchPlaceholder}
+                placeholder={copy.search}
               />
             </label>
             <CompactLibraryFilters
@@ -245,6 +255,8 @@ function OwnedCompactLibraryBrowser({
               displayMode={displayMode}
               onDisplayModeChange={changeDisplayMode}
               sourceOptions={{ source, availableSources, sourceLabels, onSourceChange }}
+              selection={selection}
+              isLoading={isLoading}
             />
             <div className="compact-library-display" role="group" aria-label={copy.display}>
               {(
@@ -266,11 +278,6 @@ function OwnedCompactLibraryBrowser({
                 </button>
               ))}
             </div>
-            <CompactLibrarySelection
-              locale={locale}
-              selection={selection}
-              isLoading={isLoading}
-            />
             <span className="compact-library-total" role="status">
               {isLoading
                 ? copy.countPending
@@ -286,10 +293,10 @@ function OwnedCompactLibraryBrowser({
             renderContinuation={renderContinuation}
             onClear={() => {
               selection.clear();
-              root.current?.querySelector<HTMLButtonElement>('.compact-library-selection-trigger')?.focus();
+              root.current?.querySelector<HTMLButtonElement>('.compact-library-filters-trigger')?.focus();
             }}
           /> : null}
-          <p className="compact-library-announcement" role="status">
+          <p className={`compact-library-announcement${selection.announcement === 'SELECTION_RESET' && !selection.pending ? ' sr-only' : ''}`} role="status">
             {selection.pending ? copy.pending : announcementText(selection.announcement, copy)}
           </p>
           {selection.error ? <p role="alert">{managementError(selection.error, copy)}</p> : null}
@@ -353,6 +360,7 @@ function OwnedCompactLibraryBrowser({
             </p>
           ) : null}
           <CompactMediaGrid
+            scrollRef={scrollRoot}
             key={scopeKey}
             userId={userId}
             assets={visible}
@@ -375,14 +383,16 @@ function OwnedCompactLibraryBrowser({
           {footerContent || (hasMore && onLoadMore) ? (
             <footer className="compact-library-footer">
               {footerContent}
+              {isLoadingMore ? <span className="compact-library-load-status" role="status">{copy.loading}</span> : null}
               {hasMore && onLoadMore ? (
                 <button
                   type="button"
                   className="compact-library-load"
-                  disabled={isLoadingMore || isLoading}
-                  onClick={onLoadMore}
+                  data-auto-load={!pagination.manualRequired || undefined}
+                  disabled={isLoadingMore || isLoading || selection.pending}
+                  onClick={error ? onRetry ?? onLoadMore : onLoadMore}
                 >
-                  {loadMoreLabel ?? copy.selectLoaded}
+                  {error ? copy.retry : loadMoreLabel ?? copy.selectLoaded}
                 </button>
               ) : null}
             </footer>

@@ -493,10 +493,11 @@ test('production compact browser preserves slots, exact totals and independent v
     assert.ok(w.document.querySelector('[data-type-slot]'));
     assert.ok(w.document.querySelector('[data-header-slot]'));
     assert.match(w.document.body.textContent, /91 results/);
-    for (const label of ['Filters', 'Collections', 'Select']) {
+    for (const label of ['Filters', 'Collections']) {
       const trigger = [...w.document.querySelectorAll('.compact-library-menu-trigger')].find((button: any) => button.textContent === label);
       assert.equal(trigger?.getAttribute('aria-expanded'), 'false', 'commands are collapsed until requested');
     }
+    assert.equal(w.document.querySelector('.compact-library-selection-trigger'), null, 'checkboxes open actions without a redundant Select trigger');
     assert.equal(w.document.querySelector('[data-layout]')?.getAttribute('data-layout'), 'mosaic');
     await w.fx.act(async () => w.document.querySelector('.compact-media-check input').click());
     assert.ok(w.document.querySelector('.compact-media-check[data-selected] .compact-media-check-mark svg'));
