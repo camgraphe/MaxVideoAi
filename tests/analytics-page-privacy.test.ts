@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { JSDOM } from 'jsdom';
 import { prepareBrowserAnalyticsEvents } from '../frontend/lib/analytics/journey-browser';
+import { ANALYTICS_JOURNEY_STORAGE_KEY } from '../frontend/lib/analytics/journey-contract';
 import { sendPreparedAnalyticsEvents } from '../frontend/lib/analytics/ordered-events';
 
 function withPage(href: string, run: (window: Window) => void) {
@@ -63,6 +64,57 @@ test('excluded routes cannot prepare or send queued GA events', () => {
     const calls: unknown[][] = [];
     sendPreparedAnalyticsEvents((...args) => calls.push(args), [{ event: 'page_view', payload: {} }]);
     assert.deepEqual(calls, []);
+  });
+});
+
+const comparisonCampaign = 'utm_source=reddit&utm_medium=organic_social&utm_campaign=community_pilot&utm_content=mcp_quote';
+
+test('Higgsfield comparison page views and CTAs retain only bounded attribution across locales', () => {
+  const comparisonCtas = [
+    ['higgsfield_price_project', 'comparison_hero'],
+    ['higgsfield_price_project', 'comparison_footer'],
+    ['higgsfield_download_comparison', 'comparison_share'],
+  ] as const;
+  for (const locale of ['en', 'fr', 'es']) {
+    const pagePath = `${locale === 'en' ? '' : `/${locale}`}/higgsfield-alternative`;
+    const pageUrl = `https://maxvideoai.com${pagePath}`;
+    withPage(`${pageUrl}?${comparisonCampaign}&token=private-query#private-hash`, window => {
+      window.document.documentElement.lang = locale;
+      const events = [
+        ...prepareBrowserAnalyticsEvents('page_view', { route_family: 'marketing' }),
+        ...comparisonCtas.flatMap(([cta_name, cta_location]) => prepareBrowserAnalyticsEvents('cta_click', {
+          route_family: 'marketing', cta_name, cta_location,
+        })),
+      ];
+      const calls: { event: string; payload: Record<string, unknown> }[] = [];
+      sendPreparedAnalyticsEvents((_command, event, payload) => calls.push({ event, payload: payload as Record<string, unknown> }), events);
+      const view = calls.find(call => call.event === 'page_view')?.payload;
+      assert.equal(view?.page_location, pageUrl);
+      assert.equal(view?.page_path, pagePath);
+      assert.equal(view?.landing_surface, '/higgsfield-alternative');
+      assert.equal(view?.journey_locale, locale);
+      assert.equal(view?.campaign_source, 'reddit');
+      assert.equal(view?.campaign_medium, 'organic_social');
+      assert.equal(view?.campaign_name, 'community_pilot');
+      assert.equal(view?.campaign_content, 'mcp_quote');
+      const ctas = calls.filter(call => call.event === 'cta_click').map(call => call.payload);
+      assert.deepEqual(ctas.map(payload => [payload.cta_name, payload.cta_location]), comparisonCtas);
+      assert.ok(ctas.every(payload => payload.page_location === pageUrl && payload.landing_surface === '/higgsfield-alternative'));
+      const stored = window.localStorage.getItem(ANALYTICS_JOURNEY_STORAGE_KEY);
+      assert.ok(stored);
+      assert.doesNotMatch(JSON.stringify(calls) + stored, /private-query|private-hash|private-referrer/);
+    });
+  }
+});
+
+test('the comparison campaign and its CTA do not create GA events or storage without consent', () => {
+  withPage(`https://maxvideoai.com/higgsfield-alternative?${comparisonCampaign}`, window => {
+    window.localStorage.removeItem('mv-consent-analytics');
+    window.document.cookie = 'mv-consent=; Max-Age=0; path=/';
+    assert.deepEqual(prepareBrowserAnalyticsEvents('cta_click', {
+      route_family: 'marketing', cta_name: 'higgsfield_price_project', cta_location: 'comparison_hero',
+    }), []);
+    assert.equal(window.localStorage.getItem(ANALYTICS_JOURNEY_STORAGE_KEY), null);
   });
 });
 

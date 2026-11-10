@@ -99,6 +99,9 @@ export function PayAsYouGoSubscriptionComparisonSection({ data }: PayAsYouGoPage
             </tbody>
           </table>
         </div>
+        <Link href="/higgsfield-alternative" prefetch={false} className="mt-4 inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-brand underline underline-offset-4 hover:text-text-primary">
+          {data.subscriptionComparison.higgsfieldLinkLabel}<ArrowUpRight aria-hidden className="h-4 w-4" />
+        </Link>
       </div>
     </section>
   );

@@ -115,6 +115,7 @@ export const enPayAsYouGoContent = {
     ],
   },
   subscriptionComparison: {
+    higgsfieldLinkLabel: 'Compare MaxVideoAI and Higgsfield',
     header: {
       eyebrow: 'No subscription required',
       title: 'Pay-as-you-go vs subscription',

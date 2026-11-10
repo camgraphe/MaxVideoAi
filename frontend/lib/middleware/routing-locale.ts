@@ -106,6 +106,9 @@ export function shouldHandleLocale(pathname: string) {
   if (pathname === '/' || pathname === '') {
     return true;
   }
+  if (pathname === '/higgsfield-alternative/comparison') {
+    return false;
+  }
   if (pathname.includes('.') && !pathname.startsWith('/.well-known')) {
     return false;
   }

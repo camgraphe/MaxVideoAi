@@ -108,6 +108,7 @@ export type PayAsYouGoContent = {
   audienceFit: { cards: Array<PaygCard & { bullets: string[] }> };
   subscriptionComparison: {
     header: PaygHeaderCopy;
+    higgsfieldLinkLabel: string;
     columns: [string, string, string];
     rows: Array<{ label: string; payg: string; subscription: string }>;
   };

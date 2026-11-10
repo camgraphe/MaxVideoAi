@@ -20,3 +20,19 @@ test('Vercel private pages collapse identifiers and excluded or foreign URLs are
     assert.equal(sanitizeVercelAnalyticsEvent({ type: 'pageview', url }), null);
   }
 });
+
+test('Vercel keeps localized Higgsfield pages and the single bounded Reddit campaign', () => {
+  const campaign = 'utm_source=reddit&utm_medium=organic_social&utm_campaign=community_pilot&utm_content=mcp_quote';
+  for (const prefix of ['', '/fr', '/es']) {
+    const url = `https://maxvideoai.com${prefix}/higgsfield-alternative`;
+    assert.equal(sanitizeVercelAnalyticsEvent({
+      type: 'pageview', url: `${url}?${campaign}&token=private-query#private-hash`,
+    })?.url, `${url}?${campaign}`);
+    assert.equal(sanitizeVercelAnalyticsEvent({
+      type: 'pageview', url: `${url}?${campaign.replace('mcp_quote', 'private-campaign')}`,
+    })?.url, url);
+    assert.equal(sanitizeVercelAnalyticsEvent({
+      type: 'pageview', url: `${url}/private-descendant?token=private-query`,
+    })?.url, 'https://maxvideoai.com/other');
+  }
+});
