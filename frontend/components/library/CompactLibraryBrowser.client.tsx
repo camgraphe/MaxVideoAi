@@ -119,7 +119,7 @@ function OwnedCompactLibraryBrowser({
     if (typeof window === 'undefined') return 128;
     try {
       const n = Number(window.localStorage.getItem(`library:density:${userId}`));
-      return n >= 88 && n <= 184 ? n : window.innerWidth <= 600 ? 104 : 128;
+      return n >= 88 && n <= 184 ? n : 128;
     } catch {
       return 128;
     }
@@ -231,6 +231,8 @@ function OwnedCompactLibraryBrowser({
               locale={locale}
               density={density}
               setDensity={setDensity}
+              onRefresh={onRetry}
+              refreshLabel={retryLabel}
             />
             <div className="compact-library-display" role="group" aria-label={copy.display}>
               {(

@@ -2,11 +2,14 @@
 import type { AssetLibraryBrowserProps } from './AssetLibraryBrowser';
 import { compactLibraryCopy } from './compact-library-copy';
 import { CompactLibraryPopup } from './CompactLibraryPopup.client';
+import { RefreshCw } from 'lucide-react';
 
 type Props = NonNullable<AssetLibraryBrowserProps['management']> & {
     locale: string;
     density: number;
     setDensity: (value: number) => void;
+    onRefresh?: () => void;
+    refreshLabel?: string;
   };
 export function CompactLibraryFilters({
   userId,
@@ -15,6 +18,8 @@ export function CompactLibraryFilters({
   onScopeChange,
   density,
   setDensity,
+  onRefresh,
+  refreshLabel,
 }: Props) {
   const copy = compactLibraryCopy(locale);
   return (
@@ -72,6 +77,7 @@ export function CompactLibraryFilters({
             }}
           />
         </label>
+        {onRefresh ? <button type="button" onClick={onRefresh}><RefreshCw size={15} aria-hidden /> {refreshLabel ?? copy.retry}</button> : null}
       </div>
     </CompactLibraryPopup>
   );

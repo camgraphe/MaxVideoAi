@@ -5,10 +5,9 @@ import { LibraryImportDialog } from '@/components/library/LibraryImportQueue.cli
 
 import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
-import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import deepmerge from 'deepmerge';
-import { CheckCircle2, Plus, RefreshCw, Upload, X } from 'lucide-react';
+import { CheckCircle2, Plus, Upload, X } from 'lucide-react';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { Button } from '@/components/ui/Button';
@@ -17,7 +16,6 @@ import { MediaVisitorIntro } from '@/components/library/MediaVisitorIntro.client
 import { MediaEmptyState } from '@/components/library/MediaEmptyState';
 import { AssetLibraryBrowser } from '@/components/library/AssetLibraryBrowser';
 import { FEATURES } from '@/content/feature-flags';
-import { isCreatorToolPublic } from '@/lib/toolbox/creator-availability';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { buildAuthReturnTarget } from '@/lib/auth-entry-href';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
@@ -281,9 +279,6 @@ function OwnedLibraryPageClient({ user, authLoading }: { user: { id: string } | 
                 headerLeadingActions={mediaNavigation}
                 headerActions={<>
                   {importQueue.getSnapshot().files.length > 0 ? <button type="button" onClick={() => setImportQueueOpen(true)}>{locale.startsWith('fr') ? 'Imports' : locale.startsWith('es') ? 'Importaciones' : 'Imports'}</button> : null}
-                    {isCreatorToolPublic('subtitles') ? <Link href="/app/library/subtitles" prefetch={false} className="inline-flex min-h-9 items-center rounded-md border border-border px-3 text-xs">
-                      {locale.startsWith('fr') ? 'Sous-titres' : locale.startsWith('es') ? 'Subtítulos' : 'Subtitles'}
-                    </Link> : null}
                     <Button
                         type="button"
                         variant="outline"
@@ -295,24 +290,6 @@ function OwnedLibraryPageClient({ user, authLoading }: { user: { id: string } | 
                         <Upload className="h-4 w-4" aria-hidden />
                         {isImporting ? copy.browser.importing : copy.browser.import}
                       </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="!min-h-11 !h-11 !w-11 rounded-lg border-border bg-surface-2 !p-0 text-text-secondary"
-                      title={copy.browser.refresh}
-                      onClick={() => {
-                        clearMutationErrors();
-                        if (activeView === 'review') {
-                          void mutateRecentOutputs();
-                        } else {
-                          void mutateAssets();
-                        }
-                      }}
-                    >
-                      <RefreshCw className="h-4 w-4" aria-hidden />
-                      <span className="sr-only">{copy.browser.refresh}</span>
-                    </Button>
                   </>}
                 renderAssetMeta={(asset) =>
                   asset.createdAt ? <span className="text-text-muted">{new Date(asset.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}</span> : null

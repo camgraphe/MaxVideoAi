@@ -511,6 +511,21 @@ resolution. No Dashboard or additional Uppy focus host is mounted.
 
 ## Contextual picker acceptance
 
+On mobile, `LibraryMediaNavigation` uses a native type selector, including saved
+Characters; desktop keeps the type buttons. The shared media scroller hides its
+mobile scrollbar without changing keyboard/touch scrolling or virtualizer geometry.
+Subtitles are reached through Tools, where the subtitle workbench links to saved
+documents. They no longer compete with Import in the Media header.
+
+`useLibraryAutoRefresh` revalidates a loaded first page in place every 30 seconds
+while visible and online. It also checks when returning to a visible tab or coming
+back online. It skips outstanding requests, errors and pagination beyond the first
+page; generic SWR focus revalidation stays disabled. Existing mutation invalidation
+still refreshes imports and organization changes. Filters retains a manual Refresh
+fallback. Account/scope retirement cancels timers and stale callbacks; no private
+thumbnail HTTP cache policy is changed. `library-auto-refresh-dom.test.ts` covers
+these boundaries and preservation of displayed media during a pending refresh.
+
 Ordinary media pickers use `CompactMediaGrid` through `ReferenceLibraryPicker`.
 `ReferencePickerToolbar` keeps search, Collections and import on one row. Collections
 opens the shared destination menu directly without a nested disclosure. Source, compatibility,

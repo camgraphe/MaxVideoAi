@@ -11,7 +11,7 @@ return <main style={{height:'100dvh',display:'flex',padding:12}}><CompactLibrary
 management={{userId:'gallery-owner',scope,onScopeChange:patch=>setScope(prev=>({...prev,...patch})),totalCount:200}}
 source={scope.source} availableSources={['all','upload','generated','upscale']} sourceLabels={{all:'All',upload:'Uploads',generated:'Generated',upscale:'Upscale'}} onSourceChange={source=>setScope(prev=>({...prev,source}))}
 searchPlaceholder="Search media" sourcesTitle="Source" emptyLabel="Empty" emptySearchLabel="No match" renderAssetActions={()=>null}
-headerLeadingActions={<LibraryMediaNavigation locale="en" value="all" charactersEnabled onChange={()=>{}}/>}
+headerLeadingActions={<LibraryMediaNavigation locale="en" value={scope.kind} charactersEnabled onChange={kind=>setScope(prev=>({...prev,kind}))}/>}
 headerActions={<button>Import</button>} renderContinuation={asset=><button data-destination={asset.id}>Use selected media</button>}/></main>};createRoot(document.getElementById('root')).render(<Scene/>);`;
 const assets = Array.from({ length: 200 }, (_, index) => ({
   id: `asset-${index}`, name: `Image ${index}`, kind: 'image', source: 'upload',
@@ -43,6 +43,17 @@ test('real media browser keeps compact commands, visible selection and contained
         return route.fulfill({json:{ok:true,results:body.references.map((reference:unknown)=>({reference,status:'succeeded'})),succeededCount:body.references.length,failedCount:0,affectedCount:body.references.length}});
       });
       await page.goto(fixture.url);
+      if (width === 390) {
+        const types = page.getByRole('combobox', { name: 'Media type', exact: true });
+        await expect(types).toBeVisible();
+        await expect(types.locator('option')).toHaveCount(5);
+        await types.selectOption('image');
+        await expect(types).toHaveValue('image');
+        await types.selectOption('all');
+        const navigation = page.locator('.library-media-navigation');
+        assert.ok(await navigation.evaluate(node => node.scrollWidth <= node.clientWidth), 'mobile type navigation does not scroll sideways');
+        assert.equal(await page.locator('.compact-media-grid').evaluate(node => getComputedStyle(node).scrollbarWidth), 'none');
+      }
       const canvas = page.locator('.compact-media-canvas');
       await expect(canvas).toHaveAttribute('data-layout', 'mosaic');
       const rows = page.locator('[data-media-key]');

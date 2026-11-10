@@ -1,5 +1,7 @@
 /* Scoped to the authenticated compact browser; the application shell owns layout. */
-.library-media-navigation { display: flex; align-items: center; gap: 3px; min-width: 0; overflow-x: auto; }
+.library-media-navigation { min-width: 0; }
+.library-media-tabs { display: flex; align-items: center; gap: 3px; flex-wrap: wrap; }
+.library-media-select { display: none; }
 .library-media-navigation button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; flex-shrink: 0; white-space: nowrap; font-size: 12px; }
 .library-media-navigation button[aria-pressed="true"] { background: var(--app-accent); color: var(--app-on-accent, #fff); border-color: var(--app-accent); }
 .compact-library-tools-menu { display: grid; gap: 10px; }
@@ -584,7 +586,29 @@
     gap: 6px;
   }
   .compact-library-kind-actions {
+    flex: 1;
+    padding: 0;
+    gap: 0;
+  }
+  .library-media-navigation { flex: 1; }
+  .library-media-tabs { display: none; }
+  .library-media-select { display: flex; position: relative; min-width: 0; }
+  .library-media-select select {
     width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    padding: 6px 26px 6px 10px;
+    border: 0;
+    appearance: none;
+    background: transparent;
+    text-overflow: ellipsis;
+    font-size: 12px;
+  }
+  .library-media-select > svg { position: absolute; right: 7px; top: 14px; pointer-events: none; }
+  .compact-library-kind-actions .compact-library-tools-trigger {
+    max-width: 112px;
+    min-height: 44px !important;
+    padding-inline: 8px;
   }
   .compact-library-kind-actions button {
     flex: 1;
@@ -616,7 +640,9 @@
   }
   .compact-media-grid {
     min-height: 180px;
+    scrollbar-width: none;
   }
+  .compact-media-grid::-webkit-scrollbar { display: none; }
   .compact-audio-row .compact-media-meta,
   .compact-audio-row .compact-media-kind {
     display: none;
