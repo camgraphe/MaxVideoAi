@@ -7,12 +7,14 @@ organization state, operations and collection DTOs. References identify an owned
 source; they do not grant access. Internal DELETE IDs, public `ma_` asset IDs,
 exact job/output IDs, original URLs and temporary read grants remain distinct.
 
-Migration `97_media_library_organization.sql` is the deployment prerequisite.
+Migration `97_media_library_organization.sql` provides the organization schema;
+`98_media_library_purge.sql` adds the explicit Trash cleanup lifecycle and storage
+accounting prerequisites described in [deletion lifecycle](media-library-purge.md).
 The explicit `media-library-organization-schema.ts` owner is exported through
 `src/lib/schema.ts` and invoked by application bootstrap and organization writes.
 GET and the standalone resolver never initialize or repair schema. A missing
-organization table fails honestly. No migration was applied to a live database
-while implementing this feature.
+organization table fails honestly. Schema changes are explicit deployment steps,
+rehearsed on an isolated database branch before release.
 
 Six account-scoped sidecar tables own state: `library_organization`,
 `library_organization_aliases`, `library_collections`,
@@ -123,10 +125,13 @@ Restore clears only organization visibility and preserves the key, favorite and
 memberships. It cannot clear physical `deleted_at`, reconstruct a missing source,
 restore bytes, change job status or reacquire deleted storage.
 
-Trash has no purge or retention timer. The writer does not call the old physical
+Moving an item to recoverable Trash has no automatic retention timer. The
+organization writer does not call the old physical
 DELETE, alter media/legacy/output/job rows, revoke grants or release cleanup
 holds. Existing Studio references and Activity keep their independent source
-authorization. Browse/picker readers must apply organization Trash before their
+authorization. Explicit Empty Trash uses the separate guarded
+[deletion lifecycle](media-library-purge.md); accepted purge requests cannot be
+restored, and Studio retains a replaceable deleted-media slot. Browse/picker readers must apply organization Trash before their
 limit and winner ranking; the common browse and compatibility asset/recent list owners apply this filter
 before pagination. Exact Studio resolution and Activity remain outside that filter.
 
