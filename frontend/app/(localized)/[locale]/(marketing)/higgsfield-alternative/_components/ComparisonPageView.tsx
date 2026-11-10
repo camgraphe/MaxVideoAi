@@ -5,6 +5,7 @@ import type { AppLocale } from '@/i18n/locales';
 import { localizePathFromEnglish } from '@/lib/i18n/paths';
 import type { ComparisonCopy } from '../_content/types';
 import { getExperienceCopy } from '../_content/experience';
+import { budgetExample, getBudgetExampleCopy } from '../_content/budget-example';
 import { comparisonSources, COMPARISON_CHECKED } from '../_lib/evidence';
 import { ComparisonTable } from './ComparisonTable';
 import { ComparisonFilmStage } from './ComparisonFilmStage.client';
@@ -21,6 +22,8 @@ function QuoteLink({ children, location }: { children: React.ReactNode; location
 export function ComparisonPageView({ copy, locale, canonical }: Props) {
   const path = (href: string) => localizePathFromEnglish(locale, href);
   const experience = getExperienceCopy(locale);
+  const budget = getBudgetExampleCopy(locale);
+  const money = new Intl.NumberFormat(locale, { style: 'currency', currency: 'USD' });
   const methodIcons = [Wallet, Layers3, Clock3];
   return (
     <article className={styles.page}>
@@ -29,7 +32,7 @@ export function ComparisonPageView({ copy, locale, canonical }: Props) {
           <span className={styles.heroLabel}>MaxVideoAI <span aria-hidden="true">/</span> Higgsfield</span>
           <h1 id="comparison-heading">{copy.hero.title}</h1>
           <p className={styles.lead}>{copy.hero.description}</p>
-          <div className={styles.actions}><QuoteLink location="comparison_hero">{copy.hero.action}</QuoteLink><a className={styles.textLink} href="#comparison">{copy.hero.compare}<ArrowDown size={18} aria-hidden="true" /></a></div>
+          <div className={styles.actions}><QuoteLink location="comparison_hero">{copy.hero.action}</QuoteLink><a className={styles.textLink} href="#terms-title">{copy.hero.compare}<ArrowDown size={18} aria-hidden="true" /></a></div>
           <p className={styles.heroNote}>{copy.hero.note}</p>
         </div>
         <div className={styles.heroFilm}><ComparisonFilmStage locale={locale} /></div>
@@ -66,7 +69,14 @@ export function ComparisonPageView({ copy, locale, canonical }: Props) {
         </section>
         <section className={styles.methodology} id="methodology" aria-labelledby="method-title">
           <figure className={styles.productFrame}><Link href={path('/models/luma-uni-1-max')} prefetch={false}><Image src="/assets/model-examples/luma-uni-1-max/hero-product.webp" width={2464} height={1696} alt={copy.workflow.productAlt} sizes="(min-width: 900px) 42vw, 100vw" /></Link><figcaption>{copy.workflow.product}</figcaption></figure>
-          <div className={styles.methodCopy}><h2 id="method-title">{copy.methodology.title}</h2><p className={styles.methodIntro}>{copy.methodology.intro}</p><ol>{copy.methodology.items.map((item, index) => { const Icon = methodIcons[index]; return <li key={item.title}><Icon size={22} strokeWidth={1.6} aria-hidden="true" /><details><summary>{item.title}</summary><p>{item.text}</p></details></li>; })}</ol></div>
+          <div className={styles.methodCopy}>
+            <h2 id="method-title">{copy.methodology.title}</h2>
+            <p className={styles.methodIntro}>{copy.methodology.intro}</p>
+            <div className={styles.budgetHeading}><h3>{budget.label}</h3><p>{budget.settings}</p></div>
+            <ol>{copy.methodology.items.map((item, index) => { const Icon = methodIcons[index]; return <li key={item.title}><Icon size={22} strokeWidth={1.6} aria-hidden="true" /><details><summary><span>{item.title}</span><strong className={styles.budgetAmount}>{money.format(budgetExample.amountsCents[index] / 100)}</strong></summary><p>{item.text}</p></details></li>; })}</ol>
+            <p className={styles.budgetNote}>{budget.note}</p>
+            <Link className={styles.budgetLink} href={`${path(budgetExample.pricePath)}#${budgetExample.priceFragment}`} prefetch={false}>{budget.link}<ArrowUpRight size={16} aria-hidden="true" /></Link>
+          </div>
         </section>
         <ShareComparison copy={copy.share} locale={locale} canonical={canonical} />
         <section className={styles.final}><div><h2>{copy.final.title}</h2><p>{copy.final.description}</p></div><div className={styles.finalActions}><QuoteLink location="comparison_footer">{copy.final.action}</QuoteLink><Link className={styles.textLink} href={path('/pay-as-you-go-ai-video-generator')}>{copy.final.secondary}<ArrowUpRight size={18} aria-hidden="true" /></Link></div></section>

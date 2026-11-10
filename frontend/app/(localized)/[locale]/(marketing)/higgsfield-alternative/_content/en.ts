@@ -15,7 +15,7 @@ export const en: ComparisonCopy = {
   },
   pace: { title: 'Your project sets the pace.', first: 'Choose a model.\nCheck the price.', second: 'Come back when you have another idea.' },
   matrix: {
-    title: 'The differences,\nwith the details.',
+    title: 'Subscriptions\nand web credits.',
     scope: 'Web plans', checked: 'Checked 10 Nov 2026', sources: 'Sources', task: 'What you want to do',
     scroll: 'Swipe to compare both services',
     caption: 'MaxVideoAI vs Higgsfield: standard web credit terms, checked 10 November 2026.',
@@ -40,7 +40,7 @@ export const en: ComparisonCopy = {
     fairTitle: 'When Higgsfield makes sense',
     fairText: 'Using most of your monthly credits, Cinema Studio camera and lens controls, or an eligible Unlimited offer? Keep those benefits in the comparison. A subscription can be a better fit for regular, high-volume work.',
     fairLink: 'Explore Cinema Studio',
-    assistantTitle: 'And inside your AI assistant?',
+    assistantTitle: 'AI assistants\nand MCP access.',
     assistantNote: 'Your assistant provider may have its own plan requirements. Higgsfield announced unlimited eligible generations for new Claude MCP users; check its current eligibility, limits and renewal terms.',
     assistantRows: [
       { id: 'mcp-access', label: 'Connect a supported assistant', sources: ['max-mcp', 'higgs-connect', 'higgs-trial'],

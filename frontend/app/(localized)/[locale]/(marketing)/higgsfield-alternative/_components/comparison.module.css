@@ -77,7 +77,7 @@
 .references{display:flex;flex-wrap:wrap;gap:2px;margin-top:3px;font-size:10px;font-weight:400;color:var(--bronze)}
 .references a{display:inline-flex;align-items:center;justify-content:center;min-height:27px;min-width:24px}
 .factAnchor{text-decoration:none}.factAnchor:hover{text-decoration:underline}
-.page tr,.page li[id],.fair{scroll-margin-top:120px}
+.page tr,.page li[id],.page h2[id],.fair{scroll-margin-top:120px}
 .scopeNote{font-size:11px;line-height:1.7;color:#716e69;margin-top:15px!important;max-width:120ch}
 .fair{display:grid;grid-template-columns:1fr 2.1fr;gap:50px;margin-top:30px;padding-top:28px;border-top:1px solid var(--rule)}
 .fair h3{max-width:16ch;font-size:23px}.fair p{font-size:14px;line-height:1.65;color:#565553}.inlineLink{color:var(--bronze);font-size:13px}
@@ -113,6 +113,7 @@
 .methodology details{width:100%;background:transparent!important}
 .methodology summary{font-size:16px;font-weight:500;cursor:pointer;padding-block:11px;min-height:48px}
 .methodology details p{font-size:12px;line-height:1.75;color:#625e58;margin:3px 0 15px}
+.budgetHeading{margin-top:24px;padding-top:20px;border-top:1px solid var(--rule)}.budgetHeading h3{font-size:16px;letter-spacing:-.01em}.budgetHeading p{font-size:11px;color:#625e58;line-height:1.65;margin-top:7px}.budgetHeading+ol{margin-top:17px}.methodology summary{position:relative;padding-right:110px}.budgetAmount{position:absolute;right:0;top:10px;font-size:22px;line-height:1.35;font-weight:500;font-variant-numeric:tabular-nums;letter-spacing:-.025em;color:var(--ink)}.methodology li:last-child .budgetAmount{color:var(--green)}.budgetNote{font-size:10px;line-height:1.7;color:#716e69;margin-top:15px!important}.budgetLink{display:inline-flex;align-items:center;gap:9px;min-height:44px;font-size:12px;color:var(--bronze);text-decoration:underline;text-underline-offset:4px}
 .share{display:grid;grid-template-columns:1fr auto;gap:10px 30px;padding:25px 28px 20px;border:1px solid #c9c0b1;background:#eee9e0;border-radius:8px;margin-block:0 44px}
 .share h2{font-size:25px;line-height:1.1;letter-spacing:-.025em}.share p{font-size:12px;color:#625e58;margin-top:8px}
 .shareActions{display:flex;gap:10px;align-items:center}.shareLinks{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:22px;margin-top:3px}
