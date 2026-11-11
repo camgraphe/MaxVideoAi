@@ -129,3 +129,46 @@ La capture actuelle couvre le parcours réel de restitution ; elle ne prétend
 pas montrer tous les scénarios avancés. Hébergement de cette vidéo, accès
 reviewer, budget et disponibilité de revue, puis soumission sont les prochaines
 validations concrètes. La publication reste distincte.
+
+## Pièces reviewer enregistrées après accord explicite
+
+L'utilisateur a ensuite autorisé la transmission des identifiants du seul compte
+fictif dans le formulaire reviewer et l'hébergement privé de la capture.
+
+- Vidéo envoyée seulement dans le bucket dédié, préfixe `review-evidence/`.
+  540 421 octets ; SHA-256
+  `83391db217441863a4ae14fdbc48d48478d71362799fe4fd883c6b7992416846`.
+  Lecture signée HTTP 206 ; lecture anonyme HTTP 403. Aucun ACL public ajouté,
+  aucune politique de bucket modifiée.
+- Lien signé de 7 jours renseigné dans **Video walkthrough URL**. Expiration :
+  **18 novembre 2026 à 20:12:40 UTC / 21:12:40 Madrid**. Renouveler avant une revue
+  se prolongeant au-delà ; le lien n'est pas publié dans Git ni dans ce document.
+- Login URL, tenant, email fictif, mot de passe dédié et étapes de connexion
+  enregistrés dans **Reviewer credentials**. Aucun secret de production partagé.
+  Les notes précisent le solde nul et la pause entre sessions ; elles ne
+  présentent pas encore l'environnement comme continuellement ouvert à la revue.
+- Une première saisie avait disparu après rechargement. La nouvelle saisie via
+  les événements de formulaire a été vérifiée : requête contenant les trois
+  pièces attendues, HTTP 200 et `review_details_complete: true` pour la version
+  dédiée. Après rechargement, **Incomplete review information a disparu**.
+  Cela établit la sauvegarde, sans conclure à la cause précise du premier échec.
+- Preuves privées : `reviewer-video-upload.json`,
+  `openai-review-details-save-evidence.json`,
+  `openai-review-information-complete.png`. Les valeurs sensibles restent dans
+  `secrets/`, hors captures et journaux publics.
+
+L'état actuel remplace le paragraphe précédent qui disait les pièces non
+transmises : elles sont désormais en ligne dans le brouillon, avec l'accord
+spécifique obtenu. Aucune soumission en revue, aucun paiement, aucune nouvelle
+génération ni réactivation de la base n'a suivi cet enregistrement.
+
+### Prochaines étapes avant soumission
+
+1. Terminer ou réconcilier la matrice étendue de qualification et la démonstration
+   avec les scénarios réellement revendiqués, sans retirer de capacité.
+2. Réconcilier l'identité et le paquet final (le brouillon porte encore le nom
+   de diagnostic ; le ZIP 0.3.16 est prêt localement).
+3. Fixer la fenêtre de revue et le budget de démonstration, réactiver seulement
+   l'environnement dédié, puis contrôler les accès et le lien vidéo à cette date.
+4. Obtenir la validation finale pour **Submit for review**. La publication après
+   acceptation demeure une action distincte.
