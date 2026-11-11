@@ -166,12 +166,14 @@
       "privateTools": [
         "get_generation_download"
       ],
-      "refreshTested": false,
-      "revocationTested": false,
-      "tokenClaimsDirectlyInspected": false,
+      "refreshTested": true,
+      "revocationTested": true,
+      "tokenClaimsDirectlyInspected": true,
       "evidence": ".local/openai-directory-20261111/evidence/openai-mcp-inspection.json",
       "reconnectionTested": true,
-      "reconnectionScope": "same existing grant, no new scopes or account"
+      "reconnectionScope": "same existing grant, no new scopes or account",
+      "revocationScope": "diagnostic OAuth session only; full client grant preserved",
+      "openaiNativeAutomaticRefreshTested": false
     },
     "postOAuthApplicationCounts": {
       "jobs": 0,
@@ -194,6 +196,66 @@
       "advertisedProtectedResourceMetadata": 200,
       "unauthenticatedMcp": 401,
       "correctChallenge": true
+    },
+    "hostedOAuthLifecycle": {
+      "passed": true,
+      "pkce": "S256",
+      "refreshHttpStatus": 200,
+      "resourceAudiencePreserved": true,
+      "ordinaryLoginRejectedHttpStatus": 401,
+      "revokedRefreshHttpStatus": 400,
+      "revokedMcpHttpStatus": 401,
+      "existingOpenaiSessionsPreserved": 2,
+      "fullClientGrantRevoked": false,
+      "sessionSetFingerprint": "027e11bd6fa2683f473223560f6ea0ed",
+      "evidence": ".local/openai-directory-20261111/evidence/oauth-lifecycle-2026-11-11T17-38-32-031Z.json"
+    },
+    "postOAuthLifecycleApplicationCounts": {
+      "checkedAt": "2026-11-11T17:45:46.950Z",
+      "projectId": "lingering-glade-93540258",
+      "jobs": 0,
+      "receipts": 0,
+      "profiles": 1,
+      "consents": 4,
+      "generationQuotes": 0,
+      "oauthSessions": 2,
+      "oauthSessionSetFingerprint": "027e11bd6fa2683f473223560f6ea0ed",
+      "existingOpenaiSessionsUnchanged": true
+    },
+    "hostedNoSpendCalls": {
+      "successfulTools": [
+        "get_account_status",
+        "list_models",
+        "get_model_details",
+        "list_audio_capabilities",
+        "list_media",
+        "list_recent_generations",
+        "list_saved_characters"
+      ],
+      "imageCatalogLimit": 10,
+      "listedImageModels": 10,
+      "executableImageModes": 0,
+      "audioAvailable": false,
+      "providerKeysConfigured": false,
+      "comparisonWireError": "PARAMETER_INVALID / no_matching_scenario",
+      "comparisonSdkFailure": "structured error did not match success-only schema",
+      "paidGenerations": 0,
+      "quotesCreated": 0
+    },
+    "structuredErrorCorrection": {
+      "stage": "local verification passed; dedicated deployment pending",
+      "focusedTestsPassed": 27,
+      "mcpTestsPassed": 214,
+      "mcpTestsSkipped": 1,
+      "selectionScenariosPassed": 70,
+      "typescript": "passed",
+      "lintErrors": 0,
+      "lintExistingWarnings": 7,
+      "directoryTools": 42,
+      "directProfileUnchanged": true,
+      "malformedSuccessStillRejected": true,
+      "failureBeforeFix": 2,
+      "evidence": ".local/openai-directory-20261111/evidence/output-error-focused.log"
     }
   },
   "archive": {
@@ -249,8 +311,8 @@
     "newPaidOperationsDescription": "Neon schema window, first build, first hosted test window, OAuth login window, OAuth grant/scan window, directory description rebuild; not an invoice or transaction count."
   },
   "limits": [
-    "Hosted OAuth, same-grant reconnection and authenticated discovery pass. Token refresh/revocation and real ChatGPT functional scenarios remain incomplete.",
-    "No paid provider generations or reviewer video recorded. Initial OAuth grant is real; refresh/revocation still need separate evidence.",
+    "Hosted OAuth, PKCE, refreshed token access and diagnostic-session revocation pass. Existing OpenAI grant and both sessions preserved. Full-grant revocation and native ChatGPT functional scenarios remain incomplete.",
+    "No paid provider generations or reviewer video recorded. Provider credentials, reviewer entitlements/media and export workers remain to qualify.",
     "Core Auth/Neon/S3 credentials are installed on the dedicated project. Provider credentials and workers remain incomplete; eight internal application secrets are installed; configuration checks do not qualify runtime behavior.",
     "18+ eligibility implemented on the branch and migration applied to the dedicated database; dedicated test deployment only. This is self-attestation, not documentary age verification.",
     "Applicable account-specific direct-provider clauses still require alignment with the routes used for qualification.",
@@ -650,7 +712,7 @@
       "indicativeComputeUSD": 0.002974,
       "invoice": false
     },
-    "lastPausedAt": "2026-11-11T17:30:52Z",
+    "lastPausedAt": "2026-11-11T17:46:01Z",
     "hostedTestWindow": {
       "enabledAt": "2026-11-11T16:06:30Z",
       "disabledAt": "2026-11-11T16:30:00Z",
@@ -662,6 +724,14 @@
       "suspendedAt": "2026-11-11T17:30:52Z",
       "computeCU": 0.25,
       "maximumContinuousComputeUSD": 0.010534,
+      "invoice": false
+    },
+    "oauthLifecycleWindow": {
+      "enabledAt": "2026-11-11T17:38:22Z",
+      "suspendedAt": "2026-11-11T17:46:01Z",
+      "seconds": 459,
+      "computeCU": 0.25,
+      "maximumContinuousComputeUSD": 0.003379,
       "invoice": false
     }
   },

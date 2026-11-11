@@ -1,3 +1,4 @@
+import { withToolErrorOutput } from '@/server/mcp/output-schemas/tool-errors';
 import { getModelDetailsOutputSchema } from '@/server/mcp/output-schemas/catalog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import * as z from 'zod/v4';
@@ -40,7 +41,7 @@ export function registerGetModelDetailsTool(
         'Do not use this for exact pricing, generation, hidden models, or provider guarantees.',
       ].join(' '),
       inputSchema: getModelDetailsInputSchema,
-      ...(profile === 'openai-directory' ? { outputSchema: getModelDetailsOutputSchema } : {}),
+      ...(profile === 'openai-directory' ? { outputSchema: withToolErrorOutput(getModelDetailsOutputSchema) } : {}),
       annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false },
     },
     async ({ id }) => runAgentTool(() => services.getModelDetails(id, principal), { profile, tool: 'get_model_details' }),

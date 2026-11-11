@@ -1,3 +1,4 @@
+import { withToolErrorOutput } from '@/server/mcp/output-schemas/tool-errors';
 import type { McpDistributionProfile } from '@/server/mcp/distribution-profile';
 import { importReferenceFilesOutputSchema } from '@/server/mcp/output-schemas/references';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -41,7 +42,7 @@ export function registerImportReferenceFilesTool(
         'When the host cannot expose a file handle, use create_reference_upload_link instead.',
       ].join(' '),
       inputSchema: importReferenceFilesInputSchema,
-      ...(profile === 'openai-directory' ? { outputSchema: importReferenceFilesOutputSchema } : {}),
+      ...(profile === 'openai-directory' ? { outputSchema: withToolErrorOutput(importReferenceFilesOutputSchema) } : {}),
       annotations: {
         readOnlyHint: false,
         destructiveHint: false,

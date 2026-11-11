@@ -1,3 +1,4 @@
+import { withToolErrorOutput } from '@/server/mcp/output-schemas/tool-errors';
 import type { McpDistributionProfile } from '@/server/mcp/distribution-profile';
 import { listMediaOutputSchema } from '@/server/mcp/output-schemas/references';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -29,7 +30,7 @@ export function registerListMediaTool(
       description:
         'Use this when the user needs reusable private MaxVideoAI image, video, or audio asset IDs; filter by the required media kind and use only the returned safe metadata and controlled previews. Do not use it to upload files, expose storage or provider URLs, or start generation.',
       inputSchema: listMediaInputSchema,
-      ...(profile === 'openai-directory' ? { outputSchema: listMediaOutputSchema } : {}),
+      ...(profile === 'openai-directory' ? { outputSchema: withToolErrorOutput(listMediaOutputSchema) } : {}),
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,

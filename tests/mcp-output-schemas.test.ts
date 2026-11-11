@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
+import { AjvJsonSchemaValidator } from '@modelcontextprotocol/sdk/validation/ajv';
 
 import { AgentApiError } from '../frontend/src/server/agent-api/errors';
 import { listAgentModels } from '../frontend/src/server/agent-api/model-catalog';
@@ -37,6 +38,8 @@ async function withClient<T>(options: MaxVideoAiMcpServerOptions, run: (client: 
   await server.connect(serverTransport);
   const client = new Client({ name: 'output-contract', version: '1' });
   await client.connect(clientTransport);
+  // Real hosts discover tools first; this primes the SDK's output validators.
+  await client.listTools();
   try { return await run(client); } finally { await client.close(); await server.close(); }
 }
 
@@ -57,7 +60,11 @@ test('directory tools declare success output schemas for every capability mask; 
           }
           assert.equal(tool.outputSchema?.type, 'object', `${distributionProfile}/${mask}/${tool.name}: missing object output schema`);
           assert.ok(Object.keys(tool.outputSchema?.properties ?? {}).length > 0, tool.name);
-          assert.ok(Array.isArray(tool.outputSchema?.required) && tool.outputSchema.required.length > 0, tool.name);
+          if (distributionProfile === 'openai-directory') {
+            const alternatives = tool.outputSchema?.anyOf as Array<{ required?: string[] }>;
+            assert.equal(alternatives?.length, 2, tool.name);
+            assert.ok(alternatives.every(branch => (branch.required?.length ?? 0) > 0), tool.name);
+          } else assert.ok(tool.outputSchema?.required?.length, tool.name);
         }
         const account = tools.find(tool => tool.name === 'get_account_status')!;
         if (distributionProfile === 'openai-directory') assert.equal(Object.hasOwn(account.outputSchema!.properties!, 'accountId'), false);
@@ -229,6 +236,19 @@ test('business failures remain actionable isError responses outside the success 
   }, { getGenerationStatus: async () => { throw new AgentApiError('RATE_LIMITED', 'Wait for recovery.', true, { retryAfterSeconds: 30 }); } });
 });
 
+test('discovered price comparison retains the no-matching-scenario failure and recovery facts', async () => {
+  const nextAction = { type: 'generation_comparison', reason: 'no_matching_scenario', models: [], modelsTruncated: false };
+  await withClient({ distributionProfile: 'openai-directory' }, async client => {
+    const result = await client.callTool({ name: 'compare_generation_prices', arguments: {
+      surface: 'image', mode: 't2i', prompt: 'A yellow ceramic vase.', candidateModelIds: ['fixture-model'],
+    } });
+    assert.equal(result.isError, true);
+    const failure = { ok: false, error: { code: 'PARAMETER_INVALID', message: 'No matching scenario.', retryable: false, nextAction } };
+    assert.deepEqual(result.structuredContent, failure);
+    assert.deepEqual(JSON.parse((result.content[0] as { text: string }).text), failure);
+  }, { compareGenerationPrices: async () => { throw new AgentApiError('PARAMETER_INVALID', 'No matching scenario.', false, nextAction); } });
+});
+
 test('unexpected tool failures preserve support correlation IDs without exposing exception details', async () => {
   await withClient({ ...enabled, distributionProfile: 'openai-directory' }, async client => {
     const result = await client.callTool({ name: 'get_generation_status', arguments: { jobId: 'broken-private' } });
@@ -250,6 +270,10 @@ test('current Character Studio and all other directory capabilities coexist with
     for (const tool of tools) {
       assert.equal(tool.outputSchema?.type, 'object', tool.name);
       assert.ok(Buffer.byteLength(tool.description ?? '') <= 2000, tool.name);
+      const validate = new AjvJsonSchemaValidator().getValidator(tool.outputSchema!);
+      const failure = { ok: false, error: { code: 'REFERENCE_FORBIDDEN', message: 'Media unavailable.', retryable: false, nextAction: null } };
+      assert.equal(validate(failure).valid, true, tool.name);
+      assert.equal(validate({ ok: false, error: { code: 'REFERENCE_FORBIDDEN' } }).valid, false, tool.name);
     }
     const instructionBytes = Buffer.byteLength(client.getInstructions() ?? '');
     const maxDescriptionBytes = Math.max(...tools.map(tool => Buffer.byteLength(tool.description ?? '')));

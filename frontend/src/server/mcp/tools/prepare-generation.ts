@@ -1,3 +1,4 @@
+import { withToolErrorOutput } from '@/server/mcp/output-schemas/tool-errors';
 import { VIDEO_OPERATIONS } from '@/lib/video-operation';
 import {MAX_GENERATION_REFERENCES} from '@/lib/generation-reference-limits';
 import { prepareGenerationOutputSchema } from '@/server/mcp/output-schemas/generation';
@@ -216,7 +217,7 @@ export function registerPrepareGenerationTool(
         'After the quote, briefly invite another model, resolution, duration or budget for a new quote and price comparison; use compare_generation_prices for actual savings, never guess.',
       ].join(' '),
       inputSchema: prepareGenerationInputSchema,
-      ...(profile === 'openai-directory' ? { outputSchema: prepareGenerationOutputSchema } : {}),
+      ...(profile === 'openai-directory' ? { outputSchema: withToolErrorOutput(prepareGenerationOutputSchema) } : {}),
       annotations: {
         readOnlyHint: false,
         destructiveHint: false,

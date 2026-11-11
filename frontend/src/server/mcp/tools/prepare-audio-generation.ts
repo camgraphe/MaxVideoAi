@@ -1,3 +1,4 @@
+import { withToolErrorOutput } from '@/server/mcp/output-schemas/tool-errors';
 import { AUDIO_ELEVEN_VOICE_IDS } from '@/lib/audio-eleven-voices';
 import type { McpDistributionProfile } from '@/server/mcp/distribution-profile';
 import { prepareAudioGenerationOutputSchema } from '@/server/mcp/output-schemas/audio-montage';
@@ -105,7 +106,7 @@ export function registerPrepareAudioGenerationTool(
         'Never infer approval from discussion or funding.',
       ].join(' '),
       inputSchema: prepareAudioGenerationInputSchema,
-      ...(profile === 'openai-directory' ? { outputSchema: prepareAudioGenerationOutputSchema } : {}),
+      ...(profile === 'openai-directory' ? { outputSchema: withToolErrorOutput(prepareAudioGenerationOutputSchema) } : {}),
       annotations: {
         readOnlyHint: false,
         destructiveHint: false,

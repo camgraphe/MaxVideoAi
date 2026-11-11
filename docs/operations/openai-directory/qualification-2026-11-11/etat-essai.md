@@ -1,16 +1,18 @@
 # Essai OpenAI — journal du 11 novembre 2026
 
-**État courant : OAuth autorisé, hook dédié activé et 42 outils découverts. La correction de description est hébergée et validée ; cinq remarques de revue génériques restent ouvertes.**
+**État courant : OAuth, renouvellement et révocation de session vérifiés. Sept outils de lecture répondent. Correction locale du schéma des erreurs validée, livraison dédiée en cours ; cinq remarques de revue génériques restent ouvertes.**
 
 - Connexion OpenAI **Authorized**, domaine vérifié (après reconnexion, badge général **Configuration incomplete**), paquet de diagnostic **0.3.15**. Les deux skills passent ; aucune soumission ni publication.
 - Hook `maxvideoai_review_auth.custom_access_token_hook` activé après accord à l'action ; table d'autorisation vérifiée avec **un seul client**, le client OAuth dédié. Aucun réglage des autres projets Auth touché. Huit contrôles fonctionnels passent ; le parcours OAuth réel atteint le MCP.
-- Reviewer `openai-review-20261111@example.test` : consentement 18+ et connexion approuvés selon l'accord. Scopes `openid email profile offline_access`, PKCE S256, callback exact ChatGPT. Le renouvellement et la révocation n'ont pas encore été exercés.
+- Reviewer `openai-review-20261111@example.test` : consentement 18+ et connexion approuvés selon l'accord. Scopes `openid email profile offline_access`, PKCE S256, callback exact ChatGPT. Le renouvellement et la révocation de la session de diagnostic sont vérifiés. Les deux sessions OpenAI préexistantes et le grant sont préservés ; aucune révocation globale.
 - Découverte de **42 outils**, dont **41 publics et un téléchargement privé**. Inspection `SCANNED_OK` ; premier scan avec quatre remarques ; après correction et redécouverte, `get_model_details` passe, cinq autres outils restent à examiner. Aucun item affiché par le filtre MCP Blocking. Détail et suite dans [scan-et-suite.md](scan-et-suite.md).
 - Contrôle des seules données de test après OAuth : **1 profil, 4 consentements, 0 job, 0 reçu**. Aucun crédit ajouté ni génération payante.
 - Correction factuelle de `get_model_details` limitée au profil OpenAI, commit `95be72898e05ed1ec9c5e8d5fef168847c63c741`, poussée sur `codex/openai-directory-20261111`. Aucun comportement métier ni capacité modifié. Build dédié `dpl_FTEAU3LTzoEvTwuJpycAN5Kez2Ed` READY, deux alias de test vérifiés ; scan final terminé à 17:29:04 UTC. Reconnexion avec le même grant réussie, sans nouvel accès ni scope.
-- Neon dédié désactivé et **idle** confirmé à 17:30:52 UTC après la fenêtre 17:07:01–17:30:52 (borne indicative 0,01054 USD à 0,25 CU fixe). Les 18 crons du seul projet restent suspendus. Le filtre de build ne permet que la branche dédiée sur ce projet ; les autres projets ignorent cette branche. Le build main #646 avait été annulé sur le test. Aucun merge vers main.
+- Neon dédié désactivé et **idle** confirmé à 17:46:01 UTC après la nouvelle fenêtre 17:38:22–17:46:01 (borne indicative 0,00338 USD à 0,25 CU fixe). Les 18 crons du seul projet restent suspendus. Le filtre de build ne permet que la branche dédiée sur ce projet ; les autres projets ignorent cette branche. Le build main #646 avait été annulé sur le test. Aucun merge vers main.
 - Budget de l'essai **1 €**, inclus dans **20 €**. Premier build : 8,79 minutes, estimation 0,0616 USD. Second build : 7,248 minutes, estimation 0,0507 USD ; total des deux builds environ 0,1123 USD. La fenêtre Neon OAuth est relevée séparément ; les estimations ne constituent pas la facture.
 - Validation après correction : **17 tests directory**, **214 tests MCP réussis / 1 ignoré**, **70 scénarios déterministes réussis**. Lint frontend : zéro erreur, sept avertissements préexistants. Exposition et diff conformes.
+
+Les [preuves OAuth et essais sans dépense](oauth-et-essais-sans-depense.md) détaillent le renouvellement, les sessions préservées et les raccordements restants.
 
 Les preuves privées sont sous `.local/openai-directory-20261111/evidence/`, notamment `openai-mcp-inspection.json`, `openai-mcp-findings.json`, `oauth-audience-hook-checks.json`, `post-oauth-database-counts.json` et les captures. Les rubriques ci-dessous sont **l'historique**, non l'état courant.
 

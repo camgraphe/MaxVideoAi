@@ -6,12 +6,12 @@
 
 | Pièce | Déjà préparé ou disponible | À compléter |
 | --- | --- | --- |
-| Paquet plugin | ZIP 0.3.13 reproductible téléversé en brouillon ; métadonnées sans anomalie ; description EN/FR/ES, capacités, logo, skills et endpoint MCP dédié | URL réelle de démonstration après essai ; reconstruire l'archive |
-| Éditeur | Liens de site et support ; organisation MaxVideoAI accessible ; démarche Individual effectuée par le propriétaire, statut « Verified » confirmé dans Chrome à 14 h 40 Europe/Madrid | Compléter les vérifications de domaine demandées par le portail |
+| Paquet plugin | ZIP 0.3.14 conservé et brouillon de diagnostic 0.3.15 autorisé ; métadonnées sans anomalie ; description EN/FR/ES, capacités, logo, skills et endpoint MCP dédié | URL réelle de démonstration après essai ; reconstruire l'archive |
+| Éditeur | Liens de site et support ; organisation MaxVideoAI accessible ; démarche Individual effectuée par le propriétaire, statut « Verified » confirmé dans Chrome à 14 h 40 Europe/Madrid | Domaine vérifié ; réconcilier le nom du brouillon de diagnostic avant dépôt |
 | Conditions et confidentialité | Registre du site, audit des conditions standard, ajout local d'OpenAI pour la génération d'images | 18 ans alignés localement ; qualifier le parcours d'effacement, les routes réellement raccordées et les clauses de compte identifiées |
-| Accès reviewer | Scénarios cinq positifs / trois négatifs rédigés dans `plugins/maxvideoai/openai-directory.json` ; compte Auth fictif créé sur le projet dédié, mot de passe testé et session fermée | Héberger le site dédié, préparer les droits/solde et médias de test, qualifier OAuth et les scénarios ; ne jamais mettre les secrets dans le ZIP |
+| Accès reviewer | Scénarios cinq positifs / trois négatifs rédigés dans `plugins/maxvideoai/openai-directory.json` ; compte Auth fictif créé sur le projet dédié, mot de passe testé et session fermée | Site dédié hébergé et OAuth vérifié ; préparer les droits/solde et médias de test, qualifier les scénarios ; ne jamais mettre les secrets dans le ZIP |
 | Démonstration | Déroulé ci-dessous | Enregistrement issu du vrai essai, sans données privées de clients |
-| OAuth/hébergement | Adaptateurs, domaine final configuré dans le code, canevas sans secrets, tests en mémoire | HTTPS, DNS/callback réel, PKCE/resource/refresh/révocation, ressources et workers dédiés ; chiffrage avant activation |
+| OAuth/hébergement | Adaptateurs, domaine final configuré dans le code, canevas sans secrets, tests en mémoire | HTTPS, PKCE/resource/refresh et révocation de session vérifiés ; fournisseurs et workers dédiés à raccorder avant les générations |
 
 ## Éligibilité : 18 ans préparés sur la branche
 
@@ -40,6 +40,6 @@ Les scénarios du manifeste sont la référence précise. Les tests locaux ont u
 
 ## Essai dédié en cours
 
-L'Auth dédié est restauré et le projet Vercel daté existe sans déploiement. Le [journal de qualification](qualification-2026-11-11/etat-essai.md) distingue ces actions des éléments encore manquants. Ne pas recopier un `.env` ou les ressources du checkout Desktop. Le fichier `environment.template` est un canevas, pas un mécanisme d'isolation effectif. Le dossier doit identifier exactement les projets, bases, stockage, workers, clés et coûts dédiés avant activation.
+L'Auth et les deux domaines dédiés sont hébergés. OAuth, renouvellement et révocation de la session de diagnostic sont vérifiés. La base de test est suspendue entre essais. Le [journal de qualification](qualification-2026-11-11/etat-essai.md) distingue ces actions des éléments encore manquants. Ne pas recopier un `.env` ou les ressources du checkout Desktop. Le fichier `environment.template` est un canevas, pas un mécanisme d'isolation effectif. Le dossier doit identifier exactement les projets, bases, stockage, workers, clés et coûts dédiés avant activation.
 
 Aucun changement des bases habituelles ni de leur région n'est requis. Le domaine de qualification `openai-review.maxvideoai.com` et le domaine final `openai-mcp.maxvideoai.com` sont distincts : le ZIP final ne certifie pas le fonctionnement du domaine final avant ses vérifications réelles.

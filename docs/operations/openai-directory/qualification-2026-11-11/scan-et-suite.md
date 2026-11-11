@@ -2,7 +2,7 @@
 
 OAuth est établi sur le compte fictif du seul environnement dédié. Le portail
 reconnaît 42 outils (41 publics, téléchargement privé pour l'interface), affiche
-Configured/Authorized et le domaine vérifié. Aucun outil n'a été exécuté pour
+Authorized et le domaine vérifié (badge général Configuration incomplete après reconnexion). Aucun outil n'a été exécuté pour
 produire un média et aucune soumission humaine n'a été lancée.
 
 ## Premier scan
@@ -81,7 +81,7 @@ client dédié, et le grant OpenAI autorisé restent en place.
 
 ## Ce qui reste avant dépôt
 
-1. Compléter les preuves des cinq remarques de revue et qualifier renouvellement/révocation OAuth.
+1. Compléter les preuves des cinq remarques de revue. Renouvellement OAuth et révocation de la session de diagnostic sont vérifiés ; voir [le relevé](oauth-et-essais-sans-depense.md).
 2. Raccorder uniquement les ressources de test pour les générations et exports,
    préparer médias/solde et exécuter les cinq scénarios positifs et trois négatifs.
 3. Enregistrer la démonstration, renseigner les accès reviewer et réconcilier le

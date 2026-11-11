@@ -1,3 +1,4 @@
+import { withToolErrorOutput } from '@/server/mcp/output-schemas/tool-errors';
 import type { McpDistributionProfile } from '@/server/mcp/distribution-profile';
 import { listModelsOutputSchema } from '@/server/mcp/output-schemas/catalog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -44,7 +45,7 @@ export function registerListModelsTool(
       description:
         'Use this when the user needs current public MaxVideoAI image or video model capabilities, including audio and reference-image support. Every filtering field is nullable: send null when the user did not state that constraint, never a placeholder. Do not use it for generation, exact pricing, private models, or provider guarantees.',
       inputSchema: listModelsInputSchema,
-      ...(profile === 'openai-directory' ? { outputSchema: listModelsOutputSchema } : {}),
+      ...(profile === 'openai-directory' ? { outputSchema: withToolErrorOutput(listModelsOutputSchema) } : {}),
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,

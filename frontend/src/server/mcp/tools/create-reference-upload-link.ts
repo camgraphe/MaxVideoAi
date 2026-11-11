@@ -1,3 +1,4 @@
+import { withToolErrorOutput } from '@/server/mcp/output-schemas/tool-errors';
 import type { McpDistributionProfile } from '@/server/mcp/distribution-profile';
 import { createReferenceUploadLinkOutputSchema } from '@/server/mcp/output-schemas/references';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -38,7 +39,7 @@ export function registerCreateReferenceUploadLinkTool(
         'This does not start generation or modify an existing asset.',
       ].join(' '),
       inputSchema: createReferenceUploadLinkInputSchema,
-      ...(profile === 'openai-directory' ? { outputSchema: createReferenceUploadLinkOutputSchema } : {}),
+      ...(profile === 'openai-directory' ? { outputSchema: withToolErrorOutput(createReferenceUploadLinkOutputSchema) } : {}),
       annotations: {
         readOnlyHint: false,
         destructiveHint: false,

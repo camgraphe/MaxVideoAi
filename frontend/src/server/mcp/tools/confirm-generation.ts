@@ -1,3 +1,4 @@
+import { withToolErrorOutput } from '@/server/mcp/output-schemas/tool-errors';
 import { generationRecoveryOutputSchema } from '@/server/mcp/output-schemas/generation';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import * as z from 'zod/v4';
@@ -38,7 +39,7 @@ export function registerConfirmGenerationTool(
         'An accepted job is not a completed result.',
       ].join(' '),
       inputSchema: confirmGenerationInputSchema,
-      ...(profile === 'openai-directory' ? { outputSchema: generationRecoveryOutputSchema } : {}),
+      ...(profile === 'openai-directory' ? { outputSchema: withToolErrorOutput(generationRecoveryOutputSchema) } : {}),
       annotations: {
         readOnlyHint: false,
         destructiveHint: true,

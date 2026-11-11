@@ -1,3 +1,4 @@
+import { withToolErrorOutput } from '@/server/mcp/output-schemas/tool-errors';
 import type { McpDistributionProfile } from '@/server/mcp/distribution-profile';
 import { generationRecoveryOutputSchema } from '@/server/mcp/output-schemas/generation';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -37,7 +38,7 @@ export function registerGetGenerationStatusTool(
         'For Audio, preserve the original output and use the same recovery flow.',
       ].join(' '),
       inputSchema: getGenerationStatusInputSchema,
-      ...(profile === 'openai-directory' ? { outputSchema: generationRecoveryOutputSchema } : {}),
+      ...(profile === 'openai-directory' ? { outputSchema: withToolErrorOutput(generationRecoveryOutputSchema) } : {}),
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,

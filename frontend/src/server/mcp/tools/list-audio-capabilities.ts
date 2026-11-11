@@ -1,3 +1,4 @@
+import { withToolErrorOutput } from '@/server/mcp/output-schemas/tool-errors';
 import type { McpDistributionProfile } from '@/server/mcp/distribution-profile';
 import { listAudioCapabilitiesOutputSchema } from '@/server/mcp/output-schemas/audio-montage';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -25,7 +26,7 @@ export function registerListAudioCapabilitiesTool(
       description:
         'Lists the current public Audio modes, exact settings, owned reference roles, provider availability, pricing policy revision, and confirmation contract. It does not quote, spend, or generate.',
       inputSchema: listAudioCapabilitiesInputSchema,
-      ...(profile === 'openai-directory' ? { outputSchema: listAudioCapabilitiesOutputSchema } : {}),
+      ...(profile === 'openai-directory' ? { outputSchema: withToolErrorOutput(listAudioCapabilitiesOutputSchema) } : {}),
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,

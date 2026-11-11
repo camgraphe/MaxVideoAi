@@ -1,3 +1,4 @@
+import { withToolErrorOutput } from '@/server/mcp/output-schemas/tool-errors';
 import type { McpDistributionProfile } from '@/server/mcp/distribution-profile';
 import {MAX_GENERATION_REFERENCES} from '@/lib/generation-reference-limits';
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
@@ -94,7 +95,7 @@ export function registerCompareGenerationPricesTool(
       description:
         "Use this when an open image/video model choice or requested alternatives need prices for a simple single-output brief. One read returns up to three compatible models with current customer prices, favoring different prices; fewer if fewer meet every constraint. Use actual imported owned assets, exact mode, reference roles/combinations and explicit duration/resolution/audio requirements. Unspecified presets are disclosed; do not silently change requirements. Include a baseline model for freshly calculated savings; disclose configurationDiffers and never compare currencies. Keep labels/explanations brief, with no routine lip-sync caveats; price alone does not prove quality. Do not use to substitute an explicitly chosen model. No quotes, wallet reads, reservations, spending or media generation. After choice inspect get_model_details and prepare_generation for a fresh exact quote, then wait for approval. Invite a different model, resolution, duration or budget for a new quote and price comparison. For multi-shot production/attempt allowances use calculate_project_budget.",
       inputSchema: compareGenerationPricesInputSchema,
-      ...(profile === 'openai-directory' ? { outputSchema: compareGenerationPricesOutputSchema } : {}),
+      ...(profile === 'openai-directory' ? { outputSchema: withToolErrorOutput(compareGenerationPricesOutputSchema) } : {}),
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,

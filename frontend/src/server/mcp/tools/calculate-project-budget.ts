@@ -1,3 +1,4 @@
+import { withToolErrorOutput } from '@/server/mcp/output-schemas/tool-errors';
 import type { McpDistributionProfile } from '@/server/mcp/distribution-profile';
 import { calculateProjectBudgetOutputSchema } from '@/server/mcp/output-schemas/account-budget';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -112,7 +113,7 @@ export function registerCalculateProjectBudgetTool(
         'Do not use it to invent the creative plan, reserve a price, create a generation quote, inspect the wallet, or spend funds.',
       ].join(' '),
       inputSchema: calculateProjectBudgetInputSchema,
-      ...(profile === 'openai-directory' ? { outputSchema: calculateProjectBudgetOutputSchema } : {}),
+      ...(profile === 'openai-directory' ? { outputSchema: withToolErrorOutput(calculateProjectBudgetOutputSchema) } : {}),
       annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false },
     },
     async (input) => runAgentTool(() => {

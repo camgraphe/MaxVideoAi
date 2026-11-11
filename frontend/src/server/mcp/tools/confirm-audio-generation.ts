@@ -1,3 +1,4 @@
+import { withToolErrorOutput } from '@/server/mcp/output-schemas/tool-errors';
 import type { McpDistributionProfile } from '@/server/mcp/distribution-profile';
 import { confirmAudioGenerationOutputSchema } from '@/server/mcp/output-schemas/audio-montage';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -36,7 +37,7 @@ export function registerConfirmAudioGenerationTool(
         'Recover through get_generation_status or list_recent_generations with surface audio, then present completed original Audio with present_generation.',
       ].join(' '),
       inputSchema: confirmAudioGenerationInputSchema,
-      ...(profile === 'openai-directory' ? { outputSchema: confirmAudioGenerationOutputSchema } : {}),
+      ...(profile === 'openai-directory' ? { outputSchema: withToolErrorOutput(confirmAudioGenerationOutputSchema) } : {}),
       annotations: {
         readOnlyHint: false,
         destructiveHint: true,

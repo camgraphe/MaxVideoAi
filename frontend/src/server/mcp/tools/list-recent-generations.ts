@@ -1,3 +1,4 @@
+import { withToolErrorOutput } from '@/server/mcp/output-schemas/tool-errors';
 import type { McpDistributionProfile } from '@/server/mcp/distribution-profile';
 import { listRecentGenerationsOutputSchema } from '@/server/mcp/output-schemas/generation';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -37,7 +38,7 @@ export function registerListRecentGenerationsTool(
         'Completed results can be delivered through present_generation.',
       ].join(' '),
       inputSchema: listRecentGenerationsInputSchema,
-      ...(profile === 'openai-directory' ? { outputSchema: listRecentGenerationsOutputSchema } : {}),
+      ...(profile === 'openai-directory' ? { outputSchema: withToolErrorOutput(listRecentGenerationsOutputSchema) } : {}),
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,

@@ -1,3 +1,21 @@
+## OpenAI structured failures after discovery — 11 November 2026
+
+Hosted qualification exposed a client validation failure: SDK 1.29.0 validates
+structured errors against the advertised output schema after `tools/list`, even
+when `isError` is true. Directory output schemas now advertise both the complete
+success DTO and the existing Agent API failure. The reusable projection uses Zod
+JSON Schema metadata; server success parsing remains strict. It changes neither
+returned values, direct-profile metadata, provider gates nor business services.
+Do not drop structured errors, recovery actions or correlation IDs as a workaround.
+
+The SDK fixture now discovers tools before calls. Both business and unexpected
+error regressions failed before the correction. All 42 advertised directory
+schemas accept complete failures and reject malformed ones. Local checks: 27
+directory/output tests, 214 MCP tests (one optional skip), all 70 curated decisions,
+TypeScript and exposure pass. Lint has seven existing warnings and no errors.
+Instruction/description ceilings remain 1,998 / 1,939 bytes. Hosted confirmation
+of this correction is pending; see the dated qualification dossier.
+
 ## OpenAI directory scan wording — 11 November 2026
 
 The dedicated OpenAI draft now completes OAuth and discovers all 42 tools. Its

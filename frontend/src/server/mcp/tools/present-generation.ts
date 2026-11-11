@@ -1,3 +1,4 @@
+import { withToolErrorOutput } from '@/server/mcp/output-schemas/tool-errors';
 import type { McpDistributionProfile } from '@/server/mcp/distribution-profile';
 import { presentGenerationOutputSchema } from '@/server/mcp/output-schemas/generation';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -127,7 +128,7 @@ export function registerPresentGenerationTool(
         'Do not poll, generate, retry, confirm, or charge with this tool.',
       ].join(' '),
       inputSchema: getGenerationStatusInputSchema,
-      ...(profile === 'openai-directory' ? { outputSchema: presentGenerationOutputSchema } : {}),
+      ...(profile === 'openai-directory' ? { outputSchema: withToolErrorOutput(presentGenerationOutputSchema) } : {}),
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,

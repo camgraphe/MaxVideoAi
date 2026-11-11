@@ -1,3 +1,4 @@
+import { withToolErrorOutput } from '@/server/mcp/output-schemas/tool-errors';
 import type { McpDistributionProfile } from '@/server/mcp/distribution-profile';
 import { prepareMontageOutputSchema } from '@/server/mcp/output-schemas/audio-montage';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -48,7 +49,7 @@ export function registerPrepareMontageTool(
       description:
         'Validate 2–12 ordered owned ready video clips and return a contiguous frame-aligned edit plan. Ordering is supplied by the caller, not visual analysis. This does not render media, modify assets, or save an editable Studio project. It does not return a Studio URL.',
       inputSchema: prepareMontageInputSchema,
-      ...(profile === 'openai-directory' ? { outputSchema: prepareMontageOutputSchema } : {}),
+      ...(profile === 'openai-directory' ? { outputSchema: withToolErrorOutput(prepareMontageOutputSchema) } : {}),
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,

@@ -407,7 +407,7 @@ export function createMaxVideoAiMcpServer(
   if (studioMontageCreation) {
     registerCreateStudioMontageTool(server, principal, services, distributionProfile);
   }
-  if (studioTimelineEditing) registerStudioTimelineTools(server,principal,services);
+  if (studioTimelineEditing) registerStudioTimelineTools(server,principal,services,distributionProfile);
   if (studioExports) registerStudioExportTools(server,principal,services,distributionProfile);
   if (creatorTools && !services.creatorTools) throw new Error('Creator tool services are required when their gate is enabled.');
   // An execution shutdown must not strand an already purchased OAuth operation.
@@ -432,7 +432,7 @@ export function createMaxVideoAiMcpServer(
     registerConfirmGenerationTool(server, principal, services, distributionProfile);
     registerGetGenerationStatusTool(server, principal, services, distributionProfile);
     registerListRecentGenerationsTool(server, principal, services, distributionProfile);
-    registerGetGenerationDownloadTool(server, principal, services);
+    registerGetGenerationDownloadTool(server, principal, services, distributionProfile);
     registerPresentGenerationTool(server, principal, services, distributionProfile);
     if (distributionProfile === 'direct') registerCreateTopupLinkTool(server, principal, services);
   }
