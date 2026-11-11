@@ -67,3 +67,11 @@ n'est retirée du candidat ; cette première phase ne vaut pas dossier prêt à 
 Le reviewer Auth existe déjà ; ne pas le recréer. L'applicatif est encore vide,
 le client OAuth réel et son audience restent à qualifier, et la vidéo n'est pas
 enregistrée. Le brouillon OpenAI demeure non soumis et non publié.
+
+## Statut du premier hébergement
+
+Branche poussée au commit `dc768b7dc`. Le contrôle automatique a refusé le lien
+GitHub → projet Vercel dédié avant exécution, pour l'accès persistant au dépôt
+et les déclenchements automatiques possibles. Accord ciblé demandé ; aucun lien,
+déploiement ou enregistrement DNS créé. Le plafond proposé pour ce premier essai
+est de 1 € dans les 20 € totaux. Ne pas relancer le lien sans la réponse.

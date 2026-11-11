@@ -48,7 +48,7 @@ activer ni à contourner. Node 22 a été réglé séparément. Le projet daté 
 
 Ces lectures ne modifient ni les réglages Auth ni une base habituelle. Les gardes
 de build vérifient des bindings ; ils ne certifient pas les permissions IAM, les
-workers ou les coûts. Aucun push, déploiement ou rattachement de domaine effectué.
+workers ou les coûts. À ce stade initial, aucun push, déploiement ou rattachement de domaine n'avait été effectué. La branche a depuis été poussée, comme relevé ci-dessous.
 
 ### Accès dédiés raccordés, après accord explicite
 
@@ -122,7 +122,7 @@ bornes renvoyées par le CLI. Les frais non attribués et les autres services ne
 permettent toujours pas de conclure à un total historique nul. Les projets de test
 sont vides et n'ont pas lancé de build distant.
 
-Aucune génération, recharge ou export Fargate n'a été lancé. La courte activation Neon pour les migrations est relevée ci-dessous.
+Aucune génération, recharge ou export Fargate n'a été lancé. La courte activation Neon pour les migrations est relevée dans le document de mise à niveau lié en tête.
 L'offre gratuite de l'Auth a été vérifiée avant restauration. L'inventaire du
 stockage dédié a été vérifié le 11 novembre à 15 h 17 Europe/Madrid : **0 objet,
 0 octet**, résultat non tronqué. Cet état actuel ne constitue pas une facture
@@ -173,3 +173,22 @@ distinction. Il faut exécuter une demande de bout en bout sur le compte de test
 avec un relevé séparant suppression, anonymisation et conservation justifiée.
 La [fiche d'effacement](../fiche-effacement-reviewer.md) prépare ce traitement
 manuel ; elle ne certifie aucune suppression accomplie.
+
+## Lien Git de l'hébergement : accord ciblé demandé
+
+Le commit `dc768b7dc` est poussé sur la seule branche
+`codex/openai-directory-20261111`. Aucun merge ou PR de production créé. Le lien
+Git du seul Vercel dédié a été refusé **avant exécution** par le contrôle
+automatique : il accorderait un accès persistant au dépôt et pourrait déclencher
+des déploiements automatiques. Aucun contournement ni changement DNS effectué.
+
+Une confirmation explicite est demandée pour ce lien, le déploiement dédié et
+les deux sous-domaines réservés, avec 1 € au maximum pour le premier essai HTTPS/
+OAuth **inclus dans** les 20 €. Aucune génération ni soumission OpenAI incluse.
+La base est en pause, les fournisseurs non activés et le projet dédié non livré
+en attendant cet accord. Voir le plan concret dans `base-et-premier-hebergement.md`.
+
+Vérification GitHub du commit poussé : statut Vercel `success`, description
+**Canceled by Ignored Build Step** sur le projet habituel. Sa tentative a donc
+été annulée par la garde avant livraison ; ce n'est pas un build de qualification
+dédié réussi. Aucun runtime de production remplacé.

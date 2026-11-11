@@ -4,7 +4,7 @@
 
 ## Où on en est
 
-- Nouvelle branche locale `codex/openai-directory-20261111`, créée sur le main distant vérifié `86db1bd37b683fb7c90aec15d1c4ea57cb9b4b06` (#645).
+- Branche isolée `codex/openai-directory-20261111`, maintenant poussée sur GitHub, créée sur le main distant vérifié `86db1bd37b683fb7c90aec15d1c4ea57cb9b4b06` (#645).
 - Reprise ciblée des adaptations marketplace : OAuth et domaine dédiés, résultats structurés, présentation des médias, imports privés, compte existant sans achat dans ChatGPT, paquet de dépôt.
 - Les nouveautés du main sont conservées : registre de 54 modèles publiés dans l'app, prix et règles d'exécution actuels, Studio, audio, outils créatifs, personnages et Recast. Ce nombre n'est pas une promesse de 54 modèles exécutables sur chaque hôte : les capacités et routes conservent leurs conditions habituelles.
 - Avec toutes ses capacités activées dans le test local, le serveur du canal OpenAI expose 42 outils, dont les huit de Character Studio/Recast. Le paquet ne déverrouille aucun modèle.
@@ -38,4 +38,4 @@ La branche du 23 octobre, `codex/openai-marketplace-main-20261023` à `5c700f2e5
 
 L'effacement actuel reste celui de main. Les anciennes preuves de purge ne certifient pas ce candidat. La vérification du parcours d'effacement réel et la cohérence de la notice restent nécessaires avant diffusion ; on n'impose pas par défaut toute la refonte historique pour compiler un paquet.
 
-Le ZIP a été téléversé en brouillon OpenAI. Aucune soumission pour revue humaine, publication, opération de déploiement, push, email, génération ni accès aux bases normales n'a été effectué. Le 11 novembre, l'Auth Supabase dédié a été restauré sur son offre gratuite et un projet Vercel de test daté a été créé et ses accès configurés, sans déploiement ; voir le [journal de qualification](qualification-2026-11-11/etat-essai.md).
+Le ZIP a été téléversé en brouillon OpenAI. Aucune soumission pour revue humaine, publication, livraison de site, email, génération ni accès aux bases normales n'a été effectué. La branche dédiée est poussée sur GitHub ; le build du projet habituel a été annulé par sa garde. Le lien Git vers le projet de test attend l'accord ciblé demandé après le refus du contrôle automatique. Le 11 novembre, l'Auth Supabase dédié a été restauré sur son offre gratuite et un projet Vercel de test daté a été créé et ses accès configurés, sans déploiement ; voir le [journal de qualification](qualification-2026-11-11/etat-essai.md).

@@ -103,6 +103,13 @@
       "receipts": 0,
       "profiles": 0,
       "consents": 0
+    },
+    "pushedBranchIsolation": {
+      "commit": "dc768b7dc",
+      "vercelStatus": "success",
+      "vercelDescription": "Canceled by Ignored Build Step",
+      "normalRuntimeDeployed": false,
+      "proofUrl": "https://vercel.com/camgraphes-projects/maxvideoai/7swqtpJQHmHqWpZZjX87nnHtfJJE"
     }
   },
   "archive": {
@@ -140,7 +147,7 @@
     "productionTouched": false,
     "normalDatabasesAccessed": false,
     "providerGenerationCalls": 0,
-    "pushed": false,
+    "pushed": true,
     "deployed": false,
     "submitted": false,
     "published": false,
@@ -292,6 +299,14 @@
       "directoryChannelEnabled": false,
       "normalProjectAccessed": false,
       "newInternalSecrets": 8
+    },
+    "gitLinkApproval": {
+      "status": "pending owner approval",
+      "attemptExecuted": false,
+      "reason": "Automatic approval review rejected persistent GitHub repository access and possible automatic deployments",
+      "exactProject": "prj_UCIR8ODoPEK3bLF30ID94gvyDs5C",
+      "firstHostingBudgetEUR": 1,
+      "includedInTotalBudgetEUR": 20
     }
   },
   "dedicatedStorage": {
