@@ -1483,3 +1483,15 @@ quality gains. Comparable connected-browser qualification remains separate.
 empty-body CRC32. An explicitly supplied CRC32 stays signed. Ordinary bodyful
 storage clients retain SDK integrity defaults; no global checksum setting or
 upload transport changes. The installed SDK's offline request test checks both.
+
+## Agent private generation results
+
+`src/server/generations/generation-media-access.ts` owns temporary presentation
+grants shared by Studio and the authenticated agent API. Status/recent reads
+first retain their existing account-scoped records and bounded result projection.
+Configured storage originals are signed for five minutes only after the storage
+key matches that account. Preserve original URLs in jobs, quotes and timeline
+records. Playback and last-frame fields receive the same ownership checks as
+original image/video/audio and thumbnails. The Studio module re-exports the
+shared owner for compatibility. `tests/agent-private-generation-delivery.test.ts`
+and `tests/studio-generation-media-access.test.ts` exercise these contracts.

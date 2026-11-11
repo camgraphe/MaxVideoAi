@@ -956,3 +956,25 @@ model admission or quote/confirmation contract changes in this increment.
 `tests/oauth-adult-consent.test.ts` executes the route against controlled identity,
 consent storage and grant boundaries. The legal rollout guide covers signup and
 existing-account reconsent. Real hosted OAuth qualification remains separate.
+
+## Owned private generation delivery — 11 November 2026
+
+The dedicated OpenAI qualification found that completed jobs in a private S3
+bucket were present in Media while MCP recovery returned no usable result. The
+dedicated runtime now declares its exact canonical storage base; this setting
+does not change bucket ACLs. After the existing owned-job read and public URL
+projection, agent status and recent-generation reads use the same five-minute
+private access owner as Studio, now under
+`generations/generation-media-access.ts`. The Studio import remains a facade.
+Originals, thumbnails, playback copies and last-frame artifacts retain their
+identities; only returned presentation URLs receive signatures. Cross-account
+storage objects fail closed. No generation, ledger operation or stored URL write
+is part of these reads.
+
+Three new behavioral tests reproduce the missing signatures before the fix and
+verify video artifacts, image/audio facts, canonical immutability and ownership.
+The 69 focused checks pass; MCP client checks report 214 passing, one skipped and
+70 selection scenarios. Frontend lint has seven existing warnings and no errors;
+exposure lint passes. Tool descriptors, schemas and instruction byte budgets are
+unchanged. This local result does not establish ChatGPT host presentation or
+OpenAI acceptance; hosted qualification is recorded in the dated review dossier.

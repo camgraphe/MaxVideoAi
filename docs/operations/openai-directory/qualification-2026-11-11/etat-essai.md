@@ -1,22 +1,25 @@
 # Essai OpenAI — journal du 11 novembre 2026
 
-**État courant : OAuth, renouvellement et révocation de session vérifiés. Huit outils de lecture répondent. Correction du schéma des erreurs hébergée et vérifiée sur dix réponses réelles ; cinq remarques de revue génériques restent ouvertes.**
+**État courant : brouillon OpenAI Configured / Authorized, 42 outils et trois
+remarques génériques audio. Trois générations dédiées terminées ; worker AWS
+créé et probe réussi. Aucun dépôt en revue ni publication.**
 
-- Connexion OpenAI **Authorized**, domaine vérifié (après reconnexion, badge général **Configuration incomplete**), paquet de diagnostic **0.3.15**. Les deux skills passent ; aucune soumission ni publication.
-- Hook `maxvideoai_review_auth.custom_access_token_hook` activé après accord à l'action ; table d'autorisation vérifiée avec **un seul client**, le client OAuth dédié. Aucun réglage des autres projets Auth touché. Huit contrôles fonctionnels passent ; le parcours OAuth réel atteint le MCP.
-- Reviewer `openai-review-20261111@example.test` : consentement 18+ et connexion approuvés selon l'accord. Scopes `openid email profile offline_access`, PKCE S256, callback exact ChatGPT. Le renouvellement et la révocation de la session de diagnostic sont vérifiés. Les deux sessions OpenAI préexistantes et le grant sont préservés ; aucune révocation globale.
-- Découverte de **42 outils**, dont **41 publics et un téléchargement privé**. Inspection `SCANNED_OK` ; premier scan avec quatre remarques ; après les corrections et le nouveau scan, seules les trois définitions audio restent à examiner. Aucun item affiché par le filtre MCP Blocking. Détail et suite dans [scan-et-suite.md](scan-et-suite.md).
-- Contrôle des seules données de test après OAuth : **1 profil, 4 consentements, 0 job, 0 reçu**. Aucun crédit ajouté ni génération payante.
-- Correction factuelle de `get_model_details` limitée au profil OpenAI, commit `95be72898e05ed1ec9c5e8d5fef168847c63c741`, poussée sur `codex/openai-directory-20261111`. Aucun comportement métier ni capacité modifié. Build dédié `dpl_FTEAU3LTzoEvTwuJpycAN5Kez2Ed` READY, deux alias de test vérifiés ; scan final terminé à 17:29:04 UTC. Reconnexion avec le même grant réussie, sans nouvel accès ni scope.
-- Neon dédié désactivé et **idle** confirmé à 18:00:57 UTC. Fenêtres 17:38:22–17:46:01 puis 17:59:35–18:00:57 (bornes indicatives 0,00338 puis 0,00061 USD à 0,25 CU fixe). Les 18 crons du seul projet restent suspendus. Le filtre de build ne permet que la branche dédiée sur ce projet ; les autres projets ignorent cette branche. Le build main #646 avait été annulé sur le test. Aucun merge vers main.
-- Budget de l'essai **1 €**, inclus dans **20 €**. Premier build : 8,79 minutes, estimation 0,0616 USD. Second build : 7,248 minutes, estimation 0,0507 USD ; total des deux builds environ 0,1123 USD. La fenêtre Neon OAuth est relevée séparément ; les estimations ne constituent pas la facture.
-- Validation après correction : **17 tests directory**, **214 tests MCP réussis / 1 ignoré**, **70 scénarios déterministes réussis**. Lint frontend : zéro erreur, sept avertissements préexistants. Exposition et diff conformes.
+- Le dernier scan observé termine à 18:27:11 UTC. Métadonnées sans anomalie et
+  deux skills validés. Les accès reviewer et la vidéo restent à compléter.
+- Essais autorisés : image GPT Image 2.5 Flare (7 cents), vidéo Pika 720p 5 s
+  (24 cents), voix Eleven v4 (5 cents). Trois jobs terminés et trois actifs privés
+  en bibliothèque. Total portefeuille fictif : 36 cents USD, aucun paiement Stripe.
+- Le worker utilise uniquement Neon, S3 et réseau dédiés à Francfort. Son probe
+  termine avec exit 0 ; les privilèges temporaires réseau et secrets sont retirés.
+  Voir [l’export dédié](export-worker-preparation.md).
+- La livraison MCP de ces médias privés révélait des liens manquants. Correction
+  locale validée par 69 tests ciblés, 214 tests MCP (un ignoré), 70 scénarios, lint
+  sans erreur. Revalidation hébergée à effectuer après le nouveau build de test.
+- Neon dédié est activé pendant ces essais ; le remettre en pause après la
+  qualification. Les 18 crons restent désactivés. Aucune base normale consultée.
 
-- Correctif `b460474d8` READY sur `dpl_skjVvZDPJJW3fVQ8hhT6PfL6oPYH` : huit appels de lecture et deux refus attendus, aucune erreur de schéma. Le projet habituel a ignoré le commit. Les 18 crons dédiés restent suspendus. Troisième build : 6,428 minutes, environ 0,0450 USD ; total indicatif des trois builds 0,1573 USD. Rediscovery du brouillon OpenAI à effectuer avant les essais natifs ChatGPT.
-
-Les [preuves OAuth et essais sans dépense](oauth-et-essais-sans-depense.md) détaillent le renouvellement, les sessions préservées et les raccordements restants.
-
-Les preuves privées sont sous `.local/openai-directory-20261111/evidence/`, notamment `openai-mcp-inspection.json`, `openai-mcp-findings.json`, `oauth-audience-hook-checks.json`, `post-oauth-database-counts.json` et les captures. Les rubriques ci-dessous sont **l'historique**, non l'état courant.
+Les rubriques ci-dessous sont **l’historique**, non l’état courant. Les preuves
+privées et secrets restent dans `.local/openai-directory-20261111/`, hors Git.
 
 ## Historique des actions initiales
 

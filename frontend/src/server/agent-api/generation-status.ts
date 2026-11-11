@@ -1,3 +1,4 @@
+import { buildOwnedGenerationMediaAccess } from '@/server/generations/generation-media-access';
 import {
   getGenerationStatus,
   type AgentGenerationResult,
@@ -349,9 +350,10 @@ export async function getAgentGenerationStatus(
   if (status.seedanceWorkflow && dependencies.paidGenerationEnabled?.() === false) {
     status = { ...status, seedanceWorkflow: { ...status.seedanceWorkflow, finalizationAvailable: false } };
   }
+  const accessible = await buildOwnedGenerationMediaAccess(principal.userId, status);
   return buildAgentGenerationRecovery(
     await enrichIncludedTrialStatus(
-      status,
+      accessible!,
       principal.userId,
       dependencies.readTrialStatus ?? readTrialJobStatus,
     ),
@@ -416,9 +418,11 @@ export async function listAgentRecentGenerations(
     principal.userId,
     dependencies.readTrialStatus ?? readTrialJobStatus,
   )));
+  const accessibleItems = await Promise.all(enrichedItems.map((status) =>
+    buildOwnedGenerationMediaAccess(principal.userId, status)));
   return {
-    items: enrichedItems.map((status) => buildAgentGenerationRecovery(
-      status,
+    items: accessibleItems.map((status) => buildAgentGenerationRecovery(
+      status!,
       dependencies.accountUrl ?? DEFAULT_ACCOUNT_URL,
     )),
     nextCursor: page.nextCursor,
