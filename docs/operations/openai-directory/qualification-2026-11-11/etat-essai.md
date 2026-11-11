@@ -5,7 +5,7 @@
 - Connexion OpenAI **Authorized**, domaine vérifié (après reconnexion, badge général **Configuration incomplete**), paquet de diagnostic **0.3.15**. Les deux skills passent ; aucune soumission ni publication.
 - Hook `maxvideoai_review_auth.custom_access_token_hook` activé après accord à l'action ; table d'autorisation vérifiée avec **un seul client**, le client OAuth dédié. Aucun réglage des autres projets Auth touché. Huit contrôles fonctionnels passent ; le parcours OAuth réel atteint le MCP.
 - Reviewer `openai-review-20261111@example.test` : consentement 18+ et connexion approuvés selon l'accord. Scopes `openid email profile offline_access`, PKCE S256, callback exact ChatGPT. Le renouvellement et la révocation de la session de diagnostic sont vérifiés. Les deux sessions OpenAI préexistantes et le grant sont préservés ; aucune révocation globale.
-- Découverte de **42 outils**, dont **41 publics et un téléchargement privé**. Inspection `SCANNED_OK` ; premier scan avec quatre remarques ; après correction et redécouverte, `get_model_details` passe, cinq autres outils restent à examiner. Aucun item affiché par le filtre MCP Blocking. Détail et suite dans [scan-et-suite.md](scan-et-suite.md).
+- Découverte de **42 outils**, dont **41 publics et un téléchargement privé**. Inspection `SCANNED_OK` ; premier scan avec quatre remarques ; après les corrections et le nouveau scan, seules les trois définitions audio restent à examiner. Aucun item affiché par le filtre MCP Blocking. Détail et suite dans [scan-et-suite.md](scan-et-suite.md).
 - Contrôle des seules données de test après OAuth : **1 profil, 4 consentements, 0 job, 0 reçu**. Aucun crédit ajouté ni génération payante.
 - Correction factuelle de `get_model_details` limitée au profil OpenAI, commit `95be72898e05ed1ec9c5e8d5fef168847c63c741`, poussée sur `codex/openai-directory-20261111`. Aucun comportement métier ni capacité modifié. Build dédié `dpl_FTEAU3LTzoEvTwuJpycAN5Kez2Ed` READY, deux alias de test vérifiés ; scan final terminé à 17:29:04 UTC. Reconnexion avec le même grant réussie, sans nouvel accès ni scope.
 - Neon dédié désactivé et **idle** confirmé à 18:00:57 UTC. Fenêtres 17:38:22–17:46:01 puis 17:59:35–18:00:57 (bornes indicatives 0,00338 puis 0,00061 USD à 0,25 CU fixe). Les 18 crons du seul projet restent suspendus. Le filtre de build ne permet que la branche dédiée sur ce projet ; les autres projets ignorent cette branche. Le build main #646 avait été annulé sur le test. Aucun merge vers main.
@@ -206,3 +206,19 @@ Vérification GitHub du commit poussé : statut Vercel `success`, description
 **Canceled by Ignored Build Step** sur le projet habituel. Sa tentative a donc
 été annulée par la garde avant livraison ; ce n'est pas un build de qualification
 dédié réussi. Aucun runtime de production remplacé.
+
+## Ressource Fal et main courant — nouvelle qualification
+
+- Main `c501acf9ed4e139914a7502c8b3498ce758d59c8` intégré sans conflit dans le seul candidat (merge `79079b03fd46896fba6d0ca529865c9ef85bf497`).
+  46 contrôles ciblés d’attribution, CI et isolation passent.
+- Accord explicite obtenu pour créer et raccorder la ressource
+  `MaxVideoAI-OpenAI-Review-20261111` (`ir_2nvjpbVow2ACOApI`). Elle est disponible
+  et reliée uniquement au projet Vercel de test, cible `production` de ce projet.
+  `FAL_KEY` est installé ; l’application accepte déjà ce nom. Pas de copie de clé
+  du projet habituel, pas de recharge ni de nouveau forfait accepté. Le solde
+  prépayé reste celui de l’installation Fal commune : ce n’est pas un plafond
+  financier séparé. Aucune génération lancée. Nouveau build requis.
+- Le cluster export dédié existe, mais la lecture AWS du préfixe
+  `maxvideoai-openai-review` ne retourne aucune définition de tâche. Le worker
+  complet reste donc à préparer, avec image, rôles, réseau, accès de test et coûts.
+- Le scan OpenAI est désormais Configured ; voir le relevé actualisé.

@@ -347,10 +347,8 @@
     "18+ eligibility implemented on the branch and migration applied to the dedicated database; dedicated test deployment only. This is self-attestation, not documentary age verification.",
     "Applicable account-specific direct-provider clauses still require alignment with the routes used for qualification.",
     "Current-main account-deletion request behavior retained; full account erasure not executed.",
-    "Publisher verified; original ZIP 0.3.14 preserved. Diagnostic draft 0.3.15 retains Authorized/Domain verified and 42 tools. Final UI says Configuration incomplete; five generic further-review findings remain, credentials/demo incomplete. Reconcile diagnostic identity before submission.",
     "Vercel sourceFilesOutsideRootDirectory PATCH was rejected and not applied; creation response and current read confirm it was already true by default. No further change needed.",
-    "Original connection failed to ingest client. Fresh diagnostic draft completes OAuth with explicit reviewer approval. The directory-only wording fix is deployed and clears get_model_details. Final scan requires further review for five retained tools. No specific rationale was returned; none was inferred. Dedicated Neon is paused again.",
-    "Structured error fix verified on the dedicated hosted runtime with the SDK; the OpenAI draft still needs metadata rediscovery before native ChatGPT qualification."
+    "Latest rescan is Configured/Authorized/Domain verified. Three generic audio further-review findings remain; no specific rationale was returned. Reviewer credentials, demo and paid end-to-end qualification still pending. No functionality removed."
   ],
   "portal": {
     "browser": "Chrome",
@@ -375,7 +373,7 @@
     "publicationStatus": "Not published",
     "metadataStatus": "No findings",
     "skillsStatus": "Checks passed",
-    "mcpConfiguration": "Configuration incomplete",
+    "mcpConfiguration": "Configured",
     "domainVerified": true,
     "oauthMetadataDiscovered": true,
     "toolDiscoveryCompleted": true,
@@ -535,6 +533,26 @@
       "authentication": "Authorized",
       "domainVerified": true,
       "evidence": ".local/openai-directory-20261111/evidence/openai-final-scan-state.json"
+    },
+    "postErrorSchemaScan": {
+      "checkedAt": "2026-11-11T18:27:11Z",
+      "tools": 42,
+      "remainingTools": [
+        "list_audio_capabilities",
+        "prepare_audio_generation",
+        "confirm_audio_generation"
+      ],
+      "message": "This new tool definition needs further review before it can be published.",
+      "clearedTools": [
+        "compare_generation_prices",
+        "prepare_generation"
+      ],
+      "scannedCompareSchemaIncludesAnyOf": true,
+      "configuration": "Configured",
+      "authentication": "Authorized",
+      "domainVerified": true,
+      "humanReviewSubmitted": false,
+      "evidence": ".local/openai-directory-20261111/evidence/openai-findings-after-error-schema.json"
     }
   },
   "dedicatedAuth": {
@@ -626,7 +644,7 @@
     "environment": {
       "projectId": "prj_UCIR8ODoPEK3bLF30ID94gvyDs5C",
       "projectName": "maxvideoai-openai-review-20261111",
-      "variableCount": 36,
+      "variableCount": 37,
       "secretCount": 12,
       "configValuesCompared": 24,
       "publicValuesMatchPreparedPayload": true,
@@ -721,8 +739,8 @@
   "dedicatedDatabase": {
     "projectId": "lingering-glade-93540258",
     "endpointId": "ep-orange-lake-b2yfb7ss",
-    "disabled": true,
-    "state": "idle",
+    "disabled": false,
+    "state": "enabled for qualification; pause after probes",
     "computeCU": 0.25,
     "idleSuspendSeconds": 300,
     "connectionStringPrepared": true,
@@ -786,11 +804,15 @@
       "computeCU": 0.25,
       "maximumContinuousComputeUSD": 0.000604,
       "invoice": false
+    },
+    "providerQualificationWindow": {
+      "enabledAt": "2026-11-11T18:22:42Z",
+      "suspendedAt": null
     }
   },
   "latestMainObservedThroughCoordinatedDeployment": "c501acf9ed4e139914a7502c8b3498ce758d59c8",
   "baseVerifiedAgainstRemoteMainAt": "2026-11-11 before PR #646",
-  "candidateIncludesLatestMain": false,
+  "candidateIncludesLatestMain": true,
   "firstHostingBudget": {
     "capEUR": 1,
     "includedInTotalEUR": 20,
@@ -809,5 +831,30 @@
     "thirdBuildMinutes": 6.4282666667,
     "thirdBuildEstimatedUSD": 0.044998,
     "totalThreeBuildsEstimatedUSD": 0.157276
+  },
+  "currentMainIntegration": {
+    "main": "c501acf9ed4e139914a7502c8b3498ce758d59c8",
+    "mergeCommit": "79079b03fd46896fba6d0ca529865c9ef85bf497",
+    "conflicts": false,
+    "focusedTestsPassed": 46,
+    "productionMerged": false
+  },
+  "dedicatedFal": {
+    "resourceId": "ir_2nvjpbVow2ACOApI",
+    "resourceName": "MaxVideoAI-OpenAI-Review-20261111",
+    "installationId": "icfg_CBi8osAgAONokUgpUhsre9Go",
+    "project": "maxvideoai-openai-review-20261111",
+    "target": [
+      "production"
+    ],
+    "envName": "FAL_KEY",
+    "explicitOwnerCreationAndConnectionApproval": true,
+    "resourceCreated": true,
+    "connected": true,
+    "newSubscriptionAccepted": false,
+    "topupPerformed": false,
+    "paidCalls": 0,
+    "billingScope": "existing prepaid installation, shared balance; test resource is not a separate financial cap",
+    "newDeploymentRequired": true
   }
 }

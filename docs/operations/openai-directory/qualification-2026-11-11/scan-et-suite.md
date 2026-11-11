@@ -2,7 +2,7 @@
 
 OAuth est établi sur le compte fictif du seul environnement dédié. Le portail
 reconnaît 42 outils (41 publics, téléchargement privé pour l'interface), affiche
-Authorized et le domaine vérifié (badge général Configuration incomplete après reconnexion). Aucun outil n'a été exécuté pour
+Authorized, Configured et le domaine vérifié après le nouveau scan à 18:27 UTC. Aucun outil n'a été exécuté pour
 produire un média et aucune soumission humaine n'a été lancée.
 
 ## Premier scan
@@ -81,7 +81,7 @@ client dédié, et le grant OpenAI autorisé restent en place.
 
 ## Ce qui reste avant dépôt
 
-1. Compléter les preuves des cinq remarques de revue. Renouvellement OAuth et révocation de la session de diagnostic sont vérifiés ; voir [le relevé](oauth-et-essais-sans-depense.md).
+1. Compléter les preuves des trois remarques audio encore présentes. Renouvellement OAuth et révocation de la session de diagnostic sont vérifiés ; voir [le relevé](oauth-et-essais-sans-depense.md).
 2. Raccorder uniquement les ressources de test pour les générations et exports,
    préparer médias/solde et exécuter les cinq scénarios positifs et trois négatifs.
 3. Enregistrer la démonstration, renseigner les accès reviewer et réconcilier le
@@ -97,3 +97,18 @@ Preuves : `.local/openai-directory-20261111/evidence/openai-mcp-inspection.json`
 Git et du paquet de publication.
 
 Preuves finales : `openai-final-scan-state.json`, `openai-mcp-inspection-after-description.json`, `openai-mcp-findings-after-description.json` et `openai-authorized-final-scan.jpg`.
+
+## Nouveau scan après correction des schémas — 18:27 UTC
+
+La reconnexion réutilise le même client, secret et grant. Le scan termine sur les
+42 outils ; **Configured / Authorized / Domain verified** sont visibles. Les
+remarques `compare_generation_prices` et `prepare_generation` ont disparu. La
+définition comparateur copiée depuis le portail contient bien l’alternative
+`anyOf` du schéma de sortie corrigé. Les trois remarques audio gardent uniquement
+la demande générique d’examen complémentaire, sans motif exploitable. Les
+constats à 17:29 ci-dessus décrivent le scan précédent, désormais dépassé.
+
+Aucune fonction retirée, aucune revue humaine envoyée. Preuves :
+`openai-findings-after-error-schema.json`,
+`openai-scanned-compare-after-error-schema.json`,
+`openai-configured-three-findings.png` dans le dossier local privé.

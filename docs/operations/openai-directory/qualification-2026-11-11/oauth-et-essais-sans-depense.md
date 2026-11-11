@@ -59,7 +59,7 @@ deux refus attendus (`PARAMETER_INVALID` pour la comparaison sans fournisseur,
 Aucune erreur de validation SDK ; les 42 schémas hébergés contiennent les deux
 alternatives. Refresh et révocation de session passent à nouveau, les deux
 sessions OpenAI restent inchangées. Le brouillon OpenAI conserve pour l'instant
-sa découverte précédente : reconnecter/redécouvrir avant les essais dans ChatGPT.
+une découverte désormais renouvelée : le scan du 11 novembre à 18:27 UTC a ingéré le schéma corrigé.
 
 ## Suite concrète pour la démonstration
 
@@ -76,7 +76,7 @@ sa découverte précédente : reconnecter/redécouvrir avant les essais dans Cha
    raccordé ; cela ne qualifie pas les exports ni les outils de traitement.
 4. Exécuter les cinq scénarios positifs et trois négatifs dans ChatGPT, enregistrer
    la vidéo, puis renseigner les accès reviewer dans le portail après accord.
-   Les cinq remarques génériques du scan restent à documenter, sans leur inventer
+   Les trois remarques audio génériques du dernier scan restent à documenter, sans leur inventer
    un motif. Réconcilier le nom du brouillon, le main courant et les pièces avant
    toute soumission. La publication demande un accord distinct.
 
