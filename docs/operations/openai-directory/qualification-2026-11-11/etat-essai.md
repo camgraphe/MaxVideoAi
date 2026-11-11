@@ -1,12 +1,12 @@
 # Essai OpenAI — journal du 11 novembre 2026
 
-**État courant à 17 h 30 Madrid : premier hébergement et connexion applicative réussis ; OAuth OpenAI encore incomplet.**
+**État courant au 11 novembre : premier hébergement et connexion applicative réussis ; blocage de configuration OAuth isolé, raccordement du secret en attente d'accord.**
 
 - Déploiement Git dédié `dpl_83goM2ssi7ZwKTqCf4uJup52jFXY`, READY en 8,79 minutes, source `5312a21fa05ed6bd0f85f08bca4970b6e5be1f8d`.
 - Deux CNAME exacts, DNS-only, vers la cible recommandée par Vercel. HTTPS répond ; challenge texte exact, découverte OAuth 200, MCP sans jeton 401 avec sa bonne URL de métadonnées. Domaine OpenAI vérifié.
 - Compte reviewer connecté dans Chrome puis déconnecté. Documents acceptés après accord explicite : 1 profil, 4 consentements, 0 job et 0 reçu dans la seule base dédiée. Aucun crédit ajouté.
 - Client OAuth `324a5cbd-2929-4ba1-82a6-58083f5ccb33` créé dans l'Auth dédié, secret conservé uniquement en local privé. Callback de diagnostic local `http://127.0.0.1:8766/callback` ; aucun callback OpenAI supposé. PKCE S256 → 302 vers `/oauth/consent` du site dédié ; callback non enregistré → 400 sans redirection. Aucun jeton OAuth émis par ce test.
-- ZIP 0.3.14 importé, client public déclaré. Le portail affiche cette déclaration mais Connect renvoie encore « OAuth client ID missing from plugin ZIP ». Constat après actualisation ; origine exacte non établie. Ne pas prétendre que le secret ou la connexion sont configurés. Le hook de jetons reste désactivé et sa liste de clients vide.
+- ZIP 0.3.14 importé, client public déclaré, 13 fichiers identiques au ZIP téléchargé depuis OpenAI. L'ancienne version de connexion ne contient pas le client malgré ce manifeste. Un brouillon indépendant **MaxVideoAI OAuth Test 0.3.15**, avec manifeste MCP et skills inchangés, initialise le bon client et affiche **OAuth Client Secret**. Accord demandé pour transmettre ce seul secret au nouveau brouillon ; aucun grant ni scan accompli. L'ancien brouillon est conservé. Le hook reste désactivé ; une lecture ciblée confirme toujours une liste de clients vide.
 - 18 crons du seul projet suspendus et base dédiée remise `disabled: true`, `idle` à 16:30 UTC. Réactiver seulement cette base pour le prochain essai applicatif.
 - Filtre de build autonome enregistré au niveau du projet : build uniquement pour `codex/openai-directory-20261111`, skip pour toute autre branche. Confirmation réelle sur le main #646 : tentative `dpl_BqQ7E43D5P4MSKVbX7GuxVJ7yPhx` annulée. Coordination avec le chat Business Hub autorisée par le propriétaire.
 - Coût indicatif du build : 0,0616 USD ; fenêtre Neon réactivée de 16:06:30 à 16:30 UTC, borne à 0,25 CU fixe d'environ 0,0104 USD. Ce calcul ne remplace pas la facture et exclut stockage/requêtes/fonctions. Budget de l'essai 1 €, budget global 20 € ; aucune génération payante.

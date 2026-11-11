@@ -203,7 +203,7 @@
     "Current-main account-deletion request behavior retained; full account erasure not executed.",
     "Publisher identity is verified and ZIP 0.3.14 is uploaded as a draft. Metadata has no findings; both skills passed. Domain verified; OAuth connection, functional qualification and review evidence remain incomplete.",
     "Vercel sourceFilesOutsideRootDirectory PATCH was rejected and not applied; creation response and current read confirm it was already true by default. No further change needed.",
-    "OpenAI displays the provided client ID but Connect reports it missing after refresh; cause unproven. No OAuth secret, grant, token lifecycle or tool scan completed. Dedicated database paused and crons disabled between test windows."
+    "Original OpenAI connection did not ingest the registered-client configuration. A fresh diagnostic draft recognizes the unchanged MCP manifest and exposes the secret field. Secret transmission awaits explicit approval; OAuth grant, callback, token lifecycle and tool scan remain unverified. Original draft preserved; no runtime or database changes in this diagnostic."
   ],
   "portal": {
     "browser": "Chrome",
@@ -252,7 +252,34 @@
     "skillsEvidence": ".local/openai-directory-20261111/portal/skills-passed.jpg",
     "oauthSecretTransmitted": false,
     "oauthConnected": false,
-    "oauthClientDeclarationMatchesUploadedPackage": true
+    "oauthClientDeclarationMatchesUploadedPackage": true,
+    "oauthRecoveryDiagnostic": {
+      "checkedAt": "2026-11-11T16:47:22.576Z",
+      "originalConnectionClientMissing": true,
+      "downloadedPackageFilesIdentical": 13,
+      "newServerKeyRejected": true,
+      "originalDraftPreserved": true,
+      "diagnosticPluginId": "plugin_asdk_app_6af49bb426f08191a95f4331a3cb3739",
+      "diagnosticDraftId": "appsub_6af49bb42730819199847f39ad7a8dd0",
+      "diagnosticPackageName": "maxvideoai-oauth-test",
+      "diagnosticVersion": "0.3.15",
+      "diagnosticSha256": "9f44db9f5c7d287050a7a10701cfaff763768ce17fbc6704bcff552428907906",
+      "mcpManifestUnchanged": true,
+      "skillsUnchanged": true,
+      "savedConnectionClientRecognized": true,
+      "secretFieldVisible": true,
+      "secretTransmissionApproval": "requested",
+      "secretTransmitted": false,
+      "oauthConnected": false,
+      "callbackKnown": false,
+      "submitted": false,
+      "published": false,
+      "runtimeChanged": false,
+      "databaseReactivated": false,
+      "persistentSqlWrites": false,
+      "authSettingsChanged": false,
+      "evidence": ".local/openai-directory-20261111/evidence/oauth-recovery-diagnosis.json"
+    }
   },
   "dedicatedAuth": {
     "projectId": "ajwofjldwawdwtioekuc",
