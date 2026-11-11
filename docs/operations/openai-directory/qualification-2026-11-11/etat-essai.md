@@ -4,10 +4,10 @@
 
 | Ressource | Vérification / action | État |
 | --- | --- | --- |
-| Supabase Auth `ajwofjldwawdwtioekuc` | Offre de l'organisation vérifiée : Free. Restauration du seul projet « MaxVideoAI OpenAI Review ». | `ACTIVE_HEALTHY`, eu-central-1. Découverte OAuth publique répond ; PKCE S256 annoncé. Aucun compte, client OAuth ou secret créé. |
+| Supabase Auth `ajwofjldwawdwtioekuc` | Offre de l'organisation vérifiée : Free. Restauration du seul projet « MaxVideoAI OpenAI Review ». Puis création explicite du compte reviewer fictif. | `ACTIVE_HEALTHY`, eu-central-1. Découverte OAuth publique répond ; PKCE S256 annoncé. Mot de passe du compte test validé et session fermée. Aucun client OAuth ni nouvelle clé API créé. |
 | Neon `lingering-glade-93540258` | Inventaire et consommation lus. | Endpoint `ep-orange-lake-b2yfb7ss` désactivé, région eu-central-1. Aucune requête SQL ni activation. |
 | Ancien Vercel `prj_p6neENhzOIYsCXIPU2EvnUCJiORp` | Le connecteur renvoyait 404 ; le CLI authentifié confirme son existence dans la bonne équipe. | Vide, aucun déploiement ni lien Git. Inchangé. Le 404 ne prouvait pas sa suppression. |
-| Nouveau Vercel `prj_UCIR8ODoPEK3bLF30ID94gvyDs5C` | Projet `maxvideoai-openai-review-20261111` créé par le CLI après refus 403 du connecteur. Node réglé sur 22.x. | Même équipe, fonctions fra1, machine basic, aucune cible, aucun déploiement, aucun lien Git. Aucun secret copié. |
+| Nouveau Vercel `prj_UCIR8ODoPEK3bLF30ID94gvyDs5C` | Projet `maxvideoai-openai-review-20261111` créé par le CLI après refus 403 du connecteur. Node réglé sur 22.x. Puis 28 variables dédiées installées après accord explicite. | Même équipe, fonctions fra1, machine basic, aucune cible, aucun déploiement, aucun lien Git. Quatre secrets dédiés protégés ; aucun secret de production copié. |
 | Portail OpenAI | Session Chrome existante utilisée ; organisation MaxVideoAI et projet MaxVideoAI visibles. Le propriétaire a effectué la démarche Individual. | Projet en résidence **Global**, vérifié dans les paramètres. Après actualisation, statut **« Verified »**, constaté vers 14 h 40 Europe/Madrid : identité validée. Le contrôle différé est désactivé après ce constat. ZIP 0.3.13 téléversé en brouillon ; métadonnées sans anomalie. Aucune soumission humaine ni publication. Voir [le relevé du dépôt](depot-portail.md). |
 
 Le contrôle automatique a refusé la demande de modification
@@ -45,11 +45,69 @@ Ces lectures ne modifient ni les réglages Auth ni une base habituelle. Les gard
 de build vérifient des bindings ; ils ne certifient pas les permissions IAM, les
 workers ou les coûts. Aucun push, déploiement ou rattachement de domaine effectué.
 
+### Accès dédiés raccordés, après accord explicite
+
+Le propriétaire a autorisé la récupération des accès Supabase/Neon/S3 dédiés,
+leur conservation locale privée et leur enregistrement dans le seul projet
+Vercel `maxvideoai-openai-review-20261111`, sans déploiement ni activation payante.
+
+- **28 variables installées** : quatre secrets (`DATABASE_URL`,
+  `SUPABASE_SERVICE_ROLE_KEY`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`) et
+  24 paramètres de configuration. La cible Vercel `production` est celle du
+  projet de test, pas celle de `maxvideoai`.
+- Relecture : les 24 valeurs de configuration correspondent au canevas préparé ;
+  les quatre secrets ont le type API `sensitive` et ne sont pas retournés. Le type
+  CLI `config` correspond à `encrypted` dans l'API ; ce n'est pas une divergence
+  de valeur. Aucune valeur secrète relue depuis Vercel.
+- Le challenge de domaine est configuré ; le canal OpenAI reste désactivé jusqu'à
+  sa qualification. Le projet n'a toujours ni lien Git ni cible de déploiement.
+- La connexion Neon préparée cible uniquement l'endpoint dédié. Sa relecture
+  après configuration confirme `disabled: true`, état `idle`, 0,25 CU fixe,
+  suspension automatique à 300 secondes. Aucune connexion SQL effectuée.
+- Clé Supabase serveur existante conservée en fichier privé 0600, hors Git ;
+  clé publishable utilisée pour le navigateur. La révélation de la clé moderne
+  n'a pas renvoyé sa valeur dans cette session ; la clé `service_role` existante
+  a été récupérée pour la compatibilité du candidat. Aucune clé créée ou tournée.
+  Le portail annonce la retraite des clés legacy début 2027 : préparer la
+  migration vers la clé serveur moderne avant une exploitation durable.
+- Validation sans données utilisateur : `/auth/v1/settings` répond 200 avec la
+  clé autorisée et 401 avec une clé invalide. Le JWKS public expose ES256. Cela
+  valide l'acceptation par la passerelle, pas une session OAuth ni tous les droits
+  administratifs. Le test initial sur la liste des utilisateurs a été refusé
+  avant exécution ; il a été remplacé par cette vérification publique.
+- Cluster AWS dédié `maxvideoai-openai-review-export` : **0 tâche active,
+  0 tâche en attente, 0 service** à la lecture actuelle. Aucun lancement effectué.
+
+Preuves sans secrets : `evidence/vercel-env-installation.json`,
+`evidence/vercel-env-verification.json`, `evidence/supabase-key-read-check.json`,
+`evidence/neon-endpoint-after-env.json`, `evidence/aws-review-cluster-current.json`
+sous `.local/openai-directory-20261111/`. Les secrets restent dans son sous-dossier
+privé `secrets/`, permissions 0700/0600, et ne figurent ni dans ce dossier public
+de suivi ni dans le ZIP.
+
+La création de `openai-review-20261111@example.test` (identité fictive, sans email,
+avec mot de passe aléatoire local) a d'abord été refusée avant exécution par le
+contrôle automatique, faute d'accord assez explicite pour ce compte persistant.
+Après l'accord ciblé du propriétaire, **le compte a été créé et sa connexion par
+mot de passe a réussi**. La session de vérification a ensuite été fermée. Aucun
+compte existant consulté, aucun email, crédit ou paiement créé. Le compte Auth est
+prêt ; le compte applicatif, les données et les scénarios MCP restent à qualifier.
+Ses accès sont conservés uniquement dans `secrets/reviewer-credentials.json`
+(0600) ; preuve sans mot de passe : `evidence/reviewer-auth-created.json`.
+Ils ne sont pas encore saisis dans le portail OpenAI, car le site dédié n'est pas
+hébergé et le reviewer ne pourrait pas encore exécuter les scénarios.
+
 ## Budget cumulé : 20 € maximum
 
 La consommation Neon retournée pour octobre est de 420 CU-secondes et
-28 583 517 bytes-month de stockage racine. Ce relevé n'est pas une facture finale,
-ne couvre pas les autres services et n'établit pas un solde en euros.
+28 634 926 bytes-month de stockage racine, plus 483 774 bytes-month de restauration
+et 113 598 octets de transfert public. Novembre ajoute à ce stade 13 057 937
+bytes-month de stockage racine. Les [tarifs publics Launch](https://neon.com/pricing.md)
+consultés le 11 novembre donnent un ordre de grandeur de **0,027 USD** pour ces
+métriques (420 / 3 600 × 0,106 USD/CU-h, stockage × 0,35 USD/GB-mois,
+restauration × 0,20 USD/GB-mois ; transfert sous le quota inclus). Ce calcul
+indicatif n'est pas la facture de l'intégration Vercel et ne couvre pas AWS ni
+les autres services. Il n'établit pas un solde global en euros.
 
 Le premier endpoint Vercel ne restituait pas un relevé exploitable. Le relevé CLI
 `vercel usage --group-by project --from 2026-10-08 --to 2026-11-11 --json` a ensuite
@@ -86,14 +144,15 @@ sur d'autres ressources n'ont pas été testés.
 2. Livrer le candidat par Git au seul projet dédié, après préparation de ses
    bindings. Les gardes sont préparés et testés localement ; le projet daté reste
    vide. La politique de livraison de l'application de production reste inchangée.
-3. Raccorder seulement les secrets, Auth, base, stockage et workers dédiés ;
+3. Compléter les secrets de fonctionnement, fournisseurs et workers dédiés ;
    actualiser le registre des capacités sur les routes effectivement disponibles.
-   L'ancien fichier de préparation contient encore des clés fournisseur vides,
-   aucun service-role et des bindings de workers incomplets. Ce n'est pas un
-   environnement prêt à générer.
+   Les accès Auth, base et stockage sont maintenant configurés sur le nouveau
+   projet. Les clés fournisseur, secrets applicatifs et bindings workers restent
+   incomplets. Ce n'est pas encore un environnement prêt à générer.
 4. Réconcilier les coûts avant activation payante, puis qualifier HTTPS, client
    OAuth, audience/resource, PKCE, refresh, révocation et reconnexion en réel.
-5. Créer le compte reviewer dédié et ses données, exécuter les cas 5+3 avec devis
+5. Préparer les données et droits applicatifs du compte reviewer Auth déjà créé,
+   exécuter les cas 5+3 avec devis
    avant dépense et conserver les résultats. Enregistrer la vidéo réelle.
 6. Reconstruire le ZIP avec la vidéo accessible, résoudre les scans, puis déposer
    pour revue. La publication après acceptation reste une action distincte.

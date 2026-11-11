@@ -9,7 +9,7 @@
 | Paquet plugin | ZIP 0.3.13 reproductible téléversé en brouillon ; métadonnées sans anomalie ; description EN/FR/ES, capacités, logo, skills et endpoint MCP dédié | URL réelle de démonstration après essai ; reconstruire l'archive |
 | Éditeur | Liens de site et support ; organisation MaxVideoAI accessible ; démarche Individual effectuée par le propriétaire, statut « Verified » confirmé dans Chrome à 14 h 40 Europe/Madrid | Compléter les vérifications de domaine demandées par le portail |
 | Conditions et confidentialité | Registre du site, audit des conditions standard, ajout local d'OpenAI pour la génération d'images | 18 ans alignés localement ; qualifier le parcours d'effacement, les routes réellement raccordées et les clauses de compte identifiées |
-| Accès reviewer | Scénarios cinq positifs / trois négatifs rédigés dans `plugins/maxvideoai/openai-directory.json` | Compte dédié avec solde et médias, accès sans obstacle propre au reviewer ; ne jamais mettre les secrets dans le ZIP |
+| Accès reviewer | Scénarios cinq positifs / trois négatifs rédigés dans `plugins/maxvideoai/openai-directory.json` ; compte Auth fictif créé sur le projet dédié, mot de passe testé et session fermée | Héberger le site dédié, préparer les droits/solde et médias de test, qualifier OAuth et les scénarios ; ne jamais mettre les secrets dans le ZIP |
 | Démonstration | Déroulé ci-dessous | Enregistrement issu du vrai essai, sans données privées de clients |
 | OAuth/hébergement | Adaptateurs, domaine final configuré dans le code, canevas sans secrets, tests en mémoire | HTTPS, DNS/callback réel, PKCE/resource/refresh/révocation, ressources et workers dédiés ; chiffrage avant activation |
 

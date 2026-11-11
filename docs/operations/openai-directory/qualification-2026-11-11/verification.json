@@ -134,12 +134,15 @@
     "dedicatedAuthRestored": true,
     "dedicatedEmptyHostingProjectCreated": true,
     "migrationsAppliedToHostedDatabases": false,
-    "draftUploaded": true
+    "draftUploaded": true,
+    "dedicatedHostingEnvironmentConfigured": true,
+    "dedicatedSecretsRetrievedAndStoredWithOwnerApproval": true,
+    "dedicatedReviewerAuthCreated": true
   },
   "limits": [
     "Hosted OAuth and real ChatGPT qualification remain incomplete.",
     "Provider and OAuth grant boundaries used fixtures; no paid generations or reviewer video recorded.",
-    "Dedicated credentials and workers remain incomplete; environment.template is not an isolation guard.",
+    "Core Auth/Neon/S3 credentials are installed on the dedicated project. Provider credentials, application secrets and workers remain incomplete; configuration checks do not qualify runtime behavior.",
     "18+ eligibility implemented locally; no deployment or hosted migration. This is self-attestation, not documentary age verification.",
     "Applicable account-specific direct-provider clauses still require alignment with the routes used for qualification.",
     "Current-main account-deletion request behavior retained; full account erasure not executed.",
@@ -215,7 +218,39 @@
       "authenticatedExecute": false
     },
     "settingsChangedDuringInspection": false,
-    "sqlReadOnly": true
+    "sqlReadOnly": true,
+    "keyValidation": {
+      "projectId": "ajwofjldwawdwtioekuc",
+      "validKeySettingsStatus": 200,
+      "invalidKeySettingsStatus": 401,
+      "keyAcceptedByGateway": true,
+      "publicJwksStatus": 200,
+      "signingAlgorithms": [
+        "ES256"
+      ],
+      "adminPermissionsExercised": false,
+      "userDataRead": false,
+      "writes": false
+    },
+    "serverKeyType": "existing legacy service_role; private local file and dedicated Vercel Secret",
+    "newApiKeysCreated": false,
+    "reviewerAccount": {
+      "projectId": "ajwofjldwawdwtioekuc",
+      "created": true,
+      "syntheticIdentity": true,
+      "emailConfirmationRequired": false,
+      "adminCreateUserUsed": true,
+      "invitationSent": false,
+      "passwordLoginVerified": true,
+      "verificationSessionSignedOut": true,
+      "mcpOAuthTested": false,
+      "applicationDatabaseSeeded": false,
+      "reviewerReady": false,
+      "userDataFromOtherAccountsRead": false,
+      "explicitOwnerApproval": true,
+      "credentialsInPublicPackage": false,
+      "credentialsEnteredInOpenaiPortal": false
+    }
   },
   "dedicatedHosting": {
     "projectId": "prj_UCIR8ODoPEK3bLF30ID94gvyDs5C",
@@ -226,7 +261,21 @@
     "deployed": false,
     "localGitGuardPrepared": true,
     "localDomainProofPrepared": true,
-    "configurationGuardDoesNotCertifyPermissionsOrCosts": true
+    "configurationGuardDoesNotCertifyPermissionsOrCosts": true,
+    "environment": {
+      "projectId": "prj_UCIR8ODoPEK3bLF30ID94gvyDs5C",
+      "projectName": "maxvideoai-openai-review-20261111",
+      "variableCount": 28,
+      "secretCount": 4,
+      "configValuesCompared": 24,
+      "publicValuesMatchPreparedPayload": true,
+      "secretValuesReadBack": false,
+      "target": "production of dedicated test project",
+      "gitLinked": false,
+      "deploymentTargets": 0,
+      "directoryChannelEnabled": false,
+      "normalProjectAccessed": false
+    }
   },
   "dedicatedStorage": {
     "checkedAt": "2026-11-11T14:17:16.897109+00:00",
@@ -243,5 +292,40 @@
     "otherBucketsAccessed": false,
     "writePermissionsTested": false,
     "workerCredentialsTested": false
+  },
+  "dedicatedExportCluster": {
+    "name": "maxvideoai-openai-review-export",
+    "runningTasks": 0,
+    "pendingTasks": 0,
+    "services": 0,
+    "tasksStarted": false
+  },
+  "dedicatedDatabase": {
+    "projectId": "lingering-glade-93540258",
+    "endpointId": "ep-orange-lake-b2yfb7ss",
+    "disabled": true,
+    "state": "idle",
+    "computeCU": 0.25,
+    "idleSuspendSeconds": 300,
+    "connectionStringPrepared": true,
+    "sqlConnectionOpened": false,
+    "costIndication": {
+      "projectId": "lingering-glade-93540258",
+      "metricTotals": {
+        "compute_unit_seconds": 420,
+        "root_branch_bytes_month": 41692863,
+        "instant_restore_bytes_month": 483774,
+        "public_network_transfer_bytes": 113598
+      },
+      "indicativePublicRateCostUSD": 0.027056,
+      "source": "https://neon.com/pricing.md",
+      "pricePageUpdated": "2026-11-04",
+      "readOn": "2026-11-11",
+      "invoice": false,
+      "vercelMarketplaceBillingReconciled": false,
+      "awsHistoricalBillingReconciled": false,
+      "periods": "October and November 2026, November incomplete",
+      "activated": false
+    }
   }
 }
