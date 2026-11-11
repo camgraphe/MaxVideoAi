@@ -1,14 +1,15 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { JSDOM } from 'jsdom';
-import { prepareBrowserAnalyticsEvents } from '../frontend/lib/analytics/journey-browser';
+import { prepareBrowserAnalyticsEvents, readWalletAnalyticsJourney } from '../frontend/lib/analytics/journey-browser';
 import { ANALYTICS_JOURNEY_STORAGE_KEY } from '../frontend/lib/analytics/journey-contract';
 import { sendPreparedAnalyticsEvents } from '../frontend/lib/analytics/ordered-events';
+import { buildTopupAttributionGa4Params, buildWalletAttributionMetadata, normalizeWalletAttribution } from '../frontend/server/wallet-attribution';
 
-function withPage(href: string, run: (window: Window) => void) {
+function withPage(href: string, run: (window: Window) => void, referrer = 'https://smithery.ai/server/maxvideoai?token=private-referrer') {
   const dom = new JSDOM('<html lang="fr"><title>Private customer project</title></html>', {
     url: href,
-    referrer: 'https://smithery.ai/server/maxvideoai?token=private-referrer',
+    ...(referrer ? { referrer } : {}),
   });
   const descriptors = ['window', 'document'].map(key => [key, Object.getOwnPropertyDescriptor(globalThis, key)] as const);
   Object.defineProperty(globalThis, 'window', { configurable: true, value: dom.window });
@@ -201,4 +202,52 @@ test('the source-only ChatGPT tag survives URL cleaning without inventing a medi
     assert.equal(calls.at(-1)?.page_location, 'https://maxvideoai.com/');
     assert.doesNotMatch(JSON.stringify(calls), /private-query/);
   });
+});
+
+const chatgptCampaign = 'utm_source=chatgpt&utm_medium=cpc&utm_campaign=chatgpt_ads_pilot_202611&utm_content=no_subscription_v1';
+
+test('ChatGPT paid acquisition survives an absent referrer, URL cleaning, navigation, and checkout attribution', () => {
+  withPage(`https://maxvideoai.com/pricing?${chatgptCampaign}&token=private-query#private-hash`, window => {
+    const calls: Record<string, unknown>[] = [];
+    sendPreparedAnalyticsEvents((_command, _name, payload) => calls.push(payload as Record<string, unknown>),
+      prepareBrowserAnalyticsEvents('page_view', { route_family: 'marketing' }));
+    const view = calls.at(-1)!;
+    assert.equal(view.page_location, 'https://maxvideoai.com/pricing');
+    assert.equal(view.page_referrer, '');
+    assert.deepEqual(
+      [view.campaign_source, view.campaign_medium, view.campaign_name, view.campaign_content],
+      ['chatgpt', 'cpc', 'chatgpt_ads_pilot_202611', 'no_subscription_v1'],
+    );
+    window.history.pushState(null, '', '/billing');
+    prepareBrowserAnalyticsEvents('topup_started', { route_family: 'billing' });
+    const checkout = readWalletAnalyticsJourney();
+    assert.ok(checkout);
+    const metadata = buildWalletAttributionMetadata(normalizeWalletAttribution(checkout, true));
+    const purchaseParams = buildTopupAttributionGa4Params(metadata);
+    for (const touch of ['first', 'last']) {
+      assert.deepEqual([
+        purchaseParams[`${touch}_touch_source`], purchaseParams[`${touch}_touch_medium`],
+        purchaseParams[`${touch}_touch_campaign`], purchaseParams[`${touch}_touch_content`],
+      ], ['chatgpt', 'cpc', 'chatgpt_ads_pilot_202611', 'no_subscription_v1']);
+    }
+    assert.doesNotMatch(JSON.stringify({ calls, checkout, metadata, purchaseParams }), /private-query|private-hash/);
+    assert.equal(normalizeWalletAttribution(checkout, false), null);
+  }, '');
+});
+
+test('unapproved ChatGPT campaign or creative values cannot enter GA or stored attribution', () => {
+  for (const campaign of [
+    chatgptCampaign.replace('chatgpt_ads_pilot_202611', 'private-campaign'),
+    chatgptCampaign.replace('no_subscription_v1', 'private-creative'),
+    chatgptCampaign.replace('utm_medium=cpc', 'utm_medium=email'),
+  ]) {
+    withPage(`https://maxvideoai.com/pricing?${campaign}`, () => {
+      const events = prepareBrowserAnalyticsEvents('page_view', { route_family: 'marketing' });
+      const calls: Record<string, unknown>[] = [];
+      sendPreparedAnalyticsEvents((_command, _name, payload) => calls.push(payload as Record<string, unknown>), events);
+      assert.equal(calls.at(-1)?.campaign_source, undefined);
+      assert.equal(readWalletAnalyticsJourney()?.firstSource, 'direct');
+      assert.doesNotMatch(JSON.stringify(calls), /private-campaign|private-creative/);
+    }, '');
+  }
 });

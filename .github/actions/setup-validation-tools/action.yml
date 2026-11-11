@@ -6,9 +6,35 @@ runs:
     - name: Select official Ubuntu archive transport
       shell: bash
       run: |
-        sudo python3 - <<'PYTHON'
+        . /etc/os-release
+        ubuntu_archive_url=''
+        # Kernel.org's Ubuntu mirror is a final fallback when Ubuntu DNS is unavailable.
+        # APT still verifies the original Ubuntu archive signatures and package hashes.
+        for candidate in https://archive.ubuntu.com/ubuntu https://azure.archive.ubuntu.com/ubuntu https://mirrors.edge.kernel.org/ubuntu; do
+          if http_status="$(curl --fail --silent --show-error --connect-timeout 5 --max-time 15 \
+            "$candidate/dists/${VERSION_CODENAME:?}/InRelease" --output /dev/null --write-out '%{http_code}')" \
+            && [ "$http_status" = 200 ]; then
+            ubuntu_archive_url="$candidate"
+            break
+          fi
+        done
+        if [ -z "$ubuntu_archive_url" ]; then
+          echo 'No official Ubuntu archive is reachable from this runner.' >&2
+          exit 1
+        fi
+        echo "Using reachable Ubuntu archive: $ubuntu_archive_url"
+        sudo python3 - "$ubuntu_archive_url" <<'PYTHON'
         from pathlib import Path
         import re
+        import sys
+
+        archive_url = sys.argv[1]
+        if archive_url not in (
+            'https://archive.ubuntu.com/ubuntu',
+            'https://azure.archive.ubuntu.com/ubuntu',
+            'https://mirrors.edge.kernel.org/ubuntu',
+        ):
+            raise ValueError('Unsupported Ubuntu archive')
 
         # Change only the known Ubuntu transport endpoint, retaining suites and signing keys.
         for source in (
@@ -21,8 +47,8 @@ runs:
                 continue
             original = source.read_text()
             updated = re.sub(
-                r'https?://azure\.archive\.ubuntu\.com/ubuntu(?=/|\s|$)',
-                'https://archive.ubuntu.com/ubuntu',
+                r'https?://(?:azure\.)?archive\.ubuntu\.com/ubuntu(?=/|\s|$)',
+                archive_url,
                 original,
             )
             if updated != original:
@@ -32,7 +58,7 @@ runs:
     - name: Install media and database validation tools
       shell: bash
       run: |
-        sudo apt-get update
+        sudo timeout 5m apt-get update --error-on=any
         sudo apt-get install --yes --no-install-recommends ffmpeg postgresql-common
         sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
         sudo apt-get install --yes --no-install-recommends postgresql-17
