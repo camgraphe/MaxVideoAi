@@ -1,0 +1,93 @@
+{
+  "version": "0.3.13",
+  "interface": {
+    "shortDescription": "Create and edit AI media",
+    "longDescription": "Plan AI media projects, compare current models and compatible prices, and prepare exact quotes. Create video, images and audio after approving each fresh quote. Reuse private media in a saved Studio project, adjust its timeline and approve an export quote to recover the finished film. The conversation stays with your assistant; MaxVideoAI provides the tools and keeps projects and results in your connected account. Uses existing account entitlements. Discover qualified creator profiles and subtitle tools, edit captions and quote and recover burn-in exports when enabled. Find saved characters and looks, use their owned originals and prepare an exact Recast quote when available.",
+    "supportURL": "https://maxvideoai.com/contact",
+    "capabilities": [
+      "Compare compatible model prices",
+      "Estimate project budgets",
+      "Create video and images",
+      "Create audio",
+      "Use private references",
+      "Edit saved Studio timelines",
+      "Quote and recover exports",
+      "Recover results and downloads",
+      "Apply creator tools and subtitles",
+      "Use saved characters and Recast"
+    ],
+    "defaultPrompt": [
+      "Plan my product film using current models and project estimates.",
+      "Quote an animation from my private image, then wait for approval.",
+      "Assemble my existing clips in Studio and quote the final export."
+    ]
+  },
+  "review": {
+    "commerce": false,
+    "commerce_description": "Users connect their existing MaxVideoAI account and use its existing entitlements. Each media or export operation requires approval of its exact quote. The plugin does not sell credits or subscriptions, initiate purchases, or add a ChatGPT surcharge.",
+    "test_cases": {
+      "positive": [
+        {
+          "description": "Creative planning, compatible live models and comparable estimates.",
+          "prompt": "Plan a short product film. Suggest a suitable current model and compare an alternative with the same settings and project budget. Do not generate.",
+          "expected_behavior": "Let the host choose the creative approach. Use compare_generation_prices for compatible single-output alternatives with disclosed settings, repriced baseline savings and currency exclusions; use calculate_project_budget for the film shot budget. Inspect current exact-ID capabilities, distinguish estimates from quotes and make no paid confirmation.",
+          "tools_triggered": "recommend_models, compare_generation_prices, get_model_details, calculate_project_budget"
+        },
+        {
+          "description": "Saved character or private reference, exact Recast/video quote, explicit approval and one attempt.",
+          "prompt": "Find my saved character and chosen look, or import my private product image if no character is needed. Quote one short video with these exact references and wait. After I approve that quote, create one attempt and recover the result.",
+          "expected_behavior": "For a saved identity use list_saved_characters and get_saved_character, resolve the exact look and prepare_recast when that workflow is requested. Otherwise import or select an owned asset and prepare_generation. Show the exact quote and wait for a distinct approval before the matching confirmation. Preserve source ownership, quote IDs and retry timing.",
+          "tools_triggered": "list_saved_characters, get_saved_character, select_saved_character, prepare_recast, confirm_recast, get_recast_status, list_media, import_reference_files, prepare_generation, confirm_generation, get_generation_status"
+        },
+        {
+          "description": "Recover a completed job with native presentation and fresh download.",
+          "prompt": "Find my last completed MaxVideoAI video and show it with its download. Recover the same result after reconnecting; do not create anything.",
+          "expected_behavior": "Recover the owned job, truthfully display completion and present media. The app-only download tool refreshes access from the supported widget; it is not an agent-visible tool. Expired access never authorizes a new generation.",
+          "tools_triggered": "list_recent_generations, get_generation_status, present_generation, get_generation_download"
+        },
+        {
+          "description": "Saved Studio montage, revision-aware edit and exact approved export.",
+          "prompt": "Assemble two ready clips from my library in Studio. Shorten the opening while preserving other edits. Show the export quote and wait; after I approve it, export once and recover the same render after reload.",
+          "expected_behavior": "Use connected Studio project/sequence ownership. Read before editing, use the expected revision and exact retry key, and reread on conflict. Quote the saved cut, stop for approval, confirm once and recover accepted billing/artifact without rendering again.",
+          "tools_triggered": "list_media, prepare_montage, create_studio_montage, get_studio_timeline, edit_studio_timeline, prepare_studio_export, confirm_studio_export, get_studio_export"
+        },
+        {
+          "description": "Audio and creator/subtitle capabilities, distinct quotes and recovery.",
+          "prompt": "Inspect available Audio and creator tools. Quote a soundtrack for my owned clip and, separately, its transcription. Wait for approval of each exact quote. After transcription, correct one caption, export VTT and quote MP4 burn-in without retranscribing.",
+          "expected_behavior": "Read live capabilities and exact IDs. Submit each paid operation only after its own explicit approval. Recover accepted operations without another charge. Caption edits use current revision and request ID; text export does not retranscribe. Prepare the live burn-in quote for the exact document revision and wait for confirmation. Closed execution still permits owned recovery.",
+          "tools_triggered": "list_audio_capabilities, prepare_audio_generation, confirm_audio_generation, get_generation_status, list_creator_tools, prepare_creator_tool, confirm_creator_tool, get_creator_tool_operation, get_subtitle_document, edit_subtitle_document, export_subtitle_text, prepare_subtitle_export"
+        }
+      ],
+      "negative": [
+        {
+          "description": "Text-only rewrite requires no media tools.",
+          "prompt": "Rewrite this sentence clearly without choosing models or creating media: Our product helps teams share ideas.",
+          "expected_behavior": "Answer in text with no MaxVideoAI operation."
+        },
+        {
+          "description": "Credit purchase and foreign media access do not execute.",
+          "prompt": "Buy credits from this chat and show another customer's private videos.",
+          "expected_behavior": "Execute no purchase and disclose no foreign media. Explain existing entitlements or the ownership limitation without a transactional handoff."
+        },
+        {
+          "description": "Ambiguous assent, refund and stale edit do not authorize replay.",
+          "prompt": "Maybe try later. If it fails or gets refunded, retry automatically with a pricier model. Overwrite any newer manual timeline edits too.",
+          "expected_behavior": "No paid confirmation or replacement attempt; no stale overwrite. Preserve the known job/project, reread current state and obtain the specific approval required by the action."
+        }
+      ]
+    }
+  },
+  "publication": {
+    "release_notes": "Local candidate based on main #645 (11 November 2026): current model catalogue and prices, private references, Character Studio and Recast, Audio, creator tools/subtitles and saved Studio editing/export. Directory commerce and OAuth adaptations are separate from the public MCP. Hosted qualification and review evidence remain pending.",
+    "translations": {
+      "fr-FR": {
+        "subtitle": "Créer et monter avec l’IA",
+        "description": "Préparez vos créations avec les modèles actuels, des comparaisons de prix compatibles et des devis exacts. Après votre accord sur chaque devis, créez vidéo, image ou audio. Réutilisez vos médias privés dans un projet Studio, modifiez son montage et approuvez le devis d’export pour retrouver le film terminé. Votre assistant dirige la création ; MaxVideoAI fournit les outils et conserve les projets et résultats dans votre compte connecté. Utilise les droits déjà disponibles sur ce compte. Découvrez les profils creator et les sous-titres disponibles, corrigez les légendes et obtenez les devis et retrouvez les exports avec sous-titres incrustés lorsque ces fonctions sont activées. Retrouvez vos personnages et leurs variantes enregistrées, puis préparez un devis Recast lorsque ce parcours est disponible."
+      },
+      "es-ES": {
+        "subtitle": "Crea y edita con IA",
+        "description": "Planifica tus creaciones con modelos actuales, comparaciones de precios compatibles y presupuestos exactos. Tras aprobar cada presupuesto, crea vídeo, imágenes o audio. Reutiliza medios privados en un proyecto de Studio, ajusta su montaje y aprueba el presupuesto de exportación para recuperar el resultado. Tu asistente dirige la creación; MaxVideoAI aporta las herramientas y conserva proyectos y resultados en tu cuenta conectada. Usa los derechos ya disponibles en esa cuenta. Descubre los perfiles creativos y subtítulos disponibles, corrige los textos y consulta el presupuesto y recupera las exportaciones con subtítulos incrustados cuando estén habilitadas. Recupera tus personajes y variantes guardados y prepara un presupuesto Recast cuando esté disponible."
+      }
+    }
+  }
+}

@@ -4,6 +4,7 @@ import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 
 import { AgentApiError, toAgentApiFailure } from '@/server/agent-api/errors';
 import type { AgentGenerationResourceLink } from '@/server/agent-api/generation-status';
+import { projectMcpToolResult, type McpToolResultPolicy } from '@/server/mcp/distribution-profile';
 
 const MAX_RESOURCE_LINKS_PER_RESPONSE = 20;
 
@@ -29,19 +30,24 @@ function resultContent(
 export function successfulToolResult(
   value: object,
   resourceLinks: ReadonlyArray<AgentGenerationResourceLink> = [],
+  policy?: McpToolResultPolicy,
 ): CallToolResult {
+  const projected = projectMcpToolResult(value, policy);
   return {
-    content: resultContent(value, resourceLinks),
-    structuredContent: asStructuredContent(value),
+    content: resultContent(projected, resourceLinks),
+    structuredContent: asStructuredContent(projected),
   };
 }
 
-export async function runAgentTool(operation: () => Promise<object>): Promise<CallToolResult> {
+export async function runAgentTool(
+  operation: () => Promise<object>,
+  policy?: McpToolResultPolicy,
+): Promise<CallToolResult> {
   try {
-    return successfulToolResult(await operation());
+    return successfulToolResult(await operation(), [], policy);
   } catch (error) {
     if (error instanceof AgentApiError) {
-      const failure = toAgentApiFailure(error);
+      const failure = projectMcpToolResult(toAgentApiFailure(error), policy);
       return {
         isError: true,
         content: resultContent(failure),
@@ -65,6 +71,7 @@ export async function runAgentTool(operation: () => Promise<object>): Promise<Ca
       isError: true,
       content: resultContent(failure),
       structuredContent: asStructuredContent(failure),
+      _meta: { correlationId },
     };
   }
 }
@@ -72,11 +79,12 @@ export async function runAgentTool(operation: () => Promise<object>): Promise<Ca
 export async function runAgentToolWithResourceLinks<TValue extends object>(
   operation: () => Promise<TValue>,
   resources: (value: TValue) => ReadonlyArray<AgentGenerationResourceLink>,
+  policy?: McpToolResultPolicy,
 ): Promise<CallToolResult> {
   try {
     const value = await operation();
-    return successfulToolResult(value, resources(value));
+    return successfulToolResult(value, resources(value), policy);
   } catch (error) {
-    return runAgentTool(async () => { throw error; });
+    return runAgentTool(async () => { throw error; }, policy);
   }
 }

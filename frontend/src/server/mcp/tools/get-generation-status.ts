@@ -1,3 +1,5 @@
+import type { McpDistributionProfile } from '@/server/mcp/distribution-profile';
+import { generationRecoveryOutputSchema } from '@/server/mcp/output-schemas/generation';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import * as z from 'zod/v4';
 
@@ -14,6 +16,7 @@ export function registerGetGenerationStatusTool(
   server: McpServer,
   principal: AgentPrincipal,
   services: MaxVideoAiMcpServices,
+  profile: McpDistributionProfile = 'direct',
 ): void {
   if (!services.getGenerationStatus) {
     throw new Error('get_generation_status service is required when its gate is enabled.');
@@ -34,6 +37,7 @@ export function registerGetGenerationStatusTool(
         'For Audio, preserve the original output and use the same recovery flow.',
       ].join(' '),
       inputSchema: getGenerationStatusInputSchema,
+      ...(profile === 'openai-directory' ? { outputSchema: generationRecoveryOutputSchema } : {}),
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,

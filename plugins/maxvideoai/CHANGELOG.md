@@ -1,3 +1,9 @@
+# 0.3.9 — local source, unpublished (11 November 2026)
+
+Dedicated OpenAI review origin support in the local reference helper. The current
+OpenAI Directory candidate is separately versioned 0.3.13. No release, install
+reference or external registry is changed by this source preparation.
+
 # Changelog
 
 ## 0.3.8 — 2026-10-18

@@ -1,3 +1,5 @@
+import type { McpDistributionProfile } from '@/server/mcp/distribution-profile';
+import { confirmAudioGenerationOutputSchema } from '@/server/mcp/output-schemas/audio-montage';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import * as z from 'zod/v4';
 
@@ -14,6 +16,7 @@ export function registerConfirmAudioGenerationTool(
   server: McpServer,
   principal: AgentPrincipal,
   services: MaxVideoAiMcpServices,
+  profile: McpDistributionProfile = 'direct',
 ): void {
   if (!services.confirmAudioGeneration) {
     throw new Error('confirm_audio_generation service is required when Audio publication is enabled.');
@@ -33,6 +36,7 @@ export function registerConfirmAudioGenerationTool(
         'Recover through get_generation_status or list_recent_generations with surface audio, then present completed original Audio with present_generation.',
       ].join(' '),
       inputSchema: confirmAudioGenerationInputSchema,
+      ...(profile === 'openai-directory' ? { outputSchema: confirmAudioGenerationOutputSchema } : {}),
       annotations: {
         readOnlyHint: false,
         destructiveHint: true,
@@ -40,6 +44,6 @@ export function registerConfirmAudioGenerationTool(
         openWorldHint: true,
       },
     },
-    async (input) => runAgentTool(() => services.confirmAudioGeneration!(input, principal)),
+    async (input) => runAgentTool(() => services.confirmAudioGeneration!(input, principal), { profile, tool: 'confirm_audio_generation' }),
   );
 }

@@ -1,3 +1,5 @@
+import type { McpDistributionProfile } from '@/server/mcp/distribution-profile';
+import { calculateProjectBudgetOutputSchema } from '@/server/mcp/output-schemas/account-budget';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import * as z from 'zod/v4';
 
@@ -90,6 +92,7 @@ export function registerCalculateProjectBudgetTool(
   server: McpServer,
   principal: AgentPrincipal,
   services: MaxVideoAiMcpServices,
+  profile: McpDistributionProfile = 'direct',
 ): void {
   const calculateProjectBudget = services.calculateProjectBudget;
   server.registerTool(
@@ -109,6 +112,7 @@ export function registerCalculateProjectBudgetTool(
         'Do not use it to invent the creative plan, reserve a price, create a generation quote, inspect the wallet, or spend funds.',
       ].join(' '),
       inputSchema: calculateProjectBudgetInputSchema,
+      ...(profile === 'openai-directory' ? { outputSchema: calculateProjectBudgetOutputSchema } : {}),
       annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false },
     },
     async (input) => runAgentTool(() => {

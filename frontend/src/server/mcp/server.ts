@@ -1,4 +1,5 @@
 import { seedanceWorkflowEnabled } from '@/server/seedance-workflow-request';
+import type { McpDistributionProfile } from '@/server/mcp/distribution-profile';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 import mcpPublication from '@/config/mcp-publication.json';
@@ -215,6 +216,7 @@ export type MaxVideoAiMcpServices = {
 export type MaxVideoAiMcpServerOptions = {
   creatorTools?: boolean;
   characterStudio?: boolean;
+  distributionProfile?: McpDistributionProfile;
   paidGeneration?: boolean;
   referenceUploads?: boolean;
   montagePreparation?: boolean;
@@ -227,7 +229,7 @@ export type MaxVideoAiMcpServerOptions = {
 export function createDefaultMaxVideoAiMcpServices(
   config: McpConfig,
   trialRiskContext: TrialRiskRequestContext,
-  capabilities: McpRuntimeCapabilities,
+  capabilities: McpRuntimeCapabilities & { creatorTools?: boolean },
   accountStatusDeps?: AgentAccountStatusWalletDeps,
   topupHandoffDeps?: Partial<Omit<McpTopupHandoffDependencies, 'billingBaseUrl'>>,
   runtimeEnv: NodeJS.ProcessEnv = process.env,
@@ -244,7 +246,7 @@ export function createDefaultMaxVideoAiMcpServices(
   const studioExports = createAgentStudioExportService({enabled:true,requestOrigin:new URL(config.accountUrl).origin});
   return {
     creatorTools: createAgentCreatorToolsService({ enabled: capabilities.paidGeneration && capabilities.referenceUploads
-      && runtimeEnv.CREATOR_TOOLS_ENABLED === '1' && runtimeEnv.MCP_CREATOR_TOOLS_ENABLED === '1' }),
+      && (capabilities.creatorTools ?? (runtimeEnv.CREATOR_TOOLS_ENABLED === '1' && runtimeEnv.MCP_CREATOR_TOOLS_ENABLED === '1')) }),
     characterStudio: capabilities.characterStudio ? (principal) => createAgentCharacterStudioService(principal, {
       executionEnabled: capabilities.paidGeneration && capabilities.referenceUploads,
       accountUrl: config.accountUrl,
@@ -355,6 +357,7 @@ export function createMaxVideoAiMcpServer(
   services: MaxVideoAiMcpServices,
   options: MaxVideoAiMcpServerOptions = {},
 ): McpServer {
+  const distributionProfile = options.distributionProfile ?? 'direct';
   const referenceUploads = options.referenceUploads ?? FEATURES.mcp.referenceUploads;
   const paidGeneration = options.paidGeneration ?? mcpPublication.paidGeneration;
   const montagePreparation = options.montagePreparation ?? mcpPublication.montagePreparation;
@@ -386,51 +389,52 @@ export function createMaxVideoAiMcpServer(
     }
   );
 
-  registerGetAccountStatusTool(server, principal, services);
-  registerListModelsTool(server, principal, services);
-  registerGetModelDetailsTool(server, principal, services);
-  registerRecommendModelsTool(server, principal, services);
-  registerCalculateProjectBudgetTool(server, principal, services);
-  registerCompareGenerationPricesTool(server,principal,services);
+  registerGetAccountStatusTool(server, principal, services, distributionProfile);
+  registerListModelsTool(server, principal, services, distributionProfile);
+  registerGetModelDetailsTool(server, principal, services, distributionProfile);
+  registerRecommendModelsTool(server, principal, services, distributionProfile);
+  registerCalculateProjectBudgetTool(server, principal, services, distributionProfile);
+  registerCompareGenerationPricesTool(server,principal,services, distributionProfile);
   if (referenceUploads) {
-    registerReferenceUploadApp(server);
-    registerListMediaTool(server, principal, services);
-    registerCreateReferenceUploadLinkTool(server, principal, services);
-    registerImportReferenceFilesTool(server, principal, services);
+    registerReferenceUploadApp(server, distributionProfile);
+    registerListMediaTool(server, principal, services, distributionProfile);
+    registerCreateReferenceUploadLinkTool(server, principal, services, distributionProfile);
+    registerImportReferenceFilesTool(server, principal, services, distributionProfile);
   }
   if (montagePreparation) {
-    registerPrepareMontageTool(server, principal, services);
+    registerPrepareMontageTool(server, principal, services, distributionProfile);
   }
   if (studioMontageCreation) {
-    registerCreateStudioMontageTool(server, principal, services);
+    registerCreateStudioMontageTool(server, principal, services, distributionProfile);
   }
   if (studioTimelineEditing) registerStudioTimelineTools(server,principal,services);
-  if (studioExports) registerStudioExportTools(server,principal,services);
+  if (studioExports) registerStudioExportTools(server,principal,services,distributionProfile);
   if (creatorTools && !services.creatorTools) throw new Error('Creator tool services are required when their gate is enabled.');
   // An execution shutdown must not strand an already purchased OAuth operation.
-  if (services.creatorTools) registerCreatorTools(server, principal, services.creatorTools, { studioTimelineEditing, executionEnabled: creatorTools });
+  if (services.creatorTools) registerCreatorTools(server, principal, services.creatorTools, { distributionProfile, studioTimelineEditing, executionEnabled: creatorTools });
   if (characterStudio) {
     if (!services.characterStudio) throw new Error('Character Studio services are required when their gate is enabled.');
     const serviceFor = services.characterStudio;
     registerCharacterStudioTools(server, () => serviceFor(principal), {
       referenceUploads,
+      distributionProfile,
       executionEnabled: paidGeneration && referenceUploads,
     });
   }
   if (audioGeneration) {
-    registerListAudioCapabilitiesTool(server, principal, services);
-    registerPrepareAudioGenerationTool(server, principal, services);
-    registerConfirmAudioGenerationTool(server, principal, services);
+    registerListAudioCapabilitiesTool(server, principal, services, distributionProfile);
+    registerPrepareAudioGenerationTool(server, principal, services, distributionProfile);
+    registerConfirmAudioGenerationTool(server, principal, services, distributionProfile);
   }
   if (paidGeneration) {
-    registerGenerationResultApp(server);
-    registerPrepareGenerationTool(server, principal, services);
-    registerConfirmGenerationTool(server, principal, services);
-    registerGetGenerationStatusTool(server, principal, services);
-    registerListRecentGenerationsTool(server, principal, services);
+    registerGenerationResultApp(server, distributionProfile);
+    registerPrepareGenerationTool(server, principal, services, distributionProfile);
+    registerConfirmGenerationTool(server, principal, services, distributionProfile);
+    registerGetGenerationStatusTool(server, principal, services, distributionProfile);
+    registerListRecentGenerationsTool(server, principal, services, distributionProfile);
     registerGetGenerationDownloadTool(server, principal, services);
-    registerPresentGenerationTool(server, principal, services);
-    registerCreateTopupLinkTool(server, principal, services);
+    registerPresentGenerationTool(server, principal, services, distributionProfile);
+    if (distributionProfile === 'direct') registerCreateTopupLinkTool(server, principal, services);
   }
   return server;
 }

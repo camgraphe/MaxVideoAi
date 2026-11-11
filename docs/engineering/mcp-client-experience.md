@@ -1,3 +1,32 @@
+## OpenAI directory rebased candidate — 11 November 2026 (local only)
+
+The dedicated directory candidate starts at main `86db1bd37` (#645), retaining
+current canonical models, pricing, private-reference checks and Character Studio.
+The `openai-directory` distribution profile adds output schemas and suppresses
+purchase handoffs; the direct channel retains its metadata and funding behavior.
+Informational model pricing links remain available. Error correlation IDs remain
+usable for support without exposing exception details. See
+[`openai-directory/README.md`](../operations/openai-directory/README.md).
+
+All nine directory capability overrides are independent, including
+`MCP_OPENAI_DIRECTORY_CHARACTER_STUDIO_ENABLED`. With every capability enabled,
+SDK discovery exposes 42 tools, instructions measure 1,998 UTF-8 bytes and the
+maximum description measures 1,927 bytes. The eight Character Studio/Recast tools
+retain exact owned references, live quote prices, explicit confirmation and
+quote-scoped recovery when execution closes. Output schemas preserve additive
+fields and include the current `middle_frame` role. No provider route is switched.
+
+Local verification: 214 MCP tests passed, one optional test skipped, and all 70
+curated selection scenarios passed with the existing policy fingerprint. The
+directory-focused suite passed 101 tests. TypeScript and exposure checks passed;
+frontend lint reports zero errors and seven warnings in untouched files. The
+OpenAI archive is candidate 0.3.13; generic source 0.3.9 is unpublished. These
+checks establish neither deployment nor OAuth, actual host selection, provider
+execution, public availability or directory acceptance. The historical extended
+account-purge branch remains separate; its evidence is not reused as qualification
+of this candidate. Public eligibility/privacy and actual review access must be
+reconciled before submission.
+
 ## 2026-10-22 — Kling V4 canonical owned subjects (offline candidate)
 
 `prepare_generation` now accepts optional ordered `subjects`, scoped by canonical validation to Kling V4 reference/edit modes. Each image/video subject points to existing zero-based `role=reference` slots; every subject reference must be an owned asset. The complete ordered request participates in the existing quote hash and stored confirmation snapshot. The seven-subject, three-video-subject envelope rejects overflow, unsupported modes and unknown fields. No arbitrary element URL or provider voice ID is accepted. Voice binding remains unavailable until a server-owned fal issuance/provenance registry can bind owner, provider account, source and returned voice ID.

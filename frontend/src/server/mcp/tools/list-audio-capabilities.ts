@@ -1,3 +1,5 @@
+import type { McpDistributionProfile } from '@/server/mcp/distribution-profile';
+import { listAudioCapabilitiesOutputSchema } from '@/server/mcp/output-schemas/audio-montage';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import * as z from 'zod/v4';
 
@@ -11,6 +13,7 @@ export function registerListAudioCapabilitiesTool(
   server: McpServer,
   principal: AgentPrincipal,
   services: MaxVideoAiMcpServices,
+  profile: McpDistributionProfile = 'direct',
 ): void {
   if (!services.listAudioCapabilities) {
     throw new Error('list_audio_capabilities service is required when Audio publication is enabled.');
@@ -22,6 +25,7 @@ export function registerListAudioCapabilitiesTool(
       description:
         'Lists the current public Audio modes, exact settings, owned reference roles, provider availability, pricing policy revision, and confirmation contract. It does not quote, spend, or generate.',
       inputSchema: listAudioCapabilitiesInputSchema,
+      ...(profile === 'openai-directory' ? { outputSchema: listAudioCapabilitiesOutputSchema } : {}),
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,

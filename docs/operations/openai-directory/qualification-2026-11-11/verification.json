@@ -1,0 +1,95 @@
+{
+  "reviewedAt": "2026-11-11",
+  "branch": "codex/openai-directory-20261111",
+  "baseCommit": "86db1bd37b683fb7c90aec15d1c4ea57cb9b4b06",
+  "baseVerifiedAgainstRemoteMain": true,
+  "historicalCandidatePreserved": "5c700f2e5853de2a329b005da812ee5f96553bf9",
+  "directoryVersion": "0.3.13",
+  "genericSourceVersion": "0.3.9",
+  "genericSourcePublished": false,
+  "appPublishedModels": 54,
+  "allCapabilitiesDirectoryToolCount": 42,
+  "maximumEnabledInstructionBytes": 1998,
+  "maximumToolDescriptionBytes": 1927,
+  "verification": {
+    "mcpClient": {
+      "passed": 214,
+      "failed": 0,
+      "skipped": 1,
+      "curatedSelectionScenariosPassed": 70
+    },
+    "directoryFocused": {
+      "passed": 101,
+      "failed": 0
+    },
+    "packageAfterFinalCopyEdits": {
+      "passed": 3,
+      "failed": 0,
+      "deterministic": true
+    },
+    "existingLegalAndProviderPrivacyTests": {
+      "passed": 24,
+      "failed": 0
+    },
+    "typescript": "passed",
+    "frontendLint": {
+      "errors": 0,
+      "warnings": 7,
+      "warningFilesChanged": false
+    },
+    "exposure": "passed",
+    "diffCheck": "passed",
+    "suiteCountsOverlap": true
+  },
+  "archive": {
+    "relativePath": ".local/openai-directory-20261111/package/maxvideoai-openai-directory-0.3.13.zip",
+    "sha256": "4e7469d566f5e4890d07cee72526506004a2deb82cc7e6b0925697137516e4d8",
+    "members": [
+      "LICENSE",
+      "assets/logo-mark.svg",
+      "checksums.json",
+      "mcp.json",
+      "plugin.json",
+      "scripts/import-reference-files.mjs",
+      "skills/generate/SKILL.md",
+      "skills/generate/agents/openai.yaml",
+      "skills/generate/references/generation-safety.md",
+      "skills/generate/references/reference-inputs.md",
+      "skills/plan/SKILL.md",
+      "skills/plan/agents/openai.yaml",
+      "skills/plan/references/budget-planning.md"
+    ],
+    "memberChecksumsVerified": true
+  },
+  "unchangedAreas": [
+    "frontend/config/model-registry.json",
+    "frontend/config/engine-catalog.json",
+    "frontend/config/model-runtime.json",
+    "frontend/src/server/video-providers",
+    "frontend/src/server/images",
+    "frontend/src/server/generations",
+    "frontend/src/server/studio",
+    "neon",
+    "supabase",
+    "pnpm-lock.yaml"
+  ],
+  "scope": {
+    "productionTouched": false,
+    "normalDatabasesAccessed": false,
+    "providerGenerationCalls": 0,
+    "spendThisRun": 0,
+    "pushed": false,
+    "deployed": false,
+    "submitted": false,
+    "published": false,
+    "providerContacted": false
+  },
+  "limits": [
+    "No full application build or hosted browser qualification in this run.",
+    "SDK and provider-boundary tests used local fixtures, not external generations.",
+    "Dedicated credentials and resources not bound; environment.template is not an isolation guard.",
+    "Age/eligibility and applicable direct-provider clauses remain to resolve before public use.",
+    "Existing main deletion behavior retained; historical extended purge evidence not transferred.",
+    "Publisher identity, global OpenAI project, domain, OAuth and reviewer demonstration still require actual verification."
+  ]
+}

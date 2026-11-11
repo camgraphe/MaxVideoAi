@@ -1,3 +1,5 @@
+import type { McpDistributionProfile } from '@/server/mcp/distribution-profile';
+import { presentGenerationOutputSchema } from '@/server/mcp/output-schemas/generation';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 import {
@@ -108,6 +110,7 @@ export function registerPresentGenerationTool(
   server: McpServer,
   principal: AgentPrincipal,
   services: MaxVideoAiMcpServices,
+  profile: McpDistributionProfile = 'direct',
 ): void {
   if (!services.getGenerationStatus) {
     throw new Error('get_generation_status service is required when present_generation is enabled.');
@@ -124,6 +127,7 @@ export function registerPresentGenerationTool(
         'Do not poll, generate, retry, confirm, or charge with this tool.',
       ].join(' '),
       inputSchema: getGenerationStatusInputSchema,
+      ...(profile === 'openai-directory' ? { outputSchema: presentGenerationOutputSchema } : {}),
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,
