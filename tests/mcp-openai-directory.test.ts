@@ -104,6 +104,10 @@ test('directory account response keeps usable entitlements and destinations with
 test('directory model details preserve live capabilities and the informational pricing page', async () => {
   const c = await connected('openai-directory');
   try {
+    const descriptor = (await c.client.listTools()).tools.find((tool) => tool.name === 'get_model_details')!;
+    assert.match(descriptor.description!, /promptingSources contains reviewed official provider guides/);
+    assert.match(descriptor.description!, /empty list means this response contains no reviewed guide/);
+    assert.doesNotMatch(descriptor.description!, /substitute web search/);
     const value = payload(await c.client.callTool({ name: 'get_model_details', arguments: { id: 'minimax-h3' } }));
     assert.deepEqual(value.links, details.links);
     assert.equal(value.generationEnabled, true);
@@ -129,6 +133,7 @@ test('direct profile still exposes top-up and existing account fields after a di
   const c = await connected('direct');
   try {
     assert.ok((await c.client.listTools()).tools.some((tool) => tool.name === 'create_topup_link'));
+    assert.match((await c.client.listTools()).tools.find((tool) => tool.name === 'get_model_details')!.description!, /do not invent a guide or substitute web search/);
     assert.deepEqual(payload(await c.client.callTool({ name: 'get_account_status', arguments: {} })), account);
     assert.deepEqual(payload(await c.client.callTool({ name: 'get_model_details', arguments: { id: 'minimax-h3' } })), details);
   } finally { await c.close(); }

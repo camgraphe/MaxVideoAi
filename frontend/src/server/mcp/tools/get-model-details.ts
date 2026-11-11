@@ -33,7 +33,9 @@ export function registerGetModelDetailsTool(
         'If aspectRatios is empty, omit aspectRatio; if non-empty, include a supported aspectRatio.',
         'When audio is always_generated or unavailable, omit settings.audio; only send it when optional.',
         'For GPT Image edits use source/reference images and an optional mask image with the mask role; custom resolution needs imageWidth and imageHeight from live constraints.',
-        'For prompt help, use relevant reviewed official provider promptingSources and share the returned URL when useful; if empty, say no reviewed official source was returned; do not invent a guide or substitute web search.',
+        profile === 'openai-directory'
+          ? 'promptingSources contains reviewed official provider guides for prompt craft; cite a returned URL when relevant. An empty list means this response contains no reviewed guide; keep other sources distinct from these reviewed links.'
+          : 'For prompt help, use relevant reviewed official provider promptingSources and share the returned URL when useful; if empty, say no reviewed official source was returned; do not invent a guide or substitute web search.',
         'Provider guides inform prompt craft, not MaxVideoAI availability or pricing; live details also govern settings and execution.',
         'Do not use this for exact pricing, generation, hidden models, or provider guarantees.',
       ].join(' '),

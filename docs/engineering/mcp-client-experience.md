@@ -1,4 +1,22 @@
-## OpenAI directory rebased candidate — 11 November 2026 (local only)
+## OpenAI directory scan wording — 11 November 2026
+
+The dedicated OpenAI draft now completes OAuth and discovers all 42 tools. Its
+first scan flags `get_model_details` for apparent preference over alternatives.
+The directory-only descriptor now explains what reviewed `promptingSources`
+contains and distinguishes other sources, instead of prohibiting web search.
+Capabilities, schemas, prices, handlers and the direct-channel descriptor are
+unchanged. The three Audio tools remain present; their scan message requests
+further review without identifying a specific implementation defect.
+
+Local checks: 17 directory SDK contracts passed; `mcp:client:check` passed 214
+tests with one optional skip and all 70 curated decisions. The direct policy
+fingerprint remains unchanged. Directory instructions retain their 1,998-byte
+maximum; the largest directory descriptor is now 1,939 UTF-8 bytes (ceiling
+2,000). Frontend lint has zero errors and seven existing warnings. Deployment
+and a fresh portal scan must separately establish whether the finding clears.
+No provider execution or directory publication is inferred from discovery.
+
+## OpenAI directory rebased candidate — 11 November 2026 (initial local evidence)
 
 The dedicated directory candidate starts at main `86db1bd37` (#645), retaining
 current canonical models, pricing, private-reference checks and Character Studio.
