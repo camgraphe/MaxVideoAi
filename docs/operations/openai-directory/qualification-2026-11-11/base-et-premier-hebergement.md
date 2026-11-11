@@ -86,3 +86,11 @@ La base dédiée est réactivée à 0,25 CU fixe pour cet essai et le canal MCP 
 est ouvert pour les métadonnées/OAuth. Les clés fournisseurs ne sont pas
 raccordées ; aucune génération ni soumission OpenAI n'est autorisée dans ce lot.
 Le push de ce relevé déclenche le premier build Git sur le projet dédié.
+
+## Résultat de l'essai autorisé — 17 h 30 Madrid
+
+Le premier build Git est READY sur `5312a21fa05ed6bd0f85f08bca4970b6e5be1f8d` ; les deux domaines sont attachés au seul projet dédié et leurs CNAME sont vérifiés. Le site, le login, le challenge et la découverte OAuth répondent en HTTPS. Le reviewer a ouvert sa session, accepté les documents après accord explicite, puis s'est déconnecté. Aucun job ni paiement.
+
+Les crons dédiés sont maintenant désactivés au niveau du projet ; la base dédiée est remise en pause (`disabled: true`, `idle`). Le filtre de build autonome ignore main et toutes les branches autres que notre branche dédiée. Cette isolation a été constatée lors de la fusion de #646 dans l'autre chantier.
+
+Le ZIP 0.3.14 porte le client OAuth réel. La connexion du portail reste incomplète : l'identifiant apparaît dans les paramètres mais Connect le déclare encore manquant. Aucun secret OAuth n'a été envoyé à OpenAI. Voir `depot-portail.md` pour la reprise. Les sources du paquet et ce relevé sont conservés localement sur la branche ; pas de nouveau push documentaire qui déclencherait un build inutile.

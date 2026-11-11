@@ -49,6 +49,14 @@ function main() {
     || config.interface.shortDescription.length > 30) {
     throw new Error('Invalid OpenAI directory candidate metadata.');
   }
+  if (config.oauthClient !== undefined && (
+    !config.oauthClient || Array.isArray(config.oauthClient)
+    || Object.keys(config.oauthClient).sort().join(',') !== 'clientId,mode,tokenEndpointAuthMethod'
+    || config.oauthClient.mode !== 'provided'
+    || typeof config.oauthClient.clientId !== 'string'
+    || !/^[A-Za-z0-9._-]{1,256}$/.test(config.oauthClient.clientId)
+    || !['none', 'client_secret_basic', 'client_secret_post'].includes(config.oauthClient.tokenEndpointAuthMethod)
+  )) throw new Error('Invalid public OAuth client configuration; credentials never belong in the package.');
   // Reuse the release builder's full-source secret, asset, version, symlink and
   // output ownership checks. Nothing is uploaded or deployed by either builder.
   const genericSource = JSON.parse(execFileSync(process.execPath, [
@@ -81,10 +89,11 @@ function main() {
     } },
   };
   writeFileSync(join(bundle, 'plugin.json'), json(manifest));
-  writeFileSync(join(bundle, 'mcp.json'), json({
+  const mcpManifest = {
     $schema: 'https://agent-plugins.org/schemas/1.0.0/mcp.schema.json',
-    mcpServers: { maxvideoai: { type: 'streamable-http', url: resource.toString(), extensions: { 'com.openai': { auth: { type: 'oauth' } } } } },
-  }));
+    mcpServers: { maxvideoai: { type: 'streamable-http', url: resource.toString(), extensions: { 'com.openai': { auth: { type: 'oauth', ...(config.oauthClient ? { client: config.oauthClient } : {}) } } } } },
+  };
+  writeFileSync(join(bundle, 'mcp.json'), json(mcpManifest));
   const generatePath = join(bundle, 'skills/generate/SKILL.md');
   let generate = readFileSync(generatePath, 'utf8');
   const directFunding = [
@@ -170,7 +179,15 @@ function main() {
   ].join('\n'));
   writeFileSync(safetyPath, safety);
   const files = [...publicFiles, 'plugin.json', 'mcp.json'].sort();
-  for (const file of files) inspectPluginText(file, readFileSync(join(bundle, file)), true);
+  for (const file of files) {
+    if (file === 'mcp.json' && config.oauthClient) {
+      // A registered OAuth client ID is public protocol metadata. Exempt only
+      // this validated field from the private UUID guard, never other content.
+      const inspected = structuredClone(mcpManifest);
+      inspected.mcpServers.maxvideoai.extensions['com.openai'].auth.client.clientId = 'public-oauth-client-id';
+      inspectPluginText(file, Buffer.from(json(inspected)), true);
+    } else inspectPluginText(file, readFileSync(join(bundle, file)), true);
+  }
   const checksums = Object.fromEntries(files.map((file) => [file, sha256(readFileSync(join(bundle, file)))]));
   writeFileSync(join(bundle, 'checksums.json'), json({ algorithm: 'sha256', files: checksums }));
   const archiveName = `maxvideoai-openai-directory-${config.version}.zip`;
@@ -198,8 +215,9 @@ function main() {
     projectEligibility: { residency: 'global', verified: false, reviewedAt: '2026-11-11', source: 'https://developers.openai.com/plugins/deploy/app-review#metadata-stored-during-tool-scanning' },
     domainVerified: false,
     oauthClientConfigured: false,
+    oauthClientDeclared: Boolean(config.oauthClient),
     blockers: [
-      'Bind the real dedicated OAuth client and portal callback; configure its secret only in the portal, then qualify PKCE/resource/refresh/revocation. No client is invented in this package.',
+      'Verify the declared OAuth client and exact portal callback; configure its secret only in the portal, then qualify PKCE/resource/refresh/revocation. A declaration is not evidence of a completed connection.',
       'Deploy and verify the reviewed server profile on the final HTTPS endpoint before uploading this package.',
       'Verify publisher identity, current project eligibility/residency requirements, organization roles and the actual domain challenge.',
       'Run the five positive and three negative scenarios in each claimed real host with a seeded review account.',

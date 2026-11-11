@@ -1,67 +1,36 @@
 # Brouillon OpenAI — 11 novembre 2026
 
-## Dépôt effectué
+## État actuel
 
-- Organisation et projet : MaxVideoAI ; identité Individual vérifiée ; résidence Global.
-- Plugin : `plugin_asdk_app_6af4711f72f08191bf141a80553b9c9d`.
-- App MCP associée : `asdk_app_6af4711f72f08191bf141a80553b9c9d`.
-- Version de brouillon : `appsub_6af4711f73788191b4b0e16925c30444`, paquet **0.3.13**.
-- [Ouvrir le brouillon](https://platform.openai.com/plugins/manage/plugin_asdk_app_6af4711f72f08191bf141a80553b9c9d?tab=details&version=appsub_6af4711f73788191b4b0e16925c30444).
-- SHA-256 du ZIP envoyé : `4e7469d566f5e4890d07cee72526506004a2deb82cc7e6b0925697137516e4d8`.
-- Statuts observés : **Draft**, **Not submitted**, **Not published**.
-- Métadonnées : **No findings**. Après leur statut initial « Checking », les deux
-  skills `generate` et `plan` affichent maintenant **Checks passed**, vérifié dans
-  Chrome le 11 novembre. Aucun scan d'outils MCP n'a encore été effectué.
-- Formulaire de revue : cinq scénarios positifs et trois négatifs reconnus comme
-  complets, traductions FR/ES et notes de version importées. « Complets » décrit
-  les champs du formulaire ; ces scénarios restent à exécuter sur le compte dédié.
-- Pièces encore signalées manquantes : **Reviewer credentials** et
-  **Supporting content** (URL de vidéo de démonstration).
+- Organisation/projet MaxVideoAI, résidence Global, identité Individual vérifiée.
+- Plugin `plugin_asdk_app_6af4711f72f08191bf141a80553b9c9d`, app associée `asdk_app_6af4711f72f08191bf141a80553b9c9d`.
+- [Brouillon dans OpenAI](https://platform.openai.com/plugins/manage/plugin_asdk_app_6af4711f72f08191bf141a80553b9c9d).
+- Paquet **0.3.14** importé ; SHA-256 `46a86cf4251273772e1a699483cb1055139aed7e2f2bda0196bdd47b34e15ade`.
+- **Draft**, **Not submitted**, **Not published**. Métadonnées **No findings**, skills `plan` et `generate` **Checks passed**, après actualisation du portail.
+- Les cinq scénarios positifs et trois négatifs sont présents dans le formulaire, mais restent à exécuter. Reviewer credentials et Supporting content (vidéo) restent à renseigner.
 
-Le ZIP contient uniquement les fichiers publics prévus, sans clés ni accès reviewer.
-L'import ne vaut ni revue humaine, ni publication, ni preuve de fonctionnement MCP.
-La capture et le relevé DOM sont conservés sous
-`.local/openai-directory-20261111/portal/draft-created.jpg` et `draft-snapshot.txt`.
-Le résultat ultérieur des skills figure dans `skills-passed.jpg` et `skills-passed.txt`.
+## Hébergement et domaine validés
 
-## Raccordement demandé par le portail
+Le serveur déclaré reste `https://openai-mcp.maxvideoai.com/mcp`. Les deux sous-domaines aboutissent uniquement à l'hébergement dédié ; aucun domaine normal n'a été réaffecté. HTTPS, challenge texte exact et découverte OAuth répondent. Le portail affiche **Domain verified**, y compris après actualisation.
 
-Le serveur déclaré est `https://openai-mcp.maxvideoai.com/mcp`, avec OAuth.
-Le panneau affiche **Domain not verified** et indique qu'il ne peut pas découvrir
-les métadonnées OAuth de cette URL. Aucun serveur n'a été authentifié ; aucun
-outil ni widget n'a encore été scanné.
+Le compte de démonstration fonctionne sur `https://openai-review.maxvideoai.com/login?mode=signin` : connexion navigateur, création du profil, acceptation autorisée des documents puis déconnexion. Solde 0 $, aucun job ni reçu. La base dédiée est remise en pause entre essais : la réactiver avant de reprendre une session applicative. Les 18 crons dédiés restent suspendus.
 
-Le challenge exact a été conservé, sans retour à la ligne, dans
-`.local/openai-directory-20261111/portal/openai-apps-challenge.txt`.
-Il devra être servi en texte brut à
-`https://openai-mcp.maxvideoai.com/.well-known/openai-apps-challenge` sur le seul
-hébergement dédié. Aucun challenge du domaine principal ou d'une autre app ne
-doit être remplacé. Aucun changement DNS ou publication HTTP n'a été effectué.
-La route est maintenant implémentée et vérifiée dans le build local : 200 avec le
-jeton exact sur le domaine dédié, 404 sur les hôtes habituels et en cas de faux
-`X-Forwarded-Host`. Le challenge réel reste à configurer sur l'hébergement dédié.
+## Point OAuth restant, observé dans le portail
 
-La documentation actuelle ne permet pas de changer librement l'URL du serveur
-dans le flux de mise à jour : le brouillon a donc bien conservé le domaine final,
-et non le domaine temporaire `openai-review.maxvideoai.com`. Pour qualifier ce
-brouillon, le domaine final devra aboutir à l'environnement isolé ; cela ne
-nécessite aucune modification des domaines habituels ni des bases normales.
+Le ZIP 0.3.13 ne déclarait que `auth.type: oauth`. Le premier Connect a demandé un client `provided` et son `clientId`. Le client réel `324a5cbd-2929-4ba1-82a6-58083f5ccb33` a donc été créé sur Supabase `ajwofjldwawdwtioekuc`, puis déclaré dans 0.3.14 avec `tokenEndpointAuthMethod: client_secret_basic`, conformément à la documentation actuelle.
 
-Avant connexion :
+Après import et rechargement, le panneau Settings affiche bien ces trois champs et le bon identifiant. **Connect renvoie néanmoins encore « OAuth client ID missing from plugin ZIP »**. Le champ secret n'est alors pas proposé. L'origine de l'incohérence n'est pas établie ; ne pas présenter une hypothèse de cache ou d'enregistrement figé comme une cause prouvée. Aucune suppression de plugin ou recréation de brouillon effectuée pour contourner ce point.
 
-1. Rendre l'hébergement dédié opérationnel et vérifier son isolation, ses coûts,
-   son HTTPS et sa découverte OAuth.
-2. Utiliser les paramètres du vrai client OAuth dédié. Si le client est
-   préenregistré, déclarer son identifiant et sa méthode d'authentification dans
-   `mcp.json`, puis téléverser une nouvelle version. Ne jamais y mettre son secret.
-3. Relever le callback réel dans le flux OpenAI, le déclarer chez le fournisseur
-   Auth, puis saisir le secret éventuel uniquement dans le formulaire sécurisé.
-   Aucun callback ni identifiant client n'est inventé dans ce dossier.
-4. Vérifier le challenge puis connecter le compte de test et examiner les scans
-   des outils et widgets.
-5. Exécuter les cinq scénarios positifs et trois négatifs, compléter le compte
-   reviewer et la vidéo avant toute soumission humaine.
+Le secret du client est conservé uniquement dans le dossier local privé, hors Git et ZIP ; il n'a pas été transmis à OpenAI. Aucun grant OAuth accordé, aucun scan d'outils lancé. Le callback OpenAI n'a pas été révélé. Le seul callback enregistré est celui du diagnostic local `http://127.0.0.1:8766/callback` : il ne doit pas être présenté comme un callback OpenAI. Le test d'autorisation avec PKCE S256 retourne 302 vers `/oauth/consent` du site dédié ; une URI de retour non enregistrée reçoit 400 sans redirection. Ce test ne qualifie pas encore l'échange de code, l'audience, le refresh ou la révocation.
 
-Sources officielles consultées le 11 novembre :
-[dépôt et OAuth](https://developers.openai.com/plugins/deploy/submission),
-[authentification du manifeste](https://developers.openai.com/plugins/build/plugins#configure-mcp-authentication).
+## Reprise ciblée
+
+1. Résoudre l'enregistrement OAuth sauvegardé dans le portail en conservant les preuves du manifeste correct. Utiliser un parcours de reconfiguration officiellement disponible ; ne pas ajouter de champs non documentés, publier un secret, supprimer le plugin ou contacter un tiers sans instruction.
+2. Relever le callback exact demandé par OpenAI, l'enregistrer sur le seul client dédié et retirer le callback de diagnostic quand il n'est plus utile. Transmettre le secret uniquement au champ sécurisé du brouillon, après accord pour cette transmission précise.
+3. Réactiver la base de test et ajouter ce client à la liste du hook d'audience dédié ; activer/qualifier le hook, puis tester connexion, audience de ressource, refresh, révocation et reconnexion. Le hook est encore désactivé et sa liste vide.
+4. Lancer la découverte des outils/widgets, puis raccorder les fournisseurs/workers nécessaires aux scénarios, avec devis et crédits de test autorisés.
+5. Rejouer les cinq cas positifs et trois négatifs, enregistrer la vidéo et renseigner les accès reviewer avant toute soumission humaine. Aucune soumission n'est autorisée par le premier essai hébergé.
+
+Preuves locales privées : `evidence/openai-package-0.3.14-state.txt`, `openai-package-0.3.14.jpg`, `openai-domain-verified.jpg`, `first-hosted-http.json`, `oauth-authorize-probe.json`, `reviewer-hosted-login-passed.jpg`. Les tests du paquet refusent les secrets dans le client et les UUID privés ailleurs ; seul le champ public `clientId` a une exception ciblée.
+
+Sources officielles relues : [dépôt et OAuth](https://developers.openai.com/plugins/deploy/submission), [client préenregistré](https://developers.openai.com/plugins/build/plugins#use-a-registered-oauth-client), [callback exact](https://developers.openai.com/plugins/build/auth#redirect-url).

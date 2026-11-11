@@ -1,5 +1,5 @@
 {
-  "version": "0.3.13",
+  "version": "0.3.14",
   "interface": {
     "shortDescription": "Create and edit AI media",
     "longDescription": "Plan AI media projects, compare current models and compatible prices, and prepare exact quotes. Create video, images and audio after approving each fresh quote. Reuse private media in a saved Studio project, adjust its timeline and approve an export quote to recover the finished film. The conversation stays with your assistant; MaxVideoAI provides the tools and keeps projects and results in your connected account. Uses existing account entitlements. Discover qualified creator profiles and subtitle tools, edit captions and quote and recover burn-in exports when enabled. Find saved characters and looks, use their owned originals and prepare an exact Recast quote when available.",
@@ -89,5 +89,10 @@
         "description": "Planifica tus creaciones con modelos actuales, comparaciones de precios compatibles y presupuestos exactos. Tras aprobar cada presupuesto, crea vídeo, imágenes o audio. Reutiliza medios privados en un proyecto de Studio, ajusta su montaje y aprueba el presupuesto de exportación para recuperar el resultado. Tu asistente dirige la creación; MaxVideoAI aporta las herramientas y conserva proyectos y resultados en tu cuenta conectada. Usa los derechos ya disponibles en esa cuenta. Descubre los perfiles creativos y subtítulos disponibles, corrige los textos y consulta el presupuesto y recupera las exportaciones con subtítulos incrustados cuando estén habilitadas. Recupera tus personajes y variantes guardados y prepara un presupuesto Recast cuando esté disponible."
       }
     }
+  },
+  "oauthClient": {
+    "mode": "provided",
+    "clientId": "324a5cbd-2929-4ba1-82a6-58083f5ccb33",
+    "tokenEndpointAuthMethod": "client_secret_basic"
   }
 }

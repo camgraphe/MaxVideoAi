@@ -36,11 +36,11 @@ test('directory builder produces a deterministic portable draft with review case
   const first = join(temporary, 'a');
   const second = join(temporary, 'b');
   const result = build(first);
-  const archive = join(first, 'maxvideoai-openai-directory-0.3.13.zip');
+  const archive = join(first, 'maxvideoai-openai-directory-0.3.14.zip');
   assert.ok(existsSync(archive), `directory archive was not built: ${result.stderr}`);
   assert.equal(result.status, 0, result.stderr);
   assert.equal(build(second).status, 0);
-  assert.deepEqual(readFileSync(archive), readFileSync(join(second, 'maxvideoai-openai-directory-0.3.13.zip')));
+  assert.deepEqual(readFileSync(archive), readFileSync(join(second, 'maxvideoai-openai-directory-0.3.14.zip')));
   const files = entries(archive);
   assert.deepEqual([...files.keys()].sort(), [
     'LICENSE', 'assets/logo-mark.svg', 'checksums.json', 'mcp.json', 'plugin.json',
@@ -51,7 +51,7 @@ test('directory builder produces a deterministic portable draft with review case
   ]);
   const manifest = JSON.parse(files.get('plugin.json')!.toString());
   assert.equal(manifest.$schema, 'https://agent-plugins.org/schemas/1.0.0/plugin.schema.json');
-  assert.equal(manifest.version, '0.3.13');
+  assert.equal(manifest.version, '0.3.14');
   const openai = manifest.extensions['com.openai'];
   assert.ok(openai.interface.shortDescription.length <= 30);
   assert.equal(openai.interface.supportURL, 'https://maxvideoai.com/contact');
@@ -61,7 +61,7 @@ test('directory builder produces a deterministic portable draft with review case
   assert.equal('demo_recording_url' in openai.review, false, 'do not fabricate review evidence');
   assert.deepEqual(JSON.parse(files.get('mcp.json')!.toString()), {
     $schema: 'https://agent-plugins.org/schemas/1.0.0/mcp.schema.json',
-    mcpServers: { maxvideoai: { type: 'streamable-http', url: 'https://openai-mcp.maxvideoai.com/mcp', extensions: { 'com.openai': { auth: { type: 'oauth' } } } } },
+    mcpServers: { maxvideoai: { type: 'streamable-http', url: 'https://openai-mcp.maxvideoai.com/mcp', extensions: { 'com.openai': { auth: { type: 'oauth', client: { mode: 'provided', clientId: '324a5cbd-2929-4ba1-82a6-58083f5ccb33', tokenEndpointAuthMethod: 'client_secret_basic' } } } } } },
   });
   for (const [name, contents] of files) {
     if (name.endsWith('.md')) assert.doesNotMatch(contents.toString(), /create_topup_link|mcp_topup=|\/billing\b/);
@@ -86,6 +86,7 @@ test('directory builder produces a deterministic portable draft with review case
   assert.equal(readiness.requiredRuntimeSwitch, 'MCP_OPENAI_DIRECTORY_ENABLED=true');
   assert.equal(readiness.domainVerified, false);
   assert.equal(readiness.oauthClientConfigured,false);
+  assert.equal(readiness.oauthClientDeclared, true);
   assert.equal(readiness.targetCapabilitySwitches.MCP_OPENAI_DIRECTORY_CREATOR_TOOLS_ENABLED,'true');
   assert.equal(readiness.targetCapabilitySwitches.MCP_OPENAI_DIRECTORY_CHARACTER_STUDIO_ENABLED,'true');
   assert.match(files.get('skills/generate/SKILL.md')!.toString(), /prepare_recast.*confirm_recast.*get_recast_status/s);
@@ -129,5 +130,24 @@ test('directory metadata cannot export a private filesystem path', (t) => {
   const result = build(out, source);
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /local absolute path/i);
-  assert.equal(existsSync(join(out, 'maxvideoai-openai-directory-0.3.13.zip')), false);
+  assert.equal(existsSync(join(out, 'maxvideoai-openai-directory-0.3.14.zip')), false);
+});
+
+test('registered client metadata rejects secrets and does not exempt unrelated private UUIDs', (t) => {
+  const temporary = mkdtempSync(join(realpathSync(tmpdir()), 'maxvideoai-openai-oauth-'));
+  t.after(() => rmSync(temporary, { recursive: true, force: true }));
+  for (const kind of ['secret', 'private-id']) {
+    const source = join(temporary, kind);
+    cpSync(resolve(root, 'plugins/maxvideoai'), source, { recursive: true });
+    const path = join(source, 'openai-directory.json');
+    const config = JSON.parse(readFileSync(path, 'utf8'));
+    if (kind === 'secret') config.oauthClient.clientSecret = 'never-export-this-value';
+    else config.interface.longDescription += ` Internal account ${config.oauthClient.clientId}`;
+    writeFileSync(path, JSON.stringify(config));
+    const out = join(temporary, `out-${kind}`);
+    const result = build(out, source);
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, kind === 'secret' ? /Invalid public OAuth client/ : /internal UUID/);
+    assert.equal(existsSync(join(out, 'maxvideoai-openai-directory-0.3.14.zip')), false);
+  }
 });

@@ -4,7 +4,7 @@
   "baseCommit": "86db1bd37b683fb7c90aec15d1c4ea57cb9b4b06",
   "baseVerifiedAgainstRemoteMain": true,
   "historicalCandidatePreserved": "5c700f2e5853de2a329b005da812ee5f96553bf9",
-  "directoryVersion": "0.3.13",
+  "directoryVersion": "0.3.14",
   "genericSourceVersion": "0.3.9",
   "genericSourcePublished": false,
   "appPublishedModels": 54,
@@ -16,16 +16,18 @@
       "passed": 214,
       "failed": 0,
       "skipped": 1,
-      "curatedSelectionScenariosPassed": 70
+      "curatedSelectionScenariosPassed": 70,
+      "rerunAfterOAuthPackageChange": true
     },
     "directoryFocused": {
       "passed": 101,
       "failed": 0
     },
     "packageAfterFinalCopyEdits": {
-      "passed": 3,
+      "passed": 4,
       "failed": 0,
-      "deterministic": true
+      "deterministic": true,
+      "version": "0.3.14"
     },
     "existingLegalAndProviderPrivacyTests": {
       "passed": 24,
@@ -110,11 +112,39 @@
       "vercelDescription": "Canceled by Ignored Build Step",
       "normalRuntimeDeployed": false,
       "proofUrl": "https://vercel.com/camgraphes-projects/maxvideoai/7swqtpJQHmHqWpZZjX87nnHtfJJE"
+    },
+    "firstHostedHttps": {
+      "passed": true,
+      "siteStatus": 200,
+      "loginStatus": 200,
+      "challengeStatus": 200,
+      "challengeExact": true,
+      "protectedResourceStatus": 200,
+      "authorizationMetadataStatus": 200,
+      "unauthenticatedMcpStatus": 401,
+      "correctWwwAuthenticate": true
+    },
+    "hostedReviewerLogin": {
+      "passed": true,
+      "termsAcceptedWithOwnerApproval": true,
+      "signedOut": true,
+      "profiles": 1,
+      "userConsents": 4,
+      "jobs": 0,
+      "receipts": 0,
+      "walletDisplayedUSD": 0
+    },
+    "localOAuthAuthorizationProbe": {
+      "pkce": "S256",
+      "status": 302,
+      "consentOrigin": "https://openai-review.maxvideoai.com",
+      "unregisteredCallbackStatus": 400,
+      "tokenIssued": false
     }
   },
   "archive": {
-    "relativePath": ".local/openai-directory-20261111/package/maxvideoai-openai-directory-0.3.13.zip",
-    "sha256": "4e7469d566f5e4890d07cee72526506004a2deb82cc7e6b0925697137516e4d8",
+    "relativePath": ".local/openai-directory-20261111/package-0.3.14/maxvideoai-openai-directory-0.3.14.zip",
+    "sha256": "46a86cf4251273772e1a699483cb1055139aed7e2f2bda0196bdd47b34e15ade",
     "members": [
       "LICENSE",
       "assets/logo-mark.svg",
@@ -148,11 +178,11 @@
     "normalDatabasesAccessed": false,
     "providerGenerationCalls": 0,
     "pushed": true,
-    "deployed": false,
+    "deployed": true,
     "submitted": false,
     "published": false,
     "providerContacted": false,
-    "newPaidOperations": 1,
+    "newPaidOperations": 3,
     "cumulativeSpendReconciled": false,
     "dedicatedAuthRestored": true,
     "dedicatedEmptyHostingProjectCreated": true,
@@ -160,17 +190,20 @@
     "draftUploaded": true,
     "dedicatedHostingEnvironmentConfigured": true,
     "dedicatedSecretsRetrievedAndStoredWithOwnerApproval": true,
-    "dedicatedReviewerAuthCreated": true
+    "dedicatedReviewerAuthCreated": true,
+    "dedicatedHostingDeployed": true,
+    "newPaidOperationsDescription": "Earlier Neon schema window, first Vercel build, dedicated Neon hosted-test window; not an invoice or transaction count."
   },
   "limits": [
     "Hosted OAuth and real ChatGPT qualification remain incomplete.",
     "Provider and OAuth grant boundaries used fixtures; no paid generations or reviewer video recorded.",
     "Core Auth/Neon/S3 credentials are installed on the dedicated project. Provider credentials and workers remain incomplete; eight internal application secrets are installed; configuration checks do not qualify runtime behavior.",
-    "18+ eligibility implemented on the branch and migration applied to the dedicated database; no deployment. This is self-attestation, not documentary age verification.",
+    "18+ eligibility implemented on the branch and migration applied to the dedicated database; dedicated test deployment only. This is self-attestation, not documentary age verification.",
     "Applicable account-specific direct-provider clauses still require alignment with the routes used for qualification.",
     "Current-main account-deletion request behavior retained; full account erasure not executed.",
-    "Publisher identity is verified and ZIP 0.3.13 is uploaded as a draft. Metadata has no findings; both skills passed. Domain/OAuth setup, hosted qualification and review evidence remain incomplete.",
-    "Vercel sourceFilesOutsideRootDirectory PATCH was rejected and not applied; creation response and current read confirm it was already true by default. No further change needed."
+    "Publisher identity is verified and ZIP 0.3.14 is uploaded as a draft. Metadata has no findings; both skills passed. Domain verified; OAuth connection, functional qualification and review evidence remain incomplete.",
+    "Vercel sourceFilesOutsideRootDirectory PATCH was rejected and not applied; creation response and current read confirm it was already true by default. No further change needed.",
+    "OpenAI displays the provided client ID but Connect reports it missing after refresh; cause unproven. No OAuth secret, grant, token lifecycle or tool scan completed. Dedicated database paused and crons disabled between test windows."
   ],
   "portal": {
     "browser": "Chrome",
@@ -190,17 +223,14 @@
     "pluginId": "plugin_asdk_app_6af4711f72f08191bf141a80553b9c9d",
     "appId": "asdk_app_6af4711f72f08191bf141a80553b9c9d",
     "draftId": "appsub_6af4711f73788191b4b0e16925c30444",
-    "draftVersion": "0.3.13",
+    "draftVersion": "0.3.14",
     "reviewStatus": "Not submitted",
     "publicationStatus": "Not published",
     "metadataStatus": "No findings",
-    "skillsStatus": {
-      "generate": "Checks passed",
-      "plan": "Checks passed"
-    },
-    "mcpConfiguration": "Configuration incomplete",
-    "domainVerified": false,
-    "oauthMetadataDiscovered": false,
+    "skillsStatus": "Checks passed",
+    "mcpConfiguration": "Domain verified; OAuth client displayed but Connect reports client ID missing",
+    "domainVerified": true,
+    "oauthMetadataDiscovered": true,
     "toolDiscoveryCompleted": false,
     "reviewInformation": {
       "positiveCasesComplete": 5,
@@ -216,10 +246,13 @@
       ],
       "realScenariosExecuted": false
     },
-    "draftStatusCheckedAt": "2026-11-11T14:50:00+01:00",
+    "draftStatusCheckedAt": "2026-11-11T16:31:00Z",
     "draftUrl": "https://platform.openai.com/plugins/manage/plugin_asdk_app_6af4711f72f08191bf141a80553b9c9d?tab=details&version=appsub_6af4711f73788191b4b0e16925c30444",
     "skillsStatusVerifiedInPortal": true,
-    "skillsEvidence": ".local/openai-directory-20261111/portal/skills-passed.jpg"
+    "skillsEvidence": ".local/openai-directory-20261111/portal/skills-passed.jpg",
+    "oauthSecretTransmitted": false,
+    "oauthConnected": false,
+    "oauthClientDeclarationMatchesUploadedPackage": true
   },
   "dedicatedAuth": {
     "projectId": "ajwofjldwawdwtioekuc",
@@ -229,7 +262,7 @@
     "siteUrl": "https://openai-review.maxvideoai.com",
     "authorizationPath": "/oauth/consent",
     "dynamicClientRegistration": false,
-    "registeredOAuthApps": 0,
+    "registeredOAuthApps": 1,
     "redirectUrls": [],
     "accessTokenHook": {
       "schema": "maxvideoai_review_auth",
@@ -272,7 +305,20 @@
       "userDataFromOtherAccountsRead": false,
       "explicitOwnerApproval": true,
       "credentialsInPublicPackage": false,
-      "credentialsEnteredInOpenaiPortal": false
+      "credentialsEnteredInOpenaiPortal": false,
+      "hostedLoginAndSignOutPassed": true,
+      "legalConsentAcceptedWithOwnerApproval": true
+    },
+    "oauthClient": {
+      "id": "324a5cbd-2929-4ba1-82a6-58083f5ccb33",
+      "method": "client_secret_basic",
+      "redirectUris": [
+        "http://127.0.0.1:8766/callback"
+      ],
+      "callbackPurpose": "local diagnostic only",
+      "openaiCallbackKnown": false,
+      "secretStoredLocally": true,
+      "secretSentToOpenAI": false
     }
   },
   "dedicatedHosting": {
@@ -281,7 +327,7 @@
     "sourceFilesOutsideRootDirectory": true,
     "outsideRootSource": "already true in creation response; not changed by refused PATCH",
     "gitLinked": true,
-    "deployed": false,
+    "deployed": true,
     "localGitGuardPrepared": true,
     "localDomainProofPrepared": true,
     "configurationGuardDoesNotCertifyPermissionsOrCosts": true,
@@ -308,7 +354,26 @@
       "firstHostingBudgetEUR": 1,
       "includedInTotalBudgetEUR": 20
     },
-    "productionBranch": "codex/openai-directory-20261111"
+    "productionBranch": "codex/openai-directory-20261111",
+    "cronsEnabled": false,
+    "domains": [
+      "openai-review.maxvideoai.com",
+      "openai-mcp.maxvideoai.com"
+    ],
+    "deployment": {
+      "id": "dpl_83goM2ssi7ZwKTqCf4uJup52jFXY",
+      "state": "READY",
+      "source": "git",
+      "sha": "5312a21fa05ed6bd0f85f08bca4970b6e5be1f8d",
+      "target": "production of dedicated project only"
+    },
+    "projectLevelBuildIsolation": {
+      "registered": true,
+      "buildBranch": "codex/openai-directory-20261111",
+      "otherRefs": "skip",
+      "mainAttemptId": "dpl_BqQ7E43D5P4MSKVbX7GuxVJ7yPhx",
+      "mainAttemptState": "CANCELED"
+    }
   },
   "dedicatedStorage": {
     "checkedAt": "2026-11-11T14:17:16.897109+00:00",
@@ -336,8 +401,8 @@
   "dedicatedDatabase": {
     "projectId": "lingering-glade-93540258",
     "endpointId": "ep-orange-lake-b2yfb7ss",
-    "disabled": false,
-    "state": "enabled for bounded hosting qualification",
+    "disabled": true,
+    "state": "idle",
     "computeCU": 0.25,
     "idleSuspendSeconds": 300,
     "connectionStringPrepared": true,
@@ -371,6 +436,29 @@
       "seconds": 404,
       "indicativeComputeUSD": 0.002974,
       "invoice": false
+    },
+    "lastPausedAt": "2026-11-11T16:30:00Z",
+    "hostedTestWindow": {
+      "enabledAt": "2026-11-11T16:06:30Z",
+      "disabledAt": "2026-11-11T16:30:00Z",
+      "computeCU": 0.25,
+      "estimatedMaximumComputeUSD": 0.0104
     }
+  },
+  "latestMainObservedThroughCoordinatedDeployment": "c501acf9ed4e139914a7502c8b3498ce758d59c8",
+  "baseVerifiedAgainstRemoteMainAt": "2026-11-11 before PR #646",
+  "candidateIncludesLatestMain": false,
+  "firstHostingBudget": {
+    "capEUR": 1,
+    "includedInTotalEUR": 20,
+    "buildMinutes": 8.79053,
+    "estimatedBuildUSD": 0.06154,
+    "billingReconciled": false,
+    "excludes": [
+      "storage",
+      "requests",
+      "functions"
+    ],
+    "paidGenerations": 0
   }
 }
