@@ -9,9 +9,9 @@
 - [Ouvrir le brouillon](https://platform.openai.com/plugins/manage/plugin_asdk_app_6af4711f72f08191bf141a80553b9c9d?tab=details&version=appsub_6af4711f73788191b4b0e16925c30444).
 - SHA-256 du ZIP envoyé : `4e7469d566f5e4890d07cee72526506004a2deb82cc7e6b0925697137516e4d8`.
 - Statuts observés : **Draft**, **Not submitted**, **Not published**.
-- Métadonnées : **No findings**. À 14 h 50 Europe/Madrid, les skills `generate`
-  et `plan` restent **Checking**, « 0 of 2 skills checked ». Ce statut ne signifie
-  ni validation ni rejet. Aucun scan d'outils MCP n'a été effectué.
+- Métadonnées : **No findings**. Après leur statut initial « Checking », les deux
+  skills `generate` et `plan` affichent maintenant **Checks passed**, vérifié dans
+  Chrome le 11 novembre. Aucun scan d'outils MCP n'a encore été effectué.
 - Formulaire de revue : cinq scénarios positifs et trois négatifs reconnus comme
   complets, traductions FR/ES et notes de version importées. « Complets » décrit
   les champs du formulaire ; ces scénarios restent à exécuter sur le compte dédié.
@@ -22,6 +22,7 @@ Le ZIP contient uniquement les fichiers publics prévus, sans clés ni accès re
 L'import ne vaut ni revue humaine, ni publication, ni preuve de fonctionnement MCP.
 La capture et le relevé DOM sont conservés sous
 `.local/openai-directory-20261111/portal/draft-created.jpg` et `draft-snapshot.txt`.
+Le résultat ultérieur des skills figure dans `skills-passed.jpg` et `skills-passed.txt`.
 
 ## Raccordement demandé par le portail
 
@@ -36,6 +37,9 @@ Il devra être servi en texte brut à
 `https://openai-mcp.maxvideoai.com/.well-known/openai-apps-challenge` sur le seul
 hébergement dédié. Aucun challenge du domaine principal ou d'une autre app ne
 doit être remplacé. Aucun changement DNS ou publication HTTP n'a été effectué.
+La route est maintenant implémentée et vérifiée dans le build local : 200 avec le
+jeton exact sur le domaine dédié, 404 sur les hôtes habituels et en cas de faux
+`X-Forwarded-Host`. Le challenge réel reste à configurer sur l'hébergement dédié.
 
 La documentation actuelle ne permet pas de changer librement l'URL du serveur
 dans le flux de mise à jour : le brouillon a donc bien conservé le domaine final,

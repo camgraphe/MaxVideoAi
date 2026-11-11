@@ -125,6 +125,41 @@ the live premerge check and cross-task coordination therefore remain necessary.
 Stronger enforcement requires separately approved Vercel roles/permissions; this
 change does not modify account access or credentials.
 
+### Dedicated OpenAI qualification candidate (2026-11-11)
+
+`frontend/config/openai-review-environment.json` owns the exact dedicated project,
+Git branch, Auth URL, Neon endpoint and S3 bucket for this candidate. This is a
+separate Git-backed delivery path, not an exception for the public production
+project. Its Vercel `production` environment means the test project's runtime.
+
+`frontend/vercel.json` runs `scripts/ignore-openai-review-build.mjs` from the
+frontend root. It skips this review branch on all other projects and skips other
+branches on the dedicated project (exit 0 = skip; exit 1 = continue). Other
+branches/projects retain their existing build behavior. Prebuild independently
+rejects the review branch on a wrong project, including normal Preview builds,
+even if the ignored-build step is bypassed.
+
+The prebuild guard additionally requires exact dedicated Auth/DB/storage origins,
+host-only cookies, required credentials, PostgreSQL TLS and a Git SHA. Live Stripe,
+usual analytics, SMTP and Slack bindings are rejected. It never reads credentials
+from another project or connects to a database. These checks validate configuration,
+not credential validity, IAM permissions, workers, provider funding or total cost.
+Verify those before activation; no feature is removed to satisfy the guard.
+
+The dedicated domain proof route `/.well-known/openai-apps-challenge` serves the
+configured public challenge only on the exact directory host, project and profile.
+It does not require MCP tools to be enabled. Keep the challenge in the dedicated
+project environment (`MCP_OPENAI_DOMAIN_VERIFICATION_TOKEN`), not the plugin ZIP.
+
+Before the first push, commit and verify both build guards. Before connecting the
+dedicated Git project, complete its resource configuration and cost review. Never
+copy the usual project's environment. Normal production releases still follow
+the PR/Quality CI/main sequence above. No project setting or deployment is changed
+by these local files alone.
+
+Focused coverage: `tests/openai-review-environment.test.ts`,
+`tests/openai-domain-challenge.test.ts`, `tests/production-deployment-policy.test.ts`.
+
 ## Exceptions and recovery
 
 A generic instruction such as “deploy” uses the GitHub path. Direct production
@@ -146,5 +181,7 @@ No recurring exception or bypass is created by this recovery.
 
 - [Vercel Git integration](https://vercel.com/docs/git)
 - [System environment variables](https://vercel.com/docs/environment-variables/system-environment-variables)
+- [Ignored build step and its exit convention](https://vercel.com/docs/project-configuration/project-settings#ignored-build-step)
+- [Project JSON configuration](https://vercel.com/docs/project-configuration/vercel-json)
 - [Deployment CLI](https://vercel.com/docs/cli/deploy)
 - [Roles and production deployment access](https://vercel.com/docs/rbac/access-roles)

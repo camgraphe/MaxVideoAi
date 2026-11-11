@@ -1,22 +1,27 @@
 # Preparation locale uniquement. Ne pas charger dans le checkout Desktop.
-# Canevas de raccordement, pas une attestation ni un garde deploiement.
-# Aucun secret ni ressource reelle; remplir les bindings dedies apres autorisation.
+# Canevas de raccordement, pas une attestation d'isolation ou de fonctionnement.
+# Identifiants publics dedies verifies; aucun secret. Le prebuild les controle.
+# Vercel fournit ses variables systeme automatiquement: ne pas les fabriquer.
+# Projet attendu: prj_UCIR8ODoPEK3bLF30ID94gvyDs5C, branche codex/openai-directory-20261111.
 # NODE_ENV est gere par le build Next. Production designe ici le runtime du projet d'essai.
 MCP_OPENAI_DIRECTORY_DEPLOYMENT_PROFILE=dedicated-qualification
 MCP_API_HOST=openai-review.maxvideoai.com
 MCP_RESOURCE_URL=https://openai-review.maxvideoai.com/mcp
 MCP_OPENAI_DIRECTORY_ENABLED=false
+# Jeton public fourni par le portail OpenAI, absent du ZIP et du depot Git.
+MCP_OPENAI_DOMAIN_VERIFICATION_TOKEN=
 NEXT_PUBLIC_SITE_URL=https://openai-review.maxvideoai.com
 SUPABASE_SITE_URL=https://openai-review.maxvideoai.com
 # Cookies host-only. Ne pas reprendre .maxvideoai.com de l'application principale.
 COOKIE_DOMAIN=
 NEXT_PUBLIC_COOKIE_DOMAIN=
-NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_URL=https://ajwofjldwawdwtioekuc.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 DATABASE_URL=
-S3_BUCKET=
-S3_REGION=
+# DATABASE_URL: endpoint ep-orange-lake-b2yfb7ss (direct ou pooler), sslmode=require.
+S3_BUCKET=maxvideoai-openai-review-20261008-5c187a87
+S3_REGION=eu-central-1
 S3_PUBLIC_BASE_URL=
 S3_ACCESS_KEY_ID=
 S3_SECRET_ACCESS_KEY=

@@ -73,6 +73,20 @@
       "termsFrench": "18+ clause and version visible",
       "signupEnglish": "18+ checkbox visible and initially unchecked",
       "liveSignupExecuted": false
+    },
+    "dedicatedBuildAndDomainProof": {
+      "passed": 19,
+      "failed": 0,
+      "normalPreviewBranchRefusal": true,
+      "configurationOnly": true
+    },
+    "localDomainChallengeHttp": {
+      "passed": 4,
+      "failed": 0,
+      "externalDatabaseUsed": false,
+      "scope": "exact body on dedicated host; 404 normal/local hosts and forwarded-host spoof",
+      "transport": "node:http explicit Host",
+      "unrelatedAuthRouteWarning": "server without Auth keys reported missing Supabase env; authenticated routes were not qualified"
     }
   },
   "archive": {
@@ -129,8 +143,8 @@
     "18+ eligibility implemented locally; no deployment or hosted migration. This is self-attestation, not documentary age verification.",
     "Applicable account-specific direct-provider clauses still require alignment with the routes used for qualification.",
     "Current-main account-deletion request behavior retained; full account erasure not executed.",
-    "Publisher identity is verified and ZIP 0.3.13 is uploaded as a draft. Metadata has no findings; skills are still checking. Domain/OAuth setup, hosted qualification and review evidence remain incomplete.",
-    "Vercel sourceFilesOutsideRootDirectory enablement was rejected by automatic approval review and was not applied."
+    "Publisher identity is verified and ZIP 0.3.13 is uploaded as a draft. Metadata has no findings; both skills passed. Domain/OAuth setup, hosted qualification and review evidence remain incomplete.",
+    "Vercel sourceFilesOutsideRootDirectory PATCH was rejected and not applied; creation response and current read confirm it was already true by default. No further change needed."
   ],
   "portal": {
     "browser": "Chrome",
@@ -155,8 +169,8 @@
     "publicationStatus": "Not published",
     "metadataStatus": "No findings",
     "skillsStatus": {
-      "generate": "Checking",
-      "plan": "Checking"
+      "generate": "Checks passed",
+      "plan": "Checks passed"
     },
     "mcpConfiguration": "Configuration incomplete",
     "domainVerified": false,
@@ -177,6 +191,41 @@
       "realScenariosExecuted": false
     },
     "draftStatusCheckedAt": "2026-11-11T14:50:00+01:00",
-    "draftUrl": "https://platform.openai.com/plugins/manage/plugin_asdk_app_6af4711f72f08191bf141a80553b9c9d?tab=details&version=appsub_6af4711f73788191b4b0e16925c30444"
+    "draftUrl": "https://platform.openai.com/plugins/manage/plugin_asdk_app_6af4711f72f08191bf141a80553b9c9d?tab=details&version=appsub_6af4711f73788191b4b0e16925c30444",
+    "skillsStatusVerifiedInPortal": true,
+    "skillsEvidence": ".local/openai-directory-20261111/portal/skills-passed.jpg"
+  },
+  "dedicatedAuth": {
+    "projectId": "ajwofjldwawdwtioekuc",
+    "status": "ACTIVE_HEALTHY",
+    "plan": "Free",
+    "oauthServerEnabled": true,
+    "siteUrl": "https://openai-review.maxvideoai.com",
+    "authorizationPath": "/oauth/consent",
+    "dynamicClientRegistration": false,
+    "registeredOAuthApps": 0,
+    "redirectUrls": [],
+    "accessTokenHook": {
+      "schema": "maxvideoai_review_auth",
+      "function": "custom_access_token_hook",
+      "enabled": false,
+      "allowlistedClients": 0,
+      "authAdminExecute": true,
+      "anonExecute": false,
+      "authenticatedExecute": false
+    },
+    "settingsChangedDuringInspection": false,
+    "sqlReadOnly": true
+  },
+  "dedicatedHosting": {
+    "projectId": "prj_UCIR8ODoPEK3bLF30ID94gvyDs5C",
+    "nodeVersion": "22.x",
+    "sourceFilesOutsideRootDirectory": true,
+    "outsideRootSource": "already true in creation response; not changed by refused PATCH",
+    "gitLinked": false,
+    "deployed": false,
+    "localGitGuardPrepared": true,
+    "localDomainProofPrepared": true,
+    "configurationGuardDoesNotCertifyPermissionsOrCosts": true
   }
 }

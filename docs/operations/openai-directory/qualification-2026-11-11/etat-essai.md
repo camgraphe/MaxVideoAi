@@ -10,9 +10,40 @@
 | Nouveau Vercel `prj_UCIR8ODoPEK3bLF30ID94gvyDs5C` | Projet `maxvideoai-openai-review-20261111` créé par le CLI après refus 403 du connecteur. Node réglé sur 22.x. | Même équipe, fonctions fra1, machine basic, aucune cible, aucun déploiement, aucun lien Git. Aucun secret copié. |
 | Portail OpenAI | Session Chrome existante utilisée ; organisation MaxVideoAI et projet MaxVideoAI visibles. Le propriétaire a effectué la démarche Individual. | Projet en résidence **Global**, vérifié dans les paramètres. Après actualisation, statut **« Verified »**, constaté vers 14 h 40 Europe/Madrid : identité validée. Le contrôle différé est désactivé après ce constat. ZIP 0.3.13 téléversé en brouillon ; métadonnées sans anomalie. Aucune soumission humaine ni publication. Voir [le relevé du dépôt](depot-portail.md). |
 
-Le contrôle automatique a refusé `sourceFilesOutsideRootDirectory: true` car ce
-réglage élargit l'accès aux fichiers du projet. Il n'a pas été appliqué ni contourné.
-La modification Node 22 a été faite séparément, sans ce réglage.
+Le contrôle automatique a refusé la demande de modification
+`sourceFilesOutsideRootDirectory: true` car elle élargirait l'accès aux fichiers du
+projet. Cette demande n'a pas été appliquée. **Correction après relecture : ce
+réglage était déjà `true` par défaut dès la création du projet**, comme l'établissent
+la réponse de création conservée et la lecture actuelle. Il n'y a donc rien à
+activer ni à contourner. Node 22 a été réglé séparément. Le projet daté reste vide.
+
+### Contrôles complémentaires
+
+- Portail : `generate` et `plan` affichent tous deux **Checks passed** ; métadonnées
+  **No findings**. Les éléments incomplets sont le raccordement MCP et les pièces
+  reviewer/vidéo, pas un rejet des skills.
+- Auth dédié, lecture dans Chrome : serveur OAuth actif, Site URL
+  `https://openai-review.maxvideoai.com`, consentement `/oauth/consent`, inscription
+  dynamique désactivée, aucun client OAuth et aucune URL de redirection enregistrés.
+- Le hook `maxvideoai_review_auth.custom_access_token_hook` existe mais est
+  **désactivé**. Lecture SQL ciblée sur le seul projet dédié : liste des clients MCP
+  vide ; droit EXECUTE accordé à `supabase_auth_admin`, refusé à `anon` et
+  `authenticated`. Le code ajoute l'audience du domaine OpenAI uniquement aux
+  clients explicitement listés et au bon issuer ; aucune entrée ni activation
+  effectuée. Il reste à enregistrer le vrai client puis qualifier ses jetons.
+- Le CLI Supabase a refusé la lecture de configuration avec sa session actuelle ;
+  la session Chrome existante a permis les contrôles ci-dessus. Aucun secret extrait.
+- Livraison dédiée préparée localement : registre exact des ressources, garde Git
+  et configuration, branche ignorée sur les autres projets Vercel et route de
+  challenge limitée au domaine/projet dédiés. Voir le guide de déploiement.
+- Vérification : 19 tests ciblés réussis, build complet (1 034 pages statiques),
+  quatre contrôles HTTP locaux réussis pour la nouvelle route. Le serveur local
+  sans clés Auth a signalé leur absence pour une autre route ; cet essai valide
+  uniquement le challenge, pas une session authentifiée.
+
+Ces lectures ne modifient ni les réglages Auth ni une base habituelle. Les gardes
+de build vérifient des bindings ; ils ne certifient pas les permissions IAM, les
+workers ou les coûts. Aucun push, déploiement ou rattachement de domaine effectué.
 
 ## Budget cumulé : 20 € maximum
 
@@ -20,10 +51,13 @@ La consommation Neon retournée pour octobre est de 420 CU-secondes et
 28 583 517 bytes-month de stockage racine. Ce relevé n'est pas une facture finale,
 ne couvre pas les autres services et n'établit pas un solde en euros.
 
-Le connecteur Vercel ne restitue qu'un échantillon de lignes, avec un total toutes
-ressources confondues. Le CLI ne parse pas le JSONL de cet endpoint, y compris en
-mode raw. Aucun total partiel n'est présenté comme le coût du test. Les deux
-projets de test sont vides et n'ont pas lancé de build distant.
+Le premier endpoint Vercel ne restituait pas un relevé exploitable. Le relevé CLI
+`vercel usage --group-by project --from 2026-10-08 --to 2026-11-11 --json` a ensuite
+abouti : aucun groupe facturé au nom des deux projets `openai-review` n'est présent.
+Sa période effective est du 8 octobre 07:00 UTC au 12 novembre 08:00 UTC, selon les
+bornes renvoyées par le CLI. Les frais non attribués et les autres services ne
+permettent toujours pas de conclure à un total historique nul. Les projets de test
+sont vides et n'ont pas lancé de build distant.
 
 Aucune génération, recharge, export Fargate ou activation Neon n'a été lancée.
 L'offre gratuite de l'Auth a été vérifiée avant restauration. Le stockage dédié
@@ -31,15 +65,21 @@ historique existe dans le dossier d'octobre ; son usage/coût actuel n'est pas e
 réconcilié. Conserver la réserve historique de 5 € infrastructure, 10 € démos et
 5 € aléas **dans** le plafond de 20 €, jamais en plus.
 
+La tentative de lecture `ListObjectsV2` du seul bucket dédié, avec ses anciennes
+clés de test locales, a été refusée avant exécution par le contrôle automatique :
+autorisation jugée insuffisamment explicite pour cette source de credentials.
+Une question ciblée est en attente auprès du propriétaire. Aucun accès S3 n'a
+été réalisé et aucune autre méthode n'a été utilisée pour contourner ce refus.
+
 ## Raccordement encore nécessaire
 
-1. Terminer les contrôles du brouillon 0.3.13 déjà téléversé, puis raccorder le
-   domaine et OAuth. L'identité est validée. Le portail ne découvre pas encore
+1. Raccorder le domaine et OAuth du brouillon 0.3.13. Identité, métadonnées et skills
+   sont validés. Le portail ne découvre pas encore
    les métadonnées OAuth et le domaine est non vérifié. Relever le callback exact
    au raccordement ; ne pas l'inventer ni transmettre les secrets dans le ZIP.
-2. Préparer la livraison Git du candidat sans déclencher un environnement relié
-   aux ressources habituelles. Le projet daté est vide ; aucune dérogation à la
-   politique de déploiement de production n'a été ajoutée.
+2. Livrer le candidat par Git au seul projet dédié, après préparation de ses
+   bindings. Les gardes sont préparés et testés localement ; le projet daté reste
+   vide. La politique de livraison de l'application de production reste inchangée.
 3. Raccorder seulement les secrets, Auth, base, stockage et workers dédiés ;
    actualiser le registre des capacités sur les routes effectivement disponibles.
    L'ancien fichier de préparation contient encore des clés fournisseur vides,
