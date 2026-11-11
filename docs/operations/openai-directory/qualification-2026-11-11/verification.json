@@ -227,5 +227,21 @@
     "localGitGuardPrepared": true,
     "localDomainProofPrepared": true,
     "configurationGuardDoesNotCertifyPermissionsOrCosts": true
+  },
+  "dedicatedStorage": {
+    "checkedAt": "2026-11-11T14:17:16.897109+00:00",
+    "bucket": "maxvideoai-openai-review-20261008-5c187a87",
+    "keyCount": 0,
+    "truncated": false,
+    "returnedBytes": 0,
+    "objectsRead": false,
+    "objectsWritten": false,
+    "scope": "dedicated web IAM credentials; ListObjectsV2 metadata only",
+    "authorization": "explicit owner approval in this chat on 2026-11-11",
+    "completeInventory": true,
+    "historicalSpendReconciled": false,
+    "otherBucketsAccessed": false,
+    "writePermissionsTested": false,
+    "workerCredentialsTested": false
   }
 }

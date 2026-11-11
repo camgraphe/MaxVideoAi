@@ -60,16 +60,22 @@ permettent toujours pas de conclure à un total historique nul. Les projets de t
 sont vides et n'ont pas lancé de build distant.
 
 Aucune génération, recharge, export Fargate ou activation Neon n'a été lancée.
-L'offre gratuite de l'Auth a été vérifiée avant restauration. Le stockage dédié
-historique existe dans le dossier d'octobre ; son usage/coût actuel n'est pas encore
-réconcilié. Conserver la réserve historique de 5 € infrastructure, 10 € démos et
+L'offre gratuite de l'Auth a été vérifiée avant restauration. L'inventaire du
+stockage dédié a été vérifié le 11 novembre à 15 h 17 Europe/Madrid : **0 objet,
+0 octet**, résultat non tronqué. Cet état actuel ne constitue pas une facture
+historique. Conserver la réserve historique de 5 € infrastructure, 10 € démos et
 5 € aléas **dans** le plafond de 20 €, jamais en plus.
 
 La tentative de lecture `ListObjectsV2` du seul bucket dédié, avec ses anciennes
 clés de test locales, a été refusée avant exécution par le contrôle automatique :
 autorisation jugée insuffisamment explicite pour cette source de credentials.
-Une question ciblée est en attente auprès du propriétaire. Aucun accès S3 n'a
-été réalisé et aucune autre méthode n'a été utilisée pour contourner ce refus.
+Après autorisation explicite du propriétaire, cette même lecture a abouti avec
+les clés du seul utilisateur `maxvideoai-openai-review-web-20261008`, le propriétaire
+AWS attendu et l'endpoint S3 de Francfort. Aucun contenu de média lu, aucun objet
+écrit, aucun autre bucket consulté. Le relevé sans secrets est conservé dans
+`.local/openai-directory-20261111/evidence/s3-dedicated-current.json`. Cela vérifie
+l'accès en lecture d'inventaire ; les écritures, les accès worker et les permissions
+sur d'autres ressources n'ont pas été testés.
 
 ## Raccordement encore nécessaire
 
