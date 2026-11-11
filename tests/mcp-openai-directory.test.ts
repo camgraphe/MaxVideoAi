@@ -65,6 +65,23 @@ function payload(result: Awaited<ReturnType<Client['callTool']>>) {
   return value;
 }
 
+test('directory output schema accepts successful export confirmations as well as errors', async () => {
+  for (const profile of ['direct', 'openai-directory'] as const) {
+    let calls = 0;
+    const accepted = {ok: true as const, export: {id: 'owned-export', status: 'queued' as const, progress: 0, message: null, artifact: null}, reused: false};
+    const c = await connected(profile, {studioExports: true}, {
+      confirmStudioExport: async () => { calls++; return accepted; },
+    });
+    try {
+      await c.client.listTools(); // The SDK caches output validators during discovery.
+      const result = await c.client.callTool({name: 'confirm_studio_export', arguments: {projectId: 'project', quoteId, confirmed: true}});
+      assert.equal(result.isError, undefined);
+      assert.deepEqual(payload(result), accepted);
+      assert.equal(calls, 1, 'One accepted confirmation must not appear failed to the SDK client.');
+    } finally { await c.close(); }
+  }
+});
+
 test('directory profile exposes generation and recovery without a purchase tool, even with other gates open', async (t) => {
   const c = await connected('openai-directory', { referenceUploads: true, audioGeneration: true, montagePreparation: true, studioMontageCreation: true, studioTimelineEditing: true, studioExports: true });
   try {
@@ -343,6 +360,7 @@ test('directory Audio and Studio exports stop on insufficient entitlements witho
   for (const profile of ['direct', 'openai-directory'] as const) {
     const c = await connected(profile, { audioGeneration: true, studioExports: true }, { prepareAudioGeneration: failure, confirmAudioGeneration: failure, prepareStudioExport: failure, confirmStudioExport: failure });
     try {
+      if (profile === 'openai-directory') await c.client.listTools();
       for (const [name, args] of cases) {
         const result = await c.client.callTool({ name, arguments: args });
         assert.equal(result.isError, true);

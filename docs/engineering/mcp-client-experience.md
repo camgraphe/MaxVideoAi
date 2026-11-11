@@ -978,3 +978,19 @@ The 69 focused checks pass; MCP client checks report 214 passing, one skipped an
 exposure lint passes. Tool descriptors, schemas and instruction byte budgets are
 unchanged. This local result does not establish ChatGPT host presentation or
 OpenAI acceptance; hosted qualification is recorded in the dated review dossier.
+
+### 2026-11-11 — accepted export response schema
+
+The directory error-output projection now unions overlapping root property
+schemas instead of replacing the success property with the failure property.
+Previously the root `ok: false` contradicted the success branch's `ok: true`.
+A confirmed export could complete while the SDK rejected its response. The
+regression first discovers tools (which caches the SDK output validators), then
+confirms an injected export once. Both distribution profiles accept the successful
+result; directory entitlement failures remain valid after discovery. The Zod
+success parser and full success/error branches remain strict and unchanged.
+
+Validation: 18 directory contracts; 214 MCP tests pass, one skipped; 70 selection
+scenarios pass. Frontend lint: no errors, seven existing warnings. Exposure lint
+and diff checks pass. Native ChatGPT media checks are recorded separately from
+these deterministic contracts; the existing export is recovered without rerender.

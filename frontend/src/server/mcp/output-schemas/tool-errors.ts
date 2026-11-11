@@ -25,8 +25,17 @@ export function withToolErrorOutput<T extends z.ZodObject>(
   const cached = projected.get(success);
   if (cached) return cached as T;
   const successJson = z.toJSONSchema(success);
+  const properties = { ...successJson.properties };
+  for (const [name, failureProperty] of Object.entries(failureJson.properties ?? {})) {
+    const successProperty = properties[name];
+    // Root properties apply alongside anyOf. A failure's `ok: false` must not
+    // override a successful confirmation's `ok: true` before branch validation.
+    properties[name] = successProperty
+      ? { anyOf: [successProperty, failureProperty] }
+      : failureProperty;
+  }
   const result = success.meta({
-    properties: { ...successJson.properties, ...failureJson.properties },
+    properties,
     required: [],
     additionalProperties: true,
     anyOf: [successJson, failureJson],
