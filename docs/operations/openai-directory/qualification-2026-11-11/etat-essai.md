@@ -1,5 +1,7 @@
 # Essai OpenAI — journal du 11 novembre 2026
 
+> État actualisé de cette session : [qualification médias et ChatGPT](qualification-medias-et-chatgpt.md). Les constats datés ci-dessous restent historiques.
+
 **État courant : brouillon OpenAI Configured / Authorized, 42 outils et trois
 remarques génériques audio. Trois générations dédiées terminées ; worker AWS
 créé et probe réussi. Aucun dépôt en revue ni publication.**

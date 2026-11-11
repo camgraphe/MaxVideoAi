@@ -1,5 +1,7 @@
 # Brouillon OpenAI — 11 novembre 2026
 
+> État actualisé de cette session : [qualification médias et ChatGPT](qualification-medias-et-chatgpt.md). Les constats datés ci-dessous restent historiques.
+
 ## État actuel
 
 - Organisation/projet MaxVideoAI, résidence Global, identité Individual vérifiée.

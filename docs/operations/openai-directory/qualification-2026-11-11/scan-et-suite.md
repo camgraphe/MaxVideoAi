@@ -1,5 +1,7 @@
 # Scan OpenAI et suite — 11 novembre 2026
 
+> État actualisé de cette session : [qualification médias et ChatGPT](qualification-medias-et-chatgpt.md). Les constats datés ci-dessous restent historiques.
+
 OAuth est établi sur le compte fictif du seul environnement dédié. Le portail
 reconnaît 42 outils (41 publics, téléchargement privé pour l'interface), affiche
 Authorized, Configured et le domaine vérifié après le nouveau scan à 18:27 UTC. Aucun outil n'a été exécuté pour
