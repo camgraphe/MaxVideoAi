@@ -1,3 +1,6 @@
+> État le plus récent : [candidat 0.3.19 et scénarios restants](paquet-final-et-scenarios.md).
+> Le brouillon final est distinct du brouillon de diagnostic ; aucune soumission.
+
 # Qualification des médias et de ChatGPT — 11 novembre 2026
 
 Ce relevé complète les journaux antérieurs. Branche seule :
@@ -119,8 +122,9 @@ et la base est suspendue entre essais. Aucun accès reviewer envoyé aujourd'hui
 
 La matrice étendue n'est pas certifiée entièrement : import privé/Recast,
 transcription/correction de sous-titres/burn-in et sélection des skills restent à
-qualifier selon les scénarios revendiqués. La transcription utilise Fal mais
-exige son propre lanceur de worker, distinct de l'export Studio préparé ici.
+qualifier selon les scénarios revendiqués. Correction vérifiée le 11 novembre : la transcription utilise Fal et le même
+lanceur générique que l'export Studio. Le worker de test doit recevoir la clé
+Fal dédiée ; aucun nouveau réseau ou service permanent n'est nécessaire.
 Aucune nouvelle génération ou tâche payante n'est autorisée implicitement par
 la connexion personnelle. Ne pas présenter le bouton « complete » des champs de
 scénarios du portail comme la réussite de ces scénarios.

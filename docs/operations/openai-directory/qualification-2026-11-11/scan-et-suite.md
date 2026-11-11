@@ -1,3 +1,6 @@
+> État le plus récent : [candidat 0.3.19 et scénarios restants](paquet-final-et-scenarios.md).
+> Le brouillon final est distinct du brouillon de diagnostic ; aucune soumission.
+
 # Scan OpenAI et suite — 11 novembre 2026
 
 > État actualisé de cette session : [qualification médias et ChatGPT](qualification-medias-et-chatgpt.md). Les constats datés ci-dessous restent historiques.

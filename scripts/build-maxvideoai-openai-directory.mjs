@@ -49,6 +49,11 @@ function main() {
     || config.interface.shortDescription.length > 30) {
     throw new Error('Invalid OpenAI directory candidate metadata.');
   }
+  if (!config.publication || Array.isArray(config.publication)
+    || Object.keys(config.publication).some((key) => !['release_notes', 'translations'].includes(key))
+    || typeof config.publication.release_notes !== 'string' || !config.publication.release_notes.trim()) {
+    throw new Error('Invalid publication metadata: use release_notes and optional translations.');
+  }
   if (config.oauthClient !== undefined && (
     !config.oauthClient || Array.isArray(config.oauthClient)
     || Object.keys(config.oauthClient).sort().join(',') !== 'clientId,mode,tokenEndpointAuthMethod'
@@ -57,6 +62,10 @@ function main() {
     || !/^[A-Za-z0-9._-]{1,256}$/.test(config.oauthClient.clientId)
     || !['none', 'client_secret_basic', 'client_secret_post'].includes(config.oauthClient.tokenEndpointAuthMethod)
   )) throw new Error('Invalid public OAuth client configuration; credentials never belong in the package.');
+  if (config.packageName !== undefined && (typeof config.packageName !== 'string'
+    || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(config.packageName) || config.packageName.length > 64)) {
+    throw new Error('Invalid directory package name.');
+  }
   // Reuse the release builder's full-source secret, asset, version, symlink and
   // output ownership checks. Nothing is uploaded or deployed by either builder.
   const genericSource = JSON.parse(execFileSync(process.execPath, [
@@ -82,7 +91,7 @@ function main() {
   const { name, description, author, homepage, repository, license, keywords } = base;
   const manifest = {
     $schema: 'https://agent-plugins.org/schemas/1.0.0/plugin.schema.json',
-    name, version: config.version, description, author, homepage, repository, license, keywords,
+    name: config.packageName ?? name, version: config.version, description, author, homepage, repository, license, keywords,
     extensions: { 'com.openai': {
       interface: { ...base.interface, ...config.interface },
       review: config.review, publication: config.publication,
@@ -221,7 +230,7 @@ function main() {
       'Deploy and verify the reviewed server profile on the final HTTPS endpoint before uploading this package.',
       'Verify publisher identity, current project eligibility/residency requirements, organization roles and the actual domain challenge.',
       'Run the five positive and three negative scenarios in each claimed real host with a seeded review account.',
-      'Add a real accessible demo_recording_url to the authored review metadata and rebuild.',
+      'Provide a real accessible walkthrough URL in portal Review details, or author a public demo_recording_url and rebuild; never embed private signed URLs or reviewer credentials in the archive.',
       'Apply the standard terms for the actual provider routes, address explicit restrictions, and finalize privacy and reviewer access. Bespoke signed provider contracts are not assumed.',
     ],
     genericSourcePackage: { ...genericSource, publicationStatus: 'not-attested-by-local-builder' },
