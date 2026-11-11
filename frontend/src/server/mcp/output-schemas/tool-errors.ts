@@ -12,6 +12,8 @@ const toolFailure = z.object({
 }).passthrough();
 const failureJson = z.toJSONSchema(toolFailure);
 const projected = new WeakMap<z.ZodObject, z.ZodObject>();
+const objectSchema = (schema: z.core.JSONSchema._JSONSchema): z.core.JSONSchema.JSONSchema =>
+  typeof schema === 'boolean' ? (schema ? {} : { not: {} }) : schema;
 
 /** Keep server success validation strict, while advertising both wire results.
  * SDK clients validate structuredContent even when isError is true. Zod metadata
@@ -30,8 +32,8 @@ export function withToolErrorOutput<T extends z.ZodObject>(
     const successProperty = properties[name];
     // Root properties apply alongside anyOf. A failure's `ok: false` must not
     // override a successful confirmation's `ok: true` before branch validation.
-    properties[name] = successProperty
-      ? { anyOf: [successProperty, failureProperty] }
+    properties[name] = successProperty !== undefined
+      ? { anyOf: [objectSchema(successProperty), objectSchema(failureProperty)] }
       : failureProperty;
   }
   const result = success.meta({
