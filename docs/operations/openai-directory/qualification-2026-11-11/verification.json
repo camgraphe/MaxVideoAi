@@ -280,7 +280,7 @@
     "nodeVersion": "22.x",
     "sourceFilesOutsideRootDirectory": true,
     "outsideRootSource": "already true in creation response; not changed by refused PATCH",
-    "gitLinked": false,
+    "gitLinked": true,
     "deployed": false,
     "localGitGuardPrepared": true,
     "localDomainProofPrepared": true,
@@ -294,20 +294,21 @@
       "publicValuesMatchPreparedPayload": true,
       "secretValuesReadBack": false,
       "target": "production of dedicated test project",
-      "gitLinked": false,
+      "gitLinked": true,
       "deploymentTargets": 0,
-      "directoryChannelEnabled": false,
+      "directoryChannelEnabled": true,
       "normalProjectAccessed": false,
       "newInternalSecrets": 8
     },
     "gitLinkApproval": {
-      "status": "pending owner approval",
-      "attemptExecuted": false,
+      "status": "explicit owner approval received",
+      "attemptExecuted": true,
       "reason": "Automatic approval review rejected persistent GitHub repository access and possible automatic deployments",
       "exactProject": "prj_UCIR8ODoPEK3bLF30ID94gvyDs5C",
       "firstHostingBudgetEUR": 1,
       "includedInTotalBudgetEUR": 20
-    }
+    },
+    "productionBranch": "codex/openai-directory-20261111"
   },
   "dedicatedStorage": {
     "checkedAt": "2026-11-11T14:17:16.897109+00:00",
@@ -335,8 +336,8 @@
   "dedicatedDatabase": {
     "projectId": "lingering-glade-93540258",
     "endpointId": "ep-orange-lake-b2yfb7ss",
-    "disabled": true,
-    "state": "idle",
+    "disabled": false,
+    "state": "enabled for bounded hosting qualification",
     "computeCU": 0.25,
     "idleSuspendSeconds": 300,
     "connectionStringPrepared": true,

@@ -75,3 +75,14 @@ GitHub → projet Vercel dédié avant exécution, pour l'accès persistant au d
 et les déclenchements automatiques possibles. Accord ciblé demandé ; aucun lien,
 déploiement ou enregistrement DNS créé. Le plafond proposé pour ce premier essai
 est de 1 € dans les 20 € totaux. Ne pas relancer le lien sans la réponse.
+
+## Accord reçu et préparation du build
+
+Le propriétaire a autorisé explicitement le lien Git, le déploiement de cette
+branche et les deux sous-domaines pour HTTPS/OAuth, dans 1 € inclus dans les 20 €.
+Le seul projet Vercel dédié est maintenant relié à `camgraphe/MaxVideoAi` et son
+suivi de branche est `codex/openai-directory-20261111`, vérifié dans le portail.
+La base dédiée est réactivée à 0,25 CU fixe pour cet essai et le canal MCP dédié
+est ouvert pour les métadonnées/OAuth. Les clés fournisseurs ne sont pas
+raccordées ; aucune génération ni soumission OpenAI n'est autorisée dans ce lot.
+Le push de ce relevé déclenche le premier build Git sur le projet dédié.
