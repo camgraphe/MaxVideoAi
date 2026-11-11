@@ -1,13 +1,18 @@
 # Essai OpenAI — journal du 11 novembre 2026
 
+Suite à 15 h 58 : la base et les secrets internes sont préparés. Voir le
+[relevé de mise à niveau et le premier hébergement prévu](base-et-premier-hebergement.md).
+Les contrôles initiaux ci-dessous sont conservés comme historique ; le tableau
+et `verification.json` portent l'état courant.
+
 ## Actions effectuées
 
 | Ressource | Vérification / action | État |
 | --- | --- | --- |
 | Supabase Auth `ajwofjldwawdwtioekuc` | Offre de l'organisation vérifiée : Free. Restauration du seul projet « MaxVideoAI OpenAI Review ». Puis création explicite du compte reviewer fictif. | `ACTIVE_HEALTHY`, eu-central-1. Découverte OAuth publique répond ; PKCE S256 annoncé. Mot de passe du compte test validé et session fermée. Aucun client OAuth ni nouvelle clé API créé. |
-| Neon `lingering-glade-93540258` | Inventaire et consommation lus. | Endpoint `ep-orange-lake-b2yfb7ss` désactivé, région eu-central-1. Aucune requête SQL ni activation. |
+| Neon `lingering-glade-93540258` | Schéma dédié inspecté puis mis à niveau avec 33 migrations ; exports Studio initialisés. | 138 tables, connexion poolée vérifiée, endpoint remis en pause (`disabled: true`, `idle`). Aucune base habituelle accédée. |
 | Ancien Vercel `prj_p6neENhzOIYsCXIPU2EvnUCJiORp` | Le connecteur renvoyait 404 ; le CLI authentifié confirme son existence dans la bonne équipe. | Vide, aucun déploiement ni lien Git. Inchangé. Le 404 ne prouvait pas sa suppression. |
-| Nouveau Vercel `prj_UCIR8ODoPEK3bLF30ID94gvyDs5C` | Projet `maxvideoai-openai-review-20261111` créé par le CLI après refus 403 du connecteur. Node réglé sur 22.x. Puis 28 variables dédiées installées après accord explicite. | Même équipe, fonctions fra1, machine basic, aucune cible, aucun déploiement, aucun lien Git. Quatre secrets dédiés protégés ; aucun secret de production copié. |
+| Nouveau Vercel `prj_UCIR8ODoPEK3bLF30ID94gvyDs5C` | Projet `maxvideoai-openai-review-20261111` créé par le CLI après refus 403 du connecteur. Node réglé sur 22.x. Puis accès dédiés et secrets internes installés. | Même équipe, fonctions fra1, machine basic, aucune cible, aucun déploiement, aucun lien Git. 36 variables dont 12 secrets protégés ; aucun secret de production copié. |
 | Portail OpenAI | Session Chrome existante utilisée ; organisation MaxVideoAI et projet MaxVideoAI visibles. Le propriétaire a effectué la démarche Individual. | Projet en résidence **Global**, vérifié dans les paramètres. Après actualisation, statut **« Verified »**, constaté vers 14 h 40 Europe/Madrid : identité validée. Le contrôle différé est désactivé après ce constat. ZIP 0.3.13 téléversé en brouillon ; métadonnées sans anomalie. Aucune soumission humaine ni publication. Voir [le relevé du dépôt](depot-portail.md). |
 
 Le contrôle automatique a refusé la demande de modification
@@ -117,7 +122,7 @@ bornes renvoyées par le CLI. Les frais non attribués et les autres services ne
 permettent toujours pas de conclure à un total historique nul. Les projets de test
 sont vides et n'ont pas lancé de build distant.
 
-Aucune génération, recharge, export Fargate ou activation Neon n'a été lancée.
+Aucune génération, recharge ou export Fargate n'a été lancé. La courte activation Neon pour les migrations est relevée ci-dessous.
 L'offre gratuite de l'Auth a été vérifiée avant restauration. L'inventaire du
 stockage dédié a été vérifié le 11 novembre à 15 h 17 Europe/Madrid : **0 objet,
 0 octet**, résultat non tronqué. Cet état actuel ne constitue pas une facture
@@ -144,10 +149,10 @@ sur d'autres ressources n'ont pas été testés.
 2. Livrer le candidat par Git au seul projet dédié, après préparation de ses
    bindings. Les gardes sont préparés et testés localement ; le projet daté reste
    vide. La politique de livraison de l'application de production reste inchangée.
-3. Compléter les secrets de fonctionnement, fournisseurs et workers dédiés ;
+3. Compléter les accès fournisseurs et workers dédiés ;
    actualiser le registre des capacités sur les routes effectivement disponibles.
    Les accès Auth, base et stockage sont maintenant configurés sur le nouveau
-   projet. Les clés fournisseur, secrets applicatifs et bindings workers restent
+   projet. Les secrets internes sont maintenant installés ; les clés fournisseur et bindings workers restent
    incomplets. Ce n'est pas encore un environnement prêt à générer.
 4. Réconcilier les coûts avant activation payante, puis qualifier HTTPS, client
    OAuth, audience/resource, PKCE, refresh, révocation et reconnexion en réel.

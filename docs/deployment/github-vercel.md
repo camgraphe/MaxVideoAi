@@ -157,6 +157,13 @@ copy the usual project's environment. Normal production releases still follow
 the PR/Quality CI/main sequence above. No project setting or deployment is changed
 by these local files alone.
 
+For the first HTTPS/OAuth qualification, Auth, migrated Neon, storage and internal
+signing secrets are the required resource bindings. Provider/worker qualification
+follows before generation/export claims or submission; it is not established by
+this first hosted phase. Record the dedicated project's cron state and bounded
+test budget before activation. Do not remove tools to represent a partially wired
+environment as a complete reviewer candidate.
+
 Focused coverage: `tests/openai-review-environment.test.ts`,
 `tests/openai-domain-challenge.test.ts`, `tests/production-deployment-policy.test.ts`.
 

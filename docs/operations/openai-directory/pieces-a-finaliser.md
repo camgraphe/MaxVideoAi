@@ -22,7 +22,7 @@ Décision du propriétaire du 11 novembre : service réservé aux adultes de 18 
 - Les comptes qui n'ont que `min_age:15` doivent cocher une nouvelle confirmation. Le booléen historique `age_verified` ne prouve pas la majorité et n'est pas utilisé à cette fin.
 - Les écritures de consentement utilisent l'identité authentifiée. Les inscriptions avec email à confirmer terminent le consentement après connexion. Le choix d'emails facultatifs est conservé comme brouillon dans le même navigateur et peut être corrigé avant sauvegarde ; ce brouillon ne vaut jamais preuve d'âge.
 - Le formulaire OAuth demande la majorité avant d'accorder une nouvelle connexion ; le refus de connexion reste possible sans cocher la case. Une indisponibilité de l'enregistrement empêche l'émission du grant.
-- Migration Neon `99_legal_adult_eligibility.sql` testée sur PostgreSQL 17 jetable ; jamais appliquée aux bases habituelles. Elle ne réécrit aucun consentement historique.
+- Migration Neon `99_legal_adult_eligibility.sql` testée sur PostgreSQL 17 jetable puis appliquée à la base dédiée ; jamais appliquée aux bases habituelles. Elle ne réécrit aucun consentement historique.
 
 Il s'agit d'une attestation explicite, pas d'un contrôle de pièce d'identité ni d'une preuve qu'aucun mineur ne peut mentir. Aucun contrôle d'identité généralisé n'est ajouté par défaut. Les obligations particulières du compte BytePlus restent distinctes.
 

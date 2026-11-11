@@ -87,6 +87,22 @@
       "scope": "exact body on dedicated host; 404 normal/local hosts and forwarded-host spoof",
       "transport": "node:http explicit Host",
       "unrelatedAuthRouteWarning": "server without Auth keys reported missing Supabase env; authenticated routes were not qualified"
+    },
+    "dedicatedSchemaUpgrade": {
+      "localPostgres17TestsPassed": 3,
+      "localTestsFailed": 0,
+      "hostedPostgresVersion": "18.6",
+      "migrationsApplied": 33,
+      "expectedColumnsCompared": 1301,
+      "missingColumns": 0,
+      "columnDefinitionDifferences": 0,
+      "finalTableCount": 138,
+      "timelineExportGuardInstalled": true,
+      "poolerConnectionVerified": true,
+      "jobs": 0,
+      "receipts": 0,
+      "profiles": 0,
+      "consents": 0
     }
   },
   "archive": {
@@ -129,11 +145,11 @@
     "submitted": false,
     "published": false,
     "providerContacted": false,
-    "newPaidOperations": 0,
+    "newPaidOperations": 1,
     "cumulativeSpendReconciled": false,
     "dedicatedAuthRestored": true,
     "dedicatedEmptyHostingProjectCreated": true,
-    "migrationsAppliedToHostedDatabases": false,
+    "migrationsAppliedToHostedDatabases": true,
     "draftUploaded": true,
     "dedicatedHostingEnvironmentConfigured": true,
     "dedicatedSecretsRetrievedAndStoredWithOwnerApproval": true,
@@ -142,8 +158,8 @@
   "limits": [
     "Hosted OAuth and real ChatGPT qualification remain incomplete.",
     "Provider and OAuth grant boundaries used fixtures; no paid generations or reviewer video recorded.",
-    "Core Auth/Neon/S3 credentials are installed on the dedicated project. Provider credentials, application secrets and workers remain incomplete; configuration checks do not qualify runtime behavior.",
-    "18+ eligibility implemented locally; no deployment or hosted migration. This is self-attestation, not documentary age verification.",
+    "Core Auth/Neon/S3 credentials are installed on the dedicated project. Provider credentials and workers remain incomplete; eight internal application secrets are installed; configuration checks do not qualify runtime behavior.",
+    "18+ eligibility implemented on the branch and migration applied to the dedicated database; no deployment. This is self-attestation, not documentary age verification.",
     "Applicable account-specific direct-provider clauses still require alignment with the routes used for qualification.",
     "Current-main account-deletion request behavior retained; full account erasure not executed.",
     "Publisher identity is verified and ZIP 0.3.13 is uploaded as a draft. Metadata has no findings; both skills passed. Domain/OAuth setup, hosted qualification and review evidence remain incomplete.",
@@ -265,8 +281,8 @@
     "environment": {
       "projectId": "prj_UCIR8ODoPEK3bLF30ID94gvyDs5C",
       "projectName": "maxvideoai-openai-review-20261111",
-      "variableCount": 28,
-      "secretCount": 4,
+      "variableCount": 36,
+      "secretCount": 12,
       "configValuesCompared": 24,
       "publicValuesMatchPreparedPayload": true,
       "secretValuesReadBack": false,
@@ -274,7 +290,8 @@
       "gitLinked": false,
       "deploymentTargets": 0,
       "directoryChannelEnabled": false,
-      "normalProjectAccessed": false
+      "normalProjectAccessed": false,
+      "newInternalSecrets": 8
     }
   },
   "dedicatedStorage": {
@@ -308,7 +325,7 @@
     "computeCU": 0.25,
     "idleSuspendSeconds": 300,
     "connectionStringPrepared": true,
-    "sqlConnectionOpened": false,
+    "sqlConnectionOpened": true,
     "costIndication": {
       "projectId": "lingering-glade-93540258",
       "metricTotals": {
@@ -325,7 +342,19 @@
       "vercelMarketplaceBillingReconciled": false,
       "awsHistoricalBillingReconciled": false,
       "periods": "October and November 2026, November incomplete",
-      "activated": false
+      "activated": false,
+      "snapshotBeforeCurrentUpgrade": true
+    },
+    "migrationsApplied": 33,
+    "tables": 138,
+    "poolerVerified": true,
+    "lastUpgradeFinishedAt": "2026-11-11T14:57:38Z",
+    "activationWindow": {
+      "startedAt": "2026-11-11T14:50:54Z",
+      "suspendedAt": "2026-11-11T14:57:38Z",
+      "seconds": 404,
+      "indicativeComputeUSD": 0.002974,
+      "invoice": false
     }
   }
 }
