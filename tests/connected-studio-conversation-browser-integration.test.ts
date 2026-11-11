@@ -49,6 +49,15 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
       await expect(palette).toBeInViewport();
       await expect(menu.getByText('Language',{exact:true})).toBeInViewport();
       assert.equal(await preferences.evaluate(element => !!element.closest('.app-site-dialog-body')),false,'preferences are outside scrolling destinations');
+      const languageTrigger = preferences.getByRole('button',{name:'Change workspace language',exact:true});
+      await languageTrigger.click();
+      const languages = preferences.getByRole('menu');
+      await expect(languages).toBeInViewport({ratio:1});
+      const languageBounds = await languages.boundingBox();
+      const dialogBounds = await menu.boundingBox();
+      assert.ok(languageBounds && dialogBounds && languageBounds.x >= dialogBounds.x && languageBounds.x + languageBounds.width <= dialogBounds.x + dialogBounds.width,'Language options stay inside the dialog clipping bounds.');
+      for (const name of ['English','Français','Español']) await expect(languages.getByRole('menuitemradio',{name,exact:true})).toBeInViewport({ratio:1});
+      await languageTrigger.click();
       await menu.locator('.app-site-dialog-body').evaluate(element => {element.scrollTop = element.scrollHeight;});
       await expect(palette).toBeInViewport();
       await palette.click();
