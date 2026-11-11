@@ -23,8 +23,9 @@ automatique interne à ChatGPT ni la révocation globale du client.
 | Catalogue image filtré `t2i` | Vide : aucun mode exécutable dans cet environnement. |
 | Fiche du premier modèle retourné | Données, guides et liens structurés reçus. |
 | Catalogue audio | Mode `voice_only` publié, route fournisseur indisponible dans le test. |
+| Catalogue des outils créatifs | Réponse structurée reçue ; aucune exécution. |
 | Médias, générations, personnages | Listes vides cohérentes avec le compte neuf. |
-| Comparaison image | Erreur métier `PARAMETER_INVALID / no_matching_scenario`, sans devis ni génération. Défaut de transport découvert et corrigé localement ci-dessous. |
+| Comparaison image | Erreur métier `PARAMETER_INVALID / no_matching_scenario`, sans devis ni génération. Refus métier correctement reçu après la correction hébergée ci-dessous. |
 
 Relecture de la configuration du **seul** projet Vercel dédié : 36 variables,
 aucune clé fournisseur. Les clés webhook/poll Fal existantes ne sont pas une clé
@@ -50,7 +51,15 @@ Validation locale : **27 tests ciblés**, **214 tests MCP / un ignoré** et
 **70 scénarios de sélection** passent ; TypeScript et exposition passent.
 Lint : zéro erreur, sept avertissements préexistants. Les 42 schémas acceptent
 l'erreur complète et refusent une erreur incomplète ; les réussites malformées
-restent rejetées. Livraison dédiée et relecture réelle : en cours.
+restent rejetées. Livraison Git dédiée **b460474d8**, déploiement **dpl_skjVvZDPJJW3fVQ8hhT6PfL6oPYH**, READY. Les deux alias de test pointent sur ce build.
+
+Après déploiement : **dix réponses contrôlées**, huit réussites de lecture et
+deux refus attendus (`PARAMETER_INVALID` pour la comparaison sans fournisseur,
+`JOB_FAILED / Generation not found.` pour un identifiant de test inexistant).
+Aucune erreur de validation SDK ; les 42 schémas hébergés contiennent les deux
+alternatives. Refresh et révocation de session passent à nouveau, les deux
+sessions OpenAI restent inchangées. Le brouillon OpenAI conserve pour l'instant
+sa découverte précédente : reconnecter/redécouvrir avant les essais dans ChatGPT.
 
 ## Suite concrète pour la démonstration
 
@@ -73,10 +82,11 @@ restent rejetées. Livraison dédiée et relecture réelle : en cours.
 
 ## Ressources et preuves
 
-Au 11 novembre à 17:45:46 UTC : **1 profil, 4 consentements, 0 devis de génération,
+Au 11 novembre à 18:00:44 UTC : **1 profil, 4 consentements, 0 devis de génération,
 0 job, 0 reçu**. Aucun fournisseur appelé, crédit ajouté ou paiement effectué.
-Neon dédié remis en pause à 17:46:01 UTC, `disabled: true`, `idle`. Fenêtre
-17:38:22–17:46:01 : borne compute indicative 0,00338 USD, pas une facture.
+Neon dédié remis en pause à **18:00:57 UTC**, `disabled: true`, `idle`. Fenêtres
+17:38:22–17:46:01 et 17:59:35–18:00:57 : bornes compute indicatives respectives
+0,00338 et 0,00061 USD, pas une facture. Les 18 crons restent suspendus.
 
 Preuves privées exclues de Git dans `.local/openai-directory-20261111/evidence/` :
 `oauth-lifecycle-2026-11-11T17-38-32-031Z.json`,
@@ -84,3 +94,8 @@ Preuves privées exclues de Git dans `.local/openai-directory-20261111/evidence/
 `provider-bindings-readiness.json`, `post-lifecycle-counts.json`,
 `output-error-regression-before.log`, `output-error-focused.log`.
 Les jetons de diagnostic sont restés en mémoire et ont été révoqués.
+
+Preuve hébergée finale : `oauth-lifecycle-2026-11-11T17-59-46-367Z.json`,
+`post-output-correction-counts.json`, `error-fix-deployment.json`,
+`error-fix-github-status.json`. Troisième build : 6,428 minutes, estimation
+0,0450 USD ; trois builds cumulés environ 0,1573 USD, hors fonctions, requêtes et stockage.

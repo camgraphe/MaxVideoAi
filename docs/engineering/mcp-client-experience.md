@@ -13,8 +13,12 @@ error regressions failed before the correction. All 42 advertised directory
 schemas accept complete failures and reject malformed ones. Local checks: 27
 directory/output tests, 214 MCP tests (one optional skip), all 70 curated decisions,
 TypeScript and exposure pass. Lint has seven existing warnings and no errors.
-Instruction/description ceilings remain 1,998 / 1,939 bytes. Hosted confirmation
-of this correction is pending; see the dated qualification dossier.
+Instruction/description ceilings remain 1,998 / 1,939 bytes. Dedicated Git build `b460474d8` is READY. A real refreshed reviewer OAuth session
+discovers all 42 corrected schemas and receives ten valid responses: eight
+read successes, the expected no-matching-scenario failure and an unknown-job
+failure. Diagnostic-session revocation still rejects access; the two existing
+OpenAI sessions are preserved. Native OpenAI draft metadata rediscovery remains
+pending; see the dated qualification dossier.
 
 ## OpenAI directory scan wording — 11 November 2026
 

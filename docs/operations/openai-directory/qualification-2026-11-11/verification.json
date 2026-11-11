@@ -230,7 +230,8 @@
         "list_audio_capabilities",
         "list_media",
         "list_recent_generations",
-        "list_saved_characters"
+        "list_saved_characters",
+        "list_creator_tools"
       ],
       "imageCatalogLimit": 10,
       "listedImageModels": 10,
@@ -238,12 +239,13 @@
       "audioAvailable": false,
       "providerKeysConfigured": false,
       "comparisonWireError": "PARAMETER_INVALID / no_matching_scenario",
-      "comparisonSdkFailure": "structured error did not match success-only schema",
+      "comparisonSdkFailure": "fixed: structured PARAMETER_INVALID now delivered after discovery",
       "paidGenerations": 0,
-      "quotesCreated": 0
+      "quotesCreated": 0,
+      "missingJobFailure": "JOB_FAILED / Generation not found."
     },
     "structuredErrorCorrection": {
-      "stage": "local verification passed; dedicated deployment pending",
+      "stage": "deployed and verified on dedicated test runtime",
       "focusedTestsPassed": 27,
       "mcpTestsPassed": 214,
       "mcpTestsSkipped": 1,
@@ -255,7 +257,35 @@
       "directProfileUnchanged": true,
       "malformedSuccessStillRejected": true,
       "failureBeforeFix": 2,
-      "evidence": ".local/openai-directory-20261111/evidence/output-error-focused.log"
+      "evidence": ".local/openai-directory-20261111/evidence/output-error-focused.log",
+      "commit": "b460474d8c7a724ba00d15dce3d236765a7e1ce3",
+      "deploymentId": "dpl_skjVvZDPJJW3fVQ8hhT6PfL6oPYH",
+      "hostedToolResponses": 10,
+      "hostedSuccessResponses": 8,
+      "hostedExpectedFailures": 2,
+      "hostedSchemaFailures": 0,
+      "hostedAll42ErrorAlternativesVerified": true,
+      "openaiDraftSchemaRediscoveryPending": true,
+      "hostedEvidence": ".local/openai-directory-20261111/evidence/oauth-lifecycle-2026-11-11T17-59-46-367Z.json"
+    },
+    "postOutputCorrectionApplicationCounts": {
+      "checkedAt": "2026-11-11T18:00:44.654Z",
+      "projectId": "lingering-glade-93540258",
+      "jobs": 0,
+      "receipts": 0,
+      "profiles": 1,
+      "consents": 4,
+      "generationQuotes": 0,
+      "oauthSessions": 2,
+      "oauthSessionSetFingerprint": "027e11bd6fa2683f473223560f6ea0ed",
+      "existingOpenaiSessionsUnchanged": true
+    },
+    "pushedOutputCorrectionBranchIsolation": {
+      "commit": "b460474d8c7a724ba00d15dce3d236765a7e1ce3",
+      "normalProjectStatus": "success",
+      "normalProjectDescription": "Canceled by Ignored Build Step",
+      "normalRuntimeDeployed": false,
+      "proofUrl": "https://vercel.com/camgraphes-projects/maxvideoai/TrDneDZ6PfDpweVev9S1YL6eDsX7"
     }
   },
   "archive": {
@@ -319,7 +349,8 @@
     "Current-main account-deletion request behavior retained; full account erasure not executed.",
     "Publisher verified; original ZIP 0.3.14 preserved. Diagnostic draft 0.3.15 retains Authorized/Domain verified and 42 tools. Final UI says Configuration incomplete; five generic further-review findings remain, credentials/demo incomplete. Reconcile diagnostic identity before submission.",
     "Vercel sourceFilesOutsideRootDirectory PATCH was rejected and not applied; creation response and current read confirm it was already true by default. No further change needed.",
-    "Original connection failed to ingest client. Fresh diagnostic draft completes OAuth with explicit reviewer approval. The directory-only wording fix is deployed and clears get_model_details. Final scan requires further review for five retained tools. No specific rationale was returned; none was inferred. Dedicated Neon is paused again."
+    "Original connection failed to ingest client. Fresh diagnostic draft completes OAuth with explicit reviewer approval. The directory-only wording fix is deployed and clears get_model_details. Final scan requires further review for five retained tools. No specific rationale was returned; none was inferred. Dedicated Neon is paused again.",
+    "Structured error fix verified on the dedicated hosted runtime with the SDK; the OpenAI draft still needs metadata rediscovery before native ChatGPT qualification."
   ],
   "portal": {
     "browser": "Chrome",
@@ -622,10 +653,10 @@
       "openai-mcp.maxvideoai.com"
     ],
     "deployment": {
-      "id": "dpl_FTEAU3LTzoEvTwuJpycAN5Kez2Ed",
+      "id": "dpl_skjVvZDPJJW3fVQ8hhT6PfL6oPYH",
       "state": "READY",
       "source": "git",
-      "sha": "95be72898e05ed1ec9c5e8d5fef168847c63c741",
+      "sha": "b460474d8c7a724ba00d15dce3d236765a7e1ce3",
       "target": "production of dedicated test project only",
       "aliases": [
         "openai-mcp.maxvideoai.com",
@@ -648,6 +679,20 @@
       "source": "git",
       "sha": "5312a21fa05ed6bd0f85f08bca4970b6e5be1f8d",
       "target": "production of dedicated project only"
+    },
+    "descriptionCorrectionDeployment": {
+      "id": "dpl_FTEAU3LTzoEvTwuJpycAN5Kez2Ed",
+      "state": "READY",
+      "source": "git",
+      "sha": "95be72898e05ed1ec9c5e8d5fef168847c63c741",
+      "target": "production of dedicated test project only",
+      "aliases": [
+        "openai-mcp.maxvideoai.com",
+        "openai-review.maxvideoai.com",
+        "maxvideoai-openai-review-20261111.vercel.app",
+        "maxvideoai-openai-review-20261111-camgraphes-projects.vercel.app",
+        "maxvideoai-openai-review-2026111-git-5cf06b-camgraphes-projects.vercel.app"
+      ]
     }
   },
   "dedicatedStorage": {
@@ -712,7 +757,7 @@
       "indicativeComputeUSD": 0.002974,
       "invoice": false
     },
-    "lastPausedAt": "2026-11-11T17:46:01Z",
+    "lastPausedAt": "2026-11-11T18:00:57Z",
     "hostedTestWindow": {
       "enabledAt": "2026-11-11T16:06:30Z",
       "disabledAt": "2026-11-11T16:30:00Z",
@@ -733,6 +778,14 @@
       "computeCU": 0.25,
       "maximumContinuousComputeUSD": 0.003379,
       "invoice": false
+    },
+    "outputCorrectionWindow": {
+      "enabledAt": "2026-11-11T17:59:35Z",
+      "suspendedAt": "2026-11-11T18:00:57Z",
+      "seconds": 82,
+      "computeCU": 0.25,
+      "maximumContinuousComputeUSD": 0.000604,
+      "invoice": false
     }
   },
   "latestMainObservedThroughCoordinatedDeployment": "c501acf9ed4e139914a7502c8b3498ce758d59c8",
@@ -752,6 +805,9 @@
     "paidGenerations": 0,
     "secondBuildMinutes": 7.24822,
     "secondBuildEstimatedUSD": 0.050738,
-    "totalTwoBuildsEstimatedUSD": 0.112278
+    "totalTwoBuildsEstimatedUSD": 0.112278,
+    "thirdBuildMinutes": 6.4282666667,
+    "thirdBuildEstimatedUSD": 0.044998,
+    "totalThreeBuildsEstimatedUSD": 0.157276
   }
 }
