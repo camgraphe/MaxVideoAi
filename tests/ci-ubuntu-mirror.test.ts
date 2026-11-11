@@ -151,7 +151,7 @@ test('a reachable Azure archive replaces an unreachable canonical archive withou
   });
 });
 
-for (const reachable of ['canonical', 'azure', 'neither'] as const) {
+for (const reachable of ['canonical', 'azure', 'kernel', 'neither', 'redirect'] as const) {
   test(`archive probe handles ${reachable} availability before modifying sources`, () => {
     withAptRoot(root => {
       const calls = path.join(root, 'calls');
@@ -160,11 +160,14 @@ for (const reachable of ['canonical', 'azure', 'neither'] as const) {
       writeFileSync(path.join(bin, 'curl'), [
         '#!/bin/bash',
         'printf "%s\\n" "$*" >> "$PROBE_CALLS"',
+        'if [ "$REACHABLE_ARCHIVE" = redirect ]; then printf 301; exit 0; fi',
         'case "$*" in',
-        '  *https://azure.archive.ubuntu.com/*) [ "$REACHABLE_ARCHIVE" = azure ] ;;',
-        '  *https://archive.ubuntu.com/*) [ "$REACHABLE_ARCHIVE" = canonical ] ;;',
+        '  *https://azure.archive.ubuntu.com/*) [ "$REACHABLE_ARCHIVE" = azure ] || exit 6 ;;',
+        '  *https://archive.ubuntu.com/*) [ "$REACHABLE_ARCHIVE" = canonical ] || exit 6 ;;',
+        '  *https://mirrors.edge.kernel.org/*) [ "$REACHABLE_ARCHIVE" = kernel ] || exit 6 ;;',
         '  *) exit 2 ;;',
         'esac',
+        'printf 200',
       ].join('\n'), { mode: 0o755 });
       // Run the real selection shell only, replacing the privileged write with a marker.
       const probe = readAction().runs.steps[0].run.split('sudo python3')[0]
@@ -174,18 +177,20 @@ for (const reachable of ['canonical', 'azure', 'neither'] as const) {
         env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, PROBE_CALLS: calls, REACHABLE_ARCHIVE: reachable },
       });
       assert.ifError(result.error);
-      assert.equal(result.status, reachable === 'neither' ? 1 : 0, result.stderr);
+      const unavailable = reachable === 'neither' || reachable === 'redirect';
+      assert.equal(result.status, unavailable ? 1 : 0, result.stderr);
       const probes = readFileSync(calls, 'utf8').trim().split('\n');
-      assert.equal(probes.length, reachable === 'canonical' ? 1 : 2);
+      assert.equal(probes.length, reachable === 'canonical' ? 1 : reachable === 'azure' ? 2 : 3);
       for (const call of probes) {
         assert.match(call, /--fail --silent --show-error --connect-timeout 5 --max-time 15/);
         assert.match(call, /\/dists\/noble\/InRelease --output \/dev\/null/);
       }
-      if (reachable === 'neither') {
+      if (unavailable) {
         assert.match(result.stderr, /No official Ubuntu archive is reachable/);
         assert.doesNotMatch(result.stdout, /SELECTED=/);
       } else {
-        assert.match(result.stdout, new RegExp(`SELECTED=https://${reachable === 'azure' ? 'azure\\.' : ''}archive\\.ubuntu\\.com/ubuntu`));
+        const expected = reachable === 'kernel' ? 'mirrors.edge.kernel.org' : `${reachable === 'azure' ? 'azure.' : ''}archive.ubuntu.com`;
+        assert.ok(result.stdout.includes(`SELECTED=https://${expected}/ubuntu`));
       }
     });
   });

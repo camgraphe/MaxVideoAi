@@ -8,9 +8,12 @@ runs:
       run: |
         . /etc/os-release
         ubuntu_archive_url=''
-        for candidate in https://archive.ubuntu.com/ubuntu https://azure.archive.ubuntu.com/ubuntu; do
-          if curl --fail --silent --show-error --connect-timeout 5 --max-time 15 \
-            "$candidate/dists/${VERSION_CODENAME:?}/InRelease" --output /dev/null; then
+        # Kernel.org's Ubuntu mirror is a final fallback when Ubuntu DNS is unavailable.
+        # APT still verifies the original Ubuntu archive signatures and package hashes.
+        for candidate in https://archive.ubuntu.com/ubuntu https://azure.archive.ubuntu.com/ubuntu https://mirrors.edge.kernel.org/ubuntu; do
+          if http_status="$(curl --fail --silent --show-error --connect-timeout 5 --max-time 15 \
+            "$candidate/dists/${VERSION_CODENAME:?}/InRelease" --output /dev/null --write-out '%{http_code}')" \
+            && [ "$http_status" = 200 ]; then
             ubuntu_archive_url="$candidate"
             break
           fi
@@ -29,6 +32,7 @@ runs:
         if archive_url not in (
             'https://archive.ubuntu.com/ubuntu',
             'https://azure.archive.ubuntu.com/ubuntu',
+            'https://mirrors.edge.kernel.org/ubuntu',
         ):
             raise ValueError('Unsupported Ubuntu archive')
 
