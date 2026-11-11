@@ -44,9 +44,18 @@ export function readSeedanceWorkflowMediaFacts(value: unknown): SeedanceWorkflow
   return value as SeedanceWorkflowMediaFacts;
 }
 
+export class SeedanceWorkflowMediaFactsError extends Error {
+  readonly code = 'SEEDANCE_DRAFT_MEDIA_INCOMPLETE';
+  readonly status = 422;
+
+  constructor() {
+    super('The Draft reference media could not be prepared. No generation was submitted.');
+  }
+}
+
 export function captureSeedanceWorkflowMediaFacts(value: SeedanceWorkflowMediaFacts): SeedanceWorkflowMediaFacts {
   const facts = readSeedanceWorkflowMediaFacts(JSON.parse(JSON.stringify(value)));
-  if (!facts) throw new Error('Verified Draft media facts are incomplete.');
+  if (!facts) throw new SeedanceWorkflowMediaFactsError();
   return facts;
 }
 

@@ -130,6 +130,7 @@ test('Seedance 2.5 paid projection routes all five modes into exact app request 
         referenceAudio: [audioRef],
       },
       expectedInputs: [
+        { kind: 'image', slotId: 'image_urls', url: imageRef },
         { kind: 'video', slotId: 'video_urls', url: videoRef },
         { kind: 'audio', slotId: 'audio_urls', url: audioRef },
       ],
@@ -303,7 +304,7 @@ test('normalized private references reach actual BytePlus payloads for every See
         name: 'mcp-reference',
         type: 'application/octet-stream',
         size: 0,
-        kind: entry.kind as 'video' | 'audio',
+        kind: entry.kind as 'image' | 'video' | 'audio',
         slotId: entry.slotId as string,
         url: entry.url as string,
       })),
