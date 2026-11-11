@@ -15,11 +15,11 @@
 
 ## Le chemin restant : trois étapes
 
-1. **Finir les éléments précis du dossier.** Aligner l'âge d'accès sur les exigences explicites de Fal/Google (les CGU locales indiquent encore 15 ans). Vérifier l'application des clauses des routes directes BytePlus/Luma/Alibaba aux conditions réellement acceptées ; utiliser les contrats standard et les pièces de compte existantes. Raccorder la notice de confidentialité, les modalités d'effacement, l'identité de l'éditeur et son support. Voir [les points exacts](droits-et-regles-2026-11-11.md) et [les textes préparés](pieces-a-finaliser.md).
+1. **Finir les éléments précis du dossier.** L'âge minimum est maintenant 18 ans sur la branche : CGU/confidentialité EN/FR/ES, inscription, nouveau consentement des comptes existants et approbation OAuth. La migration de versions reste locale ; aucune base habituelle n'a été modifiée. Vérifier l'application des clauses des routes directes BytePlus/Luma/Alibaba aux conditions réellement acceptées ; utiliser les contrats standard et les pièces de compte existantes. Raccorder la notice de confidentialité, les modalités d'effacement, l'identité de l'éditeur et son support. Voir [les points exacts](droits-et-regles-2026-11-11.md) et [les textes préparés](pieces-a-finaliser.md).
 2. **Essayer le candidat dans ChatGPT, sur l'environnement dédié.** Raccorder l'HTTPS, OAuth, un compte de revue avec médias/solde de test et les ressources de test. Rejouer les cinq scénarios positifs et trois négatifs puis enregistrer une démonstration. Cette étape sort du local ; elle demande un chiffrage actualisé et le contrôle des ressources dédiées avant toute activation. Le plafond historique de 20 € ne constitue pas un relevé du budget restant.
 3. **Déposer le ZIP, puis publier après acceptation.** Vérifier l'organisation/projet OpenAI, le domaine, les accès du reviewer et la vidéo ; reconstruire le ZIP avec l'URL réelle de démonstration ; déposer pour examen. La publication reste une action séparée, après approbation.
 
-Le projet OpenAI de dépôt doit actuellement avoir une résidence **globale**. Cela ne demande pas de déplacer la base Neon de Francfort, ni les bases habituelles.
+Le projet OpenAI MaxVideoAI a été vérifié dans Chrome : résidence **Global**. L'organisation est accessible, mais son identité d'éditeur reste à vérifier avant téléversement du ZIP. Cela ne demande pas de déplacer la base Neon de Francfort, ni les bases habituelles.
 
 ## Ce qui est prêt à examiner
 
@@ -36,4 +36,4 @@ La branche du 23 octobre, `codex/openai-marketplace-main-20261023` à `5c700f2e5
 
 L'effacement actuel reste celui de main. Les anciennes preuves de purge ne certifient pas ce candidat. La vérification du parcours d'effacement réel et la cohérence de la notice restent nécessaires avant diffusion ; on n'impose pas par défaut toute la refonte historique pour compiler un paquet.
 
-Aucun déploiement, push, dépôt OpenAI, email, appel de génération ni accès aux bases normales n'a été effectué pour cette reprise.
+Aucun déploiement, push, dépôt OpenAI, email, appel de génération ni accès aux bases normales n'a été effectué. Le 11 novembre, l'Auth Supabase dédié a été restauré sur son offre gratuite et un projet Vercel de test daté a été créé vide ; voir le [journal de qualification](qualification-2026-11-11/etat-essai.md).

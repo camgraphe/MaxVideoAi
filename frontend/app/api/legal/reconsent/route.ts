@@ -1,7 +1,8 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { getLegalDocumentUncached, type LegalDocumentKey } from '@/lib/legal';
-import { recordUserConsents, type ConsentSource } from '@/server/legal-consents';
+import { AGE_ATTESTATION_VERSION, LEGAL_MIN_AGE } from '@/lib/legal-policy';
+import { recordUserConsents, type ConsentSource, type ConsentEntry } from '@/server/legal-consents';
 import { getProfileSnapshot } from '@/server/profile';
 import { query } from '@/lib/db';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
@@ -47,22 +48,23 @@ async function fetchDocuments(keys: LegalDocumentKey[]): Promise<Array<{ key: Le
   return docs;
 }
 
-async function fetchLatestConsents(userId: string): Promise<Record<LegalDocumentKey, string | null>> {
-  const latest: Record<LegalDocumentKey, string | null> = {
+async function fetchLatestConsents(userId: string): Promise<Record<LegalDocumentKey | 'age_attestation', string | null>> {
+  const latest: Record<LegalDocumentKey | 'age_attestation', string | null> = {
     terms: null,
     privacy: null,
     cookies: null,
+    age_attestation: null,
   };
   try {
     const rows = await query<{ doc_key: string; doc_version: string }>(
       `select doc_key, doc_version
        from user_consents
-       where user_id = $1
+       where user_id = $1 and accepted = true
        order by accepted_at desc`,
       [userId]
     );
     for (const row of rows) {
-      if ((row.doc_key === 'terms' || row.doc_key === 'privacy' || row.doc_key === 'cookies') && !latest[row.doc_key]) {
+      if ((row.doc_key === 'terms' || row.doc_key === 'privacy' || row.doc_key === 'cookies' || row.doc_key === 'age_attestation') && !latest[row.doc_key]) {
         latest[row.doc_key] = row.doc_version;
       }
     }
@@ -74,6 +76,7 @@ async function fetchLatestConsents(userId: string): Promise<Record<LegalDocument
 
 type RawStatus = {
   needsReconsent: boolean;
+  ageConfirmationRequired: boolean;
   shouldBlock: boolean;
   mode: ReconsentMode;
   graceEndsAt: Date | null;
@@ -89,6 +92,7 @@ async function computeReconsentStatus(userId: string): Promise<RawStatus> {
     fetchLatestConsents(userId),
   ]);
 
+  const ageConfirmationRequired = latestConsents.age_attestation !== AGE_ATTESTATION_VERSION;
   const mismatches: DocumentStatus[] = [];
   for (const doc of documents) {
     if (!doc.version) continue;
@@ -110,9 +114,10 @@ async function computeReconsentStatus(userId: string): Promise<RawStatus> {
     }
   }
 
-  if (mismatches.length === 0) {
+  if (mismatches.length === 0 && !ageConfirmationRequired) {
     return {
       needsReconsent: false,
+      ageConfirmationRequired: false,
       shouldBlock: false,
       mode,
       graceEndsAt: null,
@@ -139,11 +144,12 @@ async function computeReconsentStatus(userId: string): Promise<RawStatus> {
       : null;
 
   const shouldBlock =
-    mode === 'hard' ||
+    ageConfirmationRequired || mode === 'hard' ||
     (mode === 'soft' && graceEndsAt !== null && now.getTime() >= graceEndsAt.getTime());
 
   return {
     needsReconsent: true,
+    ageConfirmationRequired,
     shouldBlock,
     mode,
     graceEndsAt,
@@ -155,6 +161,8 @@ function serializeStatus(status: RawStatus) {
   return {
     ok: true,
     needsReconsent: status.needsReconsent,
+    ageConfirmationRequired: status.ageConfirmationRequired,
+    minimumAge: LEGAL_MIN_AGE,
     shouldBlock: status.shouldBlock,
     mode: status.mode,
     graceEndsAt: status.graceEndsAt ? status.graceEndsAt.toISOString() : null,
@@ -177,6 +185,8 @@ export async function GET(req: NextRequest) {
 }
 
 type PostBody = {
+  ageConfirmed?: boolean;
+  marketingOptIn?: boolean;
   documents?: LegalDocumentKey[];
   locale?: string | null;
   source?: ConsentSource;
@@ -201,8 +211,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(serializeStatus(status));
     }
 
+    if (status.ageConfirmationRequired && body.ageConfirmed !== true) {
+      return NextResponse.json({ ok: false, error: 'Please confirm that you are at least 18 and have reached legal majority in your country.' }, { status: 422 });
+    }
+
     const requested = new Set<LegalDocumentKey>((body.documents ?? status.documents.map((doc) => doc.key)));
-    const entries = status.documents
+    const entries: ConsentEntry[] = status.documents
       .filter((doc) => requested.has(doc.key))
       .map((doc) => ({
         docKey: doc.key,
@@ -210,6 +224,16 @@ export async function POST(req: NextRequest) {
         accepted: true,
         source: body.source ?? 'reconsent',
       }));
+
+    if (status.ageConfirmationRequired) {
+      entries.push({ docKey: 'age_attestation', docVersion: AGE_ATTESTATION_VERSION, accepted: true, source: body.source ?? 'reconsent' });
+    }
+
+    if (typeof body.marketingOptIn === 'boolean') {
+      const privacy = await getLegalDocumentUncached('privacy');
+      if (!privacy?.version) throw new Error('Privacy document is not configured');
+      entries.push({ docKey: 'marketing', docVersion: privacy.version, accepted: body.marketingOptIn, source: body.source ?? 'reconsent' });
+    }
 
     if (entries.length === 0) {
       return NextResponse.json({ ok: false, error: 'No documents provided for acceptance' }, { status: 400 });

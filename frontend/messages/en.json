@@ -6881,7 +6881,7 @@
       "privacyLabel": "Privacy Policy",
       "suffix": ".",
       "error": "You must accept the Terms of Service and Privacy Policy to continue.",
-      "age": "I confirm I am at least {age} years old.",
+      "age": "I confirm I am at least {age} years old and have reached the age of legal majority in my country.",
       "marketing": "Yes, send me occasional product emails. I can unsubscribe anytime."
     },
     "signupSuggestion": {

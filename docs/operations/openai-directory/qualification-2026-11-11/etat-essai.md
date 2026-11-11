@@ -1,0 +1,65 @@
+# Essai OpenAI — journal du 11 novembre 2026
+
+## Actions effectuées
+
+| Ressource | Vérification / action | État |
+| --- | --- | --- |
+| Supabase Auth `ajwofjldwawdwtioekuc` | Offre de l'organisation vérifiée : Free. Restauration du seul projet « MaxVideoAI OpenAI Review ». | `ACTIVE_HEALTHY`, eu-central-1. Découverte OAuth publique répond ; PKCE S256 annoncé. Aucun compte, client OAuth ou secret créé. |
+| Neon `lingering-glade-93540258` | Inventaire et consommation lus. | Endpoint `ep-orange-lake-b2yfb7ss` désactivé, région eu-central-1. Aucune requête SQL ni activation. |
+| Ancien Vercel `prj_p6neENhzOIYsCXIPU2EvnUCJiORp` | Le connecteur renvoyait 404 ; le CLI authentifié confirme son existence dans la bonne équipe. | Vide, aucun déploiement ni lien Git. Inchangé. Le 404 ne prouvait pas sa suppression. |
+| Nouveau Vercel `prj_UCIR8ODoPEK3bLF30ID94gvyDs5C` | Projet `maxvideoai-openai-review-20261111` créé par le CLI après refus 403 du connecteur. Node réglé sur 22.x. | Même équipe, fonctions fra1, machine basic, aucune cible, aucun déploiement, aucun lien Git. Aucun secret copié. |
+| Portail OpenAI | Session Chrome existante utilisée ; organisation MaxVideoAI et projet MaxVideoAI visibles. | Projet en résidence **Global**, vérifié dans les paramètres. Le portail bloque le téléversement tant que l’identité éditeur n’est pas vérifiée ; options Individual/Business affichées. Aucun ZIP téléversé ni réglage OpenAI modifié. |
+
+Le contrôle automatique a refusé `sourceFilesOutsideRootDirectory: true` car ce
+réglage élargit l'accès aux fichiers du projet. Il n'a pas été appliqué ni contourné.
+La modification Node 22 a été faite séparément, sans ce réglage.
+
+## Budget cumulé : 20 € maximum
+
+La consommation Neon retournée pour octobre est de 420 CU-secondes et
+28 583 517 bytes-month de stockage racine. Ce relevé n'est pas une facture finale,
+ne couvre pas les autres services et n'établit pas un solde en euros.
+
+Le connecteur Vercel ne restitue qu'un échantillon de lignes, avec un total toutes
+ressources confondues. Le CLI ne parse pas le JSONL de cet endpoint, y compris en
+mode raw. Aucun total partiel n'est présenté comme le coût du test. Les deux
+projets de test sont vides et n'ont pas lancé de build distant.
+
+Aucune génération, recharge, export Fargate ou activation Neon n'a été lancée.
+L'offre gratuite de l'Auth a été vérifiée avant restauration. Le stockage dédié
+historique existe dans le dossier d'octobre ; son usage/coût actuel n'est pas encore
+réconcilié. Conserver la réserve historique de 5 € infrastructure, 10 € démos et
+5 € aléas **dans** le plafond de 20 €, jamais en plus.
+
+## Raccordement encore nécessaire
+
+1. Terminer la vérification de l'identité de l'éditeur dans l'organisation
+   MaxVideoAI (organisation et résidence Global déjà vérifiées), puis relever
+   le callback exact au raccordement du MCP. Ne pas inventer un callback ni transmettre les
+   secrets dans le ZIP.
+2. Préparer la livraison Git du candidat sans déclencher un environnement relié
+   aux ressources habituelles. Le projet daté est vide ; aucune dérogation à la
+   politique de déploiement de production n'a été ajoutée.
+3. Raccorder seulement les secrets, Auth, base, stockage et workers dédiés ;
+   actualiser le registre des capacités sur les routes effectivement disponibles.
+   L'ancien fichier de préparation contient encore des clés fournisseur vides,
+   aucun service-role et des bindings de workers incomplets. Ce n'est pas un
+   environnement prêt à générer.
+4. Réconcilier les coûts avant activation payante, puis qualifier HTTPS, client
+   OAuth, audience/resource, PKCE, refresh, révocation et reconnexion en réel.
+5. Créer le compte reviewer dédié et ses données, exécuter les cas 5+3 avec devis
+   avant dépense et conserver les résultats. Enregistrer la vidéo réelle.
+6. Reconstruire le ZIP avec la vidéo accessible, résoudre les scans, puis déposer
+   pour revue. La publication après acceptation reste une action distincte.
+
+Les capacités ne sont pas retirées pour contourner ces étapes. Le paquet local
+reste `readyToSubmit: false` jusqu'aux preuves de l'essai réel.
+
+## Confidentialité et effacement
+
+Le handler courant `/api/account/delete` enregistre une demande authentifiée et
+révoque l'opt-in marketing ; il ne purge pas le compte. La notice explique cette
+distinction. Il faut exécuter une demande de bout en bout sur le compte de test,
+avec un relevé séparant suppression, anonymisation et conservation justifiée.
+La [fiche d'effacement](../fiche-effacement-reviewer.md) prépare ce traitement
+manuel ; elle ne certifie aucune suppression accomplie.

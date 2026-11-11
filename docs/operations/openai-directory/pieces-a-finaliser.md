@@ -8,22 +8,23 @@
 | --- | --- | --- |
 | Paquet plugin | ZIP 0.3.13 reproductible, description EN/FR/ES, capacités, logo, skills et endpoint MCP dédié | URL réelle de démonstration après essai ; reconstruire l'archive |
 | Éditeur | Liens de site, support et identité du manifeste existant | Vérification de l'organisation dans le portail et challenge du domaine avec les pièces société existantes |
-| Conditions et confidentialité | Registre du site, audit des conditions standard, ajout local d'OpenAI pour la génération d'images | Âge d'accès cohérent, routes effectivement utilisées, durées/effacement vérifiés, documents du compte quand une clause précise l'exige |
+| Conditions et confidentialité | Registre du site, audit des conditions standard, ajout local d'OpenAI pour la génération d'images | 18 ans alignés localement ; qualifier le parcours d'effacement, les routes réellement raccordées et les clauses de compte identifiées |
 | Accès reviewer | Scénarios cinq positifs / trois négatifs rédigés dans `plugins/maxvideoai/openai-directory.json` | Compte dédié avec solde et médias, accès sans obstacle propre au reviewer ; ne jamais mettre les secrets dans le ZIP |
 | Démonstration | Déroulé ci-dessous | Enregistrement issu du vrai essai, sans données privées de clients |
 | OAuth/hébergement | Adaptateurs, domaine final configuré dans le code, canevas sans secrets, tests en mémoire | HTTPS, DNS/callback réel, PKCE/resource/refresh/révocation, ressources et workers dédiés ; chiffrage avant activation |
 
-## Éligibilité : correction précise à finaliser
+## Éligibilité : 18 ans préparés sur la branche
 
-Le main indique encore 15 ans dans les CGU EN/FR/ES et 15/16 ans dans la confidentialité. Ce point entre en conflit avec les exigences explicites de Fal et Google. Il concerne déjà le service sous-jacent ; il n'est pas une règle ajoutée par peur de la marketplace.
+Décision du propriétaire du 11 novembre : service réservé aux adultes de 18 ans ou ayant atteint l'âge de la majorité dans leur pays si elle est supérieure.
 
-Proposition de clause, à aligner avec le parcours d'inscription et les comptes existants avant publication :
+- CGU et confidentialité EN/FR/ES alignées ; version documentaire candidate `2026-11-11`.
+- Une seule constante pour le formulaire et la preuve serveur `min_age:18`, sans possibilité de conserver accidentellement l'ancien seuil par variable d'environnement.
+- Les comptes qui n'ont que `min_age:15` doivent cocher une nouvelle confirmation. Le booléen historique `age_verified` ne prouve pas la majorité et n'est pas utilisé à cette fin.
+- Les écritures de consentement utilisent l'identité authentifiée. Les inscriptions avec email à confirmer terminent le consentement après connexion. Le choix d'emails facultatifs est conservé comme brouillon dans le même navigateur et peut être corrigé avant sauvegarde ; ce brouillon ne vaut jamais preuve d'âge.
+- Le formulaire OAuth demande la majorité avant d'accorder une nouvelle connexion ; le refus de connexion reste possible sans cocher la case. Une indisponibilité de l'enregistrement empêche l'émission du grant.
+- Migration Neon `99_legal_adult_eligibility.sql` testée sur PostgreSQL 17 jetable ; jamais appliquée aux bases habituelles. Elle ne réécrit aucun consentement historique.
 
-- **FR :** « Vous devez avoir au moins 18 ans, ou l'âge de la majorité dans votre pays s'il est plus élevé, pour utiliser les fonctions de génération. »
-- **EN :** “You must be at least 18 years old, or the age of legal majority in your country if higher, to use generation features.”
-- **ES :** « Debes tener al menos 18 años, o la mayoría de edad en tu país si es superior, para utilizar las funciones de generación. »
-
-Un changement de texte seul ne prouve pas le respect de la condition Google. La décision sur les comptes existants et le contrôle d'éligibilité doit être explicite. Cela n'impose pas par défaut de collecter des pièces d'identité pour tous les fournisseurs. Les exigences distinctes de BytePlus doivent être rattachées à sa route et à l'accord applicable.
+Il s'agit d'une attestation explicite, pas d'un contrôle de pièce d'identité ni d'une preuve qu'aucun mineur ne peut mentir. Aucun contrôle d'identité généralisé n'est ajouté par défaut. Les obligations particulières du compte BytePlus restent distinctes.
 
 ## Démonstration à enregistrer dans l'environnement dédié
 
@@ -37,8 +38,8 @@ Un changement de texte seul ne prouve pas le respect de la condition Google. La 
 
 Les scénarios du manifeste sont la référence précise. Les tests locaux ont utilisé des fixtures ; ni la vidéo ni ces résultats hôte ne sont encore enregistrés. Pour respecter le budget, relever les devis de test et choisir les médias déjà disponibles avant d'autoriser les essais payants.
 
-## Frontière externe
+## Essai dédié en cours
 
-L'étape suivante consiste à raccorder l'essai dédié. Ne pas recopier un `.env` ou les ressources du checkout Desktop. Le fichier `environment.template` est un canevas, pas un mécanisme d'isolation effectif. Le dossier doit identifier exactement les projets, bases, stockage, workers, clés et coûts dédiés avant activation.
+L'Auth dédié est restauré et le projet Vercel daté existe sans déploiement. Le [journal de qualification](qualification-2026-11-11/etat-essai.md) distingue ces actions des éléments encore manquants. Ne pas recopier un `.env` ou les ressources du checkout Desktop. Le fichier `environment.template` est un canevas, pas un mécanisme d'isolation effectif. Le dossier doit identifier exactement les projets, bases, stockage, workers, clés et coûts dédiés avant activation.
 
 Aucun changement des bases habituelles ni de leur région n'est requis. Le domaine de qualification `openai-review.maxvideoai.com` et le domaine final `openai-mcp.maxvideoai.com` sont distincts : le ZIP final ne certifie pas le fonctionnement du domaine final avant ses vérifications réelles.

@@ -39,7 +39,41 @@
     },
     "exposure": "passed",
     "diffCheck": "passed",
-    "suiteCountsOverlap": true
+    "suiteCountsOverlap": true,
+    "adultEligibilityAndAuth": {
+      "passed": 148,
+      "failed": 0,
+      "externalIdentityAndGrantBoundaries": "fixtures"
+    },
+    "adultLegalMigration": {
+      "passed": 1,
+      "failed": 0,
+      "database": "disposable PostgreSQL 17",
+      "normalDatabaseUsed": false
+    },
+    "additionalLegalCopy": {
+      "passed": 19,
+      "failed": 0
+    },
+    "privacyFallbackContract": {
+      "passed": 7,
+      "failed": 0
+    },
+    "fullApplicationBuild": {
+      "status": "passed",
+      "staticPages": 1034,
+      "externalDatabaseConfigured": false
+    },
+    "localLegalHttp": {
+      "passed": 9,
+      "failed": 0,
+      "coverage": "terms/privacy/subprocessors in EN/FR/ES; canonical, hreflang, JSON-LD parse where present, adult copy and document versions"
+    },
+    "localBrowser": {
+      "termsFrench": "18+ clause and version visible",
+      "signupEnglish": "18+ checkbox visible and initially unchecked",
+      "liveSignupExecuted": false
+    }
   },
   "archive": {
     "relativePath": ".local/openai-directory-20261111/package/maxvideoai-openai-directory-0.3.13.zip",
@@ -69,7 +103,6 @@
     "frontend/src/server/images",
     "frontend/src/server/generations",
     "frontend/src/server/studio",
-    "neon",
     "supabase",
     "pnpm-lock.yaml"
   ],
@@ -77,19 +110,36 @@
     "productionTouched": false,
     "normalDatabasesAccessed": false,
     "providerGenerationCalls": 0,
-    "spendThisRun": 0,
     "pushed": false,
     "deployed": false,
     "submitted": false,
     "published": false,
-    "providerContacted": false
+    "providerContacted": false,
+    "newPaidOperations": 0,
+    "cumulativeSpendReconciled": false,
+    "dedicatedAuthRestored": true,
+    "dedicatedEmptyHostingProjectCreated": true,
+    "migrationsAppliedToHostedDatabases": false
   },
   "limits": [
-    "No full application build or hosted browser qualification in this run.",
-    "SDK and provider-boundary tests used local fixtures, not external generations.",
-    "Dedicated credentials and resources not bound; environment.template is not an isolation guard.",
-    "Age/eligibility and applicable direct-provider clauses remain to resolve before public use.",
-    "Existing main deletion behavior retained; historical extended purge evidence not transferred.",
-    "Publisher identity, global OpenAI project, domain, OAuth and reviewer demonstration still require actual verification."
-  ]
+    "Hosted OAuth and real ChatGPT qualification remain incomplete.",
+    "Provider and OAuth grant boundaries used fixtures; no paid generations or reviewer video recorded.",
+    "Dedicated credentials and workers remain incomplete; environment.template is not an isolation guard.",
+    "18+ eligibility implemented locally; no deployment or hosted migration. This is self-attestation, not documentary age verification.",
+    "Applicable account-specific direct-provider clauses still require alignment with the routes used for qualification.",
+    "Current-main account-deletion request behavior retained; full account erasure not executed.",
+    "Publisher identity verification is required before ZIP upload. Global project residency is verified.",
+    "Vercel sourceFilesOutsideRootDirectory enablement was rejected by automatic approval review and was not applied."
+  ],
+  "portal": {
+    "browser": "Chrome",
+    "organization": "MaxVideoAI",
+    "project": "MaxVideoAI",
+    "residency": "Global",
+    "residencyVerified": true,
+    "identityVerified": false,
+    "uploadBlockedByIdentityVerification": true,
+    "zipUploaded": false,
+    "settingsChanged": false
+  }
 }

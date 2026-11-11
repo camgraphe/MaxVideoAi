@@ -901,3 +901,15 @@ tests with one intentional host skip and all 70 curated scenarios; 86 focused
 compression, capability, normalization and App tests pass. Metadata collection and
 regression checks are offline. Delivery, catalog refresh and real-host behavior
 require their own evidence.
+
+
+### 2026-11-11 — adult eligibility on the directory preparation branch
+
+The service owner approved 18+ eligibility. OAuth approval now requires an
+explicit adulthood checkbox and persists `min_age:18` for the verified session
+owner before issuing the grant. Denial remains available without the checkbox;
+failed consent storage returns 503 before approval. No MCP descriptor, capability,
+model admission or quote/confirmation contract changes in this increment.
+`tests/oauth-adult-consent.test.ts` executes the route against controlled identity,
+consent storage and grant boundaries. The legal rollout guide covers signup and
+existing-account reconsent. Real hosted OAuth qualification remains separate.
