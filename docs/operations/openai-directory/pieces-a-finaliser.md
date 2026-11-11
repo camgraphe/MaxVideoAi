@@ -6,8 +6,8 @@
 
 | Pièce | Déjà préparé ou disponible | À compléter |
 | --- | --- | --- |
-| Paquet plugin | ZIP 0.3.13 reproductible, description EN/FR/ES, capacités, logo, skills et endpoint MCP dédié | URL réelle de démonstration après essai ; reconstruire l'archive |
-| Éditeur | Liens de site, support et identité du manifeste existant | Vérification de l'organisation dans le portail et challenge du domaine avec les pièces société existantes |
+| Paquet plugin | ZIP 0.3.13 reproductible téléversé en brouillon ; métadonnées sans anomalie ; description EN/FR/ES, capacités, logo, skills et endpoint MCP dédié | URL réelle de démonstration après essai ; reconstruire l'archive |
+| Éditeur | Liens de site et support ; organisation MaxVideoAI accessible ; démarche Individual effectuée par le propriétaire, statut « Verified » confirmé dans Chrome à 14 h 40 Europe/Madrid | Compléter les vérifications de domaine demandées par le portail |
 | Conditions et confidentialité | Registre du site, audit des conditions standard, ajout local d'OpenAI pour la génération d'images | 18 ans alignés localement ; qualifier le parcours d'effacement, les routes réellement raccordées et les clauses de compte identifiées |
 | Accès reviewer | Scénarios cinq positifs / trois négatifs rédigés dans `plugins/maxvideoai/openai-directory.json` | Compte dédié avec solde et médias, accès sans obstacle propre au reviewer ; ne jamais mettre les secrets dans le ZIP |
 | Démonstration | Déroulé ci-dessous | Enregistrement issu du vrai essai, sans données privées de clients |

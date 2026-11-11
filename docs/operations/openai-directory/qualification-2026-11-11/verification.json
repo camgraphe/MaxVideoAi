@@ -119,7 +119,8 @@
     "cumulativeSpendReconciled": false,
     "dedicatedAuthRestored": true,
     "dedicatedEmptyHostingProjectCreated": true,
-    "migrationsAppliedToHostedDatabases": false
+    "migrationsAppliedToHostedDatabases": false,
+    "draftUploaded": true
   },
   "limits": [
     "Hosted OAuth and real ChatGPT qualification remain incomplete.",
@@ -128,7 +129,7 @@
     "18+ eligibility implemented locally; no deployment or hosted migration. This is self-attestation, not documentary age verification.",
     "Applicable account-specific direct-provider clauses still require alignment with the routes used for qualification.",
     "Current-main account-deletion request behavior retained; full account erasure not executed.",
-    "Publisher identity verification is required before ZIP upload. Global project residency is verified.",
+    "Publisher identity is verified and ZIP 0.3.13 is uploaded as a draft. Metadata has no findings; skills are still checking. Domain/OAuth setup, hosted qualification and review evidence remain incomplete.",
     "Vercel sourceFilesOutsideRootDirectory enablement was rejected by automatic approval review and was not applied."
   ],
   "portal": {
@@ -137,9 +138,45 @@
     "project": "MaxVideoAI",
     "residency": "Global",
     "residencyVerified": true,
-    "identityVerified": false,
-    "uploadBlockedByIdentityVerification": true,
-    "zipUploaded": false,
-    "settingsChanged": false
+    "identityVerified": true,
+    "identityFlowCompletedByOwner": true,
+    "identityType": "Individual",
+    "identityStatus": "Verified",
+    "identityStatusVerifiedInPortal": true,
+    "identityStatusCheckedAt": "2026-11-11T14:40:00+01:00",
+    "uploadBlockedByIdentityVerification": false,
+    "zipUploaded": true,
+    "settingsChanged": false,
+    "pluginId": "plugin_asdk_app_6af4711f72f08191bf141a80553b9c9d",
+    "appId": "asdk_app_6af4711f72f08191bf141a80553b9c9d",
+    "draftId": "appsub_6af4711f73788191b4b0e16925c30444",
+    "draftVersion": "0.3.13",
+    "reviewStatus": "Not submitted",
+    "publicationStatus": "Not published",
+    "metadataStatus": "No findings",
+    "skillsStatus": {
+      "generate": "Checking",
+      "plan": "Checking"
+    },
+    "mcpConfiguration": "Configuration incomplete",
+    "domainVerified": false,
+    "oauthMetadataDiscovered": false,
+    "toolDiscoveryCompleted": false,
+    "reviewInformation": {
+      "positiveCasesComplete": 5,
+      "negativeCasesComplete": 3,
+      "translationsImported": [
+        "fr-FR",
+        "es-ES"
+      ],
+      "releaseNotesImported": true,
+      "missing": [
+        "reviewer credentials",
+        "demo recording URL"
+      ],
+      "realScenariosExecuted": false
+    },
+    "draftStatusCheckedAt": "2026-11-11T14:50:00+01:00",
+    "draftUrl": "https://platform.openai.com/plugins/manage/plugin_asdk_app_6af4711f72f08191bf141a80553b9c9d?tab=details&version=appsub_6af4711f73788191b4b0e16925c30444"
   }
 }

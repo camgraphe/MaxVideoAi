@@ -8,7 +8,7 @@
 | Neon `lingering-glade-93540258` | Inventaire et consommation lus. | Endpoint `ep-orange-lake-b2yfb7ss` désactivé, région eu-central-1. Aucune requête SQL ni activation. |
 | Ancien Vercel `prj_p6neENhzOIYsCXIPU2EvnUCJiORp` | Le connecteur renvoyait 404 ; le CLI authentifié confirme son existence dans la bonne équipe. | Vide, aucun déploiement ni lien Git. Inchangé. Le 404 ne prouvait pas sa suppression. |
 | Nouveau Vercel `prj_UCIR8ODoPEK3bLF30ID94gvyDs5C` | Projet `maxvideoai-openai-review-20261111` créé par le CLI après refus 403 du connecteur. Node réglé sur 22.x. | Même équipe, fonctions fra1, machine basic, aucune cible, aucun déploiement, aucun lien Git. Aucun secret copié. |
-| Portail OpenAI | Session Chrome existante utilisée ; organisation MaxVideoAI et projet MaxVideoAI visibles. | Projet en résidence **Global**, vérifié dans les paramètres. Le portail bloque le téléversement tant que l’identité éditeur n’est pas vérifiée ; options Individual/Business affichées. Aucun ZIP téléversé ni réglage OpenAI modifié. |
+| Portail OpenAI | Session Chrome existante utilisée ; organisation MaxVideoAI et projet MaxVideoAI visibles. Le propriétaire a effectué la démarche Individual. | Projet en résidence **Global**, vérifié dans les paramètres. Après actualisation, statut **« Verified »**, constaté vers 14 h 40 Europe/Madrid : identité validée. Le contrôle différé est désactivé après ce constat. ZIP 0.3.13 téléversé en brouillon ; métadonnées sans anomalie. Aucune soumission humaine ni publication. Voir [le relevé du dépôt](depot-portail.md). |
 
 Le contrôle automatique a refusé `sourceFilesOutsideRootDirectory: true` car ce
 réglage élargit l'accès aux fichiers du projet. Il n'a pas été appliqué ni contourné.
@@ -33,10 +33,10 @@ réconcilié. Conserver la réserve historique de 5 € infrastructure, 10 € d
 
 ## Raccordement encore nécessaire
 
-1. Terminer la vérification de l'identité de l'éditeur dans l'organisation
-   MaxVideoAI (organisation et résidence Global déjà vérifiées), puis relever
-   le callback exact au raccordement du MCP. Ne pas inventer un callback ni transmettre les
-   secrets dans le ZIP.
+1. Terminer les contrôles du brouillon 0.3.13 déjà téléversé, puis raccorder le
+   domaine et OAuth. L'identité est validée. Le portail ne découvre pas encore
+   les métadonnées OAuth et le domaine est non vérifié. Relever le callback exact
+   au raccordement ; ne pas l'inventer ni transmettre les secrets dans le ZIP.
 2. Préparer la livraison Git du candidat sans déclencher un environnement relié
    aux ressources habituelles. Le projet daté est vide ; aucune dérogation à la
    politique de déploiement de production n'a été ajoutée.
