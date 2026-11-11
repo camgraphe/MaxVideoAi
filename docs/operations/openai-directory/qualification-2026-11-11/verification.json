@@ -10,14 +10,15 @@
   "appPublishedModels": 54,
   "allCapabilitiesDirectoryToolCount": 42,
   "maximumEnabledInstructionBytes": 1998,
-  "maximumToolDescriptionBytes": 1927,
+  "maximumToolDescriptionBytes": 1939,
   "verification": {
     "mcpClient": {
       "passed": 214,
       "failed": 0,
       "skipped": 1,
       "curatedSelectionScenariosPassed": 70,
-      "rerunAfterOAuthPackageChange": true
+      "rerunAfterOAuthPackageChange": true,
+      "rerunAfterDirectoryScanWording": true
     },
     "directoryFocused": {
       "passed": 101,
@@ -140,6 +141,59 @@
       "consentOrigin": "https://openai-review.maxvideoai.com",
       "unregisteredCallbackStatus": 400,
       "tokenIssued": false
+    },
+    "directoryMetadataAfterScan": {
+      "passed": 17,
+      "failed": 0,
+      "runtimeCommit": "95be72898e05ed1ec9c5e8d5fef168847c63c741",
+      "scope": "directory-only description; direct profile unchanged"
+    },
+    "hostedOAuthGrant": {
+      "passed": true,
+      "ownerApprovedHookAndGrant": true,
+      "scope": [
+        "openid",
+        "email",
+        "profile",
+        "offline_access"
+      ],
+      "pkce": "S256",
+      "clientId": "324a5cbd-2929-4ba1-82a6-58083f5ccb33",
+      "mcpResource": "https://openai-mcp.maxvideoai.com/mcp",
+      "portalAuthentication": "Authorized",
+      "discoveredTools": 42,
+      "publicTools": 41,
+      "privateTools": [
+        "get_generation_download"
+      ],
+      "refreshTested": false,
+      "revocationTested": false,
+      "tokenClaimsDirectlyInspected": false,
+      "evidence": ".local/openai-directory-20261111/evidence/openai-mcp-inspection.json",
+      "reconnectionTested": true,
+      "reconnectionScope": "same existing grant, no new scopes or account"
+    },
+    "postOAuthApplicationCounts": {
+      "jobs": 0,
+      "receipts": 0,
+      "profiles": 1,
+      "consents": 4,
+      "projectId": "lingering-glade-93540258",
+      "checkedAt": "2026-11-11T17:18:48.825639+00:00"
+    },
+    "pushedDescriptionBranchIsolation": {
+      "commit": "95be72898e05ed1ec9c5e8d5fef168847c63c741",
+      "normalProjectDeployment": "dpl_6jYvVDmRSzcsCTENSUvT1mQthSjn",
+      "normalProjectState": "CANCELED",
+      "testProjectDeployment": "dpl_FTEAU3LTzoEvTwuJpycAN5Kez2Ed",
+      "testProjectState": "READY",
+      "cronDisabledAfterBuild": true
+    },
+    "postDescriptionHttp": {
+      "login": 200,
+      "advertisedProtectedResourceMetadata": 200,
+      "unauthenticatedMcp": 401,
+      "correctChallenge": true
     }
   },
   "archive": {
@@ -182,7 +236,7 @@
     "submitted": false,
     "published": false,
     "providerContacted": false,
-    "newPaidOperations": 3,
+    "newPaidOperations": 6,
     "cumulativeSpendReconciled": false,
     "dedicatedAuthRestored": true,
     "dedicatedEmptyHostingProjectCreated": true,
@@ -192,18 +246,18 @@
     "dedicatedSecretsRetrievedAndStoredWithOwnerApproval": true,
     "dedicatedReviewerAuthCreated": true,
     "dedicatedHostingDeployed": true,
-    "newPaidOperationsDescription": "Earlier Neon schema window, first Vercel build, dedicated Neon hosted-test window; not an invoice or transaction count."
+    "newPaidOperationsDescription": "Neon schema window, first build, first hosted test window, OAuth login window, OAuth grant/scan window, directory description rebuild; not an invoice or transaction count."
   },
   "limits": [
-    "Hosted OAuth and real ChatGPT qualification remain incomplete.",
-    "Provider and OAuth grant boundaries used fixtures; no paid generations or reviewer video recorded.",
+    "Hosted OAuth, same-grant reconnection and authenticated discovery pass. Token refresh/revocation and real ChatGPT functional scenarios remain incomplete.",
+    "No paid provider generations or reviewer video recorded. Initial OAuth grant is real; refresh/revocation still need separate evidence.",
     "Core Auth/Neon/S3 credentials are installed on the dedicated project. Provider credentials and workers remain incomplete; eight internal application secrets are installed; configuration checks do not qualify runtime behavior.",
     "18+ eligibility implemented on the branch and migration applied to the dedicated database; dedicated test deployment only. This is self-attestation, not documentary age verification.",
     "Applicable account-specific direct-provider clauses still require alignment with the routes used for qualification.",
     "Current-main account-deletion request behavior retained; full account erasure not executed.",
-    "Publisher identity is verified and ZIP 0.3.14 is uploaded as a draft. Metadata has no findings; both skills passed. Domain verified; OAuth connection, functional qualification and review evidence remain incomplete.",
+    "Publisher verified; original ZIP 0.3.14 preserved. Diagnostic draft 0.3.15 retains Authorized/Domain verified and 42 tools. Final UI says Configuration incomplete; five generic further-review findings remain, credentials/demo incomplete. Reconcile diagnostic identity before submission.",
     "Vercel sourceFilesOutsideRootDirectory PATCH was rejected and not applied; creation response and current read confirm it was already true by default. No further change needed.",
-    "Original OpenAI connection did not ingest the registered-client configuration. A fresh diagnostic draft recognizes the unchanged MCP manifest and exposes the secret field. Secret transmission awaits explicit approval; OAuth grant, callback, token lifecycle and tool scan remain unverified. Original draft preserved; no runtime or database changes in this diagnostic."
+    "Original connection failed to ingest client. Fresh diagnostic draft completes OAuth with explicit reviewer approval. The directory-only wording fix is deployed and clears get_model_details. Final scan requires further review for five retained tools. No specific rationale was returned; none was inferred. Dedicated Neon is paused again."
   ],
   "portal": {
     "browser": "Chrome",
@@ -220,18 +274,18 @@
     "uploadBlockedByIdentityVerification": false,
     "zipUploaded": true,
     "settingsChanged": false,
-    "pluginId": "plugin_asdk_app_6af4711f72f08191bf141a80553b9c9d",
-    "appId": "asdk_app_6af4711f72f08191bf141a80553b9c9d",
-    "draftId": "appsub_6af4711f73788191b4b0e16925c30444",
-    "draftVersion": "0.3.14",
+    "pluginId": "plugin_asdk_app_6af49bb426f08191a95f4331a3cb3739",
+    "appId": "asdk_app_6af49bb426f08191a95f4331a3cb3739",
+    "draftId": "appsub_6af49bb42730819199847f39ad7a8dd0",
+    "draftVersion": "0.3.15",
     "reviewStatus": "Not submitted",
     "publicationStatus": "Not published",
     "metadataStatus": "No findings",
     "skillsStatus": "Checks passed",
-    "mcpConfiguration": "Domain verified; OAuth client displayed but Connect reports client ID missing",
+    "mcpConfiguration": "Configuration incomplete",
     "domainVerified": true,
     "oauthMetadataDiscovered": true,
-    "toolDiscoveryCompleted": false,
+    "toolDiscoveryCompleted": true,
     "reviewInformation": {
       "positiveCasesComplete": 5,
       "negativeCasesComplete": 3,
@@ -246,15 +300,15 @@
       ],
       "realScenariosExecuted": false
     },
-    "draftStatusCheckedAt": "2026-11-11T16:31:00Z",
-    "draftUrl": "https://platform.openai.com/plugins/manage/plugin_asdk_app_6af4711f72f08191bf141a80553b9c9d?tab=details&version=appsub_6af4711f73788191b4b0e16925c30444",
+    "draftStatusCheckedAt": "2026-11-11T17:30:29.278Z",
+    "draftUrl": "https://platform.openai.com/plugins/manage/plugin_asdk_app_6af49bb426f08191a95f4331a3cb3739?tab=mcp&version=appsub_6af49bb42730819199847f39ad7a8dd0&mcp=server%3Amaxvideoai",
     "skillsStatusVerifiedInPortal": true,
     "skillsEvidence": ".local/openai-directory-20261111/portal/skills-passed.jpg",
-    "oauthSecretTransmitted": false,
-    "oauthConnected": false,
+    "oauthSecretTransmitted": true,
+    "oauthConnected": true,
     "oauthClientDeclarationMatchesUploadedPackage": true,
     "oauthRecoveryDiagnostic": {
-      "checkedAt": "2026-11-11T16:47:22.576Z",
+      "checkedAt": "2026-11-11T17:30:29.278Z",
       "originalConnectionClientMissing": true,
       "downloadedPackageFilesIdentical": 13,
       "newServerKeyRejected": true,
@@ -268,17 +322,126 @@
       "skillsUnchanged": true,
       "savedConnectionClientRecognized": true,
       "secretFieldVisible": true,
-      "secretTransmissionApproval": "requested",
-      "secretTransmitted": false,
-      "oauthConnected": false,
-      "callbackKnown": false,
+      "secretTransmissionApproval": "explicit owner approval received",
+      "secretTransmitted": true,
+      "oauthConnected": true,
+      "callbackKnown": true,
       "submitted": false,
       "published": false,
-      "runtimeChanged": false,
-      "databaseReactivated": false,
-      "persistentSqlWrites": false,
-      "authSettingsChanged": false,
-      "evidence": ".local/openai-directory-20261111/evidence/oauth-recovery-diagnosis.json"
+      "runtimeChanged": true,
+      "databaseReactivated": true,
+      "persistentSqlWrites": true,
+      "authSettingsChanged": true,
+      "evidence": ".local/openai-directory-20261111/evidence/oauth-recovery-diagnosis.json",
+      "secretStoredConfirmedByPortal": true,
+      "callbackUri": "https://chatgpt.com/connector/oauth/jx_aF3Nv59jf",
+      "authorizationReachedReviewerConsent": true,
+      "nextApproval": null,
+      "oauthClientCallbackUpdated": true,
+      "databasePausedAfterLogin": true,
+      "hookActivationAndGrantApproved": true,
+      "databaseReactivatedForGrant": true,
+      "toolDiscoveryCompleted": true,
+      "toolCount": 42,
+      "runtimeChange": "Directory-only wording correction after initial OAuth grant; not the OAuth fix",
+      "databasePausedAfterFinalScan": true,
+      "reconnectUsedExistingGrant": true,
+      "reconnectBlankSecretError": "Portal said blank keeps secret, but saving blank returned mcp_validation for missing static client details; resupplying the same authorized client secret succeeded."
+    },
+    "originalDraft": {
+      "pluginId": "plugin_asdk_app_6af4711f72f08191bf141a80553b9c9d",
+      "appId": "asdk_app_6af4711f72f08191bf141a80553b9c9d",
+      "draftId": "appsub_6af4711f73788191b4b0e16925c30444",
+      "draftVersion": "0.3.14",
+      "draftUrl": "https://platform.openai.com/plugins/manage/plugin_asdk_app_6af4711f72f08191bf141a80553b9c9d?tab=details&version=appsub_6af4711f73788191b4b0e16925c30444",
+      "mcpConfiguration": "Domain verified; OAuth client displayed but Connect reports client ID missing",
+      "toolDiscoveryCompleted": false,
+      "oauthConnected": false
+    },
+    "diagnosticIdentityRequiresReconciliationBeforeSubmission": true,
+    "firstMcpScan": {
+      "checkedAt": "2026-11-11T17:08:32Z",
+      "safetyStatus": "SCANNED_OK",
+      "tools": 42,
+      "findings": [
+        {
+          "tool": "get_model_details",
+          "issues": [
+            "This tool's description appears to compare the plugin with alternatives, disparage them, or instruct the model to prefer this plugin."
+          ]
+        },
+        {
+          "tool": "list_audio_capabilities",
+          "issues": [
+            "This new tool definition needs further review before it can be published."
+          ]
+        },
+        {
+          "tool": "prepare_audio_generation",
+          "issues": [
+            "This new tool definition needs further review before it can be published."
+          ]
+        },
+        {
+          "tool": "confirm_audio_generation",
+          "issues": [
+            "This new tool definition needs further review before it can be published."
+          ]
+        }
+      ],
+      "blockingFilterItemsObserved": 0,
+      "findingSeverityNotInferredFromGenericWording": true,
+      "wordingCorrectionCommit": "95be72898e05ed1ec9c5e8d5fef168847c63c741",
+      "correctionRescan": "completed after metadata rediscovery; get_model_details finding cleared"
+    },
+    "finalMcpScan": {
+      "checkedAt": "2026-11-11T17:30:29.278Z",
+      "scanId": "asdk_app_6af49bb426f08191a95f4331a3cb3739~AppsSDKContinuousScan_fad90b999eb081918d24c6b6eb22586c",
+      "scanTime": "2026-11-11T17:28:57.779265+00:00",
+      "completedAt": "2026-11-11T17:29:04.285946+00:00",
+      "runtimeProblem": null,
+      "toolsReviewed": 42,
+      "modelDetailsReviewComplete": true,
+      "modelDetailsFindings": [],
+      "newWordingVerified": true,
+      "remainingFindings": [
+        {
+          "tool": "compare_generation_prices",
+          "issues": [
+            "This new tool definition needs further review before it can be published."
+          ]
+        },
+        {
+          "tool": "list_audio_capabilities",
+          "issues": [
+            "This new tool definition needs further review before it can be published."
+          ]
+        },
+        {
+          "tool": "prepare_audio_generation",
+          "issues": [
+            "This new tool definition needs further review before it can be published."
+          ]
+        },
+        {
+          "tool": "confirm_audio_generation",
+          "issues": [
+            "This new tool definition needs further review before it can be published."
+          ]
+        },
+        {
+          "tool": "prepare_generation",
+          "issues": [
+            "This new tool definition needs further review before it can be published."
+          ]
+        }
+      ],
+      "blockingFilterItemsObserved": 0,
+      "portalConfigurationBadge": "Configuration incomplete",
+      "incompleteBadgeCauseNotEstablished": true,
+      "authentication": "Authorized",
+      "domainVerified": true,
+      "evidence": ".local/openai-directory-20261111/evidence/openai-final-scan-state.json"
     }
   },
   "dedicatedAuth": {
@@ -294,14 +457,20 @@
     "accessTokenHook": {
       "schema": "maxvideoai_review_auth",
       "function": "custom_access_token_hook",
-      "enabled": false,
-      "allowlistedClients": 0,
+      "enabled": true,
+      "allowlistedClients": 1,
       "authAdminExecute": true,
       "anonExecute": false,
-      "authenticatedExecute": false
+      "authenticatedExecute": false,
+      "functionalChecksPassed": 8,
+      "functionalChecksRolledBack": true,
+      "authRuntimeVerified": true,
+      "activationApproval": "explicit owner action-time approval received and applied",
+      "roleSimulation": "SET ROLE supabase_auth_admin denied; connector-role functional tests and effective privileges checked separately",
+      "runtimeEvidence": "OpenAI Authorized and authenticated tools/list accepted all 42 tools; token claims not directly retrieved"
     },
-    "settingsChangedDuringInspection": false,
-    "sqlReadOnly": true,
+    "settingsChangedDuringInspection": true,
+    "sqlReadOnly": false,
     "keyValidation": {
       "projectId": "ajwofjldwawdwtioekuc",
       "validKeySettingsStatus": 200,
@@ -326,7 +495,7 @@
       "invitationSent": false,
       "passwordLoginVerified": true,
       "verificationSessionSignedOut": true,
-      "mcpOAuthTested": false,
+      "mcpOAuthTested": true,
       "applicationDatabaseSeeded": false,
       "reviewerReady": false,
       "userDataFromOtherAccountsRead": false,
@@ -340,12 +509,15 @@
       "id": "324a5cbd-2929-4ba1-82a6-58083f5ccb33",
       "method": "client_secret_basic",
       "redirectUris": [
-        "http://127.0.0.1:8766/callback"
+        "http://127.0.0.1:8766/callback",
+        "https://chatgpt.com/connector/oauth/jx_aF3Nv59jf"
       ],
-      "callbackPurpose": "local diagnostic only",
-      "openaiCallbackKnown": false,
+      "callbackPurpose": "Observed OpenAI callback plus temporary local diagnostic",
+      "openaiCallbackKnown": true,
       "secretStoredLocally": true,
-      "secretSentToOpenAI": false
+      "secretSentToOpenAI": true,
+      "secretDestinationPluginId": "plugin_asdk_app_6af49bb426f08191a95f4331a3cb3739",
+      "secretTransmissionApprovedByOwner": true
     }
   },
   "dedicatedHosting": {
@@ -388,11 +560,18 @@
       "openai-mcp.maxvideoai.com"
     ],
     "deployment": {
-      "id": "dpl_83goM2ssi7ZwKTqCf4uJup52jFXY",
+      "id": "dpl_FTEAU3LTzoEvTwuJpycAN5Kez2Ed",
       "state": "READY",
       "source": "git",
-      "sha": "5312a21fa05ed6bd0f85f08bca4970b6e5be1f8d",
-      "target": "production of dedicated project only"
+      "sha": "95be72898e05ed1ec9c5e8d5fef168847c63c741",
+      "target": "production of dedicated test project only",
+      "aliases": [
+        "openai-mcp.maxvideoai.com",
+        "openai-review.maxvideoai.com",
+        "maxvideoai-openai-review-20261111.vercel.app",
+        "maxvideoai-openai-review-20261111-camgraphes-projects.vercel.app",
+        "maxvideoai-openai-review-2026111-git-5cf06b-camgraphes-projects.vercel.app"
+      ]
     },
     "projectLevelBuildIsolation": {
       "registered": true,
@@ -400,6 +579,13 @@
       "otherRefs": "skip",
       "mainAttemptId": "dpl_BqQ7E43D5P4MSKVbX7GuxVJ7yPhx",
       "mainAttemptState": "CANCELED"
+    },
+    "firstDeployment": {
+      "id": "dpl_83goM2ssi7ZwKTqCf4uJup52jFXY",
+      "state": "READY",
+      "source": "git",
+      "sha": "5312a21fa05ed6bd0f85f08bca4970b6e5be1f8d",
+      "target": "production of dedicated project only"
     }
   },
   "dedicatedStorage": {
@@ -464,12 +650,19 @@
       "indicativeComputeUSD": 0.002974,
       "invoice": false
     },
-    "lastPausedAt": "2026-11-11T16:30:00Z",
+    "lastPausedAt": "2026-11-11T17:30:52Z",
     "hostedTestWindow": {
       "enabledAt": "2026-11-11T16:06:30Z",
       "disabledAt": "2026-11-11T16:30:00Z",
       "computeCU": 0.25,
       "estimatedMaximumComputeUSD": 0.0104
+    },
+    "oauthGrantScanWindow": {
+      "startedAt": "2026-11-11T17:07:01Z",
+      "suspendedAt": "2026-11-11T17:30:52Z",
+      "computeCU": 0.25,
+      "maximumContinuousComputeUSD": 0.010534,
+      "invoice": false
     }
   },
   "latestMainObservedThroughCoordinatedDeployment": "c501acf9ed4e139914a7502c8b3498ce758d59c8",
@@ -486,6 +679,9 @@
       "requests",
       "functions"
     ],
-    "paidGenerations": 0
+    "paidGenerations": 0,
+    "secondBuildMinutes": 7.24822,
+    "secondBuildEstimatedUSD": 0.050738,
+    "totalTwoBuildsEstimatedUSD": 0.112278
   }
 }

@@ -1,8 +1,8 @@
 # Base dédiée et premier hébergement
 
-État vérifié le 11 novembre 2026 à 15 h 58 Europe/Madrid. Le candidat applicatif
-est `37dc4156a` sur `codex/openai-directory-20261111` ; les changements suivants
-de ce lot sont documentaires. Aucun déploiement à ce stade.
+Historique de préparation commencé le 11 novembre 2026 à 15 h 58 Europe/Madrid.
+Le premier hébergement et OAuth ont depuis abouti ; voir le résultat en fin de
+document et le [journal courant](etat-essai.md).
 
 ## Travail exécuté
 
@@ -93,4 +93,4 @@ Le premier build Git est READY sur `5312a21fa05ed6bd0f85f08bca4970b6e5be1f8d` ; 
 
 Les crons dédiés sont maintenant désactivés au niveau du projet ; la base dédiée est remise en pause (`disabled: true`, `idle`). Le filtre de build autonome ignore main et toutes les branches autres que notre branche dédiée. Cette isolation a été constatée lors de la fusion de #646 dans l'autre chantier.
 
-Le ZIP 0.3.14 porte le client OAuth réel, mais son ancienne connexion OpenAI ne reprend pas cette déclaration. Un brouillon indépendant **MaxVideoAI OAuth Test 0.3.15**, avec les mêmes paramètres MCP et les mêmes skills, reconnaît le client et propose le champ du secret. Aucun secret OAuth n'a encore été envoyé à OpenAI : l'accord ciblé est demandé. Voir `depot-portail.md` pour le diagnostic et la reprise. Aucun runtime, réglage Auth ou base n'a été modifié pour ce diagnostic. Les sources et relevés restent locaux ; pas de nouveau push documentaire déclenchant un build inutile.
+Le ZIP 0.3.14 porte le client réel, mais son ancienne connexion OpenAI ne le reprend pas. Le brouillon indépendant **MaxVideoAI OAuth Test 0.3.15**, avec le même MCP et les mêmes skills, a permis de terminer OAuth. Secret enregistré après accord, callback exact raccordé, hook restreint activé et reviewer approuvé : **Configured / Authorized**, 42 outils découverts. Le premier scan remonte quatre remarques ; une correction de formulation dédiée a été livrée depuis `95be72898`, sans retrait audio. Le scan après redécouverte confirme la correction et demande un examen supplémentaire pour cinq outils conservés. Le badge général est encore Configuration incomplete, avec Authorized et domaine vérifié. Le second build est READY en 7,248 minutes ; les deux alias ciblent ce commit. Neon est désactivé/idle à 17:30:52 UTC, les crons restent suspendus. Voir [le suivi](scan-et-suite.md) et [le relevé du portail](depot-portail.md). Le renouvellement/révocation et les scénarios avec fournisseurs restent à qualifier.

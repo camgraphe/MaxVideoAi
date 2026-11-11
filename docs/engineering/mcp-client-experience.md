@@ -12,8 +12,11 @@ Local checks: 17 directory SDK contracts passed; `mcp:client:check` passed 214
 tests with one optional skip and all 70 curated decisions. The direct policy
 fingerprint remains unchanged. Directory instructions retain their 1,998-byte
 maximum; the largest directory descriptor is now 1,939 UTF-8 bytes (ceiling
-2,000). Frontend lint has zero errors and seven existing warnings. Deployment
-and a fresh portal scan must separately establish whether the finding clears.
+2,000). Frontend lint has zero errors and seven existing warnings. The dedicated Git deployment `95be72898` is READY; after metadata rediscovery,
+the portal scan completes `get_model_details` without findings. All 42 tool
+reviews finish; five other tools require further review without a specific
+rationale (three Audio tools, comparison and generation preparation). The portal
+retains Authorized/domain verification but shows Configuration incomplete.
 No provider execution or directory publication is inferred from discovery.
 
 ## OpenAI directory rebased candidate — 11 November 2026 (initial local evidence)
