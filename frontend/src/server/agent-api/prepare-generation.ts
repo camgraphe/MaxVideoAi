@@ -16,6 +16,7 @@ import { AgentApiError } from './errors';
 import {readGenerationPricing} from './generation-pricing-read';
 export {buildGenerationPricingSnapshot} from './generation-pricing-read';
 import {
+  GenerationNormalizationError,
   hashCanonicalGenerationRequest,
   normalizeGenerationRequest,
 } from './generation-normalization';
@@ -219,11 +220,18 @@ function requireTrialRiskRequestContext(value: unknown): TrialRiskRequestContext
 }
 
 
-function invalidParameter(): never {
-  throw new AgentApiError(
-    'PARAMETER_INVALID',
-    'One or more generation settings are invalid for the selected model.',
-  );
+function normalizePreparationRequest(input: PrepareGenerationInput): CanonicalGenerationRequest {
+  try {
+    return normalizeGenerationRequest(input);
+  } catch (error) {
+    if (error instanceof GenerationNormalizationError) {
+      // Normalizer-authored fields and messages never include submitted values.
+      throw new AgentApiError('PARAMETER_INVALID', error.message, false, {
+        type: 'correct_request', field: error.field,
+      });
+    }
+    throw new AgentApiError('PARAMETER_INVALID', 'The generation request is invalid.');
+  }
 }
 
 function requireWallet(wallet: WalletSummary, currency: string): number {
@@ -289,8 +297,7 @@ export async function prepareGenerationForActor(
 ): Promise<PreparedGeneration> {
   requireGenerationActor(principal);
   if (principal.authMethod !== 'oauth') {
-    let pilotRequest: CanonicalGenerationRequest;
-    try { pilotRequest = normalizeGenerationRequest(input); } catch { invalidParameter(); }
+    const pilotRequest = normalizePreparationRequest(input);
     requireStudioGenerationRequest(pilotRequest,{enforceReferenceLimit:principal.authMethod==='studio-session'});
   }
   const originalTrialCandidate = principal.authMethod === 'oauth' ? trialCandidateFromOriginal(input) : null;
@@ -304,11 +311,7 @@ export async function prepareGenerationForActor(
 
   let request = originalTrialCandidate;
   if (!request) {
-    try {
-      request = normalizeGenerationRequest(input);
-    } catch {
-      throw new AgentApiError('PARAMETER_INVALID', 'The generation request is invalid.');
-    }
+    request = normalizePreparationRequest(input);
   }
 
   let prospectiveTrial = false;

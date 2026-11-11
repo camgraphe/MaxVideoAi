@@ -162,7 +162,9 @@ export const prepareGenerationInputSchema = z.object({
     'Seedance 2.5 native Draft only: draft selects finalizable 480p; final uses an owned ready draftJobId and inherits creative facts. Omit for ordinary generation. For final, omit mode, prompt, settings and references.',
   ),
   settings: canonicalSettingsSchema.nullable().default(null),
-  references: z.array(reference).max(MAX_GENERATION_REFERENCES).nullable().default(null),
+  references: z.array(reference).max(MAX_GENERATION_REFERENCES).nullable().default(null).describe(
+    'Slots count from 0 within the selected mode’s ordered role, never across the whole array. In v2v/r2v, only role=reference uses slots; omit slot on the source video. In extend, only role=source uses slots. These modes infer caller order when slots are omitted. Other roles must omit slot; other ordered workflows use role=reference.',
+  ),
   subjects: z.array(canonicalSubjectSchema).min(1).max(7).nullable().default(null).describe(
     'Only when model details report subjects: ordered image/video subjects linked to zero-based role=reference positions in references. Subject references must be owned assets. Voice bindings are unavailable; never pass provider voice IDs.',
   ),

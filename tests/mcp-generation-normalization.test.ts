@@ -82,6 +82,20 @@ test('defaults optional canonical collections and the single output count', () =
   );
 });
 
+test('normalization errors identify input paths for settings keys and nested Draft fields', () => {
+  for (const [overrides, field] of [
+    [{ settings: { ['x'.repeat(65)]: true } }, 'settings'],
+    [{ engineId: 'seedance-2-5', seedanceWorkflow: { step: 'final', draftJobId: 'x'.repeat(256) } }, 'seedanceWorkflow.draftJobId'],
+    [{ engineId: 'seedance-2-5', seedanceWorkflow: { step: 'draft' }, settings: { resolution: '720p' } }, 'settings.resolution'],
+  ] as const) {
+    assert.throws(() => normalizeGenerationRequest(request(overrides)), (error: unknown) => {
+      assert.ok(error instanceof GenerationNormalizationError);
+      assert.equal(error.field, field);
+      return true;
+    });
+  }
+});
+
 test('sorts references deterministically within an explicit semantic role order', () => {
   const references = [
     { kind: 'asset', assetId: 'asset-mask', role: 'mask' },

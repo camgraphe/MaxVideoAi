@@ -872,3 +872,52 @@ tests with one intentional host skip and all 70 curated scenarios; 86 focused
 compression, capability, normalization and App tests pass. Metadata collection and
 regression checks are offline. Delivery, catalog refresh and real-host behavior
 require their own evidence.
+
+### 2026-11-11 — Role-scoped reference slots and preparation errors (source candidate)
+
+In canonical `v2v`/`r2v`, slots belong only to `role=reference` and start at zero
+within that role. The source video has no slot. In `extend`, slots instead belong
+to `role=source`. These modes infer caller order when slots are omitted. Numbering
+the entire mixed source/reference array is invalid even though each individual
+slot is an integer in the MCP schema's range. The preparation input schema now
+states this rule; accepted requests, normalization, ordering and quote hashes are
+unchanged.
+
+Preparation preserves normalizer-authored public messages and returns
+`nextAction: { type: "correct_request", field: "references[0].slot" }` for a slot
+on an unordered source. An offset ordered slot identifies its own field and the
+expected zero-based position. Submitted prompts, asset IDs, URLs and unknown
+field names are never interpolated into these messages. Unexpected exceptions
+retain the generic failure. No media resolution, pricing, wallet read, quote
+insertion or provider submission follows invalid normalization.
+Previously abbreviated nested Draft fields now identify `settings.resolution`
+and `seedanceWorkflow.draftJobId`; invalid setting keys point to `settings`
+without disclosing the rejected key.
+
+Removing only `prepare_generation.inputSchema.properties.references.description`
+from the collected metadata reproduces prior policy fingerprint
+`5d5ad3dc054ef9ccb38003575a17ad0b2861db26eb31150e57368c79ec79701c`.
+The reviewed documentation-only metadata change yields
+`727dbff0194eb24e4b6626b0d39f870583a879e98d0e76591a00db697e52b1d2`.
+All 70 curated decisions, 39 policy checks and the fixture-contract fingerprint
+are unchanged. Global instructions remain 1,551 UTF-8 bytes; 18 visible tool
+descriptors have a maximum description of 1,927 bytes. Preparation remains 1,639
+description bytes; its serialized input schema is 14,572 bytes (previously 14,222).
+
+The real SDK adapter, canonical preparation and injected offline media/pricing
+boundaries reproduce rejection before media/pricing at both reported prompt
+lengths. Omitting slots or using a source without a slot and reference slots
+`0, 1, 2` preserves scene/body/face order in the prepared snapshot. Historical
+unnumbered and ordered Wan reference quote hashes retain their frozen values.
+These tests are offline evidence. Separately, the owning production workflow
+prepared a quote from the corrected no-slot request with the same canonical
+request hash and ordered assets. That verifies production quote preparation
+without deploying this diagnostic improvement. Provider generation, output
+quality and a refreshed host catalog are not established by these checks.
+
+Final local verification: 76 focused normalization/preparation/compatibility tests
+pass; `mcp:client:check` reports 204 passing tests and one skipped unavailable
+Codex authoring validator, plus all 70 curated scenarios. TypeScript, exposure
+lint and `git diff --check` pass. Frontend ESLint has zero errors and seven
+existing warnings in unrelated UI files. A read-only independent review found
+no remaining issues after correcting the abbreviated Draft field paths.
