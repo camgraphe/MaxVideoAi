@@ -23,7 +23,7 @@ function transportPython(): string {
   const step = readAction().runs.steps[0];
   assert.equal(step?.name, 'Select official Ubuntu archive transport', 'Ubuntu transport step is missing');
   assert.equal(step.shell, 'bash');
-  const match = /^sudo python3 - <<'PYTHON'\n([\s\S]+)\nPYTHON\n?$/.exec(step.run);
+  const match = /\nsudo python3 - "\$ubuntu_archive_url" <<'PYTHON'\n([\s\S]+)\nPYTHON\n?$/.exec(step.run);
   assert.ok(match, 'transport step must contain the executable Python heredoc');
   return match[1];
 }
@@ -44,11 +44,11 @@ function writeSource(root: string, name: string, content: string): string {
   return source;
 }
 
-function runTransport(root: string): string {
+function runTransport(root: string, archive = 'https://archive.ubuntu.com/ubuntu'): string {
   // Execute the action's real Python, redirecting only its APT filesystem root.
   // The shell wrapper, sudo and installation commands are never executed.
   const script = transportPython().replaceAll('/etc/apt/', `${root}/etc/apt/`);
-  const result = spawnSync('python3', ['-c', script], { encoding: 'utf8', timeout: 10_000 });
+  const result = spawnSync('python3', ['-c', script, archive], { encoding: 'utf8', timeout: 10_000 });
   assert.ifError(result.error);
   assert.equal(result.status, 0, result.stderr);
   assert.equal(result.stderr, '');
@@ -134,6 +134,68 @@ test('missing APT sources are safe and are not created', () => {
   });
 });
 
+test('a reachable Azure archive replaces an unreachable canonical archive without changing trust', () => {
+  withAptRoot(root => {
+    const source = writeSource(root, 'sources.list.d/ubuntu.sources', [
+      'Types: deb',
+      'URIs: https://archive.ubuntu.com/ubuntu/',
+      'Suites: noble noble-updates noble-backports noble-security',
+      'Components: main universe',
+      'Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg',
+      '',
+    ].join('\n'));
+    const original = readFileSync(source, 'utf8');
+    runTransport(root, 'https://azure.archive.ubuntu.com/ubuntu');
+    assert.equal(readFileSync(source, 'utf8'), original.replace(
+      'https://archive.ubuntu.com/ubuntu/', 'https://azure.archive.ubuntu.com/ubuntu/'));
+  });
+});
+
+for (const reachable of ['canonical', 'azure', 'kernel', 'neither', 'redirect'] as const) {
+  test(`archive probe handles ${reachable} availability before modifying sources`, () => {
+    withAptRoot(root => {
+      const calls = path.join(root, 'calls');
+      const bin = path.join(root, 'bin');
+      mkdirSync(bin);
+      writeFileSync(path.join(bin, 'curl'), [
+        '#!/bin/bash',
+        'printf "%s\\n" "$*" >> "$PROBE_CALLS"',
+        'if [ "$REACHABLE_ARCHIVE" = redirect ]; then printf 301; exit 0; fi',
+        'case "$*" in',
+        '  *https://azure.archive.ubuntu.com/*) [ "$REACHABLE_ARCHIVE" = azure ] || exit 6 ;;',
+        '  *https://archive.ubuntu.com/*) [ "$REACHABLE_ARCHIVE" = canonical ] || exit 6 ;;',
+        '  *https://mirrors.edge.kernel.org/*) [ "$REACHABLE_ARCHIVE" = kernel ] || exit 6 ;;',
+        '  *) exit 2 ;;',
+        'esac',
+        'printf 200',
+      ].join('\n'), { mode: 0o755 });
+      // Run the real selection shell only, replacing the privileged write with a marker.
+      const probe = readAction().runs.steps[0].run.split('sudo python3')[0]
+        .replace('. /etc/os-release', 'VERSION_CODENAME=noble');
+      const result = spawnSync('bash', ['-e', '-c', `${probe}\nprintf 'SELECTED=%s\\n' "$ubuntu_archive_url"`], {
+        encoding: 'utf8', timeout: 10_000,
+        env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, PROBE_CALLS: calls, REACHABLE_ARCHIVE: reachable },
+      });
+      assert.ifError(result.error);
+      const unavailable = reachable === 'neither' || reachable === 'redirect';
+      assert.equal(result.status, unavailable ? 1 : 0, result.stderr);
+      const probes = readFileSync(calls, 'utf8').trim().split('\n');
+      assert.equal(probes.length, reachable === 'canonical' ? 1 : reachable === 'azure' ? 2 : 3);
+      for (const call of probes) {
+        assert.match(call, /--fail --silent --show-error --connect-timeout 5 --max-time 15/);
+        assert.match(call, /\/dists\/noble\/InRelease --output \/dev\/null/);
+      }
+      if (unavailable) {
+        assert.match(result.stderr, /No official Ubuntu archive is reachable/);
+        assert.doesNotMatch(result.stdout, /SELECTED=/);
+      } else {
+        const expected = reachable === 'kernel' ? 'mirrors.edge.kernel.org' : `${reachable === 'azure' ? 'azure.' : ''}archive.ubuntu.com`;
+        assert.ok(result.stdout.includes(`SELECTED=https://${expected}/ubuntu`));
+      }
+    });
+  });
+}
+
 test('repeated transport selection does not rewrite already converted sources', () => {
   withAptRoot(root => {
     const source = writeSource(root, 'security-mirrors.txt', 'http://azure.archive.ubuntu.com/ubuntu noble-security\n');
@@ -146,7 +208,7 @@ test('repeated transport selection does not rewrite already converted sources', 
   });
 });
 
-test('transport selection preserves every existing installation command and has valid shell syntax', () => {
+test('transport selection preserves required installations and rejects incomplete index refreshes', () => {
   const action = readAction();
   transportPython();
   assert.equal(action.name, 'Setup validation tools');
@@ -156,7 +218,7 @@ test('transport selection preserves every existing installation command and has 
     name: 'Install media and database validation tools',
     shell: 'bash',
     run: [
-      'sudo apt-get update',
+      'sudo timeout 5m apt-get update --error-on=any',
       'sudo apt-get install --yes --no-install-recommends ffmpeg postgresql-common',
       'sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y',
       'sudo apt-get install --yes --no-install-recommends postgresql-17',

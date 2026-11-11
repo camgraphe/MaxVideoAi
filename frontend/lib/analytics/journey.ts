@@ -48,6 +48,7 @@ const APPROVED_UTM_TOUCHES: readonly ApprovedUtmTouch[] = [
   { source: 'google', medium: 'cpc', campaign: 'Launch', contents: ['Hero'] },
   { source: 'google', medium: 'cpc', campaign: 'claude_desktop_clip_20261005', contents: ADS_READINESS_DRAFT_CONTENTS },
   { source: 'youtube', medium: 'paid_video', campaign: 'claude_desktop_clip_20261005', contents: ADS_READINESS_DRAFT_CONTENTS },
+  { source: 'chatgpt', medium: 'cpc', campaign: 'chatgpt_ads_pilot_202611', contents: ['no_subscription_v1'] },
   { source: 'newsletter', medium: 'email' },
   { source: 'reddit', medium: 'organic_social', campaign: 'community_pilot', contents: ['mcp_quote'] },
   {
