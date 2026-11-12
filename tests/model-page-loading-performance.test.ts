@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import test from 'node:test';
 import { build } from 'esbuild';
+import { getRuntimeModelById } from '../frontend/config/model-runtime';
 import { getFalEngineById } from '../frontend/src/config/falEngines';
 import { mergeEngineLocalizedContent } from '../frontend/lib/models/i18n-normalization';
 import { makeModelPagePricingHarness, findModelLayoutElements } from './helpers/model-page-pricing-harness';
@@ -51,6 +52,7 @@ async function makeRouteHarness() {
     PREFERRED_MEDIA: `{'veo-3-1':{hero:'public-one',demo:null}}`,
     FEATURED_EXAMPLE_MEDIA: `{'veo-3-1':[]}`,
     MarketingModelPageLayout: `()=>null`,
+    ModelArchivePage: `()=>null`,
     resolveRuntimePublicSlug: `()=>model`,
     isRuntimeModelPagePublished: `()=>true`,
     isRuntimePresentationOnlyModel: `()=>prelaunch`,
@@ -168,6 +170,28 @@ test('model route preserves rejected readers, optional playlist fallback and exc
       assert.deepEqual(h.calls,[],'prelaunch/archive must not start active-model reads');
     }
   } finally {await dispose();}
+});
+
+test('localized Pika archives select ModelArchivePage before current and prelaunch templates', async () => {
+  const { harness: h, dispose } = await makeRouteHarness();
+  try {
+    const model = getRuntimeModelById('pika-text-to-video');
+    assert.ok(model);
+    for (const locale of ['en', 'fr', 'es']) for (const prelaunch of [false, true]) {
+      h.reset({ archive: true, prelaunch });
+      Object.assign(h.model, model);
+      const localized = JSON.parse(await readFile(`content/models/${locale}/${model.slug}.json`, 'utf8'));
+      Object.assign(h.localized, localized);
+      h.release();
+      const result = await h.page({ params: Promise.resolve({ slug: model.slug, locale }) });
+      assert.equal(result.type, h.ModelArchivePage, `${locale}: archive takes precedence over ${prelaunch ? 'prelaunch' : 'current'} templates`);
+      assert.equal(result.props.model, h.model);
+      assert.equal(result.props.value, h.localized.archive);
+      assert.equal(result.props.locale, locale);
+      assert.deepEqual(h.calls, [], 'archives must not start active pricing/media readers');
+      assert.deepEqual(h.details, []);
+    }
+  } finally { await dispose(); }
 });
 
 const modelLocales = ['en', 'fr', 'es'] as const;

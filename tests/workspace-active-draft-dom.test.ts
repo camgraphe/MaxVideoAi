@@ -6,6 +6,7 @@ import * as React from 'react';
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { listFalEngines } from '../frontend/src/config/falEngines';
+import { isArchivedGenerationModel } from '../frontend/lib/model-generation-policy';
 import { useWorkspaceRouteFormState } from '../frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceRouteFormState';
 import { useWorkspaceAssetState } from '../frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceAssetState';
 import { useWorkspaceDraftHydration } from '../frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceDraftHydration';
@@ -1185,6 +1186,7 @@ for (const [locale, notice] of [
     const view = await mount({ locale });
     try {
       await act(async () => {
+        view.current.setForm(coerceFormState(allEngines.find(engine => engine.id === 'kling-3-pro')!, 't2v', null));
         view.current.setPrompt('My current prompt');
         view.current.setNegativePrompt('My negative prompt');
         view.current.setInputAssets({ image_url: [media('image_url')] });
@@ -1192,7 +1194,7 @@ for (const [locale, notice] of [
       const before = snapshot(view);
       const storedBefore = view.storage.getItem(workspaceActiveDraftKey('a'));
       const firstRecallRender = view.renders.length;
-      for (const engineId of ['pika-text-to-video', 'pika-image-to-video', 'wan-3']) {
+      for (const engineId of ['wan-3', 'wan-3-prime']) {
         await act(async () => view.current.videoSettings.applyVideoSettingsSnapshot({
           schemaVersion: 1, surface: 'video', engineId, inputMode: 'i2v',
           prompt: 'Do not copy this prompt', negativePrompt: 'Do not copy this either',
@@ -1204,7 +1206,7 @@ for (const [locale, notice] of [
         assert.equal(view.notices.at(-1), notice);
       }
       await act(async () => view.current.videoSettings.applyVideoSettingsFromTile({
-        id: 'legacy-pika', engineId: 'pika-image-to-video', prompt: 'Legacy unavailable prompt',
+        id: 'legacy-wan', engineId: 'wan-3', prompt: 'Legacy unavailable prompt',
         durationSec: 5, aspectRatio: '16:9', iterationCount: 1,
       }));
       assert.deepEqual(snapshot(view), before);
@@ -1222,33 +1224,51 @@ for (const [locale, notice] of [
   });
 }
 
-test('authenticated legacy job response rejects unavailable Pika before changing the draft', async () => {
-  const view = await mount();
-  try {
-    await act(async () => view.current.setPrompt('Keep my draft'));
-    const before = snapshot(view);
-    // The real server mapper derives this snapshot when a legacy job has none stored.
-    const { mapGenerationStatusRecordToWeb } = await import('../frontend/src/server/generations/generation-status');
-    const payload = mapGenerationStatusRecordToWeb({
-      job_id: 'job_legacy_pika', engine_id: 'pika-image-to-video', engine_label: 'Pika',
-      surface: 'video', settings_snapshot: null, prompt: 'Legacy job prompt', duration_sec: 5,
-      status: 'completed', video_url: 'https://assets.test/legacy.mp4',
-    } as Parameters<typeof mapGenerationStatusRecordToWeb>[0]);
-    await act(async () => { void view.current.videoSettings.hydrateVideoSettingsFromJob('job_legacy_pika'); });
-    const request = view.requests.at(-1)!;
-    assert.equal(request.url, '/api/jobs/job_legacy_pika');
-    await act(async () => request.resolve(new Response(JSON.stringify(payload))));
-    assert.deepEqual(snapshot(view), before);
-    assert.match(view.notices.at(-1)!, /currently unavailable/);
-  } finally { await view.close(); }
-});
+for (const archived of [false, true]) {
+  test(`authenticated legacy job ${archived ? 'restores archived Pika without enabling generation' : 'rejects unavailable current model before changing the draft'}`, async () => {
+    const view = await mount();
+    const engineId = archived ? 'pika-image-to-video' : 'wan-3';
+    const jobId = archived ? 'job_legacy_pika' : 'job_unavailable_wan';
+    try {
+      await act(async () => {
+        view.current.setForm(coerceFormState(allEngines.find(engine => engine.id === 'kling-3-pro')!, 't2v', null));
+        view.current.setPrompt('Keep my draft');
+      });
+      const before = snapshot(view);
+      const requestsBefore = view.requests.length;
+      // The real server mapper derives this snapshot when a legacy job has none stored.
+      const { mapGenerationStatusRecordToWeb } = await import('../frontend/src/server/generations/generation-status');
+      const payload = mapGenerationStatusRecordToWeb({
+        job_id: jobId, engine_id: engineId, engine_label: archived ? 'Pika' : 'Wan 3',
+        surface: 'video', settings_snapshot: null, prompt: 'Legacy job prompt', duration_sec: 5,
+        status: 'completed', video_url: 'https://assets.test/legacy.mp4',
+      } as Parameters<typeof mapGenerationStatusRecordToWeb>[0]);
+      await act(async () => { void view.current.videoSettings.hydrateVideoSettingsFromJob(jobId); });
+      const request = view.requests.at(-1)!;
+      assert.equal(request.url, '/api/jobs/' + jobId);
+      await act(async () => request.resolve(new Response(JSON.stringify(payload))));
+      assert.equal(view.requests.length, requestsBefore + 1, 'history recall performs one owned job read only');
+      if (archived) {
+        assert.equal(view.current.form.engineId, 'pika-text-to-video');
+        assert.equal(view.current.prompt, 'Legacy job prompt');
+        assert.equal(isArchivedGenerationModel(view.current.form.engineId), true);
+        assert.equal(allEngines.some(engine => engine.id === view.current.form.engineId), false);
+      } else {
+        assert.deepEqual(snapshot(view), before);
+        assert.match(view.notices.at(-1)!, /currently unavailable/);
+      }
+    } finally { await view.close(); }
+  });
+}
 
 
 for (const source of ['history', 'active'] as const) {
   for (const action of ['continue', 'refine'] as const) {
-    for (const available of [false, true]) {
-      test(`${source} gallery ${action} ${available ? 'applies available settings once' : 'preserves the draft after refusal'}`, async () => {
-        const engineId = available ? 'kling-3-pro' : 'pika-image-to-video';
+    for (const availability of ['available', 'unavailable', 'archived'] as const) {
+      const available = availability !== 'unavailable';
+      const archived = availability === 'archived';
+      test(`${source} gallery ${action} ${archived ? 'restores archived settings once' : available ? 'applies available settings once' : 'preserves the draft after refusal'}`, async () => {
+        const engineId = archived ? 'pika-image-to-video' : available ? 'kling-3-pro' : 'wan-3';
         const hero: GroupSummary['hero'] = {
           id: 'recall-output', jobId: 'job_recall', engineId, engineLabel: engineId,
           prompt: 'Gallery recall prompt', durationSec: 5, createdAt: '2026-10-01',
@@ -1269,6 +1289,7 @@ for (const source of ['history', 'active'] as const) {
         const view = await mount({ galleryRenderGroups: renderGroups });
         try {
           await act(async () => {
+            view.current.setForm(coerceFormState(allEngines.find(engine => engine.id === 'kling-3-pro')!, 't2v', null));
             view.current.setPrompt('Keep my existing prompt');
             view.current.setInputAssets({ image_url: [media('image_url')] });
           });
@@ -1289,7 +1310,11 @@ for (const source of ['history', 'active'] as const) {
               ok: true, settingsSnapshot: { schemaVersion: 1, surface: 'video', engineId, inputMode: 't2v', prompt: 'Gallery recall prompt' },
             }))));
             assert.equal(view.current.videoSettings.recallBlocked, false);
-            assert.equal(view.current.form.engineId, engineId);
+            assert.equal(view.current.form.engineId, archived ? 'pika-text-to-video' : engineId);
+            if (archived) {
+              assert.equal(isArchivedGenerationModel(view.current.form.engineId), true);
+              assert.equal(allEngines.some(engine => engine.id === view.current.form.engineId), false);
+            }
             assert.equal(view.current.prompt, 'Gallery recall prompt' + (action === 'refine' ? '\n\n// refine here' : ''));
           }
         } finally { await view.close(); }

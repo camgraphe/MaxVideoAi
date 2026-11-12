@@ -100,20 +100,28 @@ test('legacy Luma loop selectors are covered without inventing loop for edit mod
   }
 });
 
-test('coverage follows all 54 app-published models in 15 families, including the November launch and pricing-hidden legacy variants', () => {
+test('coverage follows all 53 app-published models in 14 families, including the November launch and pricing-hidden legacy variants', () => {
   const coverage = collectSellableManualTariffCoverage();
   const published = listRuntimeModels().filter((model) => model.publication.app.published);
-  assert.equal(published.length, 54);
+  assert.equal(published.length, 53);
   for (const id of ['kling-v4-flash', 'gpt-image-2-6-flare', 'gpt-image-2-6-sunburst'])
     assert.ok(published.some(model => model.id === id));
   assert.ok(published.some(model => model.id === 'kling-v4'));
   assert.ok(published.some(model => model.id === 'nano-banana-2-1'));
   assert.equal(coverage.scenarios.filter((scenario) => scenario.modelId === 'flux-3-max').length, 128);
-  assert.equal(new Set(published.map((model) => model.family)).size, 15);
+  assert.equal(new Set(published.map((model) => model.family)).size, 14);
   assert.deepEqual(new Set(coverage.scenarios.map((scenario) => scenario.modelId)), new Set(published.map((model) => model.id)));
   assert.ok(coverage.scenarios.some((scenario) => scenario.modelId === 'lumaRay2'));
   assert.ok(coverage.scenarios.some((scenario) => scenario.modelId === 'lumaRay2_flash'));
   assert.equal(new Set(coverage.scenarios.map((scenario) => scenario.id)).size, coverage.scenarios.length);
+  const pika = listRuntimeModels().find(model => model.id === 'pika-text-to-video');
+  assert.ok(pika);
+  assert.equal(pika.publication.model.published, true, 'the historical model page remains published');
+  assert.equal(pika.publication.app.published, false);
+  assert.equal(coverage.scenarios.some(scenario => scenario.modelId === pika.id), false);
+  assert.equal(coverage.gaps.some(gap => gap.modelId === pika.id), false, 'an archive is not an unresolved sellable tariff');
+  assert.deepEqual(collectSellableManualTariffCoverage({ modelId: pika.id }), { scenarios: [], gaps: [] });
+
 });
 
 test('published Kling4 coverage preserves every qualified source/output timing class', () => {
