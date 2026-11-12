@@ -13,6 +13,7 @@ import { CREATOR_TOOL_IDS, type CreatorToolId } from '@/lib/toolbox/catalogue';
 import { resolveServerBillingPolicy, type ResolveServerPricingPolicyDependencies } from './resolve-pricing-policy';
 
 export const CREATOR_COMMERCIAL_POLICY_ID = 'creator-tools:provider-plus-120:v1';
+export const SUBTITLE_COMMERCIAL_POLICY_ID = 'creator-subtitles:provider-plus-200:v1';
 
 /** This product policy replaces model retail policy; it never multiplies a customer quote. */
 export function quoteCreatorProviderBillingSnapshot(input: {
@@ -29,10 +30,13 @@ export function quoteCreatorProviderBillingSnapshot(input: {
   }
   const compatibilityProfile = getVersionedPricingPolicy().compatibilityProfiles.find(profile => profile.id === 'standard');
   if (!compatibilityProfile) throw new Error('Missing standard pricing profile.');
+  const subtitle = input.toolId === 'subtitles';
+  const policyId = subtitle ? SUBTITLE_COMMERCIAL_POLICY_ID : CREATOR_COMMERCIAL_POLICY_ID;
+  const markupPercent = subtitle ? 2 : 1.2;
   const policy: ResolvedPricingPolicy = {
-    source: 'versioned', matchedBy: 'precise', sourceRuleId: CREATOR_COMMERCIAL_POLICY_ID,
-    rule: { id: CREATOR_COMMERCIAL_POLICY_ID, engineId: input.facts.engineId, currency: 'USD',
-      marginPercent: 1.2, marginFlatCents: 0, surchargeAudioPercent: 0, surchargeUpscalePercent: 0,
+    source: 'versioned', matchedBy: 'precise', sourceRuleId: policyId,
+    rule: { id: policyId, engineId: input.facts.engineId, currency: 'USD',
+      marginPercent: markupPercent, marginFlatCents: 0, surchargeAudioPercent: 0, surchargeUpscalePercent: 0,
       compatibilityProfile: 'standard' },
   };
   const quote = quoteCanonicalPricing({
@@ -43,9 +47,9 @@ export function quoteCreatorProviderBillingSnapshot(input: {
   });
   return projectCanonicalQuoteToSnapshot({ quote, base: input.base, addons: input.addons ?? [],
     vendorAccountId: input.vendorAccountId ?? null,
-    meta: { ...input.meta, surface: 'tool', toolId: input.toolId, creatorPricingPolicy: CREATOR_COMMERCIAL_POLICY_ID,
+    meta: { ...input.meta, surface: 'tool', toolId: input.toolId, creatorPricingPolicy: policyId,
       providerCostExactCents: input.facts.vendorSubtotalExactCents,
-      providerCostMultiplier: 2.2, ruleId: policy.sourceRuleId },
+      providerCostMultiplier: subtitle ? 3 : 2.2, ruleId: policy.sourceRuleId },
   });
 }
 

@@ -238,7 +238,7 @@ export function buildAgentGenerationRecovery(
   const { retryAfterSeconds, ...safeStatus } = status;
   const result = status.status === 'completed' ? boundedResult(status.result) : null;
   const destinations = buildAgentAccountDestinations(accountUrl);
-  const retry = status.status === 'accepted' || status.status === 'running'
+  const retry = !status.needsAttention && (status.status === 'accepted' || status.status === 'running')
     ? {
         tool: 'get_generation_status' as const,
         arguments: { jobId: status.jobId },

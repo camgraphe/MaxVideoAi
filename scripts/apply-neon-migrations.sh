@@ -65,7 +65,11 @@ if ! command -v psql >/dev/null 2>&1; then
 fi
 
 echo "Applying Neon migrations from $ROOT_DIR/neon/migrations"
-for file in "$ROOT_DIR"/neon/migrations/*.sql; do
-  echo "==> $(basename "$file")"
+# Numeric prefixes are sequence numbers, not fixed-width lexical keys. Keep
+# complete filenames as identities when independent migrations share a prefix.
+migration_files="$(cd "$ROOT_DIR/neon/migrations" && printf '%s\n' *.sql | LC_ALL=C sort -t_ -k1,1n -k2)"
+while IFS= read -r migration_file; do
+  file="$ROOT_DIR/neon/migrations/$migration_file"
+  echo "==> $migration_file"
   psql "$MIGRATION_DATABASE_URL" --single-transaction -v ON_ERROR_STOP=1 -f "$file"
-done
+done <<< "$migration_files"

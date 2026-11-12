@@ -1,3 +1,4 @@
+import type {TransactionQueryExecutor} from '@/lib/db';
 import {z} from 'zod';
 import {requireGenerationActor,type GenerationActor} from '../agent-api/generation-actor';
 import {toolAssetRefSchema} from '../../lib/toolbox/contract';
@@ -24,7 +25,7 @@ function response(operation:SubtitleOperationRecord){
     }}:{})};
 }
 /** The caller supplies a trusted session/OAuth/Studio actor and a bounded durable worker launcher. */
-export function createSubtitleOperationsService(actor:GenerationActor,options:{enabled:boolean;dependencies?:Partial<SubtitleOperationsDependencies>}){
+export function createSubtitleOperationsService(actor:GenerationActor,options:{enabled:boolean;dependencies?:Partial<SubtitleOperationsDependencies>;onPrepared?:(operation:SubtitleOperationRecord,executor:TransactionQueryExecutor)=>Promise<void>}){
   requireGenerationActor(actor);const dependencies={...defaults,...options.dependencies};
   const available=()=>{if(!options.enabled)throw new Error('SUBTITLE_TOOL_UNAVAILABLE');};
   async function prepare(input:unknown){
@@ -34,7 +35,7 @@ export function createSubtitleOperationsService(actor:GenerationActor,options:{e
     const settings=scribeSettingsSchema.parse({language:parsed.language,keyterms:parsed.keyterms});
     const pricing=await dependencies.quoteTranscription({durationSec:source.durationMs/1000,keyterms:settings.keyterms});
     const estimate=source.ref.kind==='video'?subtitleExportPrice(facts):undefined;
-    const operation=await dependencies.jobs.prepare(actor,'transcribe',{source,facts,originalIdentity,settings},pricing,estimate?{...estimate,requiresNewQuote:false}:undefined);
+    const operation=await dependencies.jobs.prepare(actor,'transcribe',{source,facts,originalIdentity,settings},pricing,estimate?{...estimate,requiresNewQuote:false}:undefined,options.onPrepared);
     return response(operation);
   }
   async function prepareStudioSubtitles(input:unknown){
@@ -45,7 +46,7 @@ export function createSubtitleOperationsService(actor:GenerationActor,options:{e
     const facts={durationMs:Math.round(sequence.manifest.durationSec*1000),width:dimensions.width,height:dimensions.height,fps:projectSettings.fps,hasAudio:true};
     const transcription=await dependencies.quoteTranscription({durationSec:facts.durationMs/1000,keyterms:settings.keyterms});
     const pricing=subtitleMixPricing(transcription,facts);
-    return response(await dependencies.jobs.prepare(actor,'mix-transcribe',{source:null,sequence,facts,settings},pricing));
+    return response(await dependencies.jobs.prepare(actor,'mix-transcribe',{source:null,sequence,facts,settings},pricing,undefined,options.onPrepared));
   }
   async function prepareExport(input:unknown){
     available();const parsed=z.object({documentId:z.string().min(1).max(200),revision:z.number().int().positive()}).strict().parse(input);
@@ -54,7 +55,7 @@ export function createSubtitleOperationsService(actor:GenerationActor,options:{e
     const {source,facts,originalIdentity}=await dependencies.readSource(actor.userId,document.source.ref);
     if(source.fingerprint!==document.source.fingerprint)throw new Error('SUBTITLE_SOURCE_CHANGED');
     const pricing=subtitleExportPricing(facts);
-    return response(await dependencies.jobs.prepare(actor,'render',{source,facts,originalIdentity,settings:{keyterms:[]},document},pricing));
+    return response(await dependencies.jobs.prepare(actor,'render',{source,facts,originalIdentity,settings:{keyterms:[]},document},pricing,undefined,options.onPrepared));
   }
   async function confirm(input:unknown){
     available();const parsed=z.object({operationId:z.string().uuid(),confirmed:z.boolean()}).strict().parse(input);if(!parsed.confirmed)throw new Error('SUBTITLE_CONFIRMATION_REQUIRED');

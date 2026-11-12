@@ -1,6 +1,6 @@
 # Creator tools
 
-Reviewed 2026-10-19. This guide covers Subtitles, Lip Sync, Product Photo Editor,
+Reviewed 2026-11-12. This guide covers Subtitles, Lip Sync, Product Photo Editor,
 Product Video Editor and Motion Transfer. It complements the existing
 [Toolbox guide](toolbox-integration.md); it does not change the older tools' runners.
 
@@ -86,13 +86,15 @@ records, rechecks the saved request/profile and original source identity, and
 claims one charge and one submission. An ordinary generation quote cannot be
 confirmed as a creator operation.
 
-`server/pricing/quote-creator.ts` owns the server-selected commercial product
-`creator-tools:provider-plus-120:v1` for these five tools. Canonical image/video
-profiles reuse the shared trusted-media pricing normalization and provider facts,
-then the canonical calculator applies 120% markup with no model retail margin,
-flat fee or reference-image retail floor layered on top. Specialized Scribe,
-LatentSync and Kling profiles feed their existing list-reference costs into the
-same owner; existing explicit profile configuration and release gates still apply.
+`server/pricing/quote-creator.ts` owns the server-selected commercial policies.
+The 2026-11-12 subtitle-only candidate selects
+`creator-subtitles:provider-plus-200:v1`: 200% markup on exact supplier cost
+(cost × 3 before standard rounding). Lip Sync, Product Photo Editor, Product Video
+Editor and Motion Transfer retain `creator-tools:provider-plus-120:v1` and 120%
+markup (cost × 2.20). The policies feed provider facts directly to the canonical
+calculator, with no model retail margin, flat fee or reference-image retail floor
+layered on top. Specialized Scribe, LatentSync and Kling profiles keep their
+existing list-reference costs, explicit configuration and release gates.
 Provider input-video seconds, reference-image costs, vendor routing and standard
 rounding remain authoritative. No ordinary image/video/MCP quote, model tariff
 cell, wallet FX, tax or Stripe settlement rule changes. The immutable creator
@@ -154,8 +156,9 @@ idempotent.
 Scribe v2 uses its documented endpoint with an explicit language when supplied
 and optional keyterms. The recorded list reference is USD 0.008/minute with a 30%
 keyterms surcharge, checked 2026-10-19; this is not an account invoice claim.
-The creator policy feeds the canonical pricing kernel with a 120% markup
-(provider cost × 2.20), preserving standard fractional-cent and customer rounding.
+The 2026-11-12 subtitle policy feeds the canonical pricing kernel with a 200%
+markup (provider cost × 3 before rounding), preserving standard fractional-cent
+and customer rounding. The four other creator products remain at 120%.
 MP4 burn-in, including later text/style revisions, and sequence mix preparation
 are included in the transcription price. Internal processing costs are absorbed;
 a zero additional customer charge does not assert zero infrastructure cost.
@@ -167,6 +170,31 @@ purchase-ledger entries. Their failure creates no financial refund. Already acce
 paid exports retain their original charge and refund behavior; stale unaccepted
 paid export quotes must be prepared again. General Studio timeline export pricing
 is unchanged.
+
+Current candidate examples from the native subtitle quote owner:
+
+| Duration | Supplier LIST USD | Customer USD | Supplier LIST with keyterms USD | Customer with keyterms USD |
+| --- | ---: | ---: | ---: | ---: |
+| 10 s | 0.001333… | 0.01 | 0.001733… | 0.01 |
+| 30 s | 0.004 | 0.01 | 0.0052 | 0.03 |
+| 1 min | 0.008 | 0.03 | 0.0104 | 0.04 |
+| 4 min | 0.032 | 0.10 | 0.0416 | 0.13 |
+| 10 min | 0.08 | 0.24 | 0.104 | 0.31 |
+| 30 min | 0.24 | 0.72 | 0.312 | 0.94 |
+
+These use the recorded USD 0.008/minute LIST reference and its 30% keyterms
+surcharge, not an account invoice. Exact fractional supplier cents enter the
+unchanged standard kernel once: markup cents round upward, then the final total
+rounds to the nearest cent. No CPU, worker, storage or other infrastructure cost
+has been invented in this tariff. Commercial markup is not verified profit after
+infrastructure. Corrections, SRT/VTT, sequence mix preparation and revision-bound
+MP4 export remain included in the paid transcription price.
+
+Old prepared transcription/mix snapshots must be re-prepared, including when the
+rounded amount happens to remain equal: the policy identity is part of locked
+revalidation. Already accepted operations, jobs, receipts and exact refunds keep
+their stored policy and amount. This candidate makes no remote pricing write or
+migration and does not enable execution gates.
 
 Rendering uses the same subtitle overlay as preview, pins the saved document
 revision, verifies the original fingerprint, preserves source timing and audio,

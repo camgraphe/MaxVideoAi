@@ -79,6 +79,7 @@ const baseExpectedPublicFiles = [
   'scripts/import-reference-files.mjs',
   'skills/generate/SKILL.md',
   'skills/generate/agents/openai.yaml',
+  'skills/generate/references/extended-workflows.md',
   'skills/generate/references/generation-safety.md',
   'skills/generate/references/reference-inputs.md',
   'skills/plan/SKILL.md',

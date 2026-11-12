@@ -3,7 +3,7 @@ import test from 'node:test';
 import { getFalEngineById } from '../frontend/src/config/falEngines';
 import { CREATOR_TOOL_IDS } from '../frontend/src/lib/toolbox/catalogue';
 import { computeCanonicalBillingSnapshot } from '../frontend/server/pricing/quote-billing';
-import { computeCanonicalCreatorBillingSnapshot, CREATOR_COMMERCIAL_POLICY_ID, quoteCreatorProviderBillingSnapshot } from '../frontend/server/pricing/quote-creator';
+import { computeCanonicalCreatorBillingSnapshot, CREATOR_COMMERCIAL_POLICY_ID, SUBTITLE_COMMERCIAL_POLICY_ID, quoteCreatorProviderBillingSnapshot } from '../frontend/server/pricing/quote-creator';
 import { quoteCreatorLipSync } from '../frontend/src/server/tools/creator-profiles-lipsync';
 import { quoteCreatorMotion } from '../frontend/src/server/tools/creator-profiles-motion';
 import type { PricingContext } from '../frontend/src/lib/pricing-context';
@@ -14,24 +14,26 @@ const pricingPolicy = { loadOverrides: async () => ({ status: 'loaded' as const,
 }], routingRules: [{ id: 'routing', marginPercent: 4, marginFlatCents: 55, surchargeAudioPercent: 0.9,
   surchargeUpscalePercent: 0.9, currency: 'USD', vendorAccountId: 'acct_existing_vendor' }] }) };
 
-test('all five creator products apply 120% markup to provider facts and retain settlement routing', () => {
+test('subtitle markup is 200% while the other four creator products retain their 120% policy and settlement routing', () => {
   for (const toolId of CREATOR_TOOL_IDS) {
     const quote = quoteCreatorProviderBillingSnapshot({ toolId,
       facts: { engineId: 'supplier-fact', currency: 'USD', vendorSubtotalExactCents: 100, unit: 'operation', quantity: 1 },
       base: { seconds: 1, rate: 1, amountCents: 100, unit: 'operation' }, vendorAccountId: 'acct_vendor',
     });
-    assert.equal(quote.totalCents, 220); // $1 supplier cost -> $2.20 before settlement FX/taxes.
-    assert.equal(quote.margin.percentApplied, 1.2);
+    const subtitle = toolId === 'subtitles';
+    assert.equal(quote.totalCents, subtitle ? 300 : 220); // Direct provider facts, never an already marked-up quote.
+    assert.equal(quote.margin.percentApplied, subtitle ? 2 : 1.2);
     assert.equal(quote.margin.flatCents, 0);
-    assert.equal(quote.platformFeeCents, 120);
+    assert.equal(quote.platformFeeCents, subtitle ? 200 : 120);
     assert.equal(quote.vendorShareCents, 100);
     assert.equal(quote.vendorAccountId, 'acct_vendor');
-    assert.equal(quote.meta?.creatorPricingPolicy, CREATOR_COMMERCIAL_POLICY_ID);
+    assert.equal(quote.meta?.creatorPricingPolicy, subtitle ? SUBTITLE_COMMERCIAL_POLICY_ID : CREATOR_COMMERCIAL_POLICY_ID);
+    assert.equal(quote.meta?.providerCostMultiplier, subtitle ? 3 : 2.2);
   }
 });
 
 test('fractional supplier cents enter the unchanged standard rounding exactly once', () => {
-  for (const [providerCents, customerCents] of [[0.8, 2], [1.04, 3], [3.2, 7], [4.16, 9], [100.01, 221]]) {
+  for (const [providerCents, customerCents] of [[0.8, 3], [1.04, 4], [3.2, 10], [4.16, 13], [100.01, 301]]) {
     const quote = quoteCreatorProviderBillingSnapshot({ toolId: 'subtitles',
       facts: { engineId: 'toolbox-subtitles', currency: 'USD', vendorSubtotalExactCents: providerCents!, unit: 'audio', quantity: 1 },
       base: { seconds: 60, rate: providerCents! / 100, amountCents: providerCents!, unit: 'audio' },

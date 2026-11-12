@@ -325,9 +325,10 @@ test('canonical projection returns one explicit outcome for every selected scena
       'estimator:gpt-image-2-6-sunburst:10:1024x1024',
       'estimator:kling-v4-flash:5:720p',
       'estimator:nano-banana-2-1:1:1k',
-      'pricing-hub:pika-text-to-video:10s-1080p-audio',
-      'pricing-hub:pika-text-to-video:4k-route',
-      'pricing-hub:pika-text-to-video:8s-1080p',
+      'pricing-hub:veo-3-1:10s-1080p',
+      'pricing-hub:veo-3-1:10s-1080p-audio',
+      'pricing-hub:veo-3-1:10s-720p',
+      'pricing-hub:veo-3-1:5s-720p',
       'tool:upscale:default',
     ]
   );

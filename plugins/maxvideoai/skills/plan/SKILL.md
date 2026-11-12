@@ -1,7 +1,7 @@
 ---
 name: plan
 description: |
-  Plan AI video or image projects with live MaxVideoAI model facts. Use when: AI video or image project planning, model comparison, a video or image budget or pricing estimate, shot list or key-visual list design, or reference strategy, including YouTube Shorts, Reels, TikTok videos, and ads. Turn an open brief into an executable model shortlist and production plan. NOT for: an exact price or exact quote, generation or paid approval, job status or result presentation, or result recovery (use generate), or a text-only rewrite without model or production advice.
+  Plan AI video or image projects with live MaxVideoAI model facts. Use when: AI video or image project planning, model comparison, a video or image budget or pricing estimate, shot list or key-visual list design, or reference strategy, including YouTube Shorts, Reels, TikTok videos, and ads. Also use for planning audio, voice, music or SFX, Character Studio identities and looks, Recast, creator tools, subtitles and Studio editing or export from current capabilities. Turn an open brief into an executable model shortlist and production plan. NOT for: an exact price or exact quote, generation or paid approval, job status or result presentation, or result recovery (use generate), or a text-only rewrite without model or production advice.
 ---
 
 # Plan with MaxVideoAI
@@ -142,6 +142,27 @@ reserve a price and does not authorize or create a generation.
 
 Read [project budget planning](references/budget-planning.md) when the user
 needs multi-shot proposals, mixed-model allocation, or attempt planning.
+
+## Audio, characters, tools and Studio
+
+Audio planning starts with `list_audio_capabilities`, including the requested
+voice, music, SFX, ambience, song or soundtrack mode. A missing mode is unavailable
+in that connected environment; do not infer it from the web app or provider.
+`calculate_project_budget` is a video project budget tool and must not be used to
+invent Audio or creator-tool estimates. A selected Audio request goes to
+`generate` for its own exact quote.
+
+Use `list_saved_characters` and `get_saved_character` to distinguish identities
+and their looks before planning reuse or Recast. A new identity or look can use
+`prepare_character_builder` when exposed; its recipe and quote still require a
+separate approval. Generic image generation is not a saved Builder recipe.
+
+Use `list_creator_tools` for profiles and exact returned web destinations. Keep
+web availability separate from direct assistant execution, including in Milo.
+For subtitles or another selected creator operation, continue with `generate`.
+For Studio work, read the saved timeline when its tool is available; a plan,
+saved montage, caption sidecar and rendered MP4 are distinct outcomes. Never
+promise a tool, model, mode or export solely because a sibling is supported.
 
 ## Handoff
 

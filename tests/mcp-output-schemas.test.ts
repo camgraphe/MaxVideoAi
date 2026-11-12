@@ -95,7 +95,7 @@ test('creator and subtitle DTOs survive SDK validation on both channels, includi
   const text = { documentId: document.id, revision: document.revision, format: 'vtt',
     filename: 'subtitles-r1.vtt', text: serializeSubtitles(document, 'vtt') };
   const creator = {
-    ...createAgentCreatorToolsService({ enabled: false }),
+    ...createAgentCreatorToolsService({ enabled: false, accountUrl: 'https://maxvideoai.com/app' }),
     prepare: async () => prepared, prepareExport: async () => prepared, prepareStudio: async () => prepared,
     confirm: async () => completed, status: async () => completed,
     readDocument: async () => ({ document }), editDocument: async () => ({ document }), exportText: async () => text,

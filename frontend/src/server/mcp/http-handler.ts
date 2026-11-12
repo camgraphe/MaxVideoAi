@@ -126,6 +126,7 @@ const AUDITABLE_TOOL_NAMES = new Set([
   'prepare_studio_subtitles',
   'list_saved_characters', 'get_saved_character', 'select_saved_character', 'save_character',
   'prepare_recast', 'confirm_recast', 'get_recast_quote', 'get_recast_status',
+  'prepare_character_builder', 'confirm_character_builder', 'get_character_builder_quote', 'get_character_builder_status',
   'get_account_status',
   'list_models',
   'get_model_details',

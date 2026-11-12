@@ -1,3 +1,10 @@
+import {trustedAccountUrlFromOrigin} from '@/server/agent-api/account-destinations';
+import {isStudioCharacterBuilderEnabled,type StudioCharacterBuilderFactory} from './conversation-character-authoring';
+import {createCharacterBuilderAuthoringService} from '@/server/character-studio/authoring';
+import {projectCharacterBuilderRecipe} from '@/server/character-studio/authoring-output';
+import {createStudioCreatorToolsService,type StudioCreatorFactory} from './conversation-creator';
+import {isCreatorExecutionEnabled} from '@/server/tools/creator-execution-gates';
+import {studioCreatorConfirmationSchema} from '@/lib/studio/conversation-creator-contract';
 import {createCharacterStudioIntegration} from '@/server/character-studio/integration';
 import {isStudioCharacterEnabled} from './feature-access';
 import type {StudioCharacterFactory} from './conversation-character';
@@ -45,7 +52,7 @@ import {projectStudioReply} from '@/lib/studio/conversation-reply';
 import {imageRequestFromDraft,imageReferenceFingerprintFromReview} from './conversation-image-request';
 export {imageRequestFromDraft,imageReferenceFingerprintFromReview} from './conversation-image-request';
 
-export const imageConfirmationSchema = z
+const ordinaryImageConfirmationSchema = z
   .object({
     requestId: z.string().uuid(),
     quoteId: z.string().uuid(),
@@ -55,6 +62,7 @@ export const imageConfirmationSchema = z
   })
   .strict()
   .refine(value => (value.amountCents === undefined) === (value.currency === undefined));
+export const imageConfirmationSchema = z.union([ordinaryImageConfirmationSchema,studioCreatorConfirmationSchema]);
 export type ImageGenerationFactory = typeof createStudioImageGenerationService;
 export function createImageConversationService(
   actor: StudioGenerationActor,
@@ -70,6 +78,8 @@ export function createImageConversationService(
     mediaEnabled?: boolean;
     characterEnabled?: boolean;
     characterFactory?: StudioCharacterFactory;
+    characterBuilderEnabled?:boolean;characterBuilderFactory?:StudioCharacterBuilderFactory;
+    creatorEnabled?:boolean;creatorFactory?:StudioCreatorFactory;
     videoGenerationFactory?: StudioMediaFactories['video'];
     audioGenerationFactory?: StudioMediaFactories['audio'];
     editingEnabled?: boolean;
@@ -87,6 +97,10 @@ export function createImageConversationService(
     audio: dependencies.audioGenerationFactory ?? defaultStudioMediaFactories.audio};
   const characterEnabled = dependencies.enabled && dependencies.actionsEnabled === true && dependencies.mediaEnabled === true &&
     (dependencies.characterEnabled ?? isStudioCharacterEnabled());
+  const characterBuilderEnabled=characterEnabled&&(dependencies.characterBuilderEnabled??isStudioCharacterBuilderEnabled());
+  const builder=()=> (dependencies.characterBuilderFactory??createCharacterBuilderAuthoringService)(actor,{executionEnabled:characterBuilderEnabled,accountUrl:trustedAccountUrlFromOrigin(dependencies.requestOrigin)});
+  const creatorEnabled=dependencies.enabled&&dependencies.actionsEnabled===true&&(dependencies.creatorEnabled??isCreatorExecutionEnabled());
+  const creator=()=> (dependencies.creatorFactory??createStudioCreatorToolsService)(actor,{enabled:creatorEnabled,accountUrl:dependencies.requestOrigin});
   const character = () => (dependencies.characterFactory ?? createCharacterStudioIntegration)(actor,{executionEnabled:characterEnabled});
   const serviceForDraft = (draft: ImageDraft | null) => {
     const surface = draftSurface(draft);
@@ -119,12 +133,15 @@ export function createImageConversationService(
     const expiredLease =
       turn.state === "thinking" &&
       new Date(turn.lease_expires_at).getTime() <= Date.now();
+    const creatorQuote=turn.draft_json?.creatorQuote;
+    const characterBuilder=turn.draft_json?.characterBuilder;
+    const builderQuote=characterBuilder&&turn.quote_id?await builder().readStoredQuote({quoteId:turn.quote_id}):null;
     const recast = turn.draft_json?.recast;
     const recastQuote = recast && turn.quote_id ? await character().getRecastQuote({quoteId:turn.quote_id}) : null;
-    const quote = recast ? recastQuote : turn.quote_id ? await serviceForDraft(turn.draft_json).getQuote(turn.quote_id) : null;
+    const quote = creatorQuote ? null : characterBuilder?builderQuote?.quote??null : recast ? recastQuote : turn.quote_id ? await serviceForDraft(turn.draft_json).getQuote(turn.quote_id) : null;
     const videoPassage = recastQuote?.passages.video;
     const audioPassage = recastQuote?.passages.audio;
-    if (turn.quote_id && !quote)
+    if (turn.quote_id && !quote && !creatorQuote)
       throw new AgentApiError(
         "INTERNAL_ERROR",
         "The saved image quote is unavailable.",
@@ -141,6 +158,7 @@ export function createImageConversationService(
       ...(turn.input_json.taskBudget?{taskBudget:turn.input_json.taskBudget}:{}),
       ...(turn.input_json.locale?{locale:turn.input_json.locale}:{}),
       reply: turn.draft_json ? projectStudioReply(turn.draft_json.reply) : null,
+      ...(creatorQuote?{creatorQuote,creatorOperation:await creator().read(creatorQuote)}:{}),
       ...(turn.draft_json?.exportQuote ? {exportQuote: turn.draft_json.exportQuote} : {}),
       ...(turn.draft_json?.analysisQuote ? {analysisQuote:turn.draft_json.analysisQuote} : {}),
       ...(turn.draft_json?.continuation ? {continuation: turn.draft_json.continuation} : {}),
@@ -166,7 +184,8 @@ export function createImageConversationService(
               quote.expiresAt.getTime() <= Date.now()
                 ? "expired"
                 : quote.state,
-            modelLabel: recast ? 'Character Recast' : getBaseEngineIncludingHidden(quote.request.engineId)?.label ?? quote.request.engineId,
+            modelLabel:characterBuilder?'Character Builder': recast ? 'Character Recast' : getBaseEngineIncludingHidden(quote.request.engineId)?.label ?? quote.request.engineId,
+            ...(builderQuote?{characterBuilder:{confirmationEnabled:characterBuilderEnabled,recipe:projectCharacterBuilderRecipe(builderQuote.recipe)}}:{}),
             ...(recast ? {recast:{
               ...(videoPassage ? {videoRange:{startSec:videoPassage.startSec,endSec:videoPassage.endSec}} : {}),
               ...(audioPassage ? {audioRange:{startSec:audioPassage.startSec,endSec:audioPassage.endSec}} : {}),
@@ -174,7 +193,7 @@ export function createImageConversationService(
             }} : {}),
           }
         : null,
-      generation: quote?.jobId ? await buildStudioGenerationMediaAccess(actor.userId, recast
+      generation: quote?.jobId ? await buildStudioGenerationMediaAccess(actor.userId, characterBuilder?await builder().recover({quoteId:quote.quoteId}): recast
         ? await character().recoverRecast({quoteId:quote.quoteId}) : await serviceForDraft(turn.draft_json).recover(quote.quoteId)) : null,
       createdAt: new Date(turn.created_at).toISOString(),
     };
@@ -246,7 +265,7 @@ export function createImageConversationService(
             history: history.map(saved => ({message: saved.input_json.message, reply: saved.draft_json ? projectStudioReply(saved.draft_json.reply) : null,
               ...(saved.input_json.referenceMentions ? {referenceMentions: saved.input_json.referenceMentions} : {})})),
             taskExecution:dependencies.taskExecution, enabled: dependencies.enabled, factory, createResponse: dependencies.createActionResponse,assistancePolicy: dependencies.assistancePolicy,countInputTokens: dependencies.countInputTokens,
-            factories, mediaEnabled: dependencies.mediaEnabled,characterEnabled,characterFactory:dependencies.characterFactory,editingEnabled: dependencies.editingEnabled,exportsEnabled: dependencies.exportsEnabled,requestOrigin: dependencies.requestOrigin,exportDependencies: dependencies.exportDependencies,
+            factories, mediaEnabled: dependencies.mediaEnabled,creatorEnabled,creatorFactory:dependencies.creatorFactory,characterEnabled,characterFactory:dependencies.characterFactory,characterBuilderEnabled,characterBuilderFactory:dependencies.characterBuilderFactory,editingEnabled: dependencies.editingEnabled,exportsEnabled: dependencies.exportsEnabled,requestOrigin: dependencies.requestOrigin,exportDependencies: dependencies.exportDependencies,
           }) : await runMeteredImageDirector(
             actor,
             turn,
@@ -263,7 +282,7 @@ export function createImageConversationService(
           await persistImageDraft(actor, turn, draft, referenceFingerprint);
         if (hasDraftCreation(draft) && !useActions) {
           if (dependencies.actionsEnabled) {
-            await resumeStudioImageAction({actor, turn, input, references: refs, referenceFingerprint, enabled: dependencies.enabled, factory, factories, mediaEnabled: dependencies.mediaEnabled,characterEnabled,characterFactory:dependencies.characterFactory,editingEnabled:dependencies.editingEnabled});
+            await resumeStudioImageAction({actor, turn, input, references: refs, referenceFingerprint, enabled: dependencies.enabled, factory, factories, mediaEnabled: dependencies.mediaEnabled,characterEnabled,characterFactory:dependencies.characterFactory,characterBuilderEnabled,characterBuilderFactory:dependencies.characterBuilderFactory,requestOrigin:dependencies.requestOrigin,editingEnabled:dependencies.editingEnabled});
           } else {
           const request = imageRequestFromDraft(
             draft,
@@ -298,11 +317,22 @@ export function createImageConversationService(
       const turn = (await listImageTurns(actor)).find(
         (turn) => turn.request_id === input.requestId,
       );
-      if (!turn || turn.state !== "ready" || turn.quote_id !== input.quoteId)
+      if (!turn || turn.state !== "ready")
         throw new AgentApiError(
           "QUOTE_EXPIRED",
           "Review the image quote in this project before confirming.",
         );
+      if ('creator' in input) {
+        const saved=turn.draft_json?.creatorQuote;
+        if(!saved||saved.operationId!==input.creator.operationId||saved.toolId!==input.creator.toolId)throw new AgentApiError('QUOTE_EXPIRED','Review the exact creator operation saved in this project before confirming.');
+        return creator().confirm(saved,{amountCents:input.creator.amountCents,currency:input.creator.currency});
+      }
+      if(turn.quote_id!==input.quoteId)throw new AgentApiError('QUOTE_EXPIRED','Review the exact saved generation quote before confirming.');
+      if(turn.draft_json?.characterBuilder){
+        if(input.amountCents===undefined||input.currency!=='USD')throw new AgentApiError('PARAMETER_INVALID','Review the exact Character Builder price before confirming.');
+        return buildStudioGenerationMediaAccess(actor.userId,await builder().confirm({quoteId:input.quoteId,confirmed:true,
+          amountCents:input.amountCents,currency:input.currency}));
+      }
       if (turn.draft_json?.recast) {
         if (input.amountCents === undefined || input.currency !== 'USD')
           throw new AgentApiError('PARAMETER_INVALID','Review the exact Recast amount before confirming.');

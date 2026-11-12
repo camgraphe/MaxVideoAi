@@ -57,7 +57,7 @@ import {
   type PrepareGenerationInput,
   type TrialRiskRequestContext,
 } from '@/server/agent-api/prepare-generation';
-import { listAudioCapabilities, listMcpAudioCapabilities } from '@/server/agent-api/audio-capabilities';
+import { listAudioCapabilities, listMcpAudioCapabilities, isMcpExtendedAudioEnabled } from '@/server/agent-api/audio-capabilities';
 import {
   createPrepareAudioGenerationService,
   type PreparedAudioGeneration,
@@ -137,10 +137,14 @@ import { createAgentCreatorToolsService, type CreatorMcpServices } from '@/serve
 import { registerCreatorTools } from '@/server/mcp/tools/creator-tools';
 import { createAgentCharacterStudioService, type AgentCharacterStudioService } from '@/server/agent-api/character-studio';
 import { registerCharacterStudioTools } from '@/server/mcp/tools/character-studio';
+import { createAgentCharacterBuilderService, type AgentCharacterBuilderService } from '@/server/agent-api/character-builder';
+import { registerCharacterBuilderTools } from '@/server/mcp/tools/character-builder';
+import { enqueueAudioDispatch } from '@/server/audio/dispatch-repository';
 
 export type MaxVideoAiMcpServices = {
   creatorTools?: CreatorMcpServices;
   characterStudio?(principal: AgentPrincipal): AgentCharacterStudioService;
+  characterBuilder?(principal: AgentPrincipal): AgentCharacterBuilderService;
   compareGenerationPrices?(input:GenerationPriceComparisonInput,principal:AgentPrincipal):Promise<GenerationPriceComparison>;
   getAccountStatus(principal: AgentPrincipal): Promise<AgentAccountStatus>;
   listModels(filter: AgentModelFilter, principal: AgentPrincipal): Promise<AgentModel[]>;
@@ -217,6 +221,7 @@ export type MaxVideoAiMcpServerOptions = {
   creatorTools?: boolean;
   characterStudio?: boolean;
   distributionProfile?: McpDistributionProfile;
+  characterBuilder?: boolean;
   paidGeneration?: boolean;
   referenceUploads?: boolean;
   montagePreparation?: boolean;
@@ -245,11 +250,14 @@ export function createDefaultMaxVideoAiMcpServices(
   const studioTimeline = createAgentStudioTimelineService({featureEnabled: true});
   const studioExports = createAgentStudioExportService({enabled:true,requestOrigin:new URL(config.accountUrl).origin});
   return {
-    creatorTools: createAgentCreatorToolsService({ requestOrigin:new URL(config.accountUrl).origin, enabled: capabilities.paidGeneration && capabilities.referenceUploads
+    creatorTools: createAgentCreatorToolsService({ accountUrl: config.accountUrl, requestOrigin:new URL(config.accountUrl).origin, enabled: capabilities.paidGeneration && capabilities.referenceUploads
       && (capabilities.creatorTools ?? (runtimeEnv.CREATOR_TOOLS_ENABLED === '1' && runtimeEnv.MCP_CREATOR_TOOLS_ENABLED === '1')) }),
     characterStudio: capabilities.characterStudio ? (principal) => createAgentCharacterStudioService(principal, {
       executionEnabled: capabilities.paidGeneration && capabilities.referenceUploads,
       accountUrl: config.accountUrl,
+    }) : undefined,
+    characterBuilder: capabilities.characterStudio ? (principal) => createAgentCharacterBuilderService(principal, {
+      executionEnabled: capabilities.characterBuilder === true && capabilities.paidGeneration && capabilities.referenceUploads, accountUrl: config.accountUrl,
     }) : undefined,
     getAccountStatus: createAgentAccountStatusService(config.accountUrl, accountStatusDeps),
     listModels: (filter, principal) => listAgentModels(filter, catalogDepsFor(principal)),
@@ -337,7 +345,8 @@ export function createDefaultMaxVideoAiMcpServices(
     )(input, principal),
     confirmAudioGeneration: (input, principal) => createConfirmAudioGenerationService(
       config.accountUrl,
-      { paidGenerationEnabled: () => capabilities.paidGeneration, listCapabilities: () => listMcpAudioCapabilities(runtimeEnv) },
+      { paidGenerationEnabled: () => capabilities.paidGeneration, listCapabilities: () => listMcpAudioCapabilities(runtimeEnv),
+        ...(isMcpExtendedAudioEnabled(runtimeEnv) ? { enqueueRun: enqueueAudioDispatch } : {}) },
     )(input, principal),
     createStudioMontage: (input, principal) => createStudioMontageProject(
       { userId: principal.userId },
@@ -415,6 +424,10 @@ export function createMaxVideoAiMcpServer(
   if (characterStudio) {
     if (!services.characterStudio) throw new Error('Character Studio services are required when their gate is enabled.');
     const serviceFor = services.characterStudio;
+    if (services.characterBuilder) {
+      const builderFor = services.characterBuilder;
+      registerCharacterBuilderTools(server, () => builderFor(principal), { executionEnabled: options.characterBuilder === true && paidGeneration && referenceUploads });
+    }
     registerCharacterStudioTools(server, () => serviceFor(principal), {
       referenceUploads,
       distributionProfile,

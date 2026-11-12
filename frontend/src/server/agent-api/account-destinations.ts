@@ -55,6 +55,11 @@ export function parseTrustedAccountUrl(value: string): URL {
   return parsed;
 }
 
+/** Server request origins must become an exact trusted account destination before canonical quoting. */
+export function trustedAccountUrlFromOrigin(origin = 'https://maxvideoai.com'): string {
+  return parseTrustedAccountUrl(new URL(ACCOUNT_CONNECTIONS_PATH, origin).toString()).toString();
+}
+
 function destination(
   origin: string,
   path: string,

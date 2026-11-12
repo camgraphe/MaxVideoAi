@@ -57,7 +57,7 @@ export function registerCharacterStudioTools(
   server.registerTool('list_saved_characters', {
     ...(profile === 'openai-directory' ? { outputSchema: withToolErrorOutput(characterStudioOutputSchemas.list_saved_characters) } : {}),
     title: 'Find saved Character Studio identities',
-    description: 'List private identities saved in Character Studio. Filter by exact name or follow nextCursor with the same filter. When names match multiple identities, ask which one the user means. Use get_saved_character to choose a look. Open characterBuilderUrl to generate new identity or look recipes. Save the completed original in Character Builder or with save_character.',
+    description: 'List private identities saved in Character Studio. Filter by exact name or follow nextCursor with the same filter. When names match multiple identities, ask which one the user means. Use get_saved_character to choose a look. Use prepare_character_builder for a new identity or look recipe when enabled, or open characterBuilderUrl. Save a completed original on request with save_character.',
     inputSchema: z.object({ cursor: studioId.nullable().optional(), name: name.optional() }).strict(),
     annotations: readAnnotations,
   }, input => runAgentTool(() => service().list(input), { profile, tool: 'list_saved_characters' }));
@@ -73,7 +73,7 @@ export function registerCharacterStudioTools(
   server.registerTool('save_character', {
     ...(profile === 'openai-directory' ? { outputSchema: withToolErrorOutput(characterStudioOutputSchemas.save_character) } : {}),
     title: 'Save a completed Character Builder identity or look',
-    description: 'Save the exact original image of an owned completed Character Builder job using the jobId and original imageUrl. The Builder recipe determines whether it becomes a new identity or a look on its parent character. Use the Builder workspace to author the recipe. Generic image generation does not create a saveable Character Builder recipe. Save only on request. Saving does not generate or charge.',
+    description: 'Save the exact original image of an owned completed Character Builder job using the jobId and original imageUrl. The Builder recipe determines whether it becomes a new identity or a look on its parent character. Author the recipe through prepare_character_builder when enabled or the Builder workspace. Generic image generation does not create a saveable Character Builder recipe. Save only on request. Saving does not generate or charge.',
     inputSchema: z.object({ name, ...original }).strict(),
     annotations: saveAnnotations,
   }, input => runAgentTool(() => service().save(input), { profile, tool: 'save_character' }));

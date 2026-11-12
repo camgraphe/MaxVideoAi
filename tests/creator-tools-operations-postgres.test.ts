@@ -32,9 +32,15 @@ test('creator operation binds one quote, scopes confirmation, recovers one charg
   const executable=()=>({executable:true as const,reason:'available' as const});
   const generationOptions={prepareDependencies:{listPublicEngines:async()=>catalog,resolveRequestExecutability:executable},confirmDependencies:{listPublicEngines:async()=>catalog,resolveRequestExecutability:executable,submitPaidGeneration:provider.submit}};
   const prepare=async()=>prepareCreatorProfile(input,[{input:input.inputs[0],asset:{type:'asset',assetId,kind:'image'},url:'https://cdn.maxvideoai.com/image.png',fingerprint:creatorSourceFingerprint(await resolveStudioMedia(actor.userId,input.inputs[0].source)),facts:{kind:'image',width:1024,height:1024,durationSec:null,fps:null,hasAudio:false,sizeBytes:1234,mimeType:'image/png'}}]);
-  const options={enabled:true,generationOptions,dependencies:{prepare}};
+  let checkpointId:string|undefined;
+  const options={enabled:true,generationOptions,dependencies:{prepare},onPrepared:async(quote:any,_snapshot:any,tx:any)=>{
+    checkpointId=quote.quoteId;assert.equal((await tx.query('SELECT id FROM creator_operations WHERE id=$1',[quote.quoteId]))[0]?.id,quote.quoteId);
+  }};
+  await assert.rejects(createCreatorOperationsService(actor,{...options,onPrepared:async()=>{throw new Error('CHECKPOINT_REJECTED');}}).prepare(input),/CHECKPOINT_REJECTED/);
+  assert.equal((await pg.pool.query('SELECT count(*)::int n FROM creator_operations')).rows[0].n,0,'A rejected Studio checkpoint rolls back preparation.');
   const service=createCreatorOperationsService(actor,options);
   const prepared=await service.prepare(input);
+  assert.equal(checkpointId,prepared.operationId);
   const recovered=await service.status(prepared.operationId);
   assert.equal(recovered.status,'prepared');
   assert.equal(recovered.quote?.price.amountCents,prepared.quote.price.amountCents);

@@ -95,8 +95,8 @@ configuration has an unavailable baseline, never a fabricated zero price.
 Deletion or rollback to a missing rule is refused. Public EN/FR/ES pricing
 examples use the same owner and fail to a live-quote label if unavailable.
 No product rule is installed by code or schema bootstrap; activation is an
-explicit environment-specific admin action. Image tariffs and the five creator
-tools' ×2.2 policy are separate. Financial and admin regression coverage lives in
+explicit environment-specific admin action. Image tariffs and creator-tool commercial policies are separate; the later
+subtitle-only 200% policy is documented below, while the other four retain ×2.2. Financial and admin regression coverage lives in
 `character-studio-recast-*.test.ts`, `admin-recast-pricing*.test.ts` and
 `recast-pricing-page.test.ts`.
 
@@ -1340,7 +1340,45 @@ retain full-surface limits, failure observation and next-request freshness. No
 cross-request quote cache or tariff arithmetic is introduced.
 
 
+## Subtitle-only commercial policy (2026-11-12 candidate)
+
+`server/pricing/quote-creator.ts` now selects
+`creator-subtitles:provider-plus-200:v1` only for `toolId=subtitles`. It passes the
+existing exact supplier LIST facts directly to `quoteCanonicalPricing` with
+`marginPercent=2` (200% markup, cost × 3 before existing standard rounding).
+It does not multiply a 120%-marked-up customer quote. Lip Sync, Product Photo
+Editor, Product Video Editor and Motion Transfer retain the original
+`creator-tools:provider-plus-120:v1`, margin 1.2 and cost multiplier 2.2.
+The standard fractional-cent, margin and customer rounding owners are unchanged.
+
+The immutable subtitle snapshot records the new policy/rule ID and multiplier.
+Standalone and saved-sequence transcription share that owner. Locked confirmation
+rebuilds the complete current snapshot, so an old unaccepted 120% quote is rejected
+even if its customer cents happen to match. There is no silent repricing. Already
+accepted work skips fresh preparation/repricing; its jobs, ledger entries and
+failure refunds retain the exact stored old policy and amount.
+
+Corrections, SRT/VTT, sequence mix preparation and revision-bound MP4 burn-in remain
+included in the paid transcription price. Included renders still require explicit
+confirmation and platform-funded durable jobs, without another wallet charge or
+refund. The recorded supplier reference remains USD 0.008/minute, plus 30% for
+keyterms; it is not a verified account invoice or a full infrastructure-cost
+model. No CPU/storage cost is inserted into tariff arithmetic. See
+[creator tools](creator-tools.md#subtitles) for exact native-quote examples.
+
+`creator-commercial-pricing.test.ts` and `creator-subtitle-pricing.test.ts` cover
+all five products, fractional rounding and the duration/keyterms matrix.
+`subtitles-commercial-policy-postgres.test.ts` uses real disposable PostgreSQL to
+exercise stale standalone/mix quotes, equal-cent policy changes, accepted-history
+replay/refunds, new paid/mix quotes and included exports. Existing billing coverage
+retains account restrictions, locked repricing, concurrent aggregate limits and
+exact refunds. This local source change performs no remote price write/migration
+and enables no gate.
+
 ## Five creator tools commercial policy (2026-10-19)
+
+This dated section records the former policy. The current subtitle exception is
+specified in the 2026-11-12 section above; its original values remain historical.
 
 The server-only `server/pricing/quote-creator.ts` owner selects
 `creator-tools:provider-plus-120:v1` for Subtitles, Lip Sync, Product Photo Editor,

@@ -1010,3 +1010,20 @@ Validation: 18 directory contracts; 214 MCP tests pass, one skipped; 70 selectio
 scenarios pass. Frontend lint: no errors, seven existing warnings. Exposure lint
 and diff checks pass. Native ChatGPT media checks are recorded separately from
 these deterministic contracts; the existing export is recovered without rerender.
+
+## Common alignment candidate — 2026-11-12
+
+The extended Audio worker path and independent Character Builder authoring tools
+retain exact quote approval and existing scope/publication owners. Read/status
+recovery is distinct from admission of a new purchase. Migrations 100/101 and their
+qualified runtime switches must be handled by the release owner; local tests do
+not establish deployed worker, paid-provider or host qualification.
+
+The plan/generate package includes `generate/references/extended-workflows.md`.
+Its actual contents now participate in the policy fingerprint alongside the
+existing references; the independent inventory assertion must include this file.
+The 70 curated offline decisions were not rewritten. Global instruction checks
+cover all 1024 combinations, including creator/Character/Builder flags, with a
+1998-byte maximum under the 2000-byte limit. Builder/creator descriptor tests keep
+per-tool guidance bounded. Marketplace-specific output schemas, distribution
+profiles and package versioning remain owned by the marketplace branch.

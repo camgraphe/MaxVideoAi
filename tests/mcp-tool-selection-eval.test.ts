@@ -286,6 +286,7 @@ test('policy fingerprint changes with instructions or tool metadata and stale ar
     'plan/SKILL.md',
   ]);
   assert.deepEqual(Object.keys(current.references).sort(), [
+    'generate/extended-workflows.md',
     'generate/generation-safety.md',
     'generate/reference-inputs.md',
     'plan/budget-planning.md',

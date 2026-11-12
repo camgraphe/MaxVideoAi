@@ -131,9 +131,20 @@ export function listAudioCapabilities(env: NodeJS.ProcessEnv = process.env) {
   return { ...contract, revision: createHash('sha256').update(JSON.stringify(contract)).digest('hex') };
 }
 
-/** First public MCP Audio release: one bounded Eleven narration attempt. */
+/** Extended modes require a qualified external worker as well as their publication switch. */
+export function isMcpExtendedAudioEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
+  return env.MCP_AUDIO_EXTENDED_ENABLED === 'true' && env.AUDIO_GENERATION_WORKER_ENABLED === 'true';
+}
+
+/** Preserve synchronous Eleven until the separately qualified worker release is enabled. */
 export function listMcpAudioCapabilities(env: NodeJS.ProcessEnv = process.env): ReturnType<typeof listAudioCapabilities> {
   const full = listAudioCapabilities(env);
+  if (isMcpExtendedAudioEnabled(env)) {
+    const { revision: _revision, ...capabilities } = full;
+    void _revision;
+    const revision = createHash('sha256').update(JSON.stringify({ ...capabilities, execution: 'durable-audio-worker-v1' })).digest('hex');
+    return { ...capabilities, revision };
+  }
   const { revision: _revision, ...base } = full;
   void _revision;
   const modes = full.modes.filter(mode => mode.mode === 'voice_only').map(mode => {
