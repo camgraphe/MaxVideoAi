@@ -1676,3 +1676,13 @@ test('adapter boundary permits provider guidance but rejects executable dependen
     `query('INSERT INTO app_receipts VALUES (1)');`,
   ]) assert.throws(() => assertPrepareAdapterBoundary(source), undefined, source);
 });
+
+test('archived Pika cannot prepare a quote before pricing or persistence', async () => {
+  const { listPublicAgentGenerationEngines } = await import('../frontend/src/server/agent-api/model-catalog');
+  const { deps, captures } = baseDependencies({ listPublicEngines: () => listPublicAgentGenerationEngines({
+    listEngines: async () => listFalEngines().map(entry => entry.engine), surfaceByEngineId: () => 'video',
+  }) });
+  await expectAgentError(prepareGeneration({ ...videoInput, engineId: 'pika-text-to-video' }, principal, deps), 'ENGINE_UNAVAILABLE');
+  assert.equal(captures.events.includes('pricing'), false);
+  assert.equal(captures.inserted.length, 0);
+});

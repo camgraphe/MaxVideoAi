@@ -104,14 +104,10 @@ test('Sora remains historical by exact choice and cannot generate or be recommen
   }
 });
 
-test('explicit Pika preference and exact ID remain eligible without default recommendation', async () => {
-  const catalogDeps = realRegistryDeps();
+test('an explicit Pika preference cannot restore archived execution', async () => {
   for (const input of [{ preferredModelIds: ['pika-text-to-video'] }, { id: 'pika-text-to-video' }]) {
-    const result = await recommendAgentModels({ ...input, mode: 't2v' }, catalogDeps);
-    const preferred = result.recommendations[0];
-    assert.equal(preferred?.model.id, 'pika-text-to-video');
-    assert.equal(preferred.model.recommendedByDefault, false);
-    assert.equal(preferred.editorialGuidance?.level, 'on_request');
+    const result = await recommendAgentModels({ ...input, mode: 't2v' }, realRegistryDeps());
+    assert.equal(result.recommendations.some(item => item.model.id === 'pika-text-to-video'), false);
   }
 });
 
@@ -129,7 +125,7 @@ test('explicit preference never restores legacy or archived models to recommenda
   }
 });
 
-test('current editorial references lead broad matches while Pika stays discoverable on request', async () => {
+test('current editorial references lead broad matches while Pika stays historical', async () => {
   const catalogDeps = deps([candidate('pika-text-to-video'),candidate('minimax-h3'),candidate('seedance-2-5'),candidate('wan-3'),candidate('kling-o3-pro')]);
   const broad = await recommendAgentModels({surface: 'video'},catalogDeps);
   assert.deepEqual(new Set(broad.recommendations.map(entry=>entry.model.id)),new Set(['seedance-2-5','wan-3','kling-o3-pro']));
@@ -138,18 +134,19 @@ test('current editorial references lead broad matches while Pika stays discovera
   const discoverable = await listAgentModels({id: 'pika-text-to-video'},catalogDeps);
   assert.equal(discoverable[0]?.id,'pika-text-to-video');
   const explicit = await recommendAgentModels({preferredModelIds: ['pika-text-to-video']},catalogDeps);
-  assert.equal(explicit.recommendations[0]?.model.id,'pika-text-to-video');
+  assert.equal(explicit.recommendations.some(item=>item.model.id==='pika-text-to-video'),false);
+  assert.equal(discoverable[0]?.generationEnabled,false);
   const details = await getAgentModelDetails('pika-text-to-video',catalogDeps);
   assert.equal(details.editorialGuidance?.level,'on_request');
 });
 
 test('explicit executable choice outranks editorial and soft priorities while exclusions and hard caps win', async () => {
-  const catalogDeps = deps([candidate('seedance-2-5',{latencyTier: 'fast',modes: ['t2v','ref2v']}),candidate('pika-text-to-video')]);
-  const preferred = await recommendAgentModels({preferredModelIds: ['pika-text-to-video'],priorities: ['speed']},catalogDeps);
-  assert.equal(preferred.recommendations[0]?.model.id,'pika-text-to-video');
-  const incompatible = await recommendAgentModels({mode: 'ref2v',referenceImages: true,preferredModelIds: ['pika-text-to-video']},catalogDeps);
+  const catalogDeps = deps([candidate('seedance-2-5',{latencyTier: 'fast',modes: ['t2v','ref2v']}),candidate('explicit-choice-fixture')]);
+  const preferred = await recommendAgentModels({preferredModelIds: ['explicit-choice-fixture'],priorities: ['speed']},catalogDeps);
+  assert.equal(preferred.recommendations[0]?.model.id,'explicit-choice-fixture');
+  const incompatible = await recommendAgentModels({mode: 'ref2v',referenceImages: true,preferredModelIds: ['explicit-choice-fixture']},catalogDeps);
   assert.deepEqual(incompatible.recommendations.map(entry=>entry.model.id),['seedance-2-5']);
-  const excluded = await recommendAgentModels({preferredModelIds: ['pika-text-to-video'],excludedModelIds: ['pika-text-to-video']},catalogDeps);
+  const excluded = await recommendAgentModels({preferredModelIds: ['explicit-choice-fixture'],excludedModelIds: ['explicit-choice-fixture']},catalogDeps);
   assert.deepEqual(excluded.recommendations.map(entry=>entry.model.id),['seedance-2-5']);
   const unavailable = await recommendAgentModels({},deps([{...candidate('seedance-2-5'),availability: 'unavailable'},candidate('minimax-h3')]));
   assert.deepEqual(unavailable.recommendations.map(entry=>entry.model.id),['minimax-h3']);

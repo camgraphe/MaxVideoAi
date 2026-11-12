@@ -8,18 +8,16 @@
     "family": "pika",
     "familyExamplesPage": {
       "stage": "indexed",
-      "showInNav": true,
+      "showInNav": false,
       "publishedModelSlugs": [
         "pika-text-to-video"
       ],
-      "currentModelSlugs": [
-        "pika-text-to-video"
-      ]
+      "currentModelSlugs": []
     },
     "versionLabel": "2.2",
     "availability": "available",
     "logoPolicy": "logoAllowed",
-    "lifecycle": "current",
+    "lifecycle": "deep_legacy",
     "successorId": null,
     "successorSlug": null,
     "surfaces": {
@@ -29,7 +27,7 @@
       },
       "examples": {
         "includeInFamilyResolver": true,
-        "includeInFamilyCopy": true
+        "includeInFamilyCopy": false
       },
       "compare": {
         "suggestOpponents": [
@@ -63,11 +61,10 @@
         "includeInHub": true
       },
       "app": {
-        "enabled": true,
-        "discoveryRank": 5
+        "enabled": false
       },
       "pricing": {
-        "includeInEstimator": true
+        "includeInEstimator": false
       }
     },
     "surfacesSource": "registry",

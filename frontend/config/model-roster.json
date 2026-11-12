@@ -1031,7 +1031,7 @@
     "brandId": "pika",
     "modelSlug": "pika-text-to-video",
     "family": "pika",
-    "lifecycle": "current",
+    "lifecycle": "deep_legacy",
     "successorId": null,
     "successorSlug": null,
     "versionLabel": "2.2",
