@@ -1,6 +1,6 @@
 import { CONSENT_COOKIE_NAME, parseConsent } from '@/lib/consent';
 import { getAnalyticsRouteContext } from '@/lib/analytics-route';
-import { isBrowserCommercialAnalyticsExcluded } from './commercial-client';
+import { isBrowserCommercialAnalyticsConfirmedAdmin, isBrowserCommercialAnalyticsExcluded } from './commercial-client';
 import {
   OPENAI_ATTRIBUTION_COOKIE,
   OPENAI_CLICK_TTL_MS,
@@ -31,11 +31,14 @@ export function syncOpenAIAttribution(policyVersion: string): OpenAIAttribution 
     !consent?.categories.analytics ||
     !consent.categories.ads ||
     consent.version !== policyVersion ||
-    isBrowserCommercialAnalyticsExcluded()
+    isBrowserCommercialAnalyticsConfirmedAdmin()
   ) {
     clearOpenAIAttribution();
     return null;
   }
+  // Pending email confirmation or an unavailable role lookup is not admin evidence.
+  // Keep an already-consented click for recovery, but do not capture or emit now.
+  if (isBrowserCommercialAnalyticsExcluded()) return null;
   if (getAnalyticsRouteContext(window.location.pathname).excludedFromGa4) return null;
   const now = Date.now();
   const context = { ...consent.categories, version: policyVersion, timestamp: consent.timestamp };

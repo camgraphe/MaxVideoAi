@@ -1,11 +1,28 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { NextRequest } from 'next/server';
+import { parseOpenAIRequestAttribution } from '../frontend/server/openai-conversions-context';
 import {
   parseOpenAIAttribution,
   buildOpenAIOrderEvent,
   buildOpenAIRegistrationEvent,
 } from '../frontend/lib/analytics/openai-contract';
 import { sendOpenAIConversion } from '../frontend/server/openai-conversions-transport';
+
+test('the NextRequest cookie round trip preserves every opaque percent character exactly once', () => {
+  const timestamp = Date.now() - 1000;
+  const consent = { version: 'policy', timestamp, categories: { analytics: true, ads: true }, source: 'banner' };
+  for (const oppref of ['opaque%2Fclick', 'opaque%click', 'opaque%2520click']) {
+    const attribution = { oppref, capturedAt: timestamp, consentAt: timestamp, policyVersion: 'policy' };
+    const req = new NextRequest('https://maxvideoai.com/api/analytics/openai-registration', {
+      headers: {
+        Cookie: `mv-consent=${encodeURIComponent(JSON.stringify(consent))}; mvai-openai-click=${encodeURIComponent(JSON.stringify(attribution))}`,
+      },
+    });
+    assert.deepEqual(parseOpenAIRequestAttribution(req, 'policy'), attribution);
+    assert.equal(parseOpenAIRequestAttribution(req, 'different-policy'), null);
+  }
+});
 
 const now = Date.now();
 const click = {

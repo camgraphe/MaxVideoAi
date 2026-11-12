@@ -7,24 +7,7 @@ import {
   openAIEventId,
 } from './openai-conversions-outbox';
 import { sendOpenAIConversion, type OpenAIDeliveryResult } from './openai-conversions-transport';
-
-async function accountEligibility(db: QueryExecutor, userId: string): Promise<OpenAIDeliveryResult | null> {
-  const [tables] = await db.query<{ roles: boolean; legacy: boolean }>(
-    `SELECT to_regclass('public.user_roles') IS NOT NULL AS roles,to_regclass('public.app_admins') IS NOT NULL AS legacy`
-  );
-  if (!tables?.roles && !tables?.legacy) return { status: 'retry', code: 'role_unavailable' };
-  for (const sql of [
-    ...(tables.roles
-      ? ["SELECT EXISTS(SELECT 1 FROM user_roles WHERE user_id::text=$1 AND role='admin') AS excluded"]
-      : []),
-    ...(tables.legacy ? ['SELECT EXISTS(SELECT 1 FROM app_admins WHERE user_id::text=$1) AS excluded'] : []),
-  ]) {
-    const [role] = await db.query<{ excluded: boolean }>(sql, [userId]);
-    if (!role) return { status: 'retry', code: 'role_unavailable' };
-    if (role.excluded) return { status: 'suppressed', code: 'admin' };
-  }
-  return null;
-}
+import { checkOpenAIAccountEligibility } from './openai-conversions-eligibility';
 
 /** Repair only receipts carrying the new checkout marker, never historical purchases. */
 export async function repairOpenAIOrders(db: QueryExecutor): Promise<number> {
@@ -91,7 +74,7 @@ export async function drainOpenAIConversions(
         const row = rows[next++];
         let result: OpenAIDeliveryResult;
         try {
-          const account = await accountEligibility(db, row.user_id);
+          const account = await checkOpenAIAccountEligibility(db, row.user_id);
           if (row.policy_version !== options.policyVersion) result = { status: 'suppressed', code: 'policy_changed' };
           else if (account) result = account;
           else {

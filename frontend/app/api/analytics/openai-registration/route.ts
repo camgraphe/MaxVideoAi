@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getUserIdFromRequest } from '@/lib/user';
 import { query } from '@/lib/db';
 import { getSupabaseAdmin } from '@/server/supabase-admin';
-import { isCommercialAccountAnalyticsEligible } from '@/server/wallet-first-topup';
+import { checkOpenAIAccountEligibility } from '@/server/openai-conversions-eligibility';
 import { readOpenAIRequestAttribution } from '@/server/openai-conversions-context';
 import { buildOpenAIRegistrationEvent } from '@/lib/analytics/openai-contract';
 import { enqueueOpenAIConversion, openAIEventId } from '@/server/openai-conversions-outbox';
@@ -22,7 +22,8 @@ export async function POST(req: NextRequest) {
     if (!attribution) return reply();
     const userId = await getUserIdFromRequest(req);
     if (!userId) return reply(401);
-    if (!(await isCommercialAccountAnalyticsEligible({ query }, userId))) return reply();
+    const account = await checkOpenAIAccountEligibility({ query }, userId);
+    if (account) return reply(account.status === 'retry' ? 503 : 202);
     const { data, error } = await getSupabaseAdmin().auth.admin.getUserById(userId);
     if (error || !data.user) return reply(503);
     if (!data.user.email_confirmed_at && !data.user.phone_confirmed_at) return reply();

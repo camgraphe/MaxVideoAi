@@ -6,13 +6,6 @@ import {
   type OpenAIAttribution,
 } from '@/lib/analytics/openai-contract';
 
-function decoded(value: string | undefined): string | null {
-  try {
-    return value ? decodeURIComponent(value) : null;
-  } catch {
-    return null;
-  }
-}
 export async function readOpenAIRequestAttribution(req: NextRequest): Promise<OpenAIAttribution | null> {
   if (
     process.env.VERCEL_ENV !== 'production' ||
@@ -20,14 +13,20 @@ export async function readOpenAIRequestAttribution(req: NextRequest): Promise<Op
     process.env.OPENAI_ADS_CONVERSIONS_DISABLED === '1'
   )
     return null;
-  const consent = parseConsent(decoded(req.cookies.get(CONSENT_COOKIE_NAME)?.value));
+  const consent = parseConsent(req.cookies.get(CONSENT_COOKIE_NAME)?.value ?? null);
   if (!consent?.categories.analytics || !consent.categories.ads) return null;
   const { getLegalDocumentUncached } = await import('@/lib/legal');
   const policy = await getLegalDocumentUncached('cookies');
-  if (!policy || consent.version !== policy.version) return null;
-  return parseOpenAIAttribution(decoded(req.cookies.get(OPENAI_ATTRIBUTION_COOKIE)?.value), {
+  return policy ? parseOpenAIRequestAttribution(req, policy.version) : null;
+}
+
+export function parseOpenAIRequestAttribution(req: NextRequest, policyVersion: string): OpenAIAttribution | null {
+  // NextRequest already URI-decodes cookie values. A second decode corrupts opaque IDs.
+  const consent = parseConsent(req.cookies.get(CONSENT_COOKIE_NAME)?.value ?? null);
+  if (!consent || consent.version !== policyVersion) return null;
+  return parseOpenAIAttribution(req.cookies.get(OPENAI_ATTRIBUTION_COOKIE)?.value, {
     ...consent.categories,
-    version: policy.version,
+    version: policyVersion,
     timestamp: consent.timestamp,
   });
 }

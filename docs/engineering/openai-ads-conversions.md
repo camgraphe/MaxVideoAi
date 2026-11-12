@@ -9,8 +9,10 @@ media is sent to OpenAI. `opt_out=true` is set on each event.
 
 - `OpenAIAttribution` stores the original `oppref` only after both current-policy
   analytics and advertising consent. The first-party Secure/SameSite=Lax cookie
-  expires after 30 days and is removed on withdrawal/admin exclusion. Private
-  routes and non-production hostnames do not capture it. An ordinary logout does
+  expires after 30 days and is removed on withdrawal or confirmed admin status.
+  Unavailable/anonymous role resolution suppresses capture and emission without
+  deleting the consented click, so email confirmation can recover attribution.
+  Admin/password-reset routes and non-production hostnames do not capture it. An ordinary logout does
   not erase a browser click; account identity is never stored in this cookie.
 - `/api/analytics/openai-registration` authenticates the request, checks current
   policy/consent/admin eligibility, then reads the actual Supabase account. Only
