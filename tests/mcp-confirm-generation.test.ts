@@ -1186,6 +1186,33 @@ test('paid continuation classifies refunded rejection and unrefunded timeout wit
   assert.equal(refundChecks, 1);
 });
 
+test('incomplete Draft media before provider submission is a refundable rejection, never an ambiguous render', async () => {
+  const { captureSeedanceWorkflowMediaFacts } = await import('../frontend/server/seedance-workflow-facts');
+  const quote = quoteFor(videoRequest);
+  const execution: PaidGenerationExecution = {
+    surface: 'video', quoteId: quote.quoteId, userId: quote.userId, request: videoRequest,
+    engine: capability(videoRequest).engine,
+    canonicalPricing: quote.pricingSnapshot.canonicalPricing as Record<string, unknown>,
+    trustedInitialState: { kind: 'created', jobId: quote.quoteId, walletChargeReserved: true },
+  };
+  let failure: unknown;
+  const outcome = await submitReservedPaidGeneration(execution, {
+    executeVideo: async () => {
+      captureSeedanceWorkflowMediaFacts({schemaVersion:1,mode:'ref2v',durationSec:25,
+        aspectRatio:'16:9',hasVideoInput:false,attachments:[],trustedMediaReferences:[]});
+      assert.fail('incomplete facts must stop before any provider submission');
+    },
+    executeImage: async () => assert.fail('unexpected image'),
+    ensureKnownRejectionRefund: async (_execution, receivedFailure) => {
+      failure=receivedFailure;
+      return true;
+    },
+  });
+  assert.deepEqual(outcome,{kind:'rejected',refunded:true});
+  assert.deepEqual(failure,{code:'SEEDANCE_DRAFT_MEDIA_INCOMPLETE',status:422,
+    message:'The Draft reference media could not be prepared. No generation was submitted.'});
+});
+
 test('paid continuation rejects a success-shaped failed video response after its wallet refund', async () => {
   const quote = quoteFor(videoRequest);
   const execution: PaidGenerationExecution = {

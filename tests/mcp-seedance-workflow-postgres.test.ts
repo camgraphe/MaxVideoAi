@@ -20,14 +20,15 @@ test('MCP native Draft and final use separate tariffs, true provider lineage, at
   const previous = envKeys.map(key => process.env[key]);
   Object.assign(process.env, { DATABASE_URL: db.databaseUrl, NODE_ENV: 'development', PRICING_SANDBOX: '1',
     SEEDANCE_2_5_DRAFT_ENABLED: '1', MCP_RESOURCE_URL: 'http://localhost/mcp' });
-  const flags = { BYTEPLUS_ARK_ENABLED: 'true', BYTEPLUS_ARK_API_KEY: 'fixture-key', SEEDANCE_2_5_BYTEPLUS_ENABLED: 'true',
+  const flags = { BYTEPLUS_ARK_ENABLED: 'true', BYTEPLUS_ARK_API_KEY: 'fixture-key', BYTEPLUS_ARK_BASE_URL: 'https://seedance-provider.invalid', SEEDANCE_2_5_BYTEPLUS_ENABLED: 'true',
     SEEDANCE_2_5_PROVIDER: 'byteplus_modelark', SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY: 'false', SEEDANCE_2_5_BYTEPLUS_MODES: 't2v,i2v,ref2v,v2v,extend' };
   const priorFlags = Object.fromEntries(Object.keys(flags).map(key => [key, (ENV as unknown as Record<string, unknown>)[key]]));
   Object.assign(ENV, flags);
   const previousFetch = globalThis.fetch;
   const payloads: Record<string, unknown>[] = [];
   globalThis.fetch = (async (input, init) => {
-    assert.match(String(input), /^https:\/\/ark\./);
+    // No real credentials or routable provider host. Never forward to previousFetch.
+    assert.match(String(input), /^https:\/\/seedance-provider\.invalid\//);
     assert.equal(init?.method, 'POST');
     payloads.push(JSON.parse(String(init?.body)));
     return new Response(JSON.stringify({ id: `cgt-fixture-${payloads.length}`, status: 'queued' }), { status: 202 });
@@ -126,6 +127,44 @@ test('MCP native Draft and final use separate tariffs, true provider lineage, at
     assert.equal(payloads.length,2);
     process.env.SEEDANCE_2_5_DRAFT_ENABLED='1';
     await ensureAssetSchema();
+    const imageReferences: ResolvedReference[] = Array.from({length:7}, (_,index) => ({
+      assetId:`owned-image-${index}`, role:'reference', mediaKind:'image',
+      storageUrl:`https://media.maxvideoai.com/owned/image-${index}.jpg`,
+      width:index === 5 ? 1280 : 2035, height:index === 5 ? 720 : 1043,
+      mimeType:'image/jpeg', sizeBytes:1000, durationSec:null,
+    }));
+    for (const reference of imageReferences) {
+      await db.pool.query('INSERT INTO user_assets(asset_id,user_id,url,width,height) VALUES($1,$2,$3,$4,$5)',
+        [reference.assetId,identity.userId,reference.storageUrl,reference.width,reference.height]);
+    }
+    const imageScenarios = ['480p','1080p'].map(resolution => buildManualTariffCoverageScenario({
+      engine:entry.engine,mode:'ref2v',durationSec:25,resolution,aspectRatio:'16:9',addons:{audio:true},
+      membershipTier:'member',hasVideoInput:false,inputVideoDurationSec:0,referenceImageCount:7,inputImageCount:7,
+    },'mcp-draft-seven-images'));
+    for (const [index,scenario] of seedanceWorkflowScenarios(imageScenarios).entries()) {
+      const selector=scenario.selector;
+      await db.pool.query(`INSERT INTO app_customer_tariff_cells(id,selector_key,selector_json,price_json,currency,effective_from,revision,updated_by)
+        VALUES($1,$2,$3,$4,'USD','2026-10-01',1,'11111111-1111-4111-8111-111111111111')`,
+        [`native-seven-images-${index}`,JSON.stringify(Object.entries(selector).sort(([a],[b])=>a.localeCompare(b))),selector,
+          {kind:'fixed',customerCents:scenario.context.workflowStep==='draft'?643:999}]);
+    }
+    const imageDependencies={...dependencies,resolveGenerationReferences:async()=>imageReferences};
+    const prepareImages=createPrepareGenerationService('http://localhost/account/connections',{clientIp:null,userAgent:null},imageDependencies);
+    const confirmImages=createConfirmGenerationService('http://localhost/account/connections',{clientIp:null,userAgent:null},imageDependencies);
+    const imageDraft=await prepareImages({...request,mode:'ref2v',settings:{durationSec:25,resolution:'480p',aspectRatio:'16:9',audio:true,outputFormat:'mp4'},
+      references:imageReferences.map(reference=>({kind:'asset',assetId:reference.assetId,role:reference.role})),seedanceWorkflow:{step:'draft'}},identity);
+    const beforeImages=payloads.length;
+    await confirmImages({quoteId:imageDraft.quoteId,confirmed:true},identity);
+    assert.equal(payloads.length,beforeImages+1,JSON.stringify(await row(imageDraft.quoteId)));
+    assert.equal(payloads[beforeImages].draft,true);
+    assert.equal((payloads[beforeImages].content as unknown[]).length,8);
+    assert.equal((await row(imageDraft.quoteId)).provider_job_id,`cgt-fixture-${beforeImages+1}`);
+    const imageFacts=(await row(imageDraft.quoteId)).settings_snapshot.seedanceWorkflow.mediaFacts;
+    assert.equal(imageFacts.attachments.length,7);
+    assert.deepEqual(imageFacts.attachments.map((attachment:{assetId:string})=>attachment.assetId),imageReferences.map(reference=>reference.assetId));
+    await confirmImages({quoteId:imageDraft.quoteId,confirmed:true},identity);
+    assert.equal(payloads.length,beforeImages+1,'recovering this same attempt must never submit twice');
+    assert.equal((await db.pool.query("SELECT count(*)::int AS count FROM app_receipts WHERE job_id=$1 AND type='charge'",[imageDraft.quoteId])).rows[0].count,1);
     for (const mode of ['i2v','ref2v','v2v','extend'] as const) {
       const video = mode !== 'i2v';
       const ref: ResolvedReference = {...(mode==='extend'?{slot:0}:{}),assetId:`owned-${mode}`,role:mode==='ref2v'?'reference':'source',
