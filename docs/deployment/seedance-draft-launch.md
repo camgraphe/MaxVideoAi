@@ -90,3 +90,20 @@ Existing recorded-provider polling continues. Ready Drafts may temporarily lose
 finalization access, so preserve their expiry and lineage when investigating.
 Re-enabling the same validated release restores eligible finalization; never
 replay accepted submissions or rewrite receipts to recover the workflow.
+
+## MCP image-reference preparation — 2026-11-11
+
+Seedance 2.5 reference images must retain their owned `image_urls` attachment
+records when the canonical MCP request is projected into the shared generation
+pipeline. The URL-only `referenceImages` projection cannot supply the immutable
+Draft media facts required by Final reconstruction. Keep both projections in
+canonical order, including each attachment's asset identity and verified media
+metadata. `tests/mcp-seedance-workflow-postgres.test.ts` covers a 25-second Draft
+with seven images through quotation, debit, simulated provider submission,
+persisted media facts and duplicate confirmation without a second debit or send.
+
+Incomplete media facts discovered before submission raise an explicit 422
+`SEEDANCE_DRAFT_MEDIA_INCOMPLETE` rejection. Paid confirmation uses its existing
+verified refund path for that rejection. Timeouts and uncertain provider outcomes
+retain their existing reconciliation policy; the preparation error does not
+establish permission to resubmit a paid attempt.

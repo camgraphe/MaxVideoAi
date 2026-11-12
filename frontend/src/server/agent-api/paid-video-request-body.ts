@@ -411,7 +411,9 @@ export function buildPaidVideoRequestBody(
       ...(middle[0] && middleFieldId ? [input(middle[0],middleFieldId)] : []),
       ...(start[0] && startFieldId ? [input(start[0], startFieldId)] : []),
       ...(end[0] && endFieldId ? [input(end[0], endFieldId)] : []),
-      ...(imageFieldId && (imageFieldId !== 'image_urls' || isKlingV4FalQueueEngineId(execution.engine.id))
+      ...(imageFieldId && (imageFieldId !== 'image_urls'
+        || isKlingV4FalQueueEngineId(execution.engine.id)
+        || execution.engine.id === 'seedance-2-5')
         ? referenceMedia.filter((reference) => reference.kind === 'image')
           .map((reference) => input(reference, imageFieldId))
         : []),
