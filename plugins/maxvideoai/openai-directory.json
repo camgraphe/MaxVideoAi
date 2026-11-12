@@ -1,5 +1,5 @@
 {
-  "version": "0.3.20",
+  "version": "0.3.21",
   "interface": {
     "shortDescription": "Create and edit AI media",
     "longDescription": "Plan AI media projects, compare current models and compatible prices, and prepare exact quotes. Create video, images and audio after approving each fresh quote. Reuse private media in a saved Studio project, adjust its timeline and approve an export quote to recover the finished film. The conversation stays with your assistant; MaxVideoAI provides the tools and keeps projects and results in your connected account. Uses existing account entitlements. Discover qualified creator profiles and subtitle tools, edit captions and quote and recover burn-in exports when enabled. Find saved characters and looks, use their owned originals and prepare an exact Recast quote when available.",
@@ -78,7 +78,7 @@
     }
   },
   "publication": {
-    "release_notes": "Refreshes the private-reference review scenario to select a currently available compatible model instead of Pika. Retains the existing media, Audio, Studio, subtitle and saved-character workflows, exact-quote approvals and recovery. Reviewer credentials and the recorded walkthrough are supplied separately. This local qualification candidate has not been submitted or published.",
+    "release_notes": "Local candidate aligning current model availability, Audio recovery, Character Builder identity/look authoring, creator-tool discovery and included subtitle exports. Preserves dedicated OAuth, owned media delivery, explicit quote approval and existing-entitlement boundaries. Updated hosted qualification, review scenarios and walkthrough are pending; not submitted.",
     "translations": {
       "fr-FR": {
         "subtitle": "Créer et monter avec l’IA",

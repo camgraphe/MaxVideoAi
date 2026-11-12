@@ -12,6 +12,7 @@ const switches = {
   studioExports: 'MCP_OPENAI_DIRECTORY_STUDIO_EXPORTS_ENABLED',
   creatorTools: 'MCP_OPENAI_DIRECTORY_CREATOR_TOOLS_ENABLED',
   characterStudio: 'MCP_OPENAI_DIRECTORY_CHARACTER_STUDIO_ENABLED',
+  characterBuilder: 'MCP_OPENAI_DIRECTORY_CHARACTER_BUILDER_ENABLED',
 } as const;
 
 // Called only after request configuration validates the dedicated resource.

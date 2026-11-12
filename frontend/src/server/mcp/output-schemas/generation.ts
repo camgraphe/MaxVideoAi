@@ -10,6 +10,7 @@ const generationResult = z.discriminatedUnion('surface', [
 export const generationStatusFields = {
   jobId: z.string(), surface: mediaKind, status: generationState, progress: z.number().nullable(),
   message: z.string().nullable(), priceCents: z.number().nullable(), currency: z.string().nullable(), paymentStatus: z.string().nullable(),
+  needsAttention: z.boolean().optional(),
 };
 export const generationRecoveryOutputSchema = z.object({
   openUrl: z.string().url().optional(),

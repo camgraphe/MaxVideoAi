@@ -29,6 +29,7 @@ export type McpToolResultPolicy = {
     | 'list_creator_tools' | 'prepare_creator_tool' | 'confirm_creator_tool' | 'get_creator_tool_operation'
     | 'list_saved_characters' | 'get_saved_character' | 'save_character' | 'select_saved_character'
     | 'prepare_recast' | 'confirm_recast' | 'get_recast_quote' | 'get_recast_status'
+    | 'prepare_character_builder' | 'confirm_character_builder' | 'get_character_builder_quote' | 'get_character_builder_status'
     | 'get_subtitle_document' | 'edit_subtitle_document' | 'prepare_subtitle_export' | 'prepare_studio_subtitles' | 'export_subtitle_text';
 };
 

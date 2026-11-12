@@ -7,17 +7,20 @@ import type {
 import type { AgentGenerationStatus } from '@/server/generations/generation-status';
 import { AgentApiError } from './errors';
 import { requireOAuthGenerationActor } from './generation-actor';
-import { buildAgentGenerationRecovery, buildGenerationResourceLinks } from './generation-status';
+import { buildGenerationResourceLinks } from './generation-status';
 import type { AgentPrincipal } from './principal';
+import { buildQuoteGenerationRecovery } from './quote-generation-recovery';
 
-function builderRecovery(status:AgentGenerationStatus|null,quoteId:string,accountUrl:string) {
-  if (!status) return {quoteId,jobId:null,status:'no_job' as const,retry:null};
-  const recovery=buildAgentGenerationRecovery(status,accountUrl);
-  return {...recovery,quoteId,retry:recovery.retry&&{
-    tool:'get_character_builder_status' as const,arguments:{quoteId},afterSeconds:recovery.retry.afterSeconds,
-  }};
+async function builderRecovery(status:AgentGenerationStatus|null,quoteId:string,principal:AgentPrincipal,accountUrl:string) {
+  const recovery=await buildQuoteGenerationRecovery(status,quoteId,'get_character_builder_status',principal,accountUrl);
+  // save_character verifies this exact stored original, not its temporary read grant.
+  const original = status?.status === 'completed' && status.result?.surface === 'image'
+    ? status.result.imageUrls[0] : null;
+  return original && 'surface' in recovery && recovery.result?.surface === 'image'
+    ? {...recovery,saveSource:{jobId:status!.jobId,imageUrl:original}}
+    : recovery;
 }
-export function buildCharacterBuilderResourceLinks(result:ReturnType<typeof builderRecovery>) {
+export function buildCharacterBuilderResourceLinks(result:Awaited<ReturnType<typeof builderRecovery>>) {
   return 'surface' in result?buildGenerationResourceLinks({...result,retry:null}):[];
 }
 export function createAgentCharacterBuilderService(
@@ -31,7 +34,7 @@ export function createAgentCharacterBuilderService(
   return {
     prepare:(input:CharacterBuilderAuthoringInput)=>service.prepare(input),
     async confirm(input:CharacterBuilderConfirmationInput) {
-      return builderRecovery(await service.confirm(input),input.quoteId,options.accountUrl);
+      return builderRecovery(await service.confirm(input),input.quoteId,principal,options.accountUrl);
     },
     async getQuote(input:{quoteId:string}) {
       const owned=await service.getQuote(input);
@@ -39,7 +42,7 @@ export function createAgentCharacterBuilderService(
       return {...owned,expiresAt:owned.expiresAt.toISOString()};
     },
     async recover(input:{quoteId:string}) {
-      return builderRecovery(await service.recover(input),input.quoteId,options.accountUrl);
+      return builderRecovery(await service.recover(input),input.quoteId,principal,options.accountUrl);
     },
   };
 }

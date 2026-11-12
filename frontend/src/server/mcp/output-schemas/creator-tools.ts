@@ -21,9 +21,20 @@ const profile = object({
   }),
 });
 export const listCreatorToolsOutputSchema = object({
+  executionSurface: z.enum(['mcp', 'studio']).optional(), directExecutionEnabled: z.boolean().optional(),
   tools: z.array(object({ id: toolId, source: strings, profiles: z.array(z.union([
-    profile, object({ id: z.string(), editing: z.string(), exports: strings }),
-  ])) })),
+    profile, object({ id: z.string(), editing: z.string(), exports: strings,
+      deploymentGateOpen: z.boolean().optional(), webDeploymentGateOpen: z.boolean().optional() }),
+  ])), web: object({ url: z.string().url(), publicReleased: z.boolean(), executionGateOpen: z.boolean() }).optional() })),
+  webTools: z.array(object({
+    id: z.string(), inputKinds: strings, outputKinds: strings, url: z.string().url(),
+    mcpExecution: z.literal(false), providerReadiness: z.literal('not-checked'),
+    release: z.enum(['public-web-entry', 'owner-approved-pilot', 'qualified', 'profile-dependent']),
+    profiles: z.array(object({ id: z.string(), quality: z.enum(['standard', 'pro']),
+      release: z.enum(['owner-approved-pilot', 'qualified']) })),
+  })).optional(),
+  webHandoff: object({ startsOperation: z.literal(false), transfersMedia: z.literal(false),
+    requiresSourceSelection: z.literal(true), requiresWebQuoteApproval: z.literal(true) }).optional(),
   requiresExactQuoteApproval: z.literal(true), statusPolling: z.string(),
 });
 const quote = object({

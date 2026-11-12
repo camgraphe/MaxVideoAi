@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { resolveMcpRequestServerOptions } from '../frontend/src/server/mcp/directory-capabilities';
 
-test('all nine dedicated capability switches remain independent and leave other resources intact', () => {
+test('all ten dedicated capability switches remain independent and leave other resources intact', () => {
   const names = {
     paidGeneration: 'MCP_OPENAI_DIRECTORY_PAID_GENERATION_ENABLED',
     referenceUploads: 'MCP_OPENAI_DIRECTORY_REFERENCE_UPLOADS_ENABLED',
@@ -13,10 +13,11 @@ test('all nine dedicated capability switches remain independent and leave other 
     studioExports: 'MCP_OPENAI_DIRECTORY_STUDIO_EXPORTS_ENABLED',
     creatorTools: 'MCP_OPENAI_DIRECTORY_CREATOR_TOOLS_ENABLED',
     characterStudio: 'MCP_OPENAI_DIRECTORY_CHARACTER_STUDIO_ENABLED',
+    characterBuilder: 'MCP_OPENAI_DIRECTORY_CHARACTER_BUILDER_ENABLED',
   } as const;
   const keys = Object.keys(names) as Array<keyof typeof names>;
   const base = { paidGeneration: true, referenceUploads: false, studioMontageCreation: false };
-  for (let mask = 0; mask < 512; mask++) {
+  for (let mask = 0; mask < 1024; mask++) {
     const expected = Object.fromEntries(keys.map((key, index) => [key, Boolean(mask & (1 << index))]));
     const env = { MCP_OPENAI_DIRECTORY_ENABLED: 'true', ...Object.fromEntries(keys.map((key, index) => [names[key], String(Boolean(mask & (1 << index)))])) };
     assert.deepEqual(resolveMcpRequestServerOptions('openai-mcp.maxvideoai.com', 'openai-directory', env, base), { ...expected, distributionProfile: 'openai-directory' });

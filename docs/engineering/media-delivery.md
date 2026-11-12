@@ -1496,6 +1496,16 @@ original image/video/audio and thumbnails. The Studio module re-exports the
 shared owner for compatibility. `tests/agent-private-generation-delivery.test.ts`
 and `tests/studio-generation-media-access.test.ts` exercise these contracts.
 
+Quote-scoped Character Builder and Recast recovery compose these same owners in
+`src/server/agent-api/quote-generation-recovery.ts`. The caller supplies the
+already verified owned status; presentation adds no database or trial read.
+Retain the original quote ID and status tool for polling, including `no_job` and
+`needsAttention` with a null retry. Completed Builder images return `saveSource`
+with the canonical job ID and original image URL required by `save_character`;
+temporary signed presentation URLs must not replace that stored identity.
+`tests/character-quote-private-media.test.ts` checks signing, immutable originals,
+foreign-key rejection and first-party handoff behavior without provider calls.
+
 ### MCP Markdown handoff — 12 November 2026
 
 Model-visible generation, Studio export and Creator media responses may also carry

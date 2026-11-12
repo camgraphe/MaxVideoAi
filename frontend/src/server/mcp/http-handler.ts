@@ -394,6 +394,7 @@ export async function handleMcpHttpRequest(
         audioGeneration: serverOptions.audioGeneration ?? capabilities.audioGeneration,
         creatorTools: serverOptions.creatorTools,
         characterStudio: serverOptions.characterStudio ?? capabilities.characterStudio,
+        characterBuilder: serverOptions.characterBuilder ?? capabilities.characterBuilder,
       },
       injectedDeps?.accountStatusDeps,
     ),

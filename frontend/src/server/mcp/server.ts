@@ -426,7 +426,7 @@ export function createMaxVideoAiMcpServer(
     const serviceFor = services.characterStudio;
     if (services.characterBuilder) {
       const builderFor = services.characterBuilder;
-      registerCharacterBuilderTools(server, () => builderFor(principal), { executionEnabled: options.characterBuilder === true && paidGeneration && referenceUploads });
+      registerCharacterBuilderTools(server, () => builderFor(principal), { distributionProfile, executionEnabled: options.characterBuilder === true && paidGeneration && referenceUploads });
     }
     registerCharacterStudioTools(server, () => serviceFor(principal), {
       referenceUploads,

@@ -1027,3 +1027,23 @@ cover all 1024 combinations, including creator/Character/Builder flags, with a
 1998-byte maximum under the 2000-byte limit. Builder/creator descriptor tests keep
 per-tool guidance bounded. Marketplace-specific output schemas, distribution
 profiles and package versioning remain owned by the marketplace branch.
+
+### Directory integration of the common candidate — 12 November 2026
+
+The directory branch adds a tenth independent capability override,
+`MCP_OPENAI_DIRECTORY_CHARACTER_BUILDER_ENABLED`, propagated through both server
+registration and business-service admission. Builder authoring retains existing
+paid/reference prerequisites and quote/status reads when new execution closes.
+All four Builder tools declare success/error outputs and apply the directory's
+existing-entitlement projection; direct responses retain their original policy.
+Recovery preserves `needsAttention`, null retries and canonical `saveSource`
+separately from temporary private presentation URLs. Creator discovery retains
+`webTools`/`webHandoff` without implying MCP execution or media transfer.
+
+Offline full discovery exposes 46 directory tools with object output schemas,
+1,997 instruction bytes and a 1,939-byte maximum descriptor. The combined policy
+fingerprint is `fce2c72d8134e2d7f85019f4df615090db8fa99c6e6090aff9dc5741c1201202`;
+the 70 curated decisions and fixture contract remain unchanged. The 0.3.21 local
+package includes the extended-workflows reference in its independent archive
+inventory. Source integration and these deterministic checks do not establish
+hosted worker readiness, a successful generation or directory submission.

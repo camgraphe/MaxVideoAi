@@ -14,12 +14,16 @@ Pour commencer, le propriétaire a validé **P1 seulement**, avec la réponse «
 
 Avant chaque prise suivante, présenter séparément : **l'exigence OpenAI**, **notre choix de scénario**, **les étapes visibles**, puis **le coût éventuel**. OpenAI impose la couverture des cas ; le choix du laptop, le cadrage et les explications latérales sont nos choix éditoriaux, pas des exigences du reviewer.
 
-Cadre proposé : application entière stable, explications courtes à droite, curseur réel, prompt et réponse suffisamment tenus. Pas de voix off dans cette version reviewer ; son original seulement pendant la lecture des exemples. La publicité marketing reste distincte. Le projet Premiere V5 est conservé pour reprise manuelle. L'habillage reste une proposition tant que le propriétaire ne l'a pas validé.
+Cadre proposé : application entière stable, explications courtes à droite, curseur réel, prompt et réponse suffisamment tenus. Pas de voix off dans cette version reviewer ; son original seulement pendant la lecture des exemples. La publicité marketing reste distincte. Le projet Premiere V5 est conservé pour reprise manuelle. **Le propriétaire a validé l'habillage le 12 novembre : « ça marche, c'est propre ». L'agent réalise le montage ; les projets modifiables permettent une reprise facultative par le propriétaire.** Cette validation graphique ne vaut pas validation globale des scénarios ou de leur exécution.
+
+**Kit graphique préparé le 12 novembre :** [planche de quatre applications](../../../.local/openai-directory-20261111/presentation-review/review-walkthrough-v2/exports/graphics-kit-v1/planche-habillage.png), [aperçu animé de 16 secondes](../../../.local/openai-directory-20261111/presentation-review/review-walkthrough-v2/exports/graphics-kit-v1/habillage-mouvement-16s.mp4), [mode d'emploi](../../../.local/openai-directory-20261111/presentation-review/review-walkthrough-v2/exports/graphics-kit-v1/LISEZ-MOI.md). Fond ivoire, vert profond, cartes de chapitre, explication latérale, étiquette transparente. Projet After Effects natif avec textes et formes séparés, créé et observé dans l'application ; import des quatre clips sauvegardé dans un projet Premiere distinct. Direction validée. La capture historique de placement ne constitue pas une nouvelle prise ni une preuve P2. Environ 60 Mio d'images temporaires de ce seul rendu ont été supprimées après vérification ; médias et projets conservés.
+
+**Préparation visuelle complémentaire :** [dashboard fictif ATELIER](../../../.local/openai-directory-20261111/presentation-review/review-walkthrough-v2/exports/preparation-visuelle-v1/assets/atelier-dashboard.png), [huit chapitres](../../../.local/openai-directory-20261111/presentation-review/review-walkthrough-v2/exports/preparation-visuelle-v1/assets/planche-scenarios.png) et [textes anglais/français](../../../.local/openai-directory-20261111/presentation-review/review-walkthrough-v2/exports/preparation-visuelle-v1/TEXTES-ET-VISUELS.md). Le dashboard est un visuel original de 1920 × 1080, avec projets et données fictifs, proposé comme deuxième référence de P2 ; ce n'est pas un écran MaxVideoAI ou ChatGPT. Les huit cartons restent des déclinaisons proposées : P5 annonce transcription/correction/export sans inventer un surcoût d'export ; N2 et N3 illustrent les propositions simplifiées déjà présentées (confidentialité seule ; accord ambigu seul). Les prompts antérieurs du paquet ci-dessous restent explicitement à synchroniser après validation. Aucun nouveau scénario capturé ; déclinaisons PNG/SVG et données de calques préparées, pas encore ajoutées aux projets Adobe natifs.
 
 | Cas | Sujet proposé | Actions à montrer | Validation avant prise |
 | --- | --- | --- | --- |
 | P1 | Planifier et comparer | Sélection visible de MaxVideoAI, laptop graphite, deux modèles compatibles, différence créative et coût. | Scénario et cadrage validés pour préparation après alignement ; aucune prise réalisée. |
-| P2 | Référence privée et génération | Image du laptop, import réel, modèle et réglages, devis lisible, puis accord distinct si une nouvelle génération est retenue. | Scénario et cadrage à valider ; aucun envoi automatique. |
+| P2 | Deux références vers un plan produit | Laptop + capture d'une app fictive importée ; interface intégrée à l'écran dans l'image, puis beau plan caméra / mains au clavier. Devis et accords visibles. | Direction enrichie par le propriétaire ; visuels et prise à préparer après alignement, aucune génération lancée. |
 | P3 | Retrouver son résultat | Résultat du même compte, lecture, téléchargement réel et retour au même résultat. | Scénario et cadrage à valider ; aucun envoi automatique. |
 | P4 | Monter et exporter | Montage sauvegardé, modification visible, devis ; si export exécuté, résultat du montage exact et de sa révision. | Scénario et cadrage à valider ; aucun envoi automatique. |
 | P5 | Voix et sous-titres | Voix existante, texte des sous-titres, correction lisible, fichier VTT et rendu correspondant si son devis est approuvé. | Scénario et cadrage à valider ; aucun envoi automatique. |
@@ -51,7 +55,20 @@ Plan a five-second product ad for this graphite laptop. Compare two compatible c
 
 ### P2 — Référence privée et génération
 
-**Prompt anglais du candidat local**
+**Direction demandée par le propriétaire le 12 novembre :** ajouter une capture d'une application fictive comme seconde référence à importer. Incorporer son dashboard à l'écran du laptop dans l'image. L'interface peut rester stable : le film doit surtout montrer un beau plan du produit ou une personne qui tape. Une animation de l'interface n'est pas recherchée.
+
+**Proposition de mise en scène :** pour cinq secondes, un seul plan de trois quarts avec un léger travelling latéral, lumière soignée et mains au clavier. Le choix de ce cadrage est une proposition ; le visage n'est pas nécessaire. Le dashboard fictif pourrait montrer des projets créatifs, quelques vignettes et un calendrier, avec des données inventées. Montrer cette capture au propriétaire avant de la retenir comme référence.
+
+**Ce que cela démontre au reviewer :** import réel de références, demande de modification d'image, réutilisation du résultat pour une vidéo et contrôle des devis. Ce choix visuel n'est pas une exigence OpenAI ; il sert à montrer plus clairement un usage du plugin. Les étapes et outils effectivement disponibles seront vérifiés sur le candidat aligné.
+
+**Parcours proposé en deux temps, en français :**
+
+1. « Voici l'image du laptop et une capture de mon application. Intègre cette interface dans l'écran du laptop en respectant son design, et prépare une belle image publicitaire avec les mains d'une personne au clavier. Montre-moi le devis avant de créer l'image. »
+2. Après validation de l'image obtenue : « À partir de cette image, prépare un plan publicitaire de cinq secondes en 720p : léger travelling latéral, mains qui tapent naturellement. L'interface peut rester stable dans l'écran. Montre-moi le devis avant de lancer. »
+
+L'incorporation de l'interface est confiée au modèle à partir des références ; aucun remplacement d'écran par tracking en postproduction n'est prévu. Contrôler le résultat réel, sans promettre une reproduction parfaite de chaque texte. Une génération d'image supplémentaire est à chiffrer en plus de la vidéo. Aucun devis, génération ni capture nouvelle n'est autorisé par ce conducteur seul.
+
+**Prompt anglais du candidat local 0.3.20 — antérieur à cette adaptation, à synchroniser dans le prochain paquet après validation :**
 
 ```text
 Import my local product image privately. Choose a currently available model that supports this image as a reference and quote one five-second image-to-video clip in 720p, then wait. After I explicitly approve that exact quote, create one attempt and recover the same result.
@@ -59,13 +76,13 @@ Import my local product image privately. Choose a currently available model that
 
 **Français pour validation :** Importe mon image produit en privé. Choisis un modèle disponible compatible avec cette image et prépare le devis d’un clip de cinq secondes en 720p. Attends mon accord précis avant une seule tentative, puis retrouve ce même résultat.
 
-**À l’écran :** Image du laptop, import réel, modèle et réglages, devis lisible, puis accord distinct si une nouvelle génération est retenue.
+**À l’écran :** Les deux références clairement identifiées, leur import réel, le devis de l'image et son résultat approuvé, puis les réglages et le devis vidéo, l'accord distinct et le vrai résultat. Ne pas faire passer le dashboard fictif du produit pour l'interface du plugin ChatGPT.
 
 **Texte latéral proposé :** Check the exact quote / Vérifier le devis exact.
 
 **Résultat attendu déclaré :** Use a host file handle with import_reference_files, or create_reference_upload_link and the packaged local helper when a native handle is unavailable. Preserve the returned owned asset ID. Inspect the exact current model ID and supported settings; do not select an archived model or silently substitute an incompatible duration or resolution. Prepare one matching quote, wait for a distinct approval, confirm once, and recover the same accepted generation. An expired quote or failed attempt does not authorize a retry.
 
-**Point à vérifier :** Le cas Pika ne certifie plus une nouvelle génération. Arrêt au devis possible pour la répétition, mais ne pas présenter cet arrêt comme une exécution complète.
+**Point à vérifier :** Le cas Pika ne certifie plus une nouvelle génération. Vérifier la modification d'image avec deux références puis le passage de son résultat à la vidéo sur le candidat aligné. Arrêt au devis possible pour la répétition, mais ne pas présenter cet arrêt comme une exécution complète.
 
 ### P3 — Retrouver son résultat
 

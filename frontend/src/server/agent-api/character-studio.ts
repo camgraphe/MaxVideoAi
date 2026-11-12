@@ -15,24 +15,15 @@ import type { AgentGenerationStatus } from '@/server/generations/generation-stat
 import { buildAgentAccountDestinations } from './account-destinations';
 import { AgentApiError } from './errors';
 import { requireOAuthGenerationActor } from './generation-actor';
-import { buildAgentGenerationRecovery, buildGenerationResourceLinks } from './generation-status';
+import { buildGenerationResourceLinks } from './generation-status';
 import type { AgentPrincipal } from './principal';
+import { buildQuoteGenerationRecovery } from './quote-generation-recovery';
 
-function recastRecovery(status: AgentGenerationStatus | null, quoteId: string, accountUrl: string) {
-  if (!status) return { quoteId, jobId: null, status: 'no_job' as const, retry: null };
-  const recovery = buildAgentGenerationRecovery(status, accountUrl);
-  return {
-    ...recovery,
-    quoteId,
-    retry: recovery.retry && {
-      tool: 'get_recast_status' as const,
-      arguments: { quoteId },
-      afterSeconds: recovery.retry.afterSeconds,
-    },
-  };
+function recastRecovery(status: AgentGenerationStatus | null, quoteId: string, principal: AgentPrincipal, accountUrl: string) {
+  return buildQuoteGenerationRecovery(status, quoteId, 'get_recast_status', principal, accountUrl);
 }
 
-export function buildRecastResourceLinks(result: ReturnType<typeof recastRecovery>) {
+export function buildRecastResourceLinks(result: Awaited<ReturnType<typeof recastRecovery>>) {
   return 'surface' in result ? buildGenerationResourceLinks({ ...result, retry: null }) : [];
 }
 
@@ -60,7 +51,7 @@ export function createAgentCharacterStudioService(
     async confirmRecast(input: z.input<typeof recastConfirmationInput>) {
       const status = await service.confirmRecast(input);
       if (!status) throw new AgentApiError('INTERNAL_ERROR', 'The submitted Recast status is unavailable. Recover it using the same quoteId.');
-      return recastRecovery(status, input.quoteId, options.accountUrl);
+      return recastRecovery(status, input.quoteId, principal, options.accountUrl);
     },
     async getRecastQuote(input: z.input<typeof recastQuoteInput>) {
       const quote = await service.getRecastQuote(input);
@@ -78,7 +69,7 @@ export function createAgentCharacterStudioService(
       };
     },
     async recoverRecast(input: z.input<typeof recastQuoteInput>) {
-      return recastRecovery(await service.recoverRecast(input), input.quoteId, options.accountUrl);
+      return recastRecovery(await service.recoverRecast(input), input.quoteId, principal, options.accountUrl);
     },
   };
 }
