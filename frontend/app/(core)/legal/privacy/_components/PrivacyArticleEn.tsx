@@ -103,6 +103,7 @@ export function PrivacyArticleEn({
 
       <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">8. Cookies &amp; similar technologies</h3>
+        <p>With your analytics and advertising consent, we share an OpenAI ad click reference and confirmed registration or paid wallet top-up events with OpenAI to measure advertising results. These events include a pseudonymous event reference, date and, for payments, the amount and currency. This integration does not send your email address, phone number, prompts or generated media. You can withdraw consent in cookie settings.</p>
         <p>
           We use essential cookies to run the site and, with your consent, analytics or advertising cookies. Consent can be withdrawn at any time via the cookie banner or settings. See the{' '}
           <Link href={links.cookiesHref} className="text-brand underline hover:text-brandHover">

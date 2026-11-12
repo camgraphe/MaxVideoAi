@@ -28,6 +28,11 @@ const openSession = {
   paymentStatus: 'unpaid',
   status: 'open',
 };
+const openAIMetadata={openai_conversion_version:'1',openai_oppref:'opaque-click',openai_consent_at:'100',openai_click_at:'200',openai_policy_version:'current'};
+assert.equal(isReusableStripeCheckoutSession({...openSession,metadata:{...addressPolicy,...openAIMetadata},openAIMetadata}),true);
+assert.equal(isReusableStripeCheckoutSession({...openSession,metadata:{...addressPolicy,...openAIMetadata},openAIMetadata:{}}),false,'withdrawn ads consent cannot reuse a consented snapshot');
+assert.equal(isReusableStripeCheckoutSession({...openSession,metadata:addressPolicy,openAIMetadata}),false,'a new ad click needs its own checkout attribution');
+assert.equal(isReusableStripeCheckoutSession({...openSession,metadata:{...addressPolicy,...openAIMetadata},openAIMetadata:{...openAIMetadata,openai_oppref:'other-click'}}),false);
 assert.equal(
   EXPRESS_CHECKOUT_REUSE_WINDOW_SECONDS,
   30 * 60,
