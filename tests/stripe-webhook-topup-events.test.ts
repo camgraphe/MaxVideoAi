@@ -176,3 +176,27 @@ test('top-up translators take payment mode from the verified Stripe object, neve
   assert.equal((checkout as unknown as Record<string, unknown>)?.stripeLiveMode, false);
   assert.equal((intent as unknown as Record<string, unknown>)?.stripeLiveMode, true);
 });
+
+test('both paid translators preserve only allowlisted OpenAI conversion metadata', () => {
+  const attribution = {
+    openai_conversion_version: '1',
+    openai_oppref: 'opaque-click-fixture',
+    openai_click_at: '1794480000000',
+    openai_consent_at: '1794479900000',
+    openai_policy_version: 'test-policy',
+    openai_consent_observed_at: '2026-11-12T10:41:00.000Z',
+  };
+  const metadata = { kind: 'topup', user_id: 'customer', ...attribution, openai_email: 'excluded@example.test' };
+  const checkout = buildCheckoutSessionTopupInput({
+    id: 'cs_fixture', amount_total: 2500, currency: 'eur', livemode: true, metadata,
+  } as unknown as Stripe.Checkout.Session, { receiptsPriceOnly: true, resolvedReceiptUrl: null });
+  const intent = buildPaymentIntentTopupInput({
+    id: 'pi_fixture', amount_received: 2500, currency: 'eur', livemode: true, metadata,
+  } as unknown as Stripe.PaymentIntent, { receiptsPriceOnly: true, resolvedReceiptUrl: null });
+  for (const input of [checkout, intent]) {
+    assert.ok(input);
+    assert.deepEqual(Object.fromEntries(Object.entries(input.metadata).filter(([key]) => key.startsWith('openai_'))), attribution);
+    assert.equal(input.settlementAmountCents, 2500);
+    assert.equal(input.settlementCurrency, 'eur');
+  }
+});

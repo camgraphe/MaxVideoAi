@@ -16,6 +16,7 @@ type CheckoutSessionReuseRow = {
 type StripeCheckoutSessionRetriever = Pick<Stripe, 'checkout'>;
 
 export type ReusableStripeCheckoutSessionInput = {
+  openAIMetadata?: Record<string, string>;
   attribution?: NormalizedWalletAttribution | null;
   clientSecret?: string | null;
   created?: number | null;
@@ -27,6 +28,7 @@ export type ReusableStripeCheckoutSessionInput = {
 };
 
 export function isReusableStripeCheckoutSession({
+  openAIMetadata = {},
   attribution,
   clientSecret,
   expiresAt,
@@ -43,6 +45,8 @@ export function isReusableStripeCheckoutSession({
       paymentStatus === 'unpaid' &&
       expiresAtSeconds !== null &&
       expiresAtSeconds > now &&
+      ['openai_conversion_version','openai_oppref','openai_click_at','openai_consent_at','openai_policy_version']
+        .every(key => (metadata?.[key] ?? '') === (openAIMetadata[key] ?? '')) &&
       matchesWalletAttribution(metadata ?? {}, attribution ?? null)
   );
 }
@@ -52,11 +56,13 @@ export async function findReusableExpressCheckoutSession(
   {
     amountCents,
     attribution,
+    openAIMetadata,
     currency,
     userId,
   }: {
     amountCents: number;
     attribution?: NormalizedWalletAttribution | null;
+    openAIMetadata?: Record<string, string>;
     currency: string;
     userId: string;
     hasCompletedTopUp?: boolean;
@@ -94,6 +100,7 @@ export async function findReusableExpressCheckoutSession(
       const session = await stripe.checkout.sessions.retrieve(sessionId);
       if (
         isReusableStripeCheckoutSession({
+          openAIMetadata,
           attribution,
           clientSecret: session.client_secret,
           expiresAt: session.expires_at,

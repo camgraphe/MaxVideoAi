@@ -13,6 +13,7 @@ const GoogleAds = dynamic(() => import('@/components/analytics/GoogleAds').then(
 const SpeedInsights = dynamic(() => import('@vercel/speed-insights/next').then((mod) => mod.SpeedInsights), {
   ssr: false,
 });
+const OpenAIAttribution = dynamic(() => import('./OpenAIAttribution').then(mod => mod.OpenAIAttribution), { ssr: false });
 const GOOGLE_ADS_CONSENT: ConsentCategory[] = ['analytics', 'ads'];
 
 export function AnalyticsScripts() {
@@ -28,6 +29,7 @@ export function AnalyticsScripts() {
 
   return (
     <>
+      <OpenAIAttribution />
       {loadSpeedInsights ? <SpeedInsights /> : null}
       {loadMarketingAnalytics ? (
         <>
