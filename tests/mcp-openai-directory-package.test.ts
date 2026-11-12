@@ -36,11 +36,11 @@ test('directory builder produces a deterministic portable draft with review case
   const first = join(temporary, 'a');
   const second = join(temporary, 'b');
   const result = build(first);
-  const archive = join(first, 'maxvideoai-openai-directory-0.3.19.zip');
+  const archive = join(first, 'maxvideoai-openai-directory-0.3.20.zip');
   assert.ok(existsSync(archive), `directory archive was not built: ${result.stderr}`);
   assert.equal(result.status, 0, result.stderr);
   assert.equal(build(second).status, 0);
-  assert.deepEqual(readFileSync(archive), readFileSync(join(second, 'maxvideoai-openai-directory-0.3.19.zip')));
+  assert.deepEqual(readFileSync(archive), readFileSync(join(second, 'maxvideoai-openai-directory-0.3.20.zip')));
   const files = entries(archive);
   assert.deepEqual([...files.keys()].sort(), [
     'LICENSE', 'assets/logo-mark.svg', 'checksums.json', 'mcp.json', 'plugin.json',
@@ -51,7 +51,7 @@ test('directory builder produces a deterministic portable draft with review case
   ]);
   const manifest = JSON.parse(files.get('plugin.json')!.toString());
   assert.equal(manifest.$schema, 'https://agent-plugins.org/schemas/1.0.0/plugin.schema.json');
-  assert.equal(manifest.version, '0.3.19');
+  assert.equal(manifest.version, '0.3.20');
   assert.equal(manifest.name, 'maxvideoai-media');
   const openai = manifest.extensions['com.openai'];
   assert.ok(openai.interface.shortDescription.length <= 30);
@@ -131,7 +131,7 @@ test('directory metadata cannot export a private filesystem path', (t) => {
   const result = build(out, source);
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /local absolute path/i);
-  assert.equal(existsSync(join(out, 'maxvideoai-openai-directory-0.3.19.zip')), false);
+  assert.equal(existsSync(join(out, 'maxvideoai-openai-directory-0.3.20.zip')), false);
 });
 
 test('registered client metadata rejects secrets and does not exempt unrelated private UUIDs', (t) => {
@@ -149,7 +149,7 @@ test('registered client metadata rejects secrets and does not exempt unrelated p
     const result = build(out, source);
     assert.notEqual(result.status, 0);
     assert.match(result.stderr, kind === 'secret' ? /Invalid public OAuth client/ : /internal UUID/);
-    assert.equal(existsSync(join(out, 'maxvideoai-openai-directory-0.3.19.zip')), false);
+    assert.equal(existsSync(join(out, 'maxvideoai-openai-directory-0.3.20.zip')), false);
   }
 });
 

@@ -1,5 +1,7 @@
 # Pièces et essai : préparation locale
 
+> **Actualisation du 12 novembre :** les tableaux ci-dessous décrivent la préparation du 11 novembre. OAuth, ressources, médias et brouillon 0.3.19 ont depuis été qualifiés ; le code et la vidéo doivent maintenant être réalignés. Consulter l'[état actuel](README.md) et le [conducteur de recapture](recapture-et-dossier-2026-11-12.md). Le candidat 0.3.20 est local, aucun nouveau dépôt n'a été effectué.
+
 État au 11 novembre 2026. Cette page sert de feuille de travail ; aucun texte ci-dessous n'est publié.
 
 ## Pièces minimales

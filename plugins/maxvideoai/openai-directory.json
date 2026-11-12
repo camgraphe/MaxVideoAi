@@ -1,5 +1,5 @@
 {
-  "version": "0.3.19",
+  "version": "0.3.20",
   "interface": {
     "shortDescription": "Create and edit AI media",
     "longDescription": "Plan AI media projects, compare current models and compatible prices, and prepare exact quotes. Create video, images and audio after approving each fresh quote. Reuse private media in a saved Studio project, adjust its timeline and approve an export quote to recover the finished film. The conversation stays with your assistant; MaxVideoAI provides the tools and keeps projects and results in your connected account. Uses existing account entitlements. Discover qualified creator profiles and subtitle tools, edit captions and quote and recover burn-in exports when enabled. Find saved characters and looks, use their owned originals and prepare an exact Recast quote when available.",
@@ -35,8 +35,8 @@
         },
         {
           "description": "Private image import, exact video quote, explicit approval and one attempt.",
-          "prompt": "Import my local product image privately, then quote one five-second Pika image-to-video clip in 720p with this exact reference and wait. After I approve that quote, create one attempt and recover the result.",
-          "expected_behavior": "Use a host file handle with import_reference_files, or create_reference_upload_link and the packaged local helper when a native handle is unavailable. Preserve the returned owned asset ID. Inspect the exact model ID and supported settings, prepare one matching quote, wait for a distinct approval, confirm once, and recover the same accepted generation. An expired quote or failed attempt does not authorize a retry.",
+          "prompt": "Import my local product image privately. Choose a currently available model that supports this image as a reference and quote one five-second image-to-video clip in 720p, then wait. After I explicitly approve that exact quote, create one attempt and recover the same result.",
+          "expected_behavior": "Use a host file handle with import_reference_files, or create_reference_upload_link and the packaged local helper when a native handle is unavailable. Preserve the returned owned asset ID. Inspect the exact current model ID and supported settings; do not select an archived model or silently substitute an incompatible duration or resolution. Prepare one matching quote, wait for a distinct approval, confirm once, and recover the same accepted generation. An expired quote or failed attempt does not authorize a retry.",
           "tools_triggered": "create_reference_upload_link, import_reference_files, get_model_details, prepare_generation, confirm_generation, get_generation_status"
         },
         {
@@ -78,7 +78,7 @@
     }
   },
   "publication": {
-    "release_notes": "Qualification candidate based on main c501acf9 and dedicated hosted code ae2aa125e. Includes private media access and discovery-time structured success/error validation fixes. Preserves the complete model, reference, Character Studio/Recast, Audio, creator/subtitle and Studio toolset. Reviewer credentials and walkthrough are provided separately in the portal. Human review and publication are not requested by this archive.",
+    "release_notes": "Refreshes the private-reference review scenario to select a currently available compatible model instead of Pika. Retains the existing media, Audio, Studio, subtitle and saved-character workflows, exact-quote approvals and recovery. Reviewer credentials and the recorded walkthrough are supplied separately. This local qualification candidate has not been submitted or published.",
     "translations": {
       "fr-FR": {
         "subtitle": "Créer et monter avec l’IA",
