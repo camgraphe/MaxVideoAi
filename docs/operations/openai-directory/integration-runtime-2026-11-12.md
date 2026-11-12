@@ -22,6 +22,8 @@ Suivi réintégré sans conflit après les adaptations marketplace `ab2229111` :
 - `60a1f3a8115cbd1c81fde7886fdbd5a2c88ebf52` → `ba998c2e1` : fixtures
   courantes, récupération historique de paramètres Pika sans génération, garde
   de route/SSR archive sans CTA de génération et contrat d'extraction Builder.
+- `f344ca27507209923a68b493bb32db9cc96d0743` → `5c9c9ce66` : dossier final
+  du chantier commun, résultats, réserve navigateur et économie des sous-titres.
 
 Ces deux patches sont identiques à leurs sources. Le journal historique déjà
 modifié conserve son empreinte ; aucun fichier du paquet directory ou de son
@@ -106,27 +108,40 @@ ce test inchangé (réussi) et la commande d'évaluation (réussie).
 
 La tâche commune annonce ses validations Studio et build vertes. Ses dernières
 suites navigateur et rapide restent de sa responsabilité. Les vérifications
-TypeScript/lint de notre candidat final ont été réalisées en série après accord
-sur le créneau et passent. Aucun build complet ou parcours navigateur nouveau
-n’a été lancé ici ; ne pas confondre les résultats de l’autre worktree avec ceux
-de la branche marketplace.
+TypeScript/lint de nos adaptations ont été réalisées en série après accord
+sur le créneau et passent. Le build du candidat intégré a ensuite été vérifié
+ici ; aucun parcours navigateur nouveau n'a été lancé dans cette branche.
+Ne pas confondre les résultats de l'autre worktree avec ceux de la branche
+marketplace.
 
-État du suivi commun au moment de la réintégration : Studio 1 601 réussites et un
+État final annoncé par le chantier commun : Studio 1 601 réussites et un
 skip ; build et matrices financières réussis. Le navigateur termine à 328/329 :
 l'échec Header/useId a été reproduit sur `main` par l'autre tâche et reste
 documenté, sans masquage. Les audits offline annoncés passent à 270 scénarios
 (dont 14 Pika), 92 additions et 629 projections publiques ; les fixtures
 financières restent inchangées. Les lots ciblés du suivi passent selon le bilan
-commun. Sa suite rapide complète (1 697 fichiers), puis TypeScript et lint sur
-`60a1f3a81`, sont encore en cours. Aucun test lourd n'a été relancé ici pendant
-ce créneau. Les résultats locaux ci-dessus qualifient `ab2229111` ; le bilan
-global du suivi et la qualification du candidat marketplace intégré restent à
-recevoir/réaliser.
+commun. Sa suite rapide complète sur `60a1f3a81` passe : 1 697 fichiers,
+11 226 tests réussis, zéro échec et un skip préexistant. TypeScript, lint
+(zéro erreur, sept avertissements préexistants), exposure et diff passent aussi.
+Les reçus et identités des logs se trouvent dans le
+[dossier commun](../assistant-mcp-alignment-2026-11-12/README.md).
+Aucun test lourd n'a été relancé ici pendant son créneau. Les résultats locaux
+MCP ci-dessus qualifient `ab2229111` ; le build de notre candidat intégré
+`5c9c9ce66` passe ensuite, en 141 secondes : prébuild, compilation, types, lint,
+pages et sitemap. Il a tourné sans clés de service ni connexion de base.
+Les cinq tests locaux d'isolation Review passent aussi (projet, provenance,
+ressources, cookies, paiement réel, Ads et exclusion des autres builds).
+Les reçus sont conservés sous `.local/openai-directory-20261111/requalification-20261112/`
+dans `integrated-build-receipt.json` et `integrated-environment-guard.log`.
+Le canevas rend explicites les deux gates Audio étendues encore fermées,
+sans changer les fonctionnalités de l'environnement hébergé.
+La qualification hébergée reste distincte.
 
 ## Avant l'essai dédié
 
-1. Recevoir le bilan global du chantier commun, puis préparer le build de qualification
-   du candidat intégré. Contrôles MCP, TypeScript/lint et revue des adaptations locales terminés.
+1. Arrêter le périmètre de la prochaine livraison sur le seul projet Review.
+   Réintégration, build local, contrôles MCP, TypeScript/lint, isolation et revue
+   des adaptations locales sont terminés. Aucun push ou déploiement effectué.
 2. Préparer la migration dédiée 100 puis 101 avec le runner numérique ; ne pas
    appliquer ces migrations aux bases normales. Les deux migrations 99 restent
    distinctes, identifiées par leur nom complet.

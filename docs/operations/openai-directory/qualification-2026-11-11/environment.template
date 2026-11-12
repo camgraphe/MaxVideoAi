@@ -46,6 +46,11 @@ MCP_OPENAI_DIRECTORY_CREATOR_TOOLS_ENABLED=true
 MCP_OPENAI_DIRECTORY_CHARACTER_STUDIO_ENABLED=true
 # Enable only after migration 101 and dedicated Builder qualification.
 MCP_OPENAI_DIRECTORY_CHARACTER_BUILDER_ENABLED=false
+# Extended Audio also requires migration 100 and a qualified dedicated Node 22/FFmpeg worker.
+# These two switches must be enabled together only after that qualification.
+# Leaving them closed preserves the existing bounded Eleven projection.
+MCP_AUDIO_EXTENDED_ENABLED=false
+AUDIO_GENERATION_WORKER_ENABLED=false
 CREATOR_TOOLS_ENABLED=1
 # Workers dedies seulement; le flag ne fournit ni cluster ni credentials.
 STUDIO_VERCEL_WORKERS_ENABLED=false
