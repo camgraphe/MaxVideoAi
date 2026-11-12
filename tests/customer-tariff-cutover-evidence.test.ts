@@ -4,9 +4,12 @@ import { collectCustomerTariffCutoverCheckpoints, cutoverDigest, assertCustomerT
   projectInitialCustomerTariffCutoverCells,type CustomerTariffCutoverRelease } from '../frontend/server/pricing/customer-tariff-cutover-evidence';
 import { collectSellableManualTariffCoverage } from '../frontend/lib/pricing-audit/manual-tariff-coverage';
 import { ENV } from '../frontend/src/lib/env';
+import { withArchivedPikaPricingCatalogue } from './helpers/historical-customer-tariff-catalogue';
 
-test('cutover derives all ordinary, workflow and real input duration checkpoints with unique identities', () => {
+test('cutover derives all ordinary, workflow and real input duration checkpoints with unique identities', async () => withArchivedPikaPricingCatalogue(() => {
   const cases = collectCustomerTariffCutoverCheckpoints();
+  assert.equal(cases.filter(row => row.scenario.modelId === 'pika-text-to-video').length, 8,
+    'retirement cannot erase Pika from the historical cutover replay');
   const novemberModels = ['kling-v4-flash', 'gpt-image-2-6-flare', 'gpt-image-2-6-sunburst'];
   assert.equal(cases.filter(row => row.kind === 'ordinary' && !['flux-3-max','kling-v4','nano-banana-2-1',...novemberModels].includes(row.scenario.modelId)).length, 20158);
   assert.deepEqual(novemberModels.map(id => cases.filter(row => row.scenario.modelId === id).length), [72, 1020, 1020]);
@@ -32,9 +35,9 @@ test('cutover derives all ordinary, workflow and real input duration checkpoints
   assert.ok(cases.filter(row => row.currentStatus === 'unavailable').every(row => row.scenario.selector.engineId === 'seedance-2-5'
     && row.scenario.selector.mode === 'v2v' && row.scenario.selector.resolution === '1080p'));
   assert.ok(cases.some(row => row.kind === 'input_stress' && row.scenario.context.inputVideoDurationSec === 30));
-});
+}));
 
-test('transport coverage keeps every historical checkpoint and admits 1080p only for ModelArk normal Edit', () => {
+test('transport coverage keeps every historical checkpoint and admits 1080p only for ModelArk normal Edit', async () => withArchivedPikaPricingCatalogue(() => {
   const previous = ENV.SEEDANCE_2_5_EDIT_TRANSPORT;
   try {
     ENV.SEEDANCE_2_5_EDIT_TRANSPORT = 'las';
@@ -52,9 +55,9 @@ test('transport coverage keeps every historical checkpoint and admits 1080p only
   } finally {
     ENV.SEEDANCE_2_5_EDIT_TRANSPORT = previous;
   }
-});
+}));
 
-test('initial projection archives obsolete no-duration Seedance staging and refuses unrelated unused prices', () => {
+test('initial projection archives obsolete no-duration Seedance staging and refuses unrelated unused prices', async () => withArchivedPikaPricingCatalogue(() => {
   const cases = collectCustomerTariffCutoverCheckpoints();
   const pika = cases.find(row => row.scenario.modelId === 'pika-text-to-video')!.scenario.selector;
   const video = cases.find(row => row.scenario.modelId === 'seedance-2-0-mini' && row.scenario.selector.billingInputType === 'video_input')!.scenario.selector;
@@ -68,9 +71,9 @@ test('initial projection archives obsolete no-duration Seedance staging and refu
   assert.deepEqual(result.archivedLegacyCells,[rows[1]]);
   assert.deepEqual(rows.map(row => row.id),['current','obsolete']);
   assert.throws(() => projectInitialCustomerTariffCutoverCells([{ ...rows[0],selector: { engineId: 'unknown' } }]), /unknown unused/i);
-});
+}));
 
-test('a fingerprint of a reduced inventory, expired capture or local provenance cannot certify production', t => {
+test('a fingerprint of a reduced inventory, expired capture or local provenance cannot certify production', async t => withArchivedPikaPricingCatalogue(() => {
   const capturedAt = Date.now();
   t.mock.timers.enable({ apis: ['Date'], now: capturedAt });
   const cases = collectCustomerTariffCutoverCheckpoints();
@@ -87,4 +90,4 @@ test('a fingerprint of a reduced inventory, expired capture or local provenance 
   t.mock.timers.setTime(capturedAt);
   assert.throws(() => assertCustomerTariffCutoverRelease(release, release.fingerprint, 'rehearsal'), /complete.*coverage/i);
   assert.throws(() => assertCustomerTariffCutoverRelease(release, release.fingerprint, 'production'), /production.*provenance/i);
-});
+}));

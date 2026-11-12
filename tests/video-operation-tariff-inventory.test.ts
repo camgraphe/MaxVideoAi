@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { collectSellableManualTariffCoverage } from '../frontend/lib/pricing-audit/manual-tariff-coverage';
 import { collectCustomerTariffCutoverCheckpoints } from '../frontend/server/pricing/customer-tariff-cutover-evidence';
+import { withArchivedPikaPricingCatalogue } from './helpers/historical-customer-tariff-catalogue';
 import { videoOperationTariffContexts } from '../frontend/lib/pricing-audit/video-operation-tariff-inventory';
 
 test('operation inventory distinguishes omitted scope from explicit empty model or mode', () => {
@@ -22,13 +23,14 @@ test('operation inventory distinguishes omitted scope from explicit empty model 
   }
 });
 
-test('all historical checkpoints and independently enumerated additive operation families are disjoint', () => {
+test('all historical checkpoints and independently enumerated additive operation families are disjoint', async () => withArchivedPikaPricingCatalogue(() => {
   const coverage = collectSellableManualTariffCoverage();
   const counts: Record<string, number> = {};
   for (const row of coverage.scenarios) if (row.selector.operation) counts[row.selector.operation] = (counts[row.selector.operation] ?? 0) + 1;
   assert.deepEqual(counts, { 'kling-reference': 13, 'kling-edit': 3, 'h3-recast': 2, 'h3-relight': 4,
     'luma-extend': 3, 'flux-keyframes': 48, 'flux-fast-edit': 1, 'flux-draft-enhance': 1, 'ltx23-reframe': 2 });
   const cases = collectCustomerTariffCutoverCheckpoints();
+  assert.equal(cases.filter(row => row.scenario.modelId === 'pika-text-to-video').length, 8);
   const novemberModels = ['kling-v4-flash', 'gpt-image-2-6-flare', 'gpt-image-2-6-sunburst'];
   assert.equal(cases.filter(row => row.kind === 'ordinary' && !['kling-v4', 'nano-banana-2-1', ...novemberModels].includes(row.scenario.modelId)).length, 20286);
   assert.deepEqual(novemberModels.map(id => cases.filter(row => row.scenario.modelId === id).length), [72, 1020, 1020]);
@@ -45,7 +47,7 @@ test('all historical checkpoints and independently enumerated additive operation
   assert.deepEqual(new Set(veo.map(row => `${row.selector.durationSec}:${row.selector.resolution}:${row.selector.audio}`)),
     new Set([4,6,8].flatMap(s => ['720p','1080p','4k'].flatMap(r => ['false','true'].map(a => `${s}:${r}:${a}`)))));
   assert.ok(!coverage.scenarios.some(row => ['h3-extend','h3-insert','h3-reframe'].includes(row.selector.operation)));
-});
+}));
 
 test('exact additive selectors and default identities match the separately enumerated commercial inventory', async () => {
   const { videoOperationInitializationScenarios } = await import('../frontend/server/pricing/video-operation-tariffs');

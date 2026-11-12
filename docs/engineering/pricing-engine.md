@@ -714,6 +714,17 @@ pnpm --silent pricing:audit -- --json
 
 The 178-row pre-canonical billing baseline and public baseline are immutable historical evidence. The legacy `pricing:public-baseline:generate` entry point now refuses to write; changing either fixture requires a separately designed migration rather than an operating command. The commands above do not mutate pricing policy or application state.
 
+The historical canonical collector selects `buildPricingAuditScenarios({ scope: 'historical' })`.
+Its frozen public representatives are Pika for video and Luma Uni 1 for image;
+current catalogue order and publication retirement cannot replace those identities.
+The 270-row billing replay (178 original plus 92 reviewed additions) keeps all
+14 Pika checkpoints without changing publication flags or live admin selection.
+The actual audit and shadow-addition CLI commands run against this scope without
+mutating test helpers. Public projection checks apply the reviewed archive sunset:
+Pika leaves estimator, hub and workspace preflight and has no Product offer;
+its 13-row original public evidence stays frozen. The remaining model-page row
+is historical offline evidence, not a current purchasable quote.
+
 Reviewed post-baseline price changes are recorded as exact scenario and field deltas in `frontend/src/lib/pricing-audit/approved-changes.ts`. The audit reports those rows separately as approved changes and still fails for any unlisted or altered delta. Gemini Omni 1.1's exact token price is the first such change: the historical 10-second 720p projection remains $1.30 while the reviewed canonical price is $1.32.
 
 Every current cross-surface difference is preserved and identified by a compatibility profile. Updating `frontend/config/pricing-policy.json` is a commercial change after this foundation batch and requires an intentional matrix review; it must never be bundled into an unrelated refactor.

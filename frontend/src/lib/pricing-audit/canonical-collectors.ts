@@ -29,7 +29,7 @@ export function collectCanonicalPricingOutputs(
   // Nano21 and Kling 4 use native customer tariffs. Their current quotes are
   // qualified independently; pricing publication cannot create a historical
   // supplier-cost/percentage-margin baseline that never existed.
-  const scenarios = buildPricingAuditScenarios().filter(
+  const scenarios = buildPricingAuditScenarios({ scope: 'historical' }).filter(
     (scenario) => scenario.engineId !== NANO21_ENGINE_ID && !isKlingV4FalQueueEngineId(scenario.engineId) && !isGptImage26EngineId(scenario.engineId)
   );
   const baselineById = new Map(baselineRows.map((row) => [row.scenarioId, row]));
