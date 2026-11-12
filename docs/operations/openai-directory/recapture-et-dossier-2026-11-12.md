@@ -1,6 +1,6 @@
 # Scénarios à discuter avant de filmer
 
-12 novembre 2026 — préparation locale. **P1 validé pour préparation après l'alignement technique ; aucune nouvelle capture réalisée.** Le propriétaire demande de voir d'abord ce qui est exigé, ce qui sera montré et de valider les scénarios ensemble. Les sept autres cas restent des propositions ; aucun prompt ci-dessous n'est envoyé.
+12 novembre 2026 — **P1 exécuté dans le vrai ChatGPT sur le candidat dédié aligné `e75f95e7b`**, sans génération ni débit. Une correction de l'illustration a été nécessaire. La répétition de montage conserve la saisie réelle et des captures fixes du résultat corrigé ; curseur et continuité restent à améliorer avant la prise finale. Voir le [reçu de qualification](qualification-hebergee-2026-11-12.md). Le propriétaire demande de valider les scénarios ensemble ; les sept autres cas restent des propositions et n'ont pas été envoyés.
 
 ## Ce qu'OpenAI demande réellement
 
@@ -22,7 +22,7 @@ Cadre proposé : application entière stable, explications courtes à droite, cu
 
 | Cas | Sujet proposé | Actions à montrer | Validation avant prise |
 | --- | --- | --- | --- |
-| P1 | Planifier et comparer | Sélection visible de MaxVideoAI, laptop graphite, deux modèles compatibles, différence créative et coût. | Scénario et cadrage validés pour préparation après alignement ; aucune prise réalisée. |
+| P1 | Planifier et comparer | Plugin sélectionné, laptop graphite, deux modèles compatibles, différence créative et coût. | Essai réel terminé sans génération. Réponse corrigée et répétition de montage disponibles ; validation visuelle et prise finale restent à faire. |
 | P2 | Deux références vers un plan produit | Laptop + capture d'une app fictive importée ; interface intégrée à l'écran dans l'image, puis beau plan caméra / mains au clavier. Devis et accords visibles. | Direction enrichie par le propriétaire ; visuels et prise à préparer après alignement, aucune génération lancée. |
 | P3 | Retrouver son résultat | Résultat du même compte, lecture, téléchargement réel et retour au même résultat. | Scénario et cadrage à valider ; aucun envoi automatique. |
 | P4 | Monter et exporter | Montage sauvegardé, modification visible, devis ; si export exécuté, résultat du montage exact et de sa révision. | Scénario et cadrage à valider ; aucun envoi automatique. |

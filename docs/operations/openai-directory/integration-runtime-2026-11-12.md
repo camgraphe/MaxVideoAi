@@ -1,8 +1,10 @@
 # Alignement du candidat OpenAI — 12 novembre 2026
 
-Travail local sur `codex/openai-directory-20261111`. Aucune nouvelle capture,
-génération, migration distante, activation, livraison hébergée ou soumission.
-Les fichiers modifiés avant la réintégration ont été préservés.
+Intégration sur `codex/openai-directory-20261111`, puis livraison du candidat
+`e75f95e7b` au seul environnement Review et essai P1 dans ChatGPT. Aucun merge
+en production ni soumission. Les fichiers modifiés avant la réintégration sont
+préservés. Voir le [reçu de qualification hébergée](qualification-hebergee-2026-11-12.md)
+pour les migrations, les limites de capture et la clôture de la base dédiée.
 
 ## Sources intégrées
 
@@ -137,7 +139,12 @@ Le canevas rend explicites les deux gates Audio étendues encore fermées,
 sans changer les fonctionnalités de l'environnement hébergé.
 La qualification hébergée reste distincte.
 
-## Avant l'essai dédié
+## Préparation de l'essai dédié — état antérieur à la livraison
+
+Cette liste conserve les conditions préparées avant l'essai. La livraison,
+les migrations 99/100/101, la désactivation des 19 crons et P1 ont depuis été
+réalisés ; la base dédiée est à nouveau en pause. Worker Audio, activation des
+nouvelles capacités et prises suivantes restent à qualifier séparément.
 
 1. Arrêter le périmètre de la prochaine livraison sur le seul projet Review.
    Réintégration, build local, contrôles MCP, TypeScript/lint, isolation et revue
