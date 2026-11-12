@@ -24,7 +24,7 @@ export function registerStudioExportTools(server:McpServer,principal:AgentPrinci
   },async input=>runAgentTool(async()=>{try{return await services.confirmStudioExport!(input,principal);}catch(error){throw asStudioExportAgentError(error);}},{profile,tool:'confirm_studio_export'}));
   server.registerTool('get_studio_export',{
     title:'Read an owned Studio export',
-    description:'Observe the owned render job belonging to an exact scoped projectId and quoteId. Returns null before confirmation, then saved status, progress and recorded billing. Completed artifacts receive fresh temporary read access for the OAuth host; artifactDelivery=unavailable means the film remains completed but delivery must be checked again. Never starts, retries or charges a render.',
+    description:'Observe the owned render job belonging to an exact scoped projectId and quoteId. Returns null before confirmation, then saved status, progress and recorded billing. Completed artifacts receive fresh temporary read access for the OAuth host; use artifact.openUrl when available for clickable Markdown links and retain outputUrl for native playback. artifactDelivery=unavailable means the film remains completed but delivery must be checked again. Never starts, retries or charges a render.',
     inputSchema:getStudioExportInputSchema,outputSchema: withToolErrorOutput(getStudioExportOutputSchema, profile),
     annotations:{readOnlyHint:true,destructiveHint:false,idempotentHint:true,openWorldHint:false},
   },async input=>runAgentTool(async()=>{try{return await services.getStudioExport!(input,principal);}catch(error){throw asStudioExportAgentError(error);}},{profile,tool:'get_studio_export'}));

@@ -6,11 +6,11 @@ import test from 'node:test';
 import { build } from 'esbuild';
 
 async function fixture() {
-  const state = { unavailable: '' as '' | 'resolve' | 'sign', users: [] as string[] };
+  const state = { unavailable: '' as '' | 'resolve' | 'sign', users: [] as string[], readUrl:'https://owned.invalid/signed?token=fresh', expires:123 as number|string };
   const root = resolve('frontend');
   const stubs: Record<string, string> = {
     '@/server/studio/media-resolver': 'export async function resolveStudioMedia(userId,ref){state.users.push(userId);if(state.unavailable==="resolve")throw Error("removed");return ref;}',
-    '@/server/studio/conversation-media-read-access': 'export async function createConversationMediaReadAccess(){if(state.unavailable==="sign")throw Error("signing");return {url:"https://owned.invalid/signed?token=fresh",thumbnailAccessUrl:"https://owned.invalid/thumb?token=fresh",expires:123};}',
+    '@/server/studio/conversation-media-read-access': 'export async function createConversationMediaReadAccess(){if(state.unavailable==="sign")throw Error("signing");return {url:state.readUrl,thumbnailAccessUrl:"https://owned.invalid/thumb?token=fresh",expires:state.expires};}',
   };
   const built = await build({ absWorkingDir: root, entryPoints: ['src/server/tools/creator-media-access.ts'], tsconfig: resolve(root, 'tsconfig.json'),
     bundle: true, platform: 'node', format: 'cjs', write: false, packages: 'external', plugins: [{ name: 'media-access-fixture', setup(builder) {
@@ -18,10 +18,40 @@ async function fixture() {
       builder.onLoad({ filter: /.*/, namespace: 'fixture' }, args => ({ contents: stubs[args.path], loader: 'js' }));
     } }] });
   const module = { exports: {} as any };
-  runInNewContext(built.outputFiles[0].text, { module, exports: module.exports, require: createRequire(resolve(root, 'package.json')), state, process, Error });
+  runInNewContext(built.outputFiles[0].text, { module, exports: module.exports, require: createRequire(resolve(root, 'package.json')), state, process, Error, URL, Buffer });
   return { ...module.exports, state };
 }
 const ref = { type: 'asset', assetId: 'ma_11111111111111111111111111111111', kind: 'video' };
+test('creator results expose a scoped Markdown link separately from native original access',async()=>{
+  const saved={...process.env};
+  try {
+    process.env.S3_BUCKET='creator-link-fixture';process.env.S3_REGION='eu-central-1';
+    process.env.S3_PUBLIC_BASE_URL='https://creator-link-fixture.s3.eu-central-1.amazonaws.com';
+    process.env.MCP_ACQUISITION_SIGNING_SECRET='offline-creator-link-secret-at-least-32-bytes';
+    const {withCreatorMediaReadAccess,state}=await fixture();
+    state.readUrl=`${process.env.S3_PUBLIC_BASE_URL}/renders/owner/subtitles.mp4?X-Amz-Signature=offline`;
+    state.expires=new Date(Date.now()+300000).toISOString();
+    for(const result of [{ref,originalUrl:'stored-original'},{outputs:[{asset:ref,originalUrl:'stored-original'}]}]) {
+      const presented=await withCreatorMediaReadAccess('owner',{state:'completed',result},{
+        principal:{userId:'owner',clientId:'client',authMethod:'oauth',emailVerified:true},origin:'https://openai-review.maxvideoai.com',
+      });
+      const output=presented.result.outputs?.[0]??presented.result;
+      assert.equal(output.readUrl,state.readUrl);
+      assert.equal(output.originalUrl,'stored-original');
+      const link=new URL(output.openUrl);
+      assert.equal(link.origin,'https://openai-review.maxvideoai.com');
+      assert.equal(link.pathname,'/api/mcp/media');
+      const payload=JSON.parse(Buffer.from(link.searchParams.get('token')!.split('.')[0],'base64url').toString());
+      assert.deepEqual(payload.source,ref);
+      assert.equal(payload.userId,'owner');assert.equal(payload.clientId,'client');
+      assert.equal('openUrl' in result,false);
+    }
+  } finally {
+    for(const key of ['S3_BUCKET','S3_REGION','S3_PUBLIC_BASE_URL','MCP_ACQUISITION_SIGNING_SECRET']) {
+      if(saved[key]===undefined)delete process.env[key];else process.env[key]=saved[key];
+    }
+  }
+});
 test('creator presentation refreshes owned read URLs without changing originals or operation identity', async () => {
   const { withCreatorMediaReadAccess, state } = await fixture();
   for (const result of [{ outputs: [{ asset: ref, originalUrl: 'https://owned.invalid/original' }] }, { ref, originalUrl: 'https://owned.invalid/original' }]) {

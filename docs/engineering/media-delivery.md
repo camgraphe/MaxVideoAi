@@ -1495,3 +1495,31 @@ records. Playback and last-frame fields receive the same ownership checks as
 original image/video/audio and thumbnails. The Studio module re-exports the
 shared owner for compatibility. `tests/agent-private-generation-delivery.test.ts`
 and `tests/studio-generation-media-access.test.ts` exercise these contracts.
+
+### MCP Markdown handoff — 12 November 2026
+
+Model-visible generation, Studio export and Creator media responses may also carry
+`openUrl`. Use that first-party link for Markdown; keep the original signed
+`videoUrl`, `outputUrl`, `readUrl` and widget download descriptor for native media.
+Hosts can append UTM parameters to Markdown links, which invalidates an S3
+signature if exposed directly. `src/server/mcp/media-link.ts` creates a separate
+read capability using domain-separated HMAC with the existing
+`MCP_ACQUISITION_SIGNING_SECRET`. No new secret, table or persistent token is used.
+An absent/invalid secret omits `openUrl` and preserves the existing native result.
+
+The capability binds audience origin, owner, issuing OAuth client, exact source
+reference, storage-key hash and an expiry of at most five minutes, capped by the
+existing read grant. `GET/HEAD /api/mcp/media` needs no web-session cookie. It
+re-reads the owned available asset/completed job/export, rejects changed storage
+identity, and redirects with a method-specific 307 and private/no-store headers.
+Only bounded outer `utm_*` parameters are ignored; no incoming query or arbitrary
+target URL reaches S3. A fixed signing date and remaining TTL prevent redemption
+from extending the capability deadline. Original bytes and stored URLs are unchanged.
+
+This is a short-lived bearer capability, like the S3 URL already issued: possession
+authorizes the exact read until expiry. The issuing client is integrity-bound;
+the route does not claim immediate OAuth-client revocation or authenticate the
+browser as that client. Renewal requires another authenticated MCP read. Tests
+cover UTM, tampering, expiry, foreign/removed/replaced media, the actual route with
+an offline database boundary, and all three additive projections. Local tests do
+not establish deployed host delivery.

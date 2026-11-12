@@ -44,6 +44,28 @@ test('agent delivery cannot grant private access to another account object', asy
   await assert.rejects(() => getAgentGenerationStatus({jobId:'job-1'},principal,{readStatus:async () => ({...stored,result:{surface:'image',imageUrls:[`${base}/renders/images/other/private.png`],thumbnailUrls:[]}})}),/MEDIA_NOT_AVAILABLE/);
 });
 
+test('Markdown delivery uses a first-party link while native media retains its original signed URL', async () => {
+  const previous = process.env.MCP_ACQUISITION_SIGNING_SECRET;
+  process.env.MCP_ACQUISITION_SIGNING_SECRET = 'offline-media-link-secret-at-least-32-bytes';
+  try {
+    const {getAgentGenerationStatus} = await api;
+    const status = await getAgentGenerationStatus({jobId:'job-1'},principal,{
+      readStatus:async () => stored, accountUrl:'https://openai-review.maxvideoai.com/account/connections',
+    });
+    assert.ok(status.openUrl, 'A model-visible link must not expose the S3 signature to host-added UTM parameters.');
+    const link = new URL(status.openUrl);
+    assert.equal(link.origin, 'https://openai-review.maxvideoai.com');
+    assert.equal(link.pathname, '/api/mcp/media');
+    assert.ok(link.searchParams.get('token'));
+    assert.equal(link.searchParams.has('X-Amz-Signature'), false);
+    assert.equal(status.result?.surface, 'video');
+    if(status.result?.surface==='video') assertSigned(status.result.videoUrl, '/renders/owner/video.mp4');
+  } finally {
+    if(previous===undefined) delete process.env.MCP_ACQUISITION_SIGNING_SECRET;
+    else process.env.MCP_ACQUISITION_SIGNING_SECRET=previous;
+  }
+});
+
 test('private image and audio delivery retains original type and measured duration', async () => {
   const {getAgentGenerationStatus} = await api;
   for (const result of [

@@ -30,7 +30,8 @@ export function asCreatorAgentError(error: unknown): AgentApiError {
   if (code.includes('UNAVAILABLE') || code.startsWith('MISSING_')) return new AgentApiError('ENGINE_UNAVAILABLE', 'This tool is currently unavailable.');
   return new AgentApiError('PARAMETER_INVALID', 'Check the selected media, duration, settings and document revision.');
 }
-export function createAgentCreatorToolsService(options: { enabled: boolean }): CreatorMcpServices {
+export function createAgentCreatorToolsService(options: { enabled: boolean; requestOrigin?:string }): CreatorMcpServices {
+  const delivery = (principal:AgentPrincipal) => options.requestOrigin ? {principal,origin:options.requestOrigin} : undefined;
   const creators = (principal: AgentPrincipal) => createCreatorOperationsService(principal, options);
   const subtitles = (principal: AgentPrincipal) => createSubtitleOperationsService(principal, options);
   async function authorize(principal: AgentPrincipal) {
@@ -63,10 +64,10 @@ export function createAgentCreatorToolsService(options: { enabled: boolean }): C
     async confirm(input, principal) {
       await authorize(principal);
       const result = await (input.toolId === 'subtitles' ? subtitles(principal) : creators(principal)).confirm({ operationId: input.operationId, confirmed: input.confirmed });
-      return withRetry(await withCreatorMediaReadAccess(principal.userId, result));
+      return withRetry(await withCreatorMediaReadAccess(principal.userId, result,delivery(principal)));
     },
     async status(input, principal) {
-      return withRetry(await withCreatorMediaReadAccess(principal.userId, await (input.toolId === 'subtitles' ? subtitles(principal) : creators(principal)).status(input.operationId)));
+      return withRetry(await withCreatorMediaReadAccess(principal.userId, await (input.toolId === 'subtitles' ? subtitles(principal) : creators(principal)).status(input.operationId),delivery(principal)));
     },
     async readDocument(input, principal) { return { document: await readDocument(input, principal) }; },
     async editDocument(input, principal) {

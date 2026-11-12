@@ -12,6 +12,7 @@ export const generationStatusFields = {
   message: z.string().nullable(), priceCents: z.number().nullable(), currency: z.string().nullable(), paymentStatus: z.string().nullable(),
 };
 export const generationRecoveryOutputSchema = z.object({
+  openUrl: z.string().url().optional(),
   ...generationStatusFields, failureCode: z.string().optional(), funding: z.literal('included_trial').optional(),
   entitlementState: z.enum(['reserved', 'consumed', 'released']).optional(), result: generationResult.nullable(),
   library: destination, workspace: destination, savedToLibrary: z.boolean(),

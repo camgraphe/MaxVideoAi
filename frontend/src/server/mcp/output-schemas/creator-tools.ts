@@ -33,7 +33,7 @@ const quote = object({
 const result = z.union([
   object({
     toolId, version: z.literal(1), jobId: z.string(), sourceAssets: z.array(asset),
-    outputs: z.array(object({ asset, originalUrl: z.string(), kind: z.enum(['image', 'video']),
+    outputs: z.array(object({ asset, originalUrl: z.string(), openUrl:z.string().url().optional(), kind: z.enum(['image', 'video']),
       thumbnailUrl: z.string().nullable().optional(), durationSec: z.number().optional(),
       audioPolicy: audioPolicy.optional(), audioEncoding: z.enum(['source', 'aac']).optional(),
     })),
@@ -41,7 +41,7 @@ const result = z.union([
   // Transcription and MP4 publication both retain document/revision; publication
   // adds the exact owned media reference and original/read URLs.
   object({ documentId: z.string(), revision: z.number(), ref: asset.optional(),
-    assetId: z.string().optional(), originalUrl: z.string().optional(), thumbnailUrl: z.string().nullable().optional(),
+    assetId: z.string().optional(), originalUrl: z.string().optional(), openUrl:z.string().url().optional(), thumbnailUrl: z.string().nullable().optional(),
   }),
 ]);
 const subtitleState = z.enum(['prepared', 'queued', 'running', 'completed', 'failed']);

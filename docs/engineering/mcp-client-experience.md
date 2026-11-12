@@ -1,3 +1,19 @@
+## Private Markdown media links — 12 November 2026 (local candidate)
+
+Generation recovery/presentation exposes optional `openUrl`, Studio export exposes
+`artifact.openUrl`, and Creator media exposes `openUrl` beside `readUrl`. The
+descriptors direct Markdown links to this first-party handoff while preserving
+native originals and the working generation widget/download flow. Tool count,
+feature gates, input schemas and widget URI are unchanged. The short-lived bearer
+contract, ownership checks, secret-absent fallback and revocation limit are in
+`media-delivery.md` under “MCP Markdown handoff”.
+
+The documented metadata collector gives policy fingerprint
+`a713e4a2d8434623e8ecedead988b78f1da3df12e889879f403205a411c54eb7`.
+Only this fingerprint changed in the curated fixture; all 70 decisions, 39 policy
+checks and its fixture-contract hash remain unchanged. Package version, publication
+and fresh hosted qualification are separate follow-up work.
+
 ## OpenAI structured failures after discovery — 11 November 2026
 
 Hosted qualification exposed a client validation failure: SDK 1.29.0 validates

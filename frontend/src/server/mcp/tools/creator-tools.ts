@@ -73,7 +73,7 @@ export function registerCreatorTools(server: McpServer, principal: AgentPrincipa
   server.registerTool('get_creator_tool_operation', {
     ...(options.distributionProfile === 'openai-directory' ? { outputSchema: withToolErrorOutput(creatorOperationOutputSchema) } : {}),
     title: 'Recover a creative tool operation',
-    description: 'Read the existing operation scoped to this account and OAuth client. Recover after disconnects before proposing another attempt. Follow retry.afterSeconds; null ends automatic polling. Finalizing means output validation or selected audio composition is still pending. Only completed results are deliverable. Subtitle transcription returns a documentId/revision for get_subtitle_document; rendering returns a saved video. Does not submit generation.',
+    description: 'Read the existing operation scoped to this account and OAuth client. Recover after disconnects before proposing another attempt. Follow retry.afterSeconds; null ends automatic polling. Finalizing means output validation or selected audio composition is still pending. Only completed results are deliverable. Subtitle transcription returns a documentId/revision for get_subtitle_document; rendering returns a saved video. Use the media openUrl when available for clickable Markdown links; retain readUrl for native playback. Does not submit generation.',
     inputSchema: z.object(operation).strict(), annotations: readAnnotations,
   }, input => run('get_creator_tool_operation', () => service.status(input, principal)));
   server.registerTool('get_subtitle_document', {

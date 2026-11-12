@@ -245,7 +245,7 @@ export function createDefaultMaxVideoAiMcpServices(
   const studioTimeline = createAgentStudioTimelineService({featureEnabled: true});
   const studioExports = createAgentStudioExportService({enabled:true,requestOrigin:new URL(config.accountUrl).origin});
   return {
-    creatorTools: createAgentCreatorToolsService({ enabled: capabilities.paidGeneration && capabilities.referenceUploads
+    creatorTools: createAgentCreatorToolsService({ requestOrigin:new URL(config.accountUrl).origin, enabled: capabilities.paidGeneration && capabilities.referenceUploads
       && (capabilities.creatorTools ?? (runtimeEnv.CREATOR_TOOLS_ENABLED === '1' && runtimeEnv.MCP_CREATOR_TOOLS_ENABLED === '1')) }),
     characterStudio: capabilities.characterStudio ? (principal) => createAgentCharacterStudioService(principal, {
       executionEnabled: capabilities.paidGeneration && capabilities.referenceUploads,

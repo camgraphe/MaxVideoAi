@@ -125,6 +125,7 @@ export function registerPresentGenerationTool(
         'First verify completion with get_generation_status or list_recent_generations.',
         'Explain that the result is saved in the same connected MaxVideoAI library.',
         'If the host does not render the UI, use the returned resource link and library destination as fallback; never invent URLs.',
+        'Use openUrl when available for clickable Markdown links; native playback and the download button use the original URLs.',
         'Do not poll, generate, retry, confirm, or charge with this tool.',
       ].join(' '),
       inputSchema: getGenerationStatusInputSchema,
