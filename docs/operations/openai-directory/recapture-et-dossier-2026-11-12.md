@@ -1,6 +1,6 @@
 # Scénarios à discuter avant de filmer
 
-12 novembre 2026 — préparation locale. **Aucune nouvelle capture autorisée par ce document.** Le propriétaire demande de voir d'abord ce qui est exigé, ce qui sera montré et de valider les scénarios ensemble. Les prompts ci-dessous sont une proposition ; ils ne sont pas envoyés.
+12 novembre 2026 — préparation locale. **P1 validé pour préparation après l'alignement technique ; aucune nouvelle capture réalisée.** Le propriétaire demande de voir d'abord ce qui est exigé, ce qui sera montré et de valider les scénarios ensemble. Les sept autres cas restent des propositions ; aucun prompt ci-dessous n'est envoyé.
 
 ## Ce qu'OpenAI demande réellement
 
@@ -10,13 +10,15 @@ Cinq cas positifs (scénario, prompt, outils attendus, résultat attendu), trois
 
 Le choix des sujets, l'ordre, l'habillage et la durée sont éditoriaux. Le laptop remplace le vase dans la proposition produit ; sa référence doit être importée dans le compte dédié, sans réutiliser un identifiant de média du compte habituel comme s'il appartenait au test.
 
-Pour commencer, je propose **P1 seulement** : une vraie demande dans ChatGPT, MaxVideoAI explicitement sélectionné, une comparaison et le budget. Aucun rendu payant. On pourra juger la lisibilité et le rythme avant d'enregistrer les autres cas.
+Pour commencer, le propriétaire a validé **P1 seulement**, avec la réponse « Oui, préparer cette capture après l'alignement technique » : une vraie demande dans ChatGPT, MaxVideoAI explicitement sélectionné, une publicité de cinq secondes pour le laptop graphite, deux modèles actuels compatibles, leur différence créative et leur coût. Aucun rendu payant. On pourra juger la lisibilité et le rythme avant d'enregistrer les autres cas.
+
+Avant chaque prise suivante, présenter séparément : **l'exigence OpenAI**, **notre choix de scénario**, **les étapes visibles**, puis **le coût éventuel**. OpenAI impose la couverture des cas ; le choix du laptop, le cadrage et les explications latérales sont nos choix éditoriaux, pas des exigences du reviewer.
 
 Cadre proposé : application entière stable, explications courtes à droite, curseur réel, prompt et réponse suffisamment tenus. Pas de voix off dans cette version reviewer ; son original seulement pendant la lecture des exemples. La publicité marketing reste distincte. Le projet Premiere V5 est conservé pour reprise manuelle. L'habillage reste une proposition tant que le propriétaire ne l'a pas validé.
 
 | Cas | Sujet proposé | Actions à montrer | Validation avant prise |
 | --- | --- | --- | --- |
-| P1 | Planifier et comparer | Sélection visible de MaxVideoAI, demande lisible, deux options compatibles et budget. Aucun code à lire. | Scénario et cadrage à valider ; aucun envoi automatique. |
+| P1 | Planifier et comparer | Sélection visible de MaxVideoAI, laptop graphite, deux modèles compatibles, différence créative et coût. | Scénario et cadrage validés pour préparation après alignement ; aucune prise réalisée. |
 | P2 | Référence privée et génération | Image du laptop, import réel, modèle et réglages, devis lisible, puis accord distinct si une nouvelle génération est retenue. | Scénario et cadrage à valider ; aucun envoi automatique. |
 | P3 | Retrouver son résultat | Résultat du même compte, lecture, téléchargement réel et retour au même résultat. | Scénario et cadrage à valider ; aucun envoi automatique. |
 | P4 | Monter et exporter | Montage sauvegardé, modification visible, devis ; si export exécuté, résultat du montage exact et de sa révision. | Scénario et cadrage à valider ; aucun envoi automatique. |
@@ -31,13 +33,13 @@ Les opérations payantes de P2/P4/P5 restent distinctes : on peut préparer leur
 
 ### P1 — Planifier et comparer
 
-**Prompt anglais du candidat local**
+**Prompt anglais de la prise validée** — adaptation à synchroniser dans le prochain paquet ; le ZIP 0.3.20 déjà construit contient encore le prompt générique.
 
 ```text
-Plan a short product film. Suggest a suitable current model and compare an alternative with the same settings and project budget. Do not generate.
+Plan a five-second product ad for this graphite laptop. Compare two compatible current models, explain their creative differences, and show the cost. Do not generate.
 ```
 
-**Français pour validation :** Prépare un court film produit. Propose un modèle actuel et compare une alternative avec les mêmes réglages et le budget du projet. Ne génère rien.
+**Français validé :** Prépare une vidéo publicitaire de cinq secondes pour ce laptop graphite. Compare deux modèles actuels compatibles, explique leur différence créative et indique le coût. Ne génère rien.
 
 **À l’écran :** Sélection visible de MaxVideoAI, demande lisible, deux options compatibles et budget. Aucun code à lire.
 
@@ -45,7 +47,7 @@ Plan a short product film. Suggest a suitable current model and compare an alter
 
 **Résultat attendu déclaré :** Let the host choose the creative approach. Use compare_generation_prices for compatible single-output alternatives with disclosed settings, repriced baseline savings and currency exclusions; use calculate_project_budget for the film shot budget. Inspect current exact-ID capabilities, distinguish estimates from quotes and make no paid confirmation.
 
-**Point à vérifier :** P1 doit être refait avec le catalogue aligné ; les anciens montants ne sont pas des tarifs actuels.
+**Point à vérifier :** P1 doit être refait avec le catalogue aligné ; les anciens montants ne sont pas des tarifs actuels. Préparer l'image du laptop dans le compte dédié si elle est montrée comme référence. Le choix de l'hôte et la disponibilité du candidat de test restent à vérifier avant prise ; cette validation n'autorise aucune génération payante.
 
 ### P2 — Référence privée et génération
 
@@ -185,7 +187,7 @@ Ces parcours ne sont ni retirés du produit, ni présentés comme déjà filmés
 
 ## Comment on prépare la séance
 
-1. Valider ensemble scénario, visuels, ordre et habillage. Rien n'est capturé avant cet accord.
+1. Valider ensemble scénario, visuels, ordre et habillage. P1 est validé pour préparation après alignement ; les sept autres cas attendent leur discussion. Rien n'est capturé avant l'accord correspondant.
 2. Réintégrer les commits, tester le candidat local puis livrer uniquement l'environnement dédié quand l'étape est décidée.
 3. Vérifier compte et données de test, accès du host, version du paquet, noms d'outils et état des capacités. Les 14/31/41 outils précédemment rapportés décrivent des surfaces différentes, pas une preuve de parité.
 4. Relever le prix réel de chaque opération retenue et obtenir son accord séparé avant confirmation. Ne pas amorcer d'achat ou recharger depuis le canal OpenAI.

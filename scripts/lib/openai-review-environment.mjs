@@ -23,6 +23,7 @@ export function checkOpenaiReviewEnvironment(env) {
     NEXT_PUBLIC_SUPABASE_URL: OPENAI_REVIEW.supabaseUrl,
     S3_BUCKET: OPENAI_REVIEW.storageBucket,
     S3_REGION: OPENAI_REVIEW.storageRegion,
+    OPENAI_ADS_CONVERSIONS_DISABLED: '1',
   };
   const invalid = Object.keys(expected).filter(key => env[key] !== expected[key]);
   if (!/^[a-f0-9]{40}$/.test(env.VERCEL_GIT_COMMIT_SHA ?? '')) invalid.push('VERCEL_GIT_COMMIT_SHA');
@@ -60,7 +61,7 @@ export function checkOpenaiReviewEnvironment(env) {
   }
   if (env.STRIPE_WEBHOOK_SECRET && !env.STRIPE_SECRET_KEY?.startsWith('sk_test_')) invalid.push('STRIPE_WEBHOOK_SECRET');
   for (const key of ['SLACK_WEBHOOK_URL', 'GA4_API_SECRET', 'GA4_MEASUREMENT_ID', 'NEXT_PUBLIC_CLARITY_ID',
-    'BREVO_SMTP_USERNAME', 'BREVO_SMTP_PASSWORD']) {
+    'BREVO_SMTP_USERNAME', 'BREVO_SMTP_PASSWORD', 'OPENAI_ADS_PIXEL_ID', 'OPENAI_ADS_CONVERSIONS_KEY']) {
     if (env[key]) invalid.push(key);
   }
   if (invalid.length) {

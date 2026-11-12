@@ -103,3 +103,8 @@ SLACK_WEBHOOK_URL=
 GA4_MEASUREMENT_ID=
 GA4_API_SECRET=
 NEXT_PUBLIC_CLARITY_ID=
+# Le runtime Vercel dedie est "production" : desactiver explicitement les conversions publicitaires.
+# Pas de pixel ni cle Ads du compte habituel. Le prebuild refuse leur presence.
+OPENAI_ADS_CONVERSIONS_DISABLED=1
+OPENAI_ADS_PIXEL_ID=
+OPENAI_ADS_CONVERSIONS_KEY=

@@ -19,6 +19,7 @@ const env = {
   DATABASE_URL: 'postgresql://test:test@ep-orange-lake-b2yfb7ss.c-6.eu-central-1.aws.neon.tech/neondb?sslmode=require',
   S3_BUCKET: 'maxvideoai-openai-review-20261008-5c187a87', S3_REGION: 'eu-central-1',
   S3_ACCESS_KEY_ID: 'test-access-key', S3_SECRET_ACCESS_KEY: 'test-storage-secret',
+  OPENAI_ADS_CONVERSIONS_DISABLED: '1',
 };
 
 test('dedicated build accepts only its complete Git and resource configuration, with direct or pooled Neon', () => {
@@ -43,6 +44,8 @@ test('wrong project, normal resource, shared cookie domain and live integrations
     { STRIPE_SECRET_KEY: 'sk_live_fixture' }, { NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: 'pk_live_fixture' },
     { STRIPE_WEBHOOK_SECRET: 'whsec_without_test_mode' }, { SLACK_WEBHOOK_URL: 'https://example.test' },
     { GA4_API_SECRET: 'test-secret' }, { BREVO_SMTP_PASSWORD: 'test-password' },
+    { OPENAI_ADS_CONVERSIONS_DISABLED: '0' },
+    { OPENAI_ADS_PIXEL_ID: 'normal-pixel' }, { OPENAI_ADS_CONVERSIONS_KEY: 'test-ads-key' },
   ];
   for (const patch of patches) assert.throws(() => checkProductionGit({ ...env, ...patch }), /OpenAI review build refused/, JSON.stringify(Object.keys(patch)));
   // If Vercel bypasses the ignored-build step, prebuild still rejects this branch

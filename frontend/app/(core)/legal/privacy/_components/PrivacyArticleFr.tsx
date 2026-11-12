@@ -104,6 +104,9 @@ export function PrivacyArticleFr({
       <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">8. Cookies &amp; technologies similaires</h3>
         <p>
+          Avec votre consentement à la mesure d’audience et à la publicité, nous partageons avec OpenAI une référence de clic publicitaire et les inscriptions confirmées ou recharges de portefeuille payées pour mesurer les résultats publicitaires. Ces événements comprennent une référence pseudonyme, la date et, pour les paiements, le montant et la devise. Cette intégration ne transmet pas votre e-mail, téléphone, prompts ou médias générés.
+        </p>
+        <p>
           Nous utilisons des cookies essentiels pour faire fonctionner le site et, avec votre accord, des cookies d’analyse/publicité. Vous pouvez retirer votre consentement via la bannière ou les
           paramètres. Voir la{' '}
           <Link href={links.cookiesHref} className="text-brand underline hover:text-brandHover">

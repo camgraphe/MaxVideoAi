@@ -16,7 +16,7 @@ let activeResolution: Promise<boolean> | null = null;
 let resolvedAt = 0;
 
 declare global {
-  interface Window { __mvaiCommercialAnalyticsExcluded?: boolean; __mvaiCommercialAnalyticsPending?: boolean; }
+  interface Window { __mvaiCommercialAnalyticsExcluded?: boolean; __mvaiCommercialAnalyticsPending?: boolean; __mvaiCommercialAnalyticsConfirmedAdmin?: boolean; }
 }
 
 function applyBrowserAnalyticsExclusion(excluded: boolean, persist: boolean): void {
@@ -35,6 +35,7 @@ export function setBrowserAnalyticsAuthContext(appMetadata: unknown): void {
   const metadata = appMetadata && typeof appMetadata === 'object' ? appMetadata as Record<string, unknown> : {};
   const roles = [metadata.role, ...(Array.isArray(metadata.roles) ? metadata.roles : [])];
   const admin = roles.some((role) => typeof role === 'string' && role.trim().toLowerCase() === 'admin');
+  if (admin) window.__mvaiCommercialAnalyticsConfirmedAdmin = true;
   // Non-admin metadata cannot disprove authoritative DB admin evidence.
   applyBrowserAnalyticsExclusion(admin || isBrowserCommercialAnalyticsExcluded(), admin);
 }
@@ -45,6 +46,7 @@ export function clearBrowserAnalyticsAuthContext(): void {
   activeResolution = null;
   resolvedAt = 0;
   applyBrowserAnalyticsExclusion(false, true);
+  if (typeof window !== 'undefined') window.__mvaiCommercialAnalyticsConfirmedAdmin = false;
   if (typeof window !== 'undefined') window.__mvaiCommercialAnalyticsPending = true;
   if (typeof window !== 'undefined') window.dispatchEvent(new window.CustomEvent(COMMERCIAL_ANALYTICS_CONTEXT_CHANGED_EVENT, { detail: { resetJourney: true } }));
 }
@@ -68,7 +70,10 @@ export function resolveBrowserCommercialAnalyticsAuthContext(
   const identityChanged = activeBrowser !== window || activeUserId !== userId;
   const resetJourney = activeBrowser === window && activeUserId !== null && activeUserId !== userId;
   if (identityChanged) {
-    if (resetJourney) applyBrowserAnalyticsExclusion(false, true);
+    if (resetJourney) {
+      applyBrowserAnalyticsExclusion(false, true);
+      window.__mvaiCommercialAnalyticsConfirmedAdmin = false;
+    }
     window.dispatchEvent(new window.CustomEvent(COMMERCIAL_ANALYTICS_CONTEXT_CHANGED_EVENT, { detail: { resetJourney } }));
     activeUserId = userId;
     activeBrowser = window;
@@ -103,6 +108,7 @@ export function resolveBrowserCommercialAnalyticsAuthContext(
   const resolution = Promise.resolve().then(async () => {
     let eligible = false;
     let confirmedDenied = false;
+    let confirmedAdmin = false;
     try {
       const response = await fetch('/api/admin/access', {
         credentials: 'same-origin', cache: 'no-store', signal: controller.signal,
@@ -111,11 +117,13 @@ export function resolveBrowserCommercialAnalyticsAuthContext(
       const body = response.ok ? await response.json() : null;
       eligible = body?.ok === false && body?.commercialAnalyticsEligible === true;
       confirmedDenied = body?.commercialAnalyticsEligible === false;
+      confirmedAdmin = body?.ok === true && confirmedDenied;
     } catch { /* Uncertain roles suppress commercial events, never product use. */ }
     finally { clearTimeout(timer); }
     if (activeResolution !== resolution || typeof window === 'undefined' || browser !== window) return false;
     // A newer metadata-admin resolution invalidates this promise above.
     // Confirmed ordinary eligibility can retire prior stored DB exclusion.
+    if (eligible || confirmedAdmin) browser.__mvaiCommercialAnalyticsConfirmedAdmin = confirmedAdmin;
     applyBrowserAnalyticsExclusion(!eligible, eligible || confirmedDenied);
     browser.__mvaiCommercialAnalyticsPending = false;
     resolvedAt = Date.now();
@@ -124,6 +132,11 @@ export function resolveBrowserCommercialAnalyticsAuthContext(
   });
   activeResolution = resolution;
   return resolution;
+}
+
+/** Generic exclusion also covers anonymous sessions and failed role lookups. */
+export function isBrowserCommercialAnalyticsConfirmedAdmin(): boolean {
+  return typeof window !== 'undefined' && window.__mvaiCommercialAnalyticsConfirmedAdmin === true;
 }
 
 export function isBrowserCommercialAnalyticsExcluded(): boolean {
