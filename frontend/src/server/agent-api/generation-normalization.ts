@@ -301,7 +301,7 @@ function normalizeEngineId(value: unknown): string {
 }
 
 function normalizeSettingKey(value: string, allowedKeys: ReadonlySet<string>): string {
-  const key = normalizeText(value, 'settings key', MAX_SETTING_KEY_CHARS, false);
+  const key = normalizeText(value, 'settings', MAX_SETTING_KEY_CHARS, false);
   if (!SAFE_SETTING_KEY_PATTERN.test(key) || !allowedKeys.has(key)) {
     fail('settings', 'settings contains an unknown or unsupported field.');
   }
@@ -450,6 +450,9 @@ function normalizeReference(
   assertPlainDataObject(value, field);
   const kind = normalizeToken(value.kind, `${field}.kind`);
   const role = normalizeReferenceRole(value.role, index);
+  if (Object.hasOwn(value, 'slot') && role !== orderedRole) {
+    fail(`${field}.slot`, 'slot is unsupported for this reference role in the selected mode; omit it.');
+  }
   if (kind === 'asset') {
     assertExactFields(
       value,
@@ -530,7 +533,7 @@ function normalizeReferences(
     nextOrderedSlot += 1;
     const authoredSlot = (reference as Record<string, unknown>).slot;
     if (authoredSlot !== undefined && authoredSlot !== slot) {
-      fail(`references[${index}].slot`, 'ordered reference slot does not match caller order.');
+      fail(`references[${index}].slot`, `Ordered reference slots count from 0 within their role. Use slot ${slot} here, or omit slots to infer caller order.`);
     }
     return { ...normalized, slot };
   }).sort(compareReferences);
@@ -630,8 +633,8 @@ function normalizeGenerationInput(input: unknown,comparison = false): CanonicalG
     if (input.engineId !== 'seedance-2-5' || input.surface !== 'video'
       || !['draft', 'final'].includes(String(workflow.step))) fail('seedanceWorkflow', 'Unsupported Draft workflow.');
     if (workflow.step === 'final') {
-      const draftJobId = normalizeText(workflow.draftJobId, 'draftJobId', 255, false);
-      if (!SAFE_ID_PATTERN.test(draftJobId)) fail('seedanceWorkflow', 'Invalid Draft job identifier.');
+      const draftJobId = normalizeText(workflow.draftJobId, 'seedanceWorkflow.draftJobId', 255, false);
+      if (!SAFE_ID_PATTERN.test(draftJobId)) fail('seedanceWorkflow.draftJobId', 'Invalid Draft job identifier.');
       seedanceWorkflow = { step: 'final', draftJobId };
     } else seedanceWorkflow = { step: 'draft' };
   }
@@ -659,7 +662,7 @@ function normalizeGenerationInput(input: unknown,comparison = false): CanonicalG
   if ((operation === 'h3-relight' || noPrompt) && prompt) fail('prompt','This operation does not accept a prompt.');
   if (operation === 'h3-recast' && prompt.length > 2000) fail('prompt','Recast supports at most 2000 characters.');
   if (seedanceWorkflow?.step === 'draft') {
-    if (settings.resolution !== undefined && settings.resolution !== '480p') fail('resolution', 'Native Draft requires 480p.');
+    if (settings.resolution !== undefined && settings.resolution !== '480p') fail('settings.resolution', 'Native Draft requires 480p.');
     settings.resolution = '480p';
     if (settings.audio === undefined) settings.audio = true;
   }

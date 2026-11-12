@@ -2,10 +2,11 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import type * as TypeScript from '../frontend/node_modules/typescript';
-import test from 'node:test';
+import test, { type TestContext } from 'node:test';
 
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 import { listFalEngines } from '../frontend/src/config/falEngines';
 import type { TransactionQueryExecutor } from '../frontend/src/lib/db';
@@ -32,6 +33,7 @@ import {
   createMaxVideoAiMcpServer,
   type MaxVideoAiMcpServices,
 } from '../frontend/src/server/mcp/server';
+import { registerPrepareGenerationTool } from '../frontend/src/server/mcp/tools/prepare-generation';
 
 const principal: AgentPrincipal = {
   userId: 'user-1',
@@ -305,6 +307,133 @@ async function expectAgentError(
     return true;
   });
 }
+
+async function prepareClient(t: TestContext, dependencies: PrepareGenerationDependencies): Promise<Client> {
+  const server = new McpServer({ name: 'prepare-reference-slots', version: '1.0.0' });
+  registerPrepareGenerationTool(server, principal, {
+    prepareGeneration: (input, actor) => prepareGeneration(input, actor, dependencies),
+  } as MaxVideoAiMcpServices);
+  const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+  await server.connect(serverTransport);
+  const client = new Client({ name: 'prepare-reference-slots', version: '1.0.0' });
+  await client.connect(clientTransport);
+  t.after(async () => { await client.close(); await server.close(); });
+  return client;
+}
+
+const wanPrimeEdit: PrepareGenerationInput = {
+  schemaVersion: 1, surface: 'video', engineId: 'wan-3-prime', mode: 'v2v',
+  prompt: 'Edit the source with the scene, body and face references in that order.',
+  settings: { durationSec: 10, resolution: '720p', aspectRatio: '9:16', fps: 30, audio: false, enablePromptExpansion: false },
+  outputCount: 1,
+  references: [
+    { kind: 'asset', assetId: 'private-source', role: 'source', slot: 0 },
+    { kind: 'asset', assetId: 'z-private-scene', role: 'reference', slot: 1 },
+    { kind: 'asset', assetId: 'b-private-body', role: 'reference', slot: 2 },
+    { kind: 'asset', assetId: 'a-private-face', role: 'reference', slot: 3 },
+  ],
+};
+
+for (const sourceSlot of [true, false]) {
+  test(`MCP prepare identifies ${sourceSlot ? 'a slot on the v2v source' : 'reference slots offset by the source'} before media or pricing`, async (t) => {
+    const { deps, captures } = baseDependencies({
+      resolveGenerationReferences: async () => { assert.fail('invalid slots must not resolve media'); },
+    });
+    const client = await prepareClient(t, deps);
+    for (const promptLength of [4165, 3224]) {
+      captures.events.length = 0;
+      const input = structuredClone(wanPrimeEdit);
+      input.prompt = 'x'.repeat(promptLength);
+      if (!sourceSlot) delete input.references![0].slot;
+      const result = await client.callTool({ name: 'prepare_generation', arguments: input });
+      assert.equal(result.isError, true);
+      const failure = result.structuredContent as { error: { code: string; message: string; retryable: boolean; nextAction: unknown } };
+      assert.equal(failure.error.code, 'PARAMETER_INVALID');
+      assert.equal(failure.error.retryable, false);
+      assert.deepEqual(failure.error.nextAction, {
+        type: 'correct_request', field: sourceSlot ? 'references[0].slot' : 'references[1].slot',
+      });
+      assert.match(failure.error.message, sourceSlot ? /slot.*omit/i : /slot.*0/i);
+      assert.doesNotMatch(JSON.stringify(failure), /private|xxxxx/i);
+      const fallback = result.content as Array<{ type: string; text: string }>;
+      assert.deepEqual(JSON.parse(fallback[0].text), result.structuredContent);
+      assert.deepEqual(captures.priced, []);
+      assert.deepEqual(captures.inserted, []);
+      assert.deepEqual(captures.events, ['feature', 'restriction']);
+    }
+  });
+}
+
+test('MCP prepare accepts role-scoped Wan Prime references and preserves image order in the quote', async (t) => {
+  const { deps, captures } = baseDependencies({
+    listPublicEngines: async () => [registryCapability('wan-3-prime')],
+    resolveGenerationReferences: async (request) => request.references.map((reference): ResolvedReference => {
+      assert.ok(reference.kind === 'asset');
+      const video = reference.role === 'source';
+      return {
+        assetId: reference.assetId, role: reference.role,
+        ...(reference.slot === undefined ? {} : { slot: reference.slot }),
+        mediaKind: video ? 'video' : 'image', storageUrl: `https://assets.example.com/${reference.assetId}.${video ? 'mp4' : 'png'}`,
+        width: video ? 720 : 1024, height: video ? 1280 : 1536,
+        durationSec: video ? 10 : null, mimeType: video ? 'video/mp4' : 'image/png',
+        sizeBytes: video ? 3_666_096 : 2_000_000,
+      };
+    }),
+  });
+  const client = await prepareClient(t, deps);
+  for (const explicitSlots of [false, true]) {
+    const input = structuredClone(wanPrimeEdit);
+    input.references!.forEach((reference, index) => {
+      if (explicitSlots && index > 0) reference.slot = index - 1;
+      else delete reference.slot;
+    });
+    const result = await client.callTool({ name: 'prepare_generation', arguments: input });
+    assert.notEqual(result.isError, true, JSON.stringify(result.structuredContent));
+    const prepared = result.structuredContent as unknown as Awaited<ReturnType<typeof prepareGeneration>>;
+    assert.deepEqual(prepared.summary.references, [
+      { kind: 'asset', assetId: 'private-source', role: 'source' },
+      { kind: 'asset', assetId: 'z-private-scene', role: 'reference', slot: 0 },
+      { kind: 'asset', assetId: 'b-private-body', role: 'reference', slot: 1 },
+      { kind: 'asset', assetId: 'a-private-face', role: 'reference', slot: 2 },
+    ]);
+    assert.equal(prepared.summary.prompt, input.prompt);
+    assert.deepEqual(prepared.summary.settings, input.settings);
+    assert.equal(prepared.confirmationRequired, true);
+    assert.equal(captures.inserted.length, explicitSlots ? 2 : 1);
+  }
+  assert.equal(captures.priced[0].references[0].slot, undefined);
+  assert.deepEqual(captures.priced[0], captures.priced[1]);
+});
+
+test('MCP prepare returns public normalization guidance without echoing invalid private values', async (t) => {
+  const { deps, captures } = baseDependencies();
+  const client = await prepareClient(t, deps);
+  const result = await client.callTool({ name: 'prepare_generation', arguments: {
+    ...videoInput, prompt: 'private-prompt-secret',
+    references: [{ kind: 'asset', assetId: 'private-asset-secret?token=secret', role: 'source' }],
+  } });
+  assert.equal(result.isError, true);
+  const failure = result.structuredContent as { error: { code: string; nextAction: unknown } };
+  assert.equal(failure.error.code, 'PARAMETER_INVALID');
+  assert.deepEqual(failure.error.nextAction, { type: 'correct_request', field: 'references[0].assetId' });
+  assert.doesNotMatch(JSON.stringify(failure), /private-prompt-secret|private-asset-secret|token=secret/);
+  assert.deepEqual(captures.priced, []);
+  assert.deepEqual(captures.inserted, []);
+});
+
+test('MCP prepare points Draft corrections at settings.resolution rather than a top-level field', async (t) => {
+  const { deps, captures } = baseDependencies();
+  const client = await prepareClient(t, deps);
+  const result = await client.callTool({ name: 'prepare_generation', arguments: {
+    ...videoInput, engineId: 'seedance-2-5', seedanceWorkflow: { step: 'draft' },
+  } });
+  assert.equal(result.isError, true);
+  const failure = result.structuredContent as { error: { code: string; nextAction: unknown } };
+  assert.equal(failure.error.code, 'PARAMETER_INVALID');
+  assert.deepEqual(failure.error.nextAction, { type: 'correct_request', field: 'settings.resolution' });
+  assert.deepEqual(captures.priced, []);
+  assert.deepEqual(captures.inserted, []);
+});
 
 test('Veo rejects unsupported reference hosts before pricing or persisting a payable quote', async () => {
   for (const host of ['cloud.inference.sh', 'tempfile.redpandaai.co']) {
