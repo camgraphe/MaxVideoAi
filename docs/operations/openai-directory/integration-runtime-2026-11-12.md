@@ -13,6 +13,20 @@ Les fichiers modifiés avant la réintégration ont été préservés.
 - Le main vérifié `371ee9eaf` était déjà intégré. Le merge de l'autre worktree
   `566d430c8` n'a pas été repris.
 
+Suivi réintégré sans conflit après les adaptations marketplace `ab2229111` :
+
+- `f346f175ea14b85d5fdd23cc83b951755b401e5e` → `c59deb481` : identité
+  historique explicite dans les audits offline ; l'archivage de Pika ne doit pas
+  remplacer ses lignes historiques par Veo. Aucune formule de prix ou gate live
+  modifiée.
+- `60a1f3a8115cbd1c81fde7886fdbd5a2c88ebf52` → `ba998c2e1` : fixtures
+  courantes, récupération historique de paramètres Pika sans génération, garde
+  de route/SSR archive sans CTA de génération et contrat d'extraction Builder.
+
+Ces deux patches sont identiques à leurs sources. Le journal historique déjà
+modifié conserve son empreinte ; aucun fichier du paquet directory ou de son
+infrastructure de livraison privée n'est changé par ce suivi.
+
 Quatre conflits ont été résolus : guide MCP (conservation des deux historiques),
 service creator (origine de livraison privée et URL de découverte), serveur MCP
 (profil directory et option Builder), empreinte de politique (recalcul du contenu
@@ -96,6 +110,18 @@ TypeScript/lint de notre candidat final ont été réalisées en série après a
 sur le créneau et passent. Aucun build complet ou parcours navigateur nouveau
 n’a été lancé ici ; ne pas confondre les résultats de l’autre worktree avec ceux
 de la branche marketplace.
+
+État du suivi commun au moment de la réintégration : Studio 1 601 réussites et un
+skip ; build et matrices financières réussis. Le navigateur termine à 328/329 :
+l'échec Header/useId a été reproduit sur `main` par l'autre tâche et reste
+documenté, sans masquage. Les audits offline annoncés passent à 270 scénarios
+(dont 14 Pika), 92 additions et 629 projections publiques ; les fixtures
+financières restent inchangées. Les lots ciblés du suivi passent selon le bilan
+commun. Sa suite rapide complète (1 697 fichiers), puis TypeScript et lint sur
+`60a1f3a81`, sont encore en cours. Aucun test lourd n'a été relancé ici pendant
+ce créneau. Les résultats locaux ci-dessus qualifient `ab2229111` ; le bilan
+global du suivi et la qualification du candidat marketplace intégré restent à
+recevoir/réaliser.
 
 ## Avant l'essai dédié
 
