@@ -112,7 +112,7 @@ export function collectSellableManualTariffCoverage(scope: { modelId?: string; m
         if (scope.mode !== undefined && context.mode !== scope.mode) continue;
         scenarios.push(buildManualTariffCoverageScenario(context, capabilityKey));
       }
-      for (const mode of (model.id === 'kling-v4-flash' ? ['ref2v'] : ['ref2v', 'v2v'])) {
+      for (const mode of entry.engine.modes.filter(mode => mode === 'ref2v' || mode === 'v2v')) {
         if (scope.mode !== undefined && mode !== scope.mode) continue;
         gaps.push({ modelId: model.id, reason: `${mode}: fractional input video duration needs a continuous unit tariff` });
       }

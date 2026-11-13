@@ -12,6 +12,7 @@ const V4_ENDPOINTS = new Set([
   'kling/v4/flash/text-to-video',
   'kling/v4/flash/image-to-video',
   'kling/v4/flash/reference-to-video',
+  'kling/v4/flash/video-to-video',
   'kling/v4/text-to-video',
   'kling/v4/image-to-video',
   'kling/v4/reference-to-video',

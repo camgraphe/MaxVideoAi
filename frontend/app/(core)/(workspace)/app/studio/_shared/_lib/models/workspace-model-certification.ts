@@ -99,7 +99,7 @@ const CONVERSATION_REFERENCE_VIDEO_MODELS = new Set<string>([
   ...REFERENCE_VIDEO_MODELS, 'minimax-h3-max', 'grok-imagine-video-1-5', 'flux-3-max','flux-3','flux-3-draft',
 ]);
 const CONVERSATION_VIDEO_EDIT_MODELS = new Set([
-  'kling-v4',
+  'kling-v4', 'kling-v4-flash',
   'gemini-omni-flash', 'lumaRay2', 'lumaRay2_flash', 'luma-ray-3-2',
   'kling-o3-standard', 'kling-o3-pro', 'kling-o3-4k', 'happy-horse-1-0',
   'seedance-2-0', 'seedance-2-0-fast', 'seedance-2-0-mini', 'seedance-2-5',

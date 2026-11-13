@@ -26,6 +26,7 @@ function candidate(
   } = {},
 ): EngineCaps {
   const modes = options.modes ?? ['t2v'];
+  const imageModes = modes.filter((mode) => ['i2v', 'ref2v', 'fl2v', 'i2i'].includes(mode));
   const resolutions = options.resolutions ?? ['1080p'];
   return {
     id,
@@ -45,6 +46,11 @@ function candidate(
     keyframes: false,
     params: {},
     inputLimits: {},
+    inputSchema: {
+      optional: imageModes.length
+        ? [{ id: 'image_urls', type: 'image', label: 'Reference images', modes: imageModes }]
+        : [],
+    },
     modeCaps: Object.fromEntries(modes.map((mode) => [mode, {
       modes: [mode],
       duration: { options: [5, options.maxDurationSec ?? 10], default: 5 },

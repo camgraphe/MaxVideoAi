@@ -153,7 +153,11 @@ export async function verifyExternalFalEvidence(input: ExternalFalImport, assets
     }
     referenceProofs.push(await verifyExternalReferenceCopies(reference, original, stored));
   }
-  if (isKlingExternalFalImport(input) && input.mode === 'ref2v' && referenceVideoDuration > (input.engineId === 'kling-v4-flash' ? 20 : 30)) throw new Error('IMPORT_KLING_REFERENCE_VIDEO_DURATION_LIMIT');
+  if (isKlingExternalFalImport(input)
+    && (input.mode === 'ref2v' || (input.engineId === 'kling-v4-flash' && input.mode === 'v2v'))
+    && referenceVideoDuration > (input.engineId === 'kling-v4-flash' ? 20 : 30)) {
+    throw new Error('IMPORT_KLING_REFERENCE_VIDEO_DURATION_LIMIT');
+  }
   const measured = await probeExternalImportVideo(durableBytes, { url: video.url, sha256: input.videoSha256, sizeBytes: durableBytes.length });
   if (display && display.preview.durationSec > measured.mediaFacts.durationSec + 0.1) throw new Error('IMPORT_KLING_PREVIEW_LONGER_THAN_ORIGINAL');
   return { ...(display ? { display } : {}), referenceProofs, providerResultSha256, providerVideoUrl, verifiedAt: new Date().toISOString(),

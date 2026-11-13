@@ -52,7 +52,7 @@ export async function validateKlingV4OwnedMedia(params: {
   };
   if (flash) {
     fields.i2v = { image_url: 'image' };
-    delete fields.v2v;
+    fields.v2v = { video_url: 'video', image_urls: 'image', video_urls: 'video' };
   }
   if (!fields[params.mode] || params.referenceMediaItems.some(item =>
     !(params.trustedResolvedReferences !== undefined && /^canonical_(?:reference|subject_video)\.\d+$/u.test(item.fieldId))
@@ -76,7 +76,8 @@ export async function validateKlingV4OwnedMedia(params: {
   if (['ref2v', 'v2v'].includes(params.mode) && flatImages.length > 10) {
     return rejected('image_urls', 'Use at most ten flat images, including the opening image. Subject views have their own limits.');
   }
-  if (flatVideos.length > 5) return rejected('video_urls', 'Use at most five flat reference videos.');
+  const maxFlatVideos = flash && params.mode === 'v2v' ? 4 : 5;
+  if (flatVideos.length > maxFlatVideos) return rejected('video_urls', `Use at most ${maxFlatVideos} flat reference videos.`);
   const elements = params.elements ?? [];
   if (elements.length > 7 || (elements.length && !['ref2v', 'v2v'].includes(params.mode))) {
     return rejected('elements', 'Kling 4 subjects require reference generation or video editing, with at most seven subjects.');
@@ -86,7 +87,7 @@ export async function validateKlingV4OwnedMedia(params: {
     const fieldId = `elements.${index}`;
     if (element.voiceId || element.providerElementId) return rejected(fieldId, 'This subject requires a verified voice or provider binding before it can be used.');
     if (element.videoUrl) {
-      if (params.mode !== 'ref2v' || element.frontalImageUrl || element.referenceImageUrls?.length) {
+      if (!(params.mode === 'ref2v' || (flash && params.mode === 'v2v')) || element.frontalImageUrl || element.referenceImageUrls?.length) {
         return rejected(fieldId, 'Video subjects are only supported in reference generation, without image views.');
       }
       candidates.push({ fieldId, kind: 'video', url: element.videoUrl.trim(), assetId: element.videoAssetId?.trim() });
@@ -169,7 +170,7 @@ export async function validateKlingV4OwnedMedia(params: {
     }
     trustedMediaReferences.push({ ...candidate, assetId: candidate.assetId!, width, height, durationSec, ...(fps === undefined ? {} : { fps }) });
   }
-  if (params.mode === 'ref2v' && videoTotal > maxVideoSeconds + 1e-8) {
+  if ((params.mode === 'ref2v' || (flash && params.mode === 'v2v')) && videoTotal > maxVideoSeconds + 1e-8) {
     return rejected('references', `Reference videos and video subjects must total no more than ${maxVideoSeconds} seconds.`);
   }
   return { ok: true, trustedDurationSecByField, trustedMediaReferences };

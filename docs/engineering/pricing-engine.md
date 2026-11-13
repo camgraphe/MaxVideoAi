@@ -35,6 +35,44 @@ verify all original exact rows and paid snapshots unchanged, exercise repeat
 confirmation/resume and quote through the selected database reader. These tests do
 not establish production activation or generation qualification.
 
+## Kling 4 Flash Modify pricing (2026-11-07 candidate)
+
+Flash Modify (`v2v`) uses the documented endpoint-specific fal LIST rate of
+$0.063 per billable second: `output + max(total video input, output)`.
+The [Modify API page](https://fal.ai/models/kling/v4/flash/video-to-video/api)
+supplies this pricing override; its generic $0.094 endpoint billing metadata
+does not replace it. This remains a public LIST estimate with an unverified
+effective supplier charge, never a customer price or an observed invoice.
+
+The output is 720p. An explicit duration is an integer from 3 to 20 seconds;
+omission inherits the exact owned source duration, including fractional seconds.
+`canonicalKlingV4PricingFacts` separately sums every submitted source, reference
+and subject video occurrence, enforcing an exact 20-second total. Inherited
+output uses only the source, not that aggregate. Browser-declared timing cannot
+supply these facts. App preflight and canonical generation retain the same
+fractional output quantity without rounding it to a displayed duration class.
+
+The existing 72 creation examples and their selectors remain unchanged. The
+inventory derives supported modes from the engine and adds 18 explicit Modify
+examples, for 90 total. Each Modify selector keeps `mode=v2v`; its reviewed
+continuous alternative has both `durationSec=continuous` and
+`inputVideoDurationSec=continuous`, priced by `billable_seconds`. The same
+reviewed rate covers explicit and source-inherited output within the validated
+domain. A `ref2v` tariff cannot satisfy Modify, and a missing or inactive tariff
+fails closed without a percentage-policy fallback.
+
+The November 5 native batch remains limited to its 72 reviewed creation classes.
+The 90-example unit inventory does not widen that historical batch or apply its
+approved creation multiplier to Modify. A new Modify price uses the separate
+literal unit-price preview and confirmation described in
+[native batches](pricing-admin-batches.md).
+
+This integration creates or activates no production cells. The dedicated PG17
+test prepares and confirms a literal Modify rate only in a disposable Unix-socket
+database, checks exact fractional quantities and public/billing parity, rejects
+stale confirmation, and preserves the original creation and standard Kling V4
+rows. Existing standard Kling V4 timing and customer selectors are unchanged.
+
 ## Kling 4 tariff preparation (2026-10-25)
 
 The V4 candidate remains closed to spending for every actor. Its factual supplier

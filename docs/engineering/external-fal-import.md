@@ -2,7 +2,7 @@
 
 The operator CLI is `frontend/scripts/import-external-fal-results.ts`. Its strict
 manifest supports FLUX 3 Max through its canonical request builder, Kling V4
-through its four-mode validator and Kling V4 Flash through its separate three-mode
+through its four-mode validator and Kling V4 Flash through its separate four-mode
 validator. The engine discriminant
 selects these separate contracts; renaming a Kling request as FLUX is rejected. It recovers an already accepted Fal
 request and adopts an already owned durable Camgraph upload; it never submits a
@@ -148,13 +148,18 @@ change curation. See the dated [qualification and placement handoff](../launch/k
 ### Kling V4 Flash and separately recorded evidence
 
 Flash uses `engineId: kling-v4-flash` and only the exact `kling/v4/flash`
-text/image/reference endpoints. Replay defaults to 5 seconds and 720p. The strict
-Flash generation validator rejects V4-only controls, structured shots, Edit,
+text/image/reference/video-to-video endpoints. Creation replay defaults to 5 seconds
+and 720p; Modify preserves omitted duration as source inheritance. Its source uses
+`video_url`, with up to four additional `video_urls`; replay keeps these roles
+separate. Nullable Modify optionals are normalized only for validation and replay,
+leaving accepted provider input and journal bytes intact. The strict
+Flash generation validator rejects V4-only controls, structured shots,
 final frames, voice bindings and 1080p. Plain prompts may describe several cuts.
 Reference order, subject views and repeated occurrences remain explicit; each
 measured flat video is 3–20.05 seconds, a subject video is 3–8.05 seconds, and
-their combined duration must be at most 20 seconds with no aggregate tolerance.
-The shared Flash contract limits this launch to 15 actual originals.
+their combined duration, including the Modify source, must be at most 20 seconds
+with no aggregate tolerance. The shared Flash contract limits this launch to 15
+actual originals, including the source and subject views.
 
 Flash supports an additional evidence envelope for runs that originally saved
 separate JSON files rather than JSONL events. `maxvideoai-recorded-fal-files-v1`

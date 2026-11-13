@@ -22,6 +22,7 @@ interface CoreSettingsBarProps {
   onIterationsChange?: (value: number) => void;
   durationSec: number;
   durationOption?: number | string | null;
+  durationAutoLabel?: string;
   onDurationChange: (value: number | string) => void;
   numFrames?: number | null;
   onNumFramesChange?: (value: number) => void;
@@ -270,6 +271,7 @@ export function CoreSettingsBar({
   onIterationsChange,
   durationSec,
   durationOption,
+  durationAutoLabel,
   onDurationChange,
   numFrames,
   onNumFramesChange,
@@ -350,7 +352,7 @@ export function CoreSettingsBar({
         }))
       : enumeratedDurationOptions?.map((option) => ({
           value: option.raw,
-          label: option.label,
+          label: option.raw === 'auto' && durationAutoLabel ? durationAutoLabel : option.label,
         })) ?? [];
 
   const durationValue = frameOptions && frameOptions.length

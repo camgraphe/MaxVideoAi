@@ -84,10 +84,18 @@ test('all certified video tuples share MCP exact price, owned payload and one-at
     await pg.pool.query(`INSERT INTO app_customer_tariff_cells(id,selector_key,selector_json,price_json,currency,effective_from,revision,updated_by)
       VALUES($1,$2,$3,$4,'USD','2026-10-02',1,$5)`,[cell.id,JSON.stringify(Object.entries(cell.selector).sort(([a],[b])=>a.localeCompare(b))),cell.selector,cell.price,operationIdentity.actorId]);
   }
-  const flashFixtures=klingV4TariffScenarios('kling-v4-flash').filter(s=>s.context.resolution==='720p'&&s.context.durationSec===3&&!s.context.hasVideoInput);
-  assert.deepEqual(flashFixtures.map(s=>s.context.mode).sort(),['i2v','ref2v','t2v']);
-  for(const scenario of flashFixtures)await pg.pool.query(`INSERT INTO app_customer_tariff_cells(id,selector_key,selector_json,price_json,currency,effective_from,revision,updated_by)
-    VALUES($1,$2,$3,$4,'USD','2026-11-05',1,$5)`,[`fixture-${scenario.id}`,JSON.stringify(Object.entries(scenario.selector).sort(([a],[b])=>a.localeCompare(b))),scenario.selector,{kind:'fixed',customerCents:37},operationIdentity.actorId]);
+  const flashFixtures=klingV4TariffScenarios('kling-v4-flash').filter(s=>s.context.resolution==='720p'&&s.context.durationSec===3
+    &&(s.context.mode==='v2v'||!s.context.hasVideoInput));
+  assert.deepEqual(flashFixtures.map(s=>s.context.mode).sort(),['i2v','ref2v','t2v','v2v']);
+  for(const scenario of flashFixtures){
+    // Modify requires an independent reviewed curve; creation fixture prices stay fixed.
+    const cell=scenario.context.mode==='v2v'?(await prepareContinuousInputTariffChange({scenario,
+      state:operationTariffState(),policy:operationPolicy,proposal:{operation:'create',scenarioId:scenario.id,
+        scope:'continuous_input',price:{kind:'kling_v4_billable',customerCentsPerBillableSecond:12}}})).proposedCell!
+      :{id:`fixture-${scenario.id}`,selector:scenario.selector,price:{kind:'fixed',customerCents:37}};
+    await pg.pool.query(`INSERT INTO app_customer_tariff_cells(id,selector_key,selector_json,price_json,currency,effective_from,revision,updated_by)
+      VALUES($1,$2,$3,$4,'USD','2026-11-05',1,$5)`,[cell.id,JSON.stringify(Object.entries(cell.selector).sort(([a],[b])=>a.localeCompare(b))),cell.selector,cell.price,operationIdentity.actorId]);
+  }
   await pg.pool.query('UPDATE app_customer_tariff_state SET active=TRUE,revision=1');
   await pg.pool.query(readFileSync('neon/migrations/53_studio_media_generation_scope.sql','utf8'));
   await addTopup(pg.pool,workflowActor.userId,10000000);
@@ -163,7 +171,8 @@ test('all certified video tuples share MCP exact price, owned payload and one-at
     assert.ok(Number.isSafeInteger(quote.price.amountCents)&&quote.price.amountCents>0);assert.equal(provider.captures.length,before,'Preparation never dispatches');
     if(candidate.engine.id==='kling-v4')assert.equal(quote.price.amountCents,mode==='v2v'?127:71,
       'V4 uses its stored native fixture price and the measured 6-second Modify source');
-    if(candidate.engine.id==='kling-v4-flash')assert.equal(quote.price.amountCents,37,'Flash uses its approved 3-second 720p customer price');
+    if(candidate.engine.id==='kling-v4-flash')assert.equal(quote.price.amountCents,mode==='v2v'?108:37,
+      'Flash Modify prices 3 output + 6 measured source seconds at its distinct fixture rate; Create remains unchanged');
     if(candidate.engine.id==='seedance-2-5'&&mode==='v2v')assert.equal(quote.price.amountCents,308,'LAS quotes the measured 6-second source plus 4-second output from its reviewed literal tariff');
     await assert.rejects(mcp.confirmGeneration!({quoteId:quote.quoteId,confirmed:true},principal(workflowActor.userId)),{code:'QUOTE_EXPIRED'});
     await assert.rejects(createStudioVideoGenerationService({...workflowActor,projectId:'other'},options).confirm({quoteId:quote.quoteId,confirmed:true}),{code:'QUOTE_EXPIRED'});
@@ -183,10 +192,10 @@ test('all certified video tuples share MCP exact price, owned payload and one-at
       await assert.rejects(mcp.confirmGeneration!({quoteId:oauthQuote.quoteId,confirmed:true},principal(workflowActor.userId,'another-client')),{code:'QUOTE_EXPIRED'});
       await Promise.all([1,2].map(()=>mcp.confirmGeneration!({quoteId:oauthQuote.quoteId,confirmed:true},principal(workflowActor.userId))));
       assert.equal(provider.captures.filter(call=>call.quoteId===oauthQuote.quoteId).length,1);
-      assert.deepEqual((await pg.pool.query("SELECT amount_cents FROM app_receipts WHERE job_id=$1 AND type='charge'",[oauthQuote.quoteId])).rows.map(row=>row.amount_cents),[37]);
+      assert.deepEqual((await pg.pool.query("SELECT amount_cents FROM app_receipts WHERE job_id=$1 AND type='charge'",[oauthQuote.quoteId])).rows.map(row=>row.amount_cents),[mode==='v2v'?108:37]);
       assert.equal((await mcp.getGenerationStatus!({jobId:oauthQuote.quoteId},principal(workflowActor.userId))).jobId,oauthQuote.quoteId);
       assert.equal(provider.captures.filter(call=>call.quoteId===oauthQuote.quoteId).length,1,'Status recovery never resubmits');
-      totalCharge+=37;
+      totalCharge+=oauthQuote.price.amountCents;
     }
   });
   assert.equal((await pg.pool.query<{total:number}>(`SELECT sum(amount_cents)::int AS total FROM app_receipts WHERE user_id=$1 AND type='charge'`,[workflowActor.userId])).rows[0].total,totalCharge);

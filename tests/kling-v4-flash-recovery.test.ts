@@ -13,7 +13,12 @@ const requestId = 'flash-offline-request';
 const base = `https://queue.fal.run/${endpoint}/requests/${requestId}`;
 const receipt = { request_id: requestId, status_url: `${base}/status`, response_url: base, cancel_url: `${base}/cancel` };
 
-test('Flash receipt is validated and acceptance survives a persistence failure without another POST', async () => {
+for (const { mode, endpoint } of [
+  { mode: 't2v', endpoint: 'kling/v4/flash/text-to-video' },
+  { mode: 'v2v', endpoint: 'kling/v4/flash/video-to-video' },
+]) test(`Flash ${mode} receipt survives persistence failure and restart without another POST`, async () => {
+  const base = `https://queue.fal.run/${endpoint}/requests/${requestId}`;
+  const receipt = { request_id: requestId, status_url: `${base}/status`, response_url: base, cancel_url: `${base}/cancel` };
   let posts = 0, writes = 0;
   const stored: unknown[][] = [];
   const tracker = createProviderJobTracker({ jobId: 'owned-job', engineId: 'kling-v4-flash', providerKey: 'fal', prompt: 'Offline',
@@ -27,15 +32,40 @@ test('Flash receipt is validated and acceptance survives a persistence failure w
       }
       stored.push(args ?? []); return [];
     } });
-  const accepted = await submitFalQueueOnce(endpoint, {}, 'owned-job', async () => { posts++; return new Response(JSON.stringify(receipt), { status: 202 }); },
+  const accepted = await submitFalQueueOnce(endpoint, {}, 'owned-job', async (target, init) => {
+    assert.equal(new URL(String(target)).pathname, `/${endpoint}`);
+    assert.equal(init?.method, 'POST'); posts++;
+    return new Response(JSON.stringify(receipt), { status: 202 });
+  },
     (id, proof) => tracker.persistProviderJobId(id, undefined, proof));
   assert.equal(accepted, requestId); assert.equal(tracker.getLastProviderJobId(), requestId);
   const proof = parseFalQueueReceipt(endpoint, requestId, receipt);
   assert.equal(proof.metadataState, 'verified');
   await tracker.persistProviderJobId(requestId, undefined, proof);
   assert.equal(writes, 2); assert.equal(posts, 1);
-  assert.equal(JSON.parse(stored[0][5] as string).falQueueReceiptRequired, true);
-  assert.equal(JSON.parse(stored[0][5] as string).falQueueReceipt.endpoint, endpoint);
+  const persisted = JSON.parse(stored[0][5] as string);
+  assert.equal(persisted.falQueueReceiptRequired, true);
+  assert.equal(persisted.falQueueReceipt.endpoint, endpoint);
+  const reads: string[] = [];
+  const restarted = await resolveFalJobQueue({ jobId: 'owned-job', engineId: 'kling-v4-flash', requestId, legacyModel: endpoint }, {
+    queryFn: async <T>(sql: string, args?: readonly unknown[]) => {
+      assert.match(sql, /SELECT proof.receipt/);
+      assert.deepEqual(args, ['owned-job', requestId, 'kling-v4-flash']);
+      return [{ receipt: persisted.falQueueReceipt, receipt_present: true, receipt_required: true, legacy_enqueued: false }] as T[];
+    },
+    client: { queue: { status: async () => { throw new Error('Unexpected legacy fallback'); },
+      result: async () => { throw new Error('Unexpected legacy fallback'); } } } as never,
+    fetchFn: (async (target, init) => {
+      assert.equal(init?.method, 'GET'); assert.equal(init?.redirect, 'error'); reads.push(String(target));
+      if (String(target) === receipt.status_url) return new Response(JSON.stringify({ request_id: requestId, status: 'COMPLETED' }));
+      assert.equal(String(target), receipt.response_url);
+      return new Response(JSON.stringify({ video: { url: 'https://fal.media/recovered-offline.mp4' } }));
+    }) as typeof fetch,
+  });
+  assert.equal((await restarted.status()).status, 'COMPLETED');
+  assert.equal((await restarted.result()).data.video.url, 'https://fal.media/recovered-offline.mp4');
+  assert.deepEqual(reads, [receipt.status_url, receipt.response_url]);
+  assert.equal(posts, 1);
 });
 
 test('Flash rollback closes admission and transport never retries timeout or rejection', async (t) => {

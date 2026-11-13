@@ -1,5 +1,5 @@
 import { resolveRuntimeEngineInput } from '@/config/model-runtime';
-import type { EngineCaps, PreflightRequest } from '@/types/engines';
+import type { EngineCaps, AppPreflightRequest } from '@/types/engines';
 import { buildWorkspacePreflightRequest } from './workspace-preflight-request';
 import {
   prepareWorkspaceModelCandidate,
@@ -10,7 +10,7 @@ import {
 export type WorkspaceModelAlternativeCandidate = {
   engine: EngineCaps;
   candidate: WorkspaceModelCandidate;
-  request: PreflightRequest | null;
+  request: AppPreflightRequest | null;
 };
 
 export function isVideoComparisonEngine(engine: EngineCaps) {

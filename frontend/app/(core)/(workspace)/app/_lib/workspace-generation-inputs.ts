@@ -1,5 +1,5 @@
 import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
-import { getWorkspaceKlingV4ActiveAssets, getWorkspaceKlingV4MediaError } from './workspace-kling-v4-media';
+import { getWorkspaceKlingV4ActiveAssets, getWorkspaceKlingV4MediaError, usesWorkspaceKlingFlashSourceDuration } from './workspace-kling-v4-media';
 import { getWorkspaceMultiPromptState } from './workspace-multi-prompt-state';
 import type { MultiPromptScene } from '@/components/Composer';
 import type { KlingElementAsset, KlingElementState } from '@/components/KlingElementsBuilder';
@@ -168,7 +168,7 @@ export function buildKlingElementsPayload(
     if (isKlingV4 && (references.length > 3 || (video && (frontal || references.length)))) {
       return { ok: false, message: 'Each Kling 4.0 subject uses one video OR a frontal image with 1–3 reference images.' };
     }
-    if (isKlingV4 && options.submissionMode === 'v2v' && video) {
+    if (options.selectedEngineId === 'kling-v4' && options.submissionMode === 'v2v' && video) {
       return { ok: false, message: 'Kling 4.0 Edit accepts image subjects only. Remove video subjects or switch to Reference to video.' };
     }
     if (isKlingV4 && (frontal?.kind === 'video' || references.some((asset) => asset.kind !== 'image') || (video && video.kind !== 'video'))) {
@@ -239,7 +239,8 @@ export function prepareGenerationInputs(options: PrepareGenerationInputsOptions)
     if (options.multiPromptActive && options.submissionMode === 'v2v') return { ok: false, message: 'Kling 4.0 Edit does not support a shot plan.' };
     const shots = getWorkspaceMultiPromptState({ active: options.multiPromptActive, scenes: options.multiPromptScenes, minDurationSec: 3, maxDurationSec: 30, strictIntegerDurations: true });
     if (shots.invalid) return { ok: false, message: shots.error! };
-    if (!options.multiPromptActive && (!Number.isInteger(options.form.durationSec) || options.form.durationSec < 3 || options.form.durationSec > (options.selectedEngineId === 'kling-v4-flash' ? 20 : 30))) return { ok: false, message: options.selectedEngineId === 'kling-v4-flash' ? 'Kling 4.0 Flash output duration must be 3–20 whole seconds.' : 'Kling 4.0 output duration must be 3–30 whole seconds.' };
+    if (!options.multiPromptActive && !usesWorkspaceKlingFlashSourceDuration(options.selectedEngineId, options.submissionMode, options.form.durationOption)
+      && (!Number.isInteger(options.form.durationSec) || options.form.durationSec < 3 || options.form.durationSec > (options.selectedEngineId === 'kling-v4-flash' ? 20 : 30))) return { ok: false, message: options.selectedEngineId === 'kling-v4-flash' ? 'Kling 4.0 Flash output duration must be 3–20 whole seconds.' : 'Kling 4.0 output duration must be 3–30 whole seconds.' };
   }
   const schemaFields = [...(options.inputSchema?.required ?? []), ...(options.inputSchema?.optional ?? [])];
   if (((!isUnifiedSeedanceEngineId(options.selectedEngineId) && hasMultimodalReferenceFields(schemaFields))
@@ -406,13 +407,11 @@ export function prepareGenerationInputs(options: PrepareGenerationInputsOptions)
   // V4 prompt tokens identify ordered occurrences, including repeated references.
   // Keep direct URLs identical to the attachment projection before the server merges them.
   const referenceImageUrls = isKlingV4 ? referenceImageCandidates : uniqueValues(referenceImageCandidates);
-  let referenceVideoUrls = inputsPayload
-    ? uniqueValues(
-        inputsPayload
-          .filter((attachment) => attachment.kind === 'video' && typeof attachment.url === 'string')
-          .map((attachment) => attachment.url)
-      )
-    : [];
+  const referenceVideoCandidates = (inputsPayload ?? [])
+    .filter((attachment) => attachment.kind === 'video' && typeof attachment.url === 'string'
+      && !(options.selectedEngineId === 'kling-v4-flash' && options.submissionMode === 'v2v' && attachment.slotId === 'video_url'))
+    .map((attachment) => attachment.url);
+  let referenceVideoUrls = isKlingV4 ? referenceVideoCandidates : uniqueValues(referenceVideoCandidates);
   const referenceAudioUrls = inputsPayload
     ? uniqueValues(
         inputsPayload

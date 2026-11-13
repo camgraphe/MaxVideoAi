@@ -25,13 +25,22 @@ const schema = z.object({ schemaVersion: z.literal(1), ownerUserId: z.string().u
   }).strict()).max(50),
 }).strict();
 export type KlingV4ExternalFalImport = z.infer<typeof schema>;
-const flashSchema = schema.extend({ engineId: z.literal('kling-v4-flash'), mode: z.enum(['t2v', 'i2v', 'ref2v']),
+const flashCreationSchema = schema.extend({ engineId: z.literal('kling-v4-flash'), mode: z.enum(['t2v', 'i2v', 'ref2v']),
   providerInput: z.object({ prompt: z.string().optional(), duration: z.number().int().min(3).max(20).optional(),
     resolution: z.literal('720p').optional(), aspect_ratio: z.string().optional(), start_image_url: url.optional(),
     image_urls: z.array(url).optional(), video_urls: z.array(url).optional(),
     elements: z.array(z.object({ frontal_image_url: url.optional(), reference_image_urls: z.array(url).optional(), video_url: url.optional() }).strict()).optional(),
   }).strict(),
 });
+const flashSchema = z.discriminatedUnion('mode', [flashCreationSchema,
+  schema.extend({ engineId: z.literal('kling-v4-flash'), mode: z.literal('v2v'),
+    providerInput: z.object({ prompt: z.string(), video_url: url,
+      duration: z.number().int().min(3).max(20).nullish(), resolution: z.literal('720p').optional(),
+      image_urls: z.array(url).nullish(), video_urls: z.array(url).nullish(),
+      elements: z.array(element.omit({ voice_id: true })).nullish(),
+    }).strict(),
+  }),
+]);
 export type KlingV4FlashExternalFalImport = z.infer<typeof flashSchema>;
 export type KlingExternalFalImport = KlingV4ExternalFalImport | KlingV4FlashExternalFalImport;
 export function isKlingExternalFalImport(input: { engineId: string }): input is KlingExternalFalImport {
@@ -40,16 +49,17 @@ export function isKlingExternalFalImport(input: { engineId: string }): input is 
 
 /** Normalize documented defaults for validation/reuse only; never rewrite the accepted journal. */
 function effectiveProviderInput(input: KlingExternalFalImport): KlingV4ExternalFalImport['providerInput'] {
+  const isFlashEdit = input.engineId === 'kling-v4-flash' && input.mode === 'v2v';
   const nullable = new Set({
     t2v: ['prompt', 'multi_prompt'], i2v: ['prompt', 'multi_prompt', 'end_image_url'],
     ref2v: ['prompt', 'multi_prompt', 'start_image_url', 'image_urls', 'video_urls', 'elements'],
-    v2v: ['duration', 'image_urls', 'elements'],
+    v2v: ['duration', 'image_urls', 'elements', ...(isFlashEdit ? ['video_urls'] : [])],
   }[input.mode]);
   const provider = Object.fromEntries(Object.entries(input.providerInput).filter(([key, value]) => value !== null || !nullable.has(key))) as KlingV4ExternalFalImport['providerInput'];
   return { ...provider,
     ...(provider.duration === undefined && input.mode !== 'v2v' ? { duration: 5 } : {}),
     ...(provider.multi_prompt ? { multi_prompt: provider.multi_prompt.map(shot => ({ ...shot, duration: shot.duration ?? 5 })) } : {}),
-    ...(input.mode === 'ref2v' && provider.elements ? { elements: provider.elements.map(subject =>
+    ...((input.mode === 'ref2v' || isFlashEdit) && provider.elements ? { elements: provider.elements.map(subject =>
       Object.fromEntries(Object.entries(subject).filter(([, value]) => value !== null))) } : {}),
   };
 }
@@ -115,7 +125,8 @@ export function klingV4ImportSettings(input: KlingExternalFalImport, assets: { p
       resolution: provider.resolution ?? (input.engineId === 'kling-v4-flash' ? '720p' : '1080p'), aspectRatio: provider.aspect_ratio ?? (['t2v', 'ref2v'].includes(input.mode) ? '16:9' : null), audio: null, fps: null, iterationCount: 1, numFrames: null },
     advanced: { seed: null, multiPrompt: provider.multi_prompt ?? null, extraInputValues: null },
     refs: { imageUrl: ref('start_image_url')?.url ?? null, endImageUrl: ref('end_image_url')?.url ?? null,
-      referenceImages: images ?? null, videoUrls: videos ?? (ref('video_url') ? [ref('video_url')!.url] : null),
+      referenceImages: images ?? null, videoUrls: videos
+        ?? (input.engineId === 'kling-v4-flash' && input.mode === 'v2v' ? null : ref('video_url') ? [ref('video_url')!.url] : null),
       elements: provider.elements?.map((element, index) => ({
         ...(element.frontal_image_url ? { frontalImageUrl: ref(`elements.${index}.frontal_image_url`)!.url,
           frontalAssetId: ref(`elements.${index}.frontal_image_url`)!.public_id } : {}),

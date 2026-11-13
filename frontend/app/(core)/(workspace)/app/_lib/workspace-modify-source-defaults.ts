@@ -8,6 +8,10 @@ import { resolveDerivedAspectRatio } from './workspace-derived-aspect-ratio';
 /** Initial choices for a newly selected Modify source, never a pricing or provider policy. */
 export function getModifySourceDefaults(engine: EngineCaps, mode: Mode, source: ReferenceAsset): Partial<FormState> {
   if (mode !== 'v2v' || source.kind !== 'video' || source.status !== 'ready' || source.excerptEditing) return {};
+  if (engine.id === 'kling-v4-flash') {
+    return typeof source.durationSec === 'number' && Number.isFinite(source.durationSec) && source.durationSec > 0
+      ? { durationSec: source.durationSec, durationOption: 'auto', numFrames: null } : {};
+  }
   const caps = getModeCaps(engine, mode);
   const patch: Partial<FormState> = {};
   if (videoDurationPolicy(engine, mode, caps) === 'requested' && caps?.duration && !caps.frames?.length &&

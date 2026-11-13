@@ -13,6 +13,7 @@ import type {
 import type { FormState } from './workspace-form-state';
 import type { LumaRay2GenerationContext } from './workspace-generation-guards';
 import { workspaceModeSupportsRequestField } from './workspace-mode-request-fields';
+import { usesWorkspaceKlingFlashSourceDuration } from './workspace-kling-v4-media';
 
 export type WorkspaceGeneratePayload = Parameters<typeof runGenerate>[0] & {
   imageUrl?: string;
@@ -106,7 +107,8 @@ export function buildWorkspaceGeneratePayload(
           options.form.durationOption ??
           options.effectiveDurationSec
         : options.form.durationOption ?? options.effectiveDurationSec;
-  const shouldSendDuration = !options.capability || Boolean(options.capability.duration || options.capability.frames);
+  const sourceDuration = usesWorkspaceKlingFlashSourceDuration(options.selectedEngineId, requestMode, options.form.durationOption);
+  const shouldSendDuration = !sourceDuration && (!options.capability || Boolean(options.capability.duration || options.capability.frames));
   const shouldSendResolution = workspaceModeSupportsRequestField({
     inputSchema: options.inputSchema,
     capability: options.capability,
@@ -137,7 +139,7 @@ export function buildWorkspaceGeneratePayload(
     prompt: (options.selectedEngineId === 'kling-v4' && options.multiPromptPayload?.length) || options.form.operation && !schemaSupportsField(options.inputSchema, 'prompt', requestMode) ? '' : options.trimmedPrompt,
     mode: options.submissionMode,
     ...(options.form.operation ? { operation: options.form.operation } : {}),
-    ...((options.form.operation === 'kling-edit' || isH3SourceOperation(options.form.operation) || isFluxLtxSourceOperation(options.form.operation)) ? {} : { durationSec: resolvedDurationSeconds }),
+    ...((sourceDuration || options.form.operation === 'kling-edit' || isH3SourceOperation(options.form.operation) || isFluxLtxSourceOperation(options.form.operation)) ? {} : { durationSec: resolvedDurationSeconds }),
     ...((options.form.operation === 'flux-draft-enhance' || (options.form.engineId === 'luma-ray-3-2' && requestMode === 'extend')) && options.form.extraInputValues.source_job_id ? {sourceJobId:String(options.form.extraInputValues.source_job_id),...(options.form.extraInputValues.source_output_id ? {sourceOutputId:String(options.form.extraInputValues.source_output_id)} : {})} : {}),
     membershipTier: 'Member',
     payment: { mode: options.paymentMode },

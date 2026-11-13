@@ -9,9 +9,13 @@ test('cutover derives all ordinary, workflow and real input duration checkpoints
   const cases = collectCustomerTariffCutoverCheckpoints();
   const novemberModels = ['kling-v4-flash', 'gpt-image-2-6-flare', 'gpt-image-2-6-sunburst'];
   assert.equal(cases.filter(row => row.kind === 'ordinary' && !['flux-3-max','kling-v4','nano-banana-2-1',...novemberModels].includes(row.scenario.modelId)).length, 20158);
-  assert.deepEqual(novemberModels.map(id => cases.filter(row => row.scenario.modelId === id).length), [72, 1020, 1020]);
+  assert.deepEqual(novemberModels.map(id => cases.filter(row => row.scenario.modelId === id).length), [90, 1020, 1020]);
+  const flash = cases.filter(row => row.scenario.modelId === 'kling-v4-flash');
+  assert.equal(flash.filter(row => row.scenario.selector.mode !== 'v2v').length, 72, 'preserve every creation checkpoint');
+  assert.deepEqual(flash.filter(row => row.scenario.selector.mode === 'v2v').map(row => row.scenario.context.durationSec),
+    Array.from({ length: 18 }, (_, index) => index + 3), 'Modify adds separate 3–20-second checkpoints');
   assert.ok(cases.filter(row => novemberModels.includes(row.scenario.modelId)).every(row => row.kind === 'ordinary'));
-  const novemberDelta = 72 + 1020 + 1020;
+  const novemberDelta = 72 + 18 + 1020 + 1020;
   assert.equal(cases.filter(row => row.scenario.modelId === 'flux-3-max').length, 128);
   assert.equal(cases.filter(row => row.scenario.modelId === 'kling-v4').length, 280);
   const nano = cases.filter(row => row.scenario.modelId === 'nano-banana-2-1');

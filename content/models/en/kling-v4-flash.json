@@ -3,16 +3,16 @@
   "versionLabel": "4.0 Flash",
   "seo": {
     "title": "Kling 4.0 Flash — Direct a short scene at 720p | MaxVideoAI",
-    "description": "Create from a prompt, animate an opening image or guide a new scene with visual references. Output is 720p."
+    "description": "Create from a prompt, animate an opening image, guide a new scene with references or modify an owned source video. Output is 720p."
   },
-  "overview": "Create from a prompt, animate an opening image or guide a new scene with visual references. Output is 720p.",
+  "overview": "Create from a prompt, animate an opening image, guide a new scene with references or modify an owned source video. Output is 720p.",
   "pricingNotes": [
     "Create video scenes in the App, in Studio, or from your connected assistant through MCP. Review the price before each generation.",
     "Review the current quote before confirming a generation. Changing settings or references requires a new quote."
   ],
   "hero": {
     "title": "Kling 4.0 Flash — Direct a short scene at 720p",
-    "intro": "Create from a prompt, animate an opening image or guide a new scene with visual references. Output is 720p.",
+    "intro": "Create from a prompt, animate an opening image, guide a new scene with references or modify an owned source video. Output is 720p.",
     "badge": "720p · 3–20 s",
     "ctaPrimary": {
       "label": "Open the workspace",
@@ -32,11 +32,11 @@
   "faqs": [
     {
       "q": "Read specifications",
-      "a": "Create from a prompt, animate an opening image or guide a new scene with visual references. Output is 720p. Video references share 20 seconds total; video subjects must be 3–8 seconds each. Each image subject uses a frontal image and 1–3 additional views."
+      "a": "Create from a prompt, animate an opening image, guide a new scene with references or modify an owned source video. Output is 720p. The source, video references and video subjects share a 20-second total limit. Video subjects must be 3–8 seconds each. Each image subject uses a frontal image and 1–3 additional views."
     },
     {
       "q": "Owned visual references",
-      "a": "Reference mode allows up to ten flat images including the opening image, five flat videos and seven subjects. MaxVideoAI initially limits all originals, including subject views, to 15."
+      "a": "Create with up to ten images, five videos and seven subjects. Modify requires one source (@Video1), with up to ten images, four additional videos (@Video2 onward) and seven subjects. At most three subjects can use video. MaxVideoAI limits all originals to 15, including the source and subject views."
     },
     {
       "q": "Pricing",
@@ -44,27 +44,27 @@
     },
     {
       "q": "Compare the available controls",
-      "a": "On MaxVideoAI, Flash currently does not offer a final frame, structured shot plans, Modify, Extend, voice bindings, FPS, seed or guidance controls. Choose Kling 4.0 when its broader controls match your project."
+      "a": "Modify requires a prompt and one owned source video of 3–20 seconds. It inherits source framing and duration unless you choose an explicit output duration of 3–20 whole seconds. Flash has no Extend, final frame, structured shot plan, voice binding, FPS, seed or guidance control."
     }
   ],
   "custom": {
     "whyTitle": "Kling 4.0 Flash",
     "heroHighlights": [
-      "3–20 whole seconds||Create from a prompt, animate an opening image or guide a new scene with visual references. Output is 720p.",
-      "Owned visual references||Reference mode allows up to ten flat images including the opening image, five flat videos and seven subjects. MaxVideoAI initially limits all originals, including subject views, to 15.",
+      "Create or Modify at 720p||Create from a prompt, animate an opening image, guide a new scene with references or modify an owned source video. Output is 720p.",
+      "Owned visual references||Create with up to ten images, five videos and seven subjects. Modify requires one source (@Video1), with up to ten images, four additional videos (@Video2 onward) and seven subjects. At most three subjects can use video. MaxVideoAI limits all originals to 15, including the source and subject views.",
       "Describe the sound||The provider documents native audio. Specify atmosphere and dialogue in the prompt; this release has no audio switch or audio-file input."
     ],
     "specTitle": "Read specifications",
-    "specNote": "On MaxVideoAI, Flash currently does not offer a final frame, structured shot plans, Modify, Extend, voice bindings, FPS, seed or guidance controls. Choose Kling 4.0 when its broader controls match your project.",
+    "specNote": "Modify requires a prompt and one owned source video of 3–20 seconds. It inherits source framing and duration unless you choose an explicit output duration of 3–20 whole seconds. Flash has no Extend, final frame, structured shot plan, voice binding, FPS, seed or guidance control.",
     "specSections": [
       {
         "title": "Edited sequence",
-        "body": "Create from a prompt, animate an opening image or guide a new scene with visual references. Output is 720p.",
+        "body": "Create from a prompt, animate an opening image, guide a new scene with references or modify an owned source video. Output is 720p.",
         "items": []
       },
       {
         "title": "Owned visual references",
-        "body": "Video references share 20 seconds total; video subjects must be 3–8 seconds each. Each image subject uses a frontal image and 1–3 additional views.",
+        "body": "The source, video references and video subjects share a 20-second total limit. Video subjects must be 3–8 seconds each. Each image subject uses a frontal image and 1–3 additional views.",
         "items": []
       }
     ]
@@ -74,7 +74,7 @@
     "hero": {
       "eyebrow": "KLING 4.0 FLASH",
       "title": "Kling 4.0 Flash — Direct a short scene at 720p",
-      "subtitle": "Create from a prompt, animate an opening image or guide a new scene with visual references. Output is 720p.",
+      "subtitle": "Create from a prompt, animate an opening image, guide a new scene with references or modify an owned source video. Output is 720p.",
       "subtitleHighlights": [
         "720p"
       ],
@@ -110,13 +110,13 @@
     },
     "features": [
       {
-        "title": "3–20 whole seconds",
-        "body": "Create from a prompt, animate an opening image or guide a new scene with visual references. Output is 720p.",
+        "title": "Create or Modify at 720p",
+        "body": "Create from a prompt, animate an opening image, guide a new scene with references or modify an owned source video. Output is 720p.",
         "tone": "duration"
       },
       {
         "title": "Owned visual references",
-        "body": "Reference mode allows up to ten flat images including the opening image, five flat videos and seven subjects. MaxVideoAI initially limits all originals, including subject views, to 15.",
+        "body": "Create with up to ten images, five videos and seven subjects. Modify requires one source (@Video1), with up to ten images, four additional videos (@Video2 onward) and seven subjects. At most three subjects can use video. MaxVideoAI limits all originals to 15, including the source and subject views.",
         "tone": "reference"
       },
       {
@@ -146,11 +146,11 @@
     "referenceWorkflows": [
       {
         "title": "Edited sequence",
-        "body": "Create from a prompt, animate an opening image or guide a new scene with visual references. Output is 720p."
+        "body": "Create from a prompt, animate an opening image, guide a new scene with references or modify an owned source video. Output is 720p."
       },
       {
         "title": "Owned visual references",
-        "body": "Video references share 20 seconds total; video subjects must be 3–8 seconds each. Each image subject uses a frontal image and 1–3 additional views."
+        "body": "The source, video references and video subjects share a 20-second total limit. Video subjects must be 3–8 seconds each. Each image subject uses a frontal image and 1–3 additional views."
       }
     ],
     "pricingCopy": {
@@ -159,11 +159,11 @@
       "footnote": "Create video scenes in the App, in Studio, or from your connected assistant through MCP. Review the price before each generation.",
       "ctaLabel": "View current pricing",
       "ctaHref": "/pricing#kling-v4-flash-pricing",
-      "maxDurationNote": "3–20 whole seconds"
+      "maxDurationNote": "Create: 3–20 whole seconds. Modify: source duration by default, or 3–20 whole seconds."
     },
     "meta": {
       "title": "Kling 4.0 Flash — Direct a short scene at 720p | MaxVideoAI",
-      "description": "Create from a prompt, animate an opening image or guide a new scene with visual references. Output is 720p."
+      "description": "Create from a prompt, animate an opening image, guide a new scene with references or modify an owned source video. Output is 720p."
     }
   },
   "prompting": {
@@ -211,7 +211,7 @@
       "Review the current quote before confirming a generation. Changing settings or references requires a new quote."
     ],
     "engineWhy": [
-      "Video references share 20 seconds total; video subjects must be 3–8 seconds each. Each image subject uses a frontal image and 1–3 additional views."
+      "The source, video references and video subjects share a 20-second total limit. Video subjects must be 3–8 seconds each. Each image subject uses a frontal image and 1–3 additional views."
     ],
     "demo": {
       "title": "The Last Rampart",
@@ -259,7 +259,7 @@
         "id": "proof-0",
         "icon": "image",
         "title": "Cinematic scene",
-        "body": "Create from a prompt, animate an opening image or guide a new scene with visual references. Output is 720p."
+        "body": "Create from a prompt, animate an opening image, guide a new scene with references or modify an owned source video. Output is 720p."
       },
       {
         "id": "proof-1",

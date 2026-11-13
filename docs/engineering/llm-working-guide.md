@@ -109,6 +109,7 @@ Frontend `prebuild` first validates the model registry, checks production Git pr
 
 Keep these boundaries stable when continuing workspace cleanup:
 
+- Kling 4.0 Flash Modify keeps its required owned source (`video_url`, `@Video1`) separate from optional images, four additional videos (`video_urls`, `@Video2` onward) and subjects. The source, references and subject videos share an exact 20-second budget; the 15-original product limit includes the source and every subject view. The workspace's Source duration option maps to omitted duration in both preflight and generation, while the server resolves exact owned timing. Explicit durations remain integer 3–20 seconds. Do not add an aspect-ratio control, FPS, audio toggle, voice binding, keyframe or Extend. Inactive Create/Modify assets remain in the draft and are excluded from the other workflow's payload.
 - `frontend/app/(core)/(workspace)/app/AppClient.tsx` should remain the route-level orchestrator, not the owner of every prop transformation.
 - `WorkspaceAppShell` owns route shell rendering.
 - `WorkspaceRuntimeModals` owns shared modal wiring.

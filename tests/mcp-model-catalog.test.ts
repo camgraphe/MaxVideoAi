@@ -20,6 +20,7 @@ function engine(
   overrides: Partial<EngineCaps> = {}
 ): EngineCaps {
   const isImage = modes.every((mode) => mode === 't2i' || mode === 'i2i');
+  const imageModes = modes.filter((mode) => ['i2v', 'ref2v', 'fl2v', 'i2i'].includes(mode));
   return {
     id,
     label: id,
@@ -38,6 +39,11 @@ function engine(
     keyframes: false,
     params: {},
     inputLimits: {},
+    inputSchema: {
+      optional: imageModes.length
+        ? [{ id: 'image_urls', type: 'image', label: 'Reference images', modes: imageModes }]
+        : [],
+    },
     modeCaps: Object.fromEntries(modes.map((mode) => [mode, {
       modes: [mode],
       ...(!isImage ? { duration: { options: [5, 10], default: 5 } } : {}),

@@ -15,6 +15,7 @@ import { getVideoSchemaControlConstraintViolation } from '@/lib/video-input-sche
 import type { ValidationResult } from './validate-types';
 import { deriveRuntimeSchemaCaps } from './runtime-schema-options';
 import { getPrivateRuntimeEngineById } from '@/server/video-generation/private-engine-registry';
+import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
 export type RequestValidationContext = { inputSchema?: EngineInputSchema | null; referenceValuesByField?: ReferenceBudgetValuesByField<string>; referenceMediaItems?: readonly ReferenceBudgetMediaItem[]; referenceProvenanceIssues?: readonly ReferenceProvenanceIssue[] };
 const ENGINE_INPUT_LIMITS = listFalEngines().reduce<Record<string, { promptMaxChars?: number }>>((acc, entry) => {
   acc[entry.id] = { promptMaxChars: entry.engine.inputLimits.promptMaxChars };
@@ -145,7 +146,8 @@ export function validateRequest(engineId: string, mode: Mode | undefined, payloa
         },
       };
     }
-  } else if (caps.duration) {
+  } else if (caps.duration && !(isKlingV4FalQueueEngineId(engineId) && normalizedMode === 'v2v'
+    && payload.duration === undefined && payload.duration_seconds === undefined)) {
     const rawDuration = payload['duration'] ?? payload['duration_seconds'];
     const duration = normalizeVideoDurationOption(rawDuration);
     if (duration == null) {

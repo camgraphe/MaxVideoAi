@@ -250,3 +250,53 @@ test('Flash evidence enforces measured subject limits and counts every repeated 
     else assert.equal((await verify()).referenceProofs?.length, 1);
   }
 });
+
+test('Flash Modify evidence counts source, repeated references and subjects within the strict twenty-second budget', async () => {
+  const original = readFileSync('tests/fixtures/studio-media/pattern-a.mp4');
+  const preview = execFileSync('ffmpeg', ['-v', 'error', '-i', 'tests/fixtures/studio-media/pattern-a.mp4', '-t', '2', '-an', '-c:v', 'copy', '-f', 'mp4', '-movflags', 'frag_keyframe+empty_moov', 'pipe:1']);
+  const poster = await sharp({ create: { width: 64, height: 36, channels: 3, background: '#123456' } }).webp().toBuffer();
+  const digest = (bytes: Buffer) => createHash('sha256').update(bytes).digest('hex');
+  const clips = new Map<number, Buffer>();
+  const clip = (frames: number) => {
+    if (!clips.has(frames)) clips.set(frames, execFileSync('ffmpeg', ['-v', 'error', '-f', 'lavfi', '-i', 'color=c=black:s=720x720:r=30',
+      '-frames:v', String(frames), '-c:v', 'libx264', '-preset', 'ultrafast', '-pix_fmt', 'yuv420p',
+      '-f', 'mp4', '-movflags', 'frag_keyframe+empty_moov', 'pipe:1']));
+    return clips.get(frames)!;
+  };
+  const base = fixture(), requestId = base.requestId, endpoint = 'kling/v4/flash/video-to-video';
+  for (const scenario of [
+    { frames: [600], slots: ['video_url'], error: null },
+    { frames: [601], slots: ['video_url'], error: /REFERENCE_VIDEO_DURATION_LIMIT/ },
+    { frames: [602], slots: ['video_url'], error: /SOURCE_VIDEO_DURATION_LIMIT/ },
+    { frames: [360, 150, 90], slots: ['video_url', 'video_urls.0', 'elements.0.video_url'], error: null },
+    { frames: [361, 150, 90], slots: ['video_url', 'video_urls.0', 'elements.0.video_url'], error: /REFERENCE_VIDEO_DURATION_LIMIT/ },
+    { frames: [303, 303], slots: ['video_url', 'video_urls.0'], error: /REFERENCE_VIDEO_DURATION_LIMIT/ },
+    { frames: [90, 241], slots: ['video_url', 'elements.0.video_url'], error: null },
+    { frames: [90, 242], slots: ['video_url', 'elements.0.video_url'], error: /SOURCE_VIDEO_DURATION_LIMIT/ },
+  ]) {
+    const references = scenario.slots.map((slotId, index) => ({ slotId, kind: 'video' as const,
+      providerUrl: `https://fal.media/clip-${scenario.frames[index]}.mp4`,
+      assetId: 'ma_' + String(index + 1).repeat(32), sha256: digest(clip(scenario.frames[index])) }));
+    const providerInput = { prompt: 'Edit this source.', video_url: references[0].providerUrl, duration: null,
+      image_urls: null, video_urls: references.filter((ref) => ref.slotId.startsWith('video_urls.')).map((ref) => ref.providerUrl),
+      elements: references.filter((ref) => ref.slotId.startsWith('elements.')).map((ref) => ({ video_url: ref.providerUrl })) };
+    const result = { requestId, data: { video: { url: 'https://fal.media/original.mp4' } } };
+    const journal = Buffer.from([{ event: 'submission_started', endpoint, input: providerInput }, { event: 'accepted', requestId },
+      { event: 'recovered', requestId, status: 'COMPLETED', result }].map((value) => JSON.stringify(value)).join('\n'));
+    const input = parseExternalFalImport({ ...base.input, engineId: 'kling-v4-flash', mode: 'v2v', endpoint, providerInput,
+      videoSha256: digest(original), evidenceSha256: digest(journal), references,
+      media: { poster: { url: base.asset.thumb_url, sha256: digest(poster) }, preview: { url: 'https://media.maxvideoai.com/preview.mp4', sha256: digest(preview) } } });
+    assert.deepEqual(input.providerInput, providerInput);
+    const referenceAssets = references.map((ref, index) => ({ ...base.asset, public_id: ref.assetId,
+      url: ref.providerUrl.replace('fal.media', 'media.maxvideoai.com'), size_bytes: clip(scenario.frames[index]).length }));
+    const deps = { ...base.deps, journal, provider: { status: async () => ({ status: 'COMPLETED', request_id: requestId }), result: async () => result },
+      fetcher: (async (url: unknown, init) => {
+        assert.equal(init?.method, 'GET'); assert.equal(init?.redirect, 'error');
+        const match = String(url).match(/\/clip-(\d+)\.mp4$/u);
+        return new Response(match ? clip(Number(match[1])) : String(url).endsWith('.webp') ? poster : String(url).endsWith('/preview.mp4') ? preview : original);
+      }) as typeof fetch };
+    const verify = () => verifyExternalFalEvidence(input, [{ ...base.asset, preview_url: 'https://media.maxvideoai.com/preview.mp4' }, ...referenceAssets], deps);
+    if (scenario.error) await assert.rejects(verify(), scenario.error, JSON.stringify(scenario));
+    else assert.equal((await verify()).referenceProofs?.length, references.length);
+  }
+});

@@ -27,7 +27,7 @@ import {
   isUnifiedMinimaxH3EngineId,
 } from './minimax-h3-unified-workflow';
 import { isVideoSourceWorkflow } from '@/lib/video-source-workflow';
-import { resolveKlingV4CreateMode } from './workspace-kling-v4-media';
+import { resolveKlingV4CreateMode, usesWorkspaceKlingFlashSourceDuration } from './workspace-kling-v4-media';
 import {
   getWorkspaceMediaFields,
   hasMultimodalReferenceFields,
@@ -95,7 +95,8 @@ export function resolveWorkspaceWorkflow({ engine: selectedEngine, capabilityEng
       const entries = inputAssets[fieldId] ?? [];
       for (const asset of entries) {
         if (asset?.kind === 'video' && typeof asset.durationSec === 'number' && Number.isFinite(asset.durationSec)) {
-          return selectedEngine?.activeVideoOperation ? asset.durationSec : Math.ceil(asset.durationSec);
+          return selectedEngine?.activeVideoOperation || (selectedEngine?.id === 'kling-v4-flash' && form?.mode === 'v2v')
+            ? asset.durationSec : Math.ceil(asset.durationSec);
         }
       }
     }
@@ -307,6 +308,7 @@ export function resolveWorkspaceComposerFacts({
   const effectivePrompt = noPrompt ? '' : multiPromptActive ? buildMultiPromptSummary(multiPromptScenes) : prompt;
   const effectiveDurationSec = (() => {
     if (multiPromptActive) return multiPromptTotalSec;
+    if (selectedEngine && usesWorkspaceKlingFlashSourceDuration(selectedEngine.id, submissionMode, form?.durationOption)) return primaryVideoDurationSec ?? 0;
     if (supportsKlingV4Controls) return form?.durationSec ?? 0;
     if (submissionMode === 'a2v' && typeof primaryAudioDurationSec === 'number') return primaryAudioDurationSec;
     if (selectedEngine && videoDurationPolicy(selectedEngine,submissionMode,getModeCaps(selectedEngine,submissionMode))==='source_video'

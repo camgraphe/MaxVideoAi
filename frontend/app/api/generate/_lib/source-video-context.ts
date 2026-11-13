@@ -49,11 +49,12 @@ type SourceVideoContextResult =
     };
 
 export function resolveGenerateSourceVideoContext(params: SourceVideoContextParams): SourceVideoContextResult {
-  if(params.engineId==='kling-v4'&&params.mode==='v2v') {
+  if(['kling-v4', 'kling-v4-flash'].includes(params.engineId ?? '')&&params.mode==='v2v') {
+    const maximum = params.engineId === 'kling-v4-flash' ? 20 : 30;
     const source=params.trustedSourceVideo?.url===params.sourceInputVideoUrl?params.trustedSourceVideo?.durationSec:undefined;
-    if(typeof source!=='number'||!Number.isFinite(source)||source<3||source>30.05)return {ok:false,status:422,
-      body:{ok:false,error:'SOURCE_VIDEO_DURATION_UNSUPPORTED',message:'Kling 4 Modify requires verified 3–30-second source timing.'},
-      metric:{errorCode:'SOURCE_VIDEO_DURATION_UNSUPPORTED',meta:{sourceDurationSec:source??null,maxDurationSec:30.05,mode:params.mode}}};
+    if(typeof source!=='number'||!Number.isFinite(source)||source<3||source>maximum+0.05)return {ok:false,status:422,
+      body:{ok:false,error:'SOURCE_VIDEO_DURATION_UNSUPPORTED',message:`${params.engineLabel} Modify requires verified 3–${maximum}-second source timing.`},
+      metric:{errorCode:'SOURCE_VIDEO_DURATION_UNSUPPORTED',meta:{sourceDurationSec:source??null,maxDurationSec:maximum+0.05,mode:params.mode}}};
     const duration=params.inheritSourceDuration?source:params.fallbackDurationSec;
     return {ok:true,durationSec:duration,durationLabel:`${duration}s`,hasVideoInput:true};
   }

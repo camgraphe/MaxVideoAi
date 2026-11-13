@@ -342,6 +342,16 @@ export interface PreflightRequest {
   };
 }
 
+/** Transport-only omission: owned source timing is resolved before pricing. */
+export type AppPreflightRequest = PreflightRequest | (
+  Omit<PreflightRequest, 'engine' | 'mode' | 'durationSec' | 'durationOption'> & {
+    engine: 'kling-v4' | 'kling-v4-flash';
+    mode: 'v2v';
+    durationSec?: undefined;
+    durationOption?: undefined;
+  }
+);
+
 export type PreflightMediaInput = {
   assetId: string;
   slotId: string;

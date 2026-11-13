@@ -872,3 +872,22 @@ tests with one intentional host skip and all 70 curated scenarios; 86 focused
 compression, capability, normalization and App tests pass. Metadata collection and
 regression checks are offline. Delivery, catalog refresh and real-host behavior
 require their own evidence.
+
+### 2026-11-08 — Kling Flash Modify and reference-image filtering
+
+`list_models` now derives `referenceImages` from applicable image input fields in
+executable modes. Kling V4 and Flash Modify therefore match this filter without
+inventing image support for video-only editors. Empty Modify aspect-ratio lists
+retain their conservative filtering behavior: inherited framing is not a control.
+
+Flash adds the exact `kling/v4/flash/video-to-video` contract to discovery,
+canonical preparation, paid-request projection and receipt recovery. The source
+has its own role; up to four additional video references and video subjects share
+the exact 20-second input budget with it. Omitted output duration inherits the
+source, while pricing separately sums all submitted video occurrences. Owned
+identity, 720p-only output, unavailable voices and Extend, and independent reviewed
+Modify tariffs remain enforced. See [the contract](../model-launch/kling-v4-flash-modify.md).
+
+No tool schema or global instruction change is needed. Offline client-contract
+checks and the curated tool-selection evaluator pass; a host catalog refresh after
+delivery and paid output qualification remain separate from this PR.

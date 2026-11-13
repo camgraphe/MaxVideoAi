@@ -43,7 +43,7 @@ export type KlingElementState = {
 
 export interface KlingElementsBuilderProps {
   elements: KlingElementState[];
-  variant?: 'kling-v4-flash-reference' | 'legacy' | 'kling-v4-reference' | 'kling-v4-edit';
+  variant?: 'kling-v4-flash-reference' | 'kling-v4-flash-edit' | 'legacy' | 'kling-v4-reference' | 'kling-v4-edit';
   onAddElement: () => void;
   onRemoveElement: (id: string) => void;
   onAddAsset: (elementId: string, slot: 'frontal' | 'reference' | 'video', file: File, index?: number) => void;
@@ -262,14 +262,21 @@ export function KlingElementsBuilder({
   const { locale } = useI18n();
   const assetCopy = useMemo(() => getLocalizedAssetDropzoneCopy(normalizeUiLocale(locale)), [locale]);
   const isV4 = variant !== 'legacy';
-  const isFlash = variant === 'kling-v4-flash-reference';
+  const isFlashEdit = variant === 'kling-v4-flash-edit';
+  const isFlash = variant === 'kling-v4-flash-reference' || isFlashEdit;
   const isV4Edit = variant === 'kling-v4-edit';
   const v4SubjectGuidance = locale === 'fr'
     ? `Jusqu’à sept sujets${isV4Edit ? ' image pour Modify.' : ', dont trois sujets vidéo au maximum.'} Chaque sujet image comprend une vue principale et une à trois vues complémentaires. Les voix restent indisponibles sans liaison propriétaire vérifiée.`
     : locale === 'es'
       ? `Hasta siete sujetos${isV4Edit ? ' de imagen para Modify.' : ', con un máximo de tres sujetos de vídeo.'} Cada sujeto de imagen incluye una vista frontal y de una a tres vistas adicionales. Las voces no están disponibles sin una vinculación de propiedad verificada.`
       : `Up to seven subjects${isV4Edit ? '; image subjects only for Modify.' : ', including at most three video subjects.'} Each image subject needs a frontal image and one to three additional views. Voices remain unavailable without a verified owned binding.`;
-  const v4ReferenceGuidance = isV4Edit ? '' : locale === 'fr'
+  const v4ReferenceGuidance = isV4Edit ? '' : isFlashEdit
+    ? locale === 'fr'
+      ? ' Modify utilise une vidéo source, dix images de référence et quatre vidéos de référence supplémentaires au maximum, distinctes des vues des sujets. La source, les références vidéo et les sujets vidéo partagent une limite totale de 20 secondes.'
+      : locale === 'es'
+        ? ' Modify utiliza un vídeo original, hasta diez imágenes de referencia y cuatro vídeos de referencia adicionales, aparte de las vistas de sujetos. El original, las referencias de vídeo y los sujetos de vídeo comparten un límite total de 20 segundos.'
+        : ' Modify uses one source video, up to ten reference images and four additional reference videos, separately from subject views. The source, reference videos and video subjects share a 20-second total limit.'
+    : locale === 'fr'
     ? ` Les dix images (image initiale comprise) et cinq vidéos de référence sont distinctes des vues des sujets. Les vidéos partagent une limite de ${isFlash ? 20 : 30} secondes.`
     : locale === 'es'
       ? ` Las diez imágenes (incluida la inicial) y cinco vídeos de referencia tienen límites distintos de las vistas de sujetos. Los vídeos comparten un límite de ${isFlash ? 20 : 30} segundos.`

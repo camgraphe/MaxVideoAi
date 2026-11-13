@@ -24,6 +24,7 @@ export function buildGenerationSettingsSnapshot(params: {
   membershipTier: unknown;
   durationSec: number;
   durationOption: number | string | null;
+  inheritSourceDuration?: boolean;
   numFrames: number | null;
   aspectRatio: string | null;
   resolution: string;
@@ -62,7 +63,8 @@ export function buildGenerationSettingsSnapshot(params: {
     negativePrompt: trimmedStringOrNull(params.negativePrompt),
     core: {
       durationSec: params.durationSec,
-      durationOption: params.durationOption,
+      durationOption: params.engineId === 'kling-v4-flash' && params.mode === 'v2v' && params.inheritSourceDuration
+        ? 'auto' : params.durationOption,
       numFrames: params.numFrames ?? null,
       aspectRatio: params.aspectRatio,
       resolution: params.resolution,

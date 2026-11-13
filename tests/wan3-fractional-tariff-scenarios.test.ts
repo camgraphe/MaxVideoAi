@@ -59,6 +59,9 @@ test('decimal source controls enforce factual source/output limits and reject in
     'this reviewed decimal mapping must not loosen other models');
   assert.equal(coverage.gaps.filter(g => !['kling-v4', 'kling-v4-flash'].includes(g.modelId) && /fractional input video/.test(g.reason)).length, 6,
     'editable exact samples do not establish continuous manual tariff coverage');
-  assert.equal(coverage.gaps.filter(g => g.modelId === 'kling-v4-flash' && /fractional input video/.test(g.reason)).length, 1,
-    'Flash adds its own continuous reference-video tariff requirement');
+  const flashContinuousModes = coverage.gaps
+    .filter(g => g.modelId === 'kling-v4-flash' && /fractional input video/.test(g.reason))
+    .map(g => g.reason.split(':', 1)[0]).sort();
+  assert.deepEqual(flashContinuousModes, ['ref2v', 'v2v'],
+    'Flash reference generation and Modify require separate reviewed continuous tariffs');
 });

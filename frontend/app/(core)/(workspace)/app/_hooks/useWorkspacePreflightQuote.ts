@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { runPreflight } from '@/lib/api';
-import type { PreflightRequest, PreflightResponse } from '@/types/engines';
+import type { AppPreflightRequest, PreflightResponse } from '@/types/engines';
 import { DEBOUNCE_MS } from '../_lib/workspace-client-helpers';
 import { getSeedanceReferenceValidationMessage } from '@/lib/seedance-failure-messages';
 import { CUSTOMER_PRICING_REFRESH_EVENT } from '@/lib/customer-tariff-revision';
 import { getWorkspaceVideoDurationRejection } from '../_lib/workspace-video-duration-guidance';
 
 export type WorkspacePreflightQuoteOptions = {
-  request: PreflightRequest | null;
+  request: AppPreflightRequest | null;
   iterations: number;
   accessToken: string | null;
   authChecked: boolean;
@@ -17,7 +17,7 @@ type Scope = { requestKey: string | null; accessToken: string | null; authChecke
 type Observation = { scope: Scope; response: PreflightResponse | null; error?: string; videoDurationBlocked?: boolean };
 
 // Canonicalize object property order only. Array order and every wire value stay significant.
-function requestKey(payload: PreflightRequest): string {
+function requestKey(payload: AppPreflightRequest): string {
   return JSON.stringify(payload, (_key, value) =>
     value && typeof value === 'object' && !Array.isArray(value)
       ? Object.fromEntries(Object.entries(value).sort(([a], [b]) => a.localeCompare(b)))
@@ -66,7 +66,7 @@ export function useWorkspacePreflightQuote(options: WorkspacePreflightQuoteOptio
   useEffect(() => {
     if (!scope.requestKey || !scope.authChecked) return;
     let canceled = false;
-    const payload = JSON.parse(scope.requestKey) as PreflightRequest;
+    const payload = JSON.parse(scope.requestKey) as AppPreflightRequest;
     const accessToken = scope.accessToken;
     const timeout = setTimeout(() => {
       Promise.resolve().then(() => runPreflight(payload, { accessToken })).then((response) => {

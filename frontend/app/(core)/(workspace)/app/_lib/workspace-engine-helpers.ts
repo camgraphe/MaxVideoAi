@@ -428,6 +428,14 @@ export function coerceFormState(engine: EngineCaps, mode: Mode, previous: FormSt
   const previousFps = resetFastDefaultsOnEngineSwitch ? null : previous?.fps ?? null;
 
   const durationResult = (() => {
+    if (engine.id === 'kling-v4-flash') {
+      if (mode === 'v2v' && (previous?.engineId !== engine.id || previous.mode !== 'v2v' || previous.durationOption === 'auto')) {
+        return { durationSec: previous?.durationSec ?? 5, durationOption: 'auto', numFrames: null };
+      }
+      if (mode !== 'v2v' && previous?.engineId === engine.id && previous.durationOption === 'auto') {
+        return { durationSec: 5, durationOption: '5', numFrames: null };
+      }
+    }
     // A restored V4 request is authoritative, including invalid values that the editor must report.
     // A stale single-shot option must never override a saved shot-plan total.
     if (isKlingV4FalQueueEngineId(engine.id) && previous?.engineId === engine.id) {

@@ -25492,7 +25492,8 @@
       "modes": [
         "t2v",
         "i2v",
-        "ref2v"
+        "ref2v",
+        "v2v"
       ],
       "maxDurationSec": 20,
       "resolutions": [
@@ -25527,11 +25528,13 @@
             "modes": [
               "t2v",
               "i2v",
-              "ref2v"
+              "ref2v",
+              "v2v"
             ],
             "requiredInModes": [
               "t2v",
-              "ref2v"
+              "ref2v",
+              "v2v"
             ],
             "description": "Optional when animating an opening image."
           },
@@ -25555,6 +25558,24 @@
             "requiredInModes": [
               "i2v"
             ]
+          },
+          {
+            "id": "video_url",
+            "type": "video",
+            "label": "Video to edit",
+            "modes": [
+              "v2v"
+            ],
+            "requiredInModes": [
+              "v2v"
+            ],
+            "source": "either",
+            "minCount": 1,
+            "maxCount": 1,
+            "maxSizeMB": 300,
+            "minDurationSec": 3,
+            "maxDurationSec": 20.05,
+            "description": "Owned source video, referenced as @Video1. Source and reference videos share a 20-second total limit."
           }
         ],
         "optional": [
@@ -25571,9 +25592,10 @@
             "type": "image",
             "label": "Reference images",
             "modes": [
-              "ref2v"
+              "ref2v",
+              "v2v"
             ],
-            "description": "The opening image also counts toward the ten-image limit."
+            "description": "The reference-generation opening image also counts toward the ten-image limit."
           },
           {
             "id": "video_urls",
@@ -25589,6 +25611,21 @@
             "minDurationSec": 3,
             "maxDurationSec": 20.05,
             "description": "Reference videos and subject videos share a 20-second total limit. Subject videos are 3–8 seconds each."
+          },
+          {
+            "id": "video_urls",
+            "type": "video",
+            "label": "Reference videos",
+            "modes": [
+              "v2v"
+            ],
+            "source": "either",
+            "minCount": 0,
+            "maxCount": 4,
+            "maxSizeMB": 300,
+            "minDurationSec": 3,
+            "maxDurationSec": 20.05,
+            "description": "Additional videos, referenced as @Video2 onward. Source, references and subject videos total at most 20 seconds."
           },
           {
             "id": "duration",
@@ -25624,13 +25661,45 @@
             "max": 20
           },
           {
+            "id": "duration",
+            "type": "enum",
+            "label": "Output duration (seconds)",
+            "modes": [
+              "v2v"
+            ],
+            "values": [
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20"
+            ],
+            "min": 3,
+            "max": 20,
+            "description": "Omit to inherit the exact source duration."
+          },
+          {
             "id": "resolution",
             "type": "enum",
             "label": "Resolution",
             "modes": [
               "t2v",
               "i2v",
-              "ref2v"
+              "ref2v",
+              "v2v"
             ],
             "values": [
               "720p"
@@ -25673,10 +25742,12 @@
           "fieldIds": [
             "image_url",
             "image_urls",
+            "video_url",
             "video_urls"
           ],
           "modes": [
-            "ref2v"
+            "ref2v",
+            "v2v"
           ],
           "maxTotal": 15,
           "countUniqueUrls": false,
@@ -25688,18 +25759,20 @@
         "constraints": {
           "ownedAssetModes": [
             "i2v",
-            "ref2v"
+            "ref2v",
+            "v2v"
           ],
           "minImageSidePx": 300,
           "maxImageSizeMB": 30,
           "maxVideoSizeMB": 300,
           "maxCombinedVideoDurationSec": 20,
           "combinedDurationModes": [
-            "ref2v"
+            "ref2v",
+            "v2v"
           ]
         }
       },
-      "updatedAt": "2026-11-05T00:00:00Z",
+      "updatedAt": "2026-11-07T00:00:00Z",
       "ttlSec": 600,
       "providerMeta": {
         "provider": "kling",
@@ -25819,6 +25892,41 @@
           ],
           "audioToggle": false,
           "notes": "3–20 whole seconds at 720p. Describe native audio in the prompt. No FPS or audio switch."
+        },
+        "v2v": {
+          "modes": [
+            "v2v"
+          ],
+          "duration": {
+            "options": [
+              "auto",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20"
+            ],
+            "default": "auto"
+          },
+          "resolution": [
+            "720p"
+          ],
+          "aspectRatio": [],
+          "audioToggle": false,
+          "notes": "Editing inherits source framing and, when omitted, exact source duration. Explicit output duration is 3–20 whole seconds at 720p. No FPS or audio switch."
         }
       }
     },
@@ -25946,6 +26054,45 @@
           ],
           "audioToggle": false,
           "notes": "3–20 whole seconds at 720p. Describe native audio in the prompt. No FPS or audio switch."
+        }
+      },
+      {
+        "mode": "v2v",
+        "falModelId": "kling/v4/flash/video-to-video",
+        "ui": {
+          "modes": [
+            "v2v"
+          ],
+          "duration": {
+            "options": [
+              "auto",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20"
+            ],
+            "default": "auto"
+          },
+          "resolution": [
+            "720p"
+          ],
+          "aspectRatio": [],
+          "audioToggle": false,
+          "notes": "Editing inherits source framing and, when omitted, exact source duration. Explicit output duration is 3–20 whole seconds at 720p. No FPS or audio switch."
         }
       }
     ],

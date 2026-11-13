@@ -111,9 +111,12 @@ export function createAgentModelCatalogDeps(
 
 const defaultDeps: AgentModelCatalogDeps = createAgentModelCatalogDeps();
 
-function referenceImagesSupported(modes: AgentGenerationMode[]): boolean {
-  return modes.some((mode) =>
-    mode === 'i2v' || mode === 'i2v_standard' || mode === 'ref2v' || mode === 'fl2v' || mode === 'i2i'
+function referenceImagesSupported(engine: EngineCaps, modes: AgentGenerationMode[]): boolean {
+  const fields = [...(engine.inputSchema?.required ?? []), ...(engine.inputSchema?.optional ?? [])];
+  return fields.some((field) =>
+    field.type === 'image' && modes.some((mode) =>
+      !field.modes?.length || field.modes.includes(toEngineGenerationMode(engine.id, mode))
+    )
   );
 }
 
@@ -160,7 +163,7 @@ function toCandidate(
       resolutions: [...resolutions],
       maxDurationSec,
       audio: surface === 'video' && engine.audio,
-      referenceImages: referenceImagesSupported(scopedMode ? [scopedMode.mode] : modes),
+      referenceImages: referenceImagesSupported(engine, scopedMode ? [scopedMode.mode] : modes),
       availability: engine.availability,
       generationEnabled,
       lifecycle: runtime?.lifecycle ?? 'current',
