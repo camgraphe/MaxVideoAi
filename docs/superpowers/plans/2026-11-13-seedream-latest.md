@@ -26,18 +26,18 @@ production writes, deployment bypass or paid generations.
 
 ## Tasks
 
-- [ ] Provider/runtime: add failing payload/readiness/model tests, then extend
+- [x] Provider/runtime: add failing payload/readiness/model tests, then extend
   `frontend/lib/image/seedream.ts`, direct BytePlus payload/execution/environment
   owners and a focused new raw-engine definition file. Preserve Lite/Pro behavior.
-- [ ] Registry: author both identities in `frontend/config/model-registry.json`;
+- [x] Registry: author both identities in `frontend/config/model-registry.json`;
   regenerate runtime, engine catalogue and rosters with documented commands.
-- [ ] Pricing: validate official LIST/input pricing; add canonical new-offer tariff
-  coverage and bounded migration through established ownership. Test reference
+- [x] Pricing: validate official LIST/input pricing; add canonical new-offer tariff
+  coverage through the existing versioned new-offer tariff owner (no migration). Test reference
   counts, all output tiers and unchanged historical/other prices on disposable PG.
-- [ ] App/MCP/Studio: share model helpers, validation and settings; update bounded
+- [x] App/MCP/Studio: share model helpers, validation and settings; update bounded
   preflight resolutions, exact model prompting sources and Studio certification.
   Test both modes, rejection paths, background transport and quote consistency.
-- [ ] Marketing/SEO: create all three locales for both new pages with strict
+- [x] Marketing/SEO: create all three locales for both new pages with strict
   decision/prompting/examples content and registered templates. Add relevant links
   to existing pages, accurate illustrative media and canonical/hreflang tests.
 - [ ] Integration/review: run related suites, registry/launch assets, lint,
@@ -46,3 +46,6 @@ production writes, deployment bypass or paid generations.
 
 Focused runner: `TSX_TSCONFIG_PATH=frontend/tsconfig.json node --import tsx --test <files>`.
 PostgreSQL tests use `scripts/run-postgres-tests.mjs`, preserving PG17 validation.
+
+Publication remains a separate delivery step after local validation and review,
+using the repository's GitHub PR and Vercel Git deployment policy.
