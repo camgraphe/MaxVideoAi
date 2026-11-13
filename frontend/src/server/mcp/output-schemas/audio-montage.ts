@@ -21,6 +21,7 @@ export const listAudioCapabilitiesOutputSchema = z.object({
     mode: z.enum(AUDIO_PACK_VALUES), engineId: z.string(), label: z.string(), output: z.enum(['audio', 'video_or_both']), available: z.boolean(),
     variants: z.array(z.object({ settings: z.object({ voiceModel: z.enum(['seed', 'minimax', 'eleven-v4']).optional(), musicEnabled: z.boolean().optional(), musicModel: z.enum(['clip', 'pro']).optional() }).passthrough(), models: z.array(z.object({ id: z.string(), name: z.string() }).passthrough()), available: z.boolean(), unavailableReason: z.string().nullable() }).passthrough()),
     prompt: z.object({ required: z.boolean(), maxChars: z.number() }).passthrough(),
+    mood: z.object({ required: z.boolean(), values: strings }).passthrough(),
     narration: z.object({ required: z.literal(true), maxChars: z.number() }).passthrough().nullable(),
     lyrics: z.object({ required: z.literal(true), maxChars: z.number() }).passthrough().nullable(),
     duration: z.object({ source: z.string(), minSeconds: z.number().optional(), maxSeconds: z.number().optional(), clipSeconds: z.number().optional(), suggestedSeconds: z.array(z.number()).optional() }).passthrough(),

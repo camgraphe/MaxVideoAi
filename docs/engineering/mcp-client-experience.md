@@ -1,3 +1,22 @@
+## Audio request guidance — 14 November 2026 (dedicated qualification)
+
+Real ChatGPT qualification omitted the required cinematic mood and guessed output
+IDs (`original`, `0`) after receiving a generation ID. Discovery now projects each
+mode's canonical `mood.required` and values. A missing mood reports the specific
+`settings.mood` field before reference access or pricing. The prepare descriptor
+directs callers to exact `list_media` asset IDs, matched by `sourceJobId`, and never
+to invented output IDs. No default mood or weaker reference validation is added.
+
+The two added descriptor sentences alone account for the policy fingerprint change
+from `fce2c72d8134e2d7f85019f4df615090db8fa99c6e6090aff9dc5741c1201202`
+to `b707722c3e4b5356d6593771dc79af144ade441a4badaf2e5a9fa7a257d294d4`:
+removing only those sentences from collected metadata reproduces the old hash.
+The collector measures 946 bytes for Audio preparation, 1,551 instruction bytes
+and 1,927 maximum descriptor bytes. Curated decisions and fixture-contract content
+remain byte-for-byte unchanged apart from the policy fingerprint. Discovery changes
+the live catalogue revision, so unconfirmed Audio quotes must be prepared again;
+already accepted jobs remain readable. Hosted qualification is recorded separately.
+
 ## Native-site Audio execution — 13 November 2026 (local candidate)
 
 The explicit `MCP_AUDIO_EXECUTION_MODE=site` option reuses the website Audio
