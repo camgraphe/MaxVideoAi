@@ -112,6 +112,7 @@ export function listAudioCapabilities(env: NodeJS.ProcessEnv = process.env) {
     return { mode, engineId: config.engineId, label: config.label, output: config.audioOnly ? 'audio' : 'video_or_both',
       available: variants.some(variant => variant.available), variants,
       prompt: { required: ['music_only', 'sfx_only', 'song', 'ambience_only', 'cinematic'].includes(mode), maxChars: AUDIO_PROMPT_MAX_LENGTH },
+      mood: { required: config.requiresMood, values: config.requiresMood ? [...AUDIO_MOOD_VALUES] : [] },
       narration: config.includesVoice ? { required: true, maxChars: AUDIO_SCRIPT_MAX_LENGTH } : null,
       lyrics: mode === 'song' ? { required: true, maxChars: AUDIO_LYRICS_MAX_LENGTH } : null,
       duration: mode === 'song' ? { source: 'generated_output' } : mode === 'voice_only' ? { source: 'narration' }

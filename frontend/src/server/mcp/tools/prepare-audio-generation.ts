@@ -99,6 +99,8 @@ export function registerPrepareAudioGenerationTool(
       description: [
         'Use this to validate one complete Audio request and save an exact short-lived quote without debiting the wallet or contacting a provider.',
         'Read list_audio_capabilities first for a currently available mode, exact settings and owned reference roles.',
+        'Supply settings.mood when the selected mode marks mood.required; choose an allowed value matching the request or ask if unclear.',
+        'For existing media, use an exact assetId returned by list_media (match sourceJobId when a generation is named). Never invent a job-output outputId such as original or 0; use only returned IDs.',
         'Display exact cents, currency, expiry, balance and top-up state; wait for explicit approval of that exact quote before confirm_audio_generation.',
         'Treat expiresAt as UTC; definitive expiry comes from QUOTE_EXPIRED.',
         'Missing required assets block an exact quote.',
