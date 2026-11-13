@@ -14,10 +14,10 @@ Use this route in a Codex build that exposes plugin marketplace installation and
 
 ## How do I install the Codex plugin?
 
-Run the reviewed release-tag commands from your terminal:
+These commands track this source version. First confirm that its matching tag appears in [public releases](https://github.com/camgraphe/maxvideoai-plugin/releases); otherwise use the guide from an existing public release. Once the matching tag is published, run:
 
 ```sh
-codex plugin marketplace add camgraphe/maxvideoai-plugin --ref v0.3.8
+codex plugin marketplace add camgraphe/maxvideoai-plugin --ref v0.3.9
 codex plugin add maxvideoai@maxvideoai
 ```
 
@@ -115,6 +115,8 @@ Remove the package in Codex → revoke the Codex OAuth connection in MaxVideoAI 
 
 - [MaxVideoAI package repository](https://github.com/camgraphe/maxvideoai-plugin)
 - [MaxVideoAI compatibility evidence](https://maxvideoai.com/docs/mcp)
-- This package’s `.claude-plugin/marketplace.json` and `.codex-plugin/plugin.json`, matching its `v0.3.8` release tag
+- This package’s `.claude-plugin/marketplace.json` and `.codex-plugin/plugin.json`, matching the source version `0.3.9`; public tag availability is checked separately above
 
 Last reviewed: 2026-10-04.
+
+Installation version checked: 2026-11-13; the host workflow evidence date above is unchanged.

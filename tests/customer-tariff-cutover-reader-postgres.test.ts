@@ -18,7 +18,7 @@ test('cutover canonical reader sees the uncommitted candidate on its locked tran
     for (const name of ['27_pricing_admin_cockpit.sql', '54_customer_tariff_cells.sql', '55_customer_tariff_versions.sql', '58_customer_tariff_bulk_interval_lock.sql']) {
       await db.pool.query(readFileSync(`neon/migrations/${name}`, 'utf8'));
     }
-    const scenario = collectSellableManualTariffCoverage().scenarios.find(row => row.modelId === 'pika-text-to-video')!;
+    const scenario = collectSellableManualTariffCoverage().scenarios.find(row => row.modelId === 'seedance-2-0-mini')!;
     await assert.rejects(withDbTransaction(async executor => {
       const policy = await loadPricingPolicyOverridesWithExecutor(executor);
       await upsertCustomerTariffCell(executor, { id: customerTariffCellId(scenario.id), selector: scenario.selector,
