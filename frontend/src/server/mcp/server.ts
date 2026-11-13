@@ -57,7 +57,7 @@ import {
   type PrepareGenerationInput,
   type TrialRiskRequestContext,
 } from '@/server/agent-api/prepare-generation';
-import { listAudioCapabilities, listMcpAudioCapabilities, isMcpExtendedAudioEnabled } from '@/server/agent-api/audio-capabilities';
+import { listAudioCapabilities, listMcpAudioCapabilities } from '@/server/agent-api/audio-capabilities';
 import {
   createPrepareAudioGenerationService,
   type PreparedAudioGeneration,
@@ -139,7 +139,7 @@ import { createAgentCharacterStudioService, type AgentCharacterStudioService } f
 import { registerCharacterStudioTools } from '@/server/mcp/tools/character-studio';
 import { createAgentCharacterBuilderService, type AgentCharacterBuilderService } from '@/server/agent-api/character-builder';
 import { registerCharacterBuilderTools } from '@/server/mcp/tools/character-builder';
-import { enqueueAudioDispatch } from '@/server/audio/dispatch-repository';
+import { createMcpAudioExecutionDependencies } from '@/server/agent-api/audio-execution';
 
 export type MaxVideoAiMcpServices = {
   creatorTools?: CreatorMcpServices;
@@ -346,7 +346,7 @@ export function createDefaultMaxVideoAiMcpServices(
     confirmAudioGeneration: (input, principal) => createConfirmAudioGenerationService(
       config.accountUrl,
       { paidGenerationEnabled: () => capabilities.paidGeneration, listCapabilities: () => listMcpAudioCapabilities(runtimeEnv),
-        ...(isMcpExtendedAudioEnabled(runtimeEnv) ? { enqueueRun: enqueueAudioDispatch } : {}) },
+        ...createMcpAudioExecutionDependencies(runtimeEnv) },
     )(input, principal),
     createStudioMontage: (input, principal) => createStudioMontageProject(
       { userId: principal.userId },
