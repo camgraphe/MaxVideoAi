@@ -237,6 +237,7 @@ const VIDEO_PROFILES = {
   'seedance-2-0-fast': 'fast',
   'seedance-2-0-mini': 'mini',
   'seedance-2-5': 'seedance25',
+  'seedance-2-5-flash': 'seedance25Flash',
 } as const;
 
 function amountUsd(tokens: number, rateUsdPer1kTokens: number): number {

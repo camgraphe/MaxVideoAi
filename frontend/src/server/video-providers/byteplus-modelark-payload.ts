@@ -112,13 +112,14 @@ export function buildBytePlusSeedancePayload(params: {
   const prompt = params.prompt.trim();
   const duration = Math.trunc(params.durationSec);
   const mode = params.mode ?? 't2v';
+  const isSeedance25Flash = params.modelId.trim().toLowerCase().includes('seedance-2-5-flash');
   const isSeedance25 = params.modelId.trim().toLowerCase().includes('seedance-2-5');
   if ((params.outputFormat !== undefined && !['mp4', 'mov'].includes(params.outputFormat))
     || (params.returnLastFrame !== undefined && typeof params.returnLastFrame !== 'boolean')
     || (params.watermark !== undefined && typeof params.watermark !== 'boolean')) {
     throw new BytePlusModelArkError('Invalid video output options.', { code: 'BYTEPLUS_OUTPUT_OPTIONS_INVALID' });
   }
-  if (params.outputFormat === 'mov' && (!isSeedance25 || params.transport === 'las')) {
+  if (params.outputFormat === 'mov' && (!isSeedance25 || isSeedance25Flash || params.transport === 'las')) {
     throw new BytePlusModelArkError('MOV output requires Seedance 2.5 ModelArk.', { code: 'BYTEPLUS_OUTPUT_FORMAT_UNSUPPORTED' });
   }
   const imageUrl = typeof params.imageUrl === 'string' ? params.imageUrl.trim() : '';
@@ -184,7 +185,7 @@ export function buildBytePlusSeedancePayload(params: {
   const referenceAudioUrls = uniqueNonEmptyUrls(
     resolveTypedPayloadUrls('audio', params.referenceAudioUrls)
   );
-  const mediaLimits = isSeedance25 ? [30, 10, 10] : [9, 3, 3];
+  const mediaLimits = isSeedance25Flash ? [10, 5, 5] : isSeedance25 ? [30, 10, 10] : [9, 3, 3];
   for (const [index, urls] of [referenceImageUrls, referenceVideoUrls, referenceAudioUrls].entries()) {
     if (urls.length > mediaLimits[index]) {
       throw new BytePlusModelArkError('The model reference limit for this media type was exceeded.', {
@@ -277,6 +278,9 @@ export function buildBytePlusSeedancePayload(params: {
   const requestedResolution = (typeof params.resolution === 'string' && params.resolution.trim()
     ? params.resolution.trim()
     : '720p') as Resolution;
+  if (isSeedance25Flash && (!['480p', '720p'].includes(requestedResolution) || duration < 4 || duration > 30 || params.transport === 'las')) {
+    throw new BytePlusModelArkError('Seedance 2.5 Flash requires ModelArk and 480p or 720p output.', { code: 'BYTEPLUS_FLASH_OPTIONS_UNSUPPORTED' });
+  }
   const requestedRatio = (typeof params.ratio === 'string' && params.ratio.trim() ? params.ratio.trim() : '16:9') as AspectRatio;
   // ModelArk rejects fixed ratios for Seedance 2.5 extensions after task creation.
   const isSeedance25Extension =
@@ -305,7 +309,7 @@ export function buildBytePlusSeedancePayload(params: {
       code: 'REFERENCE_URL_REQUIRED',
     });
   }
-  if (mode === 'ref2v' && !isSeedance25 && referenceImageUrls.length + referenceVideoUrls.length === 0) {
+  if (mode === 'ref2v' && (!isSeedance25 || isSeedance25Flash) && referenceImageUrls.length + referenceVideoUrls.length === 0) {
     throw new BytePlusModelArkError('At least one reference image or video URL is required for BytePlus Seedance reference-to-video.', {
       code: 'REFERENCE_MEDIA_REQUIRED',
     });

@@ -1,3 +1,4 @@
+import { isSeedance25EngineId } from '@/lib/seedance-model-variants';
 import type { AspectRatio } from '@/types/engines';
 import type { PricingContext } from '@/lib/pricing-context';
 import { seedanceOutputDimensions } from '@/lib/seedance-output-dimensions';
@@ -5,7 +6,7 @@ import { seedanceOutputDimensions } from '@/lib/seedance-output-dimensions';
 export const SEEDANCE_REVIEWED_PRICING_ASPECTS: readonly AspectRatio[] = ['21:9', '16:9', '4:3', '1:1', '3:4', '9:16'];
 
 export function seedanceAutomaticDurationBounds(engineId: string): { min: 4; max: 15 | 30 } | null {
-  if (engineId === 'seedance-2-5') return { min: 4, max: 30 };
+  if (isSeedance25EngineId(engineId)) return { min: 4, max: 30 };
   return ['seedance-2-0', 'seedance-2-0-fast', 'seedance-2-0-mini'].includes(engineId) ? { min: 4, max: 15 } : null;
 }
 
@@ -42,7 +43,7 @@ export function resolveSeedanceSourcePricingAspectRatio(source: { width?: number
 /** Only server-resolved source dimensions may populate the internal pricing class. */
 export function seedanceSourcePricingAspectRatio(context: Pick<PricingContext, 'mode' | 'aspectRatio'> & { engine: { id: string } },
   references: readonly { kind: string; fieldId?: string; width?: number | null; height?: number | null }[]): AspectRatio | undefined {
-  const inheritsSource = context.engine.id === 'seedance-2-5' && ['i2v', 'extend'].includes(context.mode ?? '');
+  const inheritsSource = isSeedance25EngineId(context.engine.id) && ['i2v', 'extend'].includes(context.mode ?? '');
   if (!seedanceAutomaticDurationBounds(context.engine.id) || (!isSeedanceAdaptiveAspect(context.aspectRatio) && !inheritsSource)
     || !['i2v', 'v2v', 'extend'].includes(context.mode ?? '')) return undefined;
   const primaryField = context.mode === 'i2v' ? 'image_url' : context.mode === 'v2v' ? 'video_url' : 'extension_source_videos';

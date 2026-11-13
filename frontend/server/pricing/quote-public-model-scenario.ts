@@ -1,3 +1,4 @@
+import { isSeedance25EngineId } from '@/lib/seedance-model-variants';
 import { createHash } from 'node:crypto';
 
 import type { PricingSnapshot } from '@maxvideoai/pricing';
@@ -127,7 +128,7 @@ export function resolvePublicModelScenario(input: PublicModelQuoteInput): Manual
   if (!mode || (!gptImage && input.customImageSize !== undefined)) return null;
   // Historical tariff coverage must not reopen unsupported provider durations.
   if (model.id === 'luma-ray-3-2' && mode.mode === 'reframe' && ![5, 10].includes(input.durationSec)) return null;
-  if (entry!.id === 'seedance-2-5' && mode.mode === 'v2v'
+  if (isSeedance25EngineId(entry!.id) && mode.mode === 'v2v'
     && !getBytePlusSeedanceModeResolutions(entry!.id, mode.mode, mode.ui.resolution ?? entry!.engine.resolutions,
       resolveBytePlusTransport(entry!.id, mode.mode))
       .some((resolution) => resolution.toLowerCase() === input.resolution.toLowerCase())) return null;
@@ -139,7 +140,7 @@ export function resolvePublicModelScenario(input: PublicModelQuoteInput): Manual
   if (automaticDuration && input.durationOption !== 'auto' && mode.ui.duration && 'options' in mode.ui.duration
     && !mode.ui.duration.options.some(value => numericTariffDuration(value) === input.durationSec)) return null;
   let billedDuration = input.durationSec;
-  const inheritsEditSource = entry!.id === 'seedance-2-5' && mode.mode === 'v2v'
+  const inheritsEditSource = isSeedance25EngineId(entry!.id) && mode.mode === 'v2v'
     && resolveSeedance25ModeAvailability(entry!.engine, mode.mode)?.inheritsSourceVideo === true;
   if (inheritsEditSource) {
     if (typeof input.inputVideoDurationSec !== 'number' || !Number.isFinite(input.inputVideoDurationSec)
@@ -283,7 +284,7 @@ export async function quotePublicModelScenario(
 ): Promise<PublicModelQuote> {
   const entry = getFalEngineById(input.modelId);
   const mode = entry?.modes.find((candidate) => candidate.mode === input.mode)?.mode;
-  if (entry?.id === 'seedance-2-5' && mode === 'v2v'
+  if ((entry && isSeedance25EngineId(entry.id)) && mode === 'v2v'
     && resolveSeedance25ModeAvailability(entry.engine, mode)?.available === false) return { status: 'unavailable' };
   const scenario = resolvePublicModelScenario(input);
   if (!scenario) return { status: 'unavailable' };
@@ -297,7 +298,7 @@ export async function quotePublicModelScenario(
       tariffRevision: snapshot.meta?.customerTariffRevision ?? null,
       policy: snapshot.meta?.pricingPolicy ?? null })).digest('hex').slice(0, 20);
     const seconds = Number(scenario.selector.durationSec);
-    const inheritsEditSource = entry?.id === 'seedance-2-5' && mode === 'v2v'
+    const inheritsEditSource = (entry && isSeedance25EngineId(entry.id)) && mode === 'v2v'
       && resolveSeedance25ModeAvailability(entry.engine, mode)?.inheritsSourceVideo === true;
     const automatic = snapshot.meta?.seedanceAutomaticPricing as { durationRange?: { min: number; max: number }; billedDurationSec?: number } | undefined;
     const quantityLabel = automatic?.durationRange

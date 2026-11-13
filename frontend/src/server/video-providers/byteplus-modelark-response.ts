@@ -72,7 +72,7 @@ function extractErrorMessage(value: unknown): string | null {
   );
 }
 
-function extractErrorCode(value: unknown): string | null {
+export function extractErrorCode(value: unknown): string | null {
   const error = firstRecord(value, ['error']);
   return firstString(error, ['code', 'error_code', 'errorCode']) ?? firstString(value, ['code', 'error_code', 'errorCode']);
 }

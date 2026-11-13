@@ -34,7 +34,7 @@ export function videoModifySettingsCopy(locale: string) {
 
 export type VideoWorkflowNotice=Readonly<{code:'seedance_recognizable_people';message:string}>;
 export function videoWorkflowNotices(engineId:string,mode:string,locale='en'):readonly VideoWorkflowNotice[] {
-  if(!['seedance-2-0','seedance-2-0-fast','seedance-2-0-mini','seedance-2-5'].includes(engineId)
+  if(!['seedance-2-0','seedance-2-0-fast','seedance-2-0-mini','seedance-2-5', 'seedance-2-5-flash'].includes(engineId)
     ||!['v2v','extend','ref2v'].includes(mode))return [];
   const message=locale==='fr'
     ? 'Seedance peut refuser les vidéos de référence montrant une personne reconnaissable. Pour modifier ou prolonger une vidéo avec une personne réelle, envisagez un autre modèle compatible.'

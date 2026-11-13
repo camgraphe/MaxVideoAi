@@ -1,3 +1,4 @@
+import { isSeedance25EngineId, seedanceModelArkReferenceLimits } from './seedance-model-variants';
 import type { EngineCaps, EngineInputField } from '@/types/engines';
 import { isUnifiedSeedanceEngineId } from './seedance-workflow';
 
@@ -7,9 +8,8 @@ export const SEEDANCE_MODELARK_IMAGE_FORMATS = ['jpg', 'jpeg', 'png', 'webp', 'b
 export function withSeedanceModelArkOptions(engine: EngineCaps): EngineCaps {
   if (!isUnifiedSeedanceEngineId(engine.id) || !engine.inputSchema) return engine;
   const flagship = engine.id === 'seedance-2-5';
-  const images = flagship ? 30 : 9;
-  const videos = flagship ? 10 : 3;
-  const audios = flagship ? 10 : 3;
+  const series25 = isSeedance25EngineId(engine.id);
+  const { image: images, video: videos, audio: audios } = seedanceModelArkReferenceLimits(engine.id);
   const adaptField = (field: EngineInputField): EngineInputField => {
     if (field.type === 'image') field = { ...field, acceptedFileExtensions: [...SEEDANCE_MODELARK_IMAGE_FORMATS],
       acceptedMimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/bmp', 'image/tiff', 'image/gif', 'image/heic', 'image/heif'] };
@@ -17,7 +17,7 @@ export function withSeedanceModelArkOptions(engine: EngineCaps): EngineCaps {
     if (field.id === 'video_urls') return { ...field, modes: ['ref2v', 'v2v'] };
     if (field.id === 'extension_source_videos') return { ...field, maxCount: videos,
       label: `Source clips to extend (up to ${videos})`, description: 'Extend a source clip or connect source clips within the combined video duration limit.' };
-    if (field.id === 'duration') return { ...field, values: ['auto', ...Array.from({length: (flagship ? 30 : 15) - 3}, (_, index) => String(index + 4))] };
+    if (field.id === 'duration') return { ...field, values: ['auto', ...Array.from({length: (series25 ? 30 : 15) - 3}, (_, index) => String(index + 4))] };
     if (field.id === 'aspect_ratio') return { ...field, values: ['auto', ...(field.values ?? []).filter(value => value !== 'auto')] };
     return field;
   };
@@ -28,14 +28,14 @@ export function withSeedanceModelArkOptions(engine: EngineCaps): EngineCaps {
   const required = (engine.inputSchema.required ?? []).map(adaptField);
   const optional = [...(engine.inputSchema.optional ?? []).map(adaptField), ...outputs];
   return { ...engine, inputLimits: { ...engine.inputLimits, videoMaxMB: 200,
-    videoMaxDurationSec: flagship ? 30 : 15, audioMaxDurationSec: flagship ? 30 : 15 }, inputSchema: { ...engine.inputSchema, required, optional,
+    videoMaxDurationSec: series25 ? 30 : 15, audioMaxDurationSec: series25 ? 30 : 15 }, inputSchema: { ...engine.inputSchema, required, optional,
     referenceBudget: { fieldIds: [...required, ...optional].filter(field => ['image','video','audio'].includes(field.type)).map(field => field.id),
       modes: ['i2v','ref2v','v2v','extend'], maxTotal: images + videos + audios, countUniqueUrls: true,
       maxByType: { image: images, video: videos, audio: audios } },
     constraints: { ...engine.inputSchema.constraints,
       maxVideoSizeMB: 200,
-      maxCombinedVideoDurationSec: flagship ? 30.2 : 15,
-      maxCombinedAudioDurationSec: flagship ? 30 : 15,
+      maxCombinedVideoDurationSec: series25 ? 30.2 : 15,
+      maxCombinedAudioDurationSec: series25 ? 30 : 15,
       supportedFormats: [...SEEDANCE_MODELARK_IMAGE_FORMATS, 'mp4', 'mov', 'mp3', 'wav'],
       atLeastOneReferenceField: flagship ? ['image_urls','video_urls','audio_urls'] : ['image_urls','video_urls'],
       referenceAudioRequiresVisual: !flagship,
@@ -61,7 +61,7 @@ export function getSeedanceAutomaticPricingNote(input: {
   locale: string; inheritsSourceVideo?: boolean;
 }): string | null {
   if (!isUnifiedSeedanceEngineId(input.engineId) || input.inheritsSourceVideo) return null;
-  const max = input.engineId === 'seedance-2-5' ? 30 : 15;
+  const max = isSeedance25EngineId(input.engineId) ? 30 : 15;
   const automaticDuration = input.durationOption === 'auto';
   const automaticFormat = input.aspectRatio === 'auto' && ['t2v','ref2v'].includes(input.mode);
   const language = input.locale.split('-')[0];

@@ -1,6 +1,7 @@
+import { isSeedance25EngineId } from '@/lib/seedance-model-variants';
 /** Normal generation only; Draft/final keep their independent tariffs. */
 export function seedanceInputTariffMaximum(modelId: string): number | null {
-  return modelId === 'seedance-2-5' ? 30
+  return isSeedance25EngineId(modelId) ? 30
     : ['seedance-2-0', 'seedance-2-0-mini', 'seedance-2-0-fast'].includes(modelId) ? 15 : null;
 }
 

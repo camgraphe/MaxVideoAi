@@ -2348,6 +2348,47 @@
       "successorId": null
     },
     {
+      "id": "seedance-2-5-flash",
+      "slug": "seedance-2-5-flash",
+      "family": "seedance",
+      "category": "video",
+      "aliases": {
+        "internal": [],
+        "publicSlugs": []
+      },
+      "publication": {
+        "model": {
+          "published": false,
+          "indexable": false
+        },
+        "examples": {
+          "published": false,
+          "includeInFamilyCopy": false,
+          "current": false
+        },
+        "compare": {
+          "published": false,
+          "indexed": false,
+          "suggestedOpponentIds": [],
+          "publishedPairIds": []
+        },
+        "app": {
+          "published": false,
+          "variantGroup": "seedance-2-0",
+          "variantLabel": "2.5 Flash"
+        },
+        "pricing": {
+          "published": false
+        },
+        "sitemap": {
+          "published": false
+        }
+      },
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
+    },
+    {
       "id": "seedream",
       "slug": "seedream",
       "family": "seedream",

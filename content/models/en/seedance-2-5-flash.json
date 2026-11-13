@@ -1,0 +1,315 @@
+{
+  "marketingName": "Seedance 2.5 Flash",
+  "versionLabel": "2.5 Flash",
+  "seo": {
+    "title": "Seedance 2.5 Flash: Video Model Preview | MaxVideoAI",
+    "description": "Explore the announced Seedance 2.5 Flash video model: up to 30 seconds, 480p or 720p and multimodal references. MaxVideoAI availability is being prepared."
+  },
+  "overview": "Seedance 2.5 Flash is ByteDance’s video model for frequent creative iteration. BytePlus announces clips up to 30 seconds at 480p or 720p, with image, video and audio references. Availability on MaxVideoAI is being prepared.",
+  "hero": {
+    "title": "Seedance 2.5 Flash — cinematic ideas, ready to explore",
+    "intro": "Seedance 2.5 Flash is ByteDance’s video model for frequent creative iteration. BytePlus announces clips up to 30 seconds at 480p or 720p, with image, video and audio references. Availability on MaxVideoAI is being prepared.",
+    "badge": "Preview · 480p / 720p · Up to 30 seconds",
+    "ctaPrimary": {
+      "label": "Explore available models",
+      "href": "/models"
+    },
+    "secondaryLinks": [
+      {
+        "label": "Explore Seedance 2.5",
+        "href": "/models/seedance-2-5"
+      },
+      {
+        "label": "See the Seedance gallery",
+        "href": "/examples/seedance"
+      }
+    ]
+  },
+  "bestUseCases": {
+    "title": "Scene ideas to prepare",
+    "items": [
+      {
+        "title": "Character moments built around a glance, gesture or reaction",
+        "icon": "users"
+      },
+      {
+        "title": "Action scenes with one readable movement and a clear ending",
+        "icon": "camera"
+      },
+      {
+        "title": "Cinematic reveals with controlled framing and light",
+        "icon": "storyboard"
+      },
+      {
+        "title": "Creative variations that change one visual choice at a time",
+        "icon": "product"
+      }
+    ]
+  },
+  "technicalOverviewTitle": "Announced model capabilities",
+  "technicalOverview": [
+    {
+      "label": "Duration",
+      "body": "Up to 30 seconds per clip, according to BytePlus"
+    },
+    {
+      "label": "Output",
+      "body": "480p or 720p"
+    },
+    {
+      "label": "References",
+      "body": "Up to 10 images, 5 videos and 5 audio clips, according to BytePlus"
+    },
+    {
+      "label": "Availability",
+      "body": "MaxVideoAI integration in preparation"
+    }
+  ],
+  "tips": [
+    "Describe one visible action before adding camera detail.",
+    "Keep the character, location and lighting consistent across prompt variants.",
+    "Treat the prompts below as planning templates; they are not examples of completed Flash renders."
+  ],
+  "faqs": [
+    {
+      "q": "Can I generate with Seedance 2.5 Flash on MaxVideoAI?",
+      "a": "The integration is being prepared. Flash is not yet available for generation on MaxVideoAI."
+    },
+    {
+      "q": "What has BytePlus announced?",
+      "a": "Video clips up to 30 seconds at 480p or 720p, with up to 10 image, 5 video and 5 audio references."
+    },
+    {
+      "q": "Does Flash include 1080p, 4K or native Draft/final?",
+      "a": "These options are not part of the Flash offering being prepared. Seedance 2.5 and Flash keep their own supported options."
+    },
+    {
+      "q": "Are the prompts below real Flash results?",
+      "a": "They are suggested scene plans. Only media actually generated with Flash will appear as Flash examples."
+    },
+    {
+      "q": "How will I see the price?",
+      "a": "When generation becomes available, MaxVideoAI will show the current quote before you confirm a render."
+    }
+  ],
+  "decision": {
+    "modelSlug": "seedance-2-5-flash",
+    "hero": {
+      "eyebrow": "BYTEDANCE · MODEL PREVIEW",
+      "title": "Seedance 2.5 Flash",
+      "subtitle": "Plan the action. Shape the scene.",
+      "subtitleHighlights": [
+        "Plan the action."
+      ],
+      "paragraph": "Start with a character, one clear action and a deliberate camera move. Seedance 2.5 Flash is being prepared for MaxVideoAI; you can explore the available Seedance models while you plan your next scene.",
+      "primaryCta": {
+        "label": "Explore available models",
+        "href": "/models"
+      },
+      "secondaryCta": {
+        "label": "Explore Seedance 2.5",
+        "href": "/models/seedance-2-5"
+      },
+      "quickLinks": [
+        {
+          "label": "Character",
+          "href": "#prompting"
+        },
+        {
+          "label": "Announced model capabilities",
+          "href": "#specs"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Flash examples in preparation",
+      "description": "A dedicated Seedance 2.5 Flash example will be added after review.",
+      "renderLabel": "View example",
+      "badges": [
+        "Preview"
+      ],
+      "altContext": "Seedance 2.5 Flash cinematic scene"
+    },
+    "features": [
+      {
+        "title": "Up to 30 seconds",
+        "body": "Plan a setup, a visible action and a final beat within the announced clip length.",
+        "tone": "duration"
+      },
+      {
+        "title": "480p or 720p",
+        "body": "The announced output formats focus on these two resolutions.",
+        "tone": "quality"
+      },
+      {
+        "title": "Multimodal references",
+        "body": "BytePlus announces image, video and audio inputs for guiding a scene.",
+        "tone": "reference"
+      },
+      {
+        "title": "A separate Flash model",
+        "body": "Flash has its own availability and options within the Seedance family.",
+        "tone": "continuity"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Plan a character moment",
+        "body": "Choose one expression or gesture, then describe how the camera reveals it.",
+        "cta": {
+          "label": "Open Prompt Lab",
+          "href": "#prompting"
+        }
+      },
+      {
+        "title": "Need to create now?",
+        "body": "Explore the Seedance 2.5 model already available on MaxVideoAI.",
+        "cta": {
+          "label": "View Seedance 2.5",
+          "href": "/models/seedance-2-5"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Character and setting",
+        "body": "Define the person, wardrobe, location and lighting before writing the action."
+      },
+      {
+        "title": "Action and camera",
+        "body": "Give the scene one principal movement and one camera instruction."
+      },
+      {
+        "title": "Reference planning",
+        "body": "Prepare relevant source media and keep its identity with the prompt for later review."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Seedance 2.5 Flash pricing",
+      "subtitle": "Pricing will be shown before generation when Flash becomes available on MaxVideoAI.",
+      "footnote": "The quote will reflect the selected duration, resolution and video inputs.",
+      "ctaLabel": "Explore available models",
+      "ctaHref": "/models"
+    },
+    "meta": {
+      "title": "Seedance 2.5 Flash: Video Model Preview | MaxVideoAI",
+      "description": "Explore the announced Seedance 2.5 Flash video model: up to 30 seconds, 480p or 720p and multimodal references. MaxVideoAI availability is being prepared."
+    }
+  },
+  "prompting": {
+    "modelSlug": "seedance-2-5-flash",
+    "section": {
+      "title": "Prompt Lab — prepare a Flash scene",
+      "intro": "These are scene-planning templates, not completed Flash demonstrations. Adapt the character, action and camera before testing the model when it becomes available.",
+      "tip": "Change one visible choice between variants so you can compare the results.",
+      "guide": null,
+      "referencesTitle": null
+    },
+    "tabs": [
+      {
+        "id": "concept",
+        "label": "Character",
+        "title": "Give the scene a clear subject",
+        "description": "Describe the character and the moment you want to see.",
+        "copy": "A courier in a red jacket pauses under the awning of a rain-soaked city street at night. She notices a familiar silhouette across the road, turns toward it and smiles. Keep her jacket, face and the wet street lighting consistent."
+      },
+      {
+        "id": "motion",
+        "label": "Action",
+        "title": "Make the movement readable",
+        "description": "Set an opening, one action and a final composition.",
+        "copy": "Begin with a medium view of a dancer waiting beside a sunlit studio window. She takes one step, turns smoothly and settles facing the window. Keep her hands and feet visible during the turn. Finish with a still composition."
+      },
+      {
+        "id": "camera",
+        "label": "Camera",
+        "title": "Try one camera variation",
+        "description": "Keep the subject and action fixed while changing the framing.",
+        "copy": "Keep the same courier, location and action. Version A: a slow lateral tracking shot at eye level. Version B: a gentle push from a medium view to a close-up as she smiles. Avoid extra cuts."
+      }
+    ],
+    "tabNotes": [],
+    "globalPrinciples": [
+      "Describe the action in the order it happens.",
+      "Use a camera movement that can follow the subject.",
+      "Repeat only the visual details that must stay stable."
+    ],
+    "engineWhy": [],
+    "demo": {
+      "title": "Scene plan — the courier’s reaction",
+      "promptLabel": "Proposed prompt · not rendered",
+      "prompt": "A courier in a red jacket pauses under the awning of a rain-soaked city street at night. She notices a familiar silhouette across the road, turns toward it and smiles. A gentle camera push follows her reaction. Keep her jacket, face and the wet street lighting consistent.",
+      "notes": ["This scene has not been rendered with Flash. Its settings and result remain to be tested."],
+      "summary": {
+        "subject": "A courier in a red jacket",
+        "action": "Notice, turn and smile",
+        "camera": "A gentle push toward the reaction",
+        "style": "A rainy city street at night",
+        "output": "Scene proposal; no generated result yet"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Scene plan",
+        "outputLabel": "Result pending",
+        "duration": "To be chosen",
+        "aspectRatio": "To be chosen",
+        "audioChipMode": "media",
+        "audioChipLabel": "Not rendered",
+        "altContext": "Proposed courier scene for a future Seedance 2.5 Flash test"
+      }
+    },
+    "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "seedance-2-5-flash",
+    "showWhenEmpty": false,
+    "section": {
+      "title": "Seedance 2.5 Flash examples",
+      "intro": "Reviewed Flash clips will appear here with their original prompt and actual settings. The wider Seedance gallery identifies the model used for each clip.",
+      "defaultCtaLabel": "See the Seedance gallery",
+      "recreateLabel": null
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "All"
+      },
+      {
+        "id": "cinematic",
+        "label": "Cinematic"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "identity",
+        "icon": "users",
+        "title": "Follow the character",
+        "body": "Compare the face and wardrobe throughout a clip."
+      },
+      {
+        "id": "action",
+        "icon": "zap",
+        "title": "Read the action",
+        "body": "Look at contact, balance and changes of direction."
+      },
+      {
+        "id": "camera",
+        "icon": "maximize",
+        "title": "Watch the framing",
+        "body": "Check how the camera supports the main movement."
+      },
+      {
+        "id": "source",
+        "icon": "shield",
+        "title": "Keep the source",
+        "body": "For reference or editing examples, review the original input alongside the result."
+      },
+      {
+        "id": "prompt",
+        "icon": "pen",
+        "title": "Inspect the prompt",
+        "body": "Open the original instructions and recorded settings before planning a variation."
+      }
+    ],
+    "fallbackItems": null
+  }
+}

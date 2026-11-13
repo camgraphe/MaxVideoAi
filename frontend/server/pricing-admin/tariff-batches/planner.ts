@@ -7,8 +7,9 @@ import { PricingAdminError } from '../errors';
 import { batchSelectorKey, parseTariffBatchProposal } from './input';
 import { compileKlingBatchPrice, type KlingBatchClass } from './kling';
 import { tariffBatchClasses, tariffBatchSupplierCost } from './models';
-import { isGptImageTariffBatchModelId, type TariffBatchPlan, type TariffBatchProposal, type TariffBatchReceipt, type TariffBatchRow } from './contract';
+import { isGptImageTariffBatchModelId, isSeedanceTariffBatchModelId, type TariffBatchPlan, type TariffBatchProposal, type TariffBatchReceipt, type TariffBatchRow } from './contract';
 import { validateGpt26RasterTariffDomain } from './gpt26';
+import { validateSeedanceBatchDomain } from './seedance';
 
 export function stableBatchJson(value: unknown): string {
   if (Array.isArray(value)) return `[${value.map(stableBatchJson).join(',')}]`;
@@ -88,7 +89,9 @@ export async function buildTariffBatchPlan(input: {
       if (isGptImageTariffBatchModelId(proposal.modelId) && definition.selector.durationSec === 'continuous') {
         row.rasterDomain = validateGpt26RasterTariffDomain(definition.selector, desired);
       } else if (definition.selector.billingInputType === 'video_input') {
-        row.domain = validateCurrentContinuousTariffDomain({ context: definition.scenario.context, price: desired });
+        row.domain = isSeedanceTariffBatchModelId(proposal.modelId)
+          ? validateSeedanceBatchDomain(definition, desired)
+          : validateCurrentContinuousTariffDomain({ context: definition.scenario.context, price: desired });
       } else if (desired.kind !== 'fixed') throw new Error('A fixed class requires an exact fixed price.');
       const proposedCell: ManualTariffCell = { id: previous?.source === 'database' ? previous.id : definition.id,
         selector: definition.selector, source: 'database', version: state.revision + 1, currency: 'USD',

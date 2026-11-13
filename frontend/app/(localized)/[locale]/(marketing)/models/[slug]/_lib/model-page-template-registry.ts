@@ -47,6 +47,7 @@ import { seedance20TemplateConfig } from './model-page-templates/seedance-2-0';
 import { seedance20FastTemplateConfig } from './model-page-templates/seedance-2-0-fast';
 import { seedance20MiniTemplateConfig } from './model-page-templates/seedance-2-0-mini';
 import { seedance25TemplateConfig } from './model-page-templates/seedance-2-5';
+import { seedance25FlashTemplateConfig } from './model-page-templates/seedance-2-5-flash';
 import { seedream50ProTemplateConfig } from './model-page-templates/seedream-5-0-pro';
 import { seedreamTemplateConfig } from './model-page-templates/seedream';
 import { sora2ProTemplateConfig } from './model-page-templates/sora-2-pro';
@@ -109,6 +110,7 @@ const MODEL_PAGE_TEMPLATE_REGISTRY: Record<string, ModelPageTemplateConfig> = {
   [seedance20FastTemplateConfig.slug]: seedance20FastTemplateConfig,
   [seedance20MiniTemplateConfig.slug]: seedance20MiniTemplateConfig,
   [seedance25TemplateConfig.slug]: seedance25TemplateConfig,
+  [seedance25FlashTemplateConfig.slug]: seedance25FlashTemplateConfig,
   [seedream50ProTemplateConfig.slug]: seedream50ProTemplateConfig,
   [seedreamTemplateConfig.slug]: seedreamTemplateConfig,
   [sora2TemplateConfig.slug]: sora2TemplateConfig,
