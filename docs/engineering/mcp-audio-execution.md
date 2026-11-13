@@ -46,3 +46,15 @@ by this local implementation.
 
 Tests: `mcp-audio-site-runtime.test.ts`, existing Audio service/reservation tests,
 and the unchanged durable dispatch/worker suites for backward compatibility.
+
+## Private source media
+
+Audio preparation signs an owned storage original only for its bounded source probe.
+Execution creates fresh temporary read URLs immediately before the sound-design or
+voice-reference provider call, then refreshes the video URL for the final mix. This
+uses the same `createOwnedMediaReadUrl` owner checks as other native media readers;
+external provider URLs keep their existing signatures. Quote hashes, reservations
+and job snapshots retain canonical originals, never temporary grants. The source
+downloader still enforces its HTTPS, DNS, redirect, size and subprocess boundaries.
+`audio-private-input-access.test.ts` covers private inputs, foreign-owner rejection,
+external references and canonical persistence across the actual Audio executor.

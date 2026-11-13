@@ -2,6 +2,7 @@ import { audioWebSubmissionIdentity, readAudioWebSubmission, reserveAudioWebSubm
 import { buildAudioRunReservation, type ReservedAudioRun } from './audio-run-reservation';
 import { detectMediaBufferDuration } from '@/server/media/detect-has-audio';
 import { upsertLegacyJobOutputs } from '@/server/media-library';
+import { createOwnedMediaReadUrl } from '@/server/owned-media-read-access';
 
 import {
   type AudioGenerateRequestBody,
@@ -95,7 +96,9 @@ export async function executeReservedAudioRun(params: ReservedAudioRun, options:
         message: normalized.pack === 'sfx_only' ? 'Generating sound effects…' : 'Generating cinematic sound design…',
       });
       soundDesign = await generateSoundDesignTrack({
-        sourceVideoUrl,
+        sourceVideoUrl: sourceVideoUrl
+          ? await createOwnedMediaReadUrl({ url: sourceVideoUrl, userId: params.userId, expiresInSeconds: 900 })
+          : null,
         durationSec,
         mood: normalized.mood ?? 'epic',
         intensity: normalized.intensity,
@@ -131,7 +134,7 @@ export async function executeReservedAudioRun(params: ReservedAudioRun, options:
         normalized.voiceMode === 'clone' && normalized.voiceSampleUrl
           ? await generateClonedVoiceTrack({
               script: normalized.script,
-              voiceSampleUrl: normalized.voiceSampleUrl,
+              voiceSampleUrl: await createOwnedMediaReadUrl({ url: normalized.voiceSampleUrl, userId: params.userId, expiresInSeconds: 600 }),
               locale: normalized.locale,
               language: normalized.language,
               voiceProfile: normalized.voiceProfile ?? 'balanced',
@@ -220,7 +223,8 @@ export async function executeReservedAudioRun(params: ReservedAudioRun, options:
         });
       }
       const mixed = await mixAudioIntoVideo({
-        sourceVideoUrl: sourceVideoUrl!,
+        // Refresh after provider work rather than reusing a potentially expired grant.
+        sourceVideoUrl: await createOwnedMediaReadUrl({ url: sourceVideoUrl!, userId: params.userId }),
         soundDesignUrl: soundDesign.url,
         musicUrl: normalized.musicEnabled ? music?.url ?? null : null,
         voiceUrl: voiceTrack?.url ?? null,
