@@ -131,6 +131,19 @@ test('catalogue streams the complete stable hero before prices and reveals exact
         const controlDoc=new JSDOM(await new Response(control).text());
         assert.deepEqual(projection(final.window.document),projection(controlDoc.window.document),'Streaming preserves localized final cards, filters, hero and native schemas');
         const cards=await h.buildModelsCatalogCards({activeLocale:locale,engineMetaCopy:dictionary.models.meta??{},engineTypeLabelOverrides:dictionary.models.engineTypeLabels,galleryCopy:dictionary.models.gallery,scope});
+        if(scope!=='video')for(const id of ['seedream-5-5','seedream-5-0-flash']) {
+          const card=cards.find((item:any)=>item.id===id);
+          assert.ok(card, `${scope}/${locale}: current Seedream image card ${id}`);
+          assert.equal(card.stats.maxResolution,'2K',`${id}: catalogue shows the supported image ceiling`);
+          assert.equal(card.filterMeta.engineType,'image');
+          assert.equal(card.overallScore,null,`${id}: an unreviewed image model must not inherit a score`);
+          assert.match(card.description,/10/,`${id}: describe the supported references`);
+          assert.doesNotMatch(card.description,/AI video|vidéo IA|video IA/i,`${id}: image-specific copy replaces the generic video sentence`);
+          if(id==='seedream-5-5') {
+            assert.match(card.description,/PNG/);
+            assert.match(card.description,/transparent/i);
+          }else assert.match(card.description,/quick|rapid|rápid/i);
+        }
         const expectedNewModels=new Set(buildMarketingModelMenu(listRuntimeModels()).filter(item=>item.badge==='new').map(item=>item.slug));
         for(const card of cards)assert.equal(card.badge,expectedNewModels.has(card.id)?'new':null,`${card.id}: badge must follow published editorial discovery`);
         const noveltyBadges=[...final.window.document.querySelectorAll('#models-grid [data-model-novelty="new"]')];

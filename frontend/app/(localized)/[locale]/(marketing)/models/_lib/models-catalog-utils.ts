@@ -167,7 +167,12 @@ export function extractMaxResolution(value?: string | null, fallback?: string[])
     });
   });
   const max = explicitMax || fallbackMax;
-  if (!max) return { label: 'Data pending', value: null };
+  if (!max) {
+    const tiers = candidates.flatMap((entry) =>
+      Array.from(entry.matchAll(/\b(\d+(?:\.\d+)?)k\b/gi), (match) => Number(match[1])));
+    const tier = Math.max(0, ...tiers);
+    return tier > 0 ? { label: `${tier}K`, value: tier * 1024 } : { label: 'Data pending', value: null };
+  }
   if (explicitLabel) return { label: explicitLabel, value: max };
   return { label: `${max}p`, value: max };
 }

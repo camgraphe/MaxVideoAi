@@ -10,7 +10,7 @@
   "hero": {
     "title": "Seedream 5.0 Flash — Création rapide d’images et retouches guidées",
     "intro": "Seedream 5.0 Flash est la variante rapide de la famille de génération et de retouche Seedream 5.0. Créez une image en 1K, 1.5K ou 2K à partir d’un prompt ou de 10 images de référence maximum.",
-    "badge": "Text → Image · Image → Image · 1K / 1.5K / 2K",
+    "badge": "Texte → Image · Image → Image · 1K / 1.5K / 2K",
     "ctaPrimary": {
       "label": "Créer avec Seedream 5.0 Flash",
       "href": "/app/image?engine=seedream-5-0-flash"
@@ -93,7 +93,7 @@
     "heroSupportLine": "Création rapide d’images et retouches guidées",
     "heroSpecChips": [
       {
-        "label": "Text → Image",
+        "label": "Texte → Image",
         "icon": "textToVideo"
       },
       {
@@ -209,7 +209,7 @@
       "description": "Cette illustration représente la création d’images. Elle ne démontre pas la qualité de sortie de ce modèle.",
       "renderLabel": "Voir l’illustration",
       "badges": [
-        "Text → Image",
+        "Texte → Image",
         "Image → Image",
         "1K / 1.5K / 2K"
       ],
@@ -330,7 +330,7 @@
         {
           "id": "product",
           "title": "Composition produit",
-          "badge": "Text → Image",
+          "badge": "Texte → Image",
           "kind": "image",
           "prompt": "Un flacon en verre ambré haut de gamme sur une pierre claire, lumière latérale douce, fond de studio épuré, reflets du verre réalistes, composition centrée avec de l’espace pour un titre."
         },
@@ -344,7 +344,7 @@
         {
           "id": "typography",
           "title": "Mise en page avec texte",
-          "badge": "Text → Image",
+          "badge": "Texte → Image",
           "kind": "typography",
           "prompt": "Affiche produit éditoriale, grille nette et marges généreuses. Titre exact « NOUVELLE PERSPECTIVE » en haut, sous-titre discret « COLLECTION AUTOMNE », lettres lisibles et bien espacées."
         }

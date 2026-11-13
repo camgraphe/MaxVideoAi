@@ -295,9 +295,9 @@
       },
       {
         "id": "proof-3",
-        "title": "Audio nativo",
-        "body": "Diálogo, ambiente y efectos de sonido generados en sincronía.",
-        "icon": "audio"
+        "title": "Imágenes JPEG y PNG",
+        "body": "Crea una imagen fija en 2K y elige el formato JPEG o PNG.",
+        "icon": "image"
       },
       {
         "id": "proof-4",

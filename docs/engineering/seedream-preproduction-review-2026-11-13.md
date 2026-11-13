@@ -48,3 +48,21 @@ Les URL de Seedream et de Seedream 5.0 Pro restent en place dans les trois langu
 - Parité des prix app/MCP/Studio/marketing sur PostgreSQL 17 : validée.
 - Revue indépendante : aucun point bloquant restant.
 - Deux replays financiers exhaustifs validés, dont l’activation et le retour arrière sur 27 071 points de contrôle. Le code vérifié correspond au commit `52deb01a2`.
+
+## Seconde revue marketing du 13 novembre
+
+Périmètre : les douze fiches Seedream, les catalogues général et image, les tarifs et les pages publiques MCP et Studio, en anglais, français et espagnol. Cette revue concerne l’intégration Seedream ; elle ne constitue pas une relecture éditoriale de tous les articles et de tous les autres modèles du site.
+
+Corrections supplémentaires effectuées :
+
+- Les liens du tableau des tarifs ouvrent le modèle image choisi. Les tailles intermédiaires 1.5K et 3K ne disparaissent plus du résumé.
+- Les cartes 5.5 et Flash affichent leur maximum 2K et une description propre à chaque modèle dans les trois langues.
+- Les fiches détaillées présentent les trois options 1K / 1.5K / 2K. Les panneaux de conseils vides sont masqués et les badges ne se chevauchent plus sur mobile.
+- Les libellés image des nouvelles pages FR/ES sont traduits. Une ancienne promesse d’audio sur Pro est remplacée par ses sorties JPEG/PNG 2K.
+- Les statistiques acceptent les deux nouveaux identifiants publics, tout en conservant le filtrage des identifiants inconnus et des données privées.
+
+Les 27 URL de ce périmètre répondent en 200 avec leurs canonical, hreflang et règles d’indexation attendus. Les prix visibles ont été contrôlés avec une base PostgreSQL 17 jetable : les exemples 2K et leurs offres JSON-LD concordent, à 0,06 $ pour 5.5 et 0,03 $ pour Flash. Sans source de prix disponible, le build compilé affiche la demande de devis et n’émet pas d’offre Product inventée. Le navigateur a aussi couvert les liens entre catalogue, fiches et tarifs, la copie d’un prompt et le rendu à 390 px. Les 24 champs SEO historiques restent identiques à la production.
+
+Les correctifs passent **135 tests ciblés**, TypeScript, le lint et une nouvelle compilation complète, avec les **60 tests SEO** du prébuild. Les sept avertissements de lint existants restent présents. Les grandes suites et les replays financiers listés plus haut correspondent toujours au code `52deb01a2` et n’ont pas été rejoués pour ces correctifs marketing. Une seconde revue indépendante n’a trouvé aucun point bloquant.
+
+Le contrôle global `seo:check` rencontre un faux positif existant sur l’origine `www` autorisée par une route de sécurité, hors pages marketing. Cette autorisation a été conservée. Les contrôles distincts des liens internes, de l’exposition publique et des origines de médias passent. Le mode développement signale aussi deux avertissements React existants sur les attributs de popover.

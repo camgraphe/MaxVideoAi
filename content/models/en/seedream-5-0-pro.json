@@ -407,9 +407,9 @@
       },
       {
         "id": "proof-3",
-        "title": "Native audio",
-        "body": "Dialogue, ambience and SFX generated in sync.",
-        "icon": "audio"
+        "title": "JPEG and PNG output",
+        "body": "Create one 2K still image and choose JPEG or PNG format.",
+        "icon": "image"
       },
       {
         "id": "proof-4",

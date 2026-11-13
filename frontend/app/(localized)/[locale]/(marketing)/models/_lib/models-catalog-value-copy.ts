@@ -39,10 +39,18 @@ export const USE_CASE_MAP: Record<string, string> = {
 
 export const MODEL_CARD_DESCRIPTION_OVERRIDES: Partial<Record<AppLocale, Record<string, string>>> = {
   en: {
+    'seedream-5-5':
+      'Create and refine images with up to 10 references, 1K–2K output and native transparent PNGs.',
+    'seedream-5-0-flash':
+      'Generate and edit images quickly with up to 10 references and one 1K, 1.5K or 2K result per request.',
     'kling-v4':
       'Multi-shot scenes from text, images or references, plus source-video editing. Generate 3–30 seconds at 720p or 1080p with native audio.',
   },
   fr: {
+    'seedream-5-5':
+      'Créez et retouchez des images avec 10 références maximum, en 1K, 1.5K ou 2K, avec des PNG transparents natifs.',
+    'seedream-5-0-flash':
+      'Générez et retouchez rapidement une image en 1K, 1.5K ou 2K, guidée par 10 références maximum.',
     'kling-v4':
       'Scènes multi-plans depuis un texte, des images ou des références, et édition vidéo. Génération de 3 à 30 s en 720p ou 1080p avec audio natif.',
     'seedance-2-0':
@@ -99,6 +107,10 @@ export const MODEL_CARD_DESCRIPTION_OVERRIDES: Partial<Record<AppLocale, Record<
       'Idéal pour créer des références propres avant Seedance, des packshots produit et des visuels publicitaires contrôlés.',
   },
   es: {
+    'seedream-5-5':
+      'Crea y retoca imágenes con hasta 10 referencias, salida en 1K, 1.5K o 2K y PNG transparentes nativos.',
+    'seedream-5-0-flash':
+      'Genera y edita imágenes rápidamente con hasta 10 referencias y un resultado en 1K, 1.5K o 2K por solicitud.',
     'kling-v4':
       'Escenas de varios planos desde texto, imágenes o referencias, y edición de video. Generación de 3 a 30 s en 720p o 1080p con audio nativo.',
     'seedance-2-0':

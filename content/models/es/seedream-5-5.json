@@ -10,7 +10,7 @@
   "hero": {
     "title": "Seedream 5.5 — Ediciones precisas y PNG transparentes",
     "intro": "Seedream 5.5 crea imágenes fijas y ediciones a partir de un máximo de 10 referencias. Úsalo para imágenes de producto, ediciones sucesivas y elementos PNG transparentes, con un resultado por solicitud en 1K, 1.5K o 2K.",
-    "badge": "Text → Image · Image → Image · 1K / 1.5K / 2K",
+    "badge": "Texto → Imagen · Imagen → Imagen · 1K / 1.5K / 2K",
     "ctaPrimary": {
       "label": "Crear con Seedream 5.5",
       "href": "/app/image?engine=seedream-5-5"
@@ -93,11 +93,11 @@
     "heroSupportLine": "Ediciones precisas y PNG transparentes",
     "heroSpecChips": [
       {
-        "label": "Text → Image",
+        "label": "Texto → Imagen",
         "icon": "textToVideo"
       },
       {
-        "label": "Image → Image",
+        "label": "Imagen → Imagen",
         "icon": "imageToVideo"
       },
       {
@@ -209,8 +209,8 @@
       "description": "Esta ilustración representa la creación de imágenes. No demuestra la calidad de salida de este modelo.",
       "renderLabel": "Ver ilustración",
       "badges": [
-        "Text → Image",
-        "Image → Image",
+        "Texto → Imagen",
+        "Imagen → Imagen",
         "1K / 1.5K / 2K"
       ],
       "altContext": "Ilustración de la familia Seedream — no es un resultado de este modelo"
@@ -330,21 +330,21 @@
         {
           "id": "product",
           "title": "Composición de producto",
-          "badge": "Text → Image",
+          "badge": "Texto → Imagen",
           "kind": "image",
           "prompt": "Un frasco de vidrio ámbar de alta gama sobre piedra clara, luz lateral suave, fondo de estudio limpio, reflejos de vidrio realistas, composición centrada con espacio para un titular."
         },
         {
           "id": "edit",
           "title": "Edición con referencia",
-          "badge": "Image → Image",
+          "badge": "Imagen → Imagen",
           "kind": "edit",
           "prompt": "A partir de la referencia, conserva la identidad, el rostro, el peinado y la ropa de la persona. Cambia solo el fondo por un estudio moderno y luminoso, sin modificar el ángulo de cámara."
         },
         {
           "id": "typography",
           "title": "Composición con texto",
-          "badge": "Text → Image",
+          "badge": "Texto → Imagen",
           "kind": "typography",
           "prompt": "Cartel editorial de producto con una cuadrícula clara y márgenes generosos. Titular exacto «NUEVA PERSPECTIVA» arriba, subtítulo discreto «COLECCIÓN DE OTOÑO», letras nítidas y legibles."
         }

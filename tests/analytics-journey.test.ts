@@ -212,3 +212,41 @@ test('new public model identities survive generation projection without admittin
     engine: 'private user prompt', prompt: 'private user prompt', email: 'private@example.test',
   }), {});
 });
+
+test('latest Seedream page, card and generation events retain their exact public model attribution', () => {
+  for (const engine of ['seedream-5-5', 'seedream-5-0-flash']) {
+    assert.deepEqual(projectAllowedAnalyticsPayload('page_view', {
+      page_path: `/models/${engine}`, prompt: 'private prompt', email: 'private@example.test',
+    }), { page_path: `/models/${engine}` });
+    assert.deepEqual(projectAllowedAnalyticsPayload('model_card_click', {
+      cta_name: engine, target_family: 'models', prompt: 'private prompt', email: 'private@example.test',
+    }), { cta_name: engine, target_family: 'models' });
+    for (const mode of ['t2i', 'i2i']) {
+      assert.deepEqual(projectAllowedAnalyticsPayload('generation_started', {
+        engine, mode, route: '/app/image', prompt: 'private prompt', email: 'private@example.test',
+      }), { engine, mode, route: '/app/image' });
+    }
+  }
+});
+
+test('Seedream attribution rejects unknown identities, false prefixes and private paths', () => {
+  for (const engine of [
+    'unknown-model', 'seedream-5-5-private', 'prefix-seedream-5-5',
+    'seedream-5-0-flash-private', 'prefix-seedream-5-0-flash', 'seedream-5-5/private',
+  ]) {
+    assert.deepEqual(projectAllowedAnalyticsPayload('page_view', {
+      page_path: `/models/${engine}`, email: 'private@example.test',
+    }), {});
+    assert.deepEqual(projectAllowedAnalyticsPayload('model_card_click', {
+      cta_name: engine, email: 'private@example.test',
+    }), {});
+    assert.deepEqual(projectAllowedAnalyticsPayload('generation_started', {
+      engine, route: `/models/${engine}`, prompt: 'private prompt', email: 'private@example.test',
+    }), {});
+  }
+  for (const engine of ['seedream-5-5', 'seedream-5-0-flash']) {
+    for (const page_path of [`/models/${engine}/private`, `/models/${engine}?token=private`, `/models/${engine}#private`]) {
+      assert.deepEqual(projectAllowedAnalyticsPayload('page_view', { page_path }), {});
+    }
+  }
+});

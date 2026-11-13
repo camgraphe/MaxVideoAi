@@ -965,7 +965,7 @@ function buildImageLinks(entry: FalEngineEntry, locale: AppLocale): PricingHubLi
   if (entry.surfaces.modelPage.indexable) {
     links.push({ label: copy.links.model, href: buildLocalizedMarketingHref(locale, 'models', entry.modelSlug) });
   }
-  links.push({ label: copy.links.imageApp, href: '/app/image' });
+  links.push({ label: copy.links.imageApp, href: `/app/image?engine=${encodeURIComponent(entry.id)}` });
   return links;
 }
 
@@ -977,7 +977,9 @@ function formatImageSizeSummary(resolutions: string[], locale: AppLocale) {
   if (normalized.some((resolution) => resolution.includes('portrait') || resolution.includes('9:16'))) labels.add(copy.quote.portrait);
   if (normalized.some((resolution) => resolution.includes('landscape') || resolution.includes('16:9'))) labels.add(copy.quote.landscape);
   if (normalized.includes('1k') || normalized.some((resolution) => resolution.includes('1024'))) labels.add('1K');
+  if (normalized.includes('1.5k')) labels.add('1.5K');
   if (normalized.includes('2k') || normalized.some((resolution) => resolution.includes('2048'))) labels.add('2K');
+  if (normalized.includes('3k')) labels.add('3K');
   if (
     normalized.includes('4k') ||
     normalized.includes('4K'.toLowerCase()) ||

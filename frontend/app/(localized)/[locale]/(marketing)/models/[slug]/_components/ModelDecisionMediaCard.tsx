@@ -84,24 +84,26 @@ export function ModelDecisionMediaCard({
 
         <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(8,23,45,0.08)_0%,rgba(8,23,45,0)_46%,rgba(8,23,45,0.48)_100%)] dark:bg-[linear-gradient(180deg,rgba(3,7,18,0.14)_0%,rgba(3,7,18,0.04)_46%,rgba(3,7,18,0.58)_100%)]" />
 
-        {leadingBadge ? (
-          <span className="absolute left-5 top-5 inline-flex items-center gap-2 rounded-xl bg-black/65 px-4 py-2 text-xs font-semibold uppercase tracking-[0.08em] text-white shadow-[0_8px_28px_rgba(0,0,0,0.24)] backdrop-blur dark:border dark:border-white/10">
-            <UIIcon icon={LeadingBadgeIcon} size={15} strokeWidth={2} className={MODEL_PAGE_ICON_ON_DARK} />
-            {leadingBadge}
-          </span>
-        ) : null}
+        <div className="absolute inset-x-5 top-5 flex flex-wrap items-start justify-between gap-2">
+          {leadingBadge ? (
+            <span className="inline-flex max-w-full items-center gap-2 rounded-xl bg-black/65 px-4 py-2 text-xs font-semibold uppercase tracking-[0.08em] text-white shadow-[0_8px_28px_rgba(0,0,0,0.24)] backdrop-blur dark:border dark:border-white/10">
+              <UIIcon icon={LeadingBadgeIcon} size={15} strokeWidth={2} className={MODEL_PAGE_ICON_ON_DARK} />
+              {leadingBadge}
+            </span>
+          ) : null}
 
-        <div className="absolute right-5 top-5 flex items-center gap-2">
-          {durationBadge ? (
-            <span className="rounded-xl bg-black/65 px-4 py-2 text-xs font-semibold text-white shadow-[0_8px_28px_rgba(0,0,0,0.24)] backdrop-blur dark:border dark:border-white/10">
-              {durationBadge}
-            </span>
-          ) : null}
-          {ratioBadge ? (
-            <span className="rounded-xl bg-black/65 px-4 py-2 text-xs font-semibold text-white shadow-[0_8px_28px_rgba(0,0,0,0.24)] backdrop-blur dark:border dark:border-white/10">
-              {ratioBadge}
-            </span>
-          ) : null}
+          <div className="ml-auto flex max-w-full flex-wrap items-center justify-end gap-2">
+            {durationBadge ? (
+              <span className="rounded-xl bg-black/65 px-4 py-2 text-xs font-semibold text-white shadow-[0_8px_28px_rgba(0,0,0,0.24)] backdrop-blur dark:border dark:border-white/10">
+                {durationBadge}
+              </span>
+            ) : null}
+            {ratioBadge ? (
+              <span className="rounded-xl bg-black/65 px-4 py-2 text-xs font-semibold text-white shadow-[0_8px_28px_rgba(0,0,0,0.24)] backdrop-blur dark:border dark:border-white/10">
+                {ratioBadge}
+              </span>
+            ) : null}
+          </div>
         </div>
       </div>
 

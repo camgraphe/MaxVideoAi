@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
 
+import { buildPricingHubData } from '../frontend/app/(localized)/[locale]/(marketing)/pricing/_lib/pricingHubData.ts';
 import { buildMetadataUrls } from '../frontend/lib/metadataUrls.ts';
 import { getRuntimeModelByCanonicalSlug, resolveRuntimePublicSlug } from '../frontend/config/model-runtime.ts';
 import { parseModelDecisionContent } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-decision-content.ts';
@@ -77,5 +78,58 @@ test('Seedream versions keep independent canonical URLs and reciprocal localized
       assert.equal(metadata.canonical, expected[locale]);
       assert.deepEqual(metadata.languages, { ...expected, 'x-default': expected.en });
     }
+  }
+});
+
+
+test('pricing image links retain the selected Seedream engine in every locale', () => {
+  for (const locale of LOCALES) {
+    const rows = buildPricingHubData(locale).otherSurfaces.imageRows;
+    for (const id of ['seedream', 'seedream-5-0-pro', ...NEW_MODELS]) {
+      const row = rows.find((candidate) => candidate.id === id);
+      assert.ok(row, `${locale}/${id} pricing row`);
+      const appLink = row.links.find((link) => link.href.startsWith('/app/image'));
+      assert.equal(appLink?.href, `/app/image?engine=${id}`, `${locale}/${id} keeps model selection`);
+    }
+  }
+});
+
+test('pricing image summaries retain intermediate Seedream resolution tiers', () => {
+  const expected = {
+    seedream: '2K · 3K · 4K',
+    'seedream-5-0-pro': '2K',
+    'seedream-5-0-flash': '1K · 1.5K · 2K',
+    'seedream-5-5': '1K · 1.5K · 2K',
+  };
+  for (const locale of LOCALES) {
+    const rows = buildPricingHubData(locale).otherSurfaces.imageRows;
+    for (const [id, sizes] of Object.entries(expected)) {
+      assert.equal(rows.find((row) => row.id === id)?.sizes, sizes, `${locale}/${id} resolution summary`);
+    }
+  }
+});
+
+test('new Seedream image badges use the selected locale', () => {
+  for (const locale of LOCALES) {
+    for (const slug of NEW_MODELS) {
+      const content = readContent(locale, slug);
+      const decision = parseModelDecisionContent(content.decision, slug, locale);
+      const prompting = parseModelPromptingContent(content.prompting, slug, locale);
+      const badges = [...decision.media.badges, ...prompting.imageExamples!.items.map((item) => item.badge)].join(' ');
+      if (locale === 'fr') assert.doesNotMatch(badges, /\bText\b/);
+      if (locale === 'es') assert.doesNotMatch(badges, /\bText\b|\bImage\b/);
+    }
+  }
+});
+
+test('Seedream Pro proof cards describe supported image output without audio promises', () => {
+  for (const locale of LOCALES) {
+    const pro = parseModelExamplesContent(readContent(locale, 'seedream-5-0-pro').examples, 'seedream-5-0-pro', locale);
+    assert.ok(pro.proofItems.every((item) => item.icon !== 'audio'));
+    assert.doesNotMatch(JSON.stringify(pro.proofItems), /native audio|audio natif|audio nativo/i);
+    const outputProof = pro.proofItems.find((item) => item.id === 'proof-3');
+    assert.ok(outputProof);
+    assert.match(`${outputProof.title} ${outputProof.body}`, /2K/);
+    assert.match(`${outputProof.title} ${outputProof.body}`, /PNG/);
   }
 });
