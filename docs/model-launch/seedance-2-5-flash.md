@@ -3,7 +3,7 @@
 ## Identity and evidence
 
 - Canonical model/slug: `seedance-2-5-flash`; family `seedance`; label **Seedance 2.5 Flash**.
-- Direct ModelArk ID: `dreamina-seedance-2-5-flash-261115`, Singapore endpoint. No Fal or LAS fallback.
+- Direct ModelArk ID: `dreamina-seedance-2-5-flash-261115`, `https://ark.ap-southeast.bytepluses.com/api/v3`. No Fal or LAS fallback.
 - The account activation row was observed as **Activated**. Activation is separate from a successful generation.
 - [Official model card](https://console.byteplus.com/ark/region:ap-southeast-1/model/detail?name=dreamina-seedance-2-5-flash): up to 30 seconds, 480p/720p, up to 10 images, 5 videos and 5 audio references; multimodal generation and editing.
 - [Official pricing](https://console.byteplus.com/ark/region:ap-southeast-1/docs/model-pricing), checked 2026-11-13: $0.007/1,000 tokens without video input and $0.0043/1,000 with video input. No 1080p, 4K or offline inference. Actual provider usage remains authoritative.
@@ -14,8 +14,8 @@
 One explicitly approved attempt on 2026-11-13 submitted the exact Flash ID with
 a text-only cup scene, 4 seconds, 480p, 16:9 and generated audio off. The estimated
 LIST cost was $0.26901. BytePlus returned HTTP **404**, stating that the model or
-endpoint does not exist or is not accessible. It returned **no generation ID**;
-no second submission was made. Request ID:
+endpoint does not exist or is not accessible. It returned **no generation ID**.
+Initial request ID:
 `0217946081602479f6cd41e8514911883ec9f138006f90f614575`.
 
 A read-only `GET /api/v3/models` using the same existing project credential
@@ -26,6 +26,26 @@ not a successful render or a definitive cause. No completion usage or billing
 receipt was returned. The documentation still announced 15 November API access
 when rechecked. Private request/response evidence stays under
 `.local/seedance-25-flash/`; it contains no exported API credential.
+
+Adrien subsequently authorized a retest and an alternative calling method. A
+direct HTTPS request on 2026-11-13, without the MaxVideoAI provider adapter,
+submitted the same minimal payload and received HTTP **404** with the explicit
+code `InvalidEndpointOrModel.NotFound`. Request ID:
+`021794609347377a2f4933af3443b601e52f5659e0d958f813645`.
+The preceding read-only model listing again returned HTTP 200, the same 35
+versions and no Flash. A private, read-only comparison established that the test
+credential exactly matches Vercel's production `BYTEPLUS_ARK_API_KEY`; no secret
+was displayed or exported. The console's server key is Active with All
+permissions and Flash remains Activated. Thus the refusal is reproduced outside
+the application adapter with the production credential. The release date remains
+a possible explanation, not a proven cause. No task ID or completion usage was
+returned by either provider attempt.
+
+This diagnostic also exposed an observability defect: HTTP failures read only
+top-level error codes although BytePlus returns `error.code`. The client now
+reuses its existing nested/flat response-code parser for create, retrieve and
+delete failures. Offline regressions preserve status, code and sanitized messages
+and verify that no automatic retry or fallback is introduced.
 
 The adapter prepares the five ModelArk workflows (text, first/last frames, multimodal references, edit, extension). The 4–30-second range, Auto, six explicit ratios plus Auto, 24 FPS, source-derived edit timing/framing, input formats and duration budgets reuse the documented 2.5 protocol. They remain **candidate parameters pending exact Flash qualification**. The public catalog and submission switches remain closed. Only `t2v` is admitted by the default per-mode switch when explicitly enabling a canary.
 
@@ -86,7 +106,7 @@ Local PG17 verification exercised all 6,804 classes through those native admin t
 ## Qualification and release
 
 1. Complete local provider, canonical quote, MCP/Studio projection, recovery and PostgreSQL checks. Offline mocks are not provider canaries.
-2. Resolve the observed Flash API admission blocker. The single authorized attempt above is consumed; prepare a fresh, approved retry before another paid submission, then verify API acceptance, output, usage and raster. Qualify additional reference/edit/extension modes independently before widening `SEEDANCE_2_5_FLASH_BYTEPLUS_MODES`.
+2. Resolve the observed Flash API admission blocker. Both approved provider attempts above were refused; before any later paid submission, establish its authorized scope, then verify API acceptance, output, usage and raster. Qualify additional reference/edit/extension modes independently before widening `SEEDANCE_2_5_FLASH_BYTEPLUS_MODES`.
 3. Validate literal tariff proposals against the current database and apply through the existing admin batch preview/confirmation path. Track all 31 receipts and complete any pending refresh; verify visible prices after cache revalidation. Flash activation and standard repricing are separate from a successful code build.
 4. Complete localized model content and exact Flash media/launch assets with the marketing task. Run registry, launch-assets, SEO and browser checks when publishing those surfaces.
 5. Follow `docs/deployment/github-vercel.md`: clean committed candidate, PR, required Quality CI, current main, reviewed production release and both-domain verification.

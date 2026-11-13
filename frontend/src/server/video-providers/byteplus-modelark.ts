@@ -17,7 +17,7 @@ export { resolveBytePlusTransport, type BytePlusTransport } from './byteplus-mod
 import type { BytePlusSeedanceFastPayload } from './byteplus-modelark-payload';
 import type { Seedance25FinalRequest } from './byteplus-modelark-draft';
 import {
-  firstString,
+  extractErrorCode,
   normalizeBytePlusTask,
   parseJsonResponse,
   scrubBytePlusError,
@@ -193,7 +193,7 @@ export class BytePlusModelArkClient {
     if (!response.ok) {
       throw new BytePlusModelArkError(scrubBytePlusError(parsed), {
         status: response.status,
-        code: firstString(parsed, ['code', 'error_code']) ?? null,
+        code: extractErrorCode(parsed),
         providerMessage: scrubBytePlusError(parsed),
       });
     }
@@ -219,7 +219,7 @@ export class BytePlusModelArkClient {
     if (!response.ok) {
       throw new BytePlusModelArkError(scrubBytePlusError(parsed), {
         status: response.status,
-        code: firstString(parsed, ['code', 'error_code']) ?? null,
+        code: extractErrorCode(parsed),
         providerMessage: scrubBytePlusError(parsed),
       });
     }
@@ -239,7 +239,7 @@ export class BytePlusModelArkClient {
       const parsed = await parseJsonResponse(response);
       throw new BytePlusModelArkError(scrubBytePlusError(parsed), {
         status: response.status,
-        code: firstString(parsed, ['code', 'error_code']) ?? null,
+        code: extractErrorCode(parsed),
         providerMessage: scrubBytePlusError(parsed),
       });
     }
