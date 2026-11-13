@@ -714,6 +714,25 @@ External examples have editorial IDs, not fabricated application jobs. Registry
 publication gates the page/gallery selection. Nano21 retains its existing
 records and destinations through the same adapter.
 
+Seedream's accepted examples live in `frontend/config/seedream-editorial-images.json`,
+validated by `frontend/lib/seedream-editorial-images.ts` and selected through the
+same adapter. Each entry preserves its exact prompt, requested settings, original
+JPEG and hash-addressed WebP display derivative. Direct BytePlus examples record
+the returned provider model and response hash. Examples recovered through a
+completed MaxVideoAI MCP generation record a receipt hash and request hash instead;
+do not invent a raw provider model response that MCP did not expose. Account/job
+identifiers, signed URLs and private receipts stay outside public content.
+The selected manifest hero supplies the catalog display image, while the viewer
+opens the original. Independent text-to-image scenes must never be presented as
+reference-consistency or editing demonstrations.
+
+Gallery cards show their localized editorial title beside the factual model and
+settings label. Preserve lazy display loading, original deferral, fixed geometry
+and the existing image optimizer policy. Image-example anchor spacing must clear
+both the site header and the sticky section navigation. Seedream's media and
+content tests cover accepted provenance, hashes, original/display lineage,
+localized ownership and unchanged historical SEO fields.
+
 `tests/model-editorial-gallery-browser.test.ts` checks original deferral, source
 identity, narrow layouts and modal focus with the real components. Its standalone
 route context and image optimizer redirect are fixtures, not evidence of complete

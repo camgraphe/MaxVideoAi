@@ -22,7 +22,10 @@ export function ModelEditorialImageGallery({images,title,intro,anchorId,workspac
         aria-label={image.title} className="overflow-hidden rounded-xl border border-hairline bg-surface text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
         <Image src={image.display.url} width={image.display.width} height={image.display.height} alt={image.title}
           sizes="(min-width: 1280px) 640px, (min-width: 768px) 45vw, 95vw" loading="lazy" className="h-auto w-full object-contain"/>
-        <span className="block px-4 py-3 text-xs text-text-secondary">{image.metadataLabel}</span>
+        <span className="block space-y-1 px-4 py-3">
+          <span className="block text-sm font-semibold text-text-primary">{image.title}</span>
+          <span className="block text-xs text-text-secondary">{image.metadataLabel}</span>
+        </span>
       </button>)}
     </div>
     {afterGallery?<p className="max-w-3xl text-sm leading-6 text-text-secondary">{afterGallery}</p>:null}

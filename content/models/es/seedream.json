@@ -71,10 +71,10 @@
   "tips": {
     "title": "Notas del workflow de referencia",
     "items": [
-      "Usa Seedream para crear imágenes fuente más limpias y controladas antes de animar.",
-      "Mantén el sujeto legible y evita fondos sobrecargados cuando la imagen vaya a image-to-video.",
-      "Para producto en movimiento, estabiliza primero packaging, reflejos y ángulo héroe en Seedream.",
-      "Seedream puede mejorar la consistencia y reducir fricción frente a imágenes externas aleatorias, pero Seedance sigue evaluando cada prompt e imagen fuente."
+      "Para una serie de personaje, repite rostro, ropa, paleta y luz en el brief; revisa las diferencias en cada resultado.",
+      "Organiza un storyboard corto en instantes distintos sin pedir que cada imagen cuente toda la historia.",
+      "Para una imagen que animarás, mantén manos y accesorios legibles y deja espacio alrededor de la silueta.",
+      "Elige la mejor imagen antes de abrir un modelo de video; planea movimiento y sonido en esa generación independiente."
     ]
   },
   "prompts": [
@@ -226,14 +226,14 @@
         "brand": "ByteDance",
         "title": "Seedream 5.5",
         "modelSlug": "seedream-5-5",
-        "description": "Seedream 5.5 crea imágenes fijas y ediciones a partir de un máximo de 10 referencias. Úsalo para imágenes de producto, ediciones sucesivas y elementos PNG transparentes, con un resultado por solicitud en 1K, 1.5K o 2K.",
+        "description": "Afina una escena mediante ediciones guiadas o crea un elemento PNG transparente. Una imagen por solicitud.",
         "ctaLabel": "Descubrir Seedream 5.5"
       },
       {
         "brand": "ByteDance",
         "title": "Seedream 5.0 Flash",
         "modelSlug": "seedream-5-0-flash",
-        "description": "Seedream 5.0 Flash es la variante rápida de la familia de generación y edición Seedream 5.0. Crea una imagen en 1K, 1.5K o 2K a partir de un prompt o de un máximo de 10 imágenes de referencia.",
+        "description": "Explora encuadres, expresiones e ideas de campaña, una imagen cada vez, en 1K, 1.5K o 2K.",
         "ctaLabel": "Descubrir Seedream 5.0 Flash"
       }
     ]
@@ -312,7 +312,7 @@
       },
       {
         "title": "Precio por imagen",
-        "body": "Los escenarios de imagen usan el helper de precios compartido, no segundos de video.",
+        "body": "Revisa la cotización actual por imagen antes de generar, incluido el total de la serie si pides varias imágenes.",
         "tone": "price"
       }
     ],
@@ -343,7 +343,7 @@
       },
       {
         "title": "Descubrir Seedream 5.5",
-        "body": "Seedream 5.5 crea imágenes fijas y ediciones a partir de un máximo de 10 referencias. Úsalo para imágenes de producto, ediciones sucesivas y elementos PNG transparentes, con un resultado por solicitud en 1K, 1.5K o 2K.",
+        "body": "Afina una escena mediante ediciones guiadas o crea un elemento PNG transparente. Una imagen por solicitud.",
         "cta": {
           "label": "Descubrir Seedream 5.5",
           "href": "/es/modelos/seedream-5-5"
@@ -351,7 +351,7 @@
       },
       {
         "title": "Descubrir Seedream 5.0 Flash",
-        "body": "Seedream 5.0 Flash es la variante rápida de la familia de generación y edición Seedream 5.0. Crea una imagen en 1K, 1.5K o 2K a partir de un prompt o de un máximo de 10 imágenes de referencia.",
+        "body": "Explora encuadres, expresiones e ideas de campaña, una imagen cada vez, en 1K, 1.5K o 2K.",
         "cta": {
           "label": "Descubrir Seedream 5.0 Flash",
           "href": "/es/modelos/seedream-5-0-flash"
@@ -360,24 +360,24 @@
     ],
     "referenceWorkflows": [
       {
-        "title": "Imagen por prompt",
-        "body": "Describe producto, personaje, escena, superficie, lente e iluminación para una fuente limpia."
+        "title": "Definir el personaje",
+        "body": "Describe persona, ropa y una acción visible. Repite las reglas visuales esenciales en el brief de las imágenes relacionadas."
       },
       {
-        "title": "Edición con referencia",
-        "body": "Carga imágenes cuando debas conservar identidad, geometría de producto o detalles de marca."
+        "title": "Editar la imagen elegida",
+        "body": "Usa referencias de persona, producto o lugar. Indica qué se mantiene y elimina distracciones antes de añadir detalles."
       },
       {
-        "title": "Set de referencias",
-        "body": "Crea varias vistas: frente, perfil, detalle y contexto antes del paso de video."
+        "title": "Comparar la serie",
+        "body": "Revisa rostros, manos, accesorios y encuadres en cada imagen. Conserva las vistas y momentos que ayuden a contar la historia."
       },
       {
-        "title": "Elección de tamaño",
-        "body": "Usa 2K para preparar rápido, 3K para revisión o 4K cuando la imagen requiera más detalle."
+        "title": "Elegir el tamaño",
+        "body": "Selecciona 2K, 3K o 4K según el uso de la imagen. Comprueba los ajustes de salida y la cotización actual antes de generar."
       },
       {
-        "title": "Paso a video",
-        "body": "Envía solo las mejores imágenes fijas al modelo de movimiento elegido."
+        "title": "Preparar la apertura del video",
+        "body": "Elige una pose inicial clara y espacio para el movimiento de cámara. Guarda la imagen y planea la animación en un modelo de video independiente."
       }
     ],
     "pricingCopy": {

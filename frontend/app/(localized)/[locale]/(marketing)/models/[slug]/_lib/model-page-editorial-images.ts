@@ -1,6 +1,7 @@
 import type {AppLocale} from '@/i18n/locales';
 import {listNano21EditorialImages} from '@/lib/nano21-editorial-images';
 import {listGpt26EditorialImages,gpt26EditorialSources,type Gpt26EditorialImage} from '@/lib/gpt26-editorial-images';
+import {listSeedreamEditorialImages} from '@/lib/seedream-editorial-images';
 import type {ModelExamplesContent} from './model-page-examples-content';
 
 type EditorialFile={url:string;sha256:string;width:number;height:number};
@@ -32,6 +33,14 @@ export function toGpt26EditorialImages(images:readonly Gpt26EditorialImage[],loc
 }
 
 export function listModelEditorialImages(engineId:string,locale:AppLocale,titles?:ModelExamplesContent['editorialImages']):ModelEditorialImage[]{
+ const seedream=listSeedreamEditorialImages(engineId);
+ if(seedream.length)return seedream.map(image=>{
+  const title=titles?.find(item=>item.id===image.id)?.title;
+  if(!title)throw new Error('Missing localized Seedream editorial image title');
+  const modelLabel=engineId==='seedream-5-5'?'Seedream 5.5':engineId==='seedream-5-0-flash'?'Seedream 5.0 Flash':'Seedream 5.0 Pro';
+  return {...image,title,metadataLabel:`${modelLabel} · ${copy[locale].created} · 2K · 16:9`,
+   workspaceHref:`/app/image?engine=${engineId}`,videoModelSlug:'seedance-2-5'};
+ });
  const nano=listNano21EditorialImages(engineId);
  if(nano.length)return nano.map(image=>({...image,metadataLabel:'Nano Banana 2.1 · 1K · 16:9 · MEDIUM',workspaceHref:'/app/image?engine=nano-banana-2-1',videoModelSlug:'kling-v4'}));
  const images=listGpt26EditorialImages(engineId);

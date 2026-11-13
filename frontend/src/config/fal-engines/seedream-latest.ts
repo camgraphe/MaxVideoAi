@@ -1,5 +1,6 @@
 import type { EngineCaps } from '../../../types/engines';
 import { SEEDREAM_ASPECT_RATIO_VALUES, SEEDREAM_SINGLE_IMAGE_RESOLUTION_VALUES } from '../../../lib/image/seedream';
+import { listSeedreamEditorialImages } from '../../../lib/seedream-editorial-images';
 import type { RawFalEngineEntry } from './types';
 
 type SeedreamLatestDefinition = {
@@ -14,6 +15,7 @@ type SeedreamLatestDefinition = {
 
 function buildSeedreamLatestEntry(definition: SeedreamLatestDefinition): RawFalEngineEntry {
   const transparent = definition.id === 'seedream-5-5';
+  const editorialHero = listSeedreamEditorialImages(definition.id).find(image => image.role === 'hero');
   const formats = ['jpg', 'jpeg', 'png', 'webp', 'bmp', 'tiff', 'gif'];
   const engine: EngineCaps = {
     id: definition.id,
@@ -97,8 +99,10 @@ function buildSeedreamLatestEntry(definition: SeedreamLatestDefinition): RawFalE
       description: definition.description, canonicalPath: `/models/${definition.id}` },
     type: 'image',
     seoText: definition.description,
-    media: { videoUrl: '/assets/models/seedream-hero.webp', imagePath: '/assets/models/seedream-hero.webp',
-      altText: 'Illustration of a camera lens reflecting a dream landscape; not an output from this model.' },
+    media: editorialHero ? { videoUrl: editorialHero.original.url, imagePath: editorialHero.display.url,
+      altText: `${definition.label} generated cinematic street scene.` }
+      : { videoUrl: '/assets/models/seedream-hero.webp', imagePath: '/assets/models/seedream-hero.webp',
+        altText: 'Illustration of a camera lens reflecting a dream landscape; not an output from this model.' },
     prompts: [{ title: transparent ? 'Transparent product asset' : 'Product reference image', mode: 't2i',
       prompt: transparent ? 'A clear glass skincare bottle with a white label, isolated, precise edges, soft studio light, transparent background.'
         : 'A clean skincare product photograph on pale stone, soft daylight, realistic label, uncluttered composition.',

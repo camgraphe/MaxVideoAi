@@ -1,0 +1,197 @@
+[
+  {
+    "id": "flash-keep-going",
+    "status": "accepted",
+    "engineId": "seedream-5-0-flash",
+    "providerModelId": "dola-seedream-5-0-flash-260915",
+    "role": "hero",
+    "promptLanguage": "en",
+    "prompt": "A vibrant cinematic live-action sports-campaign still, 16:9 widescreen. A fictional female skateboarder around twenty-six, wearing a burnt-orange windbreaker, loose navy trousers and simple cream sneakers, is captured at the clean apex of a small controlled ollie over a low curb on a sunny Lisbon street. Her whole body and the complete skateboard are visible, both feet positioned convincingly above the deck, natural hands balancing the movement, focused face clearly visible. Use a low three-quarter camera angle and a believable body pose rather than an extreme stunt. Two adult friends react naturally on the sidewalk behind her, with a cafe terrace and a real city street receding into the distance. A large painted wall advertisement on the left reads exactly \"KEEP GOING\" in two crisp, oversized dark-blue lines on a pale warm-yellow background; the lettering is physically painted on the wall and follows its perspective. Late afternoon sunlight creates long diagonal shadows, tactile stucco and real skin texture. Crisp subject with a small amount of natural motion blur in the moving background, 28mm cinema lens, rich but controlled colors, energetic editorial composition with real depth. Keep the skateboarder away from the frame edges. A candid decisive moment from a premium commercial film, one cohesive image with no added title, collage or border.",
+    "settings": {
+      "mode": "t2i",
+      "resolution": "2K",
+      "aspectRatio": "16:9",
+      "outputFormat": "jpeg",
+      "numImages": 1
+    },
+    "provenance": {
+      "kind": "external_byteplus_modelark",
+      "generatedAt": "2026-11-13T20:48:01.993Z",
+      "responseSha256": "0a9747ae6c963af9ca2baa8fdda0312339161b6fe68f165535db1a3d28f230f4",
+      "promptSha256": "ed988c13f3877f980bcf4de8d454a9d7ca78daf50d00c8aa8cfc3f8cf08c2a44"
+    },
+    "original": {
+      "url": "/assets/model-examples/seedream-5-0-flash/7db3122dfba32e5cd448ce56329a6d9e349ec7278d651a8023bd998f61676716.jpg",
+      "sha256": "7db3122dfba32e5cd448ce56329a6d9e349ec7278d651a8023bd998f61676716",
+      "bytes": 772499,
+      "width": 2816,
+      "height": 1584,
+      "mimeType": "image/jpeg"
+    },
+    "display": {
+      "url": "/assets/model-examples/seedream-5-0-flash/b36673820622bc984600abf6f1668129fc1b8c6ad376cf3b118981c1236de47f.webp",
+      "sha256": "b36673820622bc984600abf6f1668129fc1b8c6ad376cf3b118981c1236de47f",
+      "bytes": 159620,
+      "width": 1600,
+      "height": 900,
+      "mimeType": "image/webp",
+      "sourceSha256": "7db3122dfba32e5cd448ce56329a6d9e349ec7278d651a8023bd998f61676716"
+    }
+  },
+  {
+    "id": "flash-next-stop",
+    "status": "accepted",
+    "engineId": "seedream-5-0-flash",
+    "providerModelId": "dola-seedream-5-0-flash-260915",
+    "role": "example",
+    "promptLanguage": "en",
+    "prompt": "An arresting live-action cinematic still, 16:9 widescreen. In a grand early-twentieth-century European railway concourse, a fictional adult dancer in their late twenties, dressed in a flowing cobalt-blue overshirt, ivory T-shirt, charcoal trousers and worn white sneakers, is caught mid-turn during an impromptu dance. The full body is visible with a convincing grounded pivot, one foot on the stone floor, natural arms extended at different heights, relaxed readable hands and a face lit by a shaft of late-afternoon sun. Several adult commuters continue walking in the deeper background, some glancing toward the dancer. Tall windows, iron arches and a large station clock create a rich architectural backdrop. A physically installed departure-board-style sign in the middle background reads exactly \"NEXT STOP\" on its first line and \"ANYWHERE\" on its second line, in clean cream block lettering on a deep-blue panel. Clothing has a light natural motion blur at its edges while the face and torso remain sharp. Warm sun against cool interior shadow, long floor reflections, atmospheric depth, 35mm cinema lens, restrained grain, beautiful believable skin and fabric. Frame the scene like the opening of a moving human story with space for a slow dolly-in, not a studio dance portrait. One coherent realistic location, no floating lettering or graphic overlay.",
+    "settings": {
+      "mode": "t2i",
+      "resolution": "2K",
+      "aspectRatio": "16:9",
+      "outputFormat": "jpeg",
+      "numImages": 1
+    },
+    "provenance": {
+      "kind": "external_byteplus_modelark",
+      "generatedAt": "2026-11-13T20:48:21.720Z",
+      "responseSha256": "24cf1da84d1094e13b2ad3193c9657f99ef38513b093f903d52cea75c16a8785",
+      "promptSha256": "5b3751a63fa14fe4cc974fac12d43debcb3e82c99340e0a1571106c9a3b080ae"
+    },
+    "original": {
+      "url": "/assets/model-examples/seedream-5-0-flash/e4c0a1183a44b16c4589cf3683f933be7a612b2907234af528e18b68c07d7cc5.jpg",
+      "sha256": "e4c0a1183a44b16c4589cf3683f933be7a612b2907234af528e18b68c07d7cc5",
+      "bytes": 585737,
+      "width": 2816,
+      "height": 1584,
+      "mimeType": "image/jpeg"
+    },
+    "display": {
+      "url": "/assets/model-examples/seedream-5-0-flash/1b163d28c2d890badd27da643e68fdacd68d497542297be1ffd171ab4170ea55.webp",
+      "sha256": "1b163d28c2d890badd27da643e68fdacd68d497542297be1ffd171ab4170ea55",
+      "bytes": 98088,
+      "width": 1600,
+      "height": 900,
+      "mimeType": "image/webp",
+      "sourceSha256": "e4c0a1183a44b16c4589cf3683f933be7a612b2907234af528e18b68c07d7cc5"
+    }
+  },
+  {
+    "id": "55-make-your-move",
+    "status": "accepted",
+    "engineId": "seedream-5-5",
+    "providerModelId": "dola-seedream-5-5-261028",
+    "role": "hero",
+    "promptLanguage": "en",
+    "prompt": "A compelling live-action feature-film still, 16:9 widescreen. A fictional woman in her late twenties in a deep burgundy trench coat has just emerged from a Parisian metro stairway into a rain-soaked street at blue hour. She is caught mid-stride, turning toward someone just outside the frame, alert and full of intent; her face is clearly visible, her coat moves in the wind. Several adults cross the street behind her; a passing taxi adds a soft streak of warm light. A large physically printed illuminated advertising panel, nearly front-facing on the right side of the street, reads exactly \"MAKE YOUR MOVE\" in three beautifully spaced lines of bold off-white sans-serif capitals. These are the only prominent words. The panel belongs naturally to the real location. Reflections on wet pavement, cinematic cyan and amber practical lighting, natural skin texture, believable hands, coherent perspective, rich deep blacks with detail. Shot on a 40mm anamorphic lens, restrained film grain, subtle halation, sophisticated campaign-film composition. The woman and the sign remain comfortably inside the central 80 percent of the image. A real human story in progress, evocative and dynamic, not a posed stock photograph. A single cohesive photograph with no borders or added graphic overlay.",
+    "settings": {
+      "mode": "t2i",
+      "resolution": "2K",
+      "aspectRatio": "16:9",
+      "outputFormat": "jpeg",
+      "numImages": 1
+    },
+    "provenance": {
+      "kind": "external_byteplus_modelark",
+      "generatedAt": "2026-11-13T21:11:16.648Z",
+      "responseSha256": "3fb0cfee01d07c3c4e6b8e5546e61763d3a41f034928cafdaa574f3d7b37252a",
+      "promptSha256": "cae0cc5de9763895c10f9f6bbaa9c123d1f2f2f4efdb267d64188cbd236698a4"
+    },
+    "original": {
+      "url": "/assets/model-examples/seedream-5-5/2535f7148cd673f38f2aabd776127690bdcca5fee1631e701eb6b550bf5dca70.jpg",
+      "sha256": "2535f7148cd673f38f2aabd776127690bdcca5fee1631e701eb6b550bf5dca70",
+      "bytes": 450563,
+      "width": 2816,
+      "height": 1584,
+      "mimeType": "image/jpeg"
+    },
+    "display": {
+      "url": "/assets/model-examples/seedream-5-5/a3014339f0f79ea9fafd4d72721a0b64fa9fee05a47cbea2893fe0cbcd45c186.webp",
+      "sha256": "a3014339f0f79ea9fafd4d72721a0b64fa9fee05a47cbea2893fe0cbcd45c186",
+      "bytes": 67128,
+      "width": 1600,
+      "height": 900,
+      "mimeType": "image/webp",
+      "sourceSha256": "2535f7148cd673f38f2aabd776127690bdcca5fee1631e701eb6b550bf5dca70"
+    }
+  },
+  {
+    "id": "55-last-train",
+    "status": "accepted",
+    "engineId": "seedream-5-5",
+    "providerModelId": "dola-seedream-5-5-261028",
+    "role": "example",
+    "promptLanguage": "en",
+    "prompt": "A cinematic live-action film still, 16:9 widescreen, from a beautifully photographed contemporary drama. On an almost empty covered railway platform at night, a fictional woman around thirty wearing a forest-green jacket reaches back to take the hand of a fictional man around thirty-five in a dark wool coat. They are both walking toward a waiting train; she turns toward him with a small spontaneous smile, while he looks at her with concern and affection. Their faces and connected hands are readable and anatomically natural. Warm light spills from the open train door behind them into the cool blue rain beyond the platform roof. A station worker and two adult travellers remain small in the background, adding scale and a believable lived-in setting. The image catches a real transition, coat hems moving and one foot just leaving the ground. Strong foreground, middle ground and background separation, glistening pavement, delicate steam in the distance, fine natural skin texture and wool detail. 50mm cinema lens, softly rolled highlights, subtle film grain, realistic color separation, intimate and emotionally charged without melodrama. Carefully composed with both people fully legible and room around them for a later camera move. One cohesive physical location, a film frame rather than a fashion pose, no title or graphic overlay.",
+    "settings": {
+      "mode": "t2i",
+      "resolution": "2K",
+      "aspectRatio": "16:9",
+      "outputFormat": "jpeg",
+      "numImages": 1
+    },
+    "provenance": {
+      "kind": "external_byteplus_modelark",
+      "generatedAt": "2026-11-13T21:11:33.442Z",
+      "responseSha256": "6e52068c262c05929f002c6ca2c0b98ebbbc8037e0b4816ff59b1eb6d17fd32c",
+      "promptSha256": "dfbd485ac016312c923198e007762b367ab5896dd3c06a19e1c6f108c6ee0238"
+    },
+    "original": {
+      "url": "/assets/model-examples/seedream-5-5/9c2ccca85c7306afc4bba3bbe4e1a80a58812188277592719b5e2327ef47e0ef.jpg",
+      "sha256": "9c2ccca85c7306afc4bba3bbe4e1a80a58812188277592719b5e2327ef47e0ef",
+      "bytes": 487155,
+      "width": 2816,
+      "height": 1584,
+      "mimeType": "image/jpeg"
+    },
+    "display": {
+      "url": "/assets/model-examples/seedream-5-5/17e3dfc0480a8ee5b4341b62d739a8f91c305c762e6d87c2f73159214600369d.webp",
+      "sha256": "17e3dfc0480a8ee5b4341b62d739a8f91c305c762e6d87c2f73159214600369d",
+      "bytes": 81806,
+      "width": 1600,
+      "height": 900,
+      "mimeType": "image/webp",
+      "sourceSha256": "9c2ccca85c7306afc4bba3bbe4e1a80a58812188277592719b5e2327ef47e0ef"
+    }
+  },
+  {
+    "id": "pro-stay-curious",
+    "status": "accepted",
+    "engineId": "seedream-5-0-pro",
+    "role": "hero",
+    "promptLanguage": "en",
+    "prompt": "A beautifully photographed live-action feature-film still, 16:9 widescreen. A fictional woman around twenty-eight with short dark curls and a textured deep-blue blazer steps out of a tiny neighborhood bakery, holding the door naturally for a fictional man around thirty-two in a charcoal jacket. They are caught in an unposed shared laugh as they begin to walk down the street, both faces clearly readable and full of character. Her hair and jacket move in a light breeze. Warm light from the bakery's open doorway and ovens spills onto their faces, contrasted with the cool blue-hour city outside. Three small adult pedestrians add life farther down the sidewalk. Behind the two main characters, an elegant physically painted street advertising panel reads exactly \"STAY CURIOUS\" in two large cream lines on a rich burgundy background. The letters are part of the real location and remain crisp and readable. Fine skin texture, individual hair strands, tactile wool and linen, delicate bakery steam and believable natural hands. Composition at waist-level with a 35mm cinema lens, foreground depth, subtly glowing practical lights, restrained grain and rich cinematic color separation. The people are the clear focus; the frame feels like the beginning of a human story and has breathing room for a future tracking shot. A premium film scene, not a posed fashion shoot or a product still life. One coherent photographic image, no collage, border or graphic title overlay.",
+    "settings": {
+      "mode": "t2i",
+      "resolution": "2K",
+      "aspectRatio": "16:9",
+      "outputFormat": "jpeg",
+      "numImages": 1
+    },
+    "provenance": {
+      "kind": "maxvideoai_mcp_generation",
+      "observedCompletedAt": "2026-11-13T21:24:40.246Z",
+      "receiptSha256": "8f09bf94688e8646a560380c3480a525060a16db27e9c23560dcbb04c84370de",
+      "requestHash": "b3fe71620dcc937b7917f8a51940ce85f0ba924c8aeaf533458ee2c73add6f39",
+      "promptSha256": "83b4b7179dd2c9f323ac3b8115088008fc205b28f33716e502f8b5e5a0714a57"
+    },
+    "original": {
+      "url": "/assets/model-examples/seedream-5-0-pro/40dafa9179cd44de9d56a41d2b9b8b97cc1985163b7fb73777f16c8bbb1b61b8.jpg",
+      "sha256": "40dafa9179cd44de9d56a41d2b9b8b97cc1985163b7fb73777f16c8bbb1b61b8",
+      "bytes": 434640,
+      "width": 2848,
+      "height": 1600,
+      "mimeType": "image/jpeg"
+    },
+    "display": {
+      "url": "/assets/model-examples/seedream-5-0-pro/f8e06de6b3e4dfefb608964bc530ce4b39b15e280b893a9f2d52d8c2f2da54cc.webp",
+      "sha256": "f8e06de6b3e4dfefb608964bc530ce4b39b15e280b893a9f2d52d8c2f2da54cc",
+      "bytes": 54684,
+      "width": 1600,
+      "height": 899,
+      "mimeType": "image/webp",
+      "sourceSha256": "40dafa9179cd44de9d56a41d2b9b8b97cc1985163b7fb73777f16c8bbb1b61b8"
+    }
+  }
+]

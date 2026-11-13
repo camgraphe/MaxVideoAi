@@ -4,6 +4,7 @@ import path from 'node:path';
 import test from 'node:test';
 
 import { buildPricingHubData } from '../frontend/app/(localized)/[locale]/(marketing)/pricing/_lib/pricingHubData.ts';
+import { listSeedreamEditorialImages } from '../frontend/lib/seedream-editorial-images';
 import { buildMetadataUrls } from '../frontend/lib/metadataUrls.ts';
 import { getRuntimeModelByCanonicalSlug, resolveRuntimePublicSlug } from '../frontend/config/model-runtime.ts';
 import { parseModelDecisionContent } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-decision-content.ts';
@@ -36,7 +37,14 @@ test('latest Seedream pages own localized strict content and factual image-only 
       assert.equal(decision.hero.primaryCta.href, `/app/image?engine=${slug}`);
       assert.equal(examples.showWhenEmpty, false);
       assert.equal(examples.fallbackItems, null);
-      assert.match(decision.media.caption, /illustrat|ilustraci/i);
+      const acceptedHero = listSeedreamEditorialImages(slug).find(image => image.role === 'hero');
+      if (acceptedHero) {
+        assert.match(decision.media.caption, /Seedream/);
+        assert.doesNotMatch(decision.media.caption, /not an output|pas un rendu|no es un resultado/i);
+        assert.ok(examples.editorialImages?.some(image => image.id === acceptedHero.id));
+      } else {
+        assert.match(decision.media.caption, /illustrat|ilustraci/i);
+      }
       const text = JSON.stringify(content);
       assert.match(text, /1K/);
       assert.match(text, /1\.5K/);
