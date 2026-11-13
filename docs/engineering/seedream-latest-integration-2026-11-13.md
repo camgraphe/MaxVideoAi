@@ -39,8 +39,11 @@ content; the generic hero is explicitly an illustration.
 
 Focused provider, real composer, MCP/Studio, pricing and SEO tests passed,
 including canonical parity on disposable PostgreSQL 17. Frontend build, TypeScript,
-MCP client check, exposure lint and independent code review passed. Subsequent
-complete suite results are recorded after the final candidate checks finish.
+MCP client check, exposure lint and independent code review passed. Final validation: 11,202 fast tests passed (one skipped), 1,580 Studio tests passed
+(one skipped), four real Studio/MCP HTTP tests passed, and both exhaustive
+financial rehearsals passed, including 27,071-point activation/rollback. The
+verified application source is `52deb01a2`; later changes contain review
+documentation only. See the [owner review checklist](seedream-preproduction-review-2026-11-13.md).
 
 No production database change, provider activation, paid generation, merge or
 deployment was performed. Account authorization and an approved paid canary

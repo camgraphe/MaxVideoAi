@@ -40,9 +40,11 @@ production writes, deployment bypass or paid generations.
 - [x] Marketing/SEO: create all three locales for both new pages with strict
   decision/prompting/examples content and registered templates. Add relevant links
   to existing pages, accurate illustrative media and canonical/hreflang tests.
-- [ ] Integration/review: run related suites, registry/launch assets, lint,
+- [x] Integration/review: run related suites, registry/launch assets, lint,
   typechecking, integration/database checks and local browser/SEO smoke tests.
-  Independently review the full change, resolve findings, prepare a draft PR.
+  Independently review the full change and resolve findings. The owner requested
+  keeping the branch local and receiving a preproduction review checklist; no PR
+  or publication is authorized at this checkpoint.
 
 Focused runner: `TSX_TSCONFIG_PATH=frontend/tsconfig.json node --import tsx --test <files>`.
 PostgreSQL tests use `scripts/run-postgres-tests.mjs`, preserving PG17 validation.
