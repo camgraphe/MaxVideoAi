@@ -131,18 +131,28 @@ export function listAudioCapabilities(env: NodeJS.ProcessEnv = process.env) {
   return { ...contract, revision: createHash('sha256').update(JSON.stringify(contract)).digest('hex') };
 }
 
-/** Extended modes require a qualified external worker as well as their publication switch. */
-export function isMcpExtendedAudioEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
-  return env.MCP_AUDIO_EXTENDED_ENABLED === 'true' && env.AUDIO_GENERATION_WORKER_ENABLED === 'true';
+/** Explicit site hosting reuses the native executor; absence preserves the existing worker contract. */
+export function getMcpAudioExecutionMode(env: NodeJS.ProcessEnv = process.env): 'site' | 'worker' | null {
+  if (env.MCP_AUDIO_EXECUTION_MODE === 'site') return 'site';
+  if (env.MCP_AUDIO_EXECUTION_MODE === undefined || env.MCP_AUDIO_EXECUTION_MODE === 'worker') return 'worker';
+  return null;
 }
 
-/** Preserve synchronous Eleven until the separately qualified worker release is enabled. */
+/** Publication and the selected execution path are independent of provider availability. */
+export function isMcpExtendedAudioEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
+  const execution = getMcpAudioExecutionMode(env);
+  return env.MCP_AUDIO_EXTENDED_ENABLED === 'true'
+    && (execution === 'site' || (execution === 'worker' && env.AUDIO_GENERATION_WORKER_ENABLED === 'true'));
+}
+
+/** Preserve bounded Eleven until an extended execution path is explicitly enabled. */
 export function listMcpAudioCapabilities(env: NodeJS.ProcessEnv = process.env): ReturnType<typeof listAudioCapabilities> {
   const full = listAudioCapabilities(env);
   if (isMcpExtendedAudioEnabled(env)) {
     const { revision: _revision, ...capabilities } = full;
     void _revision;
-    const revision = createHash('sha256').update(JSON.stringify({ ...capabilities, execution: 'durable-audio-worker-v1' })).digest('hex');
+    const execution = getMcpAudioExecutionMode(env) === 'site' ? 'native-site-audio-v1' : 'durable-audio-worker-v1';
+    const revision = createHash('sha256').update(JSON.stringify({ ...capabilities, execution })).digest('hex');
     return { ...capabilities, revision };
   }
   const { revision: _revision, ...base } = full;

@@ -1,3 +1,13 @@
+## Native-site Audio execution — 13 November 2026 (local candidate)
+
+The explicit `MCP_AUDIO_EXECUTION_MODE=site` option reuses the website Audio
+executor after the existing MCP reservation, without a permanent queue consumer.
+Absent this setting, the existing worker contract remains unchanged. Providers,
+pricing, ownership checks and available packs retain their canonical owners;
+catalogue revisions distinguish the execution modes. This is a local candidate,
+not an activated configuration. Hosted duration and recovery qualification remains
+required. See [MCP Audio execution](mcp-audio-execution.md).
+
 ## Private Markdown media links — 12 November 2026 (local candidate)
 
 Generation recovery/presentation exposes optional `openUrl`, Studio export exposes
