@@ -8,24 +8,6 @@
     { "source": "/gallery", "destination": "/examples", "permanent": true }
   ],
   "crons": [
-    { "path": "/api/cron/assistant-review-retention", "schedule": "19 * * * *" },
-    { "path": "/api/cron/ga4-payments", "schedule": "*/5 * * * *" },
-    { "path": "/api/cron/openai-conversions", "schedule": "*/5 * * * *" },
-    { "path": "/api/cron/prompt-assistance", "schedule": "* * * * *" },
-    { "path": "/api/cron/studio-tasks", "schedule": "* * * * *" },
-    { "path": "/api/cron/studio-analyses", "schedule": "* * * * *" },
-    { "path": "/api/cron/fal-poll", "schedule": "* * * * *" },
-    { "path": "/api/cron/openai-image-recovery", "schedule": "* * * * *" },
-    { "path": "/api/cron/byteplus-poll", "schedule": "* * * * *" },
-    { "path": "/api/cron/kling-direct-poll", "schedule": "* * * * *" },
-    { "path": "/api/cron/google-vertex-veo-poll", "schedule": "* * * * *" },
-    { "path": "/api/cron/google-vertex-omni-poll", "schedule": "* * * * *" },
-    { "path": "/api/cron/luma-agents-poll", "schedule": "* * * * *" },
-    { "path": "/api/cron/alibaba-model-studio-poll", "schedule": "* * * * *" },
-    { "path": "/api/cron/mcp-reference-upload-cleanup", "schedule": "*/10 * * * *" },
-    { "path": "/api/cron/media-library-purge", "schedule": "*/10 * * * *" },
-    { "path": "/api/cron/reconcile-missing-jobs", "schedule": "*/10 * * * *" },
-    { "path": "/api/cron/background-removal-retention", "schedule": "37 3 * * *" },
-    { "path": "/api/cron/infra-costs-alert", "schedule": "0 8 * * *" }
+    { "path": "/api/cron/fal-poll", "schedule": "* * * * *" }
   ]
 }
