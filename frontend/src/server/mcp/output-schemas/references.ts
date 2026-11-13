@@ -2,7 +2,7 @@ import * as z from 'zod/v4';
 import { destination, mediaKind, strings } from './common';
 
 const mediaItem = z.object({
-  assetId: z.string(), kind: mediaKind, label: z.string().nullable(), width: z.number().nullable(), height: z.number().nullable(), durationSec: z.number().nullable(),
+  assetId: z.string(), sourceJobId: z.string().nullable(), kind: mediaKind, label: z.string().nullable(), width: z.number().nullable(), height: z.number().nullable(), durationSec: z.number().nullable(),
   mimeType: z.string(), previewUrl: z.string().nullable(), source: z.enum(['upload', 'generated', 'imported']), createdAt: z.string(),
 }).passthrough();
 export const listMediaOutputSchema = z.object({ items: z.array(mediaItem), nextCursor: z.string().nullable(), hasMore: z.boolean() }).passthrough();

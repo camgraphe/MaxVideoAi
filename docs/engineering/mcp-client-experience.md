@@ -1076,3 +1076,13 @@ the 70 curated decisions and fixture contract remain unchanged. The 0.3.21 local
 package includes the extended-workflows reference in its independent archive
 inventory. Source integration and these deterministic checks do not establish
 hosted worker readiness, a successful generation or directory submission.
+
+### 2026-11-14 — Owned media generation identity
+
+A live ChatGPT Audio qualification revealed that `list_media` omitted the canonical
+`sourceJobId` while Audio reuse guidance asked the host to match it. The listing
+now projects that nullable identifier from the already owned media record and
+declares it in its output schema. It does not copy arbitrary metadata, expose a
+provider/storage URL, or add a new read. The exact DTO and ownership regression
+cover generated assets, uploads and foreign records. Tool descriptions and server
+instructions are unchanged from the measured Audio guidance above.
