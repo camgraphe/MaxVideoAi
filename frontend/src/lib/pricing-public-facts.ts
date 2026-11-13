@@ -1,3 +1,4 @@
+import { isNewSeedreamEngineId, seedreamNewModelPricingUsage } from '@/lib/image/seedream-pricing';
 import { isGptImage26EngineId } from '@/lib/image/gptImage26';
 import { calculateGptImage26ListOutputComponents } from '@/lib/image/gptImage26Pricing';
 import {
@@ -164,6 +165,11 @@ export function buildPublicPricingFacts(context: PublicPricingFactsContext): Pub
   const { engine, durationSec, resolution } = context;
   const mode = context.mode ?? (engine.modes.includes('t2i') ? 't2i' : 't2v');
   const currency = (engine.pricingDetails?.currency ?? engine.pricing?.currency ?? 'USD').toUpperCase();
+  if (isNewSeedreamEngineId(engine.id)) {
+    const usage = seedreamNewModelPricingUsage({ ...context, mode }, currency);
+    return resultFromExactFacts({ engineId: engine.id, currency, exactCents: usage.totalUsd * 100,
+      presentedBaseCents: usage.totalUsd * 100, quantity: 1, unit: 'image', rate: usage.totalUsd, meta: usage.meta });
+  }
   if (isGptImage26EngineId(engine.id)) {
     const { partialListUsd, meta } = calculateGptImage26ListOutputComponents({ ...context, mode }, currency);
     return resultFromExactFacts({ engineId: engine.id, currency, exactCents: partialListUsd * 100,

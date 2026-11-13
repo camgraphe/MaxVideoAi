@@ -221,6 +221,20 @@
         "description": "Usa Fast para borradores de movimiento más rápidos después de crear una imagen de referencia limpia en Seedream.",
         "modelSlug": "seedance-2-0-fast",
         "ctaLabel": "Borrador con Seedance 2.0 Fast ->"
+      },
+      {
+        "brand": "ByteDance",
+        "title": "Seedream 5.5",
+        "modelSlug": "seedream-5-5",
+        "description": "Seedream 5.5 crea imágenes fijas y ediciones a partir de un máximo de 10 referencias. Úsalo para imágenes de producto, ediciones sucesivas y elementos PNG transparentes, con un resultado por solicitud en 1K, 1.5K o 2K.",
+        "ctaLabel": "Descubrir Seedream 5.5"
+      },
+      {
+        "brand": "ByteDance",
+        "title": "Seedream 5.0 Flash",
+        "modelSlug": "seedream-5-0-flash",
+        "description": "Seedream 5.0 Flash es la variante rápida de la familia de generación y edición Seedream 5.0. Crea una imagen en 1K, 1.5K o 2K a partir de un prompt o de un máximo de 10 imágenes de referencia.",
+        "ctaLabel": "Descubrir Seedream 5.0 Flash"
       }
     ]
   },
@@ -325,6 +339,22 @@
         "cta": {
           "label": "Explorar modelos de video",
           "href": "/es/modelos"
+        }
+      },
+      {
+        "title": "Descubrir Seedream 5.5",
+        "body": "Seedream 5.5 crea imágenes fijas y ediciones a partir de un máximo de 10 referencias. Úsalo para imágenes de producto, ediciones sucesivas y elementos PNG transparentes, con un resultado por solicitud en 1K, 1.5K o 2K.",
+        "cta": {
+          "label": "Descubrir Seedream 5.5",
+          "href": "/es/modelos/seedream-5-5"
+        }
+      },
+      {
+        "title": "Descubrir Seedream 5.0 Flash",
+        "body": "Seedream 5.0 Flash es la variante rápida de la familia de generación y edición Seedream 5.0. Crea una imagen en 1K, 1.5K o 2K a partir de un prompt o de un máximo de 10 imágenes de referencia.",
+        "cta": {
+          "label": "Descubrir Seedream 5.0 Flash",
+          "href": "/es/modelos/seedream-5-0-flash"
         }
       }
     ],

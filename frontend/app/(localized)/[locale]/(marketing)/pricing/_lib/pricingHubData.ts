@@ -1,3 +1,4 @@
+import { isNewSeedreamEngineId } from '@/lib/image/seedream-pricing';
 import type { AppLocale } from '@/i18n/locales';
 import type { PublicModelQuoteInput } from '@/lib/pricing-public-model-contract';
 import { localePathnames } from '@/i18n/locales';
@@ -824,6 +825,8 @@ export function buildVideoHighlights(rows: VideoPricingRow[], locale: AppLocale)
 }
 
 function quoteImageScenarioCents(engine: EngineCaps, preset: ImagePriceScenario) {
+  // New native tariffs are read through the current canonical server owner.
+  if (isNewSeedreamEngineId(engine.id)) return null;
   try {
     const mode = preset.mode ?? 't2i';
     const quantity = Math.max(1, Math.floor(preset.quantity ?? 1));

@@ -1,0 +1,415 @@
+{
+  "marketingName": "Seedream 5.0 Flash",
+  "versionLabel": "5.0 Flash",
+  "seo": {
+    "title": "Seedream 5.0 Flash | Création rapide d’images et retouches guidées | MaxVideoAI",
+    "description": "Créez et retouchez des images avec Seedream 5.0 Flash de ByteDance sur MaxVideoAI. Une image JPEG ou PNG en 1K, 1.5K ou 2K, avec 10 références maximum."
+  },
+  "overview": "Seedream 5.0 Flash est la variante rapide de la famille de génération et de retouche Seedream 5.0. Créez une image en 1K, 1.5K ou 2K à partir d’un prompt ou de 10 images de référence maximum.",
+  "pricingNotes": "Le prix exact du moment s’affiche avant la confirmation. Consultez le devis actuel avant chaque requête.",
+  "hero": {
+    "title": "Seedream 5.0 Flash — Création rapide d’images et retouches guidées",
+    "intro": "Seedream 5.0 Flash est la variante rapide de la famille de génération et de retouche Seedream 5.0. Créez une image en 1K, 1.5K ou 2K à partir d’un prompt ou de 10 images de référence maximum.",
+    "badge": "Text → Image · Image → Image · 1K / 1.5K / 2K",
+    "ctaPrimary": {
+      "label": "Créer avec Seedream 5.0 Flash",
+      "href": "/app/image?engine=seedream-5-0-flash"
+    },
+    "secondaryLinks": [
+      {
+        "label": "Découvrir Seedream 5.5",
+        "href": "/fr/modeles/seedream-5-5"
+      },
+      {
+        "label": "Découvrir Seedream 5.0 Lite",
+        "href": "/fr/modeles/seedream"
+      },
+      {
+        "label": "Découvrir Seedream 5.0 Pro",
+        "href": "/fr/modeles/seedream-5-0-pro"
+      }
+    ]
+  },
+  "bestUseCases": {
+    "title": "Pour quels usages ?",
+    "items": [
+      {
+        "title": "Variations de visuels produit et publicitaires",
+        "icon": "product"
+      },
+      {
+        "title": "Retouches guidées par des références",
+        "icon": "imageToVideo"
+      },
+      {
+        "title": "Exploration rapide des compositions",
+        "icon": "layout"
+      }
+    ]
+  },
+  "tips": {
+    "title": "Conseils de création et de retouche",
+    "items": [
+      "Décrivez le sujet, la composition, les matières, la lumière et le texte exact. Pour une retouche, séparez ce qui doit rester de ce qui doit changer.",
+      "Attribuez un rôle clair à chaque référence : sujet, produit, style ou arrière-plan.",
+      "Lancez une requête par variation : Flash ne renvoie pas de série d’images séquentielle.",
+      "Relisez le texte et contrôlez les détails avant publication."
+    ]
+  },
+  "prompts": [
+    {
+      "title": "Composition produit",
+      "prompt": "Un flacon en verre ambré haut de gamme sur une pierre claire, lumière latérale douce, fond de studio épuré, reflets du verre réalistes, composition centrée avec de l’espace pour un titre."
+    },
+    {
+      "title": "Retouche avec référence",
+      "prompt": "À partir de la référence, conservez l’identité, le visage, la coiffure et les vêtements de la personne. Remplacez uniquement le fond par un studio moderne lumineux, sans changer l’angle de vue."
+    },
+    {
+      "title": "Mise en page avec texte",
+      "prompt": "Affiche produit éditoriale, grille nette et marges généreuses. Titre exact « NOUVELLE PERSPECTIVE » en haut, sous-titre discret « COLLECTION AUTOMNE », lettres lisibles et bien espacées."
+    }
+  ],
+  "faqs": [
+    {
+      "q": "Quelles résolutions sont disponibles ?",
+      "a": "L’intégration directe dans MaxVideoAI propose 1K, 1.5K et 2K."
+    },
+    {
+      "q": "Peut-on retoucher plusieurs images de référence ?",
+      "a": "Oui. Le mode image vers image accepte 10 références maximum et produit une seule image."
+    },
+    {
+      "q": "Une requête peut-elle créer une série d’images ?",
+      "a": "Non. Ce modèle renvoie une image par requête. Seedream 5.0 Lite reste disponible pour les séries."
+    },
+    {
+      "q": "Comment vérifier le prix ?",
+      "a": "Choisissez le modèle, la résolution et les références. MaxVideoAI affiche le devis actuel avant confirmation."
+    }
+  ],
+  "custom": {
+    "heroEyebrow": "Images IA · ByteDance",
+    "heroSupportLine": "Création rapide d’images et retouches guidées",
+    "heroSpecChips": [
+      {
+        "label": "Text → Image",
+        "icon": "textToVideo"
+      },
+      {
+        "label": "Image → Image",
+        "icon": "imageToVideo"
+      },
+      {
+        "label": "1K / 1.5K / 2K",
+        "icon": "resolution"
+      },
+      {
+        "label": "Une image générée par requête"
+      }
+    ],
+    "whyTitle": "Création rapide d’images et retouches guidées",
+    "heroDesc1": "Seedream 5.0 Flash est la variante rapide de la famille de génération et de retouche Seedream 5.0. Créez une image en 1K, 1.5K ou 2K à partir d’un prompt ou de 10 images de référence maximum.",
+    "heroDesc2": "Lancez une requête par variation : Flash ne renvoie pas de série d’images séquentielle.",
+    "heroHighlights": [
+      "Créez à partir d’un prompt ou retouchez des images de référence.||Jusqu’à 10 images de référence",
+      "Choisissez 1K, 1.5K ou 2K.||Une image générée par requête",
+      "Une composition par requête||Explorez une composition à la fois. Choisissez la résolution et consultez le devis exact avant chaque génération."
+    ],
+    "specSections": [
+      {
+        "title": "Réglages de l’image",
+        "items": [
+          "Créez à partir d’un prompt ou retouchez des images de référence.",
+          "Choisissez 1K, 1.5K ou 2K.",
+          "Jusqu’à 10 images de référence",
+          "Une image générée par requête",
+          "Téléchargez en JPEG ou PNG."
+        ]
+      }
+    ],
+    "strengths": [
+      "Variations de visuels produit et publicitaires",
+      "Retouches guidées par des références",
+      "Exploration rapide des compositions",
+      "Attribuez un rôle clair à chaque référence : sujet, produit, style ou arrière-plan."
+    ],
+    "boundaries": [
+      "Une image générée par requête",
+      "Lancez une requête par variation : Flash ne renvoie pas de série d’images séquentielle.",
+      "Relisez le texte et contrôlez les détails avant publication."
+    ],
+    "relatedTitle": "Les modèles image Seedream",
+    "relatedSubtitle": "Gardez Seedream 5.0 Lite pour les séries d’images et la préparation de références.",
+    "relatedItems": [
+      {
+        "brand": "ByteDance",
+        "title": "Seedream 5.5",
+        "modelSlug": "seedream-5-5",
+        "description": "Seedream 5.5 crée des images fixes et des retouches à partir de 10 références maximum. Utilisez-le pour les visuels produit, les retouches successives et les éléments PNG transparents, avec une image par requête en 1K, 1.5K ou 2K.",
+        "ctaLabel": "Découvrir Seedream 5.5"
+      },
+      {
+        "brand": "ByteDance",
+        "title": "Seedream 5.0 Lite",
+        "modelSlug": "seedream",
+        "description": "Gardez Seedream 5.0 Lite pour les séries d’images et la préparation de références.",
+        "ctaLabel": "Découvrir Seedream 5.0 Lite"
+      },
+      {
+        "brand": "ByteDance",
+        "title": "Seedream 5.0 Pro",
+        "modelSlug": "seedream-5-0-pro",
+        "description": "Gardez Seedream 5.0 Pro pour vos créations professionnelles existantes.",
+        "ctaLabel": "Découvrir Seedream 5.0 Pro"
+      }
+    ],
+    "safetyTitle": "Créer des images de façon responsable",
+    "safetyRules": [
+      "Utilisez des images que vous avez le droit de retoucher.",
+      "Respectez le consentement et les droits des personnes représentées.",
+      "Les règles de sécurité du fournisseur s’appliquent aux prompts et aux références."
+    ]
+  },
+  "decision": {
+    "modelSlug": "seedream-5-0-flash",
+    "hero": {
+      "eyebrow": "Images IA · ByteDance",
+      "title": "Seedream 5.0 Flash — Création rapide d’images et retouches guidées",
+      "subtitle": "Passez de l’idée à une image utile.",
+      "subtitleHighlights": [
+        "Passez de l’idée à une image utile"
+      ],
+      "paragraph": "Seedream 5.0 Flash est la variante rapide de la famille de génération et de retouche Seedream 5.0. Créez une image en 1K, 1.5K ou 2K à partir d’un prompt ou de 10 images de référence maximum.",
+      "primaryCta": {
+        "label": "Créer avec Seedream 5.0 Flash",
+        "href": "/app/image?engine=seedream-5-0-flash"
+      },
+      "secondaryCta": {
+        "label": "Découvrir Seedream 5.5",
+        "href": "/fr/modeles/seedream-5-5"
+      },
+      "quickLinks": [
+        {
+          "label": "Ouvrir le générateur d’images",
+          "href": "/app/image?engine=seedream-5-0-flash"
+        },
+        {
+          "label": "Voir les tarifs",
+          "href": "/fr/tarifs#seedream-5-0-flash-pricing"
+        },
+        {
+          "label": "Exemples de prompts",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Illustration de la famille Seedream — ce n’est pas un rendu de ce modèle",
+      "description": "Cette illustration représente la création d’images. Elle ne démontre pas la qualité de sortie de ce modèle.",
+      "renderLabel": "Voir l’illustration",
+      "badges": [
+        "Text → Image",
+        "Image → Image",
+        "1K / 1.5K / 2K"
+      ],
+      "altContext": "Illustration de la famille Seedream — ce n’est pas un rendu de ce modèle"
+    },
+    "features": [
+      {
+        "title": "Créez à partir d’un prompt ou retouchez des images de référence.",
+        "body": "Seedream 5.0 Flash est la variante rapide de la famille de génération et de retouche Seedream 5.0. Créez une image en 1K, 1.5K ou 2K à partir d’un prompt ou de 10 images de référence maximum.",
+        "tone": "quality"
+      },
+      {
+        "title": "Utiliser des images de référence",
+        "body": "Jusqu’à 10 images de référence. Attribuez un rôle clair à chaque référence : sujet, produit, style ou arrière-plan.",
+        "tone": "reference"
+      },
+      {
+        "title": "Une composition par requête",
+        "body": "Explorez une composition à la fois. Choisissez la résolution et consultez le devis exact avant chaque génération.",
+        "tone": "quality"
+      },
+      {
+        "title": "Tarifs image actuels",
+        "body": "Le prix exact du moment s’affiche avant la confirmation. Consultez le devis actuel avant chaque requête.",
+        "tone": "price"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Seedream 5.5",
+        "body": "Seedream 5.5 crée des images fixes et des retouches à partir de 10 références maximum. Utilisez-le pour les visuels produit, les retouches successives et les éléments PNG transparents, avec une image par requête en 1K, 1.5K ou 2K.",
+        "cta": {
+          "label": "Découvrir Seedream 5.5",
+          "href": "/fr/modeles/seedream-5-5"
+        }
+      },
+      {
+        "title": "Seedream 5.0 Lite",
+        "body": "Gardez Seedream 5.0 Lite pour les séries d’images et la préparation de références.",
+        "cta": {
+          "label": "Découvrir Seedream 5.0 Lite",
+          "href": "/fr/modeles/seedream"
+        }
+      },
+      {
+        "title": "Seedream 5.0 Pro",
+        "body": "Gardez Seedream 5.0 Pro pour vos créations professionnelles existantes.",
+        "cta": {
+          "label": "Découvrir Seedream 5.0 Pro",
+          "href": "/fr/modeles/seedream-5-0-pro"
+        }
+      },
+      {
+        "title": "Exemples de prompts",
+        "body": "Décrivez le sujet, la composition, les matières, la lumière et le texte exact. Pour une retouche, séparez ce qui doit rester de ce qui doit changer.",
+        "cta": {
+          "label": "Exemples de prompts",
+          "href": "#prompting"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Créer depuis un texte",
+        "body": "Décrivez le sujet, la composition, les matières, la lumière et le texte exact. Pour une retouche, séparez ce qui doit rester de ce qui doit changer."
+      },
+      {
+        "title": "Retoucher des références",
+        "body": "Attribuez un rôle clair à chaque référence : sujet, produit, style ou arrière-plan. Jusqu’à 10 images de référence."
+      },
+      {
+        "title": "Régler la sortie",
+        "body": "Choisissez 1K, 1.5K ou 2K. Téléchargez en JPEG ou PNG. Une image générée par requête."
+      },
+      {
+        "title": "Confirmer le devis",
+        "body": "Le prix exact du moment s’affiche avant la confirmation. Consultez le devis actuel avant chaque requête."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Seedream 5.0 Flash — tarifs image actuels",
+      "subtitle": "Le prix exact du moment s’affiche avant la confirmation. Consultez le devis actuel avant chaque requête.",
+      "footnote": "Vérifiez le devis correspondant à vos réglages avant de générer.",
+      "ctaLabel": "Voir tous les tarifs",
+      "ctaHref": "/fr/tarifs#seedream-5-0-flash-pricing"
+    },
+    "meta": {
+      "title": "Seedream 5.0 Flash | Création rapide d’images et retouches guidées | MaxVideoAI",
+      "description": "Créez et retouchez des images avec Seedream 5.0 Flash de ByteDance sur MaxVideoAI. Une image JPEG ou PNG en 1K, 1.5K ou 2K, avec 10 références maximum."
+    }
+  },
+  "prompting": {
+    "modelSlug": "seedream-5-0-flash",
+    "section": {
+      "title": "Comment rédiger un prompt pour Seedream 5.0 Flash",
+      "intro": "Décrivez le sujet, la composition, les matières, la lumière et le texte exact. Pour une retouche, séparez ce qui doit rester de ce qui doit changer.",
+      "tip": "Relisez le texte et contrôlez les détails avant publication.",
+      "guide": {
+        "label": "Guide officiel du modèle",
+        "href": "https://docs.byteplus.com/en/docs/ModelArk/seedream-5-0-pro"
+      },
+      "referencesTitle": "Utiliser des images de référence"
+    },
+    "tabs": [],
+    "tabNotes": [],
+    "globalPrinciples": [
+      "Décrivez le sujet, la composition, les matières, la lumière et le texte exact. Pour une retouche, séparez ce qui doit rester de ce qui doit changer.",
+      "Attribuez un rôle clair à chaque référence : sujet, produit, style ou arrière-plan.",
+      "Lancez une requête par variation : Flash ne renvoie pas de série d’images séquentielle."
+    ],
+    "engineWhy": [],
+    "demo": null,
+    "imageExamples": {
+      "title": "Seedream 5.0 Flash — exemples de prompts",
+      "intro": "Créez à partir d’un prompt ou retouchez des images de référence.",
+      "workspaceLabel": "Ouvrir le générateur d’images",
+      "items": [
+        {
+          "id": "product",
+          "title": "Composition produit",
+          "badge": "Text → Image",
+          "kind": "image",
+          "prompt": "Un flacon en verre ambré haut de gamme sur une pierre claire, lumière latérale douce, fond de studio épuré, reflets du verre réalistes, composition centrée avec de l’espace pour un titre."
+        },
+        {
+          "id": "edit",
+          "title": "Retouche avec référence",
+          "badge": "Image → Image",
+          "kind": "edit",
+          "prompt": "À partir de la référence, conservez l’identité, le visage, la coiffure et les vêtements de la personne. Remplacez uniquement le fond par un studio moderne lumineux, sans changer l’angle de vue."
+        },
+        {
+          "id": "typography",
+          "title": "Mise en page avec texte",
+          "badge": "Text → Image",
+          "kind": "typography",
+          "prompt": "Affiche produit éditoriale, grille nette et marges généreuses. Titre exact « NOUVELLE PERSPECTIVE » en haut, sous-titre discret « COLLECTION AUTOMNE », lettres lisibles et bien espacées."
+        }
+      ]
+    }
+  },
+  "examples": {
+    "modelSlug": "seedream-5-0-flash",
+    "section": {
+      "title": "Seedream 5.0 Flash — exemples d’images",
+      "intro": "Les rendus publiés de ce modèle précis apparaîtront ici lorsqu’ils seront disponibles.",
+      "defaultCtaLabel": null,
+      "recreateLabel": null
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "Tout"
+      },
+      {
+        "id": "product",
+        "label": "Images produit"
+      },
+      {
+        "id": "edit",
+        "label": "Retouches"
+      },
+      {
+        "id": "typography",
+        "label": "Texte et mise en page"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "image-proof-1",
+        "title": "Texte vers image",
+        "body": "Décrivez une image fixe.",
+        "icon": "image"
+      },
+      {
+        "id": "image-proof-2",
+        "title": "Retouches guidées",
+        "body": "Guidez une retouche avec 10 images maximum.",
+        "icon": "pen"
+      },
+      {
+        "id": "image-proof-3",
+        "title": "Choix de résolution",
+        "body": "Choisissez 1K, 1.5K ou 2K.",
+        "icon": "maximize"
+      },
+      {
+        "id": "image-proof-4",
+        "title": "Devis exact",
+        "body": "Consultez le prix actuel avant confirmation.",
+        "icon": "shield"
+      },
+      {
+        "id": "image-proof-5",
+        "title": "Images réutilisables",
+        "body": "Enregistrez le résultat avant une génération vidéo distincte.",
+        "icon": "sparkles"
+      }
+    ],
+    "fallbackItems": null,
+    "showWhenEmpty": false
+  }
+}

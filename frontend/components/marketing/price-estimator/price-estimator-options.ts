@@ -1,3 +1,4 @@
+import { isNewSeedreamEngineId, quoteNewSeedreamListCost } from '@/lib/image/seedream-pricing';
 import type { EngineAvailability, EngineCaps, EngineInputField, Mode } from '@/types/engines';
 import type { PricingKernel } from '@maxvideoai/pricing';
 import { getPartnerByEngineId } from '@/lib/brand-partners';
@@ -73,6 +74,10 @@ const PER_IMAGE_ENGINE_CONFIG = new Map<
     // Only the known LIST image component; this is not the provider invoice.
     rate: calculateNano21ListImageComponents({ resolution: value, mode: 't2i', durationSec: 1 }, 'USD').partialListUsd,
   })) }],
+  ...(['seedream-5-5', 'seedream-5-0-flash'] as const).map(id => [id, { rates:
+    (['1K', '1.5K', '2K'] as const).map((value, index) => ({ value, label: value,
+      rate: quoteNewSeedreamListCost({ model: id === 'seedream-5-5' ? '5.5' : 'flash', inputImages: 0,
+        outputPixels: [[1_048_576, 2_359_296, 4_194_304][index]!] }).totalUsd })) }] as const),
   ['gpt-image-2-5-flare', { rates: GPT_IMAGE_25_ESTIMATOR_RATES }],
   ['gpt-image-2-5-sunburst', { rates: GPT_IMAGE_25_ESTIMATOR_RATES }],
   [
@@ -150,12 +155,12 @@ function quoteCanonicalUnitRate(params: {
   unit: 'image' | 'sec';
   pricingRules?: PricingRuleLite[];
 }) {
-  if (params.engineId === NANO21_ENGINE_ID) {
+  if (params.engineId === NANO21_ENGINE_ID || isNewSeedreamEngineId(params.engineId)) {
     // These option hints do not replace the estimator's effective API quote.
     // Never derive Nano's fixed customer amount from a partial supplier cost.
-    const cell = customerTariffs.cells.find(row => row.selector.engineId === NANO21_ENGINE_ID
+    const cell = customerTariffs.cells.find(row => row.selector.engineId === params.engineId
       && row.selector.mode === 't2i' && row.selector.resolution === params.resolution.toUpperCase());
-    if (!cell || cell.price.kind !== 'fixed') throw new Error('Missing Nano21 fixed image tariff.');
+    if (!cell || cell.price.kind !== 'fixed') throw new Error('Missing fixed image tariff.');
     return cell.price.customerCents / 100;
   }
   const facts = buildPublicUnitPricingFacts({

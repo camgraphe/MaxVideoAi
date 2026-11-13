@@ -1,5 +1,6 @@
 import { NANO21_ENGINE_ID, normalizeNano21Settings, assertNano21UnsupportedFields, assertNano21Scenario } from '@/lib/nano-banana-2-1';
 import { isGptImage26EngineId, normalizeGptImage26Settings } from '@/lib/image/gptImage26';
+import { seedreamOutputSettingsError } from '@/lib/image/seedream';
 import { assertOpenAIImageAvailable } from './openai-image-execution';
 import { randomUUID } from 'crypto';
 import type { ImageGenerationResponse } from '@/types/image-generation';
@@ -191,6 +192,10 @@ export async function executeImageGeneration({
       { allowed: backgroundSetting.allowed },
       engineResponseExtras
     );
+  }
+  if (seedreamOutputSettingsError(engine.id, { background, outputFormat })) {
+    fail(mode, 'output_format_invalid', 'Transparent Seedream 5.5 images require PNG output.', 400,
+      { allowed: ['png'] }, engineResponseExtras);
   }
   const styleSetting = resolveImageEnumSetting(getImageFieldValues(engine, 'style', mode), body.style);
   const style = styleSetting.value;
@@ -466,6 +471,7 @@ export async function executeImageGeneration({
         normalizedSeed,
         numImages,
         outputFormat,
+        background: gpt26?.background ?? background,
         pendingReceipt,
         priceOnlyReceipts,
         pricing,

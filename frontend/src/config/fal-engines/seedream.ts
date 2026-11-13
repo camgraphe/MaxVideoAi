@@ -5,6 +5,7 @@ import {
   SEEDREAM_SIZE_VALUES,
 } from '../../../lib/image/seedream';
 import type { RawFalEngineEntry } from './types';
+import { SEEDREAM_LATEST_FAL_ENGINE_REGISTRY } from './seedream-latest';
 
 const SEEDREAM_ENGINE: EngineCaps = {
   id: 'seedream',
@@ -241,6 +242,7 @@ const SEEDREAM_PRO_ENGINE: EngineCaps = {
 };
 
 export const SEEDREAM_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
+  ...SEEDREAM_LATEST_FAL_ENGINE_REGISTRY,
   {
     id: 'seedream',
     marketingName: 'Seedream',

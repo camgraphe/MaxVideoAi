@@ -27,6 +27,8 @@ const imageModelPageSlugs = [
   'nano-banana-pro',
   'seedream',
   'seedream-5-0-pro',
+  'seedream-5-0-flash',
+  'seedream-5-5',
 ] as const;
 const imageMaxResolutionExpectations: Record<(typeof imageModelPageSlugs)[number], string> = {
   'gpt-image-2': 'Up to 4K canonical sizes',
@@ -41,6 +43,8 @@ const imageMaxResolutionExpectations: Record<(typeof imageModelPageSlugs)[number
   'nano-banana-pro': '4K',
   seedream: '4K',
   'seedream-5-0-pro': '2K',
+  'seedream-5-0-flash': '2K',
+  'seedream-5-5': '2K',
 };
 const keySpecsFile = JSON.parse(readFileSync('data/benchmarks/engine-key-specs.v1.json', 'utf8')) as {
   specs?: Array<{ modelSlug?: string; keySpecs?: { maxResolution?: unknown } }>;
@@ -336,7 +340,9 @@ test('template registry enables Seedance production and draft model templates', 
     'seedance-2-0-fast',
     'seedance-2-5',
     'seedream',
+    'seedream-5-0-flash',
     'seedream-5-0-pro',
+    'seedream-5-5',
     'sora-2',
     'sora-2-pro',
     'veo-3-1',

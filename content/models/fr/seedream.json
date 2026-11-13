@@ -221,6 +221,20 @@
         "description": "Utilisez Fast pour des brouillons de mouvement plus rapides après la création d'une image de référence propre dans Seedream.",
         "modelSlug": "seedance-2-0-fast",
         "ctaLabel": "Tester avec Seedance 2.0 Fast ->"
+      },
+      {
+        "brand": "ByteDance",
+        "title": "Seedream 5.5",
+        "modelSlug": "seedream-5-5",
+        "description": "Seedream 5.5 crée des images fixes et des retouches à partir de 10 références maximum. Utilisez-le pour les visuels produit, les retouches successives et les éléments PNG transparents, avec une image par requête en 1K, 1.5K ou 2K.",
+        "ctaLabel": "Découvrir Seedream 5.5"
+      },
+      {
+        "brand": "ByteDance",
+        "title": "Seedream 5.0 Flash",
+        "modelSlug": "seedream-5-0-flash",
+        "description": "Seedream 5.0 Flash est la variante rapide de la famille de génération et de retouche Seedream 5.0. Créez une image en 1K, 1.5K ou 2K à partir d’un prompt ou de 10 images de référence maximum.",
+        "ctaLabel": "Découvrir Seedream 5.0 Flash"
       }
     ]
   },
@@ -325,6 +339,22 @@
         "cta": {
           "label": "Parcourir les modèles vidéo",
           "href": "/fr/modeles"
+        }
+      },
+      {
+        "title": "Découvrir Seedream 5.5",
+        "body": "Seedream 5.5 crée des images fixes et des retouches à partir de 10 références maximum. Utilisez-le pour les visuels produit, les retouches successives et les éléments PNG transparents, avec une image par requête en 1K, 1.5K ou 2K.",
+        "cta": {
+          "label": "Découvrir Seedream 5.5",
+          "href": "/fr/modeles/seedream-5-5"
+        }
+      },
+      {
+        "title": "Découvrir Seedream 5.0 Flash",
+        "body": "Seedream 5.0 Flash est la variante rapide de la famille de génération et de retouche Seedream 5.0. Créez une image en 1K, 1.5K ou 2K à partir d’un prompt ou de 10 images de référence maximum.",
+        "cta": {
+          "label": "Découvrir Seedream 5.0 Flash",
+          "href": "/fr/modeles/seedream-5-0-flash"
         }
       }
     ],

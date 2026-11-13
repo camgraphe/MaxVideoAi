@@ -228,6 +228,20 @@
         "description": "Use Fast for quicker motion drafts after Seedream has produced a clean reference image.",
         "modelSlug": "seedance-2-0-fast",
         "ctaLabel": "Draft with Seedance 2.0 Fast ->"
+      },
+      {
+        "brand": "ByteDance",
+        "title": "Seedream 5.5",
+        "modelSlug": "seedream-5-5",
+        "description": "Seedream 5.5 creates still images and edits from up to 10 references. Use it for product visuals, repeated image edits and transparent PNG assets, with one result per request in 1K, 1.5K or 2K.",
+        "ctaLabel": "Discover Seedream 5.5"
+      },
+      {
+        "brand": "ByteDance",
+        "title": "Seedream 5.0 Flash",
+        "modelSlug": "seedream-5-0-flash",
+        "description": "Seedream 5.0 Flash is the faster variant of the Seedream 5.0 generation and editing family. Use a prompt or up to 10 reference images to create one still in 1K, 1.5K or 2K.",
+        "ctaLabel": "Discover Seedream 5.0 Flash"
       }
     ]
   },
@@ -332,6 +346,22 @@
         "cta": {
           "label": "Browse video models",
           "href": "/models"
+        }
+      },
+      {
+        "title": "Discover Seedream 5.5",
+        "body": "Seedream 5.5 creates still images and edits from up to 10 references. Use it for product visuals, repeated image edits and transparent PNG assets, with one result per request in 1K, 1.5K or 2K.",
+        "cta": {
+          "label": "Discover Seedream 5.5",
+          "href": "/models/seedream-5-5"
+        }
+      },
+      {
+        "title": "Discover Seedream 5.0 Flash",
+        "body": "Seedream 5.0 Flash is the faster variant of the Seedream 5.0 generation and editing family. Use a prompt or up to 10 reference images to create one still in 1K, 1.5K or 2K.",
+        "cta": {
+          "label": "Discover Seedream 5.0 Flash",
+          "href": "/models/seedream-5-0-flash"
         }
       }
     ],

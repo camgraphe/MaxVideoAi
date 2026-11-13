@@ -1,0 +1,415 @@
+{
+  "marketingName": "Seedream 5.5",
+  "versionLabel": "5.5",
+  "seo": {
+    "title": "Seedream 5.5 | Precise image edits and transparent PNGs | MaxVideoAI",
+    "description": "Create and edit images with Seedream 5.5 by ByteDance in MaxVideoAI. Use up to 10 references, 1K–2K output and native transparent PNGs."
+  },
+  "overview": "Seedream 5.5 creates still images and edits from up to 10 references. Use it for product visuals, repeated image edits and transparent PNG assets, with one result per request in 1K, 1.5K or 2K.",
+  "pricingNotes": "The exact current price is shown before you confirm generation. Resolution and reference images can change the quote.",
+  "hero": {
+    "title": "Seedream 5.5 — Precise image edits and transparent PNGs",
+    "intro": "Seedream 5.5 creates still images and edits from up to 10 references. Use it for product visuals, repeated image edits and transparent PNG assets, with one result per request in 1K, 1.5K or 2K.",
+    "badge": "Text → Image · Image → Image · 1K / 1.5K / 2K",
+    "ctaPrimary": {
+      "label": "Create with Seedream 5.5",
+      "href": "/app/image?engine=seedream-5-5"
+    },
+    "secondaryLinks": [
+      {
+        "label": "Discover Seedream 5.0 Flash",
+        "href": "/models/seedream-5-0-flash"
+      },
+      {
+        "label": "Discover Seedream 5.0 Lite",
+        "href": "/models/seedream"
+      },
+      {
+        "label": "Discover Seedream 5.0 Pro",
+        "href": "/models/seedream-5-0-pro"
+      }
+    ]
+  },
+  "bestUseCases": {
+    "title": "Useful starting points",
+    "items": [
+      {
+        "title": "Product visuals and image refinement",
+        "icon": "product"
+      },
+      {
+        "title": "Transparent PNG subjects and assets",
+        "icon": "imageToVideo"
+      },
+      {
+        "title": "Controlled edits with multiple references",
+        "icon": "layout"
+      }
+    ]
+  },
+  "tips": {
+    "title": "Generation and editing tips",
+    "items": [
+      "Describe the subject, composition, materials, lighting and exact text. For edits, separate the parts to preserve from the changes.",
+      "Give every reference a clear role: subject, product, style or background.",
+      "Choose PNG and a transparent background for an image with an alpha channel.",
+      "Review rendered text and fine details before publishing."
+    ]
+  },
+  "prompts": [
+    {
+      "title": "Product composition",
+      "prompt": "A premium amber glass bottle on pale stone, soft side light, clean studio background, realistic glass reflections, centered composition with space for a headline."
+    },
+    {
+      "title": "Reference edit",
+      "prompt": "Using the reference, keep the person’s identity, face, hairstyle and clothing. Replace only the background with a bright modern studio and preserve the camera angle."
+    },
+    {
+      "title": "Text layout",
+      "prompt": "Editorial product poster with a clear grid and generous margins. Exact headline \"NEW PERSPECTIVE\" at the top, small subheading \"AUTUMN COLLECTION\", clean readable lettering."
+    }
+  ],
+  "faqs": [
+    {
+      "q": "What resolutions are available?",
+      "a": "The direct MaxVideoAI integration offers 1K, 1.5K and 2K."
+    },
+    {
+      "q": "Can I edit several reference images?",
+      "a": "Yes. Image-to-image accepts up to 10 references and returns one generated image."
+    },
+    {
+      "q": "Can one request create a batch of images?",
+      "a": "No. This model returns one image per request. Seedream 5.0 Lite remains available for image sets."
+    },
+    {
+      "q": "How do I check the price?",
+      "a": "Select the model, resolution and references. MaxVideoAI shows the current quote before confirmation."
+    }
+  ],
+  "custom": {
+    "heroEyebrow": "AI images · ByteDance",
+    "heroSupportLine": "Precise image edits and transparent PNGs",
+    "heroSpecChips": [
+      {
+        "label": "Text → Image",
+        "icon": "textToVideo"
+      },
+      {
+        "label": "Image → Image",
+        "icon": "imageToVideo"
+      },
+      {
+        "label": "1K / 1.5K / 2K",
+        "icon": "resolution"
+      },
+      {
+        "label": "One generated image per request"
+      }
+    ],
+    "whyTitle": "Precise image edits and transparent PNGs",
+    "heroDesc1": "Seedream 5.5 creates still images and edits from up to 10 references. Use it for product visuals, repeated image edits and transparent PNG assets, with one result per request in 1K, 1.5K or 2K.",
+    "heroDesc2": "Choose PNG and a transparent background for an image with an alpha channel.",
+    "heroHighlights": [
+      "Generate from a prompt or edit reference images.||Up to 10 reference images",
+      "Choose 1K, 1.5K or 2K.||One generated image per request",
+      "Transparent backgrounds||Generate a transparent PNG directly, or request an opaque image. Keep the output format and background settings aligned."
+    ],
+    "specSections": [
+      {
+        "title": "Image settings",
+        "items": [
+          "Generate from a prompt or edit reference images.",
+          "Choose 1K, 1.5K or 2K.",
+          "Up to 10 reference images",
+          "One generated image per request",
+          "Download JPEG or PNG."
+        ]
+      }
+    ],
+    "strengths": [
+      "Product visuals and image refinement",
+      "Transparent PNG subjects and assets",
+      "Controlled edits with multiple references",
+      "Give every reference a clear role: subject, product, style or background."
+    ],
+    "boundaries": [
+      "One generated image per request",
+      "Choose PNG and a transparent background for an image with an alpha channel.",
+      "Review rendered text and fine details before publishing."
+    ],
+    "relatedTitle": "Seedream image models",
+    "relatedSubtitle": "Keep Seedream 5.0 Lite for image sets and reference preparation.",
+    "relatedItems": [
+      {
+        "brand": "ByteDance",
+        "title": "Seedream 5.0 Flash",
+        "modelSlug": "seedream-5-0-flash",
+        "description": "Seedream 5.0 Flash is the faster variant of the Seedream 5.0 generation and editing family. Use a prompt or up to 10 reference images to create one still in 1K, 1.5K or 2K.",
+        "ctaLabel": "Discover Seedream 5.0 Flash"
+      },
+      {
+        "brand": "ByteDance",
+        "title": "Seedream 5.0 Lite",
+        "modelSlug": "seedream",
+        "description": "Keep Seedream 5.0 Lite for image sets and reference preparation.",
+        "ctaLabel": "Discover Seedream 5.0 Lite"
+      },
+      {
+        "brand": "ByteDance",
+        "title": "Seedream 5.0 Pro",
+        "modelSlug": "seedream-5-0-pro",
+        "description": "Keep Seedream 5.0 Pro for your existing professional image workflows.",
+        "ctaLabel": "Discover Seedream 5.0 Pro"
+      }
+    ],
+    "safetyTitle": "Responsible image creation",
+    "safetyRules": [
+      "Use source images you have permission to edit.",
+      "Respect consent and rights when depicting real people.",
+      "Provider safety rules apply to prompts and reference images."
+    ]
+  },
+  "decision": {
+    "modelSlug": "seedream-5-5",
+    "hero": {
+      "eyebrow": "AI images · ByteDance",
+      "title": "Seedream 5.5 — Precise image edits and transparent PNGs",
+      "subtitle": "Keep the subject. Refine the image.",
+      "subtitleHighlights": [
+        "Keep the subject. Refine the image"
+      ],
+      "paragraph": "Seedream 5.5 creates still images and edits from up to 10 references. Use it for product visuals, repeated image edits and transparent PNG assets, with one result per request in 1K, 1.5K or 2K.",
+      "primaryCta": {
+        "label": "Create with Seedream 5.5",
+        "href": "/app/image?engine=seedream-5-5"
+      },
+      "secondaryCta": {
+        "label": "Discover Seedream 5.0 Flash",
+        "href": "/models/seedream-5-0-flash"
+      },
+      "quickLinks": [
+        {
+          "label": "Open image workspace",
+          "href": "/app/image?engine=seedream-5-5"
+        },
+        {
+          "label": "View pricing",
+          "href": "/pricing#seedream-5-5-pricing"
+        },
+        {
+          "label": "Prompt examples",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Seedream family illustration — not an output from this model",
+      "description": "This illustration represents the image workflow. It does not demonstrate the output quality of this model.",
+      "renderLabel": "View illustration",
+      "badges": [
+        "Text → Image",
+        "Image → Image",
+        "1K / 1.5K / 2K"
+      ],
+      "altContext": "Seedream family illustration — not an output from this model"
+    },
+    "features": [
+      {
+        "title": "Generate from a prompt or edit reference images.",
+        "body": "Seedream 5.5 creates still images and edits from up to 10 references. Use it for product visuals, repeated image edits and transparent PNG assets, with one result per request in 1K, 1.5K or 2K.",
+        "tone": "quality"
+      },
+      {
+        "title": "Work with reference images",
+        "body": "Up to 10 reference images. Give every reference a clear role: subject, product, style or background.",
+        "tone": "reference"
+      },
+      {
+        "title": "Transparent backgrounds",
+        "body": "Generate a transparent PNG directly, or request an opaque image. Keep the output format and background settings aligned.",
+        "tone": "quality"
+      },
+      {
+        "title": "Current image pricing",
+        "body": "The exact current price is shown before you confirm generation. Resolution and reference images can change the quote.",
+        "tone": "price"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Seedream 5.0 Flash",
+        "body": "Seedream 5.0 Flash is the faster variant of the Seedream 5.0 generation and editing family. Use a prompt or up to 10 reference images to create one still in 1K, 1.5K or 2K.",
+        "cta": {
+          "label": "Discover Seedream 5.0 Flash",
+          "href": "/models/seedream-5-0-flash"
+        }
+      },
+      {
+        "title": "Seedream 5.0 Lite",
+        "body": "Keep Seedream 5.0 Lite for image sets and reference preparation.",
+        "cta": {
+          "label": "Discover Seedream 5.0 Lite",
+          "href": "/models/seedream"
+        }
+      },
+      {
+        "title": "Seedream 5.0 Pro",
+        "body": "Keep Seedream 5.0 Pro for your existing professional image workflows.",
+        "cta": {
+          "label": "Discover Seedream 5.0 Pro",
+          "href": "/models/seedream-5-0-pro"
+        }
+      },
+      {
+        "title": "Prompt examples",
+        "body": "Describe the subject, composition, materials, lighting and exact text. For edits, separate the parts to preserve from the changes.",
+        "cta": {
+          "label": "Prompt examples",
+          "href": "#prompting"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Create from text",
+        "body": "Describe the subject, composition, materials, lighting and exact text. For edits, separate the parts to preserve from the changes."
+      },
+      {
+        "title": "Edit references",
+        "body": "Give every reference a clear role: subject, product, style or background. Up to 10 reference images."
+      },
+      {
+        "title": "Set the output",
+        "body": "Choose 1K, 1.5K or 2K. Download JPEG or PNG. One generated image per request."
+      },
+      {
+        "title": "Confirm the quote",
+        "body": "The exact current price is shown before you confirm generation. Resolution and reference images can change the quote."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Seedream 5.5 — current image pricing",
+      "subtitle": "The exact current price is shown before you confirm generation. Resolution and reference images can change the quote.",
+      "footnote": "Check the current quote for your exact settings before generating.",
+      "ctaLabel": "View full pricing",
+      "ctaHref": "/pricing#seedream-5-5-pricing"
+    },
+    "meta": {
+      "title": "Seedream 5.5 | Precise image edits and transparent PNGs | MaxVideoAI",
+      "description": "Create and edit images with Seedream 5.5 by ByteDance in MaxVideoAI. Use up to 10 references, 1K–2K output and native transparent PNGs."
+    }
+  },
+  "prompting": {
+    "modelSlug": "seedream-5-5",
+    "section": {
+      "title": "How to prompt Seedream 5.5",
+      "intro": "Describe the subject, composition, materials, lighting and exact text. For edits, separate the parts to preserve from the changes.",
+      "tip": "Review rendered text and fine details before publishing.",
+      "guide": {
+        "label": "Official model guide",
+        "href": "https://docs.byteplus.com/en/docs/modelark/seedream-5-5"
+      },
+      "referencesTitle": "Work with reference images"
+    },
+    "tabs": [],
+    "tabNotes": [],
+    "globalPrinciples": [
+      "Describe the subject, composition, materials, lighting and exact text. For edits, separate the parts to preserve from the changes.",
+      "Give every reference a clear role: subject, product, style or background.",
+      "Choose PNG and a transparent background for an image with an alpha channel."
+    ],
+    "engineWhy": [],
+    "demo": null,
+    "imageExamples": {
+      "title": "Seedream 5.5 — prompt examples",
+      "intro": "Generate from a prompt or edit reference images.",
+      "workspaceLabel": "Open image workspace",
+      "items": [
+        {
+          "id": "product",
+          "title": "Product composition",
+          "badge": "Text → Image",
+          "kind": "image",
+          "prompt": "A premium amber glass bottle on pale stone, soft side light, clean studio background, realistic glass reflections, centered composition with space for a headline."
+        },
+        {
+          "id": "edit",
+          "title": "Reference edit",
+          "badge": "Image → Image",
+          "kind": "edit",
+          "prompt": "Using the reference, keep the person’s identity, face, hairstyle and clothing. Replace only the background with a bright modern studio and preserve the camera angle."
+        },
+        {
+          "id": "typography",
+          "title": "Text layout",
+          "badge": "Text → Image",
+          "kind": "typography",
+          "prompt": "Editorial product poster with a clear grid and generous margins. Exact headline \"NEW PERSPECTIVE\" at the top, small subheading \"AUTUMN COLLECTION\", clean readable lettering."
+        }
+      ]
+    }
+  },
+  "examples": {
+    "modelSlug": "seedream-5-5",
+    "section": {
+      "title": "Seedream 5.5 — image examples",
+      "intro": "Published outputs from this exact model will appear here when available.",
+      "defaultCtaLabel": null,
+      "recreateLabel": null
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "All"
+      },
+      {
+        "id": "product",
+        "label": "Product images"
+      },
+      {
+        "id": "edit",
+        "label": "Image edits"
+      },
+      {
+        "id": "typography",
+        "label": "Text and layouts"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "image-proof-1",
+        "title": "Prompt-to-image",
+        "body": "Describe one still image.",
+        "icon": "image"
+      },
+      {
+        "id": "image-proof-2",
+        "title": "Reference editing",
+        "body": "Guide a single edit with up to 10 images.",
+        "icon": "pen"
+      },
+      {
+        "id": "image-proof-3",
+        "title": "Resolution choices",
+        "body": "Select 1K, 1.5K or 2K.",
+        "icon": "maximize"
+      },
+      {
+        "id": "image-proof-4",
+        "title": "Exact quote",
+        "body": "Review the current price before confirmation.",
+        "icon": "shield"
+      },
+      {
+        "id": "image-proof-5",
+        "title": "Reusable stills",
+        "body": "Save the result before a separate video generation.",
+        "icon": "sparkles"
+      }
+    ],
+    "fallbackItems": null,
+    "showWhenEmpty": false
+  }
+}

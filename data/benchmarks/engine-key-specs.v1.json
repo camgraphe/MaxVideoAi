@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "last_updated": "2026-11-05",
+  "last_updated": "2026-11-13",
   "specs": [
     {
       "modelSlug": "sora-2",
@@ -1974,6 +1974,64 @@
         "cameraMotionControls": "Prompt-based camera and cuts; no structured shot fields",
         "watermark": "No visible MaxVideoAI watermark; provider provenance markers may apply",
         "releaseDate": "Nov 2026"
+      }
+    },
+    {
+      "modelSlug": "seedream-5-5",
+      "sources": [
+        "https://ai.byteplus.com/ark/region:ap-southeast-1/docs/image-generation-api",
+        "https://ai.byteplus.com/ark/region:ap-southeast-1/docs/model-list"
+      ],
+      "keySpecs": {
+        "textToImage": "Supported",
+        "imageToImage": "Supported",
+        "imageReferences": "Up to 10 references for edit workflows",
+        "maxResolution": "2K",
+        "aspectRatios": [
+          "auto",
+          "1:1",
+          "4:3",
+          "3:4",
+          "16:9",
+          "9:16",
+          "3:2",
+          "2:3",
+          "21:9"
+        ],
+        "outputFormats": [
+          "JPEG",
+          "PNG"
+        ],
+        "audioOutput": "Not supported"
+      }
+    },
+    {
+      "modelSlug": "seedream-5-0-flash",
+      "sources": [
+        "https://ai.byteplus.com/ark/region:ap-southeast-1/docs/image-generation-api",
+        "https://ai.byteplus.com/ark/region:ap-southeast-1/docs/model-list"
+      ],
+      "keySpecs": {
+        "textToImage": "Supported",
+        "imageToImage": "Supported",
+        "imageReferences": "Up to 10 references for edit workflows",
+        "maxResolution": "2K",
+        "aspectRatios": [
+          "auto",
+          "1:1",
+          "4:3",
+          "3:4",
+          "16:9",
+          "9:16",
+          "3:2",
+          "2:3",
+          "21:9"
+        ],
+        "outputFormats": [
+          "JPEG",
+          "PNG"
+        ],
+        "audioOutput": "Not supported"
       }
     }
   ]

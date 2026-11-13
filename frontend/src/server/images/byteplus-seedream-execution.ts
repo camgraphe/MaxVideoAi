@@ -34,6 +34,12 @@ const BYTEPLUS_PROVIDER_MODE = BYTEPLUS_SEEDREAM_PROVIDER;
 
 function resolveSeedreamModelId(engine: EngineCaps): string {
   const configuredModel = engine.providerMeta?.modelSlug?.trim();
+  if (engine.id === 'seedream-5-5') {
+    return ENV.BYTEPLUS_ARK_SEEDREAM_5_5_MODEL_ID ?? configuredModel ?? 'dola-seedream-5-5-261028';
+  }
+  if (engine.id === 'seedream-5-0-flash') {
+    return ENV.BYTEPLUS_ARK_SEEDREAM_FLASH_MODEL_ID ?? configuredModel ?? 'dola-seedream-5-0-flash-260915';
+  }
   if (configuredModel?.includes('seedream-5-0-pro')) {
     return ENV.BYTEPLUS_ARK_SEEDREAM_PRO_MODEL_ID ?? configuredModel;
   }
@@ -58,6 +64,7 @@ async function signReferenceUrls(urls: string[]): Promise<string[]> {
 }
 
 export async function executeBytePlusSeedreamGeneration(params: {
+  background?: string | null;
   billingProductKey: BillingProductKey | null;
   characterReferenceCount: number;
   combinedImageUrls: string[];
@@ -110,6 +117,7 @@ export async function executeBytePlusSeedreamGeneration(params: {
       baseUrl: ENV.BYTEPLUS_ARK_BASE_URL ?? BYTEPLUS_SEEDREAM_DEFAULT_BASE_URL,
       apiKey,
       payload: buildBytePlusSeedreamPayload({
+        engineId: params.engine.id,
         modelId,
         prompt: params.effectivePrompt,
         mode: params.mode,
@@ -120,6 +128,7 @@ export async function executeBytePlusSeedreamGeneration(params: {
         aspectRatio: params.resolvedAspectRatio,
         responseFormat: 'url',
         watermark: params.watermark,
+        background: params.background,
       }),
     });
 

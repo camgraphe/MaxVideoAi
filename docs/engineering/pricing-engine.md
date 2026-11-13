@@ -307,6 +307,14 @@ the main edit source and every additional reference; Pro's ten allowed totals
 have distinct guarded tariff selectors while retaining the original one-source
 identity and customer amount. Admin labels the count **Total source images**.
 
+Seedream 5.5 and 5.0 Flash use separate versioned new-offer cells, never the
+legacy percentage fallback or the older signed account discount. The 5.5
+supplier table charges every input image, including the first; Flash inputs are
+free. `lib/image/seedream-pricing.ts` owns their dated exact LIST facts and
+supported domain. Their fixed customer selectors, public adapters and 39-cell
+launch table are documented in [the November 13 pricing note](seedream-55-flash-pricing-2026-11-13.md).
+An active customer tariff database state is still required.
+
 Both media-aware and media-free preflight paths must forward the server-resolved
 `seedanceWorkflowStep` into the canonical quote. Ordinary 480p/1080p never implies
 a Draft/final step; client-declared workflow requests first resolve authorization,

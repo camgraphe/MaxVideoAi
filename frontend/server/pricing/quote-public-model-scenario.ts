@@ -1,3 +1,4 @@
+import { isNewSeedreamEngineId } from '@/lib/image/seedream-pricing';
 import { createHash } from 'node:crypto';
 
 import type { PricingSnapshot } from '@maxvideoai/pricing';
@@ -119,6 +120,19 @@ export function resolvePublicModelScenario(input: PublicModelQuoteInput): Manual
       !input.mode || !input.resolution || (input.quantity ?? 1) !== 1) return null;
   if (input.referenceImageCount !== undefined && (!Number.isSafeInteger(input.referenceImageCount)
     || input.referenceImageCount < 0 || input.referenceImageCount > 32)) return null;
+  if (isNewSeedreamEngineId(model.id)) {
+    const entry = getFalEngineById(model.id);
+    const mode = entry?.modes.find(candidate => candidate.mode === input.mode)?.mode;
+    if (!entry || (mode !== 't2i' && mode !== 'i2i') || input.durationSec !== 1
+      || input.customImageSize !== undefined || input.durationOption !== undefined
+      || input.audio === true || input.voiceControl === true || input.hdr === true || input.exrExport === true) return null;
+    try {
+      return buildManualTariffCoverageScenario({ engine: entry.engine, mode, durationSec: 1,
+        resolution: input.resolution, aspectRatio: input.aspectRatio ?? 'auto',
+        inputImageCount: input.mode === 'i2i' ? 1 : 0, referenceImageCount: input.referenceImageCount ?? 0 },
+      `${model.id}:${input.mode}:${input.resolution}`);
+    } catch { return null; }
+  }
   if (isGptImage26EngineId(model.id)) return resolveGpt26PublicScenario(input);
   const defaultReferences = isLumaAgentsImageEngineId(model.id) || model.id === 'seedream-5-0-pro' ? 0 : 1;
   const gptImage = isGptImageFamilyEngineId(model.id);

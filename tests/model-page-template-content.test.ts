@@ -32,6 +32,8 @@ const MIGRATED_TEMPLATE_SLUGS = [
   'kling-3-4k',
   'ltx-2-3-pro',
   'seedream',
+  'seedream-5-0-flash',
+  'seedream-5-5',
   'sora-2',
   'sora-2-pro',
   'wan-2-5',
