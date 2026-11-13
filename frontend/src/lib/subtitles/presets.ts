@@ -20,5 +20,7 @@ export function subtitleAppearance(preset: SubtitleStyle['preset']) {
 }
 
 export function activeSubtitleWordStyle(accent: string) {
-  return { background: accent, color: '#111111', borderRadius: '0.13em', padding: '0.04em 0.12em', textShadow: 'none' };
+  // Paint the accent outside the glyph box without adding layout width: moving
+  // the active word must never shift letters or change the caption's line wraps.
+  return { background: accent, color: '#111111', borderRadius: '0.13em', boxShadow: `0 0 0 0.12em ${accent}`, textShadow: 'none' };
 }

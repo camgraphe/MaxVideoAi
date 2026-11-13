@@ -214,6 +214,13 @@ The three presentation presets keep stable stored identities: `active-word`
 saved documents retain their recorded style. Edited text still falls back to
 full-line captions instead of inventing word alignment.
 
+Pop's accent is paint-only: changing the highlighted word must not add inline
+width, shift glyphs or alter line wraps. Within an aligned caption, retain the
+last spoken word's accent through gaps until the next recorded word onset. Keep
+the saved segment boundaries exact and never highlight an upcoming word early.
+This presentation rule is shared by preview and export; it does not rewrite
+transcript timing or invent alignment for edited text.
+
 Media duration uses presented audio/video stream ends when available, with a
 container-duration fallback for unknown tracks. The renderer bounds its final
 AAC mux to the saved source duration and keeps the strict output check; encoder
