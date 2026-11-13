@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { ENV } from '../frontend/src/lib/env';
-import { prepareSeedanceAdminBatches, seedanceBatchClasses, validateSeedanceBatchDomain } from '../frontend/server/pricing-admin/tariff-batches/seedance';
+import { prepareSeedanceAdminBatches, seedanceBatchClasses, seedanceBatchUsage, validateSeedanceBatchDomain } from '../frontend/server/pricing-admin/tariff-batches/seedance';
 import { parseTariffBatchProposal } from '../frontend/server/pricing-admin/tariff-batches/input';
 import { buildTariffBatchPlan } from '../frontend/server/pricing-admin/tariff-batches/planner';
 import { prepareSeedance25CommercialTariffs } from '../frontend/server/pricing/seedance25-commercial-tariffs';
@@ -60,6 +60,12 @@ test('Seedance imports reject mixed models, unsupported fields, altered minima, 
     if (low.kind !== 'unit_components') throw new Error('expected source tariff');
     low.components[0].flatCents /= 10; low.components[0].terms[0].centsPerUnit /= 10;
     assert.throws(() => validateSeedanceBatchDomain(row, low), /below/);
+    const nearList = structuredClone(cell.price);
+    if (nearList.kind !== 'unit_components') throw new Error('expected source tariff');
+    const usage = seedanceBatchUsage(row, Number.MIN_VALUE);
+    nearList.components[0].flatCents = usage.supplierListCents - 1e-9;
+    nearList.components[0].terms[0].centsPerUnit = usage.estimate.width * usage.estimate.height * 24 / 1024 * usage.rate.unitPriceUsdPer1kTokens / 10;
+    assert.throws(() => validateSeedanceBatchDomain(row, nearList), /below/);
     ENV.SEEDANCE_2_5_EDIT_TRANSPORT = 'las';
     assert.throws(() => seedanceBatchClasses('seedance-2-5'), /ModelArk/);
   } finally { ENV.SEEDANCE_2_5_EDIT_TRANSPORT = saved; }

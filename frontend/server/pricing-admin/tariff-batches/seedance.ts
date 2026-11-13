@@ -51,9 +51,18 @@ export function validateSeedanceBatchDomain(row: KlingBatchClass, price: ManualT
   const retailRate = seedanceInputTariffRate(context, price);
   const usage = seedanceBatchUsage(row, Number.MIN_VALUE);
   const supplierRate = usage.estimate.width * usage.estimate.height * 24 / 1024 * usage.rate.unitPriceUsdPer1kTokens / 10;
-  if (retailRate < supplierRate) throw new Error('Seedance proportional price is below the published supplier rate.');
+  if (price.kind !== 'unit_components') throw new Error('A proportional Seedance price is required.');
+  const component = price.components[0];
+  // The shape check tolerates floating-point equality. Independently compare both
+  // branches so that tolerance cannot admit a slightly below-LIST zero-margin price.
+  const flatSurplus = component.flatCents - usage.supplierListCents;
+  const interceptSurplus = component.flatCents - component.terms[0].includedUnits! * retailRate
+    - context.durationSec * supplierRate;
+  if (retailRate < supplierRate || flatSurplus < 0 || interceptSurplus < 0) {
+    throw new Error('Seedance proportional price is below the published supplier rate or minimum.');
+  }
   return { maxInputSeconds: basis.maximum, checkedBoundaries: 2,
-    minimumGrossCents: Math.floor(basis.minimumBillableSeconds * (retailRate - supplierRate)) };
+    minimumGrossCents: Math.floor(Math.min(flatSurplus, interceptSurplus)) };
 }
 
 export function seedanceBatchSourceFacts(modelId: SeedanceTariffBatchModelId) {
