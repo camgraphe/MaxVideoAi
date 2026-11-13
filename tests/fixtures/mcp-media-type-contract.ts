@@ -16,6 +16,7 @@ type Assert<Condition extends true> = Condition;
 
 type ExpectedAgentMediaItem = {
   assetId: string;
+  sourceJobId: string | null;
   kind: 'image' | 'video' | 'audio';
   label: string | null;
   width: number | null;
@@ -29,6 +30,7 @@ type ExpectedAgentMediaItem = {
 
 type ExpectedAgentMediaKeys =
   | 'assetId'
+  | 'sourceJobId'
   | 'kind'
   | 'label'
   | 'width'

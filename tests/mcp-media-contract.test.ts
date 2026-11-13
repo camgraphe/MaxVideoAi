@@ -45,6 +45,7 @@ test('AgentMediaKind aliases the canonical kind and AgentMediaItem is an exact s
   );
   assert.deepEqual(fieldNames(body), [
     'assetId',
+    'sourceJobId',
     'kind',
     'label',
     'width',
