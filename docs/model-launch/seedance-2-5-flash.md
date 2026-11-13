@@ -1,4 +1,4 @@
-# Seedance 2.5 Flash — integration candidate, 13 November 2026
+# Seedance 2.5 Flash — integration candidate, 14 November 2026
 
 ## Identity and evidence
 
@@ -98,17 +98,40 @@ Local PG17 verification exercised all 6,804 classes through those native admin t
 | Milo | Composer context reads the same canonical mode details and Seedance prompt profile. No hardcoded Flash price, unsupported output format or quality ranking is injected. Public discovery remains gated. |
 | Payments and provider accounting | Separate Flash LIST profile, 30-second source pricing, required active manual tariff, independent commercial grid. Missing Flash tariffs fail closed. |
 | Polling, Activity, Media, recovery | Existing BytePlus provider polling; Flash edit participates in owned durable submission state, immutable paid snapshots and durable output recovery. |
-| Model page / SEO / translations | Future `/models/seedance-2-5-flash`, `/fr/modeles/seedance-2-5-flash`, `/es/modelos/seedance-2-5-flash`. Marketing copy/design coordinated with **Moderniser les pages modèles**; publish only after exact feature qualification. |
+| Model page / SEO / translations | Future `/models/seedance-2-5-flash`, `/fr/modeles/seedance-2-5-flash`, `/es/modelos/seedance-2-5-flash`. EN/FR/ES copy and the normal page template are prepared without changing publication. Marketing design is coordinated with **Moderniser les pages modèles**; publish only after exact feature qualification. |
 | Pricing hub, model cards, Product offers, comparisons | Project the same canonical active quote after publication; no authored retail amount or supplier promotion in public copy. Standard ×2 needs cache revalidation even without a layout change. |
 | Examples, watch, recreate, home, PAYG strip | Flash requires its own attributed renders, managed playlist and launch assets. Existing standard 2.5 clips remain standard 2.5. No home video/source is replaced by this candidate. |
 | Navigation, footer, family pages, best-for, llms, sitemap | Registry-driven lists follow publication. Curated home/nav/footer/best-for selections require a separate editorial choice; a new model does not silently replace the flagship. |
 
 ## Qualification and release
 
+### Offline preparation on 14 November
+
+The PR's fast lane exposed an extension regression: the new generic reference
+limit also widened standard Seedance 2.5 extension from three sources to ten.
+The execution guard now preserves standard's three-source behavior independently
+of its reference-video budget; the separate Flash candidate permits five and
+rejects six. The registry and image-dimension inventories include Flash. All 144
+focused request, MCP, image-dimension, registry and Flash regressions passed.
+
+`content/models/{en,fr,es}/seedance-2-5-flash.json` now supplies localized decision,
+Prompt Lab and Examples content using the existing strict contracts. Scene plans
+are explicitly unrendered; no standard Seedance video is attributed to Flash.
+The normal template is registered for future use, with pricing presets,
+comparisons and examples disabled. Every registry publication flag stays false.
+This prepares content, not a publicly accessible prelaunch page. Before launch,
+review the copy against completed qualification, replace availability language,
+connect reviewed Flash media, enable canonical live pricing scenarios and verify
+the localized rendered pages. The separate design proposal does not change the
+content schema or authorize media generation/publication.
+The 123 focused model-content, template, view-model and Seedance marketing tests
+passed, including unpublished-surface checks and render-data assertions that no
+Flash playback, example or generation link is fabricated from the scene plans.
+
 1. Complete local provider, canonical quote, MCP/Studio projection, recovery and PostgreSQL checks. Offline mocks are not provider canaries.
 2. Resolve the observed Flash API admission blocker. Both approved provider attempts above were refused; before any later paid submission, establish its authorized scope, then verify API acceptance, output, usage and raster. Qualify additional reference/edit/extension modes independently before widening `SEEDANCE_2_5_FLASH_BYTEPLUS_MODES`.
 3. Validate literal tariff proposals against the current database and apply through the existing admin batch preview/confirmation path. Track all 31 receipts and complete any pending refresh; verify visible prices after cache revalidation. Flash activation and standard repricing are separate from a successful code build.
-4. Complete localized model content and exact Flash media/launch assets with the marketing task. Run registry, launch-assets, SEO and browser checks when publishing those surfaces.
+4. Finalize the prepared localized model content and exact Flash media/launch assets with the marketing task. Run registry, launch-assets, SEO and browser checks when publishing those surfaces.
 5. Follow `docs/deployment/github-vercel.md`: clean committed candidate, PR, required Quality CI, current main, reviewed production release and both-domain verification.
 
 Relevant Flash environment keys: `BYTEPLUS_ARK_SEEDANCE_2_5_FLASH_MODEL_ID`, `SEEDANCE_2_5_FLASH_BYTEPLUS_ENABLED`, `SEEDANCE_2_5_FLASH_PROVIDER`, `SEEDANCE_2_5_FLASH_BYTEPLUS_ADMIN_ONLY`, `SEEDANCE_2_5_FLASH_BYTEPLUS_MODES`. Closing these controls must not prevent recovery of an already accepted job.

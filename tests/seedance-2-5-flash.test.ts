@@ -72,6 +72,9 @@ test('provider rejects over-limit Flash references even without a supplied schem
 });
 
 test('five ordered extension sources survive the execution guard; six are refused', () => {
+  for (const [count, ok] of [[3, true], [4, false]] as const) assert.equal(validateProviderSpecificConstraints({
+    engineId: 'seedance-2-5', normalizedMode: 'extend', payload: { extension_source_videos: urls(count, 'mp4') },
+  }).ok, ok, 'flagship extension keeps its three-source limit independently of its ten reference-video slots');
   for (const [count, ok] of [[5, true], [6, false]] as const) assert.equal(validateProviderSpecificConstraints({
     engineId: id, normalizedMode: 'extend', payload: { extension_source_videos: urls(count, 'mp4') },
   }).ok, ok);

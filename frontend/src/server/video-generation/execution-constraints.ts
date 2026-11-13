@@ -1,4 +1,4 @@
-import { isSeedance25EngineId, seedanceModelArkReferenceLimits } from '@/lib/seedance-model-variants';
+import { isSeedance25EngineId } from '@/lib/seedance-model-variants';
 import { getKlingV4FlashConstraintViolation } from '@/lib/kling-v4-flash';
 import { validateH3MiddleFrame, orderedH3References } from '@/lib/h3-reference-controls';
 import {
@@ -236,9 +236,10 @@ function validateSeedance25Constraints(params: {
   }
   if (normalizedMode === 'extend') {
     const sources = seedanceUrlList(payload, 'extension_source_videos');
-    return sources && sources.length >= 1 && sources.length <= seedanceModelArkReferenceLimits(params.engineId).video
+    const maximumSources = params.engineId === 'seedance-2-5-flash' ? 5 : 3;
+    return sources && sources.length >= 1 && sources.length <= maximumSources
       ? { ok: true }
-      : minimaxH3Error('extension_source_videos', `Seedance extension requires one to ${seedanceModelArkReferenceLimits(params.engineId).video} source videos.`);
+      : minimaxH3Error('extension_source_videos', `Seedance extension requires one to ${maximumSources} source videos.`);
   }
   return minimaxH3Error('mode', 'Seedance mode is unsupported.');
 }
