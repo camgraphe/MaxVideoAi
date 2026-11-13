@@ -129,7 +129,7 @@ export async function runBytePlusPoll(options: { jobId?: string; deps?: BytePlus
        FROM app_jobs
       WHERE provider = $1
         AND (provider_job_id IS NOT NULL OR (
-          engine_id = 'seedance-2-5' AND settings_snapshot->>'byteplusTransport' IN ('las', 'modelark')
+          engine_id IN ('seedance-2-5', 'seedance-2-5-flash') AND settings_snapshot->>'byteplusTransport' IN ('las', 'modelark')
           AND settings_snapshot->'byteplusSubmission'->>'phase' = 'rejected'
         ))
         AND status = ANY($2::text[])

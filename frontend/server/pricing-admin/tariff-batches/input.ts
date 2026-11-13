@@ -1,7 +1,7 @@
 import type { ManualTariffSelector } from '@maxvideoai/pricing';
 import { isValidManualTariffPrice } from '@maxvideoai/pricing';
 import { PricingAdminError } from '../errors';
-import { TARIFF_BATCH_MAX_CLASSES, isGptImageTariffBatchModelId, type TariffBatchModelId, type TariffBatchPrice, type TariffBatchProposal } from './contract';
+import { TARIFF_BATCH_MAX_CLASSES, isGptImageTariffBatchModelId, isSeedanceTariffBatchModelId, type TariffBatchModelId, type TariffBatchPrice, type TariffBatchProposal } from './contract';
 
 export function batchInvalid(message: string): never { throw new PricingAdminError('invalid_payload', message); }
 export function batchRecord(value: unknown): Record<string, unknown> {
@@ -18,6 +18,8 @@ function selector(value: unknown, modelId: TariffBatchModelId): ManualTariffSele
   const record = batchRecord(value);
   exactFields(record, isGptImageTariffBatchModelId(modelId)
     ? ['engineId', 'mode', 'resolution', 'durationSec', 'quality', 'referenceImageCount']
+    : isSeedanceTariffBatchModelId(modelId)
+    ? ['engineId', 'mode', 'resolution', 'durationSec', 'aspectRatio', 'billingInputType', 'inputVideoDurationSec', 'workflowStep']
     : ['engineId', 'mode', 'resolution', 'durationSec', 'billingInputType', 'inputVideoDurationSec']);
   if (record.engineId !== modelId || Object.values(record).some(v => typeof v !== 'string' || !v || v.length > 80)) {
     batchInvalid('Unsupported exact batch selector.');
@@ -29,7 +31,7 @@ export function decimalRatio(value: string): { numerator: bigint; denominator: b
   const [whole, fraction = ''] = value.split('.');
   return { numerator: BigInt(whole + fraction), denominator: BigInt(10) ** BigInt(fraction.length) };
 }
-function price(value: unknown, raster: boolean): TariffBatchPrice {
+function price(value: unknown, raster: boolean, seedance: boolean): TariffBatchPrice {
   const p = batchRecord(value);
   if (p.kind === 'fixed') {
     exactFields(p, ['kind', 'customerCents']);
@@ -45,6 +47,18 @@ function price(value: unknown, raster: boolean): TariffBatchPrice {
         || term.centsPerUnit < 0 || term.centsPerUnit > 1_000_000 || !isValidManualTariffPrice(p)) batchInvalid('Invalid continuous price.');
       decimalRatio(String(term.centsPerUnit));
     }
+  } else if (p.kind === 'unit_components' && seedance) {
+    exactFields(p, ['kind', 'rounding', 'components']);
+    if (p.rounding !== 'up' || !Array.isArray(p.components) || p.components.length !== 1) batchInvalid('Invalid Seedance price.');
+    const component = batchRecord(p.components[0]);
+    exactFields(component, ['id', 'rounding', 'flatCents', 'terms']);
+    if (component.id !== 'retail' || component.rounding !== 'none' || !Array.isArray(component.terms)
+      || component.terms.length !== 1 || typeof component.flatCents !== 'number' || component.flatCents > 100_000_000) batchInvalid('Invalid Seedance minimum.');
+    const term = batchRecord(component.terms[0]);
+    exactFields(term, ['unit', 'centsPerUnit', 'includedUnits']);
+    if (term.unit !== 'input_video_seconds' || typeof term.centsPerUnit !== 'number' || term.centsPerUnit > 1_000_000
+      || typeof term.includedUnits !== 'number' || term.includedUnits < 0 || term.includedUnits > 30
+      || !isValidManualTariffPrice(p)) batchInvalid('Invalid Seedance proportional price.');
   } else batchInvalid('Unsupported batch price.');
   return structuredClone(p) as TariffBatchPrice;
 }
@@ -59,7 +73,7 @@ export function parseTariffBatchProposal(value: unknown): TariffBatchProposal {
   const rollback = p.intent === 'rollback';
   exactFields(p, rollback ? ['schemaVersion', 'modelId', 'intent', 'reason', 'sourceOperationId', 'selectors']
     : ['schemaVersion', 'modelId', 'intent', 'reason', 'pricing', 'selections']);
-  if (p.schemaVersion !== 1 || (p.modelId !== 'kling-v4' && p.modelId !== 'kling-v4-flash' && !isGptImageTariffBatchModelId(p.modelId)) || !['create_missing', 'replace_selected', 'rollback'].includes(String(p.intent))
+  if (p.schemaVersion !== 1 || (p.modelId !== 'kling-v4' && p.modelId !== 'kling-v4-flash' && !isGptImageTariffBatchModelId(p.modelId) && !isSeedanceTariffBatchModelId(p.modelId)) || !['create_missing', 'replace_selected', 'rollback'].includes(String(p.intent))
     || typeof p.reason !== 'string' || p.reason.trim().length < 3 || p.reason.length > 500) batchInvalid('Invalid batch scope or reason.');
   const items = rollback ? p.selectors : p.selections;
   if (!Array.isArray(items) || !items.length || items.length > TARIFF_BATCH_MAX_CLASSES) batchInvalid(`Select 1–${TARIFF_BATCH_MAX_CLASSES} classes.`);
@@ -72,6 +86,7 @@ export function parseTariffBatchProposal(value: unknown): TariffBatchProposal {
   exactFields(pricing, pricing.kind === 'list_multiplier' ? ['kind', 'multiplier'] : ['kind']);
   if (pricing.kind === 'list_multiplier') {
     if (isGptImageTariffBatchModelId(modelId)) batchInvalid('GPT Image 2.6 requires reviewed explicit prices; supplier input cost is incomplete.');
+    if (isSeedanceTariffBatchModelId(modelId)) batchInvalid('Seedance requires reviewed explicit fixed or proportional prices.');
     const ratio = decimalRatio(pricing.multiplier as string);
     if (ratio.numerator < ratio.denominator || ratio.numerator > ratio.denominator * BigInt(10)) batchInvalid('LIST multiplier must be between 1 and 10.');
   } else if (pricing.kind !== 'explicit') batchInvalid('Unknown pricing method.');
@@ -79,7 +94,9 @@ export function parseTariffBatchProposal(value: unknown): TariffBatchProposal {
     const entry = batchRecord(item);
     exactFields(entry, pricing.kind === 'explicit' ? ['selector', 'price'] : ['selector']);
     const raster = isGptImageTariffBatchModelId(modelId) && selectors[i].durationSec === 'continuous';
-    const literal = pricing.kind === 'explicit' ? price(entry.price, raster) : undefined;
+    const seedance = isSeedanceTariffBatchModelId(modelId);
+    const literal = pricing.kind === 'explicit' ? price(entry.price, raster, seedance) : undefined;
+    if (seedance && literal?.kind !== (selectors[i].billingInputType === 'video_input' ? 'unit_components' : 'fixed')) batchInvalid('Seedance requires a fixed price or its reviewed source-video minimum.');
     if (isGptImageTariffBatchModelId(modelId) && literal?.kind !== (raster ? 'unit_terms' : 'fixed')) batchInvalid('GPT Image 2.6 requires an exact fixed price or reviewed raster units.');
     return { selector: selectors[i], ...(literal ? { price: literal } : {}) };
   });

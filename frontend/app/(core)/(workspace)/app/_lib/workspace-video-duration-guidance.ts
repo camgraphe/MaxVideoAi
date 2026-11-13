@@ -1,3 +1,4 @@
+import { isSeedance25EngineId } from '@/lib/seedance-model-variants';
 import type { EngineCaps, Mode, PreflightResponse } from '@/types/engines';
 import { listActiveVideoInputFields } from '@/lib/video-input-schema';
 import { getMediaExcerptLimits } from '@/lib/video-excerpt';
@@ -70,7 +71,7 @@ export function getWorkspaceVideoDurationGuidance({ engine, mode, inputAssets, o
         return message('single', asset.durationSec, limit);
       }
       // Match server counting: repeated extension clips consume time in Seedance 2.5.
-      const key = engine.id === 'seedance-2-5' && mode === 'extend'
+      const key = isSeedance25EngineId(engine.id) && mode === 'extend'
         ? String(durations.size) : asset.url ?? asset.id;
       durations.set(key, asset.durationSec);
     }

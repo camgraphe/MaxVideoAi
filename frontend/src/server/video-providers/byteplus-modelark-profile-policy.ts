@@ -1,3 +1,4 @@
+import { isSeedance25EngineId } from '@/lib/seedance-model-variants';
 import { ENV } from '@/lib/env';
 import { getBytePlusSeedanceModeResolutions } from '@/lib/byteplus-mode-capabilities';
 import { resolveBytePlusTransport } from './byteplus-modelark-transport';
@@ -9,7 +10,6 @@ import {
   PUBLIC_SEEDANCE_ENGINE_ID,
   PUBLIC_SEEDANCE_FAST_ENGINE_ID,
   PUBLIC_SEEDANCE_MINI_ENGINE_ID,
-  SEEDANCE_2_5_ENGINE_ID,
   SEEDANCE_1_5_ENGINE_ID,
   isPublicSeedanceEngine,
   isPublicSeedanceFastEngine,
@@ -86,6 +86,9 @@ function readProviderOverride(
     case 'SEEDANCE_FAST_PROVIDER':
       raw = ENV.SEEDANCE_FAST_PROVIDER;
       break;
+    case 'SEEDANCE_2_5_FLASH_PROVIDER':
+      raw = ENV.SEEDANCE_2_5_FLASH_PROVIDER;
+      break;
     case 'SEEDANCE_2_5_PROVIDER':
       raw = ENV.SEEDANCE_2_5_PROVIDER;
       break;
@@ -107,6 +110,8 @@ function readEnabled(profile: BytePlusSeedanceProfile): boolean {
     case 'SEEDANCE_1_5_BYTEPLUS_ENABLED':
       return envFlagEnabled(ENV.SEEDANCE_1_5_BYTEPLUS_ENABLED) &&
         isSeedance15DirectAvailableAt(new Date().toISOString());
+    case 'SEEDANCE_2_5_FLASH_BYTEPLUS_ENABLED':
+      return envFlagEnabled(ENV.SEEDANCE_2_5_FLASH_BYTEPLUS_ENABLED ?? 'false');
     case 'SEEDANCE_2_5_BYTEPLUS_ENABLED':
       return envFlagEnabled(ENV.SEEDANCE_2_5_BYTEPLUS_ENABLED ?? 'false');
     default:
@@ -135,6 +140,10 @@ function readAdminOnly(profile: BytePlusSeedanceProfile): boolean {
       raw = ENV.SEEDANCE_MINI_BYTEPLUS_ADMIN_ONLY;
       defaultValue = false;
       break;
+    case 'SEEDANCE_2_5_FLASH_BYTEPLUS_ADMIN_ONLY':
+      raw = ENV.SEEDANCE_2_5_FLASH_BYTEPLUS_ADMIN_ONLY;
+      defaultValue = true;
+      break;
     case 'SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY':
       raw = ENV.SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY;
       defaultValue = true;
@@ -160,6 +169,9 @@ function readAllowedModes(profile: BytePlusSeedanceProfile): Mode[] {
       break;
     case 'SEEDANCE_MINI_BYTEPLUS_MODES':
       raw = ENV.SEEDANCE_MINI_BYTEPLUS_MODES;
+      break;
+    case 'SEEDANCE_2_5_FLASH_BYTEPLUS_MODES':
+      raw = ENV.SEEDANCE_2_5_FLASH_BYTEPLUS_MODES;
       break;
     case 'SEEDANCE_2_5_BYTEPLUS_MODES':
       raw = ENV.SEEDANCE_2_5_BYTEPLUS_MODES;
@@ -246,7 +258,7 @@ export function requiresBytePlusSeedanceEarlyGate(
 ): boolean {
   return engineId === SEEDANCE_1_5_ENGINE_ID
     || engineId === BYTEPLUS_SEEDANCE_FAST_ENGINE_ID
-    || engineId === SEEDANCE_2_5_ENGINE_ID;
+    || isSeedance25EngineId(engineId);
 }
 
 export function isBytePlusSeedanceHiddenEngine(engineId: string | null | undefined): boolean {
@@ -259,7 +271,7 @@ export function isBytePlusSeedanceSubmissionEnabled(
   const profile = getBytePlusSeedanceProfile(engineId);
   if (!profile || !readEnabled(profile)) return false;
   const key = profile.routing.providerOverrideKey;
-  if (key === 'SEEDANCE_1_5_PROVIDER' || key === 'SEEDANCE_2_5_PROVIDER') {
+  if (key === 'SEEDANCE_1_5_PROVIDER' || key === 'SEEDANCE_2_5_PROVIDER' || key === 'SEEDANCE_2_5_FLASH_PROVIDER') {
     return readProviderOverride(key) === BYTEPLUS_MODELARK_PROVIDER;
   }
   return true;
@@ -465,11 +477,11 @@ export function applyBytePlusSeedanceRuntimeOptions(
                   resolution: [...getBytePlusSeedanceModeResolutions(engine.id, mode, resolutions, resolveBytePlusTransport(engine.id, mode))],
                   resolutionLocked: false,
                   aspectRatio:
-                    engine.id === 'seedance-2-5' && mode === 'i2v'
+                    isSeedance25EngineId(engine.id) && mode === 'i2v'
                       ? undefined
                       : aspectRatios,
                   duration: {
-                    options: [...(isUnifiedSeedanceEngineId(engine.id) && !(engine.id === SEEDANCE_2_5_ENGINE_ID && mode === 'v2v') ? ['auto'] : []), ...durationOptions],
+                    options: [...(isUnifiedSeedanceEngineId(engine.id) && !(isSeedance25EngineId(engine.id) && mode === 'v2v') ? ['auto'] : []), ...durationOptions],
                     default: profile.defaultDurationSec,
                   },
                   audioToggle: profile.generatedAudio,

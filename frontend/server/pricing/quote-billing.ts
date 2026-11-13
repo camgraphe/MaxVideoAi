@@ -111,9 +111,10 @@ export async function computeCanonicalBillingSnapshot(
   const requiresLasTariff = !context.workflowStep && isSeedance25LasInputPricing(context.engine.id, context.mode);
   const requiresEditTariff = !context.workflowStep && isSeedance25EditInputPricing(context.engine.id, context.mode);
   const requiresKlingV4Tariff = isKlingV4FalQueueEngineId(context.engine.id);
+  const requiresSeedanceFlashTariff = context.engine.id === 'seedance-2-5-flash';
   const requiresNano21Tariff = context.engine.id === NANO21_ENGINE_ID;
   const requiresGpt26Tariff = isGptImage26EngineId(context.engine.id);
-  if (requiresGpt26Tariff || requiresKlingV4Tariff || requiresNano21Tariff || requiresOperationTariff || requiresEditTariff || context.workflowStep || dependencies.loadCustomerTariffState || dependencies.loadCustomerTariffQuoteState || customerTariffsEnabledByCode()) {
+  if (requiresSeedanceFlashTariff || requiresGpt26Tariff || requiresKlingV4Tariff || requiresNano21Tariff || requiresOperationTariff || requiresEditTariff || context.workflowStep || dependencies.loadCustomerTariffState || dependencies.loadCustomerTariffQuoteState || customerTariffsEnabledByCode()) {
     const selector = buildManualTariffScenario(context, billingFacts.facts).selector;
     const tariffState = await (dependencies.loadCustomerTariffState
       ? dependencies.loadCustomerTariffState()
@@ -151,6 +152,7 @@ export async function computeCanonicalBillingSnapshot(
       });
     }
   }
+  if (requiresSeedanceFlashTariff) throw new CustomerTariffUnavailableError('An active reviewed Seedance 2.5 Flash tariff is required.');
   if (requiresKlingV4Tariff) throw new CustomerTariffUnavailableError('A separate active reviewed Kling V4 customer tariff is required.');
   if (requiresGpt26Tariff) throw new CustomerTariffUnavailableError('An active reviewed GPT Image 2.6 customer tariff is required.');
   if (requiresNano21Tariff) throw new CustomerTariffUnavailableError('An active reviewed Nano Banana 2.1 customer tariff is required.');

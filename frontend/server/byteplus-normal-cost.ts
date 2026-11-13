@@ -21,7 +21,7 @@ type NormalUsage = {
   inputImages?: number;
 };
 const VIDEO_PROFILES = { 'seedance-2-0': 'standard', 'seedance-2-0-fast': 'fast',
-  'seedance-2-0-mini': 'mini', 'seedance-2-5': 'seedance25' } as const;
+  'seedance-2-0-mini': 'mini', 'seedance-2-5': 'seedance25', 'seedance-2-5-flash': 'seedance25Flash' } as const;
 
 /** The same dated normal-task LIST estimate serves admin comparison and manual settlement. */
 export function bytePlusNormalListCost(usage: NormalUsage) {

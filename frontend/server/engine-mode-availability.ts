@@ -1,3 +1,4 @@
+import { isSeedance25EngineId } from '@/lib/seedance-model-variants';
 import type { EngineCaps, EngineModeAvailability, Mode } from '@/types/engines';
 import {
   resolveAgentGenerationModeExecutability,
@@ -12,7 +13,7 @@ export function resolveSeedance25ModeAvailability(
   mode: Mode,
   environment?: AgentGenerationExecutabilityEnvironment,
 ): EngineModeAvailability | null {
-  if (engine.id !== 'seedance-2-5') return null;
+  if (!isSeedance25EngineId(engine.id)) return null;
   if (!engine.modes.includes(mode)) return { available: false, reason: 'profile_invalid' };
   const decision = resolveAgentGenerationModeExecutability(engine, mode, environment);
   let inheritsSourceVideo = false;
@@ -22,7 +23,7 @@ export function resolveSeedance25ModeAvailability(
 }
 
 export function projectSeedance25ModeAvailability(engine: EngineCaps, environment?: AgentGenerationExecutabilityEnvironment): EngineCaps {
-  if (engine.id !== 'seedance-2-5') return engine;
+  if (!isSeedance25EngineId(engine.id)) return engine;
   return {
     ...engine,
     modeAvailability: Object.fromEntries(engine.modes.map((mode) => [mode, resolveSeedance25ModeAvailability(engine, mode, environment)])),

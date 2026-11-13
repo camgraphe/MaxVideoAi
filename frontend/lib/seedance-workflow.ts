@@ -7,7 +7,7 @@ export type SeedanceAssetMap = Record<string, AssetEntry[] | undefined>;
 export type SeedanceFieldBlockKey = 'clearReferences' | 'clearStartEnd' | null;
 
 export const UNIFIED_SEEDANCE_ENGINE_IDS = new Set([
-  'seedance-2-5',
+  'seedance-2-5', 'seedance-2-5-flash',
   'seedance-2-0',
   'seedance-2-0-fast',
   'seedance-2-0-mini',

@@ -1,3 +1,4 @@
+import { isSeedance25EngineId } from '@/lib/seedance-model-variants';
 import type { Mode } from '@/types/engines';
 import { recordGenerateMetric, type GenerateMetricInput } from '@/server/generate-metrics';
 import { getBaseEngineIncludingHidden } from '@/lib/engines';
@@ -85,7 +86,7 @@ export function createGenerateMetricLogger(params: {
   const logPreflightRejection = async (body: Record<string, unknown>, result: GenerateRouteContextResult) => {
     if (result.ok || typeof body.engineId !== 'string') return;
     const engine = getBaseEngineIncludingHidden(body.engineId);
-    if (engine?.id !== 'seedance-2-5') return;
+    if (!engine || !isSeedance25EngineId(engine.id)) return;
     const error = result.body.error;
     const errorCode = error === 'Engine unavailable' ? 'ENGINE_UNAVAILABLE'
       : typeof error === 'string' && PREFLIGHT_ERROR_CODES.has(error) ? error : null;

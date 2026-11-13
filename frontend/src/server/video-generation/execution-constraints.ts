@@ -1,3 +1,4 @@
+import { isSeedance25EngineId, seedanceModelArkReferenceLimits } from '@/lib/seedance-model-variants';
 import { getKlingV4FlashConstraintViolation } from '@/lib/kling-v4-flash';
 import { validateH3MiddleFrame, orderedH3References } from '@/lib/h3-reference-controls';
 import {
@@ -15,7 +16,6 @@ import {
 } from '@/config/fal-engines/minimax-h3';
 import { isMinimaxH3EngineId } from '@/lib/minimax-h3';
 import type { EngineModeDurationCaps, Mode } from '@/types/engines';
-import { SEEDANCE_2_5_ENGINE_ID } from '@/server/video-providers/byteplus-modelark-constants';
 import { isKling3TurboEngineId } from '@/lib/kling-3-turbo';
 import { getFlux3MaxConstraintViolation, isFlux3MaxEngineId } from '@/lib/flux-3-max';
 
@@ -204,6 +204,7 @@ function seedanceUrlList(payload: Record<string, unknown>, field: string): strin
 }
 
 function validateSeedance25Constraints(params: {
+  engineId: string;
   normalizedMode: Mode;
   payload: Record<string, unknown>;
 }): VideoExecutionValidationResult {
@@ -235,9 +236,9 @@ function validateSeedance25Constraints(params: {
   }
   if (normalizedMode === 'extend') {
     const sources = seedanceUrlList(payload, 'extension_source_videos');
-    return sources && sources.length >= 1 && sources.length <= 3
+    return sources && sources.length >= 1 && sources.length <= seedanceModelArkReferenceLimits(params.engineId).video
       ? { ok: true }
-      : minimaxH3Error('extension_source_videos', 'Seedance extension requires one to three source videos.');
+      : minimaxH3Error('extension_source_videos', `Seedance extension requires one to ${seedanceModelArkReferenceLimits(params.engineId).video} source videos.`);
   }
   return minimaxH3Error('mode', 'Seedance mode is unsupported.');
 }
@@ -351,7 +352,7 @@ export function validateProviderSpecificConstraints(params: {
   if (isMinimaxH3EngineId(params.engineId)) {
     return validateMinimaxH3Constraints(params);
   }
-  if (params.engineId === SEEDANCE_2_5_ENGINE_ID) {
+  if (isSeedance25EngineId(params.engineId)) {
     return validateSeedance25Constraints(params);
   }
 

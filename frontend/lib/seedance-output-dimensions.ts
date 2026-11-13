@@ -66,6 +66,7 @@ const SEEDANCE_1_5_AND_2_0_DIMENSIONS: typeof SEEDANCE_2_0_4K_DIMENSIONS = {
 };
 
 export function seedanceOutputDimensions(engineId: string, resolution: string, aspectRatio: string) {
+  if (engineId === 'seedance-2-5-flash') return ['480p', '720p'].includes(resolution) ? seedance25OutputDimensions(resolution, aspectRatio) : null;
   if (engineId === 'seedance-2-5') return seedance25OutputDimensions(resolution, aspectRatio);
   return (resolution === '4k' ? SEEDANCE_2_0_4K_DIMENSIONS : SEEDANCE_1_5_AND_2_0_DIMENSIONS)[resolution]?.[aspectRatio];
 }

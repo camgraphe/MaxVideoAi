@@ -1,3 +1,4 @@
+import { isSeedance25EngineId } from '@/lib/seedance-model-variants';
 import type { GeneratePayload } from '@/lib/fal';
 import { ensureUserPreferredCurrency } from '@/lib/currency';
 import type { ReferenceBudgetValuesByField } from '@/lib/reference-budget';
@@ -153,7 +154,7 @@ export async function executePreparedVideoGeneration(params: ExecutePreparedVide
     throw new Error('Invalid pre-reserved video initial state.');
   }
 
-  if (walletInitialState && engine.id === 'seedance-2-5' && (mode === 'v2v' || params.seedanceWorkflow)) {
+  if (walletInitialState && isSeedance25EngineId(engine.id) && (mode === 'v2v' || params.seedanceWorkflow)) {
     await persistReservedBytePlusLasExecutionSettings({ jobId, userId, settings: settingsSnapshot,
       priceCents: pricing.totalCents });
   }

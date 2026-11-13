@@ -146,7 +146,7 @@ export async function markBytePlusJobFailed(
           AND q.quote_id::text = j.job_id AND q.job_id = j.job_id AND q.user_id = j.user_id
           AND q.state IN ('claimed','accepted') AND q.funding_mode = 'wallet'
           AND q.price_cents = j.final_price_cents AND UPPER(q.currency) = UPPER(j.currency)
-          AND q.request_json->>'engineId' = 'seedance-2-5' AND q.request_json->>'mode' = 'v2v'`,
+          AND q.request_json->>'engineId' IN ('seedance-2-5', 'seedance-2-5-flash') AND q.request_json->>'mode' = 'v2v'`,
       [failedJob.job_id, failedJob.user_id]);
     }
     return { job: failedJob, refunded };
