@@ -53,7 +53,7 @@ gpt-image-2-6-flare,GPT Image 2.6 Flare,openai,gpt-image-2-6-flare,gpt-image,cur
 gpt-image-2-6-sunburst,GPT Image 2.6 Sunburst,openai,gpt-image-2-6-sunburst,gpt-image,current,,,2.6,available,logoAllowed,true,true
 sora-2,OpenAI Sora 2,openai,sora-2,sora,deep_legacy,,,2,available,logoAllowed,true,true
 sora-2-pro,OpenAI Sora 2 Pro,openai,sora-2-pro,sora,deep_legacy,,,Pro,available,logoAllowed,true,true
-pika-text-to-video,Pika 2.2 Text & Image to Video,pika,pika-text-to-video,pika,current,,,2.2,available,logoAllowed,true,true
+pika-text-to-video,Pika 2.2 Text & Image to Video,pika,pika-text-to-video,pika,deep_legacy,,,2.2,available,logoAllowed,true,true
 wan-2-5,Wan 2.5 Text & Image to Video,wan,wan-2-5,wan,deep_legacy,wan-3,wan-3,Preview,available,logoAllowed,true,true
 wan-2-6,Wan 2.6 Text & Image to Video,wan,wan-2-6,wan,legacy,wan-3,wan-3,2.6,available,logoAllowed,true,true
 wan-3,Wan 3,wan,wan-3,wan,current,,,3.0,available,logoAllowed,true,true

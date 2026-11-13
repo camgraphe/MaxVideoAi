@@ -17,7 +17,8 @@ const audioQuoteCodec = {
 export const audioQuoteRepository = createQuoteRepository(audioQuoteCodec);
 export function audioQuoteRepositoryForActor(actor: GenerationActor) {
   return createQuoteRepository(audioQuoteCodec, actor.authMethod === 'studio-session'
-    ? {origin: 'studio-session', projectId: actor.projectId} : undefined);
+    ? {origin: 'studio-session', projectId: actor.projectId}
+    : actor.authMethod === 'toolbox-session' ? {origin: 'toolbox-session'} : undefined);
 }
 export type CanonicalAnyGenerationRequest = CanonicalGenerationRequest | CanonicalAudioRequest;
 

@@ -9,7 +9,8 @@ import { filterProviderComparisonRows } from '../frontend/app/(core)/admin/prici
 test('admin comparison includes published models and the closed launch tariff candidates once', () => {
   const expected = listRuntimeModels().filter((model) => model.publication.app.published);
   const rows = buildAllModelComparisonScenarios();
-  assert.equal(expected.length, 54);
+  assert.equal(expected.length, 53);
+  assert.equal(rows.some(({entry})=>entry.id==='pika-text-to-video'),false,'Archived Pika is excluded from the active admin comparison.');
   const closedLaunchIds = ['kling-v4-flash', 'gpt-image-2-6-flare', 'gpt-image-2-6-sunburst']
     .filter(id => !expected.some(model => model.id === id));
   assert.equal(rows.length, expected.length + closedLaunchIds.length);
@@ -18,10 +19,10 @@ test('admin comparison includes published models and the closed launch tariff ca
   assert.equal(rows.filter(({entry})=>entry.id==='nano-banana-2-1').length,1);
   assert.ok(rows.some(({ entry }) => entry.id === 'lumaRay2'));
   assert.ok(rows.some(({ entry }) => entry.id === 'lumaRay2_flash'));
-  assert.equal(new Set(expected.map((model) => model.family)).size, 15);
+  assert.equal(new Set(expected.map((model) => model.family)).size, 14);
   assert.ok(rows.every(({ scenario }) => scenario.durationSec && scenario.resolution && scenario.mode));
   const quotes = quoteCanonicalAdminScenarios({ databaseRules: [], scenarios: rows.filter(({entry})=>entry.id!=='kling-v4').map(({ scenario }) => scenario) });
-  assert.equal(quotes.filter((quote) => quote.status === 'quoted').length, 49);
+  assert.equal(quotes.filter((quote) => quote.status === 'quoted').length, 48);
   const [v4] = quoteCanonicalAdminScenarios({databaseRules:[],scenarios:[rows.find(({entry})=>entry.id==='kling-v4')!.scenario]});
   assert.equal(v4.status,'unsupported','V4 cannot acquire an old percentage-policy price');
   if(v4.status==='unsupported') {

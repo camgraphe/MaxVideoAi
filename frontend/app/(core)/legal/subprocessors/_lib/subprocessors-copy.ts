@@ -97,7 +97,7 @@ export const SUBPROCESSORS = {
       "data": "Messages, selected models and settings, draft/project context, relevant conversation history and selected references; image frames or audio excerpts for requested analyses."
     },
     {
-      "provider": "Fal.ai · BytePlus ModelArk · Alibaba Model Studio · Kling · Luma · Google Vertex AI",
+      "provider": "Fal.ai · BytePlus ModelArk · Alibaba Model Studio · Kling · Luma · Google Vertex AI · OpenAI",
       "service": "Media generation, depending on model and route",
       "data": "Prompts, settings, supplied references, results and request identifiers."
     },
@@ -154,7 +154,7 @@ export const SUBPROCESSORS = {
       "data": "Messages, modèles et réglages choisis, contexte du brouillon ou du projet, historique utile et références sélectionnées ; images extraites ou extraits audio pour les analyses demandées."
     },
     {
-      "provider": "Fal.ai · BytePlus ModelArk · Alibaba Model Studio · Kling · Luma · Google Vertex AI",
+      "provider": "Fal.ai · BytePlus ModelArk · Alibaba Model Studio · Kling · Luma · Google Vertex AI · OpenAI",
       "service": "Génération de médias selon le modèle et le parcours",
       "data": "Prompts, réglages, références fournies, résultats et identifiants de demande."
     },
@@ -211,7 +211,7 @@ export const SUBPROCESSORS = {
       "data": "Mensajes, modelos y ajustes elegidos, contexto del borrador o del proyecto, historial pertinente y referencias seleccionadas; fotogramas o fragmentos de audio para los análisis solicitados."
     },
     {
-      "provider": "Fal.ai · BytePlus ModelArk · Alibaba Model Studio · Kling · Luma · Google Vertex AI",
+      "provider": "Fal.ai · BytePlus ModelArk · Alibaba Model Studio · Kling · Luma · Google Vertex AI · OpenAI",
       "service": "Generación de medios según el modelo y la ruta",
       "data": "Prompts, ajustes, referencias aportadas, resultados e identificadores de solicitud."
     },

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { ENV } from '@/lib/env';
 import { getMcpRequestHost } from '@/lib/mcp-host-routing';
-import { resolveMcpConfig } from '@/server/mcp/config';
+import { resolveMcpRequestConfig } from '@/server/mcp/config';
 import { isMcpFoundationFeatureEnabled } from '@/server/mcp/feature-access';
 import { buildProtectedResourceMetadata } from '@/server/mcp/oauth-resource-metadata';
 import { withMcpNoindexHeaders } from '@/server/mcp/response-headers';
@@ -18,7 +18,10 @@ export function GET(request: Request) {
   }
 
   try {
-    const config = resolveMcpConfig();
+    const config = resolveMcpRequestConfig(requestHost);
+    if (!config) return new NextResponse(null, {
+      status: 404, headers: withMcpNoindexHeaders({ 'Cache-Control': 'private, no-store' }),
+    });
     if (!ENV.NEXT_PUBLIC_SUPABASE_URL) {
       throw new Error('Supabase URL is not configured.');
     }

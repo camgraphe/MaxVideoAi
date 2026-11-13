@@ -2,15 +2,18 @@ import { resolveStudioMedia } from '@/server/studio/media-resolver';
 import { createConversationMediaReadAccess } from '@/server/studio/conversation-media-read-access';
 import { toolAssetRefSchema } from '@/lib/toolbox/contract';
 import { creatorOperationInputSchema } from '@/lib/toolbox/creator-tools';
+import {createMcpMediaLink} from '@/server/mcp/media-link';
+import type {AgentPrincipal} from '@/server/agent-api/principal';
 
 /** Preserve stored originals/identity while issuing fresh private read access for presentation. */
-export async function withCreatorMediaReadAccess<T extends object>(userId: string, operation: T): Promise<T> {
+export async function withCreatorMediaReadAccess<T extends object>(userId: string, operation: T, delivery?:{principal:AgentPrincipal;origin:string}): Promise<T> {
   const value = operation as Record<string, unknown>;
   async function access(ref: unknown) {
     try {
       const media = await resolveStudioMedia(userId, toolAssetRefSchema.parse(ref));
       const readable = await createConversationMediaReadAccess(userId, media);
-      return { readUrl: readable.url, thumbnailReadUrl: readable.thumbnailAccessUrl ?? null, readExpiresAt: readable.expires, artifactDelivery: 'available', name: media.originalName ?? '', durationSec: media.durationSec ?? undefined };
+      const openUrl = delivery?.principal.userId===userId ? createMcpMediaLink({...delivery,source:toolAssetRefSchema.parse(ref),url:readable.url,expiresAt:readable.expires}) : null;
+      return { readUrl: readable.url, ...(openUrl?{openUrl}:{}), thumbnailReadUrl: readable.thumbnailAccessUrl ?? null, readExpiresAt: readable.expires, artifactDelivery: 'available', name: media.originalName ?? '', durationSec: media.durationSec ?? undefined };
     } catch {
       // Removed media or signing downtime must not change the completed paid operation.
       return { readUrl: null, thumbnailReadUrl: null, readExpiresAt: null, artifactDelivery: 'unavailable' };

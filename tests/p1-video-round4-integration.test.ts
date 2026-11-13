@@ -50,12 +50,12 @@ async function resolveModeAtGenerateBoundary(input: {
 }
 
 test('generate defaults only a truly absent mode and keeps normalized public mode compatibility', async () => {
-  const publicPika = getFalEngineById('pika-text-to-video')?.engine;
-  assert.ok(publicPika);
+  const establishedPublic = getFalEngineById('kling-3-pro')?.engine;
+  assert.ok(establishedPublic);
 
   for (const fixture of [
     { engine: KLING_3_TURBO_STANDARD_ENGINE },
-    { engine: publicPika },
+    { engine: establishedPublic },
   ]) {
     const omitted = await resolveModeAtGenerateBoundary({
       ...fixture,
@@ -68,7 +68,7 @@ test('generate defaults only a truly absent mode and keeps normalized public mod
   }
 
   const normalizedPublic = await resolveModeAtGenerateBoundary({
-    engine: publicPika,
+    engine: establishedPublic,
     modePresent: true,
     mode: '  T2V  ',
   });
@@ -77,8 +77,8 @@ test('generate defaults only a truly absent mode and keeps normalized public mod
 });
 
 test('generate rejects every explicitly invalid mode before database and billing work', async (context) => {
-  const publicPika = getFalEngineById('pika-text-to-video')?.engine;
-  assert.ok(publicPika);
+  const establishedPublic = getFalEngineById('kling-3-pro')?.engine;
+  assert.ok(establishedPublic);
   const invalidModes: Array<{ label: string; value: unknown }> = [
     { label: 'empty string', value: '' },
     { label: 'whitespace string', value: '   ' },
@@ -91,7 +91,7 @@ test('generate rejects every explicitly invalid mode before database and billing
 
   for (const fixture of [
     { label: 'P1 public', engine: KLING_3_TURBO_STANDARD_ENGINE },
-    { label: 'established public', engine: publicPika },
+    { label: 'established public', engine: establishedPublic },
   ]) {
     for (const invalid of invalidModes) {
       await context.test(`${fixture.label}: ${invalid.label}`, async () => {
@@ -109,6 +109,17 @@ test('generate rejects every explicitly invalid mode before database and billing
         assert.equal(resolved.billingChecks, 0);
       });
     }
+  }
+});
+
+test('archived Pika is retired before mode validation, database access or billing', async () => {
+  const archived = getFalEngineById('pika-text-to-video')?.engine;
+  assert.ok(archived);
+  for (const input of [{ modePresent: false }, { modePresent: true, mode: 't2v' }, { modePresent: true, mode: 'bogus' }]) {
+    const resolved = await resolveModeAtGenerateBoundary({ engine: archived, ...input });
+    assert.deepEqual(resolved.result, { ok: false, status: 410, body: { ok: false, error: 'ENGINE_RETIRED' } });
+    assert.equal(resolved.databaseChecks, 0);
+    assert.equal(resolved.billingChecks, 0);
   }
 });
 

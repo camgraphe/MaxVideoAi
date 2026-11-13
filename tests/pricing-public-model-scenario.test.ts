@@ -98,8 +98,8 @@ test('public exact quote carries current cents and a price-sensitive revision; f
 });
 
 test('a pricing-rule outage cannot show a versioned fallback as the current customer price', async () => {
-  const scenario = resolvePublicModelScenario({ modelId: 'pika-text-to-video', mode: 't2v',
-    durationSec: 5, resolution: '720p' });
+  const scenario = resolvePublicModelScenario({ modelId: 'kling-3-pro', mode: 't2v',
+    durationSec: 5, resolution: '1080p', audio: false });
   assert.ok(scenario);
   await assert.rejects(quoteWithVerifiedPolicy(scenario, async () => ({ status: 'unavailable',
     rules: [], errorCode: 'pricing_rules_query_failed' })), /CURRENT_PRICING_POLICY_UNAVAILABLE/);
@@ -109,15 +109,25 @@ test('a pricing-rule outage cannot show a versioned fallback as the current cust
 });
 
 test('strict current public projection uses the captured effective database policy', async () => {
-  const scenario = resolvePublicModelScenario({ modelId: 'pika-text-to-video', mode: 't2v', durationSec: 5, resolution: '720p' });
+  const scenario = resolvePublicModelScenario({ modelId: 'kling-3-pro', mode: 't2v', durationSec: 5, resolution: '1080p', audio: false });
   assert.ok(scenario);
   let reads = 0;
   const pricing = await computeCurrentPublicSnapshot(scenario.context, { pricingPolicy: { loadOverrides: async () => {
     reads += 1;
-    return { status: 'loaded', rules: [{ id: 'effective-pika', engineId: 'pika-text-to-video',
+    return { status: 'loaded', rules: [{ id: 'effective-kling', engineId: 'kling-3-pro',
       marginPercent: 1, marginFlatCents: 7, currency: 'USD' }] };
   } } });
   assert.equal(reads, 1);
-  assert.equal(pricing.totalCents, 47);
-  assert.equal((pricing.meta?.pricingPolicy as { sourceRuleId: string }).sourceRuleId, 'effective-pika');
+  assert.equal(pricing.totalCents, 119, 'five seconds at USD 0.112/s, plus 100% and seven cents');
+  assert.equal((pricing.meta?.pricingPolicy as { sourceRuleId: string }).sourceRuleId, 'effective-kling');
+});
+
+
+test('archived Pika has no current public scenario or quote and never reads current pricing', async () => {
+  const input = { modelId: 'pika-text-to-video', mode: 't2v', durationSec: 5, resolution: '720p' };
+  assert.equal(getRuntimeModelById(input.modelId)?.publication.app.published, false);
+  assert.equal(resolvePublicModelScenario(input), null);
+  assert.deepEqual(await quotePublicModelScenario(input, async () => {
+    throw new Error('archived Pika must not read a current quote');
+  }), { status: 'unavailable' });
 });

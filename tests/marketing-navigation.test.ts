@@ -10,6 +10,7 @@ import {
   MARKETING_NAV_MODELS,
   MARKETING_TOP_NAV_LINKS,
 } from '../frontend/config/navigation.ts';
+import { getMarketingExampleRouteSlugs, getExampleFamilyPageConfig } from '../frontend/lib/model-families';
 import { FOOTER_MODELS, FOOTER_COMPARISONS, FOOTER_EXAMPLES } from '../frontend/config/marketing-footer';
 import { getPartnerBrandMark, resolvePartnerBrand } from '../frontend/src/lib/brand-partners.ts';
 
@@ -250,8 +251,12 @@ test('examples navigation exposes discoverable families without promoting archiv
     assert.match(copy.examples.descriptions['all-examples'], /prompt/i);
   }
   const allEntries = [...examplesDropdown!.items, ...examplesDropdown!.sections!.flatMap(section => section.items)];
-  assert.deepEqual(allEntries.map(item => item.key).sort(), ['all-examples','veo','seedance','ltx','kling','wan','happy-horse','luma','grok','flux','pika','hailuo'].sort());
+  assert.deepEqual(allEntries.map(item => item.key).sort(), ['all-examples','veo','seedance','ltx','kling','wan','happy-horse','luma','grok','flux','hailuo'].sort());
   assert.equal(new Set(allEntries.map(item => item.key)).size, allEntries.length);
+  assert.equal(allEntries.some(item => item.key === 'pika'), false);
+  assert.ok(getMarketingExampleRouteSlugs().includes('pika'), 'the historical /examples/pika URL remains published');
+  assert.equal(getExampleFamilyPageConfig('pika')?.showInNav, false);
+
   assert.match(marketingDesktopNavSource, /dropdown\.desktopColumns === 2/);
   assert.match(marketingDesktopNavSource, /two-columns/);
   assert.match(headerBarSource, /grid grid-cols-2 gap-1/);

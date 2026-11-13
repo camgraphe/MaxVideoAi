@@ -43,13 +43,27 @@ test('a failed current comparison quote never falls back to catalogue amounts', 
 });
 
 test('comparison without a current pricing engine cannot display catalogue margin prices', async () => {
-  for (const slug of ['seedance-2-0', 'veo-3-1', 'pika-text-to-video']) {
+  for (const slug of ['seedance-2-0', 'veo-3-1', 'kling-3-pro']) {
     const entry = CATALOG_BY_SLUG.get(slug)!;
     assert.ok(entry, slug);
     const result = await resolvePricingDisplay(entry, 'en', undefined);
     assert.equal(result.headline, 'Current price unavailable', slug);
     assert.equal(result.quoteUnavailable, true);
     assert.deepEqual(result.prices, []);
+  }
+});
+
+test('Pika comparison archives report closed generation without requesting a current quote', async () => {
+  const entry = CATALOG_BY_SLUG.get('pika-text-to-video');
+  assert.ok(entry);
+  assert.equal(entry.surfaces?.app?.enabled, false);
+  for (const [locale, headline] of [
+    ['en', 'Generation unavailable'], ['fr', 'Génération indisponible'], ['es', 'Generación no disponible'],
+  ] as const) {
+    const result = await resolvePricingDisplay(entry, locale, entry.engine, async () => {
+      assert.fail('An archive must not request a current customer quote');
+    });
+    assert.deepEqual(result, { headline, subline: null, prices: [] });
   }
 });
 

@@ -1,3 +1,6 @@
+import { withToolErrorOutput } from '@/server/mcp/output-schemas/tool-errors';
+import type { McpDistributionProfile } from '@/server/mcp/distribution-profile';
+import { generationRecoveryOutputSchema } from '@/server/mcp/output-schemas/generation';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import * as z from 'zod/v4';
 
@@ -14,6 +17,7 @@ export function registerGetGenerationStatusTool(
   server: McpServer,
   principal: AgentPrincipal,
   services: MaxVideoAiMcpServices,
+  profile: McpDistributionProfile = 'direct',
 ): void {
   if (!services.getGenerationStatus) {
     throw new Error('get_generation_status service is required when its gate is enabled.');
@@ -30,10 +34,12 @@ export function registerGetGenerationStatusTool(
         'For a technical failure inspect the refund state; do not resubmit automatically.',
         'Every replacement is a new paid attempt requiring a fresh quote and approval.',
         'For a completed job use present_generation once to deliver the saved result.',
+        'Use openUrl when available for clickable Markdown links; retain the original media URLs for native playback.',
         'Native Seedance Draft lineage includes eligibility, actual expiry and any existing finalJobId; finalize only when finalizationAvailable is true, using a separate quote and approval. Recover an existing final instead of resubmitting.',
         'For Audio, preserve the original output and use the same recovery flow.',
       ].join(' '),
       inputSchema: getGenerationStatusInputSchema,
+      ...(profile === 'openai-directory' ? { outputSchema: withToolErrorOutput(generationRecoveryOutputSchema) } : {}),
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,

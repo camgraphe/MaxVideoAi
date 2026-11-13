@@ -9,7 +9,8 @@ import { resolveMediaAwarePreflight } from '../frontend/app/api/preflight/_lib/m
 import type { LaunchCanaryRequestContext } from '../frontend/src/server/model-launch-canary-request';
 import type { EngineCaps } from '../frontend/types/engines';
 
-const base = getBaseEngines().find((engine) => engine.id === 'pika-text-to-video')!;
+const base = getBaseEngines().find((engine) => engine.id === 'kling-3-pro');
+assert.ok(base, 'generic seeded defaults require a current app-published engine');
 const stale: EngineSettingsRecord = {
   engine_id: base.id,
   options: { maxDurationSec: 1 },
@@ -71,6 +72,25 @@ test('database-free preflight keeps the existing base-only resolution without co
   assert.deepEqual(engine, base);
   assert.notEqual(engine, base);
   assert.deepEqual(await getReadOnlyConfiguredEngineIncludingRuntimePrivate(base.id, false, dependencies), base);
+});
+
+test('archived Pika remains an explicit historical read without rejoining seeded public defaults', async () => {
+  const engineId = 'pika-text-to-video';
+  const archivedSettings = { ...stale, engine_id: engineId };
+  const settings = new Map([[engineId, archivedSettings]]);
+  let reads = 0;
+  const dependencies = {
+    databaseConfigured: () => true,
+    fetchSettings: async () => { reads++; return settings; },
+    fetchOverrides: async () => new Map(),
+  };
+  assert.equal(await getReadOnlyConfiguredEngine(engineId, false, dependencies), undefined);
+  assert.equal(reads, 0, 'public rejection must happen before configuration reads');
+  const archive = await getReadOnlyConfiguredEngineIncludingHidden(engineId, false, dependencies);
+  assert.equal(archive?.id, engineId);
+  assert.equal(archive.maxDurationSec, 1, 'seed refresh is limited to the current published population');
+  assert.equal(settings.get(engineId), archivedSettings);
+  assert.equal(reads, 1);
 });
 
 test('effective private-capable projection remains behind both canary access and mode executability', async () => {

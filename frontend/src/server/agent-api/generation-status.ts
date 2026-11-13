@@ -1,3 +1,5 @@
+import { buildOwnedGenerationMediaAccess } from '@/server/generations/generation-media-access';
+import {createMcpMediaLink,primaryGenerationMediaUrl} from '@/server/mcp/media-link';
 import {
   getGenerationStatus,
   type AgentGenerationResult,
@@ -36,6 +38,7 @@ export type AgentGenerationRetry = {
 };
 
 export type AgentGenerationRecovery = Omit<AgentGenerationStatus, 'retryAfterSeconds' | 'result'> & {
+  openUrl?: string;
   result: AgentGenerationResult | null;
   library: AgentOpenUrlDestination;
   workspace: AgentOpenUrlDestination;
@@ -235,7 +238,7 @@ export function buildAgentGenerationRecovery(
   const { retryAfterSeconds, ...safeStatus } = status;
   const result = status.status === 'completed' ? boundedResult(status.result) : null;
   const destinations = buildAgentAccountDestinations(accountUrl);
-  const retry = status.status === 'accepted' || status.status === 'running'
+  const retry = !status.needsAttention && (status.status === 'accepted' || status.status === 'running')
     ? {
         tool: 'get_generation_status' as const,
         arguments: { jobId: status.jobId },
@@ -349,14 +352,23 @@ export async function getAgentGenerationStatus(
   if (status.seedanceWorkflow && dependencies.paidGenerationEnabled?.() === false) {
     status = { ...status, seedanceWorkflow: { ...status.seedanceWorkflow, finalizationAvailable: false } };
   }
-  return buildAgentGenerationRecovery(
+  const accessible = await buildOwnedGenerationMediaAccess(principal.userId, status);
+  const recovery = buildAgentGenerationRecovery(
     await enrichIncludedTrialStatus(
-      status,
+      accessible!,
       principal.userId,
       dependencies.readTrialStatus ?? readTrialJobStatus,
     ),
     dependencies.accountUrl ?? DEFAULT_ACCOUNT_URL,
   );
+  return withGenerationOpenUrl(recovery,principal);
+}
+
+function withGenerationOpenUrl(recovery:AgentGenerationRecovery,principal:AgentPrincipal):AgentGenerationRecovery {
+  const url = recovery.status==='completed' ? primaryGenerationMediaUrl(recovery.result) : null;
+  const openUrl = url && createMcpMediaLink({principal,origin:recovery.library.url,
+    source:{type:'generation',jobId:recovery.jobId},url});
+  return openUrl ? {...recovery,openUrl} : recovery;
 }
 
 function normalizeRecentInput(input: ListAgentRecentGenerationsInput): Required<
@@ -416,11 +428,13 @@ export async function listAgentRecentGenerations(
     principal.userId,
     dependencies.readTrialStatus ?? readTrialJobStatus,
   )));
+  const accessibleItems = await Promise.all(enrichedItems.map((status) =>
+    buildOwnedGenerationMediaAccess(principal.userId, status)));
   return {
-    items: enrichedItems.map((status) => buildAgentGenerationRecovery(
-      status,
+    items: accessibleItems.map((status) => withGenerationOpenUrl(buildAgentGenerationRecovery(
+      status!,
       dependencies.accountUrl ?? DEFAULT_ACCOUNT_URL,
-    )),
+    ),principal)),
     nextCursor: page.nextCursor,
   };
 }

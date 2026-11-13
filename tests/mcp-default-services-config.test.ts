@@ -17,6 +17,22 @@ const principal: AgentPrincipal = {
 const disabledCapabilities = Object.freeze({ paidGeneration: false, referenceUploads: false });
 const operationalCapabilities = Object.freeze({ paidGeneration: true, referenceUploads: true });
 
+test('resolved creator capability controls real default service profiles independently of public switches', async () => {
+  for (const [resolved, publicEnabled, expected] of [[true, false, true], [false, true, false], [undefined, true, true]] as const) {
+    const services = createDefaultMaxVideoAiMcpServices(
+      config('https://openai-review.maxvideoai.com'), { clientIp: null, userAgent: null },
+      { ...operationalCapabilities, creatorTools: resolved }, undefined, undefined,
+      { CREATOR_TOOLS_ENABLED: publicEnabled ? '1' : '0', MCP_CREATOR_TOOLS_ENABLED: publicEnabled ? '1' : '0' },
+    );
+    const discovery = await services.creatorTools!.list(principal) as {
+      tools: Array<{ profiles: Array<{ qualification?: string; deploymentGateOpen?: boolean }> }>;
+    };
+    const canonical = discovery.tools.flatMap(tool => tool.profiles).filter(profile => profile.qualification === 'canonical');
+    assert.ok(canonical.length > 0);
+    assert.ok(canonical.every(profile => profile.deploymentGateOpen === expected));
+  }
+});
+
 function config(resourceOrigin: string): McpConfig {
   const resource = new URL('/mcp', resourceOrigin);
   return {

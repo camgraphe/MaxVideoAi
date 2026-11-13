@@ -144,19 +144,40 @@ test('public pricing baseline freezes the estimator per-image branch actually re
   assert.equal(nanoBanana?.customerTotalCents, 7);
 });
 
-test('Sora and Seedance 1.5 retirement removes purchasable projections without replacing the frozen workspace sample', async () => {
+test('Sora, Seedance 1.5 and Pika retirement removes purchasable projections without replacing the frozen workspace sample', async () => {
   const { collectPublicPricingProjectionRows } = await import('../frontend/scripts/pricing-public-baseline-collector');
   const rows = await collectPublicPricingProjectionRows();
   assert.deepEqual(rows.filter((row) => row.surface === 'workspace-preflight').map((row) => row.engineId).sort(), [
-    'gemini-omni-flash', 'luma-ray-3-2', 'pika-text-to-video', 'veo-3-1', 'veo-3-1-fast', 'veo-3-1-lite',
+    'gemini-omni-flash', 'luma-ray-3-2', 'veo-3-1', 'veo-3-1-fast', 'veo-3-1-lite',
   ]);
-  for (const engineId of ['sora-2', 'sora-2-pro', 'seedance-1-5-pro']) {
+  for (const engineId of ['sora-2', 'sora-2-pro', 'seedance-1-5-pro', 'pika-text-to-video']) {
     assert.equal(rows.some((row) => row.engineId === engineId
       && ['estimator', 'pricing-hub-video', 'workspace-preflight'].includes(row.surface)), false);
     assert.deepEqual(rows.find((row) => row.id === `json-ld:${engineId}:offer`), {
       id: `json-ld:${engineId}:offer`, surface: 'json-ld', engineId, status: 'unavailable',
     });
   }
+});
+
+test('the frozen public Pika evidence survives current archive projection without repricing', async () => {
+  const frozen = JSON.parse(readFileSync('tests/fixtures/pricing-public-projections.v1.json', 'utf8')) as PublicProjectionFixture;
+  const historical = frozen.rows.filter(row => row.engineId === 'pika-text-to-video');
+  assert.equal(historical.length, 13);
+  assert.equal(historical.find(row => row.surface === 'json-ld')?.customerTotalCents, 30);
+  assert.equal(historical.find(row => row.surface === 'model-page')?.customerTotalCents, 26);
+  const repairs = JSON.parse(readFileSync('tests/fixtures/product-schema-customer-price-fix-2026-09-21.json', 'utf8')) as {
+    rows: Array<{ id: string; previousCents: number; totalCents: number }>;
+  };
+  const repair = repairs.rows.find(row => row.id === 'json-ld:pika-text-to-video:offer')!;
+  assert.equal(repair.previousCents, 30);
+  assert.equal(repair.totalCents, 26);
+  const { collectPublicPricingProjectionRows } = await import('../frontend/scripts/pricing-public-baseline-collector');
+  const current = (await collectPublicPricingProjectionRows()).filter(row => row.engineId === 'pika-text-to-video');
+  assert.deepEqual(current.map(row => row.surface).sort(), ['json-ld', 'model-page']);
+  assert.deepEqual(current.find(row => row.surface === 'json-ld'), {
+    id: 'json-ld:pika-text-to-video:offer', surface: 'json-ld', engineId: 'pika-text-to-video', status: 'unavailable',
+  });
+  assert.deepEqual(current.find(row => row.surface === 'model-page'), historical.find(row => row.surface === 'model-page'));
 });
 
 test('public pricing baseline ignores machine-specific pricing environment overrides', () => {
@@ -171,7 +192,7 @@ test('public pricing baseline ignores machine-specific pricing environment overr
     },
   });
   assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
-  assert.match(result.stdout, /current \(640 rows\)/);
+  assert.match(result.stdout, /current \(629 rows\)/);
 });
 
 test('Character Studio static rows retire only four fixed prices and require a current native quote', async () => {

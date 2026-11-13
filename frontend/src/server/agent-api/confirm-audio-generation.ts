@@ -1,3 +1,4 @@
+import { audioDispatchObservation } from '@/lib/audio-dispatch-observation';
 import { mapOutputRow, type DbJobOutputRow } from '@/server/media-library-records';
 import { promoteCompletedMcpJobOutputs } from '@/server/media-library/mcp-output-assets';
 import { getAudioPackConfig } from '@/lib/audio-generation';
@@ -39,6 +40,7 @@ export type AudioGenerationConfirmation = {
   currency: string | null;
   paymentStatus: string | null;
   retryAfterSeconds: number | null;
+  needsAttention?: boolean;
 };
 
 type AudioQuote = McpGenerationQuote<CanonicalAudioRequest>;
@@ -59,6 +61,8 @@ export type ConfirmAudioGenerationDependencies = {
   buildReservation(prepared: PreparedAudioRun, userId: string): Reservation;
   reserveInitialJob(input: Reservation['initialJob'], dependencies: { executor: TransactionQueryExecutor }): Promise<void>;
   claimPreparedQuote(input: OwnedQuoteJobInput, dependencies: { executor: TransactionQueryExecutor; claimedAt: Date }): Promise<AudioQuote | null>;
+  /** Trusted durable dispatch, committed atomically with reservation and quote claim. */
+  enqueueRun?(input: { quoteId: string; principal: GenerationActor; execution: ReservedAudioRun }, dependencies: { executor: TransactionQueryExecutor }): Promise<void>;
   executeRun(input: ReservedAudioRun): Promise<unknown>;
   markQuoteAccepted(input: OwnedQuoteJobInput): Promise<AudioQuote | null>;
   markQuoteFailed(input: OwnedQuoteJobInput): Promise<AudioQuote | null>;
@@ -167,7 +171,7 @@ async function defaultPriceCurrentRun(
 
 type AudioStatusRow = {
   job_id: unknown; surface: unknown; status: unknown; progress: unknown;
-  message: unknown; final_price_cents: unknown; currency: unknown; payment_status: unknown;
+  message: unknown; final_price_cents: unknown; currency: unknown; payment_status: unknown; settings_snapshot: unknown;
 };
 
 async function readAudioStatus(
@@ -175,7 +179,7 @@ async function readAudioStatus(
   executor: QueryExecutor = { query },
 ): Promise<AudioGenerationConfirmation | null> {
   const rows = await executor.query<AudioStatusRow>(
-    `SELECT job_id, surface, status, progress, message, final_price_cents, currency, payment_status
+    `SELECT job_id, surface, status, progress, message, final_price_cents, currency, payment_status, settings_snapshot
        FROM app_jobs
       WHERE job_id = $1 AND user_id = $2 AND surface = 'audio'
       LIMIT 1`,
@@ -192,6 +196,7 @@ async function readAudioStatus(
     ? Math.max(0, Math.min(100, Math.round(row.progress)))
     : null;
   const paymentStatus = typeof row.payment_status === 'string' ? row.payment_status : null;
+  const dispatch = audioDispatchObservation(row.settings_snapshot, status);
   const message = status === 'failed'
     ? paymentStatus === 'refunded_wallet'
       ? 'MaxVideoAI could not complete this Audio attempt. The wallet charge was refunded. Prepare a fresh quote before trying again.'
@@ -202,11 +207,12 @@ async function readAudioStatus(
     surface: 'audio',
     status,
     progress: status === 'completed' ? 100 : progress,
-    message,
+    message: dispatch.message ?? message,
+    ...(dispatch.needsAttention ? { needsAttention: true } : {}),
     priceCents: Number.isSafeInteger(row.final_price_cents) ? Number(row.final_price_cents) : null,
     currency: typeof row.currency === 'string' && /^[A-Z]{3}$/u.test(row.currency.toUpperCase()) ? row.currency.toUpperCase() : null,
     paymentStatus,
-    retryAfterSeconds: status === 'accepted' || status === 'running' ? 5 : null,
+    retryAfterSeconds: !dispatch.needsAttention && (status === 'accepted' || status === 'running') ? 5 : null,
   };
 }
 
@@ -348,6 +354,7 @@ async function confirmationTransaction(
     if (!claimed || claimed.state !== 'claimed' || claimed.jobId !== reservation.initialJob.jobId) {
       throw new AgentApiError('INTERNAL_ERROR', 'The Audio quote could not be claimed.');
     }
+    await dependencies.enqueueRun?.({ quoteId: input.quoteId, principal, execution: reservation.execution }, { executor });
     return { kind: 'created', reservation };
   });
 }
@@ -384,6 +391,7 @@ export async function confirmAudioGenerationForActor(
     if (transaction.accepted) await promoteCompletedStatus(status, principal.userId, dependencies);
     return status;
   }
+  if (dependencies.enqueueRun) return requireStatus(principal.userId, transaction.reservation.initialJob.jobId, dependencies);
   const mutation = {
     quoteId: input.quoteId,
     userId: principal.userId,

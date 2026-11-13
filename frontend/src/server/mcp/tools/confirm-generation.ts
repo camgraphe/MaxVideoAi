@@ -1,3 +1,5 @@
+import { withToolErrorOutput } from '@/server/mcp/output-schemas/tool-errors';
+import { generationRecoveryOutputSchema } from '@/server/mcp/output-schemas/generation';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import * as z from 'zod/v4';
 
@@ -5,6 +7,7 @@ import { buildGenerationResourceLinks } from '@/server/agent-api/generation-stat
 import type { AgentPrincipal } from '@/server/agent-api/principal';
 import type { MaxVideoAiMcpServices } from '@/server/mcp/server';
 import { runAgentToolWithResourceLinks } from '@/server/mcp/tool-result';
+import type { McpDistributionProfile } from '@/server/mcp/distribution-profile';
 
 export const confirmGenerationInputSchema = z.object({
   quoteId: z.string().uuid(),
@@ -15,6 +18,7 @@ export function registerConfirmGenerationTool(
   server: McpServer,
   principal: AgentPrincipal,
   services: MaxVideoAiMcpServices,
+  profile: McpDistributionProfile = 'direct',
 ): void {
   if (!services.confirmGeneration) {
     throw new Error('confirm_generation service is required when its gate is enabled.');
@@ -35,6 +39,7 @@ export function registerConfirmGenerationTool(
         'An accepted job is not a completed result.',
       ].join(' '),
       inputSchema: confirmGenerationInputSchema,
+      ...(profile === 'openai-directory' ? { outputSchema: withToolErrorOutput(generationRecoveryOutputSchema) } : {}),
       annotations: {
         readOnlyHint: false,
         destructiveHint: true,
@@ -45,6 +50,7 @@ export function registerConfirmGenerationTool(
     async (input) => runAgentToolWithResourceLinks(
       () => services.confirmGeneration!(input, principal),
       buildGenerationResourceLinks,
+      { profile, tool: 'confirm_generation' },
     ),
   );
 }

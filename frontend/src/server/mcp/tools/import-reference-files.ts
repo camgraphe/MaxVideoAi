@@ -1,3 +1,6 @@
+import { withToolErrorOutput } from '@/server/mcp/output-schemas/tool-errors';
+import type { McpDistributionProfile } from '@/server/mcp/distribution-profile';
+import { importReferenceFilesOutputSchema } from '@/server/mcp/output-schemas/references';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import * as z from 'zod/v4';
 
@@ -21,6 +24,7 @@ export function registerImportReferenceFilesTool(
   server: McpServer,
   principal: AgentPrincipal,
   services: MaxVideoAiMcpServices,
+  profile: McpDistributionProfile = 'direct',
 ): void {
   if (!services.importReferenceFiles) {
     throw new Error('import_reference_files service is required when reference uploads are enabled.');
@@ -38,6 +42,7 @@ export function registerImportReferenceFilesTool(
         'When the host cannot expose a file handle, use create_reference_upload_link instead.',
       ].join(' '),
       inputSchema: importReferenceFilesInputSchema,
+      ...(profile === 'openai-directory' ? { outputSchema: withToolErrorOutput(importReferenceFilesOutputSchema) } : {}),
       annotations: {
         readOnlyHint: false,
         destructiveHint: false,

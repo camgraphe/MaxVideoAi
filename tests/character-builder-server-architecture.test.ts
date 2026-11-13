@@ -9,6 +9,7 @@ const builderDir = join(root, 'frontend/src/server/tools/character-builder');
 const modules = [
   'error.ts',
   'prompt.ts',
+  'preparation.ts',
   'trait-prompt.ts',
   'runner.ts',
   'sanitize.ts',
@@ -67,6 +68,10 @@ test('character builder focused modules expose the expected contracts', () => {
   assert.match(readModule('sanitize.ts'), /export function sanitizeRequest/);
   assert.match(readModule('snapshot.ts'), /export function buildSettingsSnapshot/);
   assert.match(readModule('runner.ts'), /export async function runCharacterBuilder/);
+  assert.match(readModule('runner.ts'), /from '\.\/preparation'/);
+  assert.doesNotMatch(readModule('runner.ts'), /from '\.\/(prompt|sanitize|snapshot)'/);
+  assert.match(readModule('preparation.ts'), /export function prepareCharacterBuilderRequest/);
+  assert.doesNotMatch(readModule('preparation.ts'), /executeImageGeneration|resolveStudioLookRequest|from ['"].*db|fetch\(/);
   assert.match(readModule('utils.ts'), /export function buildImageUrls/);
   assert.match(readModule('traits.ts'), /export function buildAnchorParts/);
 });

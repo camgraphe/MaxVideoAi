@@ -1,0 +1,59 @@
+{
+  "evidence": "local canonical subtitle pricing; explicit policy availability injected, no real quote, wallet, provider, invoice or production tariff mutation",
+  "rows": [
+    {
+      "durationSec": 10,
+      "supplierListUsd": 0.0013333333333333333,
+      "customerAmountCents": 1,
+      "keytermsSupplierListUsd": 0.0017333333333333333,
+      "keytermsCustomerAmountCents": 1,
+      "policy": "creator-subtitles:provider-plus-200:v1",
+      "multiplier": 3
+    },
+    {
+      "durationSec": 30,
+      "supplierListUsd": 0.004,
+      "customerAmountCents": 1,
+      "keytermsSupplierListUsd": 0.005200000000000001,
+      "keytermsCustomerAmountCents": 3,
+      "policy": "creator-subtitles:provider-plus-200:v1",
+      "multiplier": 3
+    },
+    {
+      "durationSec": 60,
+      "supplierListUsd": 0.008,
+      "customerAmountCents": 3,
+      "keytermsSupplierListUsd": 0.010400000000000001,
+      "keytermsCustomerAmountCents": 4,
+      "policy": "creator-subtitles:provider-plus-200:v1",
+      "multiplier": 3
+    },
+    {
+      "durationSec": 240,
+      "supplierListUsd": 0.032,
+      "customerAmountCents": 10,
+      "keytermsSupplierListUsd": 0.041600000000000005,
+      "keytermsCustomerAmountCents": 13,
+      "policy": "creator-subtitles:provider-plus-200:v1",
+      "multiplier": 3
+    },
+    {
+      "durationSec": 600,
+      "supplierListUsd": 0.08,
+      "customerAmountCents": 24,
+      "keytermsSupplierListUsd": 0.10400000000000001,
+      "keytermsCustomerAmountCents": 31,
+      "policy": "creator-subtitles:provider-plus-200:v1",
+      "multiplier": 3
+    },
+    {
+      "durationSec": 1800,
+      "supplierListUsd": 0.24,
+      "customerAmountCents": 72,
+      "keytermsSupplierListUsd": 0.312,
+      "keytermsCustomerAmountCents": 94,
+      "policy": "creator-subtitles:provider-plus-200:v1",
+      "multiplier": 3
+    }
+  ]
+}

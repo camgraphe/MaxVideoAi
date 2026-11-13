@@ -176,7 +176,7 @@ test('a generic HTTP 400 remains separate from the unconfirmed-email recovery ac
 test('signup confirmation stays visible after a duplicate submission attempt',async()=>{
  const f=await mount();
  try {await f.submitTwice(); await f.w.fx.act(async()=>f.requests[0].resolve(success));
-   assert.equal(f.requests.length,1); assert.equal(f.consents,1);
+   assert.equal(f.requests.length,1); assert.equal(f.consents,0);
    assert.match(f.w.document.querySelector('[role=status]')?.textContent??'',/click “Confirm my email”/);
    assert.equal(f.w.controller.error,null); assert.equal(f.submit.disabled,false);
  }finally{await f.dispose();}
@@ -191,7 +191,7 @@ for (const nextMode of ['signup', 'signin', 'reset']) test(`pending signup keeps
     await f.submitTwice();
     assert.equal(f.requests.length, 1);
     await f.w.fx.act(async () => f.requests[0].resolve(success));
-    assert.equal(f.consents, 1);
+    assert.equal(f.consents, 0);
     assert.match(f.w.controller.status, /click “Confirm my email”/);
     assert.equal(f.submit.disabled, false);
     await f.w.fx.act(async () => f.w.controller.onModeChange('signin'));
@@ -200,13 +200,13 @@ for (const nextMode of ['signup', 'signin', 'reset']) test(`pending signup keeps
   } finally { await f.dispose(); }
 });
 
-test('a dispatched signup still persists captured consent after leaving the form', async () => {
+test('an unconfirmed signup does not write unauthenticated consent after leaving the form', async () => {
   const f = await mount();
   try {
     await f.submitTwice();
     await f.w.fx.act(async () => f.w.fx.unmount());
     await f.w.fx.act(async () => f.requests[0].resolve(success));
-    assert.equal(f.consents, 1);
+    assert.equal(f.consents, 0);
   } finally { await f.dispose(); }
 });
 test('unmount before client readiness prevents signup dispatch',async()=>{

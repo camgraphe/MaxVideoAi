@@ -20,17 +20,13 @@ const principal: AgentPrincipal = {
 };
 
 test('every capability combination fits the host instruction window without truncation', () => {
-  for (let mask = 0; mask < 128; mask += 1) {
-    const instructions = buildMaxVideoAiMcpInstructions({
-      paidGeneration: Boolean(mask & 1),
-      referenceUploads: Boolean(mask & 2),
-      audioGeneration: Boolean(mask & 4),
-      montagePreparation: Boolean(mask & 8),
-      studioMontageCreation: Boolean(mask & 16),
-      studioTimelineEditing: Boolean(mask & 32), studioExports: Boolean(mask & 64),
-    });
-    assert.ok(Buffer.byteLength(instructions, 'utf8') <= 2000,
-      `capabilities ${mask}: ${Buffer.byteLength(instructions, 'utf8')} bytes exceeds the 2000-byte host budget`);
+  const keys=['paidGeneration','referenceUploads','audioGeneration','montagePreparation',
+    'studioMontageCreation','studioTimelineEditing','studioExports','creatorTools','characterStudio','characterBuilder'] as const;
+  for (let mask=0;mask<2**keys.length;mask+=1) {
+    const options=Object.fromEntries(keys.map((key,index)=>[key,Boolean(mask&(1<<index))]));
+    const instructions=buildMaxVideoAiMcpInstructions(options);
+    assert.ok(Buffer.byteLength(instructions,'utf8')<=2000,
+      `capabilities ${mask}: ${Buffer.byteLength(instructions,'utf8')} bytes exceeds the2000-byte host budget`);
   }
 });
 
@@ -133,7 +129,7 @@ const allCapabilities = {
   studioTimelineEditing: true, studioExports: true,
 };
 
-test('discovery routes only to tools actually advertised for every gate combination', async () => {
+test('discovery routes only to tools actually advertised for every core gate combination', async () => {
   for (let mask = 0; mask < 128; mask += 1) {
     const options = {
       paidGeneration: Boolean(mask & 1), referenceUploads: Boolean(mask & 2),

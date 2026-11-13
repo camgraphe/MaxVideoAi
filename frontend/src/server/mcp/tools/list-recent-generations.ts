@@ -1,3 +1,6 @@
+import { withToolErrorOutput } from '@/server/mcp/output-schemas/tool-errors';
+import type { McpDistributionProfile } from '@/server/mcp/distribution-profile';
+import { listRecentGenerationsOutputSchema } from '@/server/mcp/output-schemas/generation';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import * as z from 'zod/v4';
 
@@ -17,6 +20,7 @@ export function registerListRecentGenerationsTool(
   server: McpServer,
   principal: AgentPrincipal,
   services: MaxVideoAiMcpServices,
+  profile: McpDistributionProfile = 'direct',
 ): void {
   if (!services.listRecentGenerations) {
     throw new Error('list_recent_generations service is required when its gate is enabled.');
@@ -34,6 +38,7 @@ export function registerListRecentGenerationsTool(
         'Completed results can be delivered through present_generation.',
       ].join(' '),
       inputSchema: listRecentGenerationsInputSchema,
+      ...(profile === 'openai-directory' ? { outputSchema: withToolErrorOutput(listRecentGenerationsOutputSchema) } : {}),
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,

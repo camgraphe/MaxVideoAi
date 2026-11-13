@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/Button';
+import { LEGAL_MIN_AGE } from '@/lib/legal-policy';
 import { MCP_OAUTH_CONSENT_COPY as copy } from '../_lib/consent-copy';
 
 type OAuthConsentFormProps = {
@@ -44,10 +45,17 @@ export function OAuthConsentForm({
           {connectionBindingToken ? (
             <input type="hidden" name="mcp_binding" value={connectionBindingToken} />
           ) : null}
+          <label className="flex w-full items-start gap-3 text-sm text-text-secondary">
+            <input type="checkbox" name="age_confirmed" value="true" required className="mt-1" />
+            <span>
+              I confirm I am at least {LEGAL_MIN_AGE} years old and have reached the age of legal majority in my country,
+              as required by the <a href="/legal/terms" target="_blank" rel="noopener noreferrer" className="text-brand underline">Terms of Service</a>.
+            </span>
+          </label>
           <Button type="submit" name="decision" value="approve">
             {copy.approve}
           </Button>
-          <Button type="submit" name="decision" value="deny" variant="outline">
+          <Button type="submit" name="decision" value="deny" variant="outline" formNoValidate>
             {copy.deny}
           </Button>
         </form>

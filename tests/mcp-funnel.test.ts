@@ -104,6 +104,34 @@ test('migration runner parses a lowercase direct Neon host and wraps every file 
   assert.ok(psqlInvocations.every((line) => line.includes('--single-transaction')));
 });
 
+test('migration runner orders numeric prefixes before full names, including three-digit and shared prefixes', (t) => {
+  const temporaryRoot = mkdtempSync(join(tmpdir(), 'neon migrations ordered-'));
+  const scriptDir = join(temporaryRoot, 'scripts');
+  const migrationDir = join(temporaryRoot, 'neon/migrations');
+  const fakeBin = join(temporaryRoot, 'bin');
+  for (const directory of [scriptDir, migrationDir, fakeBin]) mkdirSync(directory, {recursive: true});
+  t.after(() => rmSync(temporaryRoot, {recursive: true, force: true}));
+  const runner = join(scriptDir, 'apply-neon-migrations.sh');
+  writeFileSync(runner, readFileSync(migrationRunnerPath, 'utf8'));
+  const expected = ['02_profiles.sql', '10_jobs.sql', '30_mcp_generation_quotes.sql',
+    '99_legal_adult_eligibility.sql', '99_openai_conversion_outbox.sql',
+    '100_audio_generation_dispatch.sql', '101_character_builder_quotes.sql'];
+  for (const name of expected.slice().reverse()) writeFileSync(join(migrationDir, name), '-- local ordering fixture only');
+  const fakePsql = join(fakeBin, 'psql');
+  writeFileSync(fakePsql, '#!/bin/sh\nprintf "FAKE_PSQL %s\\n" "$*"\n');
+  chmodSync(fakePsql, 0o755);
+  const result = spawnSync('bash', [runner], {encoding: 'utf8', env: {...process.env,
+    PATH: `${fakeBin}:${process.env.PATH ?? ''}`, DATABASE_URL: '',
+    DATABASE_URL_UNPOOLED: 'postgresql://fixture:fixture@ep-order.eu-west-1.aws.neon.tech/fixture',
+  }});
+  assert.equal(result.status, 0, result.stderr);
+  const observed = result.stdout.split('\n').filter(line => line.startsWith('==> ')).map(line => line.slice(4));
+  assert.deepEqual(observed, expected, 'Migrations100/101 must follow the quote prerequisite30 and every99 identity.');
+  const calls = result.stdout.split('\n').filter(line => line.startsWith('FAKE_PSQL '));
+  assert.equal(calls.length, expected.length);
+  assert.ok(calls.every(line => line.includes('--single-transaction') && line.includes('ON_ERROR_STOP=1')));
+});
+
 test('funnel migration creates a constrained explicit immutable ledger without sensitive columns', () => {
   assert.equal(existsSync(migrationPath), true);
   const migration = readFileSync(migrationPath, 'utf8');

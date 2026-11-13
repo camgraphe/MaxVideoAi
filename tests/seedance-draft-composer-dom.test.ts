@@ -96,7 +96,7 @@ test('hydrated Kling subject reference slots occupy the first composer render', 
 
 test('unavailable Draft controls do not add instructions or override normal generation labels', () => {
   const controls = { available: false, selected: false, phase: 'setup', live: true, toggle: noop, generate: noop } as const;
-  for (const [engineId, mode, iterations] of [['pika-text-to-video', 't2v', 1], ['seedance-2-5', 'ref2v', 1], ['seedance-2-5', 't2v', 2]] as const) {
+  for (const [engineId, mode, iterations] of [['kling-3-pro', 't2v', 1], ['seedance-2-5', 'ref2v', 1], ['seedance-2-5', 't2v', 2]] as const) {
     const dom = composer(engineId, controls, mode, iterations);
     try {
       assert.doesNotMatch(dom.window.document.body.textContent ?? '', /Draft|Parcours local|admin/);

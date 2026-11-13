@@ -417,11 +417,13 @@ test('Seedance 2.5 and Seedance 2.0 lead the app menu while P1 models enter mark
     'luma',
     'grok',
     'flux',
-    'pika',
     'hailuo',
   ];
   assert.deepEqual(MARKETING_NAV_EXAMPLES.map((item) => item.key), ['ltx', 'kling', 'seedance', 'wan', 'veo', 'hailuo', 'happy-horse']);
   assert.deepEqual(MARKETING_FOOTER_EXAMPLES.map((item) => item.key).sort(), expectedExampleFamilies.slice().sort());
+  assert.equal(getExampleNavFamilyIds().includes('pika'), false);
+  assert.equal(getExampleFamilyIds().includes('pika'), true, 'historical family routes remain published');
+  assert.equal(resolveExampleFamilyId('pika-image-to-video'), 'pika');
 });
 
 test('Seedance 1.5 Pro stays historical while Seedance 2.0 keeps the primary alias and promoted slots', () => {

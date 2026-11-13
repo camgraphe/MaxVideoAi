@@ -89,3 +89,20 @@ test('all creator and existing instruction gates fit the host window', t => {
   }
   t.diagnostic(`Largest instructions across 256 gate combinations: ${largest} bytes.`);
 });
+test('subtitle descriptors disclose included processing and retain exact-price approval', async () => {
+  const connection = await clientFor({ paidGeneration: true, referenceUploads: true, creatorTools: true, studioTimelineEditing: true });
+  try {
+    const tools = (await connection.client.listTools()).tools;
+    const description = (name: string) => tools.find(tool => tool.name === name)?.description ?? '';
+    assert.match(description('prepare_creator_tool'), /burn-in.*included/i);
+    assert.match(description('prepare_subtitle_export'), /burn-in.*included|included.*burn-in/i);
+    assert.doesNotMatch(description('prepare_subtitle_export'), /paid burn-in/i);
+    assert.match(description('prepare_studio_subtitles'), /mix preparation.*included/i);
+    assert.doesNotMatch(description('prepare_studio_subtitles'), /both mix-preparation and transcription charges/i);
+    for (const name of ['prepare_creator_tool', 'prepare_subtitle_export', 'prepare_studio_subtitles']) {
+      assert.match(description(name), /exact.*(?:price|total)/i);
+      assert.match(description(name), /explicit (?:user )?approval/i);
+    }
+    assert.match(description('confirm_creator_tool'), /included zero-price.*require confirmation/i);
+  } finally { await connection.close(); }
+});

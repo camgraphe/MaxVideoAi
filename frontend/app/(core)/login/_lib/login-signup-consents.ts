@@ -1,17 +1,17 @@
 type PasswordSignupData = {
   user: { id: string; identities?: readonly unknown[] } | null;
-  session: object | null;
+  session: { access_token: string; user: { id: string } } | null;
 };
 
 export async function submitPasswordSignupConsents(
   data: PasswordSignupData,
-  submitConsents: (userId: string) => Promise<void>
+  submitConsents: (userId: string, accessToken: string) => Promise<void>
 ): Promise<boolean> {
-  // Supabase masks an existing confirmed account with a synthetic user and
-  // empty identities. That id cannot own consent records in our application.
-  if (!data.user || (!data.session && data.user.identities?.length === 0)) {
+  // A user id alone is not proof of ownership. Unconfirmed and obfuscated
+  // signups must complete authenticated reconsent after email verification.
+  if (!data.user || !data.session?.access_token || data.session.user.id !== data.user.id) {
     return false;
   }
-  await submitConsents(data.user.id);
+  await submitConsents(data.user.id, data.session.access_token);
   return true;
 }

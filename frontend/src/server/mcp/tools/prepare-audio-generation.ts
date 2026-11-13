@@ -1,4 +1,7 @@
+import { withToolErrorOutput } from '@/server/mcp/output-schemas/tool-errors';
 import { AUDIO_ELEVEN_VOICE_IDS } from '@/lib/audio-eleven-voices';
+import type { McpDistributionProfile } from '@/server/mcp/distribution-profile';
+import { prepareAudioGenerationOutputSchema } from '@/server/mcp/output-schemas/audio-montage';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import * as z from 'zod/v4';
 
@@ -84,6 +87,7 @@ export function registerPrepareAudioGenerationTool(
   server: McpServer,
   principal: AgentPrincipal,
   services: MaxVideoAiMcpServices,
+  profile: McpDistributionProfile = 'direct',
 ): void {
   if (!services.prepareAudioGeneration) {
     throw new Error('prepare_audio_generation service is required when Audio publication is enabled.');
@@ -102,12 +106,13 @@ export function registerPrepareAudioGenerationTool(
         'Never infer approval from discussion or funding.',
       ].join(' '),
       inputSchema: prepareAudioGenerationInputSchema,
+      ...(profile === 'openai-directory' ? { outputSchema: withToolErrorOutput(prepareAudioGenerationOutputSchema) } : {}),
       annotations: {
         readOnlyHint: false,
         destructiveHint: false,
         openWorldHint: false,
       },
     },
-    async (input) => runAgentTool(() => services.prepareAudioGeneration!(input, principal)),
+    async (input) => runAgentTool(() => services.prepareAudioGeneration!(input, principal), { profile, tool: 'prepare_audio_generation' }),
   );
 }

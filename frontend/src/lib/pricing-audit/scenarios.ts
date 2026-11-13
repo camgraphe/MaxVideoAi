@@ -92,9 +92,15 @@ function addEngineDefaultScenarios(rows: PricingAuditScenario[], entry: ReturnTy
   });
 }
 
-export function buildPricingAuditScenarios(): PricingAuditScenario[] {
+export function buildPricingAuditScenarios(
+  options: { scope?: 'current' | 'historical' } = {},
+): PricingAuditScenario[] {
   const allEntries = listFalEngines();
-  const entries = allEntries.filter((entry) => entry.surfaces.pricing.includeInEstimator);
+  const historical = options.scope === 'historical';
+  // Frozen audit identities cannot follow public ordering or publication sunsets.
+  // These entries remain facts for replay; no public flag or live quote is changed.
+  const entries = allEntries.filter((entry) => entry.surfaces.pricing.includeInEstimator
+    || (historical && entry.id === 'pika-text-to-video'));
   const rows: PricingAuditScenario[] = [];
 
   for (const entry of entries) {
@@ -134,8 +140,13 @@ export function buildPricingAuditScenarios(): PricingAuditScenario[] {
     });
   }
 
-  const videoEntry = entries.find((entry) => entry.category !== 'image');
-  const imageEntry = entries.find((entry) => entry.category === 'image');
+  const historicalEntry = (id: string) => {
+    const entry = allEntries.find((candidate) => candidate.id === id);
+    if (!entry) throw new Error(`Missing frozen pricing audit engine ${id}`);
+    return entry;
+  };
+  const videoEntry = historical ? historicalEntry('pika-text-to-video') : entries.find((entry) => entry.category !== 'image');
+  const imageEntry = historical ? historicalEntry('luma-uni-1') : entries.find((entry) => entry.category === 'image');
   if (videoEntry) {
     for (const preset of PRICING_HUB_PRESETS) {
       addScenario(rows, {

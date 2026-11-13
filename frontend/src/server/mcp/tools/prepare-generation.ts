@@ -1,5 +1,7 @@
+import { withToolErrorOutput } from '@/server/mcp/output-schemas/tool-errors';
 import { VIDEO_OPERATIONS } from '@/lib/video-operation';
 import {MAX_GENERATION_REFERENCES} from '@/lib/generation-reference-limits';
+import { prepareGenerationOutputSchema } from '@/server/mcp/output-schemas/generation';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import * as z from 'zod/v4';
 
@@ -8,6 +10,7 @@ import { CANONICAL_GENERATION_MODES } from '@/server/agent-api/generation-types'
 import type { MaxVideoAiMcpServices } from '@/server/mcp/server';
 import { omitNullishToolInput } from '@/server/mcp/optional-tool-input';
 import { runAgentTool } from '@/server/mcp/tool-result';
+import type { McpDistributionProfile } from '@/server/mcp/distribution-profile';
 
 const referenceRole = z.enum(['source', 'reference', 'first_frame', 'middle_frame', 'last_frame', 'mask']);
 const referenceMediaKind = z.enum(['image', 'video', 'audio']);
@@ -185,6 +188,7 @@ export function registerPrepareGenerationTool(
   server: McpServer,
   principal: AgentPrincipal,
   services: MaxVideoAiMcpServices,
+  profile: McpDistributionProfile = 'direct',
 ): void {
   if (!services.prepareGeneration) {
     throw new Error('prepare_generation service is required when its gate is enabled.');
@@ -205,12 +209,15 @@ export function registerPrepareGenerationTool(
         'For video duration use settings.durationSec, never settings.duration.',
         'Use only supported settings and ordered reference roles; never infer constraints from a sibling mode.',
         'Treat expiresAt as UTC; declare definitive expiry only on QUOTE_EXPIRED, not a local-date comparison.',
-        'If credits are insufficient, use create_topup_link for this quote.',
+        profile === 'openai-directory'
+          ? 'If existing account entitlements are insufficient, explain the limitation and stop; purchases are unavailable in this integration.'
+          : 'If credits are insufficient, use create_topup_link for this quote.',
         'Funding, discussion and ambiguous assent do not approve generation.',
         'Never substitute a named model or use a quote as a generation result.',
         'After the quote, briefly invite another model, resolution, duration or budget for a new quote and price comparison; use compare_generation_prices for actual savings, never guess.',
       ].join(' '),
       inputSchema: prepareGenerationInputSchema,
+      ...(profile === 'openai-directory' ? { outputSchema: withToolErrorOutput(prepareGenerationOutputSchema) } : {}),
       annotations: {
         readOnlyHint: false,
         destructiveHint: false,
@@ -220,6 +227,6 @@ export function registerPrepareGenerationTool(
     async (input) => runAgentTool(() => services.prepareGeneration!(
       normalizePrepareGenerationInput(input),
       principal,
-    )),
+    ), { profile, tool: 'prepare_generation' }),
   );
 }
