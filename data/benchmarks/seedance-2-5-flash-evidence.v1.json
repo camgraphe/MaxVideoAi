@@ -1,0 +1,166 @@
+{
+  "version": "1.0.0",
+  "modelSlug": "seedance-2-5-flash",
+  "modelVersion": "dreamina-seedance-2-5-flash-261115",
+  "reviewedAt": "2026-11-14",
+  "reviewStatus": "editorial-estimated",
+  "methodologyFile": "benchmark-methodology.v1.json",
+  "scoreFile": "engine-scores.v1.json",
+  "editorialReview": {
+    "basis": "Exact-model documentation and attributed first-person reports; conservative editorial judgments on the existing 0–10 scale.",
+    "ownedCompletedSamples": 0,
+    "controlledBenchmark": false,
+    "independentReviewCompleted": false,
+    "overall": 8.0,
+    "overallFields": ["fidelity", "motion", "consistency"],
+    "calibration": "Each value is a provisional judgment, not a numerical result published by a source. Limited observations support the core visual criteria. Text, dialogue and multi-shot scores are low-confidence priors and need targeted outputs. No standard Seedance score, leaderboard rank or vendor speed claim is converted into a Flash score."
+  },
+  "sources": [
+    {
+      "id": "dreamina-flash",
+      "title": "Dreamina — Seedance 2.5 Flash",
+      "url": "https://dreamina.capcut.com/seedance/seedance-2-5-flash",
+      "accessedAt": "2026-11-14",
+      "kind": "official-model-page",
+      "observation": "Describes 480p/720p iteration, first/end frames, multimodal references and generated audio. Gives product-motion, poster-text and storyboard prompts. Positions standard 2.5 for higher-quality finals.",
+      "limits": "Prompts and marketing descriptions are not reviewed output evidence. No Flash legibility, phoneme alignment or explicit-cut accuracy measurement was retrieved."
+    },
+    {
+      "id": "quantslant-flash",
+      "title": "Quantslant — Seedance 2.5 Flash: what it does, price and my 720p test",
+      "url": "https://quantslant.com/seedance-2-5-flash/",
+      "author": "Piotr Olszewski",
+      "reportedTestDate": "2026-11-12",
+      "accessedAt": "2026-11-14",
+      "kind": "first-person-commercial-provider-report",
+      "retrieval": "Indexed article text; direct page retrieval was unavailable.",
+      "observation": "Reports three 5-second 720p text-only clips: coffee preparation, cycling and a boat. The author describes clean imagery, intact hands and appropriate ambience, with submission-to-file times of 157, 165 and 180 seconds.",
+      "limits": "Author-reported observations, not our playback review. Three selected scenes do not establish general reliability, dialogue accuracy, text rendering or MaxVideoAI latency. Retail prices from that service are excluded."
+    },
+    {
+      "id": "spicyapi-flash",
+      "title": "SpicyAPI — Seedance 2.5 Flash model tests",
+      "url": "https://spicyapi.ai/models/seedance-2-5-flash",
+      "reportedTestDate": "2026-11-13",
+      "accessedAt": "2026-11-14",
+      "kind": "first-person-commercial-provider-report",
+      "retrieval": "Indexed model-page text; direct page retrieval was unavailable.",
+      "observation": "Reports a portrait returning to its source pose, a two-image character/product render and a street edit retaining source audio. A repeated 4-second 480p request took 84 seconds and 4.8 minutes; its broader sample ranged to about 11 minutes.",
+      "limits": "Selected vendor-reported runs, not an independent controlled set. Provider-specific endpoints, pricing and containers do not establish MaxVideoAI support. Audio retention does not prove speech alignment."
+    },
+    {
+      "id": "byteplus-pricing",
+      "title": "BytePlus ModelArk pricing",
+      "url": "https://console.byteplus.com/ark/region:ap-southeast-1/docs/model-pricing",
+      "accessedAt": "2026-11-13",
+      "kind": "official-supplier-list",
+      "observation": "Flash LIST rates are USD 0.007 per 1,000 tokens without video input and USD 0.0043 with video input. Supplier offers and account discounts are not customer tariffs."
+    },
+    {
+      "id": "maxvideoai-tariff-candidate",
+      "title": "MaxVideoAI Seedance tariff preparation",
+      "path": "docs/model-launch/seedance-2-5-flash.md",
+      "kind": "local-release-candidate",
+      "observation": "Prepared native admin imports use Flash LIST ×1.6 and standard 2.5 LIST ×2. For 5-second 16:9 text-to-video, prepared Flash customer amounts are USD 0.54 at 480p and USD 1.21 at 720p; standard amounts are USD 1.03 and USD 2.32. These are preparation evidence, not active production quotes.",
+      "limits": "The value estimate assumes the reviewed tariff candidate is activated. Public price components must still use the current canonical quote and never this dossier."
+    }
+  ],
+  "criterionAssessments": {
+    "fidelity": {
+      "score": 8.1,
+      "confidence": "low",
+      "support": "reported-output-observations",
+      "sourceIds": ["quantslant-flash", "spicyapi-flash"],
+      "rationale": "Simple scenes and the reported two-reference result support a promising initial adherence estimate; demanding constraints remain untested."
+    },
+    "visualQuality": {
+      "score": 8.1,
+      "confidence": "low",
+      "support": "reported-output-observations",
+      "sourceIds": ["quantslant-flash", "dreamina-flash"],
+      "rationale": "Reported clean 720p imagery supports this provisional assessment, without claiming flagship detail or reviewed MaxVideoAI renders."
+    },
+    "motion": {
+      "score": 8.0,
+      "confidence": "low",
+      "support": "reported-output-observations",
+      "sourceIds": ["quantslant-flash", "spicyapi-flash"],
+      "rationale": "Reported moving scenes and a return-to-pose example support a cautious estimate; physical stress cases have not been reviewed."
+    },
+    "consistency": {
+      "score": 7.9,
+      "confidence": "low",
+      "support": "reported-output-observations",
+      "sourceIds": ["spicyapi-flash"],
+      "rationale": "Endpoint-pose and reference reports offer limited continuity evidence, without a long-clip identity audit."
+    },
+    "anatomy": {
+      "score": 7.7,
+      "confidence": "low",
+      "support": "reported-output-observations",
+      "sourceIds": ["quantslant-flash"],
+      "rationale": "The author's hand observation is encouraging but too small a sample to establish human-object reliability."
+    },
+    "textRendering": {
+      "score": 6.5,
+      "confidence": "low",
+      "support": "indirect-capability-prior",
+      "sourceIds": ["dreamina-flash"],
+      "rationale": "Provisional editorial prior only. An official text-poster prompt is not a successful legibility test; exact words and stability remain unobserved."
+    },
+    "lipsyncQuality": {
+      "score": 7.0,
+      "confidence": "low",
+      "support": "indirect-capability-prior",
+      "sourceIds": ["dreamina-flash", "quantslant-flash"],
+      "rationale": "Audio capability and reported ambience motivate a tentative prior, not a demonstrated lip-sync result. A speaking-face test is still needed."
+    },
+    "sequencingQuality": {
+      "score": 7.0,
+      "confidence": "low",
+      "support": "indirect-capability-prior",
+      "sourceIds": ["dreamina-flash"],
+      "rationale": "Storyboard positioning motivates a tentative prior only; explicit shot order, cut transitions and identity across cuts have not been assessed."
+    },
+    "controllability": {
+      "score": 8.3,
+      "confidence": "low",
+      "support": "documented-controls-and-reported-outputs",
+      "sourceIds": ["dreamina-flash", "spicyapi-flash"],
+      "rationale": "Documented reference/frame controls and reported editing results support useful control breadth; repeatability remains unmeasured."
+    },
+    "speedStability": {
+      "score": 7.1,
+      "confidence": "low",
+      "support": "reported-delivery-times",
+      "sourceIds": ["quantslant-flash", "spicyapi-flash"],
+      "rationale": "Minutes-scale but variable reported delivery warrants caution. No guaranteed speedup, MaxVideoAI median, P90 or failure rate is inferred."
+    },
+    "pricing": {
+      "score": 8.4,
+      "confidence": "medium",
+      "support": "prepared-customer-tariff-comparison",
+      "sourceIds": ["byteplus-pricing", "maxvideoai-tariff-candidate"],
+      "rationale": "The approved markup yields a lower prepared 480p/720p customer price than standard 2.5 for the same simple shot. Value remains subjective and depends on usable output."
+    }
+  },
+  "publicCopy": {
+    "en": "Provisional editorial estimates from documentation and early external test reports; confidence is limited. No controlled MaxVideoAI test yet.",
+    "fr": "Estimations éditoriales provisoires fondées sur la documentation et de premiers tests externes ; confiance limitée. Aucun test contrôlé MaxVideoAI à ce stade.",
+    "es": "Estimaciones editoriales provisionales basadas en documentación y primeras pruebas externas; confianza limitada. Sin prueba controlada de MaxVideoAI por ahora."
+  },
+  "limitations": [
+    "The retrieved sources publish no directly comparable numerical Flash benchmark; all eleven points are MaxVideoAI editorial judgments.",
+    "Prompts are not outputs. Reported external observations were not reproduced or independently scored here.",
+    "Capability-only priors for text, lip sync and sequencing are not evidence of successful execution or observed failures.",
+    "Commercial sources may select favorable outputs. Sample counts, retries and exclusions are incomplete.",
+    "No owned Flash render completed: the two authorized BytePlus attempts returned 404 before task creation. Their failures do not measure image quality or runtime latency.",
+    "Exact-mode API qualification, real launch media and tariff activation remain release checks; marketing publication settings do not establish them.",
+    "MaxVideoAI sells access to these models. Scores must not be presented as an independent laboratory ranking."
+  ],
+  "nextReview": [
+    "Run the existing prompt pack after exact Flash API access works and paid scope is authorized.",
+    "Replace weak priors first: product text, speaking-face synchronization and explicit multi-shot continuity.",
+    "Reassess value against activated canonical quotes and keep operational latency in its separate production metric."
+  ]
+}

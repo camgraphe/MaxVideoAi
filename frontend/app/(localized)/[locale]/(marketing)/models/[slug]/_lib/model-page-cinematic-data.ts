@@ -15,9 +15,9 @@ const frameSchema = z.object({
 });
 
 const ui = {
-  en: { original: 'Open original', prompt: 'Prompt & settings', source: 'Exact edit source', compare: 'Reveal the edit', background: 'Preview background', light: 'Light', dark: 'Dark', motion: 'Planned motion', sound: 'Planned sound', still: 'Start frame · GPT Image 2.6 Sunburst', sourcePrompt: 'Image prompt (English)' },
-  fr: { original: 'Ouvrir l’original', prompt: 'Prompt et réglages', source: 'Source exacte de la retouche', compare: 'Révéler la retouche', background: 'Fond de prévisualisation', light: 'Clair', dark: 'Sombre', motion: 'Mouvement prévu', sound: 'Son prévu', still: 'Image de départ · GPT Image 2.6 Sunburst', sourcePrompt: 'Prompt de l’image (anglais)' },
-  es: { original: 'Abrir original', prompt: 'Prompt y ajustes', source: 'Origen exacto de la edición', compare: 'Mostrar la edición', background: 'Fondo de vista previa', light: 'Claro', dark: 'Oscuro', motion: 'Movimiento previsto', sound: 'Sonido previsto', still: 'Fotograma inicial · GPT Image 2.6 Sunburst', sourcePrompt: 'Prompt de imagen (inglés)' },
+  en: { copy: 'Copy prompt', copied: 'Copied', original: 'Open original', prompt: 'Prompt & settings', source: 'Exact edit source', compare: 'Reveal the edit', background: 'Preview background', light: 'Light', dark: 'Dark', motion: 'Planned motion', sound: 'Planned sound', still: 'Start frame · GPT Image 2.6 Sunburst', sourcePrompt: 'Image prompt (English)' },
+  fr: { copy: 'Copier le prompt', copied: 'Copié', original: 'Ouvrir l’original', prompt: 'Prompt et réglages', source: 'Source exacte de la retouche', compare: 'Révéler la retouche', background: 'Fond de prévisualisation', light: 'Clair', dark: 'Sombre', motion: 'Mouvement prévu', sound: 'Son prévu', still: 'Image de départ · GPT Image 2.6 Sunburst', sourcePrompt: 'Prompt de l’image (anglais)' },
+  es: { copy: 'Copiar prompt', copied: 'Copiado', original: 'Abrir original', prompt: 'Prompt y ajustes', source: 'Origen exacto de la edición', compare: 'Mostrar la edición', background: 'Fondo de vista previa', light: 'Claro', dark: 'Oscuro', motion: 'Movimiento previsto', sound: 'Sonido previsto', still: 'Fotograma inicial · GPT Image 2.6 Sunburst', sourcePrompt: 'Prompt de imagen (inglés)' },
 };
 
 export type CinematicAsset = Pick<ModelEditorialImage, 'id' | 'title' | 'prompt' | 'original' | 'display' | 'metadataLabel' | 'source' | 'alphaVerified'>;
@@ -38,7 +38,7 @@ export function buildCinematicPresentation(content: ModelCinematicContent | null
   if (content.variant === 'video') {
     if (content.modelSlug !== 'seedance-2-5-flash') throw new Error('No reviewed start frames for this model');
     assets = z.array(frameSchema).parse(startFrames).map(frame => {
-      const title = examples.editorialImages?.find(item => item.id === frame.id)?.title;
+      const title = examples.cinematic?.assetTitles?.find(item => item.id === frame.id)?.title;
       if (!title) throw new Error('Missing localized start-frame title');
       return { ...frame, title, metadataLabel: `${ui[locale].still} · ${frame.original.width} × ${frame.original.height}` };
     });

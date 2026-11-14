@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import type { CinematicAsset, CinematicPresentation } from '../_lib/model-page-cinematic-data';
+import { ModelDecisionCopyButton } from './ModelDecisionCopyButton.client';
 
 export function ModelCinematicAsset({ asset, ui, plan, compact = false }: {
   asset: CinematicAsset; ui: CinematicPresentation['ui']; plan?: { motion: string; sound: string }; compact?: boolean;
@@ -20,7 +21,7 @@ export function ModelCinematicPrompt({ asset, ui }: { asset: CinematicAsset; ui:
   return <details className="cinema-prompt"><summary>{ui.prompt} — {asset.title}</summary><div>
       <p>{asset.metadataLabel}</p>
       <p className="cinema-eyebrow">{ui.sourcePrompt}</p><p lang="en">{asset.prompt}</p>
-      <div className="cinema-actions"><a href={asset.original.url} target="_blank" rel="noopener noreferrer">{ui.original} ↗</a>
+      <div className="cinema-actions"><ModelDecisionCopyButton copyText={asset.prompt} label={ui.copy} copiedLabel={ui.copied} /><a href={asset.original.url} target="_blank" rel="noopener noreferrer">{ui.original} ↗</a>
         {asset.source ? <a href={asset.source.original.url} target="_blank" rel="noopener noreferrer">{ui.source} ↗</a> : null}</div>
     </div></details>;
 }

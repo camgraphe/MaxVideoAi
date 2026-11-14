@@ -1,5 +1,33 @@
 # Pricing Engine
 
+## Seedance 2.5 / Flash commercial candidate (2026-11-13)
+
+The approved authoring inputs are public BytePlus LIST ×2 for every standard 2.5
+class (normal, Draft and final), and ×1.6 for Flash. The offline
+`prepare-seedance25-commercial-tariffs.ts` command freezes those amounts into
+31 bounded JSON imports for the existing Admin Pricing batch workflow. There is
+no runtime multiplier and no separate mutation route. The Seedance batch adapter
+retains exact aspect/stage selectors, the source-video minimum and proportional
+rate, and validates the whole fractional-second range against LIST. Standard
+editing must use the reviewed ModelArk transport; Flash has no Draft or 1080p.
+
+Native preview/confirm, version history, receipts, reconciliation, rollback and
+post-commit surface revalidation remain authoritative. The complete PG17 test
+checks all 6,804 proposed classes, paid-snapshot immutability, current public
+quotes and retrying a failed page refresh without repricing. Code and prepared
+imports do not activate production tariffs. See the
+[integration and release record](../model-launch/seedance-2-5-flash.md).
+
+Public Flash discovery also excludes the legacy percentage-policy fallback:
+static public quotes and admin margin/surcharge previews cannot create a Flash
+price. The estimator keeps its resolution and duration controls, leaves the old
+unit-rate hint empty, and displays only `/api/pricing/quote` results. Model cards,
+comparisons and Product offers retain their current native quote owners. The
+additive offline projection matrix has twelve unavailable Flash rows without an
+active tariff; historical fixtures remain frozen. The exhaustive initial-cutover
+replay excludes later native-tariff launches, while the dedicated Seedance test
+qualifies all 6,804 current proposed classes.
+
 ## GPT Image 2.6 raster tariffs (2026-11-07 candidate)
 
 The 2,040 exact launch cells retain their original identities and precedence.

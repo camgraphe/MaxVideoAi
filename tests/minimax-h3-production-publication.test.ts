@@ -39,11 +39,13 @@ test('MiniMax H3 is one canonical executable production model on every public su
     'seedance-2-5',
     'kling-o3-pro',
     'veo-3-1',
+    'seedance-2-5-flash',
   ]);
   assert.deepEqual(model.publication.compare.publishedPairIds, [
     'seedance-2-5',
     'kling-o3-pro',
     'veo-3-1',
+    'seedance-2-5-flash',
   ]);
 });
 

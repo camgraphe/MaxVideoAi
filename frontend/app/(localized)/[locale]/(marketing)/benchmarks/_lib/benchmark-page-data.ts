@@ -1,4 +1,5 @@
 import { listFalEngines } from '@/config/falEngines';
+import { listRuntimeModels, type RuntimeModelEntry } from '@/config/model-runtime';
 import { supportsVideoGeneration } from '@/lib/models/catalog';
 import { computeBenchmarkOverall, type BenchmarkLabStaticData, type BenchmarkScore } from '@/server/benchmark-lab-data';
 import type { PublicBenchmarkLatencySnapshot } from '@/server/benchmark-lab-metrics';
@@ -83,11 +84,12 @@ function publicLatencySnapshot(latency: PublicBenchmarkLatencySnapshot): PublicB
 
 export function buildBenchmarkPageData(
   staticData: BenchmarkLabStaticData,
-  latency: PublicBenchmarkLatencySnapshot
+  latency: PublicBenchmarkLatencySnapshot,
+  models: readonly RuntimeModelEntry[] = listRuntimeModels(),
 ): BenchmarkPageData {
-  const engines = listFalEngines().filter((engine) => supportsVideoGeneration(engine));
+  const publishedSlugs = new Set(models.filter((model) => model.publication.model.published).map((model) => model.slug));
+  const engines = listFalEngines().filter((engine) => supportsVideoGeneration(engine) && publishedSlugs.has(engine.modelSlug));
   const engineBySlug = new Map(engines.map((engine) => [engine.modelSlug, engine]));
-  const scoreBySlug = new Map(staticData.scores.map((score) => [score.modelSlug ?? score.engineId ?? '', score]));
   const scores = staticData.scores.flatMap((score) => {
     const modelSlug = score.modelSlug ?? score.engineId;
     const engine = modelSlug ? engineBySlug.get(modelSlug) : null;
@@ -98,8 +100,9 @@ export function buildBenchmarkPageData(
   const specs = staticData.specs.flatMap((spec) => {
     const modelSlug = spec.modelSlug ?? spec.engineId;
     const engine = modelSlug ? engineBySlug.get(modelSlug) : null;
-    const score = modelSlug ? scoreBySlug.get(modelSlug) : null;
-    if (!modelSlug || !engine || !score || !spec.keySpecs) return [];
+    // Factual specifications do not require a quality rating. Unreviewed models
+    // must not inherit a sibling's score just to appear in the specifications.
+    if (!modelSlug || !engine || !spec.keySpecs) return [];
     const inputModes = [
       isSupported(spec.keySpecs.textToVideo) ? 'textToVideo' : null,
       isSupported(spec.keySpecs.imageToVideo) ? 'imageToVideo' : null,

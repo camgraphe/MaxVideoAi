@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "last_updated": "2026-11-13",
+  "last_updated": "2026-11-14",
   "specs": [
     {
       "modelSlug": "sora-2",
@@ -989,10 +989,10 @@
       "keySpecs": {
         "textToVideo": "Supported",
         "imageToVideo": "Supported",
-      "videoToVideo": "Supported (video edit and extend)",
-      "firstLastFrame": "Supported (1 start image + optional end image in i2v)",
-      "referenceImageStyle": "Ref2V: up to 9 image references; I2V: 1 start image",
-      "referenceVideo": "Supported (up to 3 video references, video edit, or extension clips)",
+        "videoToVideo": "Supported (video edit and extend)",
+        "firstLastFrame": "Supported (1 start image + optional end image in i2v)",
+        "referenceImageStyle": "Ref2V: up to 9 image references; I2V: 1 start image",
+        "referenceVideo": "Supported (up to 3 video references, video edit, or extension clips)",
         "maxResolution": "4K on the standard Dreamina Seedance 2.0 route",
         "maxDuration": "15s",
         "aspectRatios": [
@@ -1026,10 +1026,10 @@
       "keySpecs": {
         "textToVideo": "Supported",
         "imageToVideo": "Supported",
-      "videoToVideo": "Supported (video edit and extend)",
-      "firstLastFrame": "Supported (1 start image + optional end image in i2v)",
-      "referenceImageStyle": "Ref2V: up to 9 image references; I2V: 1 start image",
-      "referenceVideo": "Supported (up to 3 video references, video edit, or extension clips)",
+        "videoToVideo": "Supported (video edit and extend)",
+        "firstLastFrame": "Supported (1 start image + optional end image in i2v)",
+        "referenceImageStyle": "Ref2V: up to 9 image references; I2V: 1 start image",
+        "referenceVideo": "Supported (up to 3 video references, video edit, or extension clips)",
         "maxResolution": "720p",
         "maxDuration": "15s",
         "aspectRatios": [
@@ -1063,10 +1063,10 @@
       "keySpecs": {
         "textToVideo": "Supported",
         "imageToVideo": "Supported",
-      "videoToVideo": "Supported (video edit and extend)",
-      "firstLastFrame": "Supported (1 start image + optional end image in i2v)",
-      "referenceImageStyle": "Ref2V: up to 9 image references; I2V: 1 start image",
-      "referenceVideo": "Supported (up to 3 video references, video edit, or extension clips)",
+        "videoToVideo": "Supported (video edit and extend)",
+        "firstLastFrame": "Supported (1 start image + optional end image in i2v)",
+        "referenceImageStyle": "Ref2V: up to 9 image references; I2V: 1 start image",
+        "referenceVideo": "Supported (up to 3 video references, video edit, or extension clips)",
         "maxResolution": "480p / 720p",
         "maxDuration": "4-15s",
         "aspectRatios": [
@@ -1719,9 +1719,19 @@
         "referenceVideo": "Not exposed in current LTX 2.5 Fast endpoint set",
         "maxResolution": "4K",
         "maxDuration": "20s",
-        "aspectRatios": ["16:9", "9:16"],
-        "fpsOptions": [24, 25, 48, 50],
-        "outputFormats": ["MP4"],
+        "aspectRatios": [
+          "16:9",
+          "9:16"
+        ],
+        "fpsOptions": [
+          24,
+          25,
+          48,
+          50
+        ],
+        "outputFormats": [
+          "MP4"
+        ],
         "audioOutput": "Supported",
         "nativeAudioGeneration": "Supported",
         "lipSync": "Supported through synchronized audio and audio-to-video workflows",
@@ -1746,9 +1756,18 @@
         "referenceVideo": "Not exposed in current LTX 2.5 Pro endpoint set",
         "maxResolution": "1080p",
         "maxDuration": "10s",
-        "aspectRatios": ["16:9", "9:16"],
-        "fpsOptions": [24, 25, 50],
-        "outputFormats": ["MP4"],
+        "aspectRatios": [
+          "16:9",
+          "9:16"
+        ],
+        "fpsOptions": [
+          24,
+          25,
+          50
+        ],
+        "outputFormats": [
+          "MP4"
+        ],
         "audioOutput": "Supported",
         "nativeAudioGeneration": "Supported",
         "lipSync": "Supported through synchronized audio and audio-to-video workflows",
@@ -1773,9 +1792,21 @@
         "referenceVideo": "Provider video-edit input is not exposed in current MaxVideoAI route",
         "maxResolution": "1080p (720p for reference-to-video)",
         "maxDuration": "15s",
-        "aspectRatios": ["16:9", "4:3", "3:2", "1:1", "2:3", "3:4", "9:16"],
-        "fpsOptions": ["Provider-managed"],
-        "outputFormats": ["MP4"],
+        "aspectRatios": [
+          "16:9",
+          "4:3",
+          "3:2",
+          "1:1",
+          "2:3",
+          "3:4",
+          "9:16"
+        ],
+        "fpsOptions": [
+          "Provider-managed"
+        ],
+        "outputFormats": [
+          "MP4"
+        ],
         "audioOutput": "Supported",
         "nativeAudioGeneration": "Supported",
         "lipSync": "Supported through generated and preset-voice workflows",
@@ -1800,9 +1831,22 @@
         "referenceVideo": "Supported (native Extend; FAST Edit)",
         "maxResolution": "1080p",
         "maxDuration": "20s",
-        "aspectRatios": ["auto", "21:9", "2:1", "16:9", "4:3", "1:1", "3:4", "9:16"],
-        "fpsOptions": ["Provider-managed"],
-        "outputFormats": ["MP4"],
+        "aspectRatios": [
+          "auto",
+          "21:9",
+          "2:1",
+          "16:9",
+          "4:3",
+          "1:1",
+          "3:4",
+          "9:16"
+        ],
+        "fpsOptions": [
+          "Provider-managed"
+        ],
+        "outputFormats": [
+          "MP4"
+        ],
         "audioOutput": "Supported",
         "nativeAudioGeneration": "Supported",
         "lipSync": "Supported for multilingual dialogue",
@@ -1827,9 +1871,22 @@
         "referenceVideo": "Supported (native Draft Extend; Enhance requires an owned paired Draft cache)",
         "maxResolution": "720p native Draft; 1080p paired-cache Enhance",
         "maxDuration": "20s",
-        "aspectRatios": ["auto", "21:9", "2:1", "16:9", "4:3", "1:1", "3:4", "9:16"],
-        "fpsOptions": ["Provider-managed"],
-        "outputFormats": ["MP4"],
+        "aspectRatios": [
+          "auto",
+          "21:9",
+          "2:1",
+          "16:9",
+          "4:3",
+          "1:1",
+          "3:4",
+          "9:16"
+        ],
+        "fpsOptions": [
+          "Provider-managed"
+        ],
+        "outputFormats": [
+          "MP4"
+        ],
         "audioOutput": "Supported",
         "nativeAudioGeneration": "Supported",
         "lipSync": "Prompt-directed dialogue in the FLUX 3 Draft endpoint family",
@@ -2032,6 +2089,48 @@
           "PNG"
         ],
         "audioOutput": "Not supported"
+      }
+    },
+    {
+      "modelSlug": "seedance-2-5-flash",
+      "sources": [
+        "https://console.byteplus.com/ark/region:ap-southeast-1/model/detail?name=dreamina-seedance-2-5-flash"
+      ],
+      "provenance": {
+        "basis": "maxvideoai-release-candidate-contract",
+        "note": "Release candidate prepared from the BytePlus console card reviewed 2026-11-13 and the separate Flash adapter. API admission and each exposed mode must be qualified before release; both authorized attempts returned 404 without a task ID. This row describes intended controls, not measured quality or latency."
+      },
+      "keySpecs": {
+        "textToVideo": "Supported",
+        "imageToVideo": "Supported",
+        "referenceToVideo": "Supported",
+        "videoToVideo": "Supported (video editing)",
+        "extension": "Supported",
+        "firstLastFrame": "Supported (start image + optional end image)",
+        "referenceImageStyle": "Up to 10 image references",
+        "referenceVideo": "Up to 5 video references",
+        "referenceAudio": "Up to 5 audio references; visual input required",
+        "maxResolution": "480p / 720p",
+        "maxDuration": "4–30s",
+        "aspectRatios": [
+          "21:9",
+          "16:9",
+          "4:3",
+          "1:1",
+          "3:4",
+          "9:16"
+        ],
+        "fpsOptions": [
+          "24 fps"
+        ],
+        "outputFormats": [
+          "MP4"
+        ],
+        "audioOutput": "Optional generated audio",
+        "nativeAudioGeneration": "Optional",
+        "lipSync": "No separate lip-sync control",
+        "cameraMotionControls": "Prompt-based only",
+        "watermark": "No (MaxVideoAI)"
       }
     }
   ]

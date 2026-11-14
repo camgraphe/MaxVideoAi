@@ -176,7 +176,7 @@ export function deriveGenerationAttachmentReferences(params: AttachmentReference
     || (['kling-v4', 'kling-v4-flash'].includes(params.engineId) && ['ref2v', 'v2v'].includes(params.mode))
     ? mergeOrderedImageProjections(directImageReferences, attachmentReferenceImageUrls)
     : Array.from(new Set([...directImageReferences, ...attachmentReferenceImageUrls]));
-  const sourceOrderedEdit = params.mode === 'v2v' && ['seedance-2-5','seedance-2-0','seedance-2-0-fast','seedance-2-0-mini'].includes(params.engineId);
+  const sourceOrderedEdit = params.mode === 'v2v' && ['seedance-2-5','seedance-2-5-flash','seedance-2-0','seedance-2-0-fast','seedance-2-0-mini'].includes(params.engineId);
   const rawVideoUrls = params.attachments
     .filter((attachment) => attachment.kind === 'video' && typeof attachment.url === 'string')
     .sort((left, right) => sourceOrderedEdit

@@ -1,5 +1,4 @@
 import type { PayAsYouGoContent } from './types';
-
 export const enPayAsYouGoContent = {
   metadata: {
     title: 'Pay-as-you-go AI Video Generator with Upfront Pricing',
@@ -68,6 +67,7 @@ export const enPayAsYouGoContent = {
       'kling-3-turbo-pro': { family: 'Kling 3.0 Turbo', title: 'Kling 3.0 Turbo Pro for detailed 1080p output', body: 'Choose Turbo Pro for polished 1080p motion, product detail, image guidance, and multi-shot sequences.' },
       'kling-3-turbo-standard': { family: 'Kling 3.0 Turbo', title: 'Kling 3.0 Turbo Standard for efficient 720p drafts', body: 'Choose Turbo Standard for faster 720p iteration, coherent motion, image guidance, and multi-shot testing.' },
       'minimax-h3-max': { family: 'MiniMax H3', title: 'MiniMax H3 Max for premium visual finish', body: 'Choose H3 Max for high visual finish, prompt adherence, native audio, and focused text- or image-to-video production.' },
+      "seedance-2-5-flash": {"family": "Seedance 2.5 Flash", "title": "Seedance 2.5 Flash for longer creative variations", "body": "Create 4–30 second scenes at 480p or 720p with optional audio and mixed references. Compare the current quote for the exact inputs; standard 2.5 keeps its separate 1080p and native Draft-to-final options."},
       'seedance-2-5': { family: 'Seedance 2.5', title: 'Seedance 2.5 for 30-second cinematic video', body: 'Consider Seedance 2.5 for cinematic, image-to-video, reference-guided, multi-shot, product, and UGC workflows, then keep Seedance 2.0 in the shortlist when 4K output is required.' },
       'seedance-2-0': { family: 'Seedance 2', title: 'Seedance 2.0 for 4K Seedance delivery', body: 'Keep Seedance 2.0 as the alternative for shorter native-audio and reference workflows when the final Seedance output must be 4K.' },
       'kling-3-pro': { family: 'Kling', title: 'Kling as the solid motion-control choice', body: 'Use Kling when you want dependable camera motion, product shots, elements, and image-guided video generation without buying a subscription first.' },
@@ -196,6 +196,7 @@ export const enPayAsYouGoContent = {
     items: {
       "flux-3-max": {"query": "flux 3 max price", "title": "FLUX 3 Max pricing", "body": "Compare a short text-to-video test, then check the quote for your keyframes, references and final settings."},
       "minimax-h3": {"query": "minimax h3 price", "title": "MiniMax H3 pricing", "body": "This example uses a supported native resolution. Match duration, resolution and reference inputs when comparing models."},
+      "seedance-2-5-flash": {"query": "seedance 2.5 flash pricing", "title": "Seedance 2.5 Flash pricing", "body": "Review the current quote for duration, resolution, audio and reference inputs. Video inputs affect billable duration; a Flash generation is separate from a standard Seedance native Draft."},
       "seedance-2-5": {"query": "seedance 2.5 price", "title": "Seedance 2.5 pricing", "body": "Check the price for your scene, including duration, resolution and references. Draft and final generations have separate quotes."},
       'kling-v4': { query: 'kling 4.0 price', title: 'Kling 4.0 pricing by workflow', body: 'Check the selected workflow, output duration and resolution. For reference and editing workflows, supplied video duration also affects the quote; compare the same inputs.' },
       'gemini-omni-flash': { query: 'gemini omni flash 1.2 price', title: 'Gemini Omni Flash 1.2 price lookup', body: 'Check the Google-direct route for fast multimodal video, native audio, and multi-shot workflows.' },
@@ -256,6 +257,7 @@ export const enPayAsYouGoContent = {
     labels: {
       "flux-3-max": "FLUX 3 Max short scene",
       "minimax-h3": "MiniMax H3 native-resolution test",
+      "seedance-2-5-flash": "Short Seedance 2.5 Flash scene",
       "seedance-2-5": "Seedance 2.5 short scene",
       'kling-v4': 'Kling 4.0 text-to-video scene',
       'gemini-omni-flash': 'Gemini Omni Flash 1.1 multimodal test',

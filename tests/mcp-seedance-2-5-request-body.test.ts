@@ -24,7 +24,8 @@ import {
 } from '../frontend/src/server/video-providers/byteplus-modelark';
 import { getBytePlusSeedanceModeResolutions } from '../frontend/lib/byteplus-mode-capabilities';
 
-const engine = listFalEngines().find((candidate) => candidate.id === 'seedance-2-5')?.engine;
+for (const engineId of ['seedance-2-5', 'seedance-2-5-flash'] as const) {
+const engine = listFalEngines().find((candidate) => candidate.id === engineId)?.engine;
 assert.ok(engine);
 
 const imageStart = 'https://cdn.maxvideoai.com/mcp/start.png';
@@ -49,12 +50,12 @@ function canonicalRequest(
 ): CanonicalGenerationRequest {
   return normalizeGenerationRequest({
     surface: 'video',
-    engineId: 'seedance-2-5',
+    engineId,
     mode,
     prompt: `Exercise ${mode} projection`,
     settings: {
       durationSec: 4,
-      resolution: mode === 'v2v' ? '720p' : '1080p',
+      resolution: mode === 'v2v' || engineId === 'seedance-2-5-flash' ? '720p' : '1080p',
       ...(mode === 'i2v' ? {} : { aspectRatio: '16:9' }),
       audio: true,
     },
@@ -96,7 +97,7 @@ async function projectedBody(
   return body;
 }
 
-test('Seedance 2.5 paid projection routes all five modes into exact app request fields', async () => {
+test(engineId + ': ' + 'Seedance 2.5 paid projection routes all five modes into exact app request fields', async () => {
   const cases: Array<{
     mode: CanonicalGenerationMode;
     references: CanonicalGenerationReference[];
@@ -185,7 +186,7 @@ test('Seedance 2.5 paid projection routes all five modes into exact app request 
   }
 });
 
-test('ordered Seedance source slots come from canonical request order, never resolver or caller order', async () => {
+test(engineId + ': ' + 'ordered Seedance source slots come from canonical request order, never resolver or caller order', async () => {
   const first = { kind: 'asset' as const, assetId: 'slot-1', role: 'source' as const };
   const second = { kind: 'asset' as const, assetId: 'slot-2', role: 'source' as const };
   const left = canonicalRequest('extend', [first, second]);
@@ -226,7 +227,7 @@ test('ordered Seedance source slots come from canonical request order, never res
   assert.equal(JSON.stringify(body).includes('mimeType'), false);
 });
 
-test('normalized private references reach actual BytePlus payloads for every Seedance mode without internal metadata', async () => {
+test(engineId + ': ' + 'normalized private references reach actual BytePlus payloads for every Seedance mode without internal metadata', async () => {
   const assets = new Map([
     ['start', { mediaKind: 'image' as const, storageUrl: imageStart, width: 1024, height: 576, mimeType: 'image/png' }],
     ['end', { mediaKind: 'image' as const, storageUrl: imageEnd, width: 1024, height: 576, mimeType: 'image/png' }],
@@ -308,7 +309,7 @@ test('normalized private references reach actual BytePlus payloads for every See
         slotId: entry.slotId as string,
         url: entry.url as string,
       })),
-      engineId: 'seedance-2-5',
+      engineId,
       mode: scenario.mode,
       imageUrl: body.imageUrl,
       endImageUrl: body.endImageUrl as string | undefined,
@@ -318,7 +319,7 @@ test('normalized private references reach actual BytePlus payloads for every See
       isBytePlusV1a: true,
     });
     const payload = buildBytePlusSeedancePayload({
-      modelId: 'dreamina-seedance-2-5-260628',
+      modelId: engineId === 'seedance-2-5-flash' ? 'dreamina-seedance-2-5-flash-261115' : 'dreamina-seedance-2-5-260628',
       prompt: request.prompt,
       durationSec: 4,
       mode: scenario.mode,
@@ -327,12 +328,12 @@ test('normalized private references reach actual BytePlus payloads for every See
       referenceImageUrls: attachments.normalizedReferenceImages,
       referenceVideoUrls: attachments.videoUrls,
       referenceAudioUrls: attachments.audioUrls,
-      resolution: scenario.mode === 'v2v' ? '720p' : '1080p',
+      resolution: scenario.mode === 'v2v' || engineId === 'seedance-2-5-flash' ? '720p' : '1080p',
       ratio: body.aspectRatio as string | undefined,
       generateAudio: true,
       allowedModes: ['t2v', 'i2v', 'ref2v', 'v2v', 'extend'],
       allowedAspectRatios: ['21:9', '16:9', '4:3', '1:1', '3:4', '9:16'],
-      allowedResolutions: getBytePlusSeedanceModeResolutions('seedance-2-5', scenario.mode, getBytePlusSeedanceAllowedResolutions('seedance-2-5')),
+      allowedResolutions: getBytePlusSeedanceModeResolutions(engineId, scenario.mode, getBytePlusSeedanceAllowedResolutions(engineId)),
       allowedDurationOptions: [4],
     });
     const media = payload.content.slice(1).map((item) => ({
@@ -352,3 +353,5 @@ test('normalized private references reach actual BytePlus payloads for every See
     );
   }
 });
+
+}

@@ -1,3 +1,4 @@
+import { isSeedance25EngineId } from '@/lib/seedance-model-variants';
 import type { LegacyJobMediaRow } from './media-library-records';
 import type { BytePlusPendingJob } from './byteplus-poll-types';
 import { isRecord } from './byteplus-record-utils';
@@ -22,7 +23,7 @@ export function bytePlusCompletedOutputRow(job: BytePlusPendingJob, videoUrl: st
 function bytePlusInheritedOutputDurationSec(job: BytePlusPendingJob) {
   const settings = isRecord(job.settings_snapshot) ? job.settings_snapshot : {};
   const source = isRecord(settings.seedanceEditSource) ? settings.seedanceEditSource : {};
-  return job.engine_id === 'seedance-2-5' && settings.byteplusTransport === 'modelark' && settings.inputMode === 'v2v'
+  return isSeedance25EngineId(job.engine_id) && settings.byteplusTransport === 'modelark' && settings.inputMode === 'v2v'
     && typeof source.durationSec === 'number' && Number.isFinite(source.durationSec) && source.durationSec >= 4 && source.durationSec <= 30
     ? source.durationSec : undefined;
 }
@@ -64,7 +65,7 @@ export function requiresBytePlusDurableEditOutput(job: BytePlusPendingJob) {
   const settings = isRecord(job.settings_snapshot) ? job.settings_snapshot : {};
   const options = bytePlusRequestedOutputOptions(job);
   if (options.requiresCompatiblePlayback || options.returnLastFrame) return true;
-  return job.engine_id === 'seedance-2-5' && (settings.byteplusTransport === 'las'
+  return isSeedance25EngineId(job.engine_id) && (settings.byteplusTransport === 'las'
     || (settings.byteplusTransport === 'modelark' && settings.inputMode === 'v2v'));
 }
 

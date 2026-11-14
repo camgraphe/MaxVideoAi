@@ -19,6 +19,8 @@ import {
   PUBLIC_SEEDANCE_FAST_ENGINE_ID,
   PUBLIC_SEEDANCE_MINI_ENGINE_ID,
   SEEDANCE_2_5_ENGINE_ID,
+  SEEDANCE_2_5_FLASH_ENGINE_ID,
+  BYTEPLUS_SEEDANCE_2_5_FLASH_RESOLUTIONS,
   SEEDANCE_1_5_ENGINE_ID,
 } from './byteplus-modelark-constants';
 import { BytePlusModelArkError } from './byteplus-modelark-error';
@@ -28,32 +30,36 @@ export type BytePlusSeedanceModelConfigKey =
   | 'seedanceModelId'
   | 'seedanceFastModelId'
   | 'seedanceMiniModelId'
-  | 'seedance25ModelId';
+  | 'seedance25ModelId'
+  | 'seedance25FlashModelId';
 
-export type BytePlusSeedancePricingProfileKey = 'seedance15' | 'standard' | 'fast' | 'mini' | 'seedance25';
+export type BytePlusSeedancePricingProfileKey = 'seedance15' | 'standard' | 'fast' | 'mini' | 'seedance25' | 'seedance25Flash';
 
 export type BytePlusSeedanceProviderOverrideKey =
   | 'SEEDANCE_1_5_PROVIDER'
   | 'SEEDANCE_2_PROVIDER'
   | 'SEEDANCE_FAST_PROVIDER'
+  | 'SEEDANCE_2_5_FLASH_PROVIDER'
   | 'SEEDANCE_2_5_PROVIDER'
   | null;
 
-export type BytePlusSeedanceEnabledKey = 'SEEDANCE_1_5_BYTEPLUS_ENABLED' | 'SEEDANCE_2_5_BYTEPLUS_ENABLED' | null;
+export type BytePlusSeedanceEnabledKey = 'SEEDANCE_1_5_BYTEPLUS_ENABLED' | 'SEEDANCE_2_5_BYTEPLUS_ENABLED' | 'SEEDANCE_2_5_FLASH_BYTEPLUS_ENABLED' | null;
 
 export type BytePlusSeedanceAdminOnlyKey =
   | 'SEEDANCE_1_5_BYTEPLUS_ADMIN_ONLY'
   | 'SEEDANCE_2_BYTEPLUS_ADMIN_ONLY'
   | 'SEEDANCE_FAST_BYTEPLUS_ADMIN_ONLY'
   | 'SEEDANCE_MINI_BYTEPLUS_ADMIN_ONLY'
-  | 'SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY';
+  | 'SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY'
+  | 'SEEDANCE_2_5_FLASH_BYTEPLUS_ADMIN_ONLY';
 
 export type BytePlusSeedanceAllowedModesKey =
   | 'SEEDANCE_1_5_BYTEPLUS_MODES'
   | 'SEEDANCE_2_BYTEPLUS_MODES'
   | 'SEEDANCE_FAST_BYTEPLUS_MODES'
   | 'SEEDANCE_MINI_BYTEPLUS_MODES'
-  | 'SEEDANCE_2_5_BYTEPLUS_MODES';
+  | 'SEEDANCE_2_5_BYTEPLUS_MODES'
+  | 'SEEDANCE_2_5_FLASH_BYTEPLUS_MODES';
 
 export type BytePlusSeedanceProfile = Readonly<{
   engineId: string;
@@ -192,6 +198,28 @@ const BYTEPLUS_SEEDANCE_PROFILES: Readonly<Record<string, BytePlusSeedanceProfil
       adminOnlyKey: 'SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY',
       allowedModesKey: 'SEEDANCE_2_5_BYTEPLUS_MODES',
       alwaysDirect: false,
+    },
+  },
+  [SEEDANCE_2_5_FLASH_ENGINE_ID]: {
+    engineId: SEEDANCE_2_5_FLASH_ENGINE_ID,
+    modelConfigKey: 'seedance25FlashModelId',
+    supportedModes: BYTEPLUS_SEEDANCE_2_5_MODES,
+    durationOptions: BYTEPLUS_SEEDANCE_2_5_DURATION_OPTIONS,
+    resolutions: BYTEPLUS_SEEDANCE_2_5_FLASH_RESOLUTIONS,
+    aspectRatios: BYTEPLUS_SEEDANCE_2_5_ASPECT_RATIOS,
+    defaultDurationSec: 4,
+    defaultResolution: '480p',
+    defaultAspectRatio: '16:9',
+    motionControls: false,
+    framesPerSecond: 24,
+    generatedAudio: true,
+    pricingProfileKey: 'seedance25Flash',
+    routing: {
+      enabledKey: 'SEEDANCE_2_5_FLASH_BYTEPLUS_ENABLED',
+      providerOverrideKey: 'SEEDANCE_2_5_FLASH_PROVIDER',
+      adminOnlyKey: 'SEEDANCE_2_5_FLASH_BYTEPLUS_ADMIN_ONLY',
+      allowedModesKey: 'SEEDANCE_2_5_FLASH_BYTEPLUS_MODES',
+      alwaysDirect: true,
     },
   },
 };

@@ -11,6 +11,7 @@ const select = (items: readonly MarketingNavItem[], keys: readonly string[]) =>
   keys.flatMap((key) => items.filter((item) => item.key === key));
 
 export const FOOTER_MODELS = select(MARKETING_NAV_MODELS, [
+  'seedance-2-5-flash',
   'kling-v4',
   'flux-3-max',
   'minimax-h3', 'seedance-2-5', 'kling-3-pro', 'veo-3-1',
@@ -18,6 +19,7 @@ export const FOOTER_MODELS = select(MARKETING_NAV_MODELS, [
 ]);
 
 export const FOOTER_COMPARISONS = select(MARKETING_NAV_COMPARE, [
+  'seedance-2-5-vs-seedance-2-5-flash',
   'minimax-h3-vs-seedance-2-5',
   'kling-v4-vs-seedance-2-5',
   'kling-3-pro-vs-seedance-2-5',

@@ -18,6 +18,9 @@ const heroSchema = z.object({
 
 /** Examples copy stays in the existing exact-locale examples block. */
 export const cinematicExamplesSchema = z.object({
+  title: text.optional(),
+  intro: text.optional(),
+  assetTitles: z.array(z.object({ id, title: text }).strict()).optional(),
   provenance: text,
   panels: z.array(z.object({
     id,

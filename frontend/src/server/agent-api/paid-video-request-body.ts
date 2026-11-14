@@ -1,3 +1,4 @@
+import { isSeedance25EngineId } from '@/lib/seedance-model-variants';
 import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
 import { withoutRetiredOutputControls } from '@/lib/generation-output-policy';
 import { validateOwnedKlingElements, isElementReference } from '@/lib/kling-owned-elements';
@@ -413,7 +414,7 @@ export function buildPaidVideoRequestBody(
       ...(end[0] && endFieldId ? [input(end[0], endFieldId)] : []),
       ...(imageFieldId && (imageFieldId !== 'image_urls'
         || isKlingV4FalQueueEngineId(execution.engine.id)
-        || execution.engine.id === 'seedance-2-5')
+        || isSeedance25EngineId(execution.engine.id))
         ? referenceMedia.filter((reference) => reference.kind === 'image')
           .map((reference) => input(reference, imageFieldId))
         : []),
@@ -474,7 +475,7 @@ export function buildPaidVideoRequestBody(
       // Edit validates owned image identity from inputs, not the URL projection alone.
       ...(imageFieldId && (imageFieldId !== 'image_urls'
         || execution.request.operation === 'kling-edit'
-        || ['seedance-2-5','kling-v4','kling-v4-flash'].includes(execution.engine.id))
+        || ['seedance-2-5','seedance-2-5-flash','kling-v4','kling-v4-flash'].includes(execution.engine.id))
         ? imageReferences.map((reference) => input(reference, imageFieldId)) : []),
       ...(videoFieldId ? videoReferences.map((reference) => input(reference, videoFieldId)) : []),
       ...(audioFieldId ? audioReferences.map((reference) => input(reference, audioFieldId)) : []),

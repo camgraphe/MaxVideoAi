@@ -1,0 +1,444 @@
+{
+  "marketingName": "Seedance 2.5 Flash",
+  "versionLabel": "2.5 Flash",
+  "seo": {
+    "title": "Seedance 2.5 Flash : vidéo IA, références et tarifs | MaxVideoAI",
+    "description": "Créez des vidéos de 4 à 30 secondes avec Seedance 2.5 Flash en 480p ou 720p. Références image, vidéo et audio, modification, extension et tarifs actuels."
+  },
+  "overview": "Transformez un personnage, un produit ou une idée de scène en vidéo de 4 à 30 secondes. Seedance 2.5 Flash associe une sortie 480p ou 720p au son généré facultatif et aux références image, vidéo ou audio. Partez d’une action claire, puis comparez les variantes avec un devis à jour pour vos réglages.",
+  "hero": {
+    "title": "Seedance 2.5 Flash — préparez vos prochaines scènes",
+    "intro": "Transformez un personnage, un produit ou une idée de scène en vidéo de 4 à 30 secondes. Seedance 2.5 Flash associe une sortie 480p ou 720p au son généré facultatif et aux références image, vidéo ou audio. Partez d’une action claire, puis comparez les variantes avec un devis à jour pour vos réglages.",
+    "badge": "480p / 720p · 4–30 s",
+    "ctaPrimary": {
+      "label": "Créer avec Flash",
+      "href": "/app?engine=seedance-2-5-flash"
+    },
+    "secondaryLinks": [
+      {
+        "label": "Découvrir Seedance 2.5",
+        "href": "/fr/modeles/seedance-2-5"
+      },
+      {
+        "label": "Voir la galerie Seedance",
+        "href": "/fr/galerie/seedance"
+      }
+    ]
+  },
+  "bestUseCases": {
+    "title": "Que créer avec Flash",
+    "items": [
+      {
+        "title": "Un moment de personnage autour d’un regard, d’un geste ou d’une réaction",
+        "icon": "users"
+      },
+      {
+        "title": "Une scène d’action avec un mouvement lisible et une fin précise",
+        "icon": "camera"
+      },
+      {
+        "title": "Une révélation cinématographique au cadrage et à la lumière maîtrisés",
+        "icon": "storyboard"
+      },
+      {
+        "title": "Des variantes créatives qui changent un seul choix visuel à la fois",
+        "icon": "product"
+      }
+    ]
+  },
+  "technicalOverviewTitle": "Les outils de Seedance 2.5 Flash",
+  "technicalOverview": [
+    {
+      "label": "Durée",
+      "body": "4 à 30 secondes par clip généré"
+    },
+    {
+      "label": "Sortie",
+      "body": "480p ou 720p"
+    },
+    {
+      "label": "Références",
+      "body": "Jusqu’à 10 images, 5 vidéos et 5 pistes audio ; une entrée visuelle est nécessaire avec les références sonores"
+    },
+    {
+      "label": "Parcours",
+      "body": "Créer depuis du texte, une image ou des références ; modifier ou prolonger une vidéo source"
+    }
+  ],
+  "tips": [
+    "Décrivez une action visible avant de détailler la caméra.",
+    "Gardez le personnage, le lieu et la lumière cohérents entre les variantes.",
+    "Les prompts ci-dessous sont des pistes de préparation, pas des rendus Flash déjà réalisés."
+  ],
+  "faqs": [
+    {
+      "q": "Comment créer une vidéo Seedance 2.5 Flash ?",
+      "a": "Sélectionnez Flash dans l’espace de travail, choisissez Create, Modify ou Extend et fournissez les entrées demandées par le mode. Vérifiez le devis actuel avant de confirmer."
+    },
+    {
+      "q": "Quelles références puis-je utiliser ?",
+      "a": "Jusqu’à 10 images, 5 vidéos et 5 pistes audio, dans les limites du mode choisi. Les références audio exigent une entrée visuelle. Modification et extension ont leurs propres contrôles de vidéo source."
+    },
+    {
+      "q": "Flash propose-t-il le 1080p, la 4K ou le Draft natif ?",
+      "a": "Non. Flash produit du 480p ou du 720p. Seedance 2.5 standard possède ses propres options 1080p et son parcours natif Draft vers rendu final. Une génération Flash ne peut pas être finalisée comme un Draft natif."
+    },
+    {
+      "q": "Ces prompts correspondent-ils à de vrais résultats Flash ?",
+      "a": "Le Prompt Lab contient des propositions de scènes à adapter. Un exemple vidéo est attribué à Flash uniquement s’il a réellement été généré par ce modèle."
+    },
+    {
+      "q": "Où consulter le prix ?",
+      "a": "La page affiche des devis actuels pour ses réglages d’exemple. Votre devis final est calculé dans l’espace de travail selon le modèle, la durée, la résolution, le son et les sources."
+    }
+  ],
+  "decision": {
+    "modelSlug": "seedance-2-5-flash",
+    "hero": {
+      "eyebrow": "BYTEDANCE · 480p / 720p · 4–30 s",
+      "title": "Seedance 2.5 Flash",
+      "subtitle": "Dirigez l’action. Explorez les variantes.",
+      "subtitleHighlights": [
+        "Dirigez l’action."
+      ],
+      "paragraph": "Partez d’un texte, d’une image de départ ou d’un brief de références. Dirigez l’action et la caméra, choisissez la durée et le son, puis utilisez le devis actuel pour préparer votre prochaine variante.",
+      "primaryCta": {
+        "label": "Créer avec Flash",
+        "href": "/app?engine=seedance-2-5-flash"
+      },
+      "secondaryCta": {
+        "label": "Comparer les versions Seedance",
+        "href": "/fr/comparatif/seedance-2-5-vs-seedance-2-5-flash"
+      },
+      "quickLinks": [
+        {
+          "label": "Personnage",
+          "href": "#prompting"
+        },
+        {
+          "label": "Les outils de Seedance 2.5 Flash",
+          "href": "#specs"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Dirigez votre scène avec Seedance 2.5 Flash",
+      "description": "Composez une scène de 4 à 30 secondes à partir de texte, d’images clés ou de références visuelles.",
+      "renderLabel": "Voir l’exemple",
+      "badges": [
+        "480p / 720p"
+      ],
+      "altContext": "Direction de scène Seedance 2.5 Flash"
+    },
+    "features": [
+      {
+        "title": "Jusqu’à 30 secondes",
+        "body": "Construisez une mise en place, une action visible et une conclusion dans une même scène.",
+        "tone": "duration"
+      },
+      {
+        "title": "480p ou 720p",
+        "body": "Choisissez le 480p pour un premier essai ou le 720p selon votre brief.",
+        "tone": "quality"
+      },
+      {
+        "title": "Références multimodales",
+        "body": "Guidez le sujet et le mouvement par des références image, vidéo et audio.",
+        "tone": "reference"
+      },
+      {
+        "title": "Créer, modifier et prolonger",
+        "body": "Créez une scène, modifiez une source ou continuez un clip par un parcours d’extension distinct.",
+        "tone": "continuity"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Préparer un moment de personnage",
+        "body": "Choisissez une expression ou un geste, puis décrivez comment la caméra le révèle.",
+        "cta": {
+          "label": "Ouvrir le labo de prompts",
+          "href": "#prompting"
+        }
+      },
+      {
+        "title": "Comparer standard et Flash",
+        "body": "Choisissez Seedance 2.5 standard pour le 1080p ou le parcours natif Draft vers rendu final. Flash possède ses propres réglages 480p/720p et limites de références.",
+        "cta": {
+          "label": "Comparer les versions Seedance",
+          "href": "/fr/comparatif/seedance-2-5-vs-seedance-2-5-flash"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Personnage et décor",
+        "body": "Définissez la personne, sa tenue, le lieu et la lumière avant de rédiger l’action."
+      },
+      {
+        "title": "Action et caméra",
+        "body": "Donnez à la scène un mouvement principal et une consigne de caméra."
+      },
+      {
+        "title": "Préparer les références",
+        "body": "Rassemblez les sources utiles et conservez leur identité avec le prompt pour les examiner ensuite."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Tarifs Seedance 2.5 Flash",
+      "subtitle": "Consultez le prix actuel pour la durée, la résolution, le son et les entrées choisis avant de générer.",
+      "footnote": "Les vidéos d’entrée influencent la durée facturée. Le devis utilise le tarif MaxVideoAI actuel ; le coût d’un ancien rendu ne fixe pas celui d’une nouvelle génération.",
+      "ctaLabel": "Créer avec Flash",
+      "ctaHref": "/app?engine=seedance-2-5-flash"
+    },
+    "meta": {
+      "title": "Seedance 2.5 Flash : vidéo IA, références et tarifs | MaxVideoAI",
+      "description": "Créez des vidéos de 4 à 30 secondes avec Seedance 2.5 Flash en 480p ou 720p. Références image, vidéo et audio, modification, extension et tarifs actuels."
+    }
+  },
+  "prompting": {
+    "modelSlug": "seedance-2-5-flash",
+    "section": {
+      "title": "Prompt Lab — diriger une scène Flash",
+      "intro": "Adaptez ces propositions de scènes à votre sujet, à l’action et à la caméra. Un modèle de prompt décrit le résultat souhaité ; ce n’est pas une génération terminée.",
+      "tip": "Changez un seul choix visible entre deux variantes pour pouvoir comparer les résultats.",
+      "guide": null,
+      "referencesTitle": null
+    },
+    "tabs": [
+      {
+        "id": "concept",
+        "label": "Personnage",
+        "title": "Donner un sujet clair à la scène",
+        "description": "Décrivez le personnage et le moment que vous souhaitez voir.",
+        "copy": "Une coursière en veste rouge s’arrête sous l’auvent d’une rue urbaine détrempée, la nuit. Elle reconnaît une silhouette de l’autre côté de la chaussée, se tourne vers elle et sourit. Conserver sa veste, son visage et la lumière sur la rue mouillée."
+      },
+      {
+        "id": "motion",
+        "label": "Action",
+        "title": "Rendre le mouvement lisible",
+        "description": "Définissez un début, une action et une composition finale.",
+        "copy": "Commencer en plan moyen sur une danseuse près d’une fenêtre ensoleillée dans un studio. Elle avance d’un pas, tourne avec fluidité puis s’immobilise face à la fenêtre. Garder ses mains et ses pieds visibles pendant le tour. Terminer sur une composition fixe."
+      },
+      {
+        "id": "camera",
+        "label": "Caméra",
+        "title": "Essayer une variante de cadrage",
+        "description": "Gardez le sujet et l’action identiques en changeant le cadrage.",
+        "copy": "Conserver la même coursière, le même lieu et la même action. Version A : un lent travelling latéral à hauteur des yeux. Version B : une légère avancée d’un plan moyen vers un gros plan lorsqu’elle sourit. Éviter les coupes supplémentaires."
+      }
+    ],
+    "tabNotes": [],
+    "globalPrinciples": [
+      "Décrivez les actions dans leur ordre d’apparition.",
+      "Choisissez un mouvement de caméra capable de suivre le sujet.",
+      "Répétez seulement les détails visuels qui doivent rester stables."
+    ],
+    "engineWhy": [],
+    "demo": {
+      "title": "Proposition de scène — la réaction de la coursière",
+      "promptLabel": "Prompt proposé · pas encore généré",
+      "prompt": "Une coursière en veste rouge s’arrête sous l’auvent d’une rue de ville détrempée, la nuit. Elle remarque une silhouette familière de l’autre côté de la route, se tourne vers elle et sourit. Un léger travelling avant accompagne sa réaction. Garder sa veste, son visage et l’éclairage de la rue mouillée cohérents.",
+      "notes": [
+        "Cette scène n’a pas été générée avec Flash. Ses réglages et son résultat restent à tester."
+      ],
+      "summary": {
+        "subject": "Une coursière en veste rouge",
+        "action": "Remarquer, se tourner et sourire",
+        "camera": "Un léger travelling avant vers la réaction",
+        "style": "Une rue de ville pluvieuse, la nuit",
+        "output": "Proposition de scène ; aucun résultat généré pour le moment"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Proposition de scène",
+        "outputLabel": "Résultat à venir",
+        "duration": "À définir",
+        "aspectRatio": "À définir",
+        "audioChipMode": "media",
+        "audioChipLabel": "Pas encore généré",
+        "altContext": "Scène de coursière proposée pour un futur essai de Seedance 2.5 Flash"
+      }
+    },
+    "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "seedance-2-5-flash",
+    "showWhenEmpty": false,
+    "section": {
+      "title": "Exemples Seedance 2.5 Flash",
+      "intro": "Examinez les vidéos Flash avec leurs prompts et réglages d’origine. La galerie Seedance conserve le modèle exact utilisé pour chaque clip.",
+      "defaultCtaLabel": "Voir la galerie Seedance",
+      "recreateLabel": null
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "Tous"
+      },
+      {
+        "id": "cinematic",
+        "label": "Cinéma"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "identity",
+        "icon": "users",
+        "title": "Suivre le personnage",
+        "body": "Comparez le visage et la tenue tout au long du clip."
+      },
+      {
+        "id": "action",
+        "icon": "zap",
+        "title": "Lire l’action",
+        "body": "Observez les contacts, l’équilibre et les changements de direction."
+      },
+      {
+        "id": "camera",
+        "icon": "maximize",
+        "title": "Observer le cadrage",
+        "body": "Vérifiez comment la caméra accompagne le mouvement principal."
+      },
+      {
+        "id": "source",
+        "icon": "shield",
+        "title": "Conserver la source",
+        "body": "Pour une démonstration de référence ou de retouche, examinez l’entrée originale avec le résultat."
+      },
+      {
+        "id": "prompt",
+        "icon": "pen",
+        "title": "Examiner le prompt",
+        "body": "Ouvrez les instructions originales et les réglages enregistrés avant de préparer une variante."
+      }
+    ],
+    "fallbackItems": null,
+    "cinematic": {
+      "title": "Seedance 2.5 Flash : préparer le plan.",
+      "intro": "Cinq scènes, cinq intentions créatives. Explorez les mouvements de caméra, les actions et les ambiances sonores qui peuvent transformer une image de départ en film.",
+      "assetTitles": [
+        {
+          "id": "midnight-run",
+          "title": "Course de minuit — travelling au ras du sol"
+        },
+        {
+          "id": "after-the-beat",
+          "title": "Après le tempo — une performance live"
+        },
+        {
+          "id": "the-blue-hour",
+          "title": "L’heure bleue — un échange discret"
+        },
+        {
+          "id": "where-gravity-ends",
+          "title": "Au-delà de la gravité — un monde en mouvement"
+        },
+        {
+          "id": "make-an-entrance",
+          "title": "Faire son entrée — mode en vertical"
+        },
+        {
+          "id": "before-the-drop",
+          "title": "Avant la descente — action en vertical"
+        }
+      ],
+      "provenance": "Ces six images, hero compris, ont été générées avec GPT Image 2.6 Sunburst. Ce sont des images de départ pour l’animation, pas des vidéos Seedance 2.5 Flash ni une preuve de son mouvement, de son audio, de sa vitesse ou de sa cohérence. Les vrais rendus les remplaceront après vérification.",
+      "panels": [
+        {
+          "id": "performance",
+          "layout": "grid",
+          "eyebrow": "Performance et dialogue",
+          "title": "Un geste. Une émotion.",
+          "body": "Une baguette suspendue avant le premier coup. Un regard avant une réponse. Partez d’une action humaine lisible et d’un mouvement de caméra qui lui laisse de la place.",
+          "note": "Ces scènes sont prévues, pas encore animées. Le rythme, la synchronisation des lèvres, les mains et le son devront être évalués dans la vidéo réelle.",
+          "assetIds": [
+            "after-the-beat",
+            "the-blue-hour"
+          ]
+        },
+        {
+          "id": "worlds",
+          "layout": "feature",
+          "eyebrow": "Création d’univers",
+          "title": "Rendre l’impossible tangible.",
+          "body": "Un astronaute, un opéra abandonné et une créature suspendue au-dessus de lui. Définissez ce qui bouge, ce qui reste fixe et comment la caméra découvre les lieux.",
+          "note": "Cette première image définit la direction visuelle. Elle ne démontre pas comment Flash traitera la gravité, la continuité ou les interactions.",
+          "assetIds": [
+            "where-gravity-ends"
+          ]
+        },
+        {
+          "id": "vertical",
+          "layout": "shots",
+          "eyebrow": "Conçu pour le format vertical",
+          "title": "Petit écran. Grande présence.",
+          "body": "Un manteau traverse la lumière. Une skateuse s’engage dans la descente. Composez dès le départ en 9:16, avec un sujet clair et de l’espace pour le mouvement.",
+          "note": "Les sources sont des images de départ verticales. Le cadrage final, le mouvement et l’audio seront vérifiés sur les futurs rendus.",
+          "assetIds": [
+            "make-an-entrance",
+            "before-the-drop"
+          ]
+        }
+      ],
+      "shotPlans": [
+        {
+          "assetId": "after-the-beat",
+          "motion": "Un court fill de batterie. La caméra tourne autour de l’instrument et termine sur son expression.",
+          "sound": "Caisse claire, toms, résonance des cymbales et ambiance lointaine du toit."
+        },
+        {
+          "assetId": "the-blue-hour",
+          "motion": "Un léger travelling vers les deux acteurs, un échange bref, puis un silence maintenu.",
+          "sound": "Deux voix distinctes, l’ambiance calme du lieu et la pluie sur la vitre."
+        },
+        {
+          "assetId": "where-gravity-ends",
+          "motion": "Suivre le regard de l’astronaute tandis que la créature glisse dans l’opéra ; préserver les lignes du décor.",
+          "sound": "Des pas, un écho ample et une atmosphère sonore basse et discrète."
+        },
+        {
+          "assetId": "make-an-entrance",
+          "motion": "Accompagner la marche sous la colonnade ; laisser le manteau bouger naturellement dans la lumière.",
+          "sound": "Des pas et le froissement du tissu dans un couloir de pierre ouvert."
+        },
+        {
+          "assetId": "before-the-drop",
+          "motion": "Une descente contrôlée, puis un court accompagnement, en gardant la planche et le corps lisibles.",
+          "sound": "Roues sur le béton, impact à la réception et brève ambiance extérieure."
+        }
+      ]
+    }
+  },
+  "cinematic": {
+    "headline": [
+      "Créez l’instant.",
+      "Mettez-le en mouvement."
+    ],
+    "intro": "Dirigez le mouvement, la caméra et le son avec Seedance 2.5 Flash de ByteDance. Partez d’un prompt ou de références, choisissez 480p ou 720p et préparez des plans jusqu’à 30 secondes.",
+    "caption": "« Course de minuit » · Image de départ créée avec GPT Image 2.6 Sunburst · Vidéo à venir",
+    "proofLabel": "De la première image au film",
+    "examplesLabel": "Explorer les plans de scène",
+    "pricingLabel": "Voir les tarifs vidéo actuels",
+    "modelSlug": "seedance-2-5-flash",
+    "variant": "video",
+    "heroAssetId": "midnight-run",
+    "facts": [
+      {
+        "label": "Durée",
+        "value": "Jusqu’à 30 secondes"
+      },
+      {
+        "label": "Résolution",
+        "value": "480p · 720p"
+      },
+      {
+        "label": "Références",
+        "value": "10 images · 5 vidéos · 5 audios"
+      },
+      {
+        "label": "Direction",
+        "value": "Mouvement · caméra · son"
+      }
+    ]
+  }
+}

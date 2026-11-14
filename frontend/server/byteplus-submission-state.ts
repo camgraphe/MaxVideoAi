@@ -12,7 +12,7 @@ export async function persistReservedBytePlusLasExecutionSettings(input: {
   const rows = await query<{ job_id: string }>(`UPDATE app_jobs SET
       settings_snapshot = COALESCE(settings_snapshot, '{}'::jsonb) || $3::jsonb,
       updated_at = now()
-    WHERE job_id = $1 AND user_id = $2 AND engine_id = 'seedance-2-5' AND provider = 'byteplus_modelark'
+    WHERE job_id = $1 AND user_id = $2 AND engine_id IN ('seedance-2-5', 'seedance-2-5-flash') AND provider = 'byteplus_modelark'
       AND payment_status = 'paid_wallet' AND final_price_cents = $4 AND status = 'pending'
       AND provider_job_id IS NULL AND settings_snapshot->'byteplusSubmission' IS NULL
     RETURNING job_id`,
@@ -28,7 +28,7 @@ export function getBytePlusSubmissionState(settings: unknown) {
 
 export async function readOwnedBytePlusLasSubmission(jobId: string, userId: string, queryFn: QueryFn) {
   const rows = await queryFn(`SELECT * FROM app_jobs WHERE job_id = $1 AND user_id = $2
-    AND engine_id = 'seedance-2-5' AND provider = 'byteplus_modelark'`, [jobId, userId]);
+    AND engine_id IN ('seedance-2-5', 'seedance-2-5-flash') AND provider = 'byteplus_modelark'`, [jobId, userId]);
   if (!Array.isArray(rows) || rows.length !== 1) {
     throw new BytePlusModelArkError('The owned generation reservation is unavailable.', { status: 400, code: 'BYTEPLUS_JOB_UNAVAILABLE' });
   }
@@ -40,7 +40,7 @@ export async function claimBytePlusLasSubmission(jobId: string, userId: string, 
       jsonb_set(jsonb_set(COALESCE(settings_snapshot, '{}'::jsonb), '{byteplusTransport}', to_jsonb($3::text), true),
         '{byteplusSubmission}', jsonb_build_object('phase', 'submit_started', 'startedAt', now()), true),
       provisional = FALSE, updated_at = now()
-    WHERE job_id = $1 AND user_id = $2 AND engine_id = 'seedance-2-5' AND provider = 'byteplus_modelark'
+    WHERE job_id = $1 AND user_id = $2 AND engine_id IN ('seedance-2-5', 'seedance-2-5-flash') AND provider = 'byteplus_modelark'
       AND status = 'pending' AND provider_job_id IS NULL
       AND settings_snapshot->'byteplusSubmission' IS NULL
     RETURNING *`, [jobId, userId, transport]);
@@ -56,7 +56,7 @@ export async function preserveBytePlusLasSubmission(input: {
       settings_snapshot = jsonb_set(COALESCE(settings_snapshot, '{}'::jsonb), '{byteplusSubmission}',
         COALESCE(settings_snapshot->'byteplusSubmission', '{}'::jsonb) || jsonb_build_object('phase', 'uncertain', 'updatedAt', now()), true),
       message = 'Submission is being checked. Do not submit again.', provisional = FALSE, updated_at = now()
-    WHERE job_id = $1 AND user_id = $2 AND engine_id = 'seedance-2-5' AND provider = 'byteplus_modelark'
+    WHERE job_id = $1 AND user_id = $2 AND engine_id IN ('seedance-2-5', 'seedance-2-5-flash') AND provider = 'byteplus_modelark'
       AND status IN ('pending','queued','running','processing','in_progress','provider_polling_stalled')`,
   [input.jobId, input.userId, input.providerJobId]);
 }
@@ -68,7 +68,7 @@ export async function recordBytePlusLasSubmissionAccepted(input: {
       settings_snapshot = jsonb_set(settings_snapshot, '{byteplusSubmission}',
         settings_snapshot->'byteplusSubmission' || jsonb_build_object('phase','accepted','acceptedAt',now()), true),
       updated_at = now()
-    WHERE job_id = $1 AND user_id = $2 AND engine_id = 'seedance-2-5' AND provider = 'byteplus_modelark'
+    WHERE job_id = $1 AND user_id = $2 AND engine_id IN ('seedance-2-5', 'seedance-2-5-flash') AND provider = 'byteplus_modelark'
       AND status IN ('pending','queued','running','processing','in_progress','provider_polling_stalled')
       AND (provider_job_id IS NULL OR provider_job_id = $3)
     RETURNING *`, [input.jobId, input.userId, input.providerJobId]);
@@ -84,7 +84,7 @@ export async function recordBytePlusLasSubmissionRejection(input: {
         '{byteplusSubmission}', COALESCE(settings_snapshot->'byteplusSubmission', '{}'::jsonb) ||
           jsonb_build_object('phase','rejected','message',$3::text,'errorCode',$4::text,'updatedAt',now()), true),
       updated_at = now()
-    WHERE job_id = $1 AND user_id = $2 AND engine_id = 'seedance-2-5' AND provider = 'byteplus_modelark'
+    WHERE job_id = $1 AND user_id = $2 AND engine_id IN ('seedance-2-5', 'seedance-2-5-flash') AND provider = 'byteplus_modelark'
       AND provider_job_id IS NULL AND status = 'pending'
       AND CASE WHEN $5::boolean THEN settings_snapshot->'byteplusSubmission'->>'phase' = 'submit_started'
         ELSE settings_snapshot->'byteplusSubmission' IS NULL END

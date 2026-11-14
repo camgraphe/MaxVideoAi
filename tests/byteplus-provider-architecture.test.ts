@@ -4,6 +4,8 @@ import test from 'node:test';
 
 import { normalizeBytePlusOptions } from '../frontend/app/api/generate/_lib/request-options-byteplus';
 import {
+  BytePlusModelArkClient,
+  BytePlusModelArkError,
   applyBytePlusSeedanceRuntimeOptions,
   buildBytePlusSeedancePayload,
   getBytePlusUserSafeErrorMessage,
@@ -194,6 +196,34 @@ test('BytePlus keeps production-proven Seedance 2.5 modes on ModelArk and reserv
     globalThis.fetch = original.fetch;
   }
 });
+
+for (const operation of ['create', 'retrieve', 'delete'] as const) {
+  for (const envelope of ['nested', 'flat'] as const) {
+    test(`BytePlus ${operation} preserves ${envelope} HTTP error codes without retrying`, async (t) => {
+      const providerCode = 'InvalidEndpointOrModel.NotFound';
+      const diagnostic = { code: providerCode, message: 'Model unavailable. Bearer private-test-token' };
+      let requests = 0;
+      t.mock.method(globalThis, 'fetch', async () => {
+        requests++;
+        return Response.json(envelope === 'nested' ? { error: diagnostic } : diagnostic, { status: 404 });
+      });
+      const client = new BytePlusModelArkClient({ apiKey: 'test-key', baseUrl: 'https://ark.example.test/api/v3' });
+      const submit = () => operation === 'create'
+        ? client.createSeedanceFastTask({ model: 'dreamina-seedance-2-5-flash-261115' } as never)
+        : operation === 'retrieve' ? client.retrieveTask('existing-task') : client.deleteTask('existing-task');
+      await assert.rejects(submit, (error: unknown) => {
+        assert.ok(error instanceof BytePlusModelArkError);
+        assert.equal(error.status, 404);
+        assert.equal(error.code, providerCode);
+        assert.match(error.message, /Model unavailable/);
+        assert.doesNotMatch(error.message, /private-test-token/);
+        assert.doesNotMatch(error.providerMessage ?? '', /private-test-token/);
+        return true;
+      });
+      assert.equal(requests, 1);
+    });
+  }
+}
 
 test('BytePlus polling reuses the persisted transport and safely classifies legacy task ids', () => {
   assert.equal(resolveBytePlusPollTransport({

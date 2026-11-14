@@ -171,13 +171,15 @@ test('Seedance family opening stays stable while keeping 2.5 guidance and histor
   assert.deepEqual(family.routeAliases, ['seedance-1-5-pro', 'seedance-2-0', 'seedance-2-0-fast', 'dreamina-seedance-2-0-mini']);
   assert.deepEqual(getExampleFamilyModelSlugs('seedance'), [
     'seedance-2-5',
+    'seedance-2-5-flash',
     'seedance-2-0',
     'seedance-2-0-fast',
     'dreamina-seedance-2-0-mini',
     'seedance-1-5-pro',
   ]);
-  assert.deepEqual(getExampleFamilyCurrentModelSlugs('seedance').slice(0, 2), [
+  assert.deepEqual(getExampleFamilyCurrentModelSlugs('seedance').slice(0, 3), [
     'seedance-2-5',
+    'seedance-2-5-flash',
     'seedance-2-0',
   ]);
 

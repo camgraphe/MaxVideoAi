@@ -3,7 +3,7 @@ import type { ManualTariffCell } from '@maxvideoai/pricing';
 import { buildManualTariffCoverageScenario, collectSellableManualTariffCoverage } from '@/lib/pricing-audit/manual-tariff-coverage';
 import { seedanceWorkflowScenarios } from '@/lib/pricing-audit/seedance-workflow-scenarios';
 import { withSeedanceTariffInputDuration } from '@/lib/pricing-audit/seedance-input-tariff-scenario';
-import { supportsSeedanceInputTariff } from '@/lib/seedance-input-tariff';
+import { supportsSeedanceInputTariff, seedanceInputTariffMaximum } from '@/lib/seedance-input-tariff';
 import { continuousInputTariffSelector } from '@/lib/pricing-manual-scenario';
 import { isSeedance25LasInputPricing } from '@/server/byteplus-las-tariff';
 import { SEEDANCE_LAS_INITIALIZATION_POLICY } from './seedance-las-authoring';
@@ -33,7 +33,7 @@ export function collectCustomerTariffCutoverCheckpoints() {
   const workflows = seedanceWorkflowScenarios(ordinary.filter(s => s.context.mode === 't2v'))
     .map(scenario => ({ key: `local_workflow:${scenario.id}`, kind: 'local_workflow' as const, scenario, currentStatus: 'quoted' as const }));
   const stress = ordinary.filter(s => supportsSeedanceInputTariff(s.modelId, s.selector.mode, s.selector.billingInputType))
-    .flatMap(s => [2, s.modelId === 'seedance-2-5' ? 30 : 15].map(seconds => ({
+    .flatMap(s => [2, seedanceInputTariffMaximum(s.modelId)!].map(seconds => ({
       key: `input_stress:${s.id}:${seconds}`, kind: 'input_stress' as const,
       scenario: withSeedanceTariffInputDuration(s, seconds), currentStatus: currentStatus(s),
     })));

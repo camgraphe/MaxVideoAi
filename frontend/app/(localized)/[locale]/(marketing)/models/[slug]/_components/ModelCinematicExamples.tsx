@@ -11,7 +11,7 @@ export function ModelCinematicExamples({ presentation, viewModel, hasRenderedVid
   return <section id="examples" className="cinema-examples">
     {viewModel.anchorId !== 'examples' ? <span id={viewModel.anchorId} /> : null}
     <header className="cinema-section-heading"><p className="cinema-eyebrow">{presentation.content.proofLabel}</p>
-      <h2>{viewModel.section.title}</h2><p>{viewModel.section.intro}</p>
+      <h2>{examples.title ?? viewModel.section.title}</h2><p>{examples.intro ?? viewModel.section.intro}</p>
     </header>
     <p className="cinema-provenance">{examples.provenance}</p>
     {hasRenderedVideos ? <ModelDecisionExamplesGallery title={viewModel.section.title} intro={viewModel.section.intro}

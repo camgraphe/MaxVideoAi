@@ -39,8 +39,10 @@ test('Flash comparison publishes in three locales and disappears when either reg
   flash.publication.model = { published: true, indexable: true };
   flash.publication.compare.published = true;
   flash.publication.compare.indexed = true;
-  assert.deepEqual(buildMarketingModelMenu(models).map(item => item.slug), [flashId, ...originalMenu.map(item => item.slug)]);
-  assert.deepEqual(buildMarketingCompareMenu(models).map(item => item.slug), [pair, ...originalCompareMenu.map(item => item.slug)]);
+  assert.ok(buildMarketingModelMenu(models).some(item => item.slug === flashId));
+  assert.deepEqual(buildMarketingModelMenu(models).filter(item => item.slug !== flashId), originalMenu);
+  assert.ok(buildMarketingCompareMenu(models).some(item => item.slug === pair));
+  assert.deepEqual(buildMarketingCompareMenu(models).filter(item => item.slug !== pair), originalCompareMenu);
   assert.ok(buildPublishedComparisonSlugsFromModels(models, () => true).includes(pair));
   const kling = models.find(model => model.id === 'kling-v4')!;
   kling.publication.compare.published = false;

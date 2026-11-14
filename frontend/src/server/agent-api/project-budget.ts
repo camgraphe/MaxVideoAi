@@ -1,3 +1,4 @@
+import { isSeedance25EngineId } from '@/lib/seedance-model-variants';
 import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
 import { getUserMembershipStatus, type UserMembershipStatus } from '@/server/membership/user-membership-status';
 
@@ -522,7 +523,7 @@ export async function calculateAgentProjectBudget(
         );
       }
       const settings = normalizeSettings(rawLine.settings, proposalIndex, lineIndex);
-      if ((engineId === 'seedance-2-5' && ['i2v', 'v2v', 'extend'].includes(mode))
+      if ((isSeedance25EngineId(engineId) && ['i2v', 'v2v', 'extend'].includes(mode))
         || (['seedance-2-0', 'seedance-2-0-fast', 'seedance-2-0-mini'].includes(engineId)
           && ['i2v', 'v2v', 'extend'].includes(mode) && ['auto', 'adaptive'].includes(settings.aspectRatio ?? ''))) {
         editProjectLine(

@@ -66,6 +66,32 @@ test('each successive edit uses its exact preceding original, not a shared first
   assert.throws(() => parseSeedreamEditorialImages(unverified), /verified native/);
 });
 
+test('Flash uses six unique attributed start frames and retains its video workspace action in every locale', () => {
+  for (const locale of locales) {
+    const content = read('seedance-2-5-flash', locale);
+    const examples = parseModelExamplesContent(content.examples, 'seedance-2-5-flash', locale);
+    const presentation = buildCinematicPresentation(parseModelCinematicContent(content.cinematic, 'seedance-2-5-flash'), examples, [], locale)!;
+    const placements = [presentation.hero.id, ...presentation.examples.panels.flatMap(panel => panel.assetIds)];
+    assert.equal(new Set(placements).size, 6);
+    assert.equal(placements.length, 6);
+    assert.deepEqual(new Set(placements), new Set(startFrames.map(frame => frame.id)));
+    assert.ok(presentation.assets.every(asset => asset.metadataLabel.includes('GPT Image 2.6 Sunburst')));
+    assert.deepEqual(new Set(presentation.examples.shotPlans!.map(plan => plan.assetId)), new Set(placements.slice(1)));
+    const missingTitle = structuredClone(examples);
+    missingTitle.cinematic!.assetTitles = [];
+    assert.throws(() => buildCinematicPresentation(presentation.content, missingTitle, [], locale), /localized start-frame title/);
+    const decision = buildModelDecisionData({engine:getFalEngineById('seedance-2-5-flash')!,locale,decisionContent:content.decision})!;
+    const html = renderToStaticMarkup(React.createElement(NextIntlClientProvider, {locale,messages:{},timeZone:'UTC'},
+      React.createElement(ModelCinematicHero, {presentation,decision,modelName:'Seedance 2.5 Flash',modelsLabel:'Models',modelsHref:'/models'})));
+    const doc = new JSDOM(html).window.document;
+    assert.equal(doc.querySelectorAll('h1').length, 1);
+    assert.equal(doc.querySelectorAll('img').length, 1);
+    assert.ok([...doc.querySelectorAll('a')].some(a => a.href.includes('/app?engine=seedance-2-5-flash')));
+    assert.ok(doc.body.textContent?.includes('GPT Image 2.6 Sunburst'));
+    assert.equal(doc.querySelectorAll('video, script[type="application/ld+json"]').length, 0);
+  }
+});
+
 test('originals and displays retain measured geometry, immutable hashes and real alpha', async () => {
   for (const image of parseSeedreamEditorialImages(seedreamRecords)) {
     for (const file of [image.original, image.display]) {

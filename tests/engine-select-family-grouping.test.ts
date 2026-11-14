@@ -216,8 +216,9 @@ test('family priority reorders the displayed groups without changing the source 
     'minimax-hailuo-02-text',
     'minimax-h3-max',
   ]);
-  assert.deepEqual(groups.find((group) => group.id === 'seedance')?.engines.map(({ id }) => id).slice(0, 4), [
+  assert.deepEqual(groups.find((group) => group.id === 'seedance')?.engines.map(({ id }) => id).slice(0, 5), [
     'seedance-2-5',
+    'seedance-2-5-flash',
     'seedance-2-0',
     'seedance-2-0-fast',
     'seedance-2-0-mini',

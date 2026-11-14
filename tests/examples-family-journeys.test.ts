@@ -12,7 +12,7 @@ for (const locale of ['en', 'fr', 'es'] as const) {
         isKlingLanding: false, isLtxLanding: false, isSeedanceLanding: false, isVeoLanding: family === 'veo',
       });
       assert.equal(new Set(links.map((link) => link.href)).size, links.length);
-      assert.ok(links[0].href.endsWith(family === 'veo' ? '/gemini-omni-flash-vs-veo-3-1' : '/minimax-h3-vs-minimax-h3-max'));
+      assert.ok(links[0].href.endsWith(family === 'veo' ? '/seedance-2-5-flash-vs-veo-3-1-fast' : '/minimax-h3-vs-seedance-2-5-flash'));
       for (const link of links) {
         assert.ok(link.href.startsWith(locale === 'en' ? '/ai-video-engines/' : `/${locale}/`));
         const slug = link.href.split('/').pop()!;

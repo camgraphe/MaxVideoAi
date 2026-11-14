@@ -27,6 +27,7 @@ import { SEEDANCE_2_STANDARD_FAL_ENGINE_REGISTRY } from './seedance-2-standard';
 import { SEEDANCE_2_FAST_FAL_ENGINE_REGISTRY } from './seedance-2-fast';
 import { SEEDANCE_2_MINI_FAL_ENGINE_REGISTRY } from './seedance-2-mini';
 import { SEEDANCE_2_BYTEPLUS_FAL_ENGINE_REGISTRY } from './seedance-2-byteplus';
+import { SEEDANCE_2_5_FLASH_FAL_ENGINE_REGISTRY } from './seedance-2-5-flash';
 import { SEEDANCE_2_5_FAL_ENGINE_REGISTRY } from './seedance-2-5';
 import { WAN_2_5_FAL_ENGINE_REGISTRY } from './wan-2-5';
 import { WAN_2_6_FAL_ENGINE_REGISTRY } from './wan-2-6';
@@ -85,6 +86,7 @@ export const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
   ...SEEDANCE_2_MINI_FAL_ENGINE_REGISTRY,
   ...SEEDANCE_2_BYTEPLUS_FAL_ENGINE_REGISTRY,
   ...SEEDANCE_2_5_FAL_ENGINE_REGISTRY,
+  ...SEEDANCE_2_5_FLASH_FAL_ENGINE_REGISTRY,
   ...WAN_2_5_FAL_ENGINE_REGISTRY,
   ...WAN_2_6_FAL_ENGINE_REGISTRY,
   ...LTX_2_FAST_FAL_ENGINE_REGISTRY,

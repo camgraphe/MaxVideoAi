@@ -91,13 +91,14 @@ test('marketing top navigation stays clean while Best-For links live inside drop
   assert.match(marketingDesktopNavSource, /font-semibold text-text-primary/);
 });
 
-test('public dropdowns limit launch badges to the eight promoted current models with none on comparisons', () => {
+test('public dropdowns limit launch badges to the nine promoted current models with none on comparisons', () => {
   const badgedEntries = Object.values(MARKETING_NAV_DROPDOWNS)
     .flatMap((dropdown) => dropdown?.items ?? [])
     .filter(({ badge }) => badge === 'new')
     .map(({ key }) => key);
 
   assert.deepEqual(badgedEntries, [
+    'seedance-2-5-flash',
     'kling-v4-flash',
     'kling-v4',
     'flux-3-max',
@@ -259,7 +260,7 @@ test('examples navigation exposes discoverable families without promoting archiv
 
 test('marketing footer projects the current bounded model menu instead of a second stale roster', () => {
   assert.match(marketingFooterSource, /FOOTER_MODELS\.map/);
-  assert.ok(FOOTER_MODELS.length <= 9);
+  assert.ok(FOOTER_MODELS.length <= 10);
   for (const item of FOOTER_MODELS) assert.ok(MARKETING_NAV_MODELS.some(model => model.key === item.key));
   assert.doesNotMatch(marketingFooterSource, /slug: 'ltx-2-3-fast'/);
   assert.doesNotMatch(marketingFooterSource, /slug: 'wan-2-6'/);
@@ -271,12 +272,12 @@ test('marketing footer promotes Kling 4 while preserving all eight previous mode
     'minimax-h3', 'seedance-2-5', 'kling-3-pro', 'veo-3-1',
     'ltx-2-5-pro', 'wan-3', 'wan-3-prime',
   ];
-  assert.deepEqual(FOOTER_MODELS.map(item => item.key), ['kling-v4', ...preservedModelKeys]);
-  assert.deepEqual(FOOTER_MODELS[0].href, {
+  assert.deepEqual(FOOTER_MODELS.map(item => item.key), ['seedance-2-5-flash', 'kling-v4', ...preservedModelKeys]);
+  assert.deepEqual(FOOTER_MODELS[1].href, {
     pathname: '/models/[slug]', params: { slug: 'kling-v4' },
   });
   assert.deepEqual(
-    FOOTER_MODELS.slice(1),
+    FOOTER_MODELS.slice(2),
     preservedModelKeys.map(key => MARKETING_NAV_MODELS.find(item => item.key === key)),
     'Existing labels and destinations remain intact and in the same order',
   );
@@ -341,7 +342,7 @@ test('marketing footer promotes the current shared comparison selection', () => 
   for (const key of ['seedance-2-0-vs-seedance-2-0-fast', 'gemini-omni-flash-vs-veo-3-1']) {
     assert.ok(FOOTER_COMPARISONS.some(item => item.key === key), 'Preserve comparisons with recorded search demand');
   }
-  assert.ok(FOOTER_COMPARISONS.length <= 5);
+  assert.ok(FOOTER_COMPARISONS.length <= 6);
   assert.equal(FOOTER_EXAMPLES[0]?.key, 'ltx');
   assert.doesNotMatch(marketingFooterSource, /seedance-1-5-pro|ltx-2-3/);
 });

@@ -7,12 +7,12 @@ import { ENV } from '../frontend/src/lib/env';
 
 test('cutover derives all ordinary, workflow and real input duration checkpoints with unique identities', () => {
   const cases = collectCustomerTariffCutoverCheckpoints();
-  const novemberModels = ['kling-v4-flash', 'gpt-image-2-6-flare', 'gpt-image-2-6-sunburst'];
+  const novemberModels = ['kling-v4-flash', 'gpt-image-2-6-flare', 'gpt-image-2-6-sunburst', 'seedance-2-5-flash'];
   const seedreamModels = ['seedream-5-5', 'seedream-5-0-flash'];
   assert.equal(cases.filter(row => row.kind === 'ordinary' && !['flux-3-max','kling-v4','nano-banana-2-1',...novemberModels,...seedreamModels].includes(row.scenario.modelId)).length, 20158);
-  assert.deepEqual(novemberModels.map(id => cases.filter(row => row.scenario.modelId === id).length), [72, 1020, 1020]);
-  assert.ok(cases.filter(row => novemberModels.includes(row.scenario.modelId)).every(row => row.kind === 'ordinary'));
-  const novemberDelta = 72 + 1020 + 1020;
+  assert.deepEqual(novemberModels.map(id => cases.filter(row => row.scenario.modelId === id).length), [72, 1020, 1020, 3888]);
+  assert.ok(cases.filter(row => novemberModels.includes(row.scenario.modelId) && row.scenario.modelId !== 'seedance-2-5-flash').every(row => row.kind === 'ordinary'));
+  const novemberDelta = 72 + 1020 + 1020 + 1944;
   const seedream = cases.filter(row => seedreamModels.includes(row.scenario.modelId));
   assert.deepEqual(seedreamModels.map(id => seedream.filter(row => row.scenario.modelId === id).length), [33, 6]);
   assert.ok(seedream.every(row => row.kind === 'ordinary' && row.currentStatus === 'quoted'));
@@ -20,6 +20,8 @@ test('cutover derives all ordinary, workflow and real input duration checkpoints
   assert.deepEqual(new Set(seedream.map(row => row.scenario.selector.mode)), new Set(['t2i', 'i2i']));
   const seedreamDelta = 33 + 6;
 
+  const flashStress = cases.filter(row => row.scenario.modelId === 'seedance-2-5-flash' && row.kind === 'input_stress');
+  assert.deepEqual(new Set(flashStress.map(row => row.scenario.context.inputVideoDurationSec)), new Set([2, 30]));
   assert.equal(cases.filter(row => row.scenario.modelId === 'flux-3-max').length, 128);
   assert.equal(cases.filter(row => row.scenario.modelId === 'kling-v4').length, 280);
   const nano = cases.filter(row => row.scenario.modelId === 'nano-banana-2-1');
@@ -28,10 +30,10 @@ test('cutover derives all ordinary, workflow and real input duration checkpoints
   assert.deepEqual(new Set(nano.map(row => row.scenario.selector.resolution)), new Set(['1K', '2K', '4K']));
   assert.equal(cases.filter(row => row.kind === 'ordinary').length, 20286 + 280 + 6 + novemberDelta + seedreamDelta);
   assert.equal(cases.filter(row => row.kind === 'local_workflow').length, 324);
-  assert.equal(cases.filter(row => row.kind === 'input_stress').length, 6372);
+  assert.equal(cases.filter(row => row.kind === 'input_stress').length, 6372 + 1944);
   assert.equal(cases.filter(row => row.kind === 'new_offer').length, 89);
-  assert.equal(cases.filter(row => row.kind !== 'new_offer').length, 26982 + 280 + 6 + novemberDelta + seedreamDelta);
-  assert.equal(cases.length, 27071 + 280 + 6 + novemberDelta + seedreamDelta);
+  assert.equal(cases.filter(row => row.kind !== 'new_offer').length, 26982 + 280 + 6 + novemberDelta + seedreamDelta + 1944);
+  assert.equal(cases.length, 27071 + 280 + 6 + novemberDelta + seedreamDelta + 1944);
   assert.equal(new Set(cases.map(row => row.key)).size, cases.length);
   const lumaModify = cases.filter(row => row.kind === 'ordinary' && row.scenario.modelId === 'luma-ray-3-2' && row.scenario.context.mode === 'v2v');
   assert.deepEqual([...new Set(lumaModify.map(row => row.scenario.context.durationSec))].sort((a, b) => a - b),

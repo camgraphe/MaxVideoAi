@@ -2,6 +2,9 @@ import type { AppLocale } from '@/i18n/locales';
 
 // Exact capability phrases only: unknown values keep their original meaning.
 const CAPABILITY_COPY: Record<string, { fr: string; es: string }> = {
+  'up to 10 image references': { fr: 'Jusqu’à 10 images de référence', es: 'Hasta 10 imágenes de referencia' },
+  'up to 5 video references': { fr: 'Jusqu’à 5 vidéos de référence', es: 'Hasta 5 vídeos de referencia' },
+  'up to 5 audio references; visual input required': { fr: 'Jusqu’à 5 références audio ; entrée visuelle nécessaire', es: 'Hasta 5 referencias de audio; se requiere una entrada visual' },
   "up to 10 images total, including the opening image": { fr: "Jusqu’à 10 images au total, image de départ comprise", es: "Hasta 10 imágenes en total, incluida la imagen inicial" },
   "up to 5 reference videos; 30s combined with video elements": { fr: "Jusqu’à 5 vidéos de référence ; 30 s au total avec les éléments vidéo", es: "Hasta 5 videos de referencia; 30 s en total con los elementos de video" },
   "provider-set; no fps selector": { fr: "Cadence définie par le fournisseur ; aucun sélecteur FPS", es: "Cadencia definida por el proveedor; sin selector de FPS" },

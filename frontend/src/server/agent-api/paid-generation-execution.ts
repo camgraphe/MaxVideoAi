@@ -1,3 +1,4 @@
+import { isSeedance25EngineId } from '@/lib/seedance-model-variants';
 import type { PreparedSeedanceWorkflow } from '@/server/seedance-workflow-request';
 import { getPlatformFeeCents } from '@maxvideoai/pricing';
 
@@ -193,7 +194,7 @@ function videoInitialParams(
   const vendorAccountId = vendorAccount(pricing);
   const pricingJson = JSON.stringify(pricing);
   let provider = quote.request.seedanceWorkflow ? 'byteplus_modelark' : candidate.engine.provider;
-  if (quote.request.engineId === 'seedance-2-5' && quote.request.mode === 'v2v' && !quote.request.seedanceWorkflow) {
+  if (isSeedance25EngineId(quote.request.engineId) && quote.request.mode === 'v2v' && !quote.request.seedanceWorkflow) {
     const context = resolveTrustedPaidGenerateRouteContext({
       body: { ...quote.request.settings, payment: { mode: 'wallet' } },
       engine: candidate.engine, jobId: quote.quoteId, mode: 'v2v',

@@ -12,17 +12,17 @@ const comparisonPaths = getHubComparisonSlugsForSitemap().map(
 const modelPaths = modelRoster.map(({ modelSlug }) => `/models/${modelSlug}`);
 const dynamicPaths = new Set([...modelPaths, ...comparisonPaths]);
 
-test('P1 and subsequent candidates add twenty-three English routes, retaining the historical inventory and latest Seedream models', () => {
-  assert.equal(modelPaths.length - fixture.publishedModelCount, 13);
-  assert.equal(comparisonPaths.length - fixture.publishedComparisonCount, 10);
-  assert.equal(dynamicPaths.size - fixture.dynamicEnglishCanonicalCount, 23);
+test('P1 and subsequent candidates add thirty English routes, retaining the historical inventory and latest Seedream models', () => {
+  assert.equal(modelPaths.length - fixture.publishedModelCount, 14);
+  assert.equal(comparisonPaths.length - fixture.publishedComparisonCount, 16);
+  assert.equal(dynamicPaths.size - fixture.dynamicEnglishCanonicalCount, 30);
 
   const localizedLocCount = modelRoster.length * 3 + getHubComparisonSlugsForSitemap().reduce(
     (total, slug) => total + getIndexableComparisonLocales(slug).length,
     0,
   );
   // Preserve prior deltas; the two new Seedream models add six localized model URLs.
-  assert.equal(localizedLocCount - fixture.localizedLocCount, 38 - 82 + 3 + 6 + 9 + 3 + 6);
+  assert.equal(localizedLocCount - fixture.localizedLocCount, 38 - 82 + 3 + 6 + 9 + 3 + 6 + 21);
   const v4 = modelRoster.find(model => model.modelSlug === 'kling-v4');
   assert.ok(v4);
   assert.deepEqual(v4.surfaces.modelPage, { indexable: true, includeInSitemap: true });

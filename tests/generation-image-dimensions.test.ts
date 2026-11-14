@@ -38,6 +38,7 @@ test('all Seedance and Kling engines that accept images require a 300 px minimum
       'seedance-2-0-fast',
       'seedance-2-0-mini',
       'seedance-2-5',
+      'seedance-2-5-flash',
     ]
   );
   for (const entry of imageEngines) {

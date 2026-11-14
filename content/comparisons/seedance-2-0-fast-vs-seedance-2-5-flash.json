@@ -1,0 +1,240 @@
+{
+  "slug": "seedance-2-0-fast-vs-seedance-2-5-flash",
+  "en": {
+    "meta": {
+      "title": "Seedance 2.5 Flash vs Seedance 2.0 Fast | MaxVideoAI",
+      "description": "Compare Seedance 2.5 Flash and Seedance 2.0 Fast: reference limits, clip length, 480p/720p workflows and current MaxVideoAI prices.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Two Seedance iteration workflows, different scene lengths. Seedance 2.0 Fast covers scenes up to 15 seconds at 720p. Seedance 2.5 Flash extends the choice to 4–30 seconds at 480p or 720p, with different reference budgets. Keep the model version attached to every example and saved setup.",
+    "quickVerdict": {
+      "title": "Choose by the job",
+      "body": "Compare a short scene at 720p first. Choose Flash when the scene needs more than 15 seconds or a 480p pass. Review reference count, audio and source-video duration again when moving a setup between versions."
+    },
+    "topCards": [
+      {
+        "title": "Two Seedance iteration workflows, different scene lengths",
+        "body": "Seedance 2.0 Fast covers scenes up to 15 seconds at 720p. Seedance 2.5 Flash extends the choice to 4–30 seconds at 480p or 720p, with different reference budgets. Keep the model version attached to every example and saved setup."
+      },
+      {
+        "title": "Flash controls",
+        "body": "Create 4–30 second scenes at 480p or 720p. Flash accepts up to 10 image, 5 video and 5 audio references, with visual input required for audio references. It does not include 1080p, 4K or the standard model’s native Draft-to-final workflow."
+      },
+      {
+        "title": "Compare the current quote",
+        "body": "Use the same duration, resolution, audio choice and inputs. A source video changes the billable duration; a text-only estimate cannot price a reference-video or editing task. The current MaxVideoAI quote is shown before confirmation."
+      },
+      {
+        "title": "Judge complete clips",
+        "body": "Use the same brief, framing and intended output. Watch the opening, subject continuity, movement, sound and ending. Flash scores are provisional editorial estimates; the methodology explains the limited evidence. Actual delivery times remain separate."
+      }
+    ],
+    "primaryLinksTitle": "Models, use cases and pricing",
+    "primaryLinks": [
+      {
+        "href": "/models/seedance-2-5-flash",
+        "label": "Seedance 2.5 Flash"
+      },
+      {
+        "href": "/models/seedance-2-0-fast",
+        "label": "Seedance 2.0 Fast"
+      },
+      {
+        "href": "/ai-video-engines/seedance-2-5-vs-seedance-2-5-flash",
+        "label": "Standard vs Flash"
+      },
+      {
+        "href": "/ai-video-engines/best-for/fast-drafts",
+        "label": "Models for creative iteration"
+      },
+      {
+        "href": "/pricing",
+        "label": "Current pricing"
+      }
+    ],
+    "faq": {
+      "title": "Questions about this comparison",
+      "subtitle": "Workflow facts and current quotes, with performance evidence kept separate.",
+      "items": [
+        {
+          "question": "What is the main difference?",
+          "answer": "Compare a short scene at 720p first. Choose Flash when the scene needs more than 15 seconds or a 480p pass. Review reference count, audio and source-video duration again when moving a setup between versions."
+        },
+        {
+          "question": "Does Seedance 2.5 Flash offer 4K?",
+          "answer": "No. Flash outputs 480p or 720p. Choose a model and mode that explicitly offer the output resolution you need; upscaling is a separate operation."
+        },
+        {
+          "question": "How should I compare the price?",
+          "answer": "Use the same duration, resolution, audio choice and inputs. A source video changes the billable duration; a text-only estimate cannot price a reference-video or editing task. The current MaxVideoAI quote is shown before confirmation."
+        },
+        {
+          "question": "Which model is faster or better?",
+          "answer": "The names Flash and Fast are not benchmark results. We do not transfer quality ratings or latency measurements between models. Compare complete clips at the same settings; measured latency needs enough real completed jobs."
+        },
+        {
+          "question": "How should I read the Flash scores?",
+          "answer": "The scorecard includes provisional editorial estimates for Flash, based on its own documentation and early external reports. These are not controlled MaxVideoAI results or inherited Seedance 2.5 scores. Measured delivery time needs enough completed generations."
+        }
+      ]
+    }
+  },
+  "fr": {
+    "meta": {
+      "title": "Seedance 2.5 Flash vs Seedance 2.0 Fast | MaxVideoAI",
+      "description": "Comparez Seedance 2.5 Flash et Seedance 2.0 Fast : limites de références, durée des clips, création en 480p/720p et tarifs MaxVideoAI actuels.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Deux parcours Seedance pour itérer, des durées différentes. Seedance 2.0 Fast couvre des scènes jusqu’à 15 secondes en 720p. Seedance 2.5 Flash élargit le choix à 4–30 secondes en 480p ou 720p, avec d’autres limites de références. Gardez la version du modèle associée à chaque exemple et réglage enregistré.",
+    "quickVerdict": {
+      "title": "Choisir selon le travail",
+      "body": "Comparez d’abord une scène courte en 720p. Choisissez Flash si la scène dépasse 15 secondes ou demande un essai en 480p. Revérifiez le nombre de références, le son et la durée des vidéos sources en passant d’une version à l’autre."
+    },
+    "topCards": [
+      {
+        "title": "Deux parcours Seedance pour itérer, des durées différentes",
+        "body": "Seedance 2.0 Fast couvre des scènes jusqu’à 15 secondes en 720p. Seedance 2.5 Flash élargit le choix à 4–30 secondes en 480p ou 720p, avec d’autres limites de références. Gardez la version du modèle associée à chaque exemple et réglage enregistré."
+      },
+      {
+        "title": "Les outils de Flash",
+        "body": "Créez des scènes de 4 à 30 secondes en 480p ou 720p. Flash accepte jusqu’à 10 images, 5 vidéos et 5 références audio ; une entrée visuelle est nécessaire avec les références sonores. Il ne propose ni 1080p, ni 4K, ni parcours natif Draft vers rendu final du modèle standard."
+      },
+      {
+        "title": "Comparer le devis actuel",
+        "body": "Gardez la même durée, résolution, option audio et les mêmes entrées. Une vidéo source modifie la durée facturée : une estimation texte seul ne chiffre pas une génération avec vidéo de référence ou une modification. Le devis MaxVideoAI actuel s’affiche avant confirmation."
+      },
+      {
+        "title": "Évaluer les clips entiers",
+        "body": "Gardez le même brief, cadrage et objectif de sortie. Regardez le début, la continuité du sujet, le mouvement, le son et la fin. Les notes Flash sont des estimations éditoriales provisoires ; la méthode précise les limites des preuves. Les délais réels restent distincts."
+      }
+    ],
+    "primaryLinksTitle": "Modèles, usages et tarifs",
+    "primaryLinks": [
+      {
+        "href": "/fr/modeles/seedance-2-5-flash",
+        "label": "Seedance 2.5 Flash"
+      },
+      {
+        "href": "/fr/modeles/seedance-2-0-fast",
+        "label": "Seedance 2.0 Fast"
+      },
+      {
+        "href": "/fr/comparatif/seedance-2-5-vs-seedance-2-5-flash",
+        "label": "Standard contre Flash"
+      },
+      {
+        "href": "/fr/comparatif/best-for/fast-drafts",
+        "label": "Modèles pour itérer"
+      },
+      {
+        "href": "/fr/tarifs",
+        "label": "Tarifs actuels"
+      }
+    ],
+    "faq": {
+      "title": "Questions sur ce comparatif",
+      "subtitle": "Les outils et devis actuels, avec les preuves de performance distinguées.",
+      "items": [
+        {
+          "question": "Quelle est la différence principale ?",
+          "answer": "Comparez d’abord une scène courte en 720p. Choisissez Flash si la scène dépasse 15 secondes ou demande un essai en 480p. Revérifiez le nombre de références, le son et la durée des vidéos sources en passant d’une version à l’autre."
+        },
+        {
+          "question": "Seedance 2.5 Flash propose-t-il la 4K ?",
+          "answer": "Non. Flash produit du 480p ou du 720p. Choisissez un modèle et un mode qui proposent explicitement la résolution requise ; l’agrandissement est une opération distincte."
+        },
+        {
+          "question": "Comment comparer les prix ?",
+          "answer": "Gardez la même durée, résolution, option audio et les mêmes entrées. Une vidéo source modifie la durée facturée : une estimation texte seul ne chiffre pas une génération avec vidéo de référence ou une modification. Le devis MaxVideoAI actuel s’affiche avant confirmation."
+        },
+        {
+          "question": "Quel modèle est le plus rapide ou le meilleur ?",
+          "answer": "Les noms Flash et Fast ne sont pas des résultats de benchmark. Nous ne transférons pas les notes de qualité ni les mesures de délai entre modèles. Comparez des clips entiers avec les mêmes réglages ; mesurer le délai demande suffisamment de générations réelles terminées."
+        },
+        {
+          "question": "Comment lire les notes de Flash ?",
+          "answer": "Le tableau inclut des estimations éditoriales provisoires pour Flash, fondées sur sa documentation et de premiers retours externes. Ce ne sont ni des résultats contrôlés MaxVideoAI ni les notes de Seedance 2.5. Les délais mesurés demandent assez de générations terminées."
+        }
+      ]
+    }
+  },
+  "es": {
+    "meta": {
+      "title": "Seedance 2.5 Flash vs Seedance 2.0 Fast | MaxVideoAI",
+      "description": "Compara Seedance 2.5 Flash y Seedance 2.0 Fast: límites de referencias, duración, creación en 480p/720p y precios actuales de MaxVideoAI.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Dos flujos Seedance para iterar, duraciones distintas. Seedance 2.0 Fast cubre escenas de hasta 15 segundos a 720p. Seedance 2.5 Flash amplía la elección a 4–30 segundos a 480p o 720p, con otros límites de referencias. Conserva la versión del modelo en cada ejemplo y configuración guardada.",
+    "quickVerdict": {
+      "title": "Elegir según el trabajo",
+      "body": "Compara primero una escena corta a 720p. Elige Flash si necesitas más de 15 segundos o una prueba a 480p. Revisa referencias, audio y duración de las fuentes al cambiar de versión."
+    },
+    "topCards": [
+      {
+        "title": "Dos flujos Seedance para iterar, duraciones distintas",
+        "body": "Seedance 2.0 Fast cubre escenas de hasta 15 segundos a 720p. Seedance 2.5 Flash amplía la elección a 4–30 segundos a 480p o 720p, con otros límites de referencias. Conserva la versión del modelo en cada ejemplo y configuración guardada."
+      },
+      {
+        "title": "Controles de Flash",
+        "body": "Crea escenas de 4 a 30 segundos a 480p o 720p. Flash acepta hasta 10 imágenes, 5 vídeos y 5 referencias de audio; el audio requiere una entrada visual. No incluye 1080p, 4K ni el flujo nativo de Draft a resultado final del modelo estándar."
+      },
+      {
+        "title": "Comparar el presupuesto actual",
+        "body": "Usa la misma duración, resolución, opción de audio y entradas. Un vídeo fuente cambia la duración facturable: una estimación solo de texto no calcula una generación con vídeo de referencia o una edición. El presupuesto actual de MaxVideoAI aparece antes de confirmar."
+      },
+      {
+        "title": "Evaluar los clips completos",
+        "body": "Mantén el mismo brief, encuadre y objetivo. Revisa el inicio, la continuidad del sujeto, el movimiento, el sonido y el final. Las notas de Flash son estimaciones editoriales provisionales; la metodología explica sus límites. Los tiempos reales se tratan por separado."
+      }
+    ],
+    "primaryLinksTitle": "Modelos, usos y precios",
+    "primaryLinks": [
+      {
+        "href": "/es/modelos/seedance-2-5-flash",
+        "label": "Seedance 2.5 Flash"
+      },
+      {
+        "href": "/es/modelos/seedance-2-0-fast",
+        "label": "Seedance 2.0 Fast"
+      },
+      {
+        "href": "/es/comparativa/seedance-2-5-vs-seedance-2-5-flash",
+        "label": "Estándar frente a Flash"
+      },
+      {
+        "href": "/es/comparativa/best-for/fast-drafts",
+        "label": "Modelos para iterar"
+      },
+      {
+        "href": "/es/precios",
+        "label": "Precios actuales"
+      }
+    ],
+    "faq": {
+      "title": "Preguntas sobre esta comparativa",
+      "subtitle": "Controles y presupuestos actuales, con las pruebas de rendimiento diferenciadas.",
+      "items": [
+        {
+          "question": "¿Cuál es la diferencia principal?",
+          "answer": "Compara primero una escena corta a 720p. Elige Flash si necesitas más de 15 segundos o una prueba a 480p. Revisa referencias, audio y duración de las fuentes al cambiar de versión."
+        },
+        {
+          "question": "¿Seedance 2.5 Flash ofrece 4K?",
+          "answer": "No. Flash produce 480p o 720p. Elige un modelo y modo que ofrezcan explícitamente la resolución requerida; ampliar la imagen es una operación separada."
+        },
+        {
+          "question": "¿Cómo comparar precios?",
+          "answer": "Usa la misma duración, resolución, opción de audio y entradas. Un vídeo fuente cambia la duración facturable: una estimación solo de texto no calcula una generación con vídeo de referencia o una edición. El presupuesto actual de MaxVideoAI aparece antes de confirmar."
+        },
+        {
+          "question": "¿Qué modelo es más rápido o mejor?",
+          "answer": "Los nombres Flash y Fast no son resultados de pruebas. No transferimos puntuaciones de calidad ni medidas de latencia entre modelos. Compara clips completos con los mismos ajustes; medir la latencia requiere suficientes generaciones reales terminadas."
+        },
+        {
+          "question": "¿Cómo interpretar las notas de Flash?",
+          "answer": "La tabla incluye estimaciones editoriales provisionales de Flash, basadas en su documentación y primeros informes externos. No son resultados controlados de MaxVideoAI ni notas heredadas de Seedance 2.5. Medir los tiempos exige suficientes generaciones completadas."
+        }
+      ]
+    }
+  }
+}

@@ -89,16 +89,19 @@ const VIDEO_EXTEND_MODELS = new Set(['seedance-2-5', 'wan-3', 'wan-3-prime']);
 // Conversation payload, quote and dispatch qualification is independent of Canvas UI qualification.
 // These proofs only intersect the canonical published catalog; they do not define model capabilities.
 const CONVERSATION_VIDEO_MODELS = new Set<string>([
+  'seedance-2-5-flash',
   ...VIDEO_TEXT_IMAGE_MODELS,
   'kling-v4', 'kling-v4-flash',
   'kling-3-turbo-pro', 'kling-3-turbo-standard', 'minimax-h3-max',
   'ltx-2-5-fast', 'ltx-2-5-pro', 'grok-imagine-video-1-5', 'flux-3', 'flux-3-draft', 'flux-3-max',
 ]);
 const CONVERSATION_REFERENCE_VIDEO_MODELS = new Set<string>([
+  'seedance-2-5-flash',
   'kling-v4', 'kling-v4-flash',
   ...REFERENCE_VIDEO_MODELS, 'minimax-h3-max', 'grok-imagine-video-1-5', 'flux-3-max','flux-3','flux-3-draft',
 ]);
 const CONVERSATION_VIDEO_EDIT_MODELS = new Set([
+  'seedance-2-5-flash',
   'kling-v4',
   'gemini-omni-flash', 'lumaRay2', 'lumaRay2_flash', 'luma-ray-3-2',
   'kling-o3-standard', 'kling-o3-pro', 'kling-o3-4k', 'happy-horse-1-0',
@@ -106,6 +109,7 @@ const CONVERSATION_VIDEO_EDIT_MODELS = new Set([
   'wan-3', 'wan-3-prime', 'ltx-2-3','flux-3','flux-3-draft','minimax-h3-max',
 ]);
 const CONVERSATION_VIDEO_EXTEND_MODELS = new Set([
+  'seedance-2-5-flash',
   'luma-ray-3-2',
   'veo-3-1', 'veo-3-1-fast', 'veo-3-1-lite', 'gemini-omni-flash',
   'seedance-2-0', 'seedance-2-0-fast', 'seedance-2-0-mini', 'seedance-2-5',
