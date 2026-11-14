@@ -196,13 +196,17 @@ export function registerPrepareGenerationTool(
   server.registerTool(
     'prepare_generation',
     {
-      title: 'Prepare a MaxVideoAI generation',
+      title: profile === 'openai-directory' ? 'Review image or video setup' : 'Prepare a MaxVideoAI generation',
       description: [
-        'Use this to validate a complete selected AI video or image request and save an exact short-lived quote.',
+        profile === 'openai-directory'
+          ? 'Validate the selected image or video setup and save its exact generation cost for review.'
+          : 'Use this to validate a complete selected AI video or image request and save an exact short-lived quote.',
         'Read get_model_details for the selected mode first, including t2v, i2v, i2v_standard, ref2v, fl2v, v2v, r2v, extend, a2v, retake and reframe.',
         'It saves the quote but does not spend or generate.',
         'For a finalizable Seedance 2.5 Draft use seedanceWorkflow.step=draft, never resolution alone. Finalization uses step=final with the owned ready draftJobId and inherited creative facts. Each step needs its own quote and approval; show returned workflow prices, with a future final price labeled as an estimate.',
-        'Display the exact price, currency and validated request, then stop and wait for explicit user approval before confirm_generation.',
+        profile === 'openai-directory'
+          ? 'Present the generation setup, exact cost, currency and validated request. Explain that confirmation consumes existing account credits; wait for explicit user approval before confirm_generation.'
+          : 'Display the exact price, currency and validated request, then stop and wait for explicit user approval before confirm_generation.',
         'Required private references must be present; if missing, no exact quote can be created.',
         'A project budget is only an estimate.',
         'For nullable inputs, omit or send null when not explicitly required by the selected mode’s live details or the user.',
@@ -214,7 +218,9 @@ export function registerPrepareGenerationTool(
           : 'If credits are insufficient, use create_topup_link for this quote.',
         'Funding, discussion and ambiguous assent do not approve generation.',
         'Never substitute a named model or use a quote as a generation result.',
-        'After the quote, briefly invite another model, resolution, duration or budget for a new quote and price comparison; use compare_generation_prices for actual savings, never guess.',
+        profile === 'openai-directory'
+          ? 'For requested alternatives, compare creative fit and exact costs with compare_generation_prices; never guess savings.'
+          : 'After the quote, briefly invite another model, resolution, duration or budget for a new quote and price comparison; use compare_generation_prices for actual savings, never guess.',
       ].join(' '),
       inputSchema: prepareGenerationInputSchema,
       ...(profile === 'openai-directory' ? { outputSchema: withToolErrorOutput(prepareGenerationOutputSchema) } : {}),

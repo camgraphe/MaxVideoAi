@@ -45,6 +45,16 @@ function main() {
     || !resource.hostname.endsWith('.maxvideoai.com') || resource.hostname === 'api.maxvideoai.com') {
     throw new Error('The OpenAI directory endpoint must identify its separate MaxVideoAI HTTPS /mcp resource.');
   }
+  // A distinct transport URL permits a fresh host-side OAuth registration after
+  // moving from test to public Auth. The token audience remains the same resource.
+  const connectionUrl = config.connectionUrl ?? resource.toString();
+  if (connectionUrl !== resource.toString()
+    && connectionUrl !== `${resource.toString()}?client=openai-directory`) {
+    throw new Error('Invalid directory connection URL; only the same resource and public registration variant are allowed.');
+  }
+  if (connectionUrl !== resource.toString() && config.oauthDiscovery?.resource !== resource.toString()) {
+    throw new Error('A separate connection URL requires the unchanged explicit OAuth resource.');
+  }
   if (!/^\d+\.\d+\.\d+$/.test(config.version) || config.review?.commerce !== false
     || config.review.test_cases.positive.length !== 5 || config.review.test_cases.negative.length !== 3
     || config.interface.shortDescription.length > 30) {
@@ -63,6 +73,32 @@ function main() {
     || !/^[A-Za-z0-9._-]{1,256}$/.test(config.oauthClient.clientId)
     || !['none', 'client_secret_basic', 'client_secret_post'].includes(config.oauthClient.tokenEndpointAuthMethod)
   )) throw new Error('Invalid public OAuth client configuration; credentials never belong in the package.');
+  if (config.oauthDiscovery !== undefined) {
+    const discovery = config.oauthDiscovery;
+    const keys = ['authorizationServerBase', 'authorizationUrl', 'tokenUrl', 'resource', 'defaultScopes'];
+    if (!discovery || Array.isArray(discovery)
+      || Object.keys(discovery).sort().join(',') !== keys.sort().join(',')) {
+      throw new Error('Invalid public OAuth discovery configuration.');
+    }
+    const endpoints = keys.filter((key) => key !== 'defaultScopes').map((key) => {
+      const value = discovery[key];
+      if (typeof value !== 'string') throw new Error('Invalid public OAuth endpoint.');
+      const url = new URL(value);
+      if (url.protocol !== 'https:' || url.username || url.password || url.port || url.search || url.hash) {
+        throw new Error('Invalid public OAuth endpoint; use credential-free HTTPS URLs.');
+      }
+      return [key, url];
+    });
+    const urls = Object.fromEntries(endpoints);
+    if (urls.resource.toString() !== resource.toString()
+      || urls.authorizationUrl.origin !== urls.authorizationServerBase.origin
+      || urls.tokenUrl.origin !== urls.authorizationServerBase.origin
+      || !Array.isArray(discovery.defaultScopes)
+      || discovery.defaultScopes.length !== 4
+      || [...discovery.defaultScopes].sort().join(',') !== 'email,offline_access,openid,profile') {
+      throw new Error('Invalid public OAuth discovery: preserve resource, issuer and approved scopes.');
+    }
+  }
   if (config.packageName !== undefined && (typeof config.packageName !== 'string'
     || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(config.packageName) || config.packageName.length > 64)) {
     throw new Error('Invalid directory package name.');
@@ -85,14 +121,14 @@ function main() {
   for (const skill of ['plan', 'generate']) {
     const path = join(bundle, `skills/${skill}/agents/openai.yaml`);
     const projected = replaceExactly(readFileSync(path, 'utf8'),
-      'url: "https://api.maxvideoai.com/mcp"', `url: "${resource.toString()}"`);
+      'url: "https://api.maxvideoai.com/mcp"', `url: "${connectionUrl}"`);
     writeFileSync(path, projected);
   }
   const base = JSON.parse(readFileSync(join(validated, '.codex-plugin/plugin.json'), 'utf8'));
-  const { name, description, author, homepage, repository, license, keywords } = base;
+  const { name, author, homepage, repository, license, keywords } = base;
   const manifest = {
     $schema: 'https://agent-plugins.org/schemas/1.0.0/plugin.schema.json',
-    name: config.packageName ?? name, version: config.version, description, author, homepage, repository, license, keywords,
+    name: config.packageName ?? name, version: config.version, description: config.interface.longDescription, author, homepage, repository, license, keywords,
     extensions: { 'com.openai': {
       interface: { ...base.interface, ...config.interface },
       review: config.review, publication: config.publication,
@@ -101,7 +137,7 @@ function main() {
   writeFileSync(join(bundle, 'plugin.json'), json(manifest));
   const mcpManifest = {
     $schema: 'https://agent-plugins.org/schemas/1.0.0/mcp.schema.json',
-    mcpServers: { maxvideoai: { type: 'streamable-http', url: resource.toString(), extensions: { 'com.openai': { auth: { type: 'oauth', ...(config.oauthClient ? { client: config.oauthClient } : {}) } } } } },
+    mcpServers: { maxvideoai: { type: 'streamable-http', url: connectionUrl, extensions: { 'com.openai': { auth: { type: 'oauth', ...(config.oauthClient ? { client: config.oauthClient } : {}), ...config.oauthDiscovery } } } } },
   };
   writeFileSync(join(bundle, 'mcp.json'), json(mcpManifest));
   const generatePath = join(bundle, 'skills/generate/SKILL.md');
@@ -191,6 +227,7 @@ function main() {
     readyToSubmit: false, productionActivated: false,
     requiredRuntimeProfile: 'openai-directory',
     resourceUrl: resource.toString(),
+    connectionUrl,
     requiredRuntimeSwitch: 'MCP_OPENAI_DIRECTORY_ENABLED=true',
     targetCapabilitySwitches: {
       MCP_OPENAI_DIRECTORY_PAID_GENERATION_ENABLED: 'true',

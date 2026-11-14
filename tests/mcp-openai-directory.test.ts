@@ -94,6 +94,16 @@ test('directory profile exposes generation and recovery without a purchase tool,
       assert.ok(tools.some(tool => tool.name === name), name);
     }
     assert.equal(tools.some((tool) => tool.description?.includes('create_topup_link')), false);
+    for (const name of ['prepare_generation', 'prepare_audio_generation']) {
+      const tool = tools.find((item) => item.name === name)!;
+      assert.match(tool.description ?? '', /exact (?:generation )?cost/);
+      assert.match(tool.description ?? '', /confirmation consumes existing account credits/);
+      assert.match(tool.description ?? '', /wait for explicit (?:user )?approval.*before confirm_/);
+      assert.match(tool.description ?? '', /entitlements are insufficient.*stop; purchases are unavailable/);
+      assert.doesNotMatch(tool.description ?? '', /top-up|checkout/);
+      assert.deepEqual(tool.annotations, { readOnlyHint: false, destructiveHint: false, openWorldHint: false });
+      t.diagnostic(`${name}: ${tool.title}, ${Buffer.byteLength(tool.description ?? '')} description bytes.`);
+    }
     for (const tool of tools) assert.ok(Buffer.byteLength(tool.description ?? '') <= 2000);
     t.diagnostic(`Directory metadata: ${Buffer.byteLength(instructions)} instruction bytes, ${tools.length} registered tools, largest descriptor ${Math.max(...tools.map((tool) => Buffer.byteLength(tool.description ?? '')))} bytes.`);
     const denied = await c.client.callTool({ name: 'create_topup_link', arguments: { quoteId } });
