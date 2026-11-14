@@ -30,7 +30,7 @@ test('Audio media route authenticates each navigation and never caches grants or
     await writeFile(output, compiled.outputFiles[0].contents);
     const { GET } = require(output);
     const { NextRequest } = frontendRequire('next/server');
-    const navigate = (query = 'kind=video') => GET(new NextRequest(`https://app.example/api/audio/media/owned-job?${query}`), { params: { jobId: 'owned-job' } });
+    const navigate = (query = 'kind=video') => GET(new NextRequest(`https://app.example/api/audio/media/owned-job?${query}`), { params: Promise.resolve({ jobId: 'owned-job' }) });
     let response = await navigate();
     assert.equal(response.status, 401); assert.equal(state.reads.length, 0);
     assert.equal(response.headers.get('Cache-Control'), 'private, no-store');
