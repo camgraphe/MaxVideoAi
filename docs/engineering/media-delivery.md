@@ -1533,3 +1533,27 @@ browser as that client. Renewal requires another authenticated MCP read. Tests
 cover UTM, tampering, expiry, foreign/removed/replaced media, the actual route with
 an offline database boundary, and all three additive projections. Local tests do
 not establish deployed host delivery.
+
+### Audio website handoff — 14 November 2026
+
+`GET /api/audio/media/[jobId]?kind=video|audio|source` is the authenticated,
+read-only browser handoff for Audio results. The thin route delegates to
+`src/server/audio/audio-web-media-access.ts`, reads the exact owned Audio job,
+and grants a five-minute read through `createOwnedMediaReadUrl`. It accepts no
+caller-supplied URL. Results must be completed; a stored source may be restored
+while a job is pending. Legacy source job lookup is also account-scoped. Both
+redirects and errors are private/no-store. Native players and File links resolve
+fresh access on navigation rather than retaining an expiring S3 URL.
+
+`lib/audio-job-media.ts` constructs display links only. Canonical result URLs,
+source input URLs, snapshots, quotes and receipts remain unchanged. Restored
+sources keep their original `url` and a separate account-bound `accessUrl`.
+Audio restoration depends on the account ID rather than a volatile session
+object, reuses its first job read, and publishes completed output before awaiting
+source metadata. Retired effects/manual edits cannot restore a late source.
+
+`tests/audio-web-handoff.test.ts`, `tests/audio-web-media-access.test.ts` and
+`tests/audio-web-media-route.test.ts` cover session refresh, account retirement,
+private signing, exact public fallback, legacy source ownership, authentication,
+uncached renewal and rejected arbitrary targets. The real workspace DOM test
+checks that completed history and results use this authenticated display route.

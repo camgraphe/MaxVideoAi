@@ -1,5 +1,7 @@
 'use client';
 
+import { audioJobMediaUrl } from '@/lib/audio-job-media';
+
 import { GenerationPendingStatus } from '@/components/groups/GenerationPendingStatus';
 import { AppGlyph } from '@/components/app/AppGlyph';
 import { WorkspaceEmptyPreview } from '@/components/composer/WorkspaceEmptyPreview.client';
@@ -34,9 +36,9 @@ export function AudioWorkspacePreview({ activeJob, result, awaitingJob = false, 
           </div>
           {inFlight ? <GenerationPendingStatus observation={activeJob.observation ?? { stage: activeJob.status === 'running' ? 'processing' : 'pending' }} startedAt={activeJob.startedAt} etaSeconds={activeJob.etaSeconds} etaSource={activeJob.etaSource} /> : null}
           {hasMedia ? <>
-            {media?.videoUrl ? <video controls preload="none" src={media.videoUrl} poster={media.thumbUrl ?? undefined} aria-label={copy.rail.outputs.video} /> : null}
-            {media?.audioUrl ? <audio controls preload="none" src={media.audioUrl} aria-label={copy.rail.outputs.audio} /> : null}
-            <a href={media?.videoUrl ?? media?.audioUrl ?? undefined} target="_blank" rel="noreferrer" className="app-audio-preview-file">{copy.rail.file}</a>
+            {media?.videoUrl ? <video controls preload="none" src={audioJobMediaUrl(media.jobId, 'video')} poster={media.thumbUrl ?? undefined} aria-label={copy.rail.outputs.video} /> : null}
+            {media?.audioUrl ? <audio controls preload="none" src={audioJobMediaUrl(media.jobId, 'audio')} aria-label={copy.rail.outputs.audio} /> : null}
+            <a href={media ? audioJobMediaUrl(media.jobId, media.videoUrl ? 'video' : 'audio') : undefined} target="_blank" rel="noreferrer" className="app-audio-preview-file">{copy.rail.file}</a>
           </> : null}
         </div>
       )}
