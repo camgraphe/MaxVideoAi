@@ -33,7 +33,7 @@ for(const slug of ['seedream-5-5','seedance-2-5-flash']){
     const originLinks=[...doc.querySelectorAll('.cinema-prompt a')].map(a=>a.href);
     assert.ok(originLinks.length>0);
     assert.ok(originLinks.every(url=>!url.includes('/_next/image')));
-    results.push({pathname,status:response.status,title:doc.title,h1:doc.querySelector('h1').textContent,canonical,hreflang,types:[...new Set(types)],visuals:visuals.length,htmlBytes:Buffer.byteLength(html),originalLinks:originLinks.length});
+    results.push({pathname,status:response.status,title:doc.title,h1:doc.querySelector('h1').textContent,canonical,hreflang,types:[...new Set(types)],visuals:visuals.length,initialImageDetailsVisible:slug==='seedream-5-5'?['faq','specs','decision-pricing'].every(id=>!doc.getElementById(id).closest('[hidden]')):null,htmlBytes:Buffer.byteLength(html),originalLinks:originLinks.length});
   }
 }
 for(const pathname of ['/models/seedance-2-5','/models/seedream-5-0-pro']){

@@ -1,16 +1,16 @@
-# Cinematic model pages — local review, 14 November 2026
+# Cinematic model pages — autonomous template review, 14 November 2026
 
-The review candidate combines the two model integrations with an opt-in cinematic presentation. It has not been pushed, merged to main or deployed. The existing image/video workspaces, canonical quote engine, model registry, metadata and localized editorial owners remain authoritative.
+The two pilots now use an independent editorial renderer matching the approved prototypes. The earlier composition that placed a new hero inside the old page assembly was rejected and has been replaced. This candidate is local only: branch `codex/model-pages-cinematic`, implementation `a9dc45350`, visual review fixes `25e5a4c1d`, initial-HTML correction `ec0afe4cb`. No push, main merge or deployment.
 
-Branch: `codex/model-pages-cinematic`. Dependency commits: Seedream `372a77053`, Seedance Flash `dffa9296c`. Local integration merge: `27f2ee100`. The shared Desktop checkout and the two model-owner branches were not edited.
+The integrated model-owner commits are Seedream `372a77053` and Seedance Flash `dffa9296c` (local merge `27f2ee100`). The shared Desktop checkout and both owner branches were not edited.
 
 ## Review URLs
 
-- English: `http://localhost:3116/models/seedream-5-5` and `http://localhost:3116/models/seedance-2-5-flash`.
-- French: `/fr/modeles/seedream-5-5` and `/fr/modeles/seedance-2-5-flash` on the same server.
-- Spanish: `/es/modelos/seedream-5-5` and `/es/modelos/seedance-2-5-flash` on the same server.
+- [Seedream 5.5](http://localhost:3116/models/seedream-5-5)
+- [Seedance 2.5 Flash](http://localhost:3116/models/seedance-2-5-flash)
+- French uses `/fr/modeles/`; Spanish uses `/es/modelos/`, with the same model slugs.
 
-Creative review screenshots are English. The real page content is localized independently in EN/FR/ES; missing cinematic content never falls back to English.
+Creative screenshots are English. Content remains exact-locale EN/FR/ES. Only the two pilots opt in; older model pages retain their existing renderer.
 
 ## Visual inventory: one purpose per image
 
@@ -33,54 +33,47 @@ Seedream media are real Seedream outputs. Exact edit-source hashes, prompts, for
 
 Flash media are GPT Image 2.6 Sunburst stills, explicitly attributed as animation start frames. Motion and sound text describes planned shots. There is no fake play button, borrowed Flash video or VideoObject for these images. Actual reviewed videos can enter through the existing video gallery owner later.
 
-## Ownership and integration review
+## Composition and ownership
 
-- Opt-in page presentation lives in the exact-locale `cinematic` block. Examples copy, panel assignments and shot plans remain under `examples.cinematic`; Prompt Lab remains under `prompting`.
-- The route remains an orchestrator. Route-local components own hero, assets and examples; only comparison, alpha preview and the existing copy button need browser state.
-- The sole image evidence manifest is extended with real PNG/reference lineage. Flash start frames have a separate image-only manifest with `videoUrl: null`.
-- The hero uses one priority responsive display image. Other media are lazy with fixed geometry; original-file and schema URLs retain the original source. No production library or provider credentials are needed for this review.
-- The primary controls use dark graphite, including hover; no orange or bright white hero control. Style scope ends with the two opted-in pages and was checked through client navigation to Seedream 5.0 Pro.
-- Both model owners independently reviewed `27f2ee100`: catalogue identities and both mandatory active-tariff guards are preserved. The Seedream tariff file is byte-identical to its owning branch. Flash runtime, commercial pricing, model content outside the new presentation, benchmark evidence and publication decisions are preserved.
+`ModelCinematicPage` owns its full-bleed hero, section navigation, overview, demonstrations, prompt guide, specifications, pricing, FAQ and related-model composition. It does not render `ModelPageContentSections` or the old pricing/spec/FAQ cards. The route still shares the existing capability projection, exact commercial promises, registry, localized content and schema builders. `ModelExamplesSection` is identical to the clean Seedream owner baseline.
 
-## Validation
+The image page uses the approved harbour photograph, large model name and two graphite actions at the bottom left. The video variant has a distinct dark composition. On mobile it places the title above the landscape car scene, retaining both driver and vehicle. It does not reuse the image page's portrait crop. The shared header's adaptation is scoped to `:has(.model-cinematic-page)`; independent browser comparison found zero measured style/geometry differences on Seedream Pro after client navigation.
 
-- Production Next.js build completed; its type/lint and registry/media/SEO prebuild checks passed. Seven existing lint warnings remain outside the cinematic changes.
-- Final focused model/page/media tests: **61 passed**. After the hero-priority adjustment, cinematic, examples-boundary and sitemap tests: **18 passed**.
-- Final original/schema/streaming checks: **41 passed**. After adding the two text-only Prompt Lab results to the visible gallery, visual coverage and localized Examples contracts: **15 passed**. These overlapping checks are reported separately.
-- Disposable PostgreSQL 17: **2 integration tests passed**, covering new Seedream web/MCP/public quotes and the Seedance LAS tariff release. No production tariff was activated.
-- The two expectation conflicts found in the broad integration test run (projection count and sorted model IDs) were corrected; the affected files passed **32 tests** on recheck.
-- The image owner independently ran **82 tests** on an isolated archive of `27f2ee100`, covering App/MCP/Studio prices, provider costs, coverage, public projections, cutover and admin comparison. The video owner independently checked the historical collector: **27,071 unchanged historical points/offers**, with new Seedream identities excluded as intended. These are separate reviews, not a combined suite count.
-- `lint:exposure` and `git diff --check` passed.
-- All six pilot URLs return 200 with one model H1, exact canonical, EN/FR/ES/x-default hreflang, FAQ and breadcrumb schemas. No still is represented as VideoObject; the environment without a database emits no fabricated Offer. English-prefix and French-segment compatibility redirects work. The actual `/sitemap-models.xml` returns 200 and contains all six localized URLs.
-- Browser controls verified: two-step comparison and keyboard range, exact source links, prompt disclosure/copy, alpha preview, FAQ, section navigation, and unchanged styling on an older image page. Desktop and mobile views are captured; responsive overflow is checked at narrow widths.
+The Examples opening is a small orientation label followed by the demonstration. The first edit image starts around 464 px after exploration on a 1440 × 1000 viewport, compared with 773 px before review. Introductory provenance is preserved in a native disclosure after the demonstrations. Prompts remain under their actual images. No photograph is duplicated merely to fill a section.
+
+Image details retain the existing non-streaming behavior: specifications, prices and FAQ must be directly visible in the initial HTML without a `[hidden]` stream container. Video details preserve the existing single streaming boundary, avoiding unstable separate pricing slots. Canonical, hreflang, metadata, current-price schemas and original-source identity remain with their established owners.
+
+## Reviewed hero delivery
+
+The reviewed `model-cinematic-hero-displays.json` profile supplies immutable AVIFs and the existing WebP fallback. Exact original hashes are verified before preparation; originals are not overwritten. Seedream uses a mobile portrait crop; Flash uses a mobile landscape derivative for its distinct composition. The desktop Seedream selection is 27,731 bytes rather than the previous 67,244-byte optimized WebP.
+
+The two media-qualified preload links match the picture sources. Chrome requests one hero only; no competing WebP or full original request was observed. The global Next image optimizer remains unchanged. The profile can be checked with `node frontend/scripts/prepare-cinematic-hero-images.mjs`.
+
+## Validation and independent review
+
+- Production build, TypeScript, lint and required prebuild checks passed; existing lint warnings remain outside these changes.
+- Autonomous renderer/media/layout/examples/streaming verification: **44 passed**. Subsequent visual fixes: **18 passed**. Image initial-HTML correction: **28 passed**. Final metadata, locale, schema, visible offer, sitemap and editorial-media checks: **34 passed**. These overlapping runs are not a combined count.
+- `lint:exposure`, immutable media validation and `git diff --check` passed.
+- The original integration's financial/provider checks remain applicable: two disposable PostgreSQL integration tests passed; the image owner independently validated 82 tests and the video owner verified 27,071 unchanged historical collector points/offers. No financial/provider code changed during the visual correction.
+- Independent visual review closed all three findings on `25e5a4c1d`: direct Examples entry, complete mobile video scene, language-icon contrast. It confirmed the actual edit-source chain, keyboard slider, alpha identity, prompt/original links, no observed console error and unchanged Pro page after navigation. Desktop 1440 × 1000, mobile 390 × 844, and Flash 320 × 740 were examined.
+- Final HTTP checks cover all six routes, one H1, canonical, EN/FR/ES/x-default hreflang, native JSON-LD, meaningful anchors, current-model actions, absence of repeated example URLs, image-only provenance and original links. Seedream details are explicitly checked for initial visibility in all three locales. The actual `/sitemap-models.xml` includes all six URLs; compatibility redirects remain intact. See `evidence/20261114-model-pages/autonomous-http-results.json` and the runnable verifier alongside it.
 
 ## Comparable loading evidence
 
-Two independently compiled Next.js servers: clean Seedream integration baseline `372a77053` on port 3117, candidate on 3116. Same public auth configuration, no application database. Chrome: 150 ms simulated latency, 200,000 B/s down, 93,750 B/s up, CPU ×4, DPR 1, disabled browser cache, 8-second observation window. Optimizer warmups are excluded. Three runs per Seedream viewport are compared; these are local laboratory observations, not field Core Web Vitals or an INP assessment.
+The final candidate and clean baseline `372a77053` are independently compiled production servers, using identical public auth configuration and no application database. Chrome measurements use 150 ms latency, 200,000 B/s download, 93,750 B/s upload, CPU ×4, DPR 1, disabled browser cache and an 8-second observation window. Three alternating runs per viewport; these are laboratory observations, not field CWV or INP measurements.
 
-| Seedream median | Baseline | Complete cinematic page |
+| Seedream median | Baseline | Final autonomous renderer |
 | --- | ---: | ---: |
-| Mobile 390 × 844 LCP | 1,036 ms | 1,008 ms |
-| Mobile CLS | 0.00039 | 0.00039 |
-| Mobile bytes transferred in 8 seconds | 534,522 | 542,330 |
-| Mobile image bytes | 23,716 | 17,172 |
-| Desktop 1440 × 1000 LCP | 1,032 ms | 1,840 ms |
+| Desktop 1440 × 1000 LCP | 1,032 ms | 996 ms |
+| Mobile 390 × 844 LCP | 1,028 ms | 928 ms |
 | Desktop CLS | 0.00036 | 0.00036 |
-| Desktop bytes transferred in 8 seconds | 512,345 | 577,627 |
-| Desktop image bytes | 71,872 | 122,802 |
+| Mobile CLS | 0.00039 | 0.00039 |
+| HTML transfer | 87,310 bytes | 60,576 bytes |
 
-Mobile timing is effectively stable; its total transfer grows about 1.5% while the page gains visual depth below the fold. No original image is requested on opening. Desktop LCP changes from the old text H1 to the large cinematic image and is reproducibly slower by roughly 0.8 seconds. `fetchPriority="high"` is explicit but does not eliminate that difference. **This desktop regression remains a release gate: do not claim a performance win or approve production on this evidence.** Resolve the image-delivery cost and rerun comparable checks before release; do not shrink away the visual proof merely to change the LCP candidate.
+The first rejected iteration's desktop regression is documented in `evidence/20261114-model-pages/first-iteration-review.md`. Its old screenshots and measurements are not the final design. The new composition removes that regression while preserving the prominent photograph and readable source content. The final Flash mobile smoke test measured 996 ms LCP with one 8,851-byte AVIF and no overflow; it is not a comparative Flash benchmark. Aggregate transfer totals include ancillary browser requests and are retained in the raw record, not used as a clean savings claim. Raw final samples are in `evidence/20261114-model-pages/autonomous-loading-samples.json`.
 
-One Flash mobile smoke measurement recorded LCP 1,064 ms / CLS 0.00039, with no original-image request. It is not a before/after Flash comparison. Native link prefetch can vary the resource count; raw samples retain all runs rather than hiding that variability.
+## Search intent and rollout boundaries
 
-Raw measurements and HTTP/viewport results are in `evidence/20261114-model-pages/`. The final `complete-*` loading samples include both campaign/story images; earlier `candidate-*` and `final-*` labels preserve the preceding iterations. The final HTTP document has eight initial Seedream image elements, with the ninth result available through the second comparator step, and six Flash start frames. No demonstration source is repeated across sections.
+The GSC and Bing evidence, query/page distinctions and source windows remain in `model-pages-search-evidence-20261114.md`. The redesign preserves stable destinations, readable model facts, prompt examples, exact references, source links, technical details and comparison links. It creates a clearer visual demonstration; it does not establish a ranking, traffic, citation or conversion increase before a controlled live test.
 
-English desktop/mobile screenshots are stored locally at `/Users/adrienmillot/.codex/visualizations/2026/11/13/01a1d6bb-6426-7122-9da1-18d13b741eef/model-page-integration/` (`seedream-desktop.png`, `seedream-mobile.png`, `seedance-desktop.png`, `seedance-mobile.png`).
-
-## Local environment limits and release gates
-
-The local preview intentionally has no `DATABASE_URL` or provider credentials. Price cards show the canonical unavailable/live-quote state, not provisional retail amounts. Database-backed historical video playlists and the full runtime sitemap cannot be smoke-tested here: Seedance 2.5 returns 500 and `/sitemap.xml` returns 503 on both the clean baseline and candidate. This is reproduced on the unchanged baseline and is not attributed to the redesign. The actual model sitemap and publication contracts do pass; verify the full sitemap and live prices on the approved integrated preview with its intended database before release.
-
-Flash API access, actual Flash video results and production tariff activation remain separate launch qualifications owned by the model task. Keep the start-frame labels until real reviewed results replace them. The launch preparation state in the registry is not proof of successful provider access.
-
-Search evidence and its limitations are recorded in `model-pages-search-evidence-20261114.md`: GSC 10 October–6 November 2026, capped query export, separate query/page tables; Bing citation counts are not visits or sales. No ranking, AI citation or conversion gain is claimed before publication and measurement.
+Review remains local. The environment has no application database, so prices truthfully fall back to the current-quote state and no fabricated Offer is emitted. The database-dependent full sitemap and historical Seedance playlist fail identically on the clean baseline; the model sitemap and the six pilot routes work. Actual Flash videos, effective model access, price activation, current-main integration and required Quality CI remain release work with the model owners. No countdown or automatic paid generation was added.
