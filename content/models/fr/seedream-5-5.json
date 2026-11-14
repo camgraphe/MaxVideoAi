@@ -497,6 +497,18 @@
           "assetIds": [
             "free-to-move"
           ]
+        },
+        {
+          "id": "stories",
+          "layout": "grid",
+          "eyebrow": "Campagne et récit",
+          "title": "Donnez une histoire à l’instant.",
+          "body": "Composez l’image autour d’un choix : une femme qui s’avance dans une rue pluvieuse, ou deux personnes qui prennent le dernier train. Le lieu, le geste et la lumière participent au récit.",
+          "note": "Deux créations indépendantes à partir de texte, avec leurs prompts anglais exacts. Adaptez l’un de ces briefs pour construire votre propre scène.",
+          "assetIds": [
+            "55-make-your-move",
+            "55-last-train"
+          ]
         }
       ]
     }

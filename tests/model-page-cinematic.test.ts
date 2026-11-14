@@ -46,8 +46,11 @@ test('cinematic content is opt-in and never falls back to another locale', () =>
     const duplicate = structuredClone(examples);
     duplicate.cinematic!.panels[1].assetIds = [content.heroAssetId];
     assert.throws(() => buildCinematicPresentation(content, duplicate, images, locale), /one placement/);
-    const promptingImages = local.prompting.imageExamples.items.map((item: {id:string}) => item.id);
-    assert.ok(examples.cinematic!.panels.flatMap(panel => panel.assetIds).every(id => !promptingImages.includes(id)), 'Prompt Lab retains its own unique visuals');
+    const placements = [content.heroAssetId, ...examples.cinematic!.panels.flatMap(panel => panel.assetIds)];
+    assert.deepEqual(new Set(placements), new Set(images.map(image => image.id)), 'All nine reviewed results have a visible placement');
+    for (const item of local.prompting.imageExamples.items) {
+      assert.equal(presentation.assets.find(asset => asset.id === item.id)?.prompt, item.prompt, 'The text-only Prompt Lab keeps the same original brief as its visual result');
+    }
     if (locale !== 'en') assert.notDeepEqual(local.cinematic.headline, en.cinematic.headline);
   }
 });
@@ -130,6 +133,7 @@ test('cinematic hero remains server-readable with one priority display and canon
     assert.equal(doc.querySelector('h1')?.textContent, content.decision.hero.title);
     assert.equal(doc.querySelectorAll('img').length, 1);
     assert.notEqual(doc.querySelector('img')?.getAttribute('loading'), 'lazy');
+    assert.equal(doc.querySelector('img')?.getAttribute('fetchPriority'), 'high');
     assert.ok(doc.querySelector('a[href="#examples"]'));
     assert.ok(doc.querySelector('a[href="#decision-pricing"]'));
     assert.ok([...doc.querySelectorAll('a')].some(a => a.href.includes('/app/image?engine=seedream-5-5')));

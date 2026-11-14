@@ -117,8 +117,6 @@
  .marketing-site .model-cinematic :is(.cinema-panel--cutout,.cinema-panel--portrait){grid-template-columns:1fr}
  .marketing-site .model-cinematic .cinema-media-grid{grid-template-columns:1fr;gap:28px}
  .marketing-site .model-cinematic .cinema-panel-heading>p:last-child{font-size:13px}
- .marketing-site .model-cinematic .cinema-panel--shots .cinema-media-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
- .marketing-site .model-cinematic .cinema-panel--shots .cinema-asset h4{font-size:16px}
  .marketing-site .model-cinematic .cinema-segmented{gap:6px}
  .marketing-site .model-cinematic .cinema-segmented button{padding:10px;font-size:11px}
 }

@@ -497,6 +497,18 @@
           "assetIds": [
             "free-to-move"
           ]
+        },
+        {
+          "id": "stories",
+          "layout": "grid",
+          "eyebrow": "Campaign & story",
+          "title": "Give the moment a story.",
+          "body": "Build a frame around a choice: a woman stepping into a rainy street, or two people catching the last train. Give the location, gesture and light a job in the story.",
+          "note": "Two independent text-to-image results, with their exact English prompts. Use either as a starting brief for your own scene.",
+          "assetIds": [
+            "55-make-your-move",
+            "55-last-train"
+          ]
         }
       ]
     }

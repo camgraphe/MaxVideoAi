@@ -407,7 +407,7 @@ export async function MarketingModelPageLayout({
     canonical,
     description: templateData?.meta.description ?? pageDescription,
     engine,
-    heroPosterAbsolute: cinematic ? toAbsoluteUrl(cinematic.hero.display.url) : heroPosterAbsolute,
+    heroPosterAbsolute: cinematic ? toAbsoluteUrl(cinematic.hero.original.url) : heroPosterAbsolute,
     heroTitle,
     inLanguage,
     localizedCanonical,

@@ -15,7 +15,7 @@ export function ModelCinematicHero({ presentation: { content, hero, ui }, decisi
     <section id="top" className={`cinema-hero cinema-hero--${content.variant}`} aria-labelledby="cinema-model-title">
       <div className="cinema-hero-art">
         <Image src={hero.display.url} width={hero.display.width} height={hero.display.height} alt={hero.title}
-          priority sizes="(min-width: 1440px) 1360px, 100vw" className="cinema-hero-image" />
+          priority fetchPriority="high" sizes="(min-width: 1440px) 1280px, 100vw" className="cinema-hero-image" />
       </div>
       <div className="cinema-hero-copy">
         <p className="cinema-eyebrow">{decision.hero.eyebrow}</p>

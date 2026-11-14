@@ -1,0 +1,44 @@
+[
+  {
+    "path": "/fr/modeles/seedream-5-5",
+    "h1": "Seedream 5.5 — Retouches précises et PNG transparents",
+    "heroButtonWidth": 232,
+    "scrollWidth": 320,
+    "width": 320
+  },
+  {
+    "path": "/es/modelos/seedream-5-5",
+    "h1": "Seedream 5.5 — Ediciones precisas y PNG transparentes",
+    "heroButtonWidth": 232,
+    "scrollWidth": 320,
+    "width": 320
+  },
+  {
+    "path": "/models/seedream-5-5",
+    "h1": "Seedream 5.5 — Precise image edits and transparent PNGs",
+    "heroButtonWidth": 232,
+    "scrollWidth": 320,
+    "width": 320
+  },
+  {
+    "path": "/fr/modeles/seedance-2-5-flash",
+    "h1": "Seedance 2.5 Flash",
+    "heroButtonWidth": 232,
+    "scrollWidth": 320,
+    "width": 320
+  },
+  {
+    "path": "/es/modelos/seedance-2-5-flash",
+    "h1": "Seedance 2.5 Flash",
+    "heroButtonWidth": 232,
+    "scrollWidth": 320,
+    "width": 320
+  },
+  {
+    "path": "/models/seedance-2-5-flash",
+    "h1": "Seedance 2.5 Flash",
+    "heroButtonWidth": 232,
+    "scrollWidth": 320,
+    "width": 320
+  }
+]
