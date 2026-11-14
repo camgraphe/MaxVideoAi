@@ -350,7 +350,7 @@
           "eyebrow": "Performance & dialogue",
           "title": "Something happens. We feel it.",
           "body": "A drumstick held before the strike. A look before a reply. Start with a readable human action and a camera move that gives it space.",
-          "note": "These are planned scenes. Timing, lip sync, hand motion and generated sound still need to be evaluated in the actual video.",
+          "note": "Build the shot around one readable gesture, exchange or camera movement.",
           "assetIds": [
             "after-the-beat",
             "the-blue-hour"
@@ -362,7 +362,7 @@
           "eyebrow": "World building",
           "title": "Make the impossible feel physical.",
           "body": "An astronaut, an abandoned opera house and a creature suspended overhead. Define what moves, what stays still and how the camera discovers the scene.",
-          "note": "This first frame sets the visual direction. It does not establish how Flash will handle gravity, continuity or interaction.",
+          "note": "Give the movement a clear path through the scene.",
           "assetIds": [
             "where-gravity-ends"
           ]
@@ -373,7 +373,7 @@
           "eyebrow": "Made for the vertical frame",
           "title": "Small screen. Full presence.",
           "body": "A coat catches the light. A skateboarder commits to the drop. Compose for 9:16 from the start, with a clear subject and room for movement.",
-          "note": "The source images are portrait start frames. Output framing, motion and audio will be checked in the future renders.",
+          "note": "Compose the action for a vertical frame from the start.",
           "assetIds": [
             "make-an-entrance",
             "before-the-drop"
@@ -411,7 +411,7 @@
   },
   "cinematic": {
     "intro": "Direct motion, camera and sound with Seedance 2.5 Flash by ByteDance. Start from a prompt or references, choose 480p or 720p, and build shots up to 30 seconds.",
-    "caption": "“Midnight run” · Start frame made with GPT Image 2.6 Sunburst · Video to follow",
+    "caption": "“Midnight run” · Start frame · 16:9",
     "proofLabel": "From first frame to film",
     "examplesLabel": "Explore the shots",
     "pricingLabel": "Pricing",
@@ -442,9 +442,59 @@
     ],
     "subtitle": "Give your next scene a pulse.",
     "primaryLabel": "Create with Flash",
-    "byline": "by ByteDance",
+    "byline": "On MaxVideoAI",
     "overviewLabel": "Overview",
     "detailsLabel": "Details",
-    "promptingLabel": "Prompt guide"
+    "promptingLabel": "Prompt guide",
+    "workflows": {
+      "eyebrow": "CREATE · EXTEND · MODIFY",
+      "title": "One scene. More ways forward.",
+      "intro": "Start a shot, continue a clip or change what is already there. Choose the workflow before preparing your references.",
+      "note": "Create starts a new shot. Extend and Modify use source video you select in the workspace. Review the exact quote before generating.",
+      "action": "Open video workspace",
+      "items": [
+        {
+          "id": "create",
+          "title": "Create",
+          "body": "Turn a prompt or a first frame into a new shot. Define the action, camera and sound you want.",
+          "input": "An idea or references",
+          "output": "A new shot",
+          "steps": [
+            "Describe the scene",
+            "Add your references",
+            "Choose settings and review the quote"
+          ]
+        },
+        {
+          "id": "extend",
+          "title": "Extend",
+          "body": "Bring a source clip and describe the next action. Keep the source and the intended continuation clear.",
+          "input": "Your source clip",
+          "output": "The next movement",
+          "steps": [
+            "Choose the source video",
+            "Describe what happens next",
+            "Review the extension settings and quote"
+          ]
+        },
+        {
+          "id": "modify",
+          "title": "Modify",
+          "body": "Start from an existing video. Tell the model what to change and what should remain consistent.",
+          "input": "Your source clip",
+          "output": "A revised shot",
+          "steps": [
+            "Choose the source video",
+            "Describe the targeted change",
+            "Add useful references and review the quote"
+          ]
+        }
+      ]
+    },
+    "promptAssistant": {
+      "title": "Need a hand with the prompt?",
+      "body": "Describe your idea to Milo, the AI assistant in the Create tool. Work on the wording together, then review and apply the prompt when you are ready.",
+      "action": "Get help from Milo"
+    }
   }
 }

@@ -350,7 +350,7 @@
           "eyebrow": "Interpretación y diálogo",
           "title": "Un gesto. Una emoción.",
           "body": "Una baqueta antes del golpe. Una mirada antes de responder. Parte de una acción humana clara y de un movimiento de cámara que le dé espacio.",
-          "note": "Estas son escenas previstas. El ritmo, la sincronización labial, las manos y el sonido tendrán que evaluarse en el vídeo real.",
+          "note": "Construye el plano alrededor de un gesto, un intercambio o un movimiento de cámara claro.",
           "assetIds": [
             "after-the-beat",
             "the-blue-hour"
@@ -362,7 +362,7 @@
           "eyebrow": "Creación de mundos",
           "title": "Haz que lo imposible parezca físico.",
           "body": "Un astronauta, una ópera abandonada y una criatura suspendida sobre él. Define qué se mueve, qué permanece quieto y cómo la cámara descubre el lugar.",
-          "note": "Este primer fotograma fija la dirección visual. No demuestra cómo Flash resolverá la gravedad, la continuidad o la interacción.",
+          "note": "Define un recorrido claro para el movimiento dentro de la escena.",
           "assetIds": [
             "where-gravity-ends"
           ]
@@ -373,7 +373,7 @@
           "eyebrow": "Pensado para el formato vertical",
           "title": "Pantalla pequeña. Gran presencia.",
           "body": "Un abrigo atraviesa la luz. Una skater inicia el descenso. Compón en 9:16 desde el principio, con un sujeto claro y espacio para moverse.",
-          "note": "Las fuentes son fotogramas iniciales verticales. El encuadre final, el movimiento y el audio se comprobarán en los futuros vídeos.",
+          "note": "Compón la acción para un encuadre vertical desde el principio.",
           "assetIds": [
             "make-an-entrance",
             "before-the-drop"
@@ -411,7 +411,7 @@
   },
   "cinematic": {
     "intro": "Dirige el movimiento, la cámara y el sonido con Seedance 2.5 Flash de ByteDance. Parte de un prompt o referencias, elige 480p o 720p y prepara planos de hasta 30 segundos.",
-    "caption": "« Carrera de medianoche » · Fotograma inicial creado con GPT Image 2.6 Sunburst · Vídeo pendiente",
+    "caption": "« Midnight run » · Fotograma inicial · 16:9",
     "proofLabel": "Del primer fotograma al cine",
     "examplesLabel": "Explorar las escenas",
     "pricingLabel": "Precios",
@@ -442,9 +442,59 @@
     ],
     "subtitle": "Dale pulso a tu próxima escena.",
     "primaryLabel": "Crear con Flash",
-    "byline": "por ByteDance",
+    "byline": "En MaxVideoAI",
     "overviewLabel": "Presentación",
     "detailsLabel": "Detalles",
-    "promptingLabel": "Guía de prompts"
+    "promptingLabel": "Guía de prompts",
+    "workflows": {
+      "eyebrow": "CREAR · EXTENDER · MODIFICAR",
+      "title": "Una escena. Más formas de continuar.",
+      "intro": "Crea un plano, continúa un vídeo o modifica una escena existente. Elige el flujo antes de preparar las referencias.",
+      "note": "Crear inicia un plano nuevo. Extender y Modificar utilizan los vídeos de origen que elijas en el espacio de trabajo. Revisa el precio exacto antes de generar.",
+      "action": "Abrir el espacio de vídeo",
+      "items": [
+        {
+          "id": "create",
+          "title": "Crear",
+          "body": "Convierte un prompt o un primer fotograma en un nuevo plano. Define la acción, la cámara y el sonido.",
+          "input": "Una idea o referencias",
+          "output": "Un nuevo plano",
+          "steps": [
+            "Describir la escena",
+            "Añadir referencias",
+            "Elegir ajustes y revisar el precio"
+          ]
+        },
+        {
+          "id": "extend",
+          "title": "Extender",
+          "body": "Añade un vídeo de origen y describe la siguiente acción. Define con claridad la continuación que quieres.",
+          "input": "Tu vídeo de origen",
+          "output": "El siguiente movimiento",
+          "steps": [
+            "Elegir el vídeo de origen",
+            "Describir la continuación",
+            "Revisar los ajustes y el precio"
+          ]
+        },
+        {
+          "id": "modify",
+          "title": "Modificar",
+          "body": "Parte de un vídeo existente. Explica qué cambiar y qué debe mantenerse coherente.",
+          "input": "Tu vídeo de origen",
+          "output": "Un plano revisado",
+          "steps": [
+            "Elegir el vídeo de origen",
+            "Describir el cambio concreto",
+            "Añadir referencias útiles y revisar el precio"
+          ]
+        }
+      ]
+    },
+    "promptAssistant": {
+      "title": "¿Necesitas ayuda con el prompt?",
+      "body": "Describe tu idea a Milo, el asistente de IA de la herramienta Create. Trabajad la redacción y después revisa y aplica el prompt cuando esté listo.",
+      "action": "Pedir ayuda a Milo"
+    }
   }
 }

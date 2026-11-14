@@ -350,7 +350,7 @@
           "eyebrow": "Performance et dialogue",
           "title": "Un geste. Une émotion.",
           "body": "Une baguette suspendue avant le premier coup. Un regard avant une réponse. Partez d’une action humaine lisible et d’un mouvement de caméra qui lui laisse de la place.",
-          "note": "Ces scènes sont prévues, pas encore animées. Le rythme, la synchronisation des lèvres, les mains et le son devront être évalués dans la vidéo réelle.",
+          "note": "Construisez le plan autour d’un geste, d’un échange ou d’un mouvement de caméra lisible.",
           "assetIds": [
             "after-the-beat",
             "the-blue-hour"
@@ -362,7 +362,7 @@
           "eyebrow": "Création d’univers",
           "title": "Rendre l’impossible tangible.",
           "body": "Un astronaute, un opéra abandonné et une créature suspendue au-dessus de lui. Définissez ce qui bouge, ce qui reste fixe et comment la caméra découvre les lieux.",
-          "note": "Cette première image définit la direction visuelle. Elle ne démontre pas comment Flash traitera la gravité, la continuité ou les interactions.",
+          "note": "Donnez au mouvement un trajet clair dans la scène.",
           "assetIds": [
             "where-gravity-ends"
           ]
@@ -373,7 +373,7 @@
           "eyebrow": "Conçu pour le format vertical",
           "title": "Petit écran. Grande présence.",
           "body": "Un manteau traverse la lumière. Une skateuse s’engage dans la descente. Composez dès le départ en 9:16, avec un sujet clair et de l’espace pour le mouvement.",
-          "note": "Les sources sont des images de départ verticales. Le cadrage final, le mouvement et l’audio seront vérifiés sur les futurs rendus.",
+          "note": "Composez l’action pour un cadre vertical dès le départ.",
           "assetIds": [
             "make-an-entrance",
             "before-the-drop"
@@ -411,7 +411,7 @@
   },
   "cinematic": {
     "intro": "Dirigez le mouvement, la caméra et le son avec Seedance 2.5 Flash de ByteDance. Partez d’un prompt ou de références, choisissez 480p ou 720p et préparez des plans jusqu’à 30 secondes.",
-    "caption": "« Course de minuit » · Image de départ créée avec GPT Image 2.6 Sunburst · Vidéo à venir",
+    "caption": "« Midnight run » · Image de départ · 16:9",
     "proofLabel": "De la première image au film",
     "examplesLabel": "Explorer les scènes",
     "pricingLabel": "Tarifs",
@@ -442,9 +442,59 @@
     ],
     "subtitle": "Donnez du rythme à votre prochaine scène.",
     "primaryLabel": "Créer avec Flash",
-    "byline": "par ByteDance",
+    "byline": "Sur MaxVideoAI",
     "overviewLabel": "Présentation",
     "detailsLabel": "Détails",
-    "promptingLabel": "Guide de prompts"
+    "promptingLabel": "Guide de prompts",
+    "workflows": {
+      "eyebrow": "CRÉER · PROLONGER · MODIFIER",
+      "title": "Une scène. Plusieurs suites possibles.",
+      "intro": "Créez un plan, prolongez une vidéo ou modifiez une scène existante. Choisissez le parcours avant de préparer vos références.",
+      "note": "Créer lance un nouveau plan. Prolonger et Modifier utilisent les vidéos source choisies dans l’espace de travail. Vérifiez le devis exact avant de générer.",
+      "action": "Ouvrir l’espace vidéo",
+      "items": [
+        {
+          "id": "create",
+          "title": "Créer",
+          "body": "Transformez un prompt ou une première image en nouveau plan. Décrivez l’action, la caméra et le son souhaités.",
+          "input": "Une idée ou des références",
+          "output": "Un nouveau plan",
+          "steps": [
+            "Décrire la scène",
+            "Ajouter les références",
+            "Choisir les réglages et vérifier le devis"
+          ]
+        },
+        {
+          "id": "extend",
+          "title": "Prolonger",
+          "body": "Ajoutez une vidéo source et décrivez l’action suivante. Précisez le lien entre la source et la continuation souhaitée.",
+          "input": "Votre vidéo source",
+          "output": "Le mouvement suivant",
+          "steps": [
+            "Choisir la vidéo source",
+            "Décrire la suite",
+            "Vérifier les réglages et le devis"
+          ]
+        },
+        {
+          "id": "modify",
+          "title": "Modifier",
+          "body": "Partez d’une vidéo existante. Indiquez ce qui doit changer et ce qui doit rester cohérent.",
+          "input": "Votre vidéo source",
+          "output": "Un plan retravaillé",
+          "steps": [
+            "Choisir la vidéo source",
+            "Décrire la modification ciblée",
+            "Ajouter les références utiles et vérifier le devis"
+          ]
+        }
+      ]
+    },
+    "promptAssistant": {
+      "title": "Besoin d’aide pour le prompt ?",
+      "body": "Décrivez votre idée à Milo, l’assistant IA de l’outil Create. Travaillez la formulation ensemble, puis relisez et appliquez le prompt lorsque vous êtes prêt.",
+      "action": "Me faire aider par Milo"
+    }
   }
 }

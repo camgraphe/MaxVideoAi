@@ -30,11 +30,12 @@ export async function ModelCinematicDetails({ pricing, commercial, schema, decis
   const offer = publicOffer ? formatModelPublicOffer(publicOffer, locale) : null;
   return <>
     {buildModelSchemaPayloads({ ...schema, pricingEngine, publicOffer }).map((payload, index) => <script key={index} id={`model-jsonld-${index}`} type="application/ld+json" suppressHydrationWarning dangerouslySetInnerHTML={{ __html: serializeJsonLd(payload) }} />)}
-    <section id="specs" className="cinema-specs cinema-section"><div className="cinema-wrap">
-      <header className="cinema-section-heading"><div><p className="cinema-eyebrow">{l.specs}</p><h2>{specTitle && specTitle !== 'Specs' ? specTitle : l.specs}</h2></div><p>{specNote}</p></header>
-      <dl className="cinema-spec-grid">{current.keySpecRows.map(row => <div key={row.id}><dt>{row.label}</dt><dd>{(row.valueLines?.length ? row.valueLines : [row.value]).map(value => <span key={value}>{localizeSpecStatus(value, locale)}</span>)}</dd></div>)}</dl>
+    <section id="specs" className="cinema-specs cinema-section"><div className="cinema-wrap cinema-specs-layout">
+      <header className="cinema-specs-heading"><p className="cinema-eyebrow">{schema.heroTitle}</p><h2>{specTitle && specTitle !== 'Specs' ? specTitle : l.specs}</h2><p>{specNote}</p><Link href={decision.hero.primaryCta.href} prefetch={false} className="cinema-button">{decision.hero.primaryCta.label} ↗</Link></header>
+      <div>
+      <dl className="cinema-spec-grid">{current.keySpecRows.map(row => <div key={row.id}><dt>{row.label}</dt><dd>{row.id.startsWith('pricePer') && row.value === 'Data pending' ? <a href="#decision-pricing" className="cinema-spec-price-link">{decision.pricing.cta.label} ↗</a> : (row.valueLines?.length ? row.valueLines : [row.value]).map(value => <span key={value}>{localizeSpecStatus(value, locale)}</span>)}</dd></div>)}</dl>
       {specSections.map(section => <details className="cinema-disclosure" key={section.title}><summary>{section.title}<span aria-hidden="true">+</span></summary><div><p>{section.intro}</p><ul>{section.items.map(item => <li key={item}>{item}</li>)}</ul></div></details>)}
-    </div></section>
+    </div></div></section>
     <section id="decision-pricing" className="cinema-pricing cinema-section"><div className="cinema-wrap">
       <header className="cinema-section-heading"><div><p className="cinema-eyebrow">{l.pricing}</p><h2>{decision.pricing.title}</h2></div><div><p>{decision.pricing.subtitle}</p><Link className="cinema-source-link" href={decision.pricing.cta.href} prefetch={false}>{decision.pricing.cta.label} ↗</Link></div></header>
       <div className="cinema-price-grid">{(scenarios ?? decision.pricing.scenarios).map(item => <article key={item.id}><h3>{item.label}</h3><p className="cinema-price-value">{item.value}</p>{item.priceUnitLabel ? <p>{item.priceUnitLabel}</p> : null}<p>{item.note}</p>{item.badge ? <span>{item.badge}</span> : null}</article>)}</div>

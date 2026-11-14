@@ -12,6 +12,20 @@ The integrated model-owner commits are Seedream `372a77053` and Seedance Flash `
 
 Creative screenshots are English. Content remains exact-locale EN/FR/ES. Only the two pilots opt in; older model pages retain their existing renderer.
 
+## Follow-up after visual review
+
+The current local revision restores the on-image edit slider and three edit thumbnails, adds an on-demand 2× portrait inspection with keyboard and mobile controls, and adds a third composition background. The hero is shorter and higher, the provider byline becomes “On MaxVideoAI”, and the scrollbar is thin and scoped to these two pages. Specifications, pricing, FAQ and closing sections have tighter geometry. Provider attribution remains in the model explanation, source disclosures and established metadata.
+
+Flash now has Frame / Planned motion / Planned sound controls with copyable video briefs, plus Create / Extend / Modify panels. The exact entry modes are `t2v`, `extend` and `v2v`. All three workflow descriptions remain in server HTML. Existing stills remain attributed Sunburst start frames; replacing them with verified Flash videos is release work.
+
+Milo is only a compact alternative inside the prompt guide. The previous large promotional block and its incorrect Studio screenshot were removed after user review. The link opens the composer assistant for the selected model and language: `/app/image?engine=seedream-5-5&assistant=milo&lang=en` or `/app?engine=seedance-2-5-flash&mode=t2v&assistant=milo&lang=en`. It does not submit a message, preload a prompt or start generation. Image prompt examples are copyable text, because the image workspace does not support URL prompt hydration. These entry contracts were confirmed with both integration owners.
+
+The rebuilt production candidate passes prebuild gates, TypeScript and lint (existing unrelated lint warnings remain). The cinematic suite passes **9/9** after the Milo correction. All six localized pilot routes return 200 with one H1, canonical, four hreflang entries and parseable JSON-LD; the assistant appears inside `#prompting` and points to the correct model, locale and workspace. Desktop 1440 × 900 and mobile 390 × 844 were reviewed; the prior 320 × 740 pass found no overflow. Slider keyboard input, the portrait zoom, composition backgrounds, workflow modes, planned sound and prompt copying were exercised. The local environment still produces the known database-dependent cookie-policy warning and cannot validate authenticated generation or live prices.
+
+Review screenshots are under `model-page-integration/iteration-two/` in the task's visualization directory. The current Milo evidence is `seedream-prompt-assistant.png`, `seedream-prompt-assistant-mobile.png` and `flash-prompt-assistant.png`; the earlier `seedream-milo*` screenshots are rejected designs. HTTP evidence for this correction is `/private/tmp/cinematic-iteration-three-http.json`.
+
+The loading measurements below describe the earlier autonomous renderer, before this follow-up; they are not new measurements of these interactions. This pass confirmed one initial hero request and deferred original portrait loading, but makes no new CWV claim. Nothing has been pushed or deployed.
+
 ## Visual inventory: one purpose per image
 
 | Page | Placement | Dedicated visuals |

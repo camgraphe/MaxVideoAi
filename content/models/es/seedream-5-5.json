@@ -493,7 +493,7 @@
           "eyebrow": "PNG transparente nativo",
           "title": "Libre para moverse. Listo para componer.",
           "body": "Genera un sujeto aislado con un canal alfa real. Cambia el fondo de vista previa para inspeccionar los bordes y abre el PNG original sin modificar.",
-          "note": "La bailarina es la misma imagen en ambas vistas. Se verificó la transparencia del original y su copia WebP; aquí no se aplica eliminación de fondo.",
+          "note": "La bailarina es la misma imagen sobre cada fondo. Se verificó la transparencia del original y su copia WebP; aquí no se aplica eliminación de fondo.",
           "assetIds": [
             "free-to-move"
           ]
@@ -545,9 +545,14 @@
     ],
     "subtitle": "Crea la escena que tienes en mente.",
     "primaryLabel": "Crear una imagen",
-    "byline": "por ByteDance",
+    "byline": "En MaxVideoAI",
     "overviewLabel": "Presentación",
     "detailsLabel": "Detalles",
-    "promptingLabel": "Guía de prompts"
+    "promptingLabel": "Guía de prompts",
+    "promptAssistant": {
+      "title": "¿Necesitas ayuda con el prompt?",
+      "body": "Describe tu idea a Milo, el asistente de IA de la herramienta Create. Trabajad la redacción y después revisa y aplica el prompt cuando esté listo.",
+      "action": "Pedir ayuda a Milo"
+    }
   }
 }

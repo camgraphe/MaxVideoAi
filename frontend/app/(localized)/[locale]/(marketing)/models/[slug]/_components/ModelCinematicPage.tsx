@@ -9,6 +9,7 @@ import { ModelCinematicExamples } from './ModelCinematicExamples';
 import { ModelCinematicPrompt } from './ModelCinematicAsset';
 import { ModelCinematicPrompting } from './ModelCinematicPrompting';
 import { ModelCinematicDetails, type CinematicDetailsProps } from './ModelCinematicDetails';
+import { ModelCinematicWorkflows } from './ModelCinematicWorkflows.client';
 
 /** Independent composition. Legacy model sections are deliberately not its visual primitives. */
 export function ModelCinematicPage({ presentation, decision, examples, hasRenderedVideos, prompting, details }: {
@@ -33,8 +34,9 @@ export function ModelCinematicPage({ presentation, decision, examples, hasRender
       <ModelCinematicPrompt asset={hero} ui={ui} />
     </section>
     <ModelCinematicExamples presentation={presentation} viewModel={examples} hasRenderedVideos={hasRenderedVideos} />
-    <ModelCinematicPrompting viewModel={prompting} assets={presentation.assets} label={content.promptingLabel} />
-    {content.variant === 'video' ? <Suspense fallback={<div aria-hidden="true" className="cinema-details-pending" />}><ModelCinematicDetails {...details} /></Suspense> : <ModelCinematicDetails {...details} />}
+    {content.workflows ? <ModelCinematicWorkflows content={content.workflows} workspaceHref={decision.hero.primaryCta.href} /> : null}
+    <ModelCinematicPrompting viewModel={prompting} content={content} locale={details.locale} />
+    {content.variant === 'video' ? <Suspense fallback={<div className="cinema-wrap cinema-details-pending" role="status"><p>{content.detailsLabel}</p><Link href={decision.pricing.cta.href} prefetch={false}>{decision.pricing.cta.label} ↗</Link></div>}><ModelCinematicDetails {...details} /></Suspense> : <ModelCinematicDetails {...details} />}
     <section className="cinema-close"><div className="cinema-wrap">
       <p className="cinema-eyebrow">MaxVideoAI / {content.titleLines.join(' ')}</p><h2>{content.subtitle}</h2>
       <Link href={decision.hero.primaryCta.href} prefetch={false} className="cinema-button">{content.primaryLabel}<span aria-hidden="true">↗</span></Link>

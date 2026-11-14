@@ -18,6 +18,9 @@ import { listModelEditorialImages } from '../frontend/app/(localized)/[locale]/(
 import { buildModelDecisionData } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-decision-data';
 import { ModelCinematicHero } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelCinematicHero';
 import { ModelCinematicPrompt } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelCinematicAsset';
+import { ModelCinematicWorkflows } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelCinematicWorkflows.client';
+import { ModelCinematicZoom } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelCinematicZoom.client';
+import { ModelCinematicPromptAssistant } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelCinematicPromptAssistant';
 
 const requireFrontend = createRequire(path.resolve('frontend/package.json'));
 const React = requireFrontend('react');
@@ -28,6 +31,45 @@ const sharp = requireFrontend('sharp');
 const locales = ['en', 'fr', 'es'] as const;
 const read = (slug: string, locale = 'en') => JSON.parse(readFileSync(`content/models/${locale}/${slug}.json`, 'utf8'));
 const filePath = (url: string) => path.join('frontend/public', url);
+
+test('workflow descriptions remain in server HTML with exact mode entry links', () => {
+  for (const locale of locales) {
+    const content = read('seedance-2-5-flash', locale).cinematic.workflows;
+    const html = renderToStaticMarkup(React.createElement(NextIntlClientProvider, {locale,messages:{},timeZone:'UTC'},
+      React.createElement(ModelCinematicWorkflows, {content,workspaceHref:'/app?engine=seedance-2-5-flash'})));
+    const doc = new JSDOM(html).window.document;
+    const panels = [...doc.querySelectorAll('.cinema-path-body')];
+    assert.equal(panels.length, 3);
+    assert.deepEqual(panels.map(panel => panel.hasAttribute('hidden')), [false, true, true]);
+    assert.deepEqual(panels.map(panel => new URL(panel.querySelector('a')!.href, 'https://maxvideoai.com').searchParams.get('mode')), ['t2v', 'extend', 'v2v']);
+    for (const item of content.items) assert.ok(doc.body.textContent?.includes(item.body));
+  }
+});
+
+test('portrait inspection defers the original and Milo opens the correct model without auto submission', () => {
+  for (const locale of locales) for (const slug of ['seedream-5-5', 'seedance-2-5-flash']) {
+    const content = read(slug, locale);
+    const examples = parseModelExamplesContent(content.examples, slug, locale);
+    const images = slug === 'seedream-5-5' ? listModelEditorialImages(slug, locale, examples.editorialImages) : [];
+    const presentation = buildCinematicPresentation(parseModelCinematicContent(content.cinematic, slug), examples, images, locale)!;
+    const workspace = new JSDOM(renderToStaticMarkup(React.createElement(ModelCinematicPromptAssistant, {content:presentation.content,locale}))).window.document;
+    const href = new URL(workspace.querySelector('a')!.href, 'https://maxvideoai.com');
+    assert.equal(href.pathname, slug === 'seedream-5-5' ? '/app/image' : '/app');
+    assert.equal(href.searchParams.get('engine'), slug);
+    assert.equal(href.searchParams.get('assistant'), 'milo');
+    assert.equal(href.searchParams.get('lang'), locale);
+    assert.equal(href.searchParams.has('prompt'), false);
+    assert.equal(href.searchParams.get('mode'), slug === 'seedream-5-5' ? null : 't2v');
+    if (slug === 'seedream-5-5') {
+      const asset = presentation.assets.find(item => item.id === 'after-the-race')!;
+      const doc = new JSDOM(renderToStaticMarkup(React.createElement(ModelCinematicZoom, {asset,ui:presentation.ui}))).window.document;
+      assert.equal(doc.querySelectorAll('img').length, 1);
+      assert.equal(doc.querySelector('img')!.getAttribute('loading'), 'lazy');
+      assert.equal(doc.querySelector('.cinema-detail-original'), null);
+      assert.equal(doc.querySelector('a')!.getAttribute('href'), asset.original.url);
+    }
+  }
+});
 
 test('cinematic content is opt-in and never falls back to another locale', () => {
   const en = read('seedream-5-5');
@@ -91,7 +133,9 @@ test('Flash uses six unique attributed start frames and retains its video worksp
     assert.equal(doc.querySelectorAll('h1').length, 1);
     assert.equal(doc.querySelectorAll('img').length, 1);
     assert.ok([...doc.querySelectorAll('a')].some(a => a.href.includes('/app?engine=seedance-2-5-flash')));
-    assert.ok(doc.body.textContent?.includes('GPT Image 2.6 Sunburst'));
+    assert.ok(doc.body.textContent?.includes(content.cinematic.caption));
+    const provenance = new JSDOM(renderToStaticMarkup(React.createElement(ModelCinematicPrompt, {asset:presentation.hero,ui:presentation.ui}))).window.document;
+    assert.ok(provenance.body.textContent?.includes('GPT Image 2.6 Sunburst'), 'The source remains in the visible hero prompt disclosure below the opening image');
     assert.equal(doc.querySelectorAll('video, script[type="application/ld+json"]').length, 0);
   }
 });

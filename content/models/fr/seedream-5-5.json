@@ -493,7 +493,7 @@
           "eyebrow": "PNG transparent natif",
           "title": "Libre de bouger. Prêt à composer.",
           "body": "Générez un sujet isolé avec un véritable canal alpha. Changez le fond de prévisualisation pour examiner les contours, puis ouvrez le PNG original intact.",
-          "note": "La danseuse est la même image dans les deux vues. La transparence a été vérifiée dans cet original et sa copie WebP ; aucun détourage n’est appliqué ici.",
+          "note": "La danseuse est la même image sur chaque fond. La transparence a été vérifiée dans cet original et sa copie WebP ; aucun détourage n’est appliqué ici.",
           "assetIds": [
             "free-to-move"
           ]
@@ -545,9 +545,14 @@
     ],
     "subtitle": "Donnez vie à la scène que vous imaginez.",
     "primaryLabel": "Créer une image",
-    "byline": "par ByteDance",
+    "byline": "Sur MaxVideoAI",
     "overviewLabel": "Présentation",
     "detailsLabel": "Détails",
-    "promptingLabel": "Guide de prompts"
+    "promptingLabel": "Guide de prompts",
+    "promptAssistant": {
+      "title": "Besoin d’aide pour le prompt ?",
+      "body": "Décrivez votre idée à Milo, l’assistant IA de l’outil Create. Travaillez la formulation ensemble, puis relisez et appliquez le prompt lorsque vous êtes prêt.",
+      "action": "Me faire aider par Milo"
+    }
   }
 }

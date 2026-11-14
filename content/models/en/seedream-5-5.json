@@ -493,7 +493,7 @@
           "eyebrow": "Native transparent PNG",
           "title": "Free to move. Ready to compose.",
           "body": "Generate an isolated subject with a real alpha channel. Change the preview background to inspect the edges, then open the unchanged original PNG.",
-          "note": "The dancer is the same image in both views. Transparency was verified in this original and its WebP display copy; no background-removal effect is applied here.",
+          "note": "The dancer is the same image on every background. Transparency was verified in this original and its WebP display copy; no background-removal effect is applied here.",
           "assetIds": [
             "free-to-move"
           ]
@@ -545,9 +545,14 @@
     ],
     "subtitle": "Make the scene you have in mind.",
     "primaryLabel": "Create an image",
-    "byline": "by ByteDance",
+    "byline": "On MaxVideoAI",
     "overviewLabel": "Overview",
     "detailsLabel": "Details",
-    "promptingLabel": "Prompt guide"
+    "promptingLabel": "Prompt guide",
+    "promptAssistant": {
+      "title": "Need a hand with the prompt?",
+      "body": "Describe your idea to Milo, the AI assistant in the Create tool. Work on the wording together, then review and apply the prompt when you are ready.",
+      "action": "Get help from Milo"
+    }
   }
 }

@@ -19,6 +19,13 @@ const heroSchema = z.object({
   proofLabel: text,
   examplesLabel: text,
   pricingLabel: text,
+  promptAssistant: z.object({ title: text, body: text, action: text }).strict(),
+  workflows: z.object({
+    eyebrow: text, title: text, intro: text, note: text, action: text,
+    items: z.array(z.object({ id: z.enum(['create', 'extend', 'modify']), title: text, body: text,
+      input: text, output: text, steps: z.array(text).length(3),
+    }).strict()).length(3),
+  }).strict().optional(),
   facts: z.array(z.object({ label: text, value: text }).strict()).min(3).max(4),
 }).strict();
 

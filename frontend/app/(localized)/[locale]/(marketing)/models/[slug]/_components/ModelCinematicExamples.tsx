@@ -23,7 +23,7 @@ export function ModelCinematicExamples({ presentation, viewModel, hasRenderedVid
         <div className="cinema-panel-media">
           {panel.layout === 'edit' ? <ModelCinematicCompare assets={selected} ui={ui} />
             : panel.layout === 'cutout' ? <><ModelCinematicCutout asset={selected[0]} ui={ui} /><ModelCinematicPrompt asset={selected[0]} ui={ui} /></>
-            : <div className={selected.length > 1 ? 'cinema-media-grid' : undefined}>{selected.map(asset => <ModelCinematicAsset key={asset.id} asset={asset} ui={ui} compact={selected.length > 1 || portrait}
+            : <div className={selected.length > 1 ? 'cinema-media-grid' : undefined}>{selected.map(asset => <ModelCinematicAsset key={asset.id} asset={asset} ui={ui} compact={selected.length > 1 || portrait} inspect={portrait}
               plan={examples.shotPlans?.find(plan => plan.assetId === asset.id)} />)}</div>}
         </div>
         <p className="cinema-panel-note">{panel.note}</p>
