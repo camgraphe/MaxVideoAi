@@ -10,7 +10,7 @@ export function ModelCinematicExamples({ presentation, viewModel, hasRenderedVid
   const { assets, examples, ui } = presentation;
   return <section id="examples" className="cinema-examples">
     {viewModel.anchorId !== 'examples' ? <span id={viewModel.anchorId} /> : null}
-    <header className="cinema-wrap cinema-examples-heading"><p className="cinema-eyebrow">{presentation.content.proofLabel}</p><h2>{examples.title ?? viewModel.section.title}</h2><p>{examples.intro ?? viewModel.section.intro}</p><p className="cinema-provenance">{examples.provenance}</p></header>
+    <header className="cinema-wrap cinema-examples-heading"><h2>{examples.title ?? viewModel.section.title}</h2></header>
     {hasRenderedVideos ? <div className="cinema-wrap"><ModelDecisionExamplesGallery title={viewModel.section.title} intro={viewModel.section.intro}
       filters={viewModel.filters} items={viewModel.decision.items} examplesLinkHref={viewModel.decision.examplesLinkHref}
       viewAllLabel={viewModel.decision.viewAllLabel} renderLinkLabel={viewModel.decision.renderLinkLabel}
@@ -29,5 +29,6 @@ export function ModelCinematicExamples({ presentation, viewModel, hasRenderedVid
         <p className="cinema-panel-note">{panel.note}</p>
       </div></article>;
     })}
+    <div className="cinema-wrap cinema-provenance"><details className="cinema-disclosure"><summary>{ui.aboutExamples}<span aria-hidden="true">+</span></summary><div><p>{examples.intro ?? viewModel.section.intro}</p><p>{examples.provenance}</p></div></details></div>
   </section>;
 }

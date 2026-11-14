@@ -134,7 +134,7 @@ test('responsive cinematic hero displays retain their exact sources and immutabl
       assert.equal(meta.width, file.width);
       assert.equal(meta.height, file.height);
     }
-    assert.ok(asset.mobile.every(file => file.height === file.width * 2));
+    assert.ok(asset.mobile.every(file => asset.id === 'first-light' ? file.height === file.width * 2 : file.width * 9 === file.height * 16));
   }
 });
 

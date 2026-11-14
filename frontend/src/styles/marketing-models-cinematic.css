@@ -6,7 +6,7 @@
 .marketing-site:has(.model-cinematic-page)>header .marketing-nav-trigger:is(:hover,.is-active){background:#ffffff14;color:#f4f6f8}
 .marketing-site:has(.model-cinematic-page)>header .marketing-menu-invoker{background:#18212a99;color:#f4f6f8;border-color:#ffffff38}
 .marketing-site:has(.model-cinematic-page)>header>div>div:last-child>a[href="/app"]{background:#202a35;color:#edf0f3;border-color:#68727e;box-shadow:none}
-.marketing-site:has(.model-cinematic-page)>header>div>div:last-child>div>button{color:#edf0f3;background:#202a3570;border-color:#ffffff38}
+.marketing-site:has(.model-cinematic-page)>header button[aria-haspopup="menu"]{color:#edf0f3;background:#202a3570;border-color:#ffffff38}
 .marketing-site .model-cinematic-page{--cinema-ink:#141b24;--cinema-muted:#58616c;--cinema-line:#d8dde2;--cinema-surface:#f1f3f4;--cinema-pad:clamp(22px,4.5vw,84px);color:var(--cinema-ink);background:#fff;overflow:clip;font-weight:400}
 .marketing-site .model-cinematic-page--video{--cinema-ink:#edf1f5;--cinema-muted:#a6b2be;--cinema-line:#ffffff28;--cinema-surface:#141b23;background:#0c1117}
 .marketing-site .model-cinematic-page :is(h1,h2,h3,h4,p,figure,dl){margin:0}
@@ -56,10 +56,10 @@
 .marketing-site .model-cinematic-page .cinema-facts{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--cinema-line);border-bottom:1px solid var(--cinema-line);padding-block:26px;gap:24px}
 .marketing-site .model-cinematic-page .cinema-facts dt{font-size:11px;color:var(--cinema-muted);margin-bottom:10px}
 .marketing-site .model-cinematic-page .cinema-facts dd{font-size:16px;font-weight:500;letter-spacing:-.025em;line-height:1.4}
-.marketing-site .model-cinematic-page .cinema-examples-heading{padding-top:70px;padding-bottom:26px}
-.marketing-site .model-cinematic-page .cinema-examples-heading h2{max-width:1000px}
-.marketing-site .model-cinematic-page .cinema-examples-heading>p:not(.cinema-eyebrow){max-width:780px;margin-top:24px;color:var(--cinema-muted);font-size:15px}
-.marketing-site .model-cinematic-page .cinema-examples-heading .cinema-provenance{font-size:12px!important}
+.marketing-site .model-cinematic-page .cinema-examples-heading{padding-top:40px;padding-bottom:0}
+.marketing-site .model-cinematic-page .cinema-examples-heading h2{font-size:12px;font-weight:600;line-height:1.5;letter-spacing:.12em;text-transform:uppercase}
+.marketing-site .model-cinematic-page .cinema-examples-heading+.cinema-panel{padding-top:30px}
+.marketing-site .model-cinematic-page .cinema-provenance{padding-bottom:50px}
 .marketing-site .model-cinematic-page .cinema-panel{padding-block:74px 90px}
 .marketing-site .model-cinematic-page .cinema-panel+.cinema-panel{border-top:1px solid var(--cinema-line)}
 .marketing-site .model-cinematic-page :is(.cinema-section-heading,.cinema-panel-heading){display:grid;grid-template-columns:1.2fr .8fr;gap:70px;align-items:end;margin-bottom:42px}
@@ -159,9 +159,15 @@
  .marketing-site .model-cinematic-page .cinema-actions{gap:20px}
  .marketing-site .model-cinematic-page .cinema-button{padding-inline:17px;gap:16px;font-size:12px}
  .marketing-site .model-cinematic-page .cinema-text-link{font-size:12px;gap:8px}
- .marketing-site .model-cinematic-page .cinema-hero--video{min-height:740px}
- .marketing-site .model-cinematic-page .cinema-hero--video h1{font-size:clamp(48px,12vw,80px)}
- .marketing-site .model-cinematic-page .cinema-hero--video .cinema-hero-image{object-position:68% center}
+ .marketing-site .model-cinematic-page .cinema-hero--video{min-height:820px;height:calc(100svh - 24px);max-height:none}
+ .marketing-site .model-cinematic-page .cinema-hero--video .cinema-hero-content{top:103px;bottom:26px}
+ .marketing-site .model-cinematic-page .cinema-hero--video h1{font-size:clamp(35px,11vw,58px);margin-top:40px}
+ .marketing-site .model-cinematic-page .cinema-hero--video h1 span+span{font-size:2.65em;line-height:.98;margin-top:14px}
+ .marketing-site .model-cinematic-page .cinema-hero--video .cinema-hero-subtitle{font-size:28px;max-width:270px;margin-top:23px}
+ .marketing-site .model-cinematic-page .cinema-hero--video .cinema-hero-art{top:430px;bottom:75px;mask-image:linear-gradient(180deg,transparent,#000 20%,#000 85%,transparent)}
+ .marketing-site .model-cinematic-page .cinema-hero--video .cinema-hero-image{object-position:right center}
+ .marketing-site .model-cinematic-page .cinema-hero--video:before,.marketing-site .model-cinematic-page .cinema-hero--video:after{background:none}
+ .marketing-site .model-cinematic-page .cinema-hero--video .cinema-hero-caption{position:absolute;left:var(--cinema-pad);right:var(--cinema-pad);bottom:0;max-width:none;margin:0}
  .marketing-site .model-cinematic-page .cinema-nav-inner{height:60px;padding-inline:22px;gap:0}
  .marketing-site .model-cinematic-page .cinema-nav .cinema-button{display:none}
  .marketing-site .model-cinematic-page .cinema-nav-links{gap:24px;font-size:11px}
@@ -170,7 +176,7 @@
  .marketing-site .model-cinematic-page .cinema-overview .cinema-intro{font-size:22px}
  .marketing-site .model-cinematic-page .cinema-facts{grid-template-columns:1fr 1fr;gap:28px 20px;padding-block:24px}
  .marketing-site .model-cinematic-page .cinema-facts dd{font-size:14px}
- .marketing-site .model-cinematic-page .cinema-examples-heading{padding-top:44px;padding-bottom:15px}
+ .marketing-site .model-cinematic-page .cinema-examples-heading{padding-top:36px;padding-bottom:0}
  .marketing-site .model-cinematic-page :is(.cinema-section,.cinema-panel){padding-block:56px}
  .marketing-site .model-cinematic-page :is(.cinema-section-heading,.cinema-panel-heading){display:block;margin-bottom:28px}
  .marketing-site .model-cinematic-page :is(.cinema-section-heading,.cinema-panel-heading)>p{margin-top:24px;font-size:14px}

@@ -9,12 +9,24 @@
       1600,
       2560
     ],
-    "mobileWidths": [
-      480,
-      720
-    ],
-    "mobileAspect": 0.5,
-    "mobilePosition": 0.65
+    "mobile": {
+      "first-light": {
+        "widths": [
+          480,
+          720
+        ],
+        "aspect": 0.5,
+        "position": 0.65
+      },
+      "midnight-run": {
+        "widths": [
+          640,
+          1280
+        ],
+        "aspect": 1.7777777777777777,
+        "position": 1
+      }
+    }
   },
   "assets": [
     {
@@ -70,9 +82,9 @@
       "id": "midnight-run",
       "originalSha256": "5abe1db872a12c6f04680bf265fda706d32b9e24aefaaa6e2fe42099963d1bf1",
       "crop": {
-        "left": 1196,
+        "left": 0,
         "top": 0,
-        "width": 720,
+        "width": 2560,
         "height": 1440
       },
       "desktop": [
@@ -100,18 +112,18 @@
       ],
       "mobile": [
         {
-          "url": "/assets/model-examples/cinematic-heroes/0ffe3dba971b7f9ff8681a26da9c0d554e6604183fb451512c1643e09819c0f0.avif",
-          "sha256": "0ffe3dba971b7f9ff8681a26da9c0d554e6604183fb451512c1643e09819c0f0",
-          "width": 480,
-          "height": 960,
-          "bytes": 13463
+          "url": "/assets/model-examples/cinematic-heroes/a0857edc4d2bf72ecd665d7d175f3f4eb67a29baf463a965250e6a91e239dc2c.avif",
+          "sha256": "a0857edc4d2bf72ecd665d7d175f3f4eb67a29baf463a965250e6a91e239dc2c",
+          "width": 640,
+          "height": 360,
+          "bytes": 8851
         },
         {
-          "url": "/assets/model-examples/cinematic-heroes/b522bec9d7e222402f96ccccb8738a100101a7db57b385030fa7a6388d7c9947.avif",
-          "sha256": "b522bec9d7e222402f96ccccb8738a100101a7db57b385030fa7a6388d7c9947",
-          "width": 720,
-          "height": 1440,
-          "bytes": 26011
+          "url": "/assets/model-examples/cinematic-heroes/2f907268aa358609df61384ae96081ed9de10b3730076db936358f1ff167ae4f.avif",
+          "sha256": "2f907268aa358609df61384ae96081ed9de10b3730076db936358f1ff167ae4f",
+          "width": 1280,
+          "height": 720,
+          "bytes": 26325
         }
       ]
     }
