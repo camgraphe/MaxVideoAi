@@ -82,7 +82,7 @@
     "status": "accepted",
     "engineId": "seedream-5-5",
     "providerModelId": "dola-seedream-5-5-261028",
-    "role": "hero",
+    "role": "example",
     "promptLanguage": "en",
     "prompt": "A compelling live-action feature-film still, 16:9 widescreen. A fictional woman in her late twenties in a deep burgundy trench coat has just emerged from a Parisian metro stairway into a rain-soaked street at blue hour. She is caught mid-stride, turning toward someone just outside the frame, alert and full of intent; her face is clearly visible, her coat moves in the wind. Several adults cross the street behind her; a passing taxi adds a soft streak of warm light. A large physically printed illuminated advertising panel, nearly front-facing on the right side of the street, reads exactly \"MAKE YOUR MOVE\" in three beautifully spaced lines of bold off-white sans-serif capitals. These are the only prominent words. The panel belongs naturally to the real location. Reflections on wet pavement, cinematic cyan and amber practical lighting, natural skin texture, believable hands, coherent perspective, rich deep blacks with detail. Shot on a 40mm anamorphic lens, restrained film grain, subtle halation, sophisticated campaign-film composition. The woman and the sign remain comfortably inside the central 80 percent of the image. A real human story in progress, evocative and dynamic, not a posed stock photograph. A single cohesive photograph with no borders or added graphic overlay.",
     "settings": {
@@ -193,5 +193,290 @@
       "mimeType": "image/webp",
       "sourceSha256": "40dafa9179cd44de9d56a41d2b9b8b97cc1985163b7fb73777f16c8bbb1b61b8"
     }
+  },
+  {
+    "id": "first-light",
+    "status": "accepted",
+    "engineId": "seedream-5-5",
+    "providerModelId": "dola-seedream-5-5-261028",
+    "role": "hero",
+    "promptLanguage": "en",
+    "prompt": "A memorable widescreen frame from a beautifully photographed contemporary adventure film. A fictional adult woman in a vivid vermilion windbreaker steps off an early-morning passenger ferry onto a Mediterranean harbour, turning back toward a friend with an irrepressible smile. Strong wind catches her jacket and loose hair; her gesture and stride feel caught in the middle of life. Cobalt sea, pale coastal buildings, a few small adult passengers, brilliant low golden sunlight and a fleeting flare. Lived-in skin and fabric, rich but believable colour, delicate film grain, bold cinematic depth. Give the woman a strong presence toward the right half of the frame, with a readable, calmer harbour and sea toward the left. Invent the expressive framing and incidental details freely. One cohesive live-action photograph, no typography or graphic overlay.",
+    "settings": {
+      "mode": "t2i",
+      "resolution": "2K",
+      "aspectRatio": "16:9",
+      "outputFormat": "jpeg",
+      "background": "opaque",
+      "numImages": 1
+    },
+    "original": {
+      "url": "/assets/model-examples/seedream-5-5/5a7f043a66d9c382e3a290b0d0f157e5c102d533b1b928d2200c3fde2a9564cf.jpg",
+      "sha256": "5a7f043a66d9c382e3a290b0d0f157e5c102d533b1b928d2200c3fde2a9564cf",
+      "bytes": 400392,
+      "width": 2816,
+      "height": 1584,
+      "mimeType": "image/jpeg"
+    },
+    "display": {
+      "url": "/assets/model-examples/seedream-5-5/9eb26248dd07b7476527fddb6631c0b2f21c278ad474643865e1cd2cdfe6dc14.webp",
+      "sha256": "9eb26248dd07b7476527fddb6631c0b2f21c278ad474643865e1cd2cdfe6dc14",
+      "bytes": 107060,
+      "width": 1800,
+      "height": 1013,
+      "mimeType": "image/webp",
+      "sourceSha256": "5a7f043a66d9c382e3a290b0d0f157e5c102d533b1b928d2200c3fde2a9564cf"
+    },
+    "provenance": {
+      "kind": "reviewed_byteplus_output",
+      "generatedAt": "2026-11-13T22:42:58.440Z",
+      "manifestSha256": "1cfe4ed04fbb35cc0302460906fc88a9612f99b1fb17443d1c3134a9d0b9eeb3",
+      "promptSha256": "a4b472806745069353e871d6a52e6c0122749d4c032ac5b5c6326f66ab2006ee"
+    }
+  },
+  {
+    "id": "backstage-original",
+    "status": "accepted",
+    "engineId": "seedream-5-5",
+    "providerModelId": "dola-seedream-5-5-261028",
+    "role": "example",
+    "promptLanguage": "en",
+    "prompt": "An intimate widescreen cinematic photograph seconds before a live performance. A fictional adult actress with short dark curly hair in an emerald-green tailored jacket turns toward someone beyond the camera while walking between heavy burgundy theatre curtains. Her face, both hands and the jacket are clearly visible in a three-quarter view. A stagehand moves softly out of focus behind her. Warm practical lamps illuminate her natural skin, the woven jacket and the worn velvet; a cool hint of the empty stage adds depth. A spontaneous human moment, confident composition, subtle grain and soft highlight roll-off. Keep the framing and lighting legible enough for a later wardrobe edit. One photograph, no lettering or graphic overlay.",
+    "settings": {
+      "mode": "t2i",
+      "resolution": "2K",
+      "aspectRatio": "16:9",
+      "outputFormat": "jpeg",
+      "background": "opaque",
+      "numImages": 1
+    },
+    "original": {
+      "url": "/assets/model-examples/seedream-5-5/0f01d7c64f2eaca38bfabd67de2da1fc3412af795836064c7577a33a6ec29538.jpg",
+      "sha256": "0f01d7c64f2eaca38bfabd67de2da1fc3412af795836064c7577a33a6ec29538",
+      "bytes": 211890,
+      "width": 2816,
+      "height": 1584,
+      "mimeType": "image/jpeg"
+    },
+    "display": {
+      "url": "/assets/model-examples/seedream-5-5/ecc64ba637002dd512fded83b298cc6dfe240d9de7bad136ac16df10cff69796.webp",
+      "sha256": "ecc64ba637002dd512fded83b298cc6dfe240d9de7bad136ac16df10cff69796",
+      "bytes": 39688,
+      "width": 1800,
+      "height": 1013,
+      "mimeType": "image/webp",
+      "sourceSha256": "0f01d7c64f2eaca38bfabd67de2da1fc3412af795836064c7577a33a6ec29538"
+    },
+    "provenance": {
+      "kind": "reviewed_byteplus_output",
+      "generatedAt": "2026-11-13T22:43:15.902Z",
+      "manifestSha256": "1cfe4ed04fbb35cc0302460906fc88a9612f99b1fb17443d1c3134a9d0b9eeb3",
+      "promptSha256": "d8d967ef5b8b17770214c0711d07ebb4a31427daac040dc2a4fbd6253492a169"
+    }
+  },
+  {
+    "id": "backstage-wardrobe",
+    "status": "accepted",
+    "engineId": "seedream-5-5",
+    "providerModelId": "dola-seedream-5-5-261028",
+    "role": "example",
+    "promptLanguage": "en",
+    "prompt": "Edit the provided photograph. Change only the actress's emerald-green jacket into an ivory silk tailored jacket, preserving its fitted silhouette and believable folds. Keep the same woman, face, hair, expression, hands, pose, framing, theatre curtains, background people and lighting. Preserve everything outside the jacket as closely as possible. Return one cohesive photographic frame.",
+    "settings": {
+      "mode": "i2i",
+      "resolution": "2K",
+      "aspectRatio": "16:9",
+      "outputFormat": "jpeg",
+      "background": "opaque",
+      "numImages": 1
+    },
+    "original": {
+      "url": "/assets/model-examples/seedream-5-5/7d0328b2bdd1635ea6d115787f7d3a25e91dc907a42a768969663f9c2cc3d9d3.jpg",
+      "sha256": "7d0328b2bdd1635ea6d115787f7d3a25e91dc907a42a768969663f9c2cc3d9d3",
+      "bytes": 230307,
+      "width": 2816,
+      "height": 1584,
+      "mimeType": "image/jpeg"
+    },
+    "display": {
+      "url": "/assets/model-examples/seedream-5-5/02b8f6d36d91deb035722216c0d726b1a39d6dd7ce5ac7130d4ec2072f45f9a9.webp",
+      "sha256": "02b8f6d36d91deb035722216c0d726b1a39d6dd7ce5ac7130d4ec2072f45f9a9",
+      "bytes": 45454,
+      "width": 1800,
+      "height": 1013,
+      "mimeType": "image/webp",
+      "sourceSha256": "7d0328b2bdd1635ea6d115787f7d3a25e91dc907a42a768969663f9c2cc3d9d3"
+    },
+    "provenance": {
+      "kind": "reviewed_byteplus_output",
+      "generatedAt": "2026-11-13T22:43:35.487Z",
+      "manifestSha256": "1cfe4ed04fbb35cc0302460906fc88a9612f99b1fb17443d1c3134a9d0b9eeb3",
+      "promptSha256": "c7d3136dca3facd2e6095536f27b8d9a88c5698f474f2b6d4f5e592594e954f2"
+    },
+    "sourceImageId": "backstage-original",
+    "sourceOriginalSha256": "0f01d7c64f2eaca38bfabd67de2da1fc3412af795836064c7577a33a6ec29538"
+  },
+  {
+    "id": "backstage-light",
+    "status": "accepted",
+    "engineId": "seedream-5-5",
+    "providerModelId": "dola-seedream-5-5-261028",
+    "role": "example",
+    "promptLanguage": "en",
+    "prompt": "Edit the provided photograph, keeping the same actress in the ivory silk jacket, her identity, expression, hands, pose, exact framing and theatre setting. Change the lighting atmosphere to a dramatic cool blue stage spill from the right with a restrained warm amber practical rim from the left. Keep skin believable and the ivory silk visibly ivory. Do not add, remove or reposition people or objects. This is a lighting change to the same scene, not a new composition.",
+    "settings": {
+      "mode": "i2i",
+      "resolution": "2K",
+      "aspectRatio": "16:9",
+      "outputFormat": "jpeg",
+      "background": "opaque",
+      "numImages": 1
+    },
+    "original": {
+      "url": "/assets/model-examples/seedream-5-5/ee5b7ba08bac3de126bc8310ef5337e147fe365cf7cfb9976f8621c80f2c6191.jpg",
+      "sha256": "ee5b7ba08bac3de126bc8310ef5337e147fe365cf7cfb9976f8621c80f2c6191",
+      "bytes": 252132,
+      "width": 2816,
+      "height": 1584,
+      "mimeType": "image/jpeg"
+    },
+    "display": {
+      "url": "/assets/model-examples/seedream-5-5/5854879cc69b8852e8e026d71bea8cfaa61d4b75aea044c025ce840be6017cb3.webp",
+      "sha256": "5854879cc69b8852e8e026d71bea8cfaa61d4b75aea044c025ce840be6017cb3",
+      "bytes": 51552,
+      "width": 1800,
+      "height": 1013,
+      "mimeType": "image/webp",
+      "sourceSha256": "ee5b7ba08bac3de126bc8310ef5337e147fe365cf7cfb9976f8621c80f2c6191"
+    },
+    "provenance": {
+      "kind": "reviewed_byteplus_output",
+      "generatedAt": "2026-11-13T22:43:58.216Z",
+      "manifestSha256": "1cfe4ed04fbb35cc0302460906fc88a9612f99b1fb17443d1c3134a9d0b9eeb3",
+      "promptSha256": "6f1c8e3657c9cfd1dd54870dd7256287c38e576a080ab31e9f043b9bc8f43f9a"
+    },
+    "sourceImageId": "backstage-wardrobe",
+    "sourceOriginalSha256": "7d0328b2bdd1635ea6d115787f7d3a25e91dc907a42a768969663f9c2cc3d9d3"
+  },
+  {
+    "id": "one-night-only",
+    "status": "accepted",
+    "engineId": "seedream-5-5",
+    "providerModelId": "dola-seedream-5-5-261028",
+    "role": "example",
+    "promptLanguage": "en",
+    "prompt": "A widescreen live-action film still outside a small independent cinema on a dry late-summer evening. Two fictional adults in their thirties hurry laughing through the illuminated entrance, one holding the door for the other. Above them, a real physical cinema marquee is readable and nearly front-facing. Its large main line reads exactly \"THE LAST LIGHT\"; its smaller second line reads exactly \"ONE NIGHT ONLY\". These are the only prominent words. The lettering belongs to the illuminated marquee, with convincing perspective and material. Warm tungsten bulbs, fading lavender sky, deep red facade, animated gestures and a few adult passers-by. A bold but natural film composition with human energy and tactile photographic detail. No added poster overlay, no standalone objects.",
+    "settings": {
+      "mode": "t2i",
+      "resolution": "2K",
+      "aspectRatio": "16:9",
+      "outputFormat": "jpeg",
+      "background": "opaque",
+      "numImages": 1
+    },
+    "original": {
+      "url": "/assets/model-examples/seedream-5-5/16b4e38576933c2c96969c00c281af474ec13f3302d79ac9b5217deaaf3bd328.jpg",
+      "sha256": "16b4e38576933c2c96969c00c281af474ec13f3302d79ac9b5217deaaf3bd328",
+      "bytes": 413637,
+      "width": 2816,
+      "height": 1584,
+      "mimeType": "image/jpeg"
+    },
+    "display": {
+      "url": "/assets/model-examples/seedream-5-5/eb388dd91ab9532c2d21584ceae0ffacb4fb3dc1fd31e566b99f5fe59b053adb.webp",
+      "sha256": "eb388dd91ab9532c2d21584ceae0ffacb4fb3dc1fd31e566b99f5fe59b053adb",
+      "bytes": 113838,
+      "width": 1800,
+      "height": 1013,
+      "mimeType": "image/webp",
+      "sourceSha256": "16b4e38576933c2c96969c00c281af474ec13f3302d79ac9b5217deaaf3bd328"
+    },
+    "provenance": {
+      "kind": "reviewed_byteplus_output",
+      "generatedAt": "2026-11-13T22:44:15.411Z",
+      "manifestSha256": "1cfe4ed04fbb35cc0302460906fc88a9612f99b1fb17443d1c3134a9d0b9eeb3",
+      "promptSha256": "9f37de0237eec90b70c0e6bf7ffe4ac5b4778503cff64e31d51b831d8698a0b2"
+    }
+  },
+  {
+    "id": "after-the-race",
+    "status": "accepted",
+    "engineId": "seedream-5-5",
+    "providerModelId": "dola-seedream-5-5-261028",
+    "role": "example",
+    "promptLanguage": "en",
+    "prompt": "A close, emotionally alive portrait from an independent sports film. A fictional Black woman runner around thirty has just finished a coastal race; she is catching her breath and laughing toward a friend outside the frame. Sunlight grazes the tiny beads of sweat and natural texture on her cheek, salt air lifts short curls, and a cobalt technical running shirt shows fine woven fibres and lived-in creases. Her hand loosely holds the edge of her collar, with natural anatomy. Warm late-afternoon rim light, the soft sea and other adult runners in the background, restrained shallow depth of field. Honest skin, small imperfections, subtle film grain, exuberant but unposed. A vertical 3:4 photographic frame, no text or graphic overlay.",
+    "settings": {
+      "mode": "t2i",
+      "resolution": "2K",
+      "aspectRatio": "3:4",
+      "outputFormat": "jpeg",
+      "background": "opaque",
+      "numImages": 1
+    },
+    "original": {
+      "url": "/assets/model-examples/seedream-5-5/7f42f3ee1c931bd1a0c993e7da0c186864b5ddc81cb803240b64912e77bd4a96.jpg",
+      "sha256": "7f42f3ee1c931bd1a0c993e7da0c186864b5ddc81cb803240b64912e77bd4a96",
+      "bytes": 554634,
+      "width": 1776,
+      "height": 2368,
+      "mimeType": "image/jpeg"
+    },
+    "display": {
+      "url": "/assets/model-examples/seedream-5-5/11e959edb38df935000b141ade1edf81bafc03094b65d08cdaf166ba976be4b1.webp",
+      "sha256": "11e959edb38df935000b141ade1edf81bafc03094b65d08cdaf166ba976be4b1",
+      "bytes": 364860,
+      "width": 1776,
+      "height": 2368,
+      "mimeType": "image/webp",
+      "sourceSha256": "7f42f3ee1c931bd1a0c993e7da0c186864b5ddc81cb803240b64912e77bd4a96"
+    },
+    "provenance": {
+      "kind": "reviewed_byteplus_output",
+      "generatedAt": "2026-11-13T22:44:28.738Z",
+      "manifestSha256": "1cfe4ed04fbb35cc0302460906fc88a9612f99b1fb17443d1c3134a9d0b9eeb3",
+      "promptSha256": "8302d26010248e94007b9cacab58eacca252affc34117a0dfff0f5b0078beaf0"
+    }
+  },
+  {
+    "id": "free-to-move",
+    "status": "accepted",
+    "engineId": "seedream-5-5",
+    "providerModelId": "dola-seedream-5-5-261028",
+    "role": "example",
+    "promptLanguage": "en",
+    "prompt": "A full-body cinematic photographic portrait of a fictional adult contemporary dancer caught in a powerful turning step, one foot grounded and the other extended, both hands naturally separated from the torso. A flowing deep-red chiffon outer layer arcs around an opaque black performance costume, with fine translucent fabric edges and a few loose strands of hair. Convincing anatomy, expressive face, clean directional film lighting with subtle warm highlights, tactile fabric and natural skin. Entire figure and flowing fabric comfortably inside the vertical frame. Native transparent background with real alpha, including delicate hair and chiffon transparency; no environment, floor, shadow backdrop, checkerboard pattern, lettering or graphic overlay. Let the pose and fabric movement be artistically expressive.",
+    "settings": {
+      "mode": "t2i",
+      "resolution": "2K",
+      "aspectRatio": "3:4",
+      "outputFormat": "png",
+      "background": "transparent",
+      "numImages": 1
+    },
+    "original": {
+      "url": "/assets/model-examples/seedream-5-5/d9a6189fa888558a3a6415efcc407c529227bebac45d64ef5a5db3e384948cf3.png",
+      "sha256": "d9a6189fa888558a3a6415efcc407c529227bebac45d64ef5a5db3e384948cf3",
+      "bytes": 3032469,
+      "width": 1776,
+      "height": 2368,
+      "mimeType": "image/png"
+    },
+    "display": {
+      "url": "/assets/model-examples/seedream-5-5/486ce17aee857d727d8c3680c856e7fb11bd913b861d73b7118e9908c45bc9c2.webp",
+      "sha256": "486ce17aee857d727d8c3680c856e7fb11bd913b861d73b7118e9908c45bc9c2",
+      "bytes": 144138,
+      "width": 1776,
+      "height": 2368,
+      "mimeType": "image/webp",
+      "sourceSha256": "d9a6189fa888558a3a6415efcc407c529227bebac45d64ef5a5db3e384948cf3"
+    },
+    "provenance": {
+      "kind": "reviewed_byteplus_output",
+      "generatedAt": "2026-11-13T22:44:47.522Z",
+      "manifestSha256": "1cfe4ed04fbb35cc0302460906fc88a9612f99b1fb17443d1c3134a9d0b9eeb3",
+      "promptSha256": "bcb00c482d435c0657568b5cc5bd40bb92469ca914edbf9e819726ba2b656992"
+    },
+    "alphaVerified": true
   }
 ]

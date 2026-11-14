@@ -8,6 +8,7 @@ type EditorialFile={url:string;sha256:string;width:number;height:number};
 export type ModelEditorialImage={
  id:string;engineId:string;title:string;prompt:string;original:EditorialFile;display:EditorialFile;
  metadataLabel:string;workspaceHref:string;videoModelSlug?:string;
+ alphaVerified?:boolean;
  source?:{label:string;original:EditorialFile};
 };
 const copy={
@@ -38,7 +39,9 @@ export function listModelEditorialImages(engineId:string,locale:AppLocale,titles
   const title=titles?.find(item=>item.id===image.id)?.title;
   if(!title)throw new Error('Missing localized Seedream editorial image title');
   const modelLabel=engineId==='seedream-5-5'?'Seedream 5.5':engineId==='seedream-5-0-flash'?'Seedream 5.0 Flash':'Seedream 5.0 Pro';
-  return {...image,title,metadataLabel:`${modelLabel} · ${copy[locale].created} · 2K · 16:9`,
+  const source=image.sourceImageId?seedream.find(candidate=>candidate.id===image.sourceImageId):null;
+  return {...image,title,metadataLabel:`${modelLabel} · ${image.settings.mode==='i2i'?copy[locale].edited:copy[locale].created} · ${image.settings.resolution} · ${image.settings.aspectRatio} · ${image.settings.outputFormat.toUpperCase()}`,
+   ...(source?{source:{label:copy[locale].source,original:source.original}}:{}),
    workspaceHref:`/app/image?engine=${engineId}`,videoModelSlug:'seedance-2-5'};
  });
  const nano=listNano21EditorialImages(engineId);

@@ -20,7 +20,7 @@ test('Seedream editorial media preserves the exact original, prompt and display 
    assert.equal(bytes.length,file.bytes);assert.equal(hash(bytes),file.sha256);
   }
   assert.equal(image.display.sourceSha256,image.original.sha256);
-  assert.equal(image.settings.mode,'t2i');
+  assert.equal(image.settings.mode,image.sourceImageId?'i2i':'t2i');
  }
 });
 

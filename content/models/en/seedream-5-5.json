@@ -352,8 +352,8 @@
   "examples": {
     "modelSlug": "seedream-5-5",
     "section": {
-      "title": "Human stories, light and text inside the scene",
-      "intro": "Two original 2K frames generated with Seedream 5.5: a street campaign and an interaction on a railway platform. Open an image to examine the original and copy its exact English prompt. These are independent text-to-image examples.",
+      "title": "Seedream 5.5 image examples",
+      "intro": "Explore real Seedream 5.5 images, then inspect the exact prompts, original files and edit sources. Each example shows one chosen result, not a guarantee for every generation.",
       "defaultCtaLabel": null,
       "recreateLabel": "Create with Seedream 5.5",
       "afterGallery": "Inspect the expression, hands, lighting and framing. Save the original image, then use it as the first frame of a separate image-to-video generation.",
@@ -419,6 +419,117 @@
       {
         "id": "55-last-train",
         "title": "The last train — two characters under the rain"
+      },
+      {
+        "id": "first-light",
+        "title": "First light — a moment at the harbour"
+      },
+      {
+        "id": "backstage-original",
+        "title": "Before the curtain — original scene"
+      },
+      {
+        "id": "backstage-wardrobe",
+        "title": "Change the wardrobe"
+      },
+      {
+        "id": "backstage-light",
+        "title": "Change the light"
+      },
+      {
+        "id": "one-night-only",
+        "title": "One night only — text in the scene"
+      },
+      {
+        "id": "after-the-race",
+        "title": "After the race — skin and fabric detail"
+      },
+      {
+        "id": "free-to-move",
+        "title": "Free to move — native transparent PNG"
+      }
+    ],
+    "cinematic": {
+      "provenance": "Generated and reviewed on 13 November 2026 with Seedream 5.5 via BytePlus. All people and scenes are AI-generated. The edit sequence uses the previous image as its single reference.",
+      "panels": [
+        {
+          "id": "refine",
+          "layout": "edit",
+          "eyebrow": "Image-to-image editing",
+          "title": "Same scene. A new direction.",
+          "body": "An emerald jacket becomes ivory. Then the warm theatre light becomes cool blue. Compare each edit with its actual source, using the slider or your keyboard.",
+          "note": "Each request uses one reference: original → wardrobe edit → lighting edit. Inspect the face, hands, curtains and framing; details can still change.",
+          "assetIds": [
+            "backstage-original",
+            "backstage-wardrobe",
+            "backstage-light"
+          ]
+        },
+        {
+          "id": "lettering",
+          "layout": "feature",
+          "eyebrow": "Text in an image",
+          "title": "Put your words in the world.",
+          "body": "A theatre entrance, a passing character and a short message inside the scene. Give the text a surface, a position and a reason to be there.",
+          "note": "The prompt requests “ONE NIGHT ONLY”. This selected image shows the result; check every letter before publishing.",
+          "assetIds": [
+            "one-night-only"
+          ]
+        },
+        {
+          "id": "moments",
+          "layout": "feature",
+          "eyebrow": "Cinematic image generation",
+          "title": "Look closer. Stay human.",
+          "body": "A runner catches her breath. Examine the skin, flyaway hair and textured fabric in this close portrait, then open the original at full size.",
+          "note": "This selected result illustrates one portrait brief. Inspect facial details and anatomy before using any generated image.",
+          "assetIds": [
+            "after-the-race"
+          ]
+        },
+        {
+          "id": "transparency",
+          "layout": "cutout",
+          "eyebrow": "Native transparent PNG",
+          "title": "Free to move. Ready to compose.",
+          "body": "Generate an isolated subject with a real alpha channel. Change the preview background to inspect the edges, then open the unchanged original PNG.",
+          "note": "The dancer is the same image in both views. Transparency was verified in this original and its WebP display copy; no background-removal effect is applied here.",
+          "assetIds": [
+            "free-to-move"
+          ]
+        }
+      ]
+    }
+  },
+  "cinematic": {
+    "headline": [
+      "Every image.",
+      "A story."
+    ],
+    "intro": "Create cinematic images with Seedream 5.5 by ByteDance. Direct the scene, refine it with references, and create native transparent PNGs — in one image workspace.",
+    "caption": "“First light” · Seedream 5.5 · Text to image · 2K",
+    "proofLabel": "Made with Seedream 5.5",
+    "examplesLabel": "Explore the images",
+    "pricingLabel": "See current prices and settings",
+    "modelSlug": "seedream-5-5",
+    "variant": "image",
+    "heroAssetId": "first-light",
+    "facts": [
+      {
+        "label": "Create & edit",
+        "value": "Text + image references"
+      },
+      {
+        "label": "Resolution",
+        "value": "1K · 1.5K · 2K"
+      },
+      {
+        "label": "References",
+        "value": "Up to 10 images"
+      },
+      {
+        "label": "Output",
+        "value": "JPEG · PNG · transparency"
       }
     ]
   }

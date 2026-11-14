@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import type { AppLocale } from '@/i18n/locales';
+import { cinematicExamplesSchema } from './model-page-cinematic-content';
 
 export const DECISION_EXAMPLE_FILTER_IDS = [
   'all', 'cinematic', 'product', 'action', 'vertical', 'audio',
@@ -43,6 +44,7 @@ const schema = z.object({
     tags: z.array(filterId).min(1),
   }).strict()).nullable(),
   editorialImages: z.array(z.object({ id: nonEmpty, title: nonEmpty }).strict()).min(1).max(50).optional(),
+  cinematic: cinematicExamplesSchema.optional(),
   postGallery: z.object({
     title: nonEmpty, example: nonEmpty, method: nonEmpty, limitation: nonEmpty,
     ctaLabel: nonEmpty, exampleLinkLabel: nonEmpty, guideLinkLabel: nonEmpty,
