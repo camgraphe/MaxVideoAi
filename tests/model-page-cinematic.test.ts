@@ -178,6 +178,7 @@ test('cinematic pilots own a separate composition while the legacy model rendere
   assert.match(layout, /<ModelCurrentDetails/);
   assert.doesNotMatch(source('ModelExamplesSection.tsx'), /[Cc]inematic/);
   assert.doesNotMatch(renderer, /ModelPageContentSections|ModelCurrentDetails|ModelDecisionHeroSection|container-page|model-editorial/);
+  assert.match(renderer, /content\.variant === 'video' \? <Suspense/, 'Only video details stream; image details remain in the initial visible HTML');
   for (const section of ['ModelCinematicHero', 'ModelCinematicExamples', 'ModelCinematicPrompting', 'ModelCinematicDetails']) assert.match(renderer, new RegExp('<' + section));
   const details = source('ModelCinematicDetails.tsx');
   assert.match(details, /Promise\.all\(\[pricing, commercial\]\)/);

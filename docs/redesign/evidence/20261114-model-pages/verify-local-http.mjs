@@ -25,6 +25,7 @@ for(const slug of ['seedream-5-5','seedance-2-5-flash']){
     assert.ok(!types.includes('Offer'),'no database means no exact retail offer');
     const anchors=['decision-pricing','examples','prompting','specs','faq'];
     for(const id of anchors)assert.ok(doc.getElementById(id),pathname+' #'+id);
+    if(slug==='seedream-5-5')for(const id of ['faq','specs','decision-pricing'])assert.equal(doc.getElementById(id).closest('[hidden]'),null,pathname+' initial visible #'+id);
     const cta=slug.startsWith('seedream')?'/app/image?engine='+slug:'/app?engine='+slug;
     assert.ok([...doc.querySelectorAll('.cinema-hero a')].some(a=>a.href.includes(cta)));
     const visuals=[...doc.querySelectorAll('img')].map(i=>i.src).filter(src=>src.includes('model-examples'));

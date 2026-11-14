@@ -34,7 +34,7 @@ export function ModelCinematicPage({ presentation, decision, examples, hasRender
     </section>
     <ModelCinematicExamples presentation={presentation} viewModel={examples} hasRenderedVideos={hasRenderedVideos} />
     <ModelCinematicPrompting viewModel={prompting} assets={presentation.assets} label={content.promptingLabel} />
-    <Suspense fallback={<div aria-hidden="true" className="cinema-details-pending" />}><ModelCinematicDetails {...details} /></Suspense>
+    {content.variant === 'video' ? <Suspense fallback={<div aria-hidden="true" className="cinema-details-pending" />}><ModelCinematicDetails {...details} /></Suspense> : <ModelCinematicDetails {...details} />}
     <section className="cinema-close"><div className="cinema-wrap">
       <p className="cinema-eyebrow">MaxVideoAI / {content.titleLines.join(' ')}</p><h2>{content.subtitle}</h2>
       <Link href={decision.hero.primaryCta.href} prefetch={false} className="cinema-button">{content.primaryLabel}<span aria-hidden="true">↗</span></Link>
