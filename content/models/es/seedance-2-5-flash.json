@@ -410,15 +410,11 @@
     }
   },
   "cinematic": {
-    "headline": [
-      "Crea el instante.",
-      "Ponlo en movimiento."
-    ],
     "intro": "Dirige el movimiento, la cámara y el sonido con Seedance 2.5 Flash de ByteDance. Parte de un prompt o referencias, elige 480p o 720p y prepara planos de hasta 30 segundos.",
     "caption": "« Carrera de medianoche » · Fotograma inicial creado con GPT Image 2.6 Sunburst · Vídeo pendiente",
     "proofLabel": "Del primer fotograma al cine",
-    "examplesLabel": "Explorar los planes de escena",
-    "pricingLabel": "Ver precios actuales de vídeo",
+    "examplesLabel": "Explorar las escenas",
+    "pricingLabel": "Precios",
     "modelSlug": "seedance-2-5-flash",
     "variant": "video",
     "heroAssetId": "midnight-run",
@@ -439,6 +435,16 @@
         "label": "Dirección",
         "value": "Movimiento · cámara · sonido"
       }
-    ]
+    ],
+    "titleLines": [
+      "Seedance 2.5",
+      "Flash"
+    ],
+    "subtitle": "Dale pulso a tu próxima escena.",
+    "primaryLabel": "Crear con Flash",
+    "byline": "por ByteDance",
+    "overviewLabel": "Presentación",
+    "detailsLabel": "Detalles",
+    "promptingLabel": "Guía de prompts"
   }
 }

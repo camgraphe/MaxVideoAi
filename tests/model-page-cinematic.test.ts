@@ -7,6 +7,7 @@ import test from 'node:test';
 import { JSDOM } from 'jsdom';
 import seedreamRecords from '../frontend/config/seedream-editorial-images.json';
 import startFrames from '../frontend/config/model-cinematic-start-frames.json';
+import heroDisplays from '../frontend/config/model-cinematic-hero-displays.json';
 import { parseSeedreamEditorialImages } from '../frontend/lib/seedream-editorial-images';
 import { mergeEngineLocalizedContent } from '../frontend/lib/models/i18n-normalization';
 import { getFalEngineById } from '../frontend/src/config/falEngines';
@@ -51,7 +52,7 @@ test('cinematic content is opt-in and never falls back to another locale', () =>
     for (const item of local.prompting.imageExamples.items) {
       assert.equal(presentation.assets.find(asset => asset.id === item.id)?.prompt, item.prompt, 'The text-only Prompt Lab keeps the same original brief as its visual result');
     }
-    if (locale !== 'en') assert.notDeepEqual(local.cinematic.headline, en.cinematic.headline);
+    if (locale !== 'en') assert.notDeepEqual(local.cinematic.subtitle, en.cinematic.subtitle);
   }
 });
 
@@ -85,7 +86,7 @@ test('Flash uses six unique attributed start frames and retains its video worksp
     assert.throws(() => buildCinematicPresentation(presentation.content, missingTitle, [], locale), /localized start-frame title/);
     const decision = buildModelDecisionData({engine:getFalEngineById('seedance-2-5-flash')!,locale,decisionContent:content.decision})!;
     const html = renderToStaticMarkup(React.createElement(NextIntlClientProvider, {locale,messages:{},timeZone:'UTC'},
-      React.createElement(ModelCinematicHero, {presentation,decision,modelName:'Seedance 2.5 Flash',modelsLabel:'Models',modelsHref:'/models'})));
+      React.createElement(ModelCinematicHero, {presentation,decision})));
     const doc = new JSDOM(html).window.document;
     assert.equal(doc.querySelectorAll('h1').length, 1);
     assert.equal(doc.querySelectorAll('img').length, 1);
@@ -119,6 +120,24 @@ test('originals and displays retain measured geometry, immutable hashes and real
   }
 });
 
+test('responsive cinematic hero displays retain their exact sources and immutable geometry', async () => {
+  const originals = [...parseSeedreamEditorialImages(seedreamRecords), ...startFrames];
+  for (const asset of heroDisplays.assets) {
+    assert.equal(asset.originalSha256, originals.find(original => original.id === asset.id)?.original.sha256);
+    assert.equal(asset.desktop.length, 3);
+    assert.equal(asset.mobile.length, 2);
+    for (const file of [...asset.desktop, ...asset.mobile]) {
+      const bytes = readFileSync(filePath(file.url));
+      const meta = await sharp(bytes).metadata();
+      assert.equal(createHash('sha256').update(bytes).digest('hex'), file.sha256);
+      assert.equal(bytes.length, file.bytes);
+      assert.equal(meta.width, file.width);
+      assert.equal(meta.height, file.height);
+    }
+    assert.ok(asset.mobile.every(file => file.height === file.width * 2));
+  }
+});
+
 test('cinematic hero remains server-readable with one priority display and canonical actions', () => {
   for (const locale of locales) {
     const content = read('seedream-5-5', locale);
@@ -127,15 +146,19 @@ test('cinematic hero remains server-readable with one priority display and canon
     const presentation = buildCinematicPresentation(parseModelCinematicContent(content.cinematic, 'seedream-5-5'), examples, images, locale)!;
     const decision = buildModelDecisionData({engine:getFalEngineById('seedream-5-5')!,locale,decisionContent:content.decision})!;
     const html = renderToStaticMarkup(React.createElement(NextIntlClientProvider, {locale,messages:{},timeZone:'UTC'},
-      React.createElement(ModelCinematicHero, {presentation,decision,modelName:'Seedream 5.5',modelsLabel:'Models',modelsHref:'/models'})));
+      React.createElement(ModelCinematicHero, {presentation,decision})));
     const doc = new JSDOM(html).window.document;
     assert.equal(doc.querySelectorAll('h1').length, 1);
-    assert.equal(doc.querySelector('h1')?.textContent, content.decision.hero.title);
+    assert.equal(doc.querySelector('h1')?.textContent, content.cinematic.titleLines.join(' '));
     assert.equal(doc.querySelectorAll('img').length, 1);
     assert.notEqual(doc.querySelector('img')?.getAttribute('loading'), 'lazy');
     assert.equal(doc.querySelector('img')?.getAttribute('fetchPriority'), 'high');
+    assert.equal(doc.querySelectorAll('picture source').length, 2);
+    const preloads = [...doc.querySelectorAll('link[rel="preload"][as="image"]')];
+    assert.equal(preloads.length, 2, 'The picture preloads are mutually exclusive; no competing WebP preload');
+    assert.deepEqual(preloads.map(link => link.getAttribute('media')), ['(max-width: 767px)', '(min-width: 768px)']);
+    assert.ok(preloads.every(link => link.getAttribute('type') === 'image/avif'));
     assert.ok(doc.querySelector('a[href="#examples"]'));
-    assert.ok(doc.querySelector('a[href="#decision-pricing"]'));
     assert.ok([...doc.querySelectorAll('a')].some(a => a.href.includes('/app/image?engine=seedream-5-5')));
     assert.equal(doc.querySelectorAll('video, script[type="application/ld+json"]').length, 0);
     const light = presentation.assets.find(asset => asset.id === 'backstage-light')!;
@@ -144,4 +167,25 @@ test('cinematic hero remains server-readable with one priority display and canon
     assert.equal(promptDoc.querySelector('p[lang="en"]')?.textContent, light.prompt);
     assert.ok(promptDoc.querySelector(`a[href="${light.source!.original.url}"]`));
   }
+});
+
+test('cinematic pilots own a separate composition while the legacy model renderer stays isolated', () => {
+  const root = 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/';
+  const source = (name: string) => readFileSync(root + name, 'utf8');
+  const layout = source('MarketingModelPageLayout.tsx');
+  const renderer = source('ModelCinematicPage.tsx');
+  assert.match(layout, /if \(cinematic && templateData\) return <ModelCinematicPage/);
+  assert.match(layout, /<ModelCurrentDetails/);
+  assert.doesNotMatch(source('ModelExamplesSection.tsx'), /[Cc]inematic/);
+  assert.doesNotMatch(renderer, /ModelPageContentSections|ModelCurrentDetails|ModelDecisionHeroSection|container-page|model-editorial/);
+  for (const section of ['ModelCinematicHero', 'ModelCinematicExamples', 'ModelCinematicPrompting', 'ModelCinematicDetails']) assert.match(renderer, new RegExp('<' + section));
+  const details = source('ModelCinematicDetails.tsx');
+  assert.match(details, /Promise\.all\(\[pricing, commercial\]\)/);
+  assert.match(details, /buildModelSchemaPayloads\(\{ \.\.\.schema, pricingEngine, publicOffer \}\)/);
+  assert.match(details, /scenarios \?\? decision\.pricing\.scenarios/);
+  assert.match(details, /current\.keySpecRows/);
+  assert.match(details, /FAQSchema questions=\{faqList\.slice\(0, 6\)\}/);
+  const css = readFileSync('frontend/src/styles/marketing-models-cinematic.css', 'utf8');
+  assert.doesNotMatch(css, /\.model-editorial|\.model-page[\s.{]|\.home-monochrome/);
+  for (const line of css.split('\n').filter(line => line.includes('>header') && !line.includes('.cinema-faq-grid'))) assert.ok(line.includes(':has(.model-cinematic-page)'), line);
 });

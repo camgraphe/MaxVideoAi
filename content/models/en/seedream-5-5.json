@@ -514,15 +514,11 @@
     }
   },
   "cinematic": {
-    "headline": [
-      "Every image.",
-      "A story."
-    ],
     "intro": "Create cinematic images with Seedream 5.5 by ByteDance. Direct the scene, refine it with references, and create native transparent PNGs — in one image workspace.",
     "caption": "“First light” · Seedream 5.5 · Text to image · 2K",
     "proofLabel": "Made with Seedream 5.5",
     "examplesLabel": "Explore the images",
-    "pricingLabel": "See current prices and settings",
+    "pricingLabel": "Pricing",
     "modelSlug": "seedream-5-5",
     "variant": "image",
     "heroAssetId": "first-light",
@@ -543,6 +539,15 @@
         "label": "Output",
         "value": "JPEG · PNG · transparency"
       }
-    ]
+    ],
+    "titleLines": [
+      "Seedream 5.5"
+    ],
+    "subtitle": "Make the scene you have in mind.",
+    "primaryLabel": "Create an image",
+    "byline": "by ByteDance",
+    "overviewLabel": "Overview",
+    "detailsLabel": "Details",
+    "promptingLabel": "Prompt guide"
   }
 }

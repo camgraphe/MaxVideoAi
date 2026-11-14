@@ -1,0 +1,63 @@
+import { createHash } from 'node:crypto';
+import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import assert from 'node:assert/strict';
+import sharp from 'sharp';
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const manifestPath = path.join(root, 'config/model-cinematic-hero-displays.json');
+const readJson = async file => JSON.parse(await readFile(file, 'utf8'));
+const hash = bytes => createHash('sha256').update(bytes).digest('hex');
+const originals = [
+  ...(await readJson(path.join(root, 'config/seedream-editorial-images.json'))),
+  ...(await readJson(path.join(root, 'config/model-cinematic-start-frames.json'))),
+];
+// This reviewed editorial profile is independent of the shared Next image optimizer.
+const profile = { version: 1, format: 'avif', quality: 40, effort: 6, desktopWidths: [960, 1600, 2560], mobileWidths: [480, 720], mobileAspect: .5, mobilePosition: .65 };
+const requestedSources = Object.fromEntries(process.argv.filter(arg => arg.startsWith('--source=')).map(arg => {
+  const value = arg.slice(9); const index = value.indexOf('=');
+  assert.ok(index > 0, 'Use --source=asset-id=/absolute/original');
+  return [value.slice(0, index), value.slice(index + 1)];
+}));
+if (process.argv.includes('--write')) {
+  assert.deepEqual(Object.keys(requestedSources).sort(), ['first-light', 'midnight-run']);
+  const assets = [];
+  for (const id of ['first-light', 'midnight-run']) {
+    const original = originals.find(asset => asset.id === id)?.original;
+    assert.ok(original, id);
+    const bytes = await readFile(requestedSources[id]);
+    assert.equal(hash(bytes), original.sha256, 'Source must be the reviewed exact original');
+    const cropWidth = Math.round(original.height * profile.mobileAspect);
+    const crop = { left: Math.round((original.width - cropWidth) * profile.mobilePosition), top: 0, width: cropWidth, height: original.height };
+    const folder = `/assets/model-examples/cinematic-heroes`;
+    await mkdir(path.join(root, 'public', folder), { recursive: true });
+    const render = async (width, mobile) => {
+      let pipeline = sharp(bytes);
+      if (mobile) pipeline = pipeline.extract(crop);
+      const result = await pipeline.resize({ width, withoutEnlargement: true }).avif({ quality: profile.quality, effort: profile.effort }).toBuffer({ resolveWithObject: true });
+      const sha256 = hash(result.data); const url = `${folder}/${sha256}.avif`;
+      await writeFile(path.join(root, 'public', url), result.data, { flag: 'wx' }).catch(error => { if (error.code !== 'EEXIST') throw error; });
+      return { url, sha256, width: result.info.width, height: result.info.height, bytes: result.data.length };
+    };
+    const desktop = []; const mobile = [];
+    for (const width of profile.desktopWidths) desktop.push(await render(width, false));
+    for (const width of profile.mobileWidths) mobile.push(await render(width, true));
+    assets.push({ id, originalSha256: original.sha256, crop, desktop, mobile });
+  }
+  await writeFile(manifestPath, JSON.stringify({ profile, assets }, null, 2) + '\n');
+}
+const manifest = await readJson(manifestPath);
+assert.deepEqual(manifest.profile, profile);
+assert.deepEqual(manifest.assets.map(asset => asset.id).sort(), ['first-light', 'midnight-run']);
+for (const asset of manifest.assets) {
+  assert.equal(asset.originalSha256, originals.find(original => original.id === asset.id)?.original.sha256);
+  for (const file of [...asset.desktop, ...asset.mobile]) {
+    const bytes = await readFile(path.join(root, 'public', file.url));
+    const metadata = await sharp(bytes).metadata();
+    assert.equal(hash(bytes), file.sha256); assert.equal(bytes.length, file.bytes);
+    assert.equal(metadata.width, file.width); assert.equal(metadata.height, file.height);
+    assert.ok(file.url.endsWith(`/${file.sha256}.avif`));
+  }
+}
+console.log('Cinematic hero displays verified: 2 exact originals, 10 immutable responsive AVIF files.');

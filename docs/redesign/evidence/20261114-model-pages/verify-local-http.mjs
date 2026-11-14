@@ -43,7 +43,7 @@ for(const pathname of ['/models/seedance-2-5','/models/seedream-5-0-pro']){
     assert.equal(response.status,baseline.status);
     results.push({pathname,status:response.status,baselineStatus:baseline.status,limitation:'Historical video playlist requires DATABASE_URL; same failure on clean baseline'});
   }else{
-    assert.equal(doc.querySelector('.model-cinematic'),null);
+    assert.equal(doc.querySelector('.model-cinematic-page'),null);
     results.push({pathname,status:response.status,unchangedPresentation:true});
   }
 }

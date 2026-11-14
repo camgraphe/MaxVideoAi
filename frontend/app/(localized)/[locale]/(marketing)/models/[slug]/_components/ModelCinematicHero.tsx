@@ -1,40 +1,34 @@
 import Image from 'next/image';
-import { ArrowDown, ArrowUpRight } from 'lucide-react';
+import { resolveCinematicHeroDisplay } from '../_lib/model-page-cinematic-hero-display';
 import { Link } from '@/i18n/navigation';
 import type { CinematicPresentation } from '../_lib/model-page-cinematic-data';
 import type { ModelDecisionData } from '../_lib/model-page-decision-data';
-import { ModelCinematicPrompt } from './ModelCinematicAsset';
 
-export function ModelCinematicHero({ presentation: { content, hero, ui }, decision, modelName, modelsLabel, modelsHref }: {
-  presentation: CinematicPresentation; decision: ModelDecisionData; modelName: string; modelsLabel: string; modelsHref: string;
+/** Full-bleed opening owned by the opt-in cinematic template. */
+export function ModelCinematicHero({ presentation: { content, hero, ui }, decision }: {
+  presentation: CinematicPresentation; decision: ModelDecisionData;
 }) {
-  return <>
-    <nav className="cinema-breadcrumb" aria-label={modelsLabel}>
-      <Link href={modelsHref} prefetch={false}>{modelsLabel}</Link><span aria-hidden="true">/</span><span>{modelName}</span>
-    </nav>
-    <section id="top" className={`cinema-hero cinema-hero--${content.variant}`} aria-labelledby="cinema-model-title">
-      <div className="cinema-hero-art">
-        <Image src={hero.display.url} width={hero.display.width} height={hero.display.height} alt={hero.title}
-          priority fetchPriority="high" sizes="(min-width: 1440px) 1280px, 100vw" className="cinema-hero-image" />
-      </div>
-      <div className="cinema-hero-copy">
-        <p className="cinema-eyebrow">{decision.hero.eyebrow}</p>
-        <h1 id="cinema-model-title">{decision.hero.title}</h1>
-        <p className="cinema-headline">{content.headline.map(line => <span key={line}>{line}</span>)}</p>
-        <p className="cinema-intro">{content.intro}</p>
+  const display = resolveCinematicHeroDisplay(hero);
+  return <section id="top" className={`cinema-hero cinema-hero--${content.variant}`} aria-labelledby="cinema-model-title">
+    <link rel="preload" as="image" type="image/avif" media="(max-width: 767px)" imageSrcSet={display.mobile} imageSizes="100vw" fetchPriority="high" />
+    <link rel="preload" as="image" type="image/avif" media="(min-width: 768px)" imageSrcSet={display.desktop} imageSizes="100vw" fetchPriority="high" />
+    <div className="cinema-hero-art"><picture>
+      <source media="(max-width: 767px)" type="image/avif" srcSet={display.mobile} sizes="100vw" />
+      <source media="(min-width: 768px)" type="image/avif" srcSet={display.desktop} sizes="100vw" />
+      <Image src={hero.display.url} width={hero.display.width} height={hero.display.height} alt={hero.title}
+        loading="eager" fetchPriority="high" sizes="100vw" className="cinema-hero-image" />
+    </picture></div>
+    <div className="cinema-wrap cinema-hero-content">
+      <p className="cinema-byline">{content.byline}</p>
+      <h1 id="cinema-model-title">{content.titleLines.map((line, index) => <span key={line}>{index ? ' ' : ''}{line}</span>)}</h1>
+      <p className="cinema-hero-subtitle">{content.subtitle}</p>
+      <div className="cinema-hero-bottom">
         <div className="cinema-actions">
-          <Link href={decision.hero.primaryCta.href} prefetch={false} className="cinema-button">{decision.hero.primaryCta.label}<ArrowUpRight size={17} aria-hidden="true" /></Link>
-          <a href="#examples" className="cinema-text-link">{content.examplesLabel}<ArrowDown size={15} aria-hidden="true" /></a>
+          <Link href={decision.hero.primaryCta.href} prefetch={false} className="cinema-button">{content.primaryLabel}<span aria-hidden="true">↗</span></Link>
+          <a href="#examples" className="cinema-text-link">{content.examplesLabel}<span aria-hidden="true">↓</span></a>
         </div>
-        <a href="#decision-pricing" className="cinema-price-link">{content.pricingLabel} <span aria-hidden="true">↗</span></a>
+        <div className="cinema-hero-caption"><p>{content.caption}</p><a href={hero.original.url} target="_blank" rel="noopener noreferrer">{ui.original} ↗</a></div>
       </div>
-      <div className="cinema-hero-caption"><span>{content.proofLabel}</span><p>{content.caption}</p><a href={hero.original.url} target="_blank" rel="noopener noreferrer">{ui.original} ↗</a></div>
-    </section>
-    <dl className="cinema-facts">{content.facts.map(fact => <div key={fact.label}><dt>{fact.label}</dt><dd>{fact.value}</dd></div>)}</dl>
-    <div className="cinema-onward">
-      <Link href={decision.hero.secondaryCta.href} prefetch={false}>{decision.hero.secondaryCta.label} ↗</Link>
-      {decision.hero.quickLinks.filter(link => link.href !== decision.hero.primaryCta.href).map(link => <Link key={link.href} href={link.href} prefetch={false}>{link.label} ↗</Link>)}
     </div>
-    <ModelCinematicPrompt asset={hero} ui={ui} />
-  </>;
+  </section>;
 }

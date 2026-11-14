@@ -410,15 +410,11 @@
     }
   },
   "cinematic": {
-    "headline": [
-      "Make the moment.",
-      "Move."
-    ],
     "intro": "Direct motion, camera and sound with Seedance 2.5 Flash by ByteDance. Start from a prompt or references, choose 480p or 720p, and build shots up to 30 seconds.",
     "caption": "“Midnight run” · Start frame made with GPT Image 2.6 Sunburst · Video to follow",
     "proofLabel": "From first frame to film",
-    "examplesLabel": "Explore the shot plans",
-    "pricingLabel": "See current video prices",
+    "examplesLabel": "Explore the shots",
+    "pricingLabel": "Pricing",
     "modelSlug": "seedance-2-5-flash",
     "variant": "video",
     "heroAssetId": "midnight-run",
@@ -439,6 +435,16 @@
         "label": "Direction",
         "value": "Motion · camera · sound"
       }
-    ]
+    ],
+    "titleLines": [
+      "Seedance 2.5",
+      "Flash"
+    ],
+    "subtitle": "Give your next scene a pulse.",
+    "primaryLabel": "Create with Flash",
+    "byline": "by ByteDance",
+    "overviewLabel": "Overview",
+    "detailsLabel": "Details",
+    "promptingLabel": "Prompt guide"
   }
 }

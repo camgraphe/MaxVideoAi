@@ -10,7 +10,7 @@ import { getExamplesHref } from '@/lib/examples-links';
 import type { ExampleGalleryVideo } from '@/components/examples/ExamplesGalleryGrid';
 import { ModelHeroSection } from './ModelHeroSection';
 import { ModelDecisionHeroSection } from './ModelDecisionHeroSection';
-import { ModelCinematicHero } from './ModelCinematicHero';
+import { ModelCinematicPage } from './ModelCinematicPage';
 import { parseModelCinematicContent } from '../_lib/model-page-cinematic-content';
 import { buildCinematicPresentation } from '../_lib/model-page-cinematic-data';
 import { ModelCurrentDetails } from './ModelCurrentDetails';
@@ -77,7 +77,6 @@ import { buildModelExamplePreviewAlts, resolveModelExamplesRuntimePolicy, resolv
 import { buildModelExamplesViewModel } from '../_lib/model-page-examples-view-model';
 import { buildModelKeyframeDemoViewModel } from '../_lib/model-page-keyframe-demo';
 import { loadModelKeyframeDemo } from '@/server/model-keyframe-demo';
-
 export async function MarketingModelPageLayout({
   engine,
   pricing,
@@ -419,6 +418,10 @@ export async function MarketingModelPageLayout({
   const legacyPricingCallout = !templateData && pricingCallout ? pricingCallout : null;
   const legacyMicroCta = !templateData && isImageEngine ? copy.microCta : null;
 
+  if (cinematic && templateData) return <ModelCinematicPage presentation={cinematic} decision={templateData}
+    examples={examplesViewModel} hasRenderedVideos={galleryVideos.some(video => Boolean(video.videoUrl))} prompting={promptingViewModel}
+    details={{ pricing, commercial, schema, decision: templateData, locale, specTitle, specNote, specSections: specSectionsToShow,
+      safetyRules, safetyInterpretation, boundaries, troubleshootingItems, faqList, faqTitle, copy }} />;
   const details = (
     <ModelCurrentDetails pricing={pricing} commercial={commercial} schema={schema} pricingData={templateData?.pricing ?? null} locale={locale}
       contentProps={{
@@ -428,7 +431,7 @@ export async function MarketingModelPageLayout({
         pricingCallout: legacyPricingCallout,
         microCta: legacyMicroCta,
         microCtaHref: normalizedPrimaryCtaHref,
-        examplesProps: { viewModel: examplesViewModel, keyframeDemo, editorialImages, cinematic, hasRenderedVideos: galleryVideos.some(video => Boolean(video.videoUrl)) },
+        examplesProps: { viewModel: examplesViewModel, keyframeDemo, editorialImages },
         decisionCards: templateData?.decisionCards ?? null,
         promptingProps: { viewModel: promptingViewModel },
         prepLinksProps: { prepLinksSection, locale },
@@ -438,12 +441,11 @@ export async function MarketingModelPageLayout({
       }}
     />
   );
-
   return (
     <>
-      <div className={['container-page model-page model-editorial overflow-x-clip pb-0 pt-5 sm:pt-7', templateData ? 'max-w-[1400px]' : 'max-w-6xl', cinematic ? 'model-cinematic' : ''].join(' ')}>
+      <div className={['container-page model-page model-editorial overflow-x-clip pb-0 pt-5 sm:pt-7', templateData ? 'max-w-[1400px]' : 'max-w-6xl'].join(' ')}>
         <div className={templateData ? 'space-y-5' : 'stack-gap-lg gap-0'}>
-          {cinematic && templateData ? <ModelCinematicHero presentation={cinematic} decision={templateData} modelName={breadcrumbModelLabel} modelsLabel={resolvedBreadcrumb.models} modelsHref={localizeModelsPath()} /> : templateData ? (
+          {templateData ? (
             <ModelDecisionHeroSection decision={templateData} localizeModelsPath={localizeModelsPath} resolvedBreadcrumb={resolvedBreadcrumb} breadcrumbModelLabel={breadcrumbModelLabel} heroMedia={heroMedia} locale={locale} audioBadgeLabel={audioBadgeLabel} mediaAltContext={mediaAltContexts.hero} preferPreviewAutoplay={engine.modelSlug === 'kling-v4'} />
           ) : (
             <ModelHeroSection

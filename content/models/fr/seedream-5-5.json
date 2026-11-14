@@ -514,15 +514,11 @@
     }
   },
   "cinematic": {
-    "headline": [
-      "Une image.",
-      "Toute une histoire."
-    ],
     "intro": "Créez des images cinématographiques avec Seedream 5.5 de ByteDance. Dirigez la scène, affinez-la avec des références et générez des PNG transparents dans le même espace image.",
     "caption": "« Première lumière » · Seedream 5.5 · Texte vers image · 2K",
     "proofLabel": "Créé avec Seedream 5.5",
     "examplesLabel": "Explorer les images",
-    "pricingLabel": "Voir les tarifs et réglages actuels",
+    "pricingLabel": "Tarifs",
     "modelSlug": "seedream-5-5",
     "variant": "image",
     "heroAssetId": "first-light",
@@ -543,6 +539,15 @@
         "label": "Sortie",
         "value": "JPEG · PNG · transparence"
       }
-    ]
+    ],
+    "titleLines": [
+      "Seedream 5.5"
+    ],
+    "subtitle": "Donnez vie à la scène que vous imaginez.",
+    "primaryLabel": "Créer une image",
+    "byline": "par ByteDance",
+    "overviewLabel": "Présentation",
+    "detailsLabel": "Détails",
+    "promptingLabel": "Guide de prompts"
   }
 }

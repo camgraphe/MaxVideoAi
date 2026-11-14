@@ -1,0 +1,119 @@
+{
+  "profile": {
+    "version": 1,
+    "format": "avif",
+    "quality": 40,
+    "effort": 6,
+    "desktopWidths": [
+      960,
+      1600,
+      2560
+    ],
+    "mobileWidths": [
+      480,
+      720
+    ],
+    "mobileAspect": 0.5,
+    "mobilePosition": 0.65
+  },
+  "assets": [
+    {
+      "id": "first-light",
+      "originalSha256": "5a7f043a66d9c382e3a290b0d0f157e5c102d533b1b928d2200c3fde2a9564cf",
+      "crop": {
+        "left": 1316,
+        "top": 0,
+        "width": 792,
+        "height": 1584
+      },
+      "desktop": [
+        {
+          "url": "/assets/model-examples/cinematic-heroes/5e49c3df15c714c09a49de8d8ff7a5e4c6e14542d12a943f2c39d2dd11385253.avif",
+          "sha256": "5e49c3df15c714c09a49de8d8ff7a5e4c6e14542d12a943f2c39d2dd11385253",
+          "width": 960,
+          "height": 540,
+          "bytes": 14714
+        },
+        {
+          "url": "/assets/model-examples/cinematic-heroes/5a91077864da121563ada961ae3841014b76a61036b295908183b9bed888b780.avif",
+          "sha256": "5a91077864da121563ada961ae3841014b76a61036b295908183b9bed888b780",
+          "width": 1600,
+          "height": 900,
+          "bytes": 27731
+        },
+        {
+          "url": "/assets/model-examples/cinematic-heroes/980326fe9764ef966bd7e5406f19598570b37b99c51a1736977520c52e98f6a3.avif",
+          "sha256": "980326fe9764ef966bd7e5406f19598570b37b99c51a1736977520c52e98f6a3",
+          "width": 2560,
+          "height": 1440,
+          "bytes": 52072
+        }
+      ],
+      "mobile": [
+        {
+          "url": "/assets/model-examples/cinematic-heroes/9f87d003e912a27b8d474fe16bb2a33852bba2e37f2e4fc5f3657f69114a50ae.avif",
+          "sha256": "9f87d003e912a27b8d474fe16bb2a33852bba2e37f2e4fc5f3657f69114a50ae",
+          "width": 480,
+          "height": 960,
+          "bytes": 9668
+        },
+        {
+          "url": "/assets/model-examples/cinematic-heroes/0f11873f14aa8734a7b88079940612d073c7a3ae8962cb0e57f14c0e4d8dddab.avif",
+          "sha256": "0f11873f14aa8734a7b88079940612d073c7a3ae8962cb0e57f14c0e4d8dddab",
+          "width": 720,
+          "height": 1440,
+          "bytes": 16791
+        }
+      ]
+    },
+    {
+      "id": "midnight-run",
+      "originalSha256": "5abe1db872a12c6f04680bf265fda706d32b9e24aefaaa6e2fe42099963d1bf1",
+      "crop": {
+        "left": 1196,
+        "top": 0,
+        "width": 720,
+        "height": 1440
+      },
+      "desktop": [
+        {
+          "url": "/assets/model-examples/cinematic-heroes/095339ca9e86d1f04c921424a62af9f1ce3923f6f5565a1f7dcfe17e87766d3a.avif",
+          "sha256": "095339ca9e86d1f04c921424a62af9f1ce3923f6f5565a1f7dcfe17e87766d3a",
+          "width": 960,
+          "height": 540,
+          "bytes": 16763
+        },
+        {
+          "url": "/assets/model-examples/cinematic-heroes/865c2e67c9e8ce1b1c5dcc14737ccd97a6bb6254d1bb4ea5ed1f003e63922ead.avif",
+          "sha256": "865c2e67c9e8ce1b1c5dcc14737ccd97a6bb6254d1bb4ea5ed1f003e63922ead",
+          "width": 1600,
+          "height": 900,
+          "bytes": 37956
+        },
+        {
+          "url": "/assets/model-examples/cinematic-heroes/d09c13690ce9c9cef56c0309f3c289775ddce35d613d06007058e3a6efbd14e0.avif",
+          "sha256": "d09c13690ce9c9cef56c0309f3c289775ddce35d613d06007058e3a6efbd14e0",
+          "width": 2560,
+          "height": 1440,
+          "bytes": 80202
+        }
+      ],
+      "mobile": [
+        {
+          "url": "/assets/model-examples/cinematic-heroes/0ffe3dba971b7f9ff8681a26da9c0d554e6604183fb451512c1643e09819c0f0.avif",
+          "sha256": "0ffe3dba971b7f9ff8681a26da9c0d554e6604183fb451512c1643e09819c0f0",
+          "width": 480,
+          "height": 960,
+          "bytes": 13463
+        },
+        {
+          "url": "/assets/model-examples/cinematic-heroes/b522bec9d7e222402f96ccccb8738a100101a7db57b385030fa7a6388d7c9947.avif",
+          "sha256": "b522bec9d7e222402f96ccccb8738a100101a7db57b385030fa7a6388d7c9947",
+          "width": 720,
+          "height": 1440,
+          "bytes": 26011
+        }
+      ]
+    }
+  ]
+}
