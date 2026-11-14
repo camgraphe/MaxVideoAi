@@ -22,7 +22,7 @@ export interface EngineOption {
   maxDuration: number;
   durationOptions: Array<{ value: number; label: string }>;
   defaultDuration: number;
-  resolutions: Array<{ value: string; label: string; rate: number; providerRate: number }>;
+  resolutions: Array<{ value: string; label: string; rate: number | null; providerRate: number }>;
   currency: string;
   availability: EngineAvailability;
   availabilityLink?: string | null;
@@ -150,6 +150,8 @@ function quoteCanonicalUnitRate(params: {
   unit: 'image' | 'sec';
   pricingRules?: PricingRuleLite[];
 }) {
+  // Flash controls remain selectable; its amount is supplied by the current quote API.
+  if (params.engineId === 'seedance-2-5-flash') return null;
   if (params.engineId === NANO21_ENGINE_ID) {
     // These option hints do not replace the estimator's effective API quote.
     // Never derive Nano's fixed customer amount from a partial supplier cost.
@@ -321,7 +323,7 @@ export function buildEngineOption(
 
   const perImageConfig = PER_IMAGE_ENGINE_CONFIG.get(entry.id);
 
-  let rates: Array<{ value: string; label: string; rate: number; providerRate: number }>;
+  let rates: EngineOption['resolutions'];
 
   if (perImageConfig) {
     rates = perImageConfig.rates.map((entryRate) => ({
@@ -364,7 +366,7 @@ export function buildEngineOption(
           }),
         };
       })
-      .filter((rate): rate is { value: string; label: string; rate: number; providerRate: number } => Boolean(rate));
+      .filter((rate): rate is EngineOption['resolutions'][number] => Boolean(rate));
 
     if (!rates.length && definition) {
       const providerRate = definition.baseUnitPriceCents / 100;

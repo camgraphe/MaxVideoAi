@@ -54,6 +54,10 @@ function buildEffectiveDatabaseRule(
 }
 
 export function quotePublicPricing(input: QuotePublicPricingInput): CanonicalPricingQuote {
+  // Flash prices come from approved native tariffs, never a percentage fallback.
+  if (input.scenario.engineId === 'seedance-2-5-flash') {
+    throw new Error('An active reviewed Seedance 2.5 Flash customer tariff is required.');
+  }
   // Partial output-only supplier facts cannot define the approved customer grid.
   if (isGptImage26EngineId(input.scenario.engineId)) {
     throw new Error('An active reviewed GPT Image 2.6 customer tariff is required.');

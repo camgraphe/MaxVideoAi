@@ -6,7 +6,7 @@ export const PAYG_ICON_IDS = [
 export type PaygIconId = (typeof PAYG_ICON_IDS)[number];
 
 export const PAYG_PRICE_LOOKUP_IDS = [
-  'flux-3-max', 'minimax-h3', 'seedance-2-5',
+  'flux-3-max', 'minimax-h3', 'seedance-2-5', 'seedance-2-5-flash',
   'kling-v4',
   'gemini-omni-flash', 'kling-3-turbo-pro', 'kling-3-turbo-standard', 'minimax-h3-max',
   'ltx-2-5-pro', 'ltx-2-5-fast',
@@ -23,7 +23,7 @@ export const PAYG_PRICE_LOOKUP_IDS = [
 export type PaygPriceLookupId = (typeof PAYG_PRICE_LOOKUP_IDS)[number];
 
 export const PAYG_EXAMPLE_COST_IDS = [
-  'flux-3-max', 'minimax-h3', 'seedance-2-5',
+  'flux-3-max', 'minimax-h3', 'seedance-2-5', 'seedance-2-5-flash',
   'kling-v4',
   'gemini-omni-flash', 'kling-3-turbo-pro', 'kling-3-turbo-standard', 'minimax-h3-max',
   'ltx-2-5-pro',
@@ -43,7 +43,7 @@ export const PAYG_SUPPORTED_MODEL_IDS = [
   'flux-3-max', 'minimax-h3',
   'kling-v4',
   'gemini-omni-flash', 'kling-3-turbo-pro', 'kling-3-turbo-standard', 'minimax-h3-max',
-  'seedance-2-5', 'seedance-2-0',
+  'seedance-2-5', 'seedance-2-5-flash', 'seedance-2-0',
   'kling-3-pro',
   'veo-3-1',
   'happy-horse-1-1',

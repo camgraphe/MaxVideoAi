@@ -2,9 +2,9 @@ import type { AppLocale } from '@/i18n/locales';
 import { MODEL_FAMILIES, type ModelFamilyDefinition } from '@/config/model-families';
 import { normalizeFamilyExamplesPageConfig } from '@/config/model-publication';
 import { isRuntimeModelPublicCurrent, listRuntimeModels, type RuntimeModelEntry } from '@/config/model-runtime';
-import { EN_KLING_V4_ADDITION, EN_KLING_V4_FLASH_ADDITION, EN_MODEL_DATA } from '@/lib/examples/modelLandingData.en';
-import { ES_KLING_V4_ADDITION, ES_KLING_V4_FLASH_ADDITION, ES_MODEL_DATA } from '@/lib/examples/modelLandingData.es';
-import { FR_KLING_V4_ADDITION, FR_KLING_V4_FLASH_ADDITION, FR_MODEL_DATA } from '@/lib/examples/modelLandingData.fr';
+import { EN_KLING_V4_ADDITION, EN_KLING_V4_FLASH_ADDITION, EN_SEEDANCE_FLASH_ADDITION, EN_MODEL_DATA } from '@/lib/examples/modelLandingData.en';
+import { ES_KLING_V4_ADDITION, ES_KLING_V4_FLASH_ADDITION, ES_SEEDANCE_FLASH_ADDITION, ES_MODEL_DATA } from '@/lib/examples/modelLandingData.es';
+import { FR_KLING_V4_ADDITION, FR_KLING_V4_FLASH_ADDITION, FR_SEEDANCE_FLASH_ADDITION, FR_MODEL_DATA } from '@/lib/examples/modelLandingData.fr';
 import type { CanonicalExampleModelSlug, LocalizedModelDescriptor } from '@/lib/examples/modelLandingTypes';
 
 export function getLocalizedModelData(
@@ -12,7 +12,22 @@ export function getLocalizedModelData(
   families: readonly ModelFamilyDefinition[] = MODEL_FAMILIES,
   models: readonly RuntimeModelEntry[] = listRuntimeModels(),
 ): Partial<Record<CanonicalExampleModelSlug, LocalizedModelDescriptor>> {
-  const data = locale === 'fr' ? FR_MODEL_DATA : locale === 'es' ? ES_MODEL_DATA : EN_MODEL_DATA;
+  const localizedData = locale === 'fr' ? FR_MODEL_DATA : locale === 'es' ? ES_MODEL_DATA : EN_MODEL_DATA;
+  const data = { ...localizedData };
+  const seedance = data.seedance;
+  const flash = models.find((model) => model.id === 'seedance-2-5-flash');
+  const seedanceExamples = normalizeFamilyExamplesPageConfig(families.find((family) => family.id === 'seedance')?.examplesPage);
+  if (seedance && seedanceExamples.stage !== 'hidden' && isRuntimeModelPublicCurrent(flash) &&
+    flash?.publication.examples.includeInFamilyCopy && seedanceExamples.publishedModelSlugs.includes(flash.slug)) {
+    const addition = locale === 'fr' ? FR_SEEDANCE_FLASH_ADDITION : locale === 'es' ? ES_SEEDANCE_FLASH_ADDITION : EN_SEEDANCE_FLASH_ADDITION;
+    data.seedance = {
+      ...seedance,
+      summary: [seedance.summary, addition.summary].filter(Boolean).join(' '),
+      promptPatterns: [seedance.promptPatterns, addition.promptPatterns].join(' '),
+      strengthsLimits: [seedance.strengthsLimits, addition.strengthsLimits].join(' '),
+      faq: [...seedance.faq, ...addition.faq],
+    };
+  }
   const kling = data.kling;
   const examples = normalizeFamilyExamplesPageConfig(families.find((family) => family.id === 'kling')?.examplesPage);
   if (!kling || examples.stage === 'hidden') return data;

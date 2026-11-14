@@ -47,7 +47,7 @@ reuses its existing nested/flat response-code parser for create, retrieve and
 delete failures. Offline regressions preserve status, code and sanitized messages
 and verify that no automatic retry or fallback is introduced.
 
-The adapter prepares the five ModelArk workflows (text, first/last frames, multimodal references, edit, extension). The 4–30-second range, Auto, six explicit ratios plus Auto, 24 FPS, source-derived edit timing/framing, input formats and duration budgets reuse the documented 2.5 protocol. They remain **candidate parameters pending exact Flash qualification**. The public catalog and submission switches remain closed. Only `t2v` is admitted by the default per-mode switch when explicitly enabling a canary.
+The adapter prepares the five ModelArk workflows (text, first/last frames, multimodal references, edit, extension). The 4–30-second range, Auto, six explicit ratios plus Auto, 24 FPS, source-derived edit timing/framing, input formats and duration budgets reuse the documented 2.5 protocol. They remain **candidate parameters pending exact Flash qualification**. At Adrien's request on 14 November, the branch prepares public catalog and indexing settings directly for launch, without a separate prelaunch marketing stage. Provider execution still uses its existing environment and per-mode controls; only `t2v` is admitted by default when explicitly enabling a canary. Validate final provider settings before release.
 
 Flash has independent 10/5/5 limits at schema and provider boundaries. MOV output, native Draft/final, 1080p, 4K and audio-only references are not admitted. Optional watermark and return-last-frame remain retired product controls. Input MOV clips are different from MOV output.
 
@@ -91,17 +91,19 @@ Local PG17 verification exercised all 6,804 classes through those native admin t
 
 | Surface | Owning source and candidate behavior |
 | --- | --- |
-| Model identity, aliases, picker variant | `config/model-registry.json`; independent Flash identity, grouped with Seedance variants. Public switches remain false. Generated runtime/catalog/roster are regenerated. |
+| Model identity, aliases, picker variant | `config/model-registry.json`; independent Flash identity, grouped with Seedance variants. Model, examples, compare, app, pricing and sitemap publication are enabled in this branch; model and comparison indexing are enabled. Generated runtime/catalog/roster are regenerated. |
 | Workspace Create / Modify / Extend | Dedicated raw engine and shared Seedance controls; reference limits, 30-second Auto bound, inherited framing, owned edit source and ordered extension clips. |
-| MCP discovery, details, prepare and confirm | Existing read-only catalog and canonical mode projection; explicit prelaunch access only. All five typed request projections tested without paid execution. No new tool/schema text is needed. |
+| MCP discovery, details, prepare and confirm | Existing catalog and canonical mode projection follow registry publication and runtime availability. All five typed request projections tested without paid execution. No new tool/schema text is needed. |
 | Studio | Conversation certification intersects canonical catalog readiness; reference fields and prices use the shared request/quote owners. No retired Canvas certification is added. |
-| Milo | Composer context reads the same canonical mode details and Seedance prompt profile. No hardcoded Flash price, unsupported output format or quality ranking is injected. Public discovery remains gated. |
+| Milo | Composer context reads the same canonical mode details and Seedance prompt profile. Guidance includes reference limits, current-quote instructions and the provisional benchmark qualification. No hardcoded Flash price or unsupported output format is injected. |
 | Payments and provider accounting | Separate Flash LIST profile, 30-second source pricing, required active manual tariff, independent commercial grid. Missing Flash tariffs fail closed. |
 | Polling, Activity, Media, recovery | Existing BytePlus provider polling; Flash edit participates in owned durable submission state, immutable paid snapshots and durable output recovery. |
-| Model page / SEO / translations | Future `/models/seedance-2-5-flash`, `/fr/modeles/seedance-2-5-flash`, `/es/modelos/seedance-2-5-flash`. EN/FR/ES copy and the normal page template are prepared without changing publication. Marketing design is coordinated with **Moderniser les pages modèles**; publish only after exact feature qualification. |
+| Model page / SEO / translations | `/models/seedance-2-5-flash`, `/fr/modeles/seedance-2-5-flash`, `/es/modelos/seedance-2-5-flash` are prepared as indexable routes with localized copy, generation CTA, current-price scenarios and comparison links. Page design is coordinated with **Moderniser les pages modèles**. |
 | Pricing hub, model cards, Product offers, comparisons | Project the same canonical active quote after publication; no authored retail amount or supplier promotion in public copy. Standard ×2 needs cache revalidation even without a layout change. |
 | Examples, watch, recreate, home, PAYG strip | Flash requires its own attributed renders, managed playlist and launch assets. Existing standard 2.5 clips remain standard 2.5. No home video/source is replaced by this candidate. |
-| Navigation, footer, family pages, best-for, llms, sitemap | Registry-driven lists follow publication. Curated home/nav/footer/best-for selections require a separate editorial choice; a new model does not silently replace the flagship. |
+| Comparisons and scoreboard | Six full EN/FR/ES comparisons: standard 2.5, 2.0 Fast, Kling 4 Flash, Veo 3.1 Fast, LTX 2.5 Fast and MiniMax H3. Hub, popular pairs, related comparisons, reciprocal links and localized sitemap discovery include them. All eleven Flash scores use the existing editorial-estimate display. |
+| Best for | Flash is an additional workflow option on fast drafts, image-to-video, character references, reference-to-video, multi-shot, ads, UGC ads and product videos. Localized MDX, FAQs and related links agree with the canonical lists. Existing editorial picks retain their order; no 4K or measured-quality winner is invented. |
+| Navigation, footer, family pages, PAYG, assistants | Curated model/comparison links, Seedance family explanations, example-page onward links and PAYG discovery include Flash. PAYG and model price cards use canonical quotes. Assistant guidance, llms.txt and AI-training page targets include the new routes and preserve estimate qualifications. |
 
 ## Qualification and release
 
@@ -117,21 +119,56 @@ focused request, MCP, image-dimension, registry and Flash regressions passed.
 `content/models/{en,fr,es}/seedance-2-5-flash.json` now supplies localized decision,
 Prompt Lab and Examples content using the existing strict contracts. Scene plans
 are explicitly unrendered; no standard Seedance video is attributed to Flash.
-The normal template is registered for future use, with pricing presets,
-comparisons and examples disabled. Every registry publication flag stays false.
-This prepares content, not a publicly accessible prelaunch page. Before launch,
-review the copy against completed qualification, replace availability language,
-connect reviewed Flash media, enable canonical live pricing scenarios and verify
-the localized rendered pages. The separate design proposal does not change the
-content schema or authorize media generation/publication.
-The 123 focused model-content, template, view-model and Seedance marketing tests
-passed, including unpublished-surface checks and render-data assertions that no
-Flash playback, example or generation link is fabricated from the scene plans.
+The normal template has three current-price scenarios (4s/480p, 8s/720p with
+audio and 30s/720p), comparisons and examples enabled. Missing active tariffs
+produce unavailable price labels through the canonical commercial builder,
+never stale fallback amounts. Publication and indexing are prepared in the
+branch now; deployment waits for the final qualification below. Scene plans
+remain explicitly unrendered. The separate design proposal does not change the
+content schema or turn illustration images into Flash video evidence.
+Each authored illustration occupies one place on the model page: one hero and
+five distinct demonstration scenes. Prompt Lab must not repeat the hero or
+gallery images unless an explicit comparison needs the repetition; retain its
+text and prompts. The model-page design task owns this visual assembly.
+
+The launch-state marketing batch passed the complete fast suite (11,213 passed,
+one existing skip), TypeScript, registry/projection checks, the public-exposure
+guard and the full production build (1,038 generated pages). ESLint has no errors
+and seven preexisting warnings. Three local PostgreSQL tests passed for the
+6,804 Seedance classes, native batch receipts, immutable paid history and current
+price propagation across public consumers. Browser/HTTP smoke checked all 45
+localized model/comparison/Best-for routes for 200 responses, canonicals,
+hreflang, indexability and JSON-LD. It also checked the estimated benchmark,
+llms.txt, mobile comparison overflow and the public pricing endpoint's unavailable
+response without an active Flash tariff. No browser exceptions were observed on
+the benchmark, comparison and pricing pages. These checks use a disposable local
+database and do not establish production access, activated tariffs or field CWV.
+
+### Sourced editorial benchmark
+
+`data/benchmarks/seedance-2-5-flash-evidence.v1.json` records the exact sources,
+retrieval limitations, rationale and confidence for all eleven criteria. The
+canonical score row derives **≈8.0/10** from prompt adherence, motion and
+consistency. These are provisional editorial judgments, not an external
+numerical benchmark or controlled MaxVideoAI results. Text rendering, lip sync
+and multi-shot sequencing are explicitly low-confidence capability priors.
+
+The dossier uses the [official Dreamina Flash page](https://dreamina.capcut.com/seedance/seedance-2-5-flash)
+and attributed first-person reports from [Quantslant](https://quantslant.com/seedance-2-5-flash/)
+and [SpicyAPI](https://spicyapi.ai/models/seedance-2-5-flash). The latter two were
+available as indexed page text, without a direct playback review. Their prices,
+endpoint variants and queue times do not establish MaxVideoAI behavior. The
+value estimate uses the prepared native admin tariffs, with activation pending.
+
+Public UI uses the existing estimate marker, one short localized explanation and
+a methodology link. The full source list stays in the evaluation dossier;
+assistant-facing guidance retains the qualification. Production median/P90
+latency remains a separate measured series with its existing sample thresholds.
 
 1. Complete local provider, canonical quote, MCP/Studio projection, recovery and PostgreSQL checks. Offline mocks are not provider canaries.
 2. Resolve the observed Flash API admission blocker. Both approved provider attempts above were refused; before any later paid submission, establish its authorized scope, then verify API acceptance, output, usage and raster. Qualify additional reference/edit/extension modes independently before widening `SEEDANCE_2_5_FLASH_BYTEPLUS_MODES`.
 3. Validate literal tariff proposals against the current database and apply through the existing admin batch preview/confirmation path. Track all 31 receipts and complete any pending refresh; verify visible prices after cache revalidation. Flash activation and standard repricing are separate from a successful code build.
-4. Finalize the prepared localized model content and exact Flash media/launch assets with the marketing task. Run registry, launch-assets, SEO and browser checks when publishing those surfaces.
+4. Finalize the separate page design and exact Flash media/launch assets with the marketing task. Review the launch-state copy against actual qualified modes, reassess provisional scores when real outputs exist, and verify registry, launch-assets, localized SEO and browser checks.
 5. Follow `docs/deployment/github-vercel.md`: clean committed candidate, PR, required Quality CI, current main, reviewed production release and both-domain verification.
 
 Relevant Flash environment keys: `BYTEPLUS_ARK_SEEDANCE_2_5_FLASH_MODEL_ID`, `SEEDANCE_2_5_FLASH_BYTEPLUS_ENABLED`, `SEEDANCE_2_5_FLASH_PROVIDER`, `SEEDANCE_2_5_FLASH_BYTEPLUS_ADMIN_ONLY`, `SEEDANCE_2_5_FLASH_BYTEPLUS_MODES`. Closing these controls must not prevent recovery of an already accepted job.

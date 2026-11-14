@@ -1,22 +1,34 @@
 import type { ModelPageTemplateConfig } from '../model-page-template-types';
 
-// Prepare the normal model layout; model-registry.json still closes every public surface.
 export const seedance25FlashTemplateConfig: ModelPageTemplateConfig = {
   slug: 'seedance-2-5-flash',
   intent: 'production',
   hero: {
-    eyebrow: 'ByteDance · Model preview',
+    eyebrow: 'ByteDance · 480p / 720p · Up to 30 seconds',
     subtitleHighlightTerms: [],
-    primaryCtaHref: '/models',
-    secondaryCtaHref: '/models/seedance-2-5',
-    quickLinks: [{ labelKey: 'promptExamples', href: '#prompting', icon: 'prompt' }],
+    primaryCtaHref: '/app?engine=seedance-2-5-flash',
+    secondaryCtaHref: '/ai-video-engines/seedance-2-5-vs-seedance-2-5-flash',
+    quickLinks: [
+      { labelKey: 'compareCurrent', href: '/ai-video-engines/seedance-2-5-vs-seedance-2-5-flash?order=seedance-2-5-flash', icon: 'compare' },
+      { labelKey: 'viewPricing', href: '#pricing', icon: 'pricing' },
+      { labelKey: 'promptExamples', href: '#prompting', icon: 'prompt' },
+    ],
   },
-  pricing: { enabled: false, anchorHref: '/models', presets: [] },
+  pricing: {
+    enabled: true,
+    showScenarioDetails: true,
+    anchorHref: '#pricing',
+    presets: [
+      { id: '4s-480p', seconds: 4, resolution: '480p', labelKey: 'entryDraft' },
+      { id: '8s-720p-audio', seconds: 8, resolution: '720p', audio: true, labelKey: 'commonProductionCheck' },
+      { id: '30s-720p', seconds: 30, resolution: '720p', labelKey: 'storyboardPass' },
+    ],
+  },
   sections: {
-    examples: false,
+    examples: true,
     prompting: true,
     tips: true,
-    compare: false,
+    compare: true,
     specs: true,
     safety: true,
     faq: true,

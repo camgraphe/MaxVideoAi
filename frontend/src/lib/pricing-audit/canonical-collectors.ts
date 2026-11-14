@@ -26,11 +26,11 @@ function formatUsd(cents: number): string {
 export function collectCanonicalPricingOutputs(
   baselineRows: FrozenPricingOutput[]
 ): CanonicalPricingAuditOutput[] {
-  // Nano21 and Kling 4 use native customer tariffs. Their current quotes are
+  // These models use native customer tariffs. Their current quotes are
   // qualified independently; pricing publication cannot create a historical
   // supplier-cost/percentage-margin baseline that never existed.
   const scenarios = buildPricingAuditScenarios().filter(
-    (scenario) => scenario.engineId !== NANO21_ENGINE_ID && !isKlingV4FalQueueEngineId(scenario.engineId) && !isGptImage26EngineId(scenario.engineId)
+    (scenario) => scenario.engineId !== 'seedance-2-5-flash' && scenario.engineId !== NANO21_ENGINE_ID && !isKlingV4FalQueueEngineId(scenario.engineId) && !isGptImage26EngineId(scenario.engineId)
   );
   const baselineById = new Map(baselineRows.map((row) => [row.scenarioId, row]));
   const canonicalById = new Map(

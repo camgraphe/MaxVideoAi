@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "last_updated": "2026-11-06",
+  "last_updated": "2026-11-14",
   "method": "manual-v1-internet-calibrated-with-platform-pricing",
   "scores": [
     {
@@ -242,6 +242,37 @@
       "speedStability": 7.7,
       "pricing": 7.2,
       "last_updated": "2026-08-08"
+    },
+    {
+      "modelSlug": "seedance-2-5-flash",
+      "fidelity": 8.1,
+      "visualQuality": 8.1,
+      "motion": 8.0,
+      "consistency": 7.9,
+      "anatomy": 7.7,
+      "textRendering": 6.5,
+      "lipsyncQuality": 7.0,
+      "sequencingQuality": 7.0,
+      "controllability": 8.3,
+      "speedStability": 7.1,
+      "pricing": 8.4,
+      "last_updated": "2026-11-14",
+      "reviewStatus": "editorial-estimated",
+      "evidenceFile": "seedance-2-5-flash-evidence.v1.json",
+      "reviewNote": "Eleven provisional editorial estimates from exact-model documentation, attributed first-person reports and prepared MaxVideoAI tariffs. No owned or controlled Flash output; text, lip sync and sequencing remain low-confidence priors.",
+      "reviewConfidence": {
+        "fidelity": "low",
+        "visualQuality": "low",
+        "motion": "low",
+        "consistency": "low",
+        "anatomy": "low",
+        "textRendering": "low",
+        "lipsyncQuality": "low",
+        "sequencingQuality": "low",
+        "controllability": "low",
+        "speedStability": "low",
+        "pricing": "medium"
+      }
     },
     {
       "modelSlug": "seedance-2-0",

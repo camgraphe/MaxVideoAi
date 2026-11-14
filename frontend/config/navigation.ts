@@ -112,6 +112,7 @@ const docLink = (slug: string): LocalizedLinkHref => ({
 
 // D85 editorial promotion. Publication and canonical identity remain registry-owned.
 const MODEL_MENU_CANDIDATES: readonly LabeledSlug[] = [
+  { slug: 'seedance-2-5-flash', label: 'Seedance 2.5 Flash', badge: 'new' },
   { slug: 'kling-v4-flash', label: 'Kling 4.0 Flash', badge: 'new' },
   { slug: 'kling-v4', label: 'Kling 4.0', badge: 'new' },
   { slug: 'flux-3-max', label: 'FLUX 3 Max', badge: 'new' },
@@ -139,8 +140,8 @@ export function buildMarketingModelMenu(models: readonly RuntimeModelEntry[]): L
       const successor = byId.get(model.successorId);
       return !successor?.publication.model.published || !successor.publication.model.indexable;
     });
-  // Each new Kling card adds a slot while preserving existing model discovery.
-  const capacity = 11 + visibleCandidates.filter(({ slug }) => slug === 'kling-v4' || slug === 'kling-v4-flash').length;
+  // Launch cards add slots while preserving existing model discovery.
+  const capacity = 11 + visibleCandidates.filter(({ slug }) => ['kling-v4', 'kling-v4-flash', 'seedance-2-5-flash'].includes(slug)).length;
   return visibleCandidates
     .slice(0, capacity)
     .map((item) => {
@@ -171,6 +172,7 @@ const OTHER_EXAMPLES = EXAMPLES_MENU.filter(item => !PRIORITY_EXAMPLE_FAMILIES.i
 const FOOTER_EXAMPLES_MENU: LabeledSlug[] = [...PRIORITY_EXAMPLES, ...OTHER_EXAMPLES];
 
 const COMPARE_MENU: LabeledSlug[] = [
+  { slug: 'seedance-2-5-vs-seedance-2-5-flash', label: 'Seedance 2.5 vs Flash' },
   { slug: 'kling-v4-vs-kling-v4-flash', label: 'Kling 4.0 vs Kling 4.0 Flash' },
   { slug: 'kling-v4-vs-seedance-2-5', label: 'Kling 4.0 vs Seedance 2.5' },
   { slug: 'kling-v4-vs-wan-3-prime', label: 'Kling 4.0 vs Wan 3 Prime' },
@@ -222,7 +224,7 @@ export const MARKETING_FOOTER_EXAMPLES: MarketingNavItem[] = FOOTER_EXAMPLES_MEN
 export function buildMarketingCompareMenu(models: readonly RuntimeModelEntry[]): LabeledSlug[] {
   const isPublishedComparisonSlug = createPublishedComparisonSlugLookup(models);
   const published = COMPARE_MENU.filter(({ slug }) => isPublishedComparisonSlug(slug));
-  const capacity = 10 + Number(published.some(({ slug }) => slug === 'kling-v4-vs-kling-v4-flash'));
+  const capacity = 10 + published.filter(({ slug }) => ['kling-v4-vs-kling-v4-flash', 'seedance-2-5-vs-seedance-2-5-flash'].includes(slug)).length;
   return published.slice(0, capacity);
 }
 

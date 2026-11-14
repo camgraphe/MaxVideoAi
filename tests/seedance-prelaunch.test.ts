@@ -191,7 +191,7 @@ test('Seedance 2 registry centralizes provisional Fal IDs and keeps both launch 
   assert.equal(seedance.surfaces.modelPage.indexable, true);
   assert.equal(fast.surfaces.modelPage.indexable, true);
   assert.equal(seedance.surfaces.compare.publishedPairs.length, 23);
-  assert.equal(fast.surfaces.compare.publishedPairs.length, 22);
+  assert.equal(fast.surfaces.compare.publishedPairs.length, 23);
   assert.equal(mini.surfaces.app.enabled, true);
   assert.equal(mini.surfaces.modelPage.indexable, true);
   assert.equal(mini.surfaces.examples.includeInFamilyResolver, true);
@@ -224,6 +224,7 @@ test('Seedance aliases, family routing, hub publication, and locale coverage are
   assert.deepEqual(family.routeAliases, ['seedance-1-5-pro', 'seedance-2-0', 'seedance-2-0-fast', 'dreamina-seedance-2-0-mini']);
   assert.deepEqual(family.examplesPage?.publishedModelSlugs, [
     'seedance-2-5',
+    'seedance-2-5-flash',
     'seedance-2-0',
     'seedance-2-0-fast',
     'dreamina-seedance-2-0-mini',
@@ -392,21 +393,22 @@ test('Public marketing media fetchers stay visibility-safe for pinned and prompt
 test('Seedance 2.5 and Seedance 2.0 lead the app menu while P1 models enter marketing navigation', () => {
   const appEngineIds = getBaseEnginesByCategory('video').map((engine) => engine.id);
   assert.equal(appEngineIds[0], 'seedance-2-5');
-  assert.equal(appEngineIds[1], 'seedance-2-0');
-  assert.equal(appEngineIds[2], 'minimax-h3');
-  assert.equal(appEngineIds[3], 'seedance-2-0-fast');
+  assert.equal(appEngineIds[1], 'seedance-2-5-flash');
+  assert.equal(appEngineIds[2], 'seedance-2-0');
+  assert.equal(appEngineIds[3], 'minimax-h3');
+  assert.equal(appEngineIds[4], 'seedance-2-0-fast');
   assert.ok(!appEngineIds.includes('sora-2'));
   assert.ok(!appEngineIds.includes('sora-2-pro'));
 
   assert.deepEqual(
     MARKETING_NAV_MODELS.map((item) => item.key),
-    ['kling-v4-flash', 'kling-v4', 'flux-3-max', 'minimax-h3', 'minimax-h3-max', 'seedance-2-5', 'kling-3-pro', 'kling-3-turbo-pro', 'veo-3-1', 'ltx-2-5-pro', 'ltx-2-5-fast', 'wan-3', 'wan-3-prime']
+    ['seedance-2-5-flash', 'kling-v4-flash', 'kling-v4', 'flux-3-max', 'minimax-h3', 'minimax-h3-max', 'seedance-2-5', 'kling-3-pro', 'kling-3-turbo-pro', 'veo-3-1', 'ltx-2-5-pro', 'ltx-2-5-fast', 'wan-3', 'wan-3-prime']
   );
   assert.deepEqual(
     MARKETING_NAV_COMPARE.map((item) => item.key),
-    ['kling-v4-vs-kling-v4-flash', 'kling-v4-vs-seedance-2-5', 'kling-v4-vs-wan-3-prime', 'minimax-h3-vs-seedance-2-5', 'minimax-h3-vs-minimax-h3-max', 'kling-3-pro-vs-seedance-2-5', 'seedance-2-5-vs-wan-3', 'ltx-2-5-fast-vs-ltx-2-5-pro', 'wan-3-vs-wan-3-prime', 'gemini-omni-flash-vs-veo-3-1', 'seedance-2-0-vs-seedance-2-0-fast']
+    ['seedance-2-5-vs-seedance-2-5-flash', 'kling-v4-vs-kling-v4-flash', 'kling-v4-vs-seedance-2-5', 'kling-v4-vs-wan-3-prime', 'minimax-h3-vs-seedance-2-5', 'minimax-h3-vs-minimax-h3-max', 'kling-3-pro-vs-seedance-2-5', 'seedance-2-5-vs-wan-3', 'ltx-2-5-fast-vs-ltx-2-5-pro', 'wan-3-vs-wan-3-prime', 'gemini-omni-flash-vs-veo-3-1', 'seedance-2-0-vs-seedance-2-0-fast']
   );
-  assert.equal(MARKETING_NAV_COMPARE.length, 11);
+  assert.equal(MARKETING_NAV_COMPARE.length, 12);
   const expectedExampleFamilies = [
     'veo',
     'seedance',
@@ -438,7 +440,7 @@ test('Seedance 1.5 Pro stays historical while Seedance 2.0 keeps the primary ali
 });
 
 test('Header model menu keeps H3 and the current P1 representatives in the bounded set', () => {
-  assert.deepEqual(MARKETING_NAV_MODELS.map((item) => item.key), ['kling-v4-flash', 'kling-v4', 'flux-3-max', 'minimax-h3', 'minimax-h3-max', 'seedance-2-5', 'kling-3-pro', 'kling-3-turbo-pro', 'veo-3-1', 'ltx-2-5-pro', 'ltx-2-5-fast', 'wan-3', 'wan-3-prime']);
+  assert.deepEqual(MARKETING_NAV_MODELS.map((item) => item.key), ['seedance-2-5-flash', 'kling-v4-flash', 'kling-v4', 'flux-3-max', 'minimax-h3', 'minimax-h3-max', 'seedance-2-5', 'kling-3-pro', 'kling-3-turbo-pro', 'veo-3-1', 'ltx-2-5-pro', 'ltx-2-5-fast', 'wan-3', 'wan-3-prime']);
 });
 
 test('Examples hub family order follows the current business priority without reordering global families', () => {
@@ -496,6 +498,7 @@ test('Examples family current model groups do not classify new delivery models a
   ]);
   assert.deepEqual(getExampleFamilyCurrentModelSlugs('seedance'), [
     'seedance-2-5',
+    'seedance-2-5-flash',
     'seedance-2-0',
     'seedance-2-0-fast',
     'dreamina-seedance-2-0-mini',

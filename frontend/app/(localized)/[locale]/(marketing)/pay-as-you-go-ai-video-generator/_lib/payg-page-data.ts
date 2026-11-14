@@ -292,7 +292,7 @@ function buildExampleCosts(
       href: `/app?engine=${encodeURIComponent(row.id)}`,
     }];
   });
-  return examples.slice(0, 6);
+  return examples.slice(0, 7);
 }
 
 function buildSupportedModels(

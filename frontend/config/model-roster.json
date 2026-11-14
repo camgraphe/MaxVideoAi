@@ -190,6 +190,25 @@
     }
   },
   {
+    "engineId": "seedance-2-5-flash",
+    "marketingName": "Seedance 2.5 Flash",
+    "brandId": "bytedance",
+    "modelSlug": "seedance-2-5-flash",
+    "family": "seedance",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
+    "versionLabel": "2.5 Flash",
+    "availability": "available",
+    "logoPolicy": "logoAllowed",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
+  },
+  {
     "engineId": "seedream",
     "marketingName": "Seedream",
     "brandId": "bytedance",

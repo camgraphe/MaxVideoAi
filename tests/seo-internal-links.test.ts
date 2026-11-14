@@ -70,11 +70,12 @@ test('reviewed best-for leaders stay localized while Seedance 2.0 stays 4K-speci
       locale,
       pricingPath: locale === 'fr' ? '/fr/tarifs' : locale === 'es' ? '/es/precios' : '/pricing',
     });
-    assert.match(examplesLinks[0]?.href ?? '', /kling-v4-vs-seedance-2-5$/, `${locale} leads with a current comparison`);
-    assert.match(examplesLinks[1]?.href ?? '', /seedance-2-5-vs-minimax-h3$/);
-    assert.match(examplesLinks[2]?.href ?? '', /seedance-2-5-vs-kling-3-pro$/);
+    assert.match(examplesLinks[0]?.href ?? '', /seedance-2-5-vs-seedance-2-5-flash$/, `${locale} leads with a current comparison`);
+    assert.match(examplesLinks[1]?.href ?? '', /kling-v4-vs-seedance-2-5$/);
+    assert.match(examplesLinks[2]?.href ?? '', /seedance-2-5-vs-minimax-h3$/);
+    assert.match(examplesLinks[3]?.href ?? '', /seedance-2-5-vs-kling-3-pro$/);
     assert.ok(examplesLinks.some(({href}) => href.endsWith('/seedance-2-0-vs-seedance-2-0-fast')), 'retain the established comparison');
-    assert.equal(examplesLinks.length, 4);
+    assert.equal(examplesLinks.length, 5);
 
     const seedance20Path = `content/models/${locale}/seedance-2-0.json`;
     assert.match(readRepositoryFile(seedance20Path), new RegExp(target.replaceAll('/', '\\/')));

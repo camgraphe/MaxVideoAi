@@ -50,7 +50,7 @@ test('every original P1 launch retains eleven reviewed finite scores, including 
     historicalScores: Array<Record<string, unknown> & { modelSlug: string; modelVersion: string }>;
   };
 
-  assert.equal(document.last_updated, '2026-11-06');
+  assert.ok(document.last_updated >= '2026-11-06');
   for (const modelId of MODEL_IDS) {
     const source = modelId === 'gemini-omni-flash'
       ? document.historicalScores.filter(row => row.modelVersion === '1.1') : document.scores;
@@ -73,7 +73,7 @@ test('every P1 model has a complete sourced key-spec row', () => {
     specs: Array<{ modelSlug: string; sources: string[]; keySpecs: Record<string, unknown> }>;
   };
 
-  assert.equal(document.last_updated, '2026-11-05'); // Includes Flash capability facts; historical scores are unchanged.
+  assert.ok(document.last_updated >= '2026-11-05'); // Later model additions preserve the historical P1 rows.
   for (const modelId of MODEL_IDS) {
     const rows = document.specs.filter(({ modelSlug }) => modelSlug === modelId);
     assert.equal(rows.length, 1, `${modelId} should have one key-spec row`);

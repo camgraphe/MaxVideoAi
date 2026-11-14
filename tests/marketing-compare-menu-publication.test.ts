@@ -25,6 +25,7 @@ const EDITORIAL_COMPARISONS = [
 ] as const;
 
 const CURRENT_EDITORIAL_COMPARISONS = [
+  { slug: 'seedance-2-5-vs-seedance-2-5-flash', label: 'Seedance 2.5 vs Flash' },
   { slug: 'kling-v4-vs-kling-v4-flash', label: 'Kling 4.0 vs Kling 4.0 Flash' },
   { slug: 'kling-v4-vs-seedance-2-5', label: 'Kling 4.0 vs Seedance 2.5' },
   { slug: 'kling-v4-vs-wan-3-prime', label: 'Kling 4.0 vs Wan 3 Prime' },
@@ -199,7 +200,7 @@ test('live runtime comparison menu retains every link, label, brand and badge fr
   assert.deepEqual(buildMarketingCompareMenu(models), CURRENT_EDITORIAL_COMPARISONS);
 
   const brandsBySlug: Record<string, string> = {
-    'minimax-h3': 'minimax', 'minimax-h3-max': 'minimax', 'seedance-2-5': 'bytedance',
+    'minimax-h3': 'minimax', 'minimax-h3-max': 'minimax', 'seedance-2-5': 'bytedance', 'seedance-2-5-flash': 'bytedance',
     'kling-3-pro': 'kling', 'kling-v4': 'kling', 'kling-v4-flash': 'kling', 'wan-3': 'wan', 'wan-3-prime': 'wan',
     'ltx-2-5-fast': 'lightricks', 'ltx-2-5-pro': 'lightricks',
     'gemini-omni-flash': 'google-veo', 'veo-3-1': 'google-veo',
@@ -212,7 +213,7 @@ test('live runtime comparison menu retains every link, label, brand and badge fr
     comparisonBrands: slug.split('-vs-').map(id => ({ id, brandId: brandsBySlug[id] })),
     badge: undefined,
   })));
-  assert.ok(MARKETING_NAV_COMPARE.length <= 11);
+  assert.ok(MARKETING_NAV_COMPARE.length <= 12);
 });
 
 test('comparison menu bounds canonical comparison work to editorial candidates even in a dense graph', (t) => {

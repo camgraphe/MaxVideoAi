@@ -50,7 +50,7 @@ test('all P0 models have eleven reviewed numeric scores and a derived three-axis
     last_updated: string;
     scores: Array<Record<string, unknown> & { modelSlug: string }>;
   };
-  assert.equal(document.last_updated, '2026-11-06');
+  assert.ok(document.last_updated >= '2026-11-06');
 
   for (const modelId of P0_IDS) {
     const score = document.scores.find(({ modelSlug }) => modelSlug === modelId);
@@ -95,7 +95,7 @@ test('all P0 models have complete sourced key specs', () => {
     'watermark',
     'releaseDate',
   ];
-  assert.equal(document.last_updated, '2026-11-05'); // Includes Flash capability facts; historical scores are unchanged.
+  assert.ok(document.last_updated >= '2026-11-05'); // Includes Flash capability facts; historical scores are unchanged.
   for (const modelId of P0_IDS) {
     const row = document.specs.find(({ modelSlug }) => modelSlug === modelId);
     assert.ok(row, modelId);
@@ -162,6 +162,7 @@ test('published P0 models expose only approved comparison edges, including the t
     if (expected.has(leftId)) expected.get(leftId)?.add(rightId);
     if (expected.has(rightId)) expected.get(rightId)?.add(leftId);
   }
+  expected.get('ltx-2-5-fast')?.add('seedance-2-5-flash');
   expected.get('wan-3')?.add('seedance-2-5');
   expected.get('wan-3-prime')?.add('kling-v4');
   expected.get('flux-3')?.add('flux-3-max');

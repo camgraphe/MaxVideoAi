@@ -1,5 +1,4 @@
 import type { PayAsYouGoContent } from './types';
-
 export const esPayAsYouGoContent = {
   metadata: {
     title: 'Generador de video con IA de pago por uso y precio por adelantado',
@@ -68,6 +67,7 @@ export const esPayAsYouGoContent = {
       'kling-3-turbo-pro': { family: 'Kling 3.0 Turbo', title: 'Kling 3.0 Turbo Pro para salida 1080p detallada', body: 'Elige Turbo Pro para movimiento 1080p pulido, detalle de producto, guía por imagen y secuencias multi-shot.' },
       'kling-3-turbo-standard': { family: 'Kling 3.0 Turbo', title: 'Kling 3.0 Turbo Standard para borradores 720p eficientes', body: 'Elige Turbo Standard para iterar más rápido en 720p con movimiento coherente, guía por imagen y pruebas multi-shot.' },
       'minimax-h3-max': { family: 'MiniMax H3', title: 'MiniMax H3 Max para un acabado visual prémium', body: 'Elige H3 Max por su acabado visual, seguimiento del prompt, audio nativo y producción enfocada de texto o imagen a video.' },
+      "seedance-2-5-flash": {"family": "Seedance 2.5 Flash", "title": "Seedance 2.5 Flash para variantes creativas más largas", "body": "Crea escenas de 4 a 30 segundos a 480p o 720p con audio opcional y referencias mixtas. Compara el presupuesto actual según las entradas; estándar 2.5 conserva sus opciones independientes de 1080p y Draft nativo a resultado final."},
       'seedance-2-5': { family: 'Seedance 2.5', title: 'Seedance 2.5 para video cinematográfico de 30 segundos', body: 'Consulta primero Seedance 2.5 para flujos cinematográficos, imagen a video, guiados por referencias, multi-shot, producto y UGC; mantén Seedance 2.0 entre las alternativas cuando necesites salida 4K.' },
       'seedance-2-0': { family: 'Seedance 2', title: 'Seedance 2.0 para entregas Seedance 4K', body: 'Mantén Seedance 2.0 como alternativa para flujos más cortos con audio nativo y referencias cuando el resultado final de Seedance deba ser 4K.' },
       'kling-3-pro': { family: 'Kling', title: 'Kling para un control de movimiento sólido', body: 'Usa Kling para movimientos de cámara fiables, tomas de producto, elementos y video guiado por imagen sin comprar una suscripción.' },
@@ -196,6 +196,7 @@ export const esPayAsYouGoContent = {
     items: {
       "flux-3-max": {"query": "precio flux 3 max", "title": "Precios de FLUX 3 Max", "body": "Compara una prueba corta de texto a video y revisa la cotización con tus fotogramas clave, referencias y ajustes finales."},
       "minimax-h3": {"query": "precio minimax h3", "title": "Precios de MiniMax H3", "body": "Este ejemplo usa una resolución nativa compatible. Compara modelos con la misma duración, resolución y referencias."},
+      "seedance-2-5-flash": {"query": "precio seedance 2.5 flash", "title": "Precios de Seedance 2.5 Flash", "body": "Consulta el presupuesto actual según duración, resolución, audio y referencias. Los videos de entrada afectan a la duración facturable; una generación Flash es distinta de un Draft nativo Seedance estándar."},
       "seedance-2-5": {"query": "precio seedance 2.5", "title": "Precios de Seedance 2.5", "body": "Comprueba el precio de tu escena según duración, resolución y referencias. Las generaciones Draft y finales tienen cotizaciones separadas."},
       'kling-v4': { query: 'precio de Kling 4.0', title: 'Precio de Kling 4.0 según el modo', body: 'Revisa el modo, la duración de salida y la resolución. En los flujos de referencias y edición, la duración del video aportado también influye en el presupuesto; compara las mismas entradas.' },
       'gemini-omni-flash': { query: 'precio de Gemini Omni Flash 1.2', title: 'Consulta el precio de Gemini Omni Flash 1.2', body: 'Consulta la ruta directa de Google para video multimodal rápido, audio nativo y flujos multi-shot.' },
@@ -256,6 +257,7 @@ export const esPayAsYouGoContent = {
     labels: {
       "flux-3-max": "Escena corta con FLUX 3 Max",
       "minimax-h3": "Prueba de MiniMax H3 en resolución nativa",
+      "seedance-2-5-flash": "Escena corta Seedance 2.5 Flash",
       "seedance-2-5": "Escena corta con Seedance 2.5",
       'kling-v4': 'Escena de texto a video con Kling 4.0',
       'gemini-omni-flash': 'Prueba multimodal con Gemini Omni Flash 1.1',

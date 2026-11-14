@@ -56,7 +56,7 @@ test('published V4 gains exactly one New menu card while retaining the existing 
   const previous = buildMarketingModelMenu(models);
   models.find(model => model.id === 'kling-v4')!.publication.model.indexable = true;
   const menu = buildMarketingModelMenu(models);
-  assert.equal(menu[0]?.slug, 'kling-v4', 'The current launch leads discovery without displacing older routes');
+  assert.equal(menu[0]?.slug, 'seedance-2-5-flash', 'The current launch leads discovery without displacing older routes');
   assert.equal(menu.filter(item => item.slug === 'kling-v4').length, 1);
   assert.equal(menu.find(item => item.slug === 'kling-v4')?.badge, 'new');
   assert.equal(menu.find(item => item.slug === 'kling-v4')?.brandId, 'kling');
@@ -78,7 +78,7 @@ test('the prepared same-family comparison remains hidden until publication and r
     suggestedOpponentIds: ['kling-o3-pro'], publishedPairIds: ['kling-o3-pro'],
   };
   assert.ok(buildMarketingCompareMenu(models).some(item => item.slug === PAIR));
-  assert.ok(buildMarketingCompareMenu(models).length <= 10);
+  assert.ok(buildMarketingCompareMenu(models).length <= 11);
   assert.equal(buildPublishedComparisonSlugsFromModels(models, () => false).includes(PAIR), false);
   assert.ok(buildPublishedComparisonSlugsFromModels(models, () => true).includes(PAIR));
 });

@@ -9,7 +9,8 @@ import { filterProviderComparisonRows } from '../frontend/app/(core)/admin/prici
 test('admin comparison includes published models and the closed launch tariff candidates once', () => {
   const expected = listRuntimeModels().filter((model) => model.publication.app.published);
   const rows = buildAllModelComparisonScenarios();
-  assert.equal(expected.length, 54);
+  assert.equal(expected.length, 55);
+  assert.equal(rows.filter(({ entry }) => entry.id === 'seedance-2-5-flash').length, 1);
   const closedLaunchIds = ['kling-v4-flash', 'gpt-image-2-6-flare', 'gpt-image-2-6-sunburst']
     .filter(id => !expected.some(model => model.id === id));
   assert.equal(rows.length, expected.length + closedLaunchIds.length);
@@ -29,6 +30,9 @@ test('admin comparison includes published models and the closed launch tariff ca
     assert.match(v4.warning,/approved customer tariffs/);
   }
   assert.ok(rows.some(({ entry }) => entry.id === 'flux-3-max'));
+  const [flash] = quoteCanonicalAdminScenarios({ databaseRules: [], scenarios: [rows.find(({ entry }) => entry.id === 'seedance-2-5-flash')!.scenario] });
+  assert.equal(flash.status, 'unsupported', 'Flash must use its native admin tariff, not the legacy margin editor');
+  if (flash.status === 'unsupported') assert.equal(flash.reason, 'product_policy_not_authoritative');
 });
 
 test('a percentage-policy preview cannot replace the fixed Nano21 customer image tariff', () => {

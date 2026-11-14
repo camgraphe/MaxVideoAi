@@ -57,6 +57,18 @@ async function main(): Promise<void> {
   if (!isDeepStrictEqual(novemberMarketing.rows, novemberMarketingIds.map(id => ({
     id, surface: id.split(':')[0], engineId: id.split(':')[1], status: 'unavailable',
   })))) throw new Error('November model discovery cannot introduce an offline fallback price.');
+  const seedanceFlash = JSON.parse(await readFile(
+    new URL('../../tests/fixtures/seedance-25-flash-public-projections-2026-11-14.json', import.meta.url), 'utf8',
+  )) as { rows: typeof rows };
+  const flashPublicIds = [
+    ...['member', 'plus', 'pro'].map(tier => `estimator:seedance-2-5-flash:${tier}:default`),
+    'json-ld:seedance-2-5-flash:offer', 'model-page:seedance-2-5-flash:default',
+    ...['10s-1080p', '10s-1080p-audio', '10s-720p', '4k-route', '5s-720p', '8s-1080p', 'entry-route']
+      .map(preset => `pricing-hub-video:seedance-2-5-flash:${preset}`),
+  ];
+  if (!isDeepStrictEqual(seedanceFlash.rows, flashPublicIds.map(id => ({
+    id, surface: id.split(':')[0], engineId: 'seedance-2-5-flash', status: 'unavailable',
+  })))) throw new Error('Flash publication requires an active customer tariff; no offline fallback price.');
   const klingPublicDiscovery = JSON.parse(await readFile(
     new URL('../../tests/fixtures/kling-v4-public-discovery-projections-2026-10-27.json', import.meta.url), 'utf8',
   )) as { rows: typeof rows };
@@ -196,7 +208,7 @@ async function main(): Promise<void> {
   }
   // Approved archive sunsets: remove purchasable surfaces and invalidate Product offers.
   // Keep the pre-archive fixtures intact as historical pricing evidence.
-  const expectedWithLaunch = [...expected, ...launchAdditions.rows, ...fluxMaxLaunch.rows, ...nano21Launch.rows, ...novemberImageAdmission.rows, ...novemberMarketing.rows, ...klingPublicDiscovery.rows, ...klingPricingDiscovery.rows].map((row) => {
+  const expectedWithLaunch = [...expected, ...launchAdditions.rows, ...fluxMaxLaunch.rows, ...nano21Launch.rows, ...novemberImageAdmission.rows, ...novemberMarketing.rows, ...seedanceFlash.rows, ...klingPublicDiscovery.rows, ...klingPricingDiscovery.rows].map((row) => {
     const repair = customerOfferRepairs.get(row.id);
     if (!repair) return row;
     if (row.surface !== 'json-ld' || row.status !== 'exact' || row.customerTotalCents !== repair.previousCents) {

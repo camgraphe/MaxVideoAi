@@ -122,7 +122,7 @@ test('P1 PAYG cards and lookups copy localized canonical pricing rows', () => {
       pricingHub,
     });
 
-    assert.equal(data.exampleCosts.items.length, 6);
+    assert.equal(data.exampleCosts.items.length, 7);
     for (const example of data.exampleCosts.items) {
       const lookup = data.priceLookups.items.find((item) => item.id === example.id);
       assert.ok(lookup, `${locale}:${example.id}:example lookup`);

@@ -154,6 +154,7 @@ test('the real published state exposes every P0 across current and machine disco
       'ltx-2-3-fast-vs-ltx-2-5-fast',
       'ltx-2-3-pro-vs-ltx-2-5-pro',
       'ltx-2-5-fast-vs-ltx-2-5-pro',
+      'ltx-2-5-fast-vs-seedance-2-5-flash',
       'seedance-2-5-vs-wan-3',
       'wan-2-6-vs-wan-3',
       'wan-3-vs-wan-3-prime',

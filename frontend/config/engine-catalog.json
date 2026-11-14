@@ -892,7 +892,8 @@
         "suggestOpponents": [
           "ltx-2-fast",
           "ltx-2-3-fast",
-          "veo-3-1"
+          "veo-3-1",
+          "seedance-2-5-flash"
         ],
         "publishedPairs": [
           "kling-2-5-turbo",
@@ -915,7 +916,8 @@
           "veo-3-1",
           "veo-3-1-lite",
           "wan-2-5",
-          "wan-2-6"
+          "wan-2-6",
+          "seedance-2-5-flash"
         ],
         "includeInHub": true
       },
@@ -13561,6 +13563,7 @@
       "showInNav": true,
       "publishedModelSlugs": [
         "seedance-2-5",
+        "seedance-2-5-flash",
         "seedance-2-0",
         "seedance-2-0-fast",
         "dreamina-seedance-2-0-mini",
@@ -13568,6 +13571,7 @@
       ],
       "currentModelSlugs": [
         "seedance-2-5",
+        "seedance-2-5-flash",
         "seedance-2-0",
         "seedance-2-0-fast",
         "dreamina-seedance-2-0-mini"
@@ -13946,6 +13950,7 @@
       "showInNav": true,
       "publishedModelSlugs": [
         "seedance-2-5",
+        "seedance-2-5-flash",
         "seedance-2-0",
         "seedance-2-0-fast",
         "dreamina-seedance-2-0-mini",
@@ -13953,6 +13958,7 @@
       ],
       "currentModelSlugs": [
         "seedance-2-5",
+        "seedance-2-5-flash",
         "seedance-2-0",
         "seedance-2-0-fast",
         "dreamina-seedance-2-0-mini"
@@ -14794,6 +14800,7 @@
       "showInNav": true,
       "publishedModelSlugs": [
         "seedance-2-5",
+        "seedance-2-5-flash",
         "seedance-2-0",
         "seedance-2-0-fast",
         "dreamina-seedance-2-0-mini",
@@ -14801,6 +14808,7 @@
       ],
       "currentModelSlugs": [
         "seedance-2-5",
+        "seedance-2-5-flash",
         "seedance-2-0",
         "seedance-2-0-fast",
         "dreamina-seedance-2-0-mini"
@@ -14825,7 +14833,8 @@
         "suggestOpponents": [
           "veo-3-1-fast",
           "ltx-2-3-fast",
-          "sora-2"
+          "sora-2",
+          "seedance-2-5-flash"
         ],
         "publishedPairs": [
           "kling-2-5-turbo",
@@ -14849,7 +14858,8 @@
           "veo-3-1-fast",
           "veo-3-1-lite",
           "wan-2-5",
-          "wan-2-6"
+          "wan-2-6",
+          "seedance-2-5-flash"
         ],
         "includeInHub": true
       },
@@ -15624,6 +15634,7 @@
       "showInNav": true,
       "publishedModelSlugs": [
         "seedance-2-5",
+        "seedance-2-5-flash",
         "seedance-2-0",
         "seedance-2-0-fast",
         "dreamina-seedance-2-0-mini",
@@ -15631,6 +15642,7 @@
       ],
       "currentModelSlugs": [
         "seedance-2-5",
+        "seedance-2-5-flash",
         "seedance-2-0",
         "seedance-2-0-fast",
         "dreamina-seedance-2-0-mini"
@@ -16375,6 +16387,7 @@
       "showInNav": true,
       "publishedModelSlugs": [
         "seedance-2-5",
+        "seedance-2-5-flash",
         "seedance-2-0",
         "seedance-2-0-fast",
         "dreamina-seedance-2-0-mini",
@@ -16382,6 +16395,7 @@
       ],
       "currentModelSlugs": [
         "seedance-2-5",
+        "seedance-2-5-flash",
         "seedance-2-0",
         "seedance-2-0-fast",
         "dreamina-seedance-2-0-mini"
@@ -16713,6 +16727,7 @@
       "showInNav": true,
       "publishedModelSlugs": [
         "seedance-2-5",
+        "seedance-2-5-flash",
         "seedance-2-0",
         "seedance-2-0-fast",
         "dreamina-seedance-2-0-mini",
@@ -16720,6 +16735,7 @@
       ],
       "currentModelSlugs": [
         "seedance-2-5",
+        "seedance-2-5-flash",
         "seedance-2-0",
         "seedance-2-0-fast",
         "dreamina-seedance-2-0-mini"
@@ -16747,7 +16763,8 @@
           "seedance-2-0",
           "kling-3-pro",
           "veo-3-1",
-          "kling-v4"
+          "kling-v4",
+          "seedance-2-5-flash"
         ],
         "publishedPairs": [
           "seedance-2-0",
@@ -16756,7 +16773,8 @@
           "minimax-h3-max",
           "veo-3-1",
           "wan-3",
-          "kling-v4"
+          "kling-v4",
+          "seedance-2-5-flash"
         ],
         "includeInHub": true
       },
@@ -17629,6 +17647,7 @@
       "showInNav": true,
       "publishedModelSlugs": [
         "seedance-2-5",
+        "seedance-2-5-flash",
         "seedance-2-0",
         "seedance-2-0-fast",
         "dreamina-seedance-2-0-mini",
@@ -17636,6 +17655,7 @@
       ],
       "currentModelSlugs": [
         "seedance-2-5",
+        "seedance-2-5-flash",
         "seedance-2-0",
         "seedance-2-0-fast",
         "dreamina-seedance-2-0-mini"
@@ -17649,25 +17669,42 @@
     "successorSlug": null,
     "surfaces": {
       "modelPage": {
-        "indexable": false,
-        "includeInSitemap": false
+        "indexable": true,
+        "includeInSitemap": true
       },
       "examples": {
-        "includeInFamilyResolver": false,
-        "includeInFamilyCopy": false
+        "includeInFamilyResolver": true,
+        "includeInFamilyCopy": true
       },
       "compare": {
-        "suggestOpponents": [],
-        "publishedPairs": [],
-        "includeInHub": false
+        "suggestOpponents": [
+          "seedance-2-5",
+          "seedance-2-0-fast",
+          "kling-v4-flash",
+          "veo-3-1-fast",
+          "ltx-2-5-fast",
+          "minimax-h3"
+        ],
+        "publishedPairs": [
+          "seedance-2-5",
+          "seedance-2-0-fast",
+          "kling-v4-flash",
+          "veo-3-1-fast",
+          "ltx-2-5-fast",
+          "minimax-h3"
+        ],
+        "includeInHub": true
       },
       "app": {
-        "enabled": false,
+        "enabled": true,
+        "discoveryRank": -2.5,
         "variantGroup": "seedance-2-0",
-        "variantLabel": "2.5 Flash"
+        "variantLabel": "2.5 Flash",
+        "launchBadge": "new"
       },
       "pricing": {
-        "includeInEstimator": false
+        "includeInEstimator": true,
+        "featuredScenario": "seedance-2-family"
       }
     },
     "surfacesSource": "registry",
@@ -20906,12 +20943,14 @@
         "suggestOpponents": [
           "seedance-2-5",
           "kling-o3-pro",
-          "veo-3-1"
+          "veo-3-1",
+          "seedance-2-5-flash"
         ],
         "publishedPairs": [
           "seedance-2-5",
           "kling-o3-pro",
-          "veo-3-1"
+          "veo-3-1",
+          "seedance-2-5-flash"
         ],
         "includeInHub": true
       },
@@ -26329,10 +26368,12 @@
       },
       "compare": {
         "suggestOpponents": [
-          "kling-v4"
+          "kling-v4",
+          "seedance-2-5-flash"
         ],
         "publishedPairs": [
-          "kling-v4"
+          "kling-v4",
+          "seedance-2-5-flash"
         ],
         "includeInHub": true
       },
@@ -28917,11 +28958,13 @@
       "compare": {
         "suggestOpponents": [
           "ltx-2-5-pro",
-          "ltx-2-3-fast"
+          "ltx-2-3-fast",
+          "seedance-2-5-flash"
         ],
         "publishedPairs": [
           "ltx-2-3-fast",
-          "ltx-2-5-pro"
+          "ltx-2-5-pro",
+          "seedance-2-5-flash"
         ],
         "includeInHub": true
       },

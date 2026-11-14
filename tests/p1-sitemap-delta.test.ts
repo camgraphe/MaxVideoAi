@@ -12,17 +12,17 @@ const comparisonPaths = getHubComparisonSlugsForSitemap().map(
 const modelPaths = modelRoster.map(({ modelSlug }) => `/models/${modelSlug}`);
 const dynamicPaths = new Set([...modelPaths, ...comparisonPaths]);
 
-test('P1 and subsequent candidates add twenty-one English routes, retaining the historical inventory and three November models', () => {
-  assert.equal(modelPaths.length - fixture.publishedModelCount, 11);
-  assert.equal(comparisonPaths.length - fixture.publishedComparisonCount, 10);
-  assert.equal(dynamicPaths.size - fixture.dynamicEnglishCanonicalCount, 21);
+test('P1 and subsequent candidates add twenty-eight English routes, retaining the historical inventory and three November models', () => {
+  assert.equal(modelPaths.length - fixture.publishedModelCount, 12);
+  assert.equal(comparisonPaths.length - fixture.publishedComparisonCount, 16);
+  assert.equal(dynamicPaths.size - fixture.dynamicEnglishCanonicalCount, 28);
 
   const localizedLocCount = modelRoster.length * 3 + getHubComparisonSlugsForSitemap().reduce(
     (total, slug) => total + getIndexableComparisonLocales(slug).length,
     0,
   );
   // Preserve prior route deltas; November adds nine model URLs and three Flash comparison URLs.
-  assert.equal(localizedLocCount - fixture.localizedLocCount, 38 - 82 + 3 + 6 + 9 + 3);
+  assert.equal(localizedLocCount - fixture.localizedLocCount, 38 - 82 + 3 + 6 + 9 + 3 + 21);
   const v4 = modelRoster.find(model => model.modelSlug === 'kling-v4');
   assert.ok(v4);
   assert.deepEqual(v4.surfaces.modelPage, { indexable: true, includeInSitemap: true });

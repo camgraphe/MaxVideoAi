@@ -2,17 +2,17 @@
   "marketingName": "Seedance 2.5 Flash",
   "versionLabel": "2.5 Flash",
   "seo": {
-    "title": "Seedance 2.5 Flash : aperçu du modèle vidéo | MaxVideoAI",
-    "description": "Découvrez Seedance 2.5 Flash : vidéos annoncées jusqu’à 30 secondes en 480p ou 720p et références multimodales. Son arrivée sur MaxVideoAI se prépare."
+    "title": "Seedance 2.5 Flash : vidéo IA, références et tarifs | MaxVideoAI",
+    "description": "Créez des vidéos de 4 à 30 secondes avec Seedance 2.5 Flash en 480p ou 720p. Références image, vidéo et audio, modification, extension et tarifs actuels."
   },
-  "overview": "Seedance 2.5 Flash est le modèle vidéo de ByteDance destiné aux itérations créatives fréquentes. BytePlus annonce des clips jusqu’à 30 secondes en 480p ou 720p, avec des références image, vidéo et audio. Son arrivée sur MaxVideoAI se prépare.",
+  "overview": "Transformez un personnage, un produit ou une idée de scène en vidéo de 4 à 30 secondes. Seedance 2.5 Flash associe une sortie 480p ou 720p au son généré facultatif et aux références image, vidéo ou audio. Partez d’une action claire, puis comparez les variantes avec un devis à jour pour vos réglages.",
   "hero": {
     "title": "Seedance 2.5 Flash — préparez vos prochaines scènes",
-    "intro": "Seedance 2.5 Flash est le modèle vidéo de ByteDance destiné aux itérations créatives fréquentes. BytePlus annonce des clips jusqu’à 30 secondes en 480p ou 720p, avec des références image, vidéo et audio. Son arrivée sur MaxVideoAI se prépare.",
-    "badge": "Aperçu · 480p / 720p · Jusqu’à 30 secondes",
+    "intro": "Transformez un personnage, un produit ou une idée de scène en vidéo de 4 à 30 secondes. Seedance 2.5 Flash associe une sortie 480p ou 720p au son généré facultatif et aux références image, vidéo ou audio. Partez d’une action claire, puis comparez les variantes avec un devis à jour pour vos réglages.",
+    "badge": "480p / 720p · 4–30 s",
     "ctaPrimary": {
-      "label": "Voir les modèles disponibles",
-      "href": "/fr/modeles"
+      "label": "Créer avec Flash",
+      "href": "/app?engine=seedance-2-5-flash"
     },
     "secondaryLinks": [
       {
@@ -26,7 +26,7 @@
     ]
   },
   "bestUseCases": {
-    "title": "Des idées de scènes à préparer",
+    "title": "Que créer avec Flash",
     "items": [
       {
         "title": "Un moment de personnage autour d’un regard, d’un geste ou d’une réaction",
@@ -46,11 +46,11 @@
       }
     ]
   },
-  "technicalOverviewTitle": "Capacités annoncées du modèle",
+  "technicalOverviewTitle": "Les outils de Seedance 2.5 Flash",
   "technicalOverview": [
     {
       "label": "Durée",
-      "body": "Jusqu’à 30 secondes par clip, selon BytePlus"
+      "body": "4 à 30 secondes par clip généré"
     },
     {
       "label": "Sortie",
@@ -58,11 +58,11 @@
     },
     {
       "label": "Références",
-      "body": "Jusqu’à 10 images, 5 vidéos et 5 extraits audio, selon BytePlus"
+      "body": "Jusqu’à 10 images, 5 vidéos et 5 pistes audio ; une entrée visuelle est nécessaire avec les références sonores"
     },
     {
-      "label": "Disponibilité",
-      "body": "Intégration à MaxVideoAI en préparation"
+      "label": "Parcours",
+      "body": "Créer depuis du texte, une image ou des références ; modifier ou prolonger une vidéo source"
     }
   ],
   "tips": [
@@ -72,43 +72,43 @@
   ],
   "faqs": [
     {
-      "q": "Puis-je générer avec Seedance 2.5 Flash sur MaxVideoAI ?",
-      "a": "L’intégration est en préparation. La génération avec Flash n’est pas encore disponible sur MaxVideoAI."
+      "q": "Comment créer une vidéo Seedance 2.5 Flash ?",
+      "a": "Sélectionnez Flash dans l’espace de travail, choisissez Create, Modify ou Extend et fournissez les entrées demandées par le mode. Vérifiez le devis actuel avant de confirmer."
     },
     {
-      "q": "Qu’a annoncé BytePlus ?",
-      "a": "Des clips jusqu’à 30 secondes en 480p ou 720p, avec jusqu’à 10 références image, 5 références vidéo et 5 références audio."
+      "q": "Quelles références puis-je utiliser ?",
+      "a": "Jusqu’à 10 images, 5 vidéos et 5 pistes audio, dans les limites du mode choisi. Les références audio exigent une entrée visuelle. Modification et extension ont leurs propres contrôles de vidéo source."
     },
     {
-      "q": "Flash inclut-il le 1080p, la 4K ou le mode Draft/final natif ?",
-      "a": "Ces options ne font pas partie de l’offre Flash en préparation. Seedance 2.5 et Flash conservent chacun leurs options prises en charge."
+      "q": "Flash propose-t-il le 1080p, la 4K ou le Draft natif ?",
+      "a": "Non. Flash produit du 480p ou du 720p. Seedance 2.5 standard possède ses propres options 1080p et son parcours natif Draft vers rendu final. Une génération Flash ne peut pas être finalisée comme un Draft natif."
     },
     {
-      "q": "Les prompts ci-dessous correspondent-ils à de vrais résultats Flash ?",
-      "a": "Ce sont des propositions de scènes. Seuls des médias réellement générés avec Flash seront présentés comme exemples Flash."
+      "q": "Ces prompts correspondent-ils à de vrais résultats Flash ?",
+      "a": "Le Prompt Lab contient des propositions de scènes à adapter. Un exemple vidéo est attribué à Flash uniquement s’il a réellement été généré par ce modèle."
     },
     {
-      "q": "Comment connaître le prix ?",
-      "a": "Lorsque la génération sera disponible, MaxVideoAI affichera le devis actuel avant la confirmation du rendu."
+      "q": "Où consulter le prix ?",
+      "a": "La page affiche des devis actuels pour ses réglages d’exemple. Votre devis final est calculé dans l’espace de travail selon le modèle, la durée, la résolution, le son et les sources."
     }
   ],
   "decision": {
     "modelSlug": "seedance-2-5-flash",
     "hero": {
-      "eyebrow": "BYTEDANCE · APERÇU DU MODÈLE",
+      "eyebrow": "BYTEDANCE · 480p / 720p · 4–30 s",
       "title": "Seedance 2.5 Flash",
-      "subtitle": "Prévoyez l’action. Composez la scène.",
+      "subtitle": "Dirigez l’action. Explorez les variantes.",
       "subtitleHighlights": [
-        "Prévoyez l’action."
+        "Dirigez l’action."
       ],
-      "paragraph": "Partez d’un personnage, d’une action lisible et d’un mouvement de caméra précis. L’arrivée de Seedance 2.5 Flash sur MaxVideoAI se prépare ; découvrez les modèles Seedance disponibles en imaginant votre prochaine scène.",
+      "paragraph": "Partez d’un texte, d’une image de départ ou d’un brief de références. Dirigez l’action et la caméra, choisissez la durée et le son, puis utilisez le devis actuel pour préparer votre prochaine variante.",
       "primaryCta": {
-        "label": "Voir les modèles disponibles",
-        "href": "/fr/modeles"
+        "label": "Créer avec Flash",
+        "href": "/app?engine=seedance-2-5-flash"
       },
       "secondaryCta": {
-        "label": "Découvrir Seedance 2.5",
-        "href": "/fr/modeles/seedance-2-5"
+        "label": "Comparer les versions Seedance",
+        "href": "/fr/comparatif/seedance-2-5-vs-seedance-2-5-flash"
       },
       "quickLinks": [
         {
@@ -116,39 +116,39 @@
           "href": "#prompting"
         },
         {
-          "label": "Capacités annoncées du modèle",
+          "label": "Les outils de Seedance 2.5 Flash",
           "href": "#specs"
         }
       ]
     },
     "media": {
-      "caption": "Exemples Flash en préparation",
-      "description": "Un exemple propre à Seedance 2.5 Flash sera ajouté après vérification.",
+      "caption": "Dirigez votre scène avec Seedance 2.5 Flash",
+      "description": "Composez une scène de 4 à 30 secondes à partir de texte, d’images clés ou de références visuelles.",
       "renderLabel": "Voir l’exemple",
       "badges": [
-        "Aperçu"
+        "480p / 720p"
       ],
-      "altContext": "Scène cinématographique Seedance 2.5 Flash"
+      "altContext": "Direction de scène Seedance 2.5 Flash"
     },
     "features": [
       {
         "title": "Jusqu’à 30 secondes",
-        "body": "Prévoyez une mise en place, une action visible et une fin dans la durée annoncée.",
+        "body": "Construisez une mise en place, une action visible et une conclusion dans une même scène.",
         "tone": "duration"
       },
       {
         "title": "480p ou 720p",
-        "body": "Les formats de sortie annoncés se concentrent sur ces deux résolutions.",
+        "body": "Choisissez le 480p pour un premier essai ou le 720p selon votre brief.",
         "tone": "quality"
       },
       {
         "title": "Références multimodales",
-        "body": "BytePlus annonce des entrées image, vidéo et audio pour guider une scène.",
+        "body": "Guidez le sujet et le mouvement par des références image, vidéo et audio.",
         "tone": "reference"
       },
       {
-        "title": "Un modèle Flash distinct",
-        "body": "Flash possède sa propre disponibilité et ses propres options dans la famille Seedance.",
+        "title": "Créer, modifier et prolonger",
+        "body": "Créez une scène, modifiez une source ou continuez un clip par un parcours d’extension distinct.",
         "tone": "continuity"
       }
     ],
@@ -162,11 +162,11 @@
         }
       },
       {
-        "title": "Envie de créer maintenant ?",
-        "body": "Découvrez Seedance 2.5, déjà disponible sur MaxVideoAI.",
+        "title": "Comparer standard et Flash",
+        "body": "Choisissez Seedance 2.5 standard pour le 1080p ou le parcours natif Draft vers rendu final. Flash possède ses propres réglages 480p/720p et limites de références.",
         "cta": {
-          "label": "Voir Seedance 2.5",
-          "href": "/fr/modeles/seedance-2-5"
+          "label": "Comparer les versions Seedance",
+          "href": "/fr/comparatif/seedance-2-5-vs-seedance-2-5-flash"
         }
       }
     ],
@@ -186,21 +186,21 @@
     ],
     "pricingCopy": {
       "title": "Tarifs Seedance 2.5 Flash",
-      "subtitle": "Le prix sera affiché avant la génération lorsque Flash sera disponible sur MaxVideoAI.",
-      "footnote": "Le devis tiendra compte de la durée, de la résolution et des vidéos utilisées en entrée.",
-      "ctaLabel": "Voir les modèles disponibles",
-      "ctaHref": "/fr/modeles"
+      "subtitle": "Consultez le prix actuel pour la durée, la résolution, le son et les entrées choisis avant de générer.",
+      "footnote": "Les vidéos d’entrée influencent la durée facturée. Le devis utilise le tarif MaxVideoAI actuel ; le coût d’un ancien rendu ne fixe pas celui d’une nouvelle génération.",
+      "ctaLabel": "Créer avec Flash",
+      "ctaHref": "/app?engine=seedance-2-5-flash"
     },
     "meta": {
-      "title": "Seedance 2.5 Flash : aperçu du modèle vidéo | MaxVideoAI",
-      "description": "Découvrez Seedance 2.5 Flash : vidéos annoncées jusqu’à 30 secondes en 480p ou 720p et références multimodales. Son arrivée sur MaxVideoAI se prépare."
+      "title": "Seedance 2.5 Flash : vidéo IA, références et tarifs | MaxVideoAI",
+      "description": "Créez des vidéos de 4 à 30 secondes avec Seedance 2.5 Flash en 480p ou 720p. Références image, vidéo et audio, modification, extension et tarifs actuels."
     }
   },
   "prompting": {
     "modelSlug": "seedance-2-5-flash",
     "section": {
-      "title": "Labo de prompts — préparez une scène Flash",
-      "intro": "Ces propositions servent à préparer une scène ; ce ne sont pas des démonstrations Flash déjà réalisées. Adaptez le personnage, l’action et la caméra avant de tester le modèle lorsqu’il sera disponible.",
+      "title": "Prompt Lab — diriger une scène Flash",
+      "intro": "Adaptez ces propositions de scènes à votre sujet, à l’action et à la caméra. Un modèle de prompt décrit le résultat souhaité ; ce n’est pas une génération terminée.",
       "tip": "Changez un seul choix visible entre deux variantes pour pouvoir comparer les résultats.",
       "guide": null,
       "referencesTitle": null
@@ -239,7 +239,9 @@
       "title": "Proposition de scène — la réaction de la coursière",
       "promptLabel": "Prompt proposé · pas encore généré",
       "prompt": "Une coursière en veste rouge s’arrête sous l’auvent d’une rue de ville détrempée, la nuit. Elle remarque une silhouette familière de l’autre côté de la route, se tourne vers elle et sourit. Un léger travelling avant accompagne sa réaction. Garder sa veste, son visage et l’éclairage de la rue mouillée cohérents.",
-      "notes": ["Cette scène n’a pas été générée avec Flash. Ses réglages et son résultat restent à tester."],
+      "notes": [
+        "Cette scène n’a pas été générée avec Flash. Ses réglages et son résultat restent à tester."
+      ],
       "summary": {
         "subject": "Une coursière en veste rouge",
         "action": "Remarquer, se tourner et sourire",
@@ -264,7 +266,7 @@
     "showWhenEmpty": false,
     "section": {
       "title": "Exemples Seedance 2.5 Flash",
-      "intro": "Les clips Flash vérifiés apparaîtront ici avec leur prompt original et leurs réglages réels. La galerie Seedance indique le modèle utilisé pour chaque clip.",
+      "intro": "Examinez les vidéos Flash avec leurs prompts et réglages d’origine. La galerie Seedance conserve le modèle exact utilisé pour chaque clip.",
       "defaultCtaLabel": "Voir la galerie Seedance",
       "recreateLabel": null
     },

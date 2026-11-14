@@ -18,6 +18,16 @@ quotes and retrying a failed page refresh without repricing. Code and prepared
 imports do not activate production tariffs. See the
 [integration and release record](../model-launch/seedance-2-5-flash.md).
 
+Public Flash discovery also excludes the legacy percentage-policy fallback:
+static public quotes and admin margin/surcharge previews cannot create a Flash
+price. The estimator keeps its resolution and duration controls, leaves the old
+unit-rate hint empty, and displays only `/api/pricing/quote` results. Model cards,
+comparisons and Product offers retain their current native quote owners. The
+additive offline projection matrix has twelve unavailable Flash rows without an
+active tariff; historical fixtures remain frozen. The exhaustive initial-cutover
+replay excludes later native-tariff launches, while the dedicated Seedance test
+qualifies all 6,804 current proposed classes.
+
 ## GPT Image 2.6 raster tariffs (2026-11-07 candidate)
 
 The 2,040 exact launch cells retain their original identities and precedence.

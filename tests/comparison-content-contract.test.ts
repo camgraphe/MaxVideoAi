@@ -121,7 +121,7 @@ function loadGenericMetadataFallbacks(locale: (typeof LOCALES)[number]): Record<
 
 test('comparison documents are dynamically discovered with unique matching identities and three locales', () => {
   const files = contentFiles();
-  assert.equal(files.length, 73); // Includes the unpublished, prepared Flash comparison.
+  assert.equal(files.length, 79); // Includes six fully localized Seedance 2.5 Flash comparisons.
   const identities = new Set<string>();
 
   for (const fileName of files) {

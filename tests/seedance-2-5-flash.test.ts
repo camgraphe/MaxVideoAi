@@ -13,7 +13,7 @@ import { getBytePlusVideoListRate } from '../frontend/server/byteplus-list-tarif
 import { estimateBytePlusBillableTokens, bytePlusInputVideoDurationSec } from '../frontend/server/byteplus-accounting';
 import { projectSeedance25ModeAvailability } from '../frontend/server/engine-mode-availability';
 import { projectAgentModelModeDetails } from '../frontend/src/server/agent-api/model-details';
-import { createAgentModelCatalogDeps, listPublicAgentCatalogEngines } from '../frontend/src/server/agent-api/model-catalog';
+import { createAgentModelCatalogDeps, listPublicAgentCatalogEngines, listPublicAgentGenerationEngines } from '../frontend/src/server/agent-api/model-catalog';
 import { getPromptAssistanceProfile } from '../frontend/src/server/prompt-assistance/profiles';
 import { isStudioConversationVideoModeCertified } from '../frontend/app/(core)/(workspace)/app/studio/_shared/_lib/models/workspace-model-certification';
 
@@ -101,7 +101,7 @@ test('Flash supplier accounting uses its own rates and the 30-second video-input
   assert.equal(estimate?.minimumTokens, 194400);
 });
 
-test('MCP, Studio and Milo derive the same Flash controls and keep public discovery gated', async () => {
+test('MCP, Studio and Milo derive the same Flash controls and respect runtime availability', async () => {
   const projected = projectSeedance25ModeAvailability({ ...engine, modeCaps: Object.fromEntries(getFalEngineById(id)!.modes.map(m => [m.mode, m.ui])) });
   for (const mode of profile.supportedModes) {
     assert.equal(isStudioConversationVideoModeCertified(id, mode), true);
@@ -110,8 +110,12 @@ test('MCP, Studio and Milo derive the same Flash controls and keep public discov
     assert.equal(getPromptAssistanceProfile(id, mode).family, 'seedance');
   }
   const deps = { ...createAgentModelCatalogDeps(), listEngines: async () => [engine], isModeExecutable: () => true, isEngineExecutable: () => true };
-  assert.deepEqual(await listPublicAgentCatalogEngines(deps), []);
-  assert.deepEqual(await listPublicAgentCatalogEngines(deps, { exactId: id }), []);
-  const canary = await listPublicAgentCatalogEngines(deps, { exactId: id, access: { allowedPrelaunchModelIds: new Set([id]) } });
-  assert.equal(canary[0]?.engine.id, id);
+  assert.deepEqual((await listPublicAgentCatalogEngines(deps)).map(entry => entry.engine.id), [id]);
+  assert.deepEqual((await listPublicAgentCatalogEngines(deps, { exactId: id })).map(entry => entry.engine.id), [id]);
+  const disabledDeps = { ...deps, isEngineExecutable: () => false, isModeExecutable: () => false };
+  const disabledCatalog = await listPublicAgentCatalogEngines(disabledDeps);
+  assert.deepEqual(disabledCatalog.map(entry => entry.engine.id), [id]);
+  assert.equal(disabledCatalog[0].generationEnabled, false);
+  assert.deepEqual(disabledCatalog[0].publicModes, []);
+  assert.deepEqual(await listPublicAgentGenerationEngines(disabledDeps), []);
 });

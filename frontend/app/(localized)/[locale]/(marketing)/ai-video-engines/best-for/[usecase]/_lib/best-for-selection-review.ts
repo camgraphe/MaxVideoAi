@@ -1,7 +1,7 @@
 import { text, type LocalizedText } from './best-for-editorial-copy';
 
-export const SELECTION_REVIEWED_AT = '2026-10-19';
-// 29 live video model contracts reviewed; capability-led editorial order.
+export const SELECTION_REVIEWED_AT = '2026-11-14';
+// Existing editorial order retained; Flash adds a workflow alternative, not a measured ranking.
 export const SELECTION_RATIONALE: Record<string, LocalizedText> = {
   'image-to-video': text("Start with Seedance 2.5 for a scene that needs time to unfold. Kling Omni Pro and H3 add reference-led options; FLUX 3 gives you explicit first and last frames, while Ray 3.2 is useful when reframing or transforming footage is part of the job.", "Commencez par Seedance 2.5 pour une scène qui a besoin de temps. Kling Omni Pro et H3 apportent des options de références ; FLUX 3 permet de fixer le début et la fin, tandis que Ray 3.2 répond aux besoins de transformation et de recadrage.", "Empieza con Seedance 2.5 para una escena que necesita tiempo. Kling Omni Pro y H3 aportan opciones de referencias; FLUX 3 permite fijar el inicio y el final, mientras Ray 3.2 sirve para transformar y reencuadrar vídeo."),
   'cinematic-realism': text("Seedance 2.5 leads this selection for longer, reference-led scenes. Wan 3 Prime adds source editing and continuation. Veo 3.1 and H3 offer 4K options; Ray 3.2 suits a visual workflow where you will add the sound separately.", "Seedance 2.5 ouvre cette sélection pour les scènes longues guidées par des références. Wan 3 Prime ajoute la modification et la prolongation d’une source. Veo 3.1 et H3 proposent des options 4K ; Ray 3.2 convient à un travail visuel dont le son sera ajouté séparément.", "Seedance 2.5 encabeza la selección para escenas largas con referencias. Wan 3 Prime añade edición y continuación de una fuente. Veo 3.1 y H3 ofrecen opciones 4K; Ray 3.2 encaja cuando el sonido se añadirá por separado."),

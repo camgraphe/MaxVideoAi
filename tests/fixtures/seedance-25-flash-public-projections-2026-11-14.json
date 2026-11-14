@@ -1,0 +1,78 @@
+{
+  "version": 1,
+  "generatedFrom": "seedance-2-5-flash-publication-with-required-active-tariff",
+  "rows": [
+    {
+      "id": "estimator:seedance-2-5-flash:member:default",
+      "surface": "estimator",
+      "engineId": "seedance-2-5-flash",
+      "status": "unavailable"
+    },
+    {
+      "id": "estimator:seedance-2-5-flash:plus:default",
+      "surface": "estimator",
+      "engineId": "seedance-2-5-flash",
+      "status": "unavailable"
+    },
+    {
+      "id": "estimator:seedance-2-5-flash:pro:default",
+      "surface": "estimator",
+      "engineId": "seedance-2-5-flash",
+      "status": "unavailable"
+    },
+    {
+      "id": "json-ld:seedance-2-5-flash:offer",
+      "surface": "json-ld",
+      "engineId": "seedance-2-5-flash",
+      "status": "unavailable"
+    },
+    {
+      "id": "model-page:seedance-2-5-flash:default",
+      "surface": "model-page",
+      "engineId": "seedance-2-5-flash",
+      "status": "unavailable"
+    },
+    {
+      "id": "pricing-hub-video:seedance-2-5-flash:10s-1080p",
+      "surface": "pricing-hub-video",
+      "engineId": "seedance-2-5-flash",
+      "status": "unavailable"
+    },
+    {
+      "id": "pricing-hub-video:seedance-2-5-flash:10s-1080p-audio",
+      "surface": "pricing-hub-video",
+      "engineId": "seedance-2-5-flash",
+      "status": "unavailable"
+    },
+    {
+      "id": "pricing-hub-video:seedance-2-5-flash:10s-720p",
+      "surface": "pricing-hub-video",
+      "engineId": "seedance-2-5-flash",
+      "status": "unavailable"
+    },
+    {
+      "id": "pricing-hub-video:seedance-2-5-flash:4k-route",
+      "surface": "pricing-hub-video",
+      "engineId": "seedance-2-5-flash",
+      "status": "unavailable"
+    },
+    {
+      "id": "pricing-hub-video:seedance-2-5-flash:5s-720p",
+      "surface": "pricing-hub-video",
+      "engineId": "seedance-2-5-flash",
+      "status": "unavailable"
+    },
+    {
+      "id": "pricing-hub-video:seedance-2-5-flash:8s-1080p",
+      "surface": "pricing-hub-video",
+      "engineId": "seedance-2-5-flash",
+      "status": "unavailable"
+    },
+    {
+      "id": "pricing-hub-video:seedance-2-5-flash:entry-route",
+      "surface": "pricing-hub-video",
+      "engineId": "seedance-2-5-flash",
+      "status": "unavailable"
+    }
+  ]
+}

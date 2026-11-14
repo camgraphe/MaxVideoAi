@@ -419,6 +419,12 @@ test('Seedance family comparisons use video showdowns while Mini and Gemini page
     ...p0ScoreboardOnlyComparisons,
     ...p1ScoreboardOnlyComparisons,
     ...trendingScoreboardOnlyComparisons,
+    'seedance-2-5-vs-seedance-2-5-flash',
+    'seedance-2-0-fast-vs-seedance-2-5-flash',
+    'kling-v4-flash-vs-seedance-2-5-flash',
+    'seedance-2-5-flash-vs-veo-3-1-fast',
+    'ltx-2-5-fast-vs-seedance-2-5-flash',
+    'minimax-h3-vs-seedance-2-5-flash',
   ]);
   assert.match(configSource, /export const SCOREBOARD_ONLY_COMPARISONS/);
   assert.match(configSource, /compareConfig as \{ scoreboardOnlyComparisons\?: string\[\] \}/);
