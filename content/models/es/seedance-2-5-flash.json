@@ -172,22 +172,22 @@
     ],
     "referenceWorkflows": [
       {
-        "title": "Personaje y entorno",
-        "body": "Define la persona, el vestuario, el lugar y la luz antes de escribir la acción."
+        "title": "Dar intención al momento",
+        "body": "Dos personas en una cafetería de noche. Una tiene algo que decir. Define sus posiciones, miradas y el ambiente."
       },
       {
-        "title": "Acción y cámara",
-        "body": "Asigna a la escena un movimiento principal y una instrucción de cámara."
+        "title": "Dirigir un movimiento claro",
+        "body": "Pide un suave acercamiento durante un breve intercambio. Deja que la reacción termine antes de cerrar el plano."
       },
       {
-        "title": "Preparar referencias",
-        "body": "Reúne los medios de origen relevantes y conserva su identidad junto al prompt para revisarlos después."
+        "title": "Dar un papel al sonido",
+        "body": "Describe las voces, el ambiente de la sala y la lluvia en la ventana. Deja un silencio para el último instante."
       }
     ],
     "pricingCopy": {
-      "title": "Precios de Seedance 2.5 Flash",
-      "subtitle": "Consulta el precio actual para la duración, resolución, audio y entradas elegidos antes de generar.",
-      "footnote": "Los vídeos de entrada afectan a la duración facturable. El presupuesto usa la tarifa actual de MaxVideoAI; el coste de un resultado anterior no fija el de una nueva generación.",
+      "title": "Tus ajustes. Tu precio.",
+      "subtitle": "Elige la duración, resolución, sonido y referencias en Create. Verás el precio exacto antes de generar.",
+      "footnote": "Los vídeos de origen pueden modificar la duración facturable. Consulta el presupuesto para tus entradas.",
       "ctaLabel": "Crear con Flash",
       "ctaHref": "/app?engine=seedance-2-5-flash"
     },
@@ -199,8 +199,8 @@
   "prompting": {
     "modelSlug": "seedance-2-5-flash",
     "section": {
-      "title": "Prompt Lab — dirigir una escena Flash",
-      "intro": "Adapta estas propuestas de escenas al sujeto, la acción y la cámara. Una plantilla de prompt describe el resultado deseado; no es una generación terminada.",
+      "title": "Cómo escribir prompts para Seedance 2.5 Flash",
+      "intro": "Da una intención a la escena y dirige la acción, la cámara y el sonido. Parte de esta conversación nocturna para crear tu propio momento.",
       "tip": "Cambia una sola decisión visible entre variantes para poder comparar los resultados.",
       "guide": null,
       "referencesTitle": null
@@ -208,24 +208,24 @@
     "tabs": [
       {
         "id": "concept",
-        "label": "Personaje",
-        "title": "Dar un sujeto claro a la escena",
-        "description": "Describe el personaje y el momento que quieres ver.",
-        "copy": "Una mensajera con chaqueta roja se detiene bajo el toldo de una calle urbana empapada por la lluvia, de noche. Reconoce una silueta al otro lado de la calzada, se gira hacia ella y sonríe. Mantener su chaqueta, su rostro y la iluminación de la calle mojada."
+        "label": "La intención",
+        "title": "La intención",
+        "description": "Empieza por las personas y el momento.",
+        "copy": "Dos personas están sentadas frente a frente en una cafetería de noche. Una hace una pregunta breve en voz baja; la otra levanta la mirada, sonríe y hace una pausa antes de responder. Mantener sus posiciones, ropa y la luz cálida de la ventana."
       },
       {
         "id": "motion",
-        "label": "Acción",
-        "title": "Hacer legible el movimiento",
-        "description": "Define un inicio, una acción y una composición final.",
-        "copy": "Empezar con un plano medio de una bailarina junto a una ventana soleada de un estudio. Da un paso, gira con fluidez y se queda quieta mirando a la ventana. Mantener las manos y los pies visibles durante el giro. Terminar con una composición fija."
+        "label": "La cámara",
+        "title": "La cámara",
+        "description": "Elige un movimiento que siga la emoción.",
+        "copy": "Empezar con un plano medio de las dos personas en la cafetería. Acercarse suavemente durante el intercambio y detenerse en la reacción de quien escucha. Mantener las miradas coherentes, sin cortes ni movimientos bruscos."
       },
       {
         "id": "camera",
-        "label": "Cámara",
-        "title": "Probar una variante de encuadre",
-        "description": "Mantén el sujeto y la acción mientras cambias el encuadre.",
-        "copy": "Mantener la misma mensajera, el mismo lugar y la misma acción. Versión A: un travelling lateral lento a la altura de los ojos. Versión B: un acercamiento suave desde un plano medio hasta un primer plano cuando sonríe. Evitar cortes adicionales."
+        "label": "El sonido",
+        "title": "El sonido",
+        "description": "Construye un ambiente alrededor del diálogo.",
+        "copy": "Dos voces distintas y tranquilas en una cafetería de noche. Ambiente suave de la sala y lluvia contra la ventana. Dejar un breve silencio tras la respuesta. Sin música."
       }
     ],
     "tabNotes": [],
@@ -236,27 +236,27 @@
     ],
     "engineWhy": [],
     "demo": {
-      "title": "Propuesta de escena — la reacción de la mensajera",
+      "title": "Plan de escena — una conversación nocturna",
       "promptLabel": "Prompt propuesto · todavía sin generar",
-      "prompt": "Una mensajera con chaqueta roja se detiene bajo el toldo de una calle de ciudad empapada por la lluvia, de noche. Reconoce una silueta al otro lado de la calle, se vuelve hacia ella y sonríe. Un suave avance de cámara acompaña su reacción. Mantener coherentes la chaqueta, el rostro y la iluminación de la calle mojada.",
+      "prompt": "Dos personas están sentadas frente a frente en una cafetería de noche. Una hace una pregunta breve en voz baja; la otra levanta la mirada, sonríe y hace una pausa antes de responder. Mantener sus posiciones, ropa y la luz cálida de la ventana. Empezar con un plano medio de las dos personas en la cafetería. Acercarse suavemente durante el intercambio y detenerse en la reacción de quien escucha. Mantener las miradas coherentes, sin cortes ni movimientos bruscos. Dos voces distintas y tranquilas en una cafetería de noche. Ambiente suave de la sala y lluvia contra la ventana. Dejar un breve silencio tras la respuesta. Sin música.",
       "notes": [
         "Esta escena no se ha generado con Flash. Sus ajustes y su resultado están pendientes de prueba."
       ],
       "summary": {
-        "subject": "Una mensajera con chaqueta roja",
-        "action": "Reconocer, girarse y sonreír",
-        "camera": "Un suave avance hacia la reacción",
-        "style": "Una calle de ciudad lluviosa de noche",
+        "subject": "Dos personas en una cafetería de noche",
+        "action": "Una pregunta tranquila, una sonrisa y una respuesta",
+        "camera": "Un suave acercamiento hacia quien escucha",
+        "style": "Luz cálida de la ventana y lluvia fuera",
         "output": "Propuesta de escena; todavía no hay un resultado generado"
       },
       "presentationOverrides": {
         "modeLabel": "Propuesta de escena",
         "outputLabel": "Resultado pendiente",
         "duration": "Por definir",
-        "aspectRatio": "Por definir",
+        "aspectRatio": "16:9",
         "audioChipMode": "media",
         "audioChipLabel": "Sin generar",
-        "altContext": "Escena de mensajera propuesta para una futura prueba de Seedance 2.5 Flash"
+        "altContext": "Una conversación prevista entre dos personas en una cafetería de noche"
       }
     },
     "imageExamples": null
@@ -346,14 +346,13 @@
       "panels": [
         {
           "id": "performance",
-          "layout": "grid",
-          "eyebrow": "Interpretación y diálogo",
+          "layout": "feature",
+          "eyebrow": "La interpretación humana",
           "title": "Un gesto. Una emoción.",
-          "body": "Una baqueta antes del golpe. Una mirada antes de responder. Parte de una acción humana clara y de un movimiento de cámara que le dé espacio.",
+          "body": "Una baqueta suspendida antes del golpe. Dirige el ritmo, el arco de cámara y la expresión al final de la toma.",
           "note": "Construye el plano alrededor de un gesto, un intercambio o un movimiento de cámara claro.",
           "assetIds": [
-            "after-the-beat",
-            "the-blue-hour"
+            "after-the-beat"
           ]
         },
         {
@@ -365,7 +364,8 @@
           "note": "Define un recorrido claro para el movimiento dentro de la escena.",
           "assetIds": [
             "where-gravity-ends"
-          ]
+          ],
+          "placement": "details"
         },
         {
           "id": "vertical",
@@ -378,6 +378,18 @@
             "make-an-entrance",
             "before-the-drop"
           ]
+        },
+        {
+          "id": "prompt-story",
+          "layout": "feature",
+          "eyebrow": "Guía de prompts",
+          "title": "Cómo escribir prompts para Seedance 2.5 Flash",
+          "body": "Da una intención a la escena y dirige la acción, la cámara y el sonido. Parte de esta conversación nocturna para crear tu propio momento.",
+          "note": "Construye el plano alrededor de un gesto, un intercambio o un movimiento de cámara claro.",
+          "assetIds": [
+            "the-blue-hour"
+          ],
+          "placement": "prompting"
         }
       ],
       "shotPlans": [

@@ -121,20 +121,9 @@
 .marketing-site .model-cinematic-page .cinema-spec-grid dt{font-size:12px;color:var(--cinema-muted);margin-bottom:10px}
 .marketing-site .model-cinematic-page .cinema-spec-grid dd{font-size:15px;font-weight:500}
 .marketing-site .model-cinematic-page .cinema-spec-grid dd span{display:block}
-.marketing-site .model-cinematic-page .cinema-pricing{background:var(--cinema-surface)}
-.marketing-site .model-cinematic-page .cinema-price-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:24px}
-.marketing-site .model-cinematic-page .cinema-price-grid article{border-top:1px solid var(--cinema-line);padding-top:24px}
-.marketing-site .model-cinematic-page .cinema-price-grid h3{font-size:15px;letter-spacing:-.025em;margin-bottom:22px}
-.marketing-site .model-cinematic-page .cinema-price-grid p{font-size:12px;color:var(--cinema-muted);margin-top:6px}
-.marketing-site .model-cinematic-page .cinema-price-grid .cinema-price-value{font-size:28px;line-height:1.2;color:var(--cinema-ink);letter-spacing:-.04em}
 .marketing-site .model-cinematic-page .cinema-price-offer{font-size:13px;margin-top:30px}
 .marketing-site .model-cinematic-page .cinema-faq-grid{display:grid;grid-template-columns:.8fr 1.2fr;gap:8%}
 .marketing-site .model-cinematic-page .cinema-faq .cinema-disclosure>summary{font-size:15px;padding-block:22px}
-.marketing-site .model-cinematic-page .cinema-related{border-top:1px solid var(--cinema-line)}
-.marketing-site .model-cinematic-page .cinema-related .cinema-wrap>div{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:36px;margin-top:48px}
-.marketing-site .model-cinematic-page .cinema-related h3{font-size:23px;letter-spacing:-.035em;margin-bottom:20px}
-.marketing-site .model-cinematic-page .cinema-related p{font-size:13px;color:var(--cinema-muted);margin-bottom:22px}
-.marketing-site .model-cinematic-page .cinema-related a{font-size:12px;text-decoration:underline;text-underline-offset:4px}
 .marketing-site .model-cinematic-page .cinema-close{background:#141b24;color:#eef2f6;padding-block:110px}
 .marketing-site .model-cinematic-page .cinema-close h2{max-width:900px;font-size:clamp(42px,6vw,90px);margin-bottom:36px}
 .marketing-site .model-cinematic-page .cinema-details-pending{min-height:120px;padding-block:36px;display:flex;justify-content:space-between;align-items:center;gap:24px}
@@ -195,7 +184,6 @@
  .marketing-site .model-cinematic-page .cinema-workflow p{grid-column:2}
  .marketing-site .model-cinematic-page .cinema-spec-grid{grid-template-columns:1fr 1fr;gap:0 24px}
  .marketing-site .model-cinematic-page .cinema-spec-grid dd{font-size:13px}
- .marketing-site .model-cinematic-page .cinema-price-grid{grid-template-columns:1fr 1fr;gap:30px 20px}
  .marketing-site .model-cinematic-page .cinema-faq-grid{display:block}
  .marketing-site .model-cinematic-page .cinema-faq-grid>header{margin-bottom:35px}
  .marketing-site .model-cinematic-page .cinema-close{padding-block:70px}
@@ -252,24 +240,12 @@ html:has(.model-cinematic-page)::-webkit-scrollbar-thumb{background:#707b8880;bo
 @media(prefers-reduced-motion:reduce){.marketing-site .model-cinematic-page .cinema-path-arrow{animation:none}}
 .marketing-site .model-cinematic-page .cinema-specs{background:var(--cinema-surface)}
 .marketing-site .model-cinematic-page .cinema-specs-layout{display:grid;grid-template-columns:.8fr 1.2fr;gap:8%;align-items:start}
-.marketing-site .model-cinematic-page .cinema-specs-heading h2{font-size:clamp(32px,3.8vw,54px)}
-.marketing-site .model-cinematic-page .cinema-specs-heading>p:not(.cinema-eyebrow){font-size:15px;color:var(--cinema-muted);margin-top:22px}
-.marketing-site .model-cinematic-page .cinema-specs-heading .cinema-button{margin-top:28px}
 .marketing-site .model-cinematic-page .cinema-spec-grid{grid-template-columns:1fr 1fr;gap:0 28px;margin-bottom:20px}
 .marketing-site .model-cinematic-page .cinema-spec-grid>div{padding-block:18px}
 .marketing-site .model-cinematic-page .cinema-spec-grid dt{font-size:12px}
 .marketing-site .model-cinematic-page .cinema-spec-grid dd{font-size:15px;line-height:1.6;overflow-wrap:anywhere}
-.marketing-site .model-cinematic-page .cinema-pricing{background:transparent;padding-top:60px}
-.marketing-site .model-cinematic-page .cinema-pricing h2{font-size:clamp(32px,3.5vw,50px)}
-.marketing-site .model-cinematic-page .cinema-price-grid{gap:16px}
-.marketing-site .model-cinematic-page .cinema-price-grid article{border:1px solid var(--cinema-line);border-radius:10px;background:var(--cinema-surface);padding:26px}
-.marketing-site .model-cinematic-page .cinema-price-grid h3{font-size:21px;letter-spacing:-.025em}
-.marketing-site .model-cinematic-page .cinema-price-grid .cinema-price-value{font-size:clamp(24px,2.8vw,38px);line-height:1.2;padding-block:22px 10px}
 .marketing-site .model-cinematic-page .cinema-faq{border-top:1px solid var(--cinema-line);padding-block:60px}
 .marketing-site .model-cinematic-page .cinema-faq h2{font-size:clamp(32px,3.8vw,52px)}
-.marketing-site .model-cinematic-page .cinema-related{padding-top:30px}
-.marketing-site .model-cinematic-page .cinema-related h2{font-size:clamp(28px,3vw,42px)}
-.marketing-site .model-cinematic-page .cinema-related article{padding:24px;border:1px solid var(--cinema-line);border-radius:10px;background:var(--cinema-surface)}
 .marketing-site .model-cinematic-page .cinema-close{padding-block:64px}
 .marketing-site .model-cinematic-page .cinema-close h2{font-size:clamp(36px,5vw,64px)}
 @media(max-width:767px){
@@ -285,7 +261,6 @@ html:has(.model-cinematic-page)::-webkit-scrollbar-thumb{background:#707b8880;bo
  .marketing-site .model-cinematic-page .cinema-path-frame{padding:18px 10px}
  .marketing-site .model-cinematic-page .cinema-path-frame i{height:42px}
  .marketing-site .model-cinematic-page .cinema-path-diagram{min-height:150px}
- .marketing-site .model-cinematic-page .cinema-price-grid{grid-template-columns:1fr}
  .marketing-site .model-cinematic-page .cinema-faq{padding-block:52px}
 }
 
@@ -294,7 +269,6 @@ html:has(.model-cinematic-page)::-webkit-scrollbar-thumb{background:#707b8880;bo
  .marketing-site .model-cinematic-page :is(.cinema-panel--portrait,.cinema-panel--cutout) .cinema-panel-heading{align-self:end}
  .marketing-site .model-cinematic-page :is(.cinema-panel--portrait,.cinema-panel--cutout) .cinema-panel-note{align-self:start;margin-top:24px}
 }
-.marketing-site .model-cinematic-page .cinema-spec-price-link{text-decoration:underline;text-underline-offset:4px;font-size:13px}
 
 .marketing-site .model-cinematic-page .cinema-shot-director{border:1px solid var(--cinema-line);border-radius:8px;overflow:hidden;margin-bottom:10px;background:var(--cinema-surface)}
 .marketing-site .model-cinematic-page .cinema-shot-tabs{display:flex;border-bottom:1px solid var(--cinema-line)}
@@ -331,4 +305,77 @@ html:has(.model-cinematic-page)::-webkit-scrollbar-thumb{background:#707b8880;bo
 @media(max-width:767px){
  .marketing-site .model-cinematic-page .cinema-detail-crop{height:210px}
  .marketing-site .model-cinematic-page .cinema-detail-proof figcaption{font-size:11px}
+}
+
+/* A visual proof accompanies each creative or decision section. Utility content stays compact. */
+.marketing-site .model-cinematic-page .cinema-prompt-lab{display:grid;grid-template-columns:1.15fr .85fr;gap:clamp(32px,5vw,76px);align-items:start}
+.marketing-site .model-cinematic-page .cinema-prompt-proof>.cinema-asset>figcaption{display:block}
+.marketing-site .model-cinematic-page .cinema-prompt-proof>.cinema-asset>figcaption p{text-align:left;max-width:none;margin-top:7px}
+.marketing-site .model-cinematic-page .cinema-prompt-proof>button{margin-top:20px;background:var(--cinema-ink);color:var(--cinema-surface);border-color:var(--cinema-ink)}
+.marketing-site .model-cinematic-page .cinema-prompt-method .cinema-workflow{display:block;margin-bottom:26px}
+.marketing-site .model-cinematic-page .cinema-prompt-method .cinema-workflow article{display:grid;grid-template-columns:28px 1fr;gap:6px 17px;padding-block:18px;border-top:1px solid var(--cinema-line)}
+.marketing-site .model-cinematic-page .cinema-prompt-method .cinema-step{border:0;margin:0;padding:3px 0;font-size:11px}
+.marketing-site .model-cinematic-page .cinema-prompt-method .cinema-workflow h3{font-size:20px;margin:0;line-height:1.3}
+.marketing-site .model-cinematic-page .cinema-prompt-method .cinema-workflow p{grid-column:2;font-size:14px;line-height:1.65}
+.marketing-site .model-cinematic-page .cinema-prompt-method .cinema-prompt-assistant{display:block;border:0;border-left:2px solid #81909d;border-radius:0;padding:4px 0 4px 20px;margin-bottom:24px;background:transparent}
+.marketing-site .model-cinematic-page .cinema-prompt-method .cinema-prompt-assistant h3{font-size:20px}
+.marketing-site .model-cinematic-page .cinema-prompt-method .cinema-prompt-assistant .cinema-button{min-height:40px;margin-top:16px;font-size:12px}
+.marketing-site .model-cinematic-page .cinema-prompt-method>.cinema-source-link{display:inline-flex;margin-top:18px;font-size:12px}
+.marketing-site .model-cinematic-page .cinema-recipes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px;margin-top:32px}
+.marketing-site .model-cinematic-page .cinema-specs{background:transparent}
+.marketing-site .model-cinematic-page .cinema-specs-layout{grid-template-columns:1.05fr .95fr;gap:clamp(32px,5vw,76px)}
+.marketing-site .model-cinematic-page .cinema-settings-proof>.cinema-asset>figcaption{display:block}
+.marketing-site .model-cinematic-page .cinema-settings-proof>.cinema-asset>figcaption p{text-align:left;max-width:none;margin-top:7px}
+@media(min-width:768px){.marketing-site .model-cinematic-page .cinema-settings-proof{position:sticky;top:100px;align-self:start}}
+.marketing-site .model-cinematic-page .cinema-settings-data .cinema-spec-grid{gap:0 26px;margin-bottom:6px}
+.marketing-site .model-cinematic-page .cinema-settings-data .cinema-spec-grid>div{padding-block:14px}
+.marketing-site .model-cinematic-page .cinema-settings-data .cinema-spec-grid dd{font-size:14px}
+.marketing-site .model-cinematic-page .cinema-price-summary{background:#17232f;color:#edf2f7;padding:28px;margin-top:28px;scroll-margin-top:100px}
+.marketing-site .model-cinematic-page--video .cinema-price-summary{background:#202d39}
+.marketing-site .model-cinematic-page .cinema-price-summary h3{font-size:28px;letter-spacing:-.04em;line-height:1.15;margin-bottom:14px}
+.marketing-site .model-cinematic-page .cinema-price-summary p{font-size:14px;color:#bcc8d3;line-height:1.65}
+.marketing-site .model-cinematic-page .cinema-price-actions{display:flex;align-items:center;gap:20px;flex-wrap:wrap;margin-top:23px}
+.marketing-site .model-cinematic-page .cinema-price-actions .cinema-button{background:#e3ebf2;color:#17232f;border:1px solid #e3ebf2;min-height:44px;box-shadow:none}
+.marketing-site .model-cinematic-page .cinema-price-actions .cinema-source-link{color:#e3ebf2;font-size:12px}
+.marketing-site .model-cinematic-page .cinema-price-summary .cinema-panel-note{font-size:12px;margin-top:18px;color:#9eafbd}
+.marketing-site .model-cinematic-page .cinema-price-list{margin-top:22px}
+.marketing-site .model-cinematic-page .cinema-price-list>div{display:flex;justify-content:space-between;gap:20px;border-top:1px solid #ffffff26;padding-block:12px;font-size:14px}
+.marketing-site .model-cinematic-page .cinema-price-list dd{font-size:23px;text-align:right;white-space:nowrap;letter-spacing:-.04em}
+.marketing-site .model-cinematic-page .cinema-price-list small{display:block;color:#adbdca;font-size:11px;letter-spacing:0;margin-top:5px}
+.marketing-site .model-cinematic-page .cinema-faq-grid{grid-template-columns:.85fr 1.15fr;gap:clamp(40px,7vw,110px)}
+.marketing-site .model-cinematic-page .cinema-faq h2{font-size:clamp(28px,3vw,42px)}
+.marketing-site .model-cinematic-page .cinema-related-links{margin-top:36px;scroll-margin-top:100px}
+.marketing-site .model-cinematic-page .cinema-related-links h3{font-size:17px;letter-spacing:-.025em;margin-bottom:14px}
+.marketing-site .model-cinematic-page .cinema-related-links>a{display:grid;grid-template-columns:1fr auto;gap:6px 20px;padding-block:15px;border-top:1px solid var(--cinema-line);font-size:16px}
+.marketing-site .model-cinematic-page .cinema-related-links small{grid-column:1/-1;font-size:12px;color:var(--cinema-muted);line-height:1.6}
+.marketing-site .model-cinematic-page .cinema-close{padding-block:40px}
+.marketing-site .model-cinematic-page .cinema-close>.cinema-wrap{display:grid;grid-template-columns:1fr auto;align-items:center;gap:12px 32px}
+.marketing-site .model-cinematic-page .cinema-close .cinema-eyebrow{grid-column:1}
+.marketing-site .model-cinematic-page .cinema-close h2{font-size:clamp(26px,3vw,42px);margin:0;grid-column:1}
+.marketing-site .model-cinematic-page .cinema-close .cinema-button{grid-column:2;grid-row:1/3}
+.marketing-site .model-cinematic-page--video .cinema-paths{background:#17232e;color:#edf1f5;--cinema-ink:#edf1f5;--cinema-muted:#aebdca;--cinema-line:#ffffff30;--cinema-surface:#223441}
+.marketing-site .model-cinematic-page--video .cinema-path-picker button{background:#17232e;color:#b8c8d4;border-color:#465867}
+.marketing-site .model-cinematic-page--video .cinema-path-picker button[aria-pressed=true]{background:#31485a;color:#f4f7f9;border-color:#8da9be}
+.marketing-site .model-cinematic-page--video .cinema-path-body{background:#223441}
+.marketing-site .model-cinematic-page--video .cinema-path-body p,.marketing-site .model-cinematic-page--video .cinema-path-body li{color:#b8c8d4}
+@media(min-width:900px){
+ .marketing-site .model-cinematic-page .cinema-panel--feature:not(.cinema-panel--portrait) .cinema-panel-inner{display:grid;grid-template-columns:.8fr 1.2fr;gap:0 6%;align-items:center}
+ .marketing-site .model-cinematic-page .cinema-panel--feature:not(.cinema-panel--portrait) .cinema-panel-heading{display:block;grid-column:1;grid-row:1;align-self:end;margin:0}
+ .marketing-site .model-cinematic-page .cinema-panel--feature:not(.cinema-panel--portrait) .cinema-panel-heading h3{font-size:clamp(36px,4vw,58px)}
+ .marketing-site .model-cinematic-page .cinema-panel--feature:not(.cinema-panel--portrait) .cinema-panel-heading>p{margin-top:26px}
+ .marketing-site .model-cinematic-page .cinema-panel--feature:not(.cinema-panel--portrait) .cinema-panel-media{grid-column:2;grid-row:1/3;min-width:0}
+ .marketing-site .model-cinematic-page .cinema-panel--feature:not(.cinema-panel--portrait) .cinema-panel-note{grid-column:1;grid-row:2;align-self:start;margin-top:22px}
+}
+@media(max-width:767px){
+ .marketing-site .model-cinematic-page .cinema-prompt-lab,.marketing-site .model-cinematic-page .cinema-specs-layout{grid-template-columns:1fr;gap:32px}
+ .marketing-site .model-cinematic-page .cinema-recipes{grid-template-columns:1fr;gap:0;margin-top:20px}
+ .marketing-site .model-cinematic-page .cinema-price-summary{padding:24px}
+ .marketing-site .model-cinematic-page .cinema-faq-grid{display:flex;flex-direction:column;gap:24px}
+ .marketing-site .model-cinematic-page .cinema-faq-grid>header{display:contents}
+ .marketing-site .model-cinematic-page .cinema-faq-grid>header>.cinema-eyebrow{order:-3;margin:0}
+ .marketing-site .model-cinematic-page .cinema-faq-grid>header>h2{order:-2}
+ .marketing-site .model-cinematic-page .cinema-faq-grid>div{order:-1}
+ .marketing-site .model-cinematic-page .cinema-related-links{margin-top:16px}
+ .marketing-site .model-cinematic-page .cinema-close>.cinema-wrap{display:block}
+ .marketing-site .model-cinematic-page .cinema-close h2{margin-block:10px 24px}
 }

@@ -16,7 +16,7 @@ export function ModelCinematicExamples({ presentation, viewModel, hasRenderedVid
       filters={viewModel.filters} items={viewModel.decision.items} examplesLinkHref={viewModel.decision.examplesLinkHref}
       viewAllLabel={viewModel.decision.viewAllLabel} renderLinkLabel={viewModel.decision.renderLinkLabel}
       emptyLabel={viewModel.decision.emptyLabel} noPreviewLabel={viewModel.decision.noPreviewLabel} /></div> : null}
-    {examples.panels.map((panel, index) => {
+    {examples.panels.filter(panel => !panel.placement || panel.placement === 'examples').map((panel, index) => {
       const selected = panel.assetIds.map(id => assets.find(asset => asset.id === id)!);
       const portrait = panel.layout === 'feature' && selected.length === 1 && selected[0].display.height > selected[0].display.width;
       return <article id={`proof-${panel.id}`} key={panel.id} className={`cinema-panel cinema-panel--${panel.layout}${portrait ? ' cinema-panel--portrait' : ''}`} aria-labelledby={`cinema-${panel.id}`}><div className="cinema-wrap cinema-panel-inner">

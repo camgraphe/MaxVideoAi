@@ -35,8 +35,8 @@ export function ModelCinematicPage({ presentation, decision, examples, hasRender
     </section>
     <ModelCinematicExamples presentation={presentation} viewModel={examples} hasRenderedVideos={hasRenderedVideos} />
     {content.workflows ? <ModelCinematicWorkflows content={content.workflows} workspaceHref={decision.hero.primaryCta.href} /> : null}
-    <ModelCinematicPrompting viewModel={prompting} content={content} locale={details.locale} />
-    {content.variant === 'video' ? <Suspense fallback={<div className="cinema-wrap cinema-details-pending" role="status"><p>{content.detailsLabel}</p><Link href={decision.pricing.cta.href} prefetch={false}>{decision.pricing.cta.label} ↗</Link></div>}><ModelCinematicDetails {...details} /></Suspense> : <ModelCinematicDetails {...details} />}
+    <ModelCinematicPrompting viewModel={prompting} presentation={presentation} />
+    {content.variant === 'video' ? <Suspense fallback={<div className="cinema-wrap cinema-details-pending" role="status"><p>{content.detailsLabel}</p><Link href={decision.pricing.cta.href} prefetch={false}>{decision.pricing.cta.label} ↗</Link></div>}><ModelCinematicDetails {...details} presentation={presentation} /></Suspense> : <ModelCinematicDetails {...details} presentation={presentation} />}
     <section className="cinema-close"><div className="cinema-wrap">
       <p className="cinema-eyebrow">MaxVideoAI / {content.titleLines.join(' ')}</p><h2>{content.subtitle}</h2>
       <Link href={decision.hero.primaryCta.href} prefetch={false} className="cinema-button">{content.primaryLabel}<span aria-hidden="true">↗</span></Link>

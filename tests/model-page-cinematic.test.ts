@@ -21,6 +21,9 @@ import { ModelCinematicPrompt } from '../frontend/app/(localized)/[locale]/(mark
 import { ModelCinematicWorkflows } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelCinematicWorkflows.client';
 import { ModelCinematicZoom, ModelCinematicDetailCrop } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelCinematicZoom.client';
 import { ModelCinematicPromptAssistant } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelCinematicPromptAssistant';
+import { ModelCinematicPricing } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelCinematicPricing';
+import { getPricingHubCopy } from '../frontend/app/(localized)/[locale]/(marketing)/pricing/_lib/pricingHubCopy';
+import { parseModelPromptingContent } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-prompting-content';
 
 const requireFrontend = createRequire(path.resolve('frontend/package.json'));
 const React = requireFrontend('react');
@@ -52,7 +55,7 @@ test('portrait inspection defers the original and Milo opens the correct model w
     const examples = parseModelExamplesContent(content.examples, slug, locale);
     const images = slug === 'seedream-5-5' ? listModelEditorialImages(slug, locale, examples.editorialImages) : [];
     const presentation = buildCinematicPresentation(parseModelCinematicContent(content.cinematic, slug), examples, images, locale)!;
-    const workspace = new JSDOM(renderToStaticMarkup(React.createElement(ModelCinematicPromptAssistant, {content:presentation.content,locale}))).window.document;
+    const workspace = new JSDOM(renderToStaticMarkup(React.createElement(ModelCinematicPromptAssistant, {copy:presentation.content.promptAssistant,href:presentation.assistantHref}))).window.document;
     const href = new URL(workspace.querySelector('a')!.href, 'https://maxvideoai.com');
     assert.equal(href.pathname, slug === 'seedream-5-5' ? '/app/image' : '/app');
     assert.equal(href.searchParams.get('engine'), slug);
@@ -76,6 +79,25 @@ test('portrait inspection defers the original and Milo opens the correct model w
   }
 });
 
+test('cinematic pricing removes unavailable repetitions and preserves each exact quoted amount', () => {
+  for (const locale of locales) {
+    const pricing = { title:'Your settings. Your price.', subtitle:'Choose your settings.', footnote:'Review before creating.', cta:{label:'Pricing',href:'/pricing'}, scenarios:[] };
+    const create = {label:'Create',href:'/app/image?engine=seedream-5-5'};
+    const unavailable = getPricingHubCopy(locale).liveQuote;
+    const missing = ['1K','1.5K','2K'].map(id => ({id,label:id,value:unavailable,note:'Single image'}));
+    const render = (scenarios: typeof missing) => new JSDOM(renderToStaticMarkup(React.createElement(NextIntlClientProvider, {locale,messages:{},timeZone:'UTC'},
+      React.createElement(ModelCinematicPricing, {pricing,scenarios,create,locale,offer:null})))).window.document;
+    const empty = render(missing);
+    assert.equal(empty.querySelector('.cinema-price-list'), null);
+    assert.equal(empty.body.textContent!.includes(unavailable), false);
+    assert.ok(empty.querySelector('a[href="/app/image?engine=seedream-5-5"]'));
+    const amounts = ['$0.13', '$0.28'];
+    const exact = render(missing.map((item,index) => index < 2 ? {...item,value:amounts[index]} : item));
+    assert.deepEqual([...exact.querySelectorAll('.cinema-price-list dd')].map(el => el.textContent), amounts);
+    assert.equal(exact.body.textContent!.includes(unavailable), false);
+  }
+});
+
 test('cinematic content is opt-in and never falls back to another locale', () => {
   const en = read('seedream-5-5');
   assert.equal(mergeEngineLocalizedContent(en, {}).cinematic, undefined);
@@ -89,6 +111,11 @@ test('cinematic content is opt-in and never falls back to another locale', () =>
     const presentation = buildCinematicPresentation(content, examples, images, locale)!;
     assert.equal(presentation.hero.id, 'first-light');
     assert.equal(presentation.assets.length, 9);
+    for (const placement of ['prompting', 'details']) {
+      const placed = presentation.examples.panels.filter(panel => panel.placement === placement);
+      assert.equal(placed.length, 1);
+      assert.equal(placed[0].assetIds.length, 1);
+    }
     assert.throws(() => buildCinematicPresentation(content, { ...examples, cinematic: undefined }, images, locale));
     assert.throws(() => buildCinematicPresentation(content, examples, images.filter(image => image.id !== 'backstage-wardrobe'), locale));
     const duplicate = structuredClone(examples);
@@ -100,6 +127,12 @@ test('cinematic content is opt-in and never falls back to another locale', () =>
       assert.equal(presentation.assets.find(asset => asset.id === item.id)?.prompt, item.prompt, 'The text-only Prompt Lab keeps the same original brief as its visual result');
     }
     if (locale !== 'en') assert.notDeepEqual(local.cinematic.subtitle, en.cinematic.subtitle);
+  }
+});
+
+test('every cinematic pilot retains its complete localized prompt-guide contract', () => {
+  for (const locale of locales) for (const slug of ['seedream-5-5', 'seedance-2-5-flash']) {
+    assert.ok(parseModelPromptingContent(read(slug, locale).prompting, slug, locale));
   }
 });
 

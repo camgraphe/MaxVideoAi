@@ -294,9 +294,9 @@
       }
     ],
     "pricingCopy": {
-      "title": "Seedream 5.5 — current image pricing",
-      "subtitle": "The exact current price is shown before you confirm generation. Resolution and reference images can change the quote.",
-      "footnote": "Check the current quote for your exact settings before generating.",
+      "title": "Your settings. Your price.",
+      "subtitle": "Choose your resolution and references in Create. See the exact price before you generate.",
+      "footnote": "Your quote reflects the settings and references you select.",
       "ctaLabel": "View full pricing",
       "ctaHref": "/pricing#seedream-5-5-pricing"
     },
@@ -499,16 +499,28 @@
           ]
         },
         {
-          "id": "stories",
-          "layout": "grid",
+          "id": "prompt-story",
+          "layout": "feature",
+          "eyebrow": "Prompt guide",
+          "title": "How to prompt Seedream 5.5",
+          "body": "Begin with a moment a camera could capture. Describe the people and their interaction, then the framing, physical light, textures and any exact text.",
+          "note": "Two independent text-to-image results, with their exact English prompts. Use either as a starting brief for your own scene.",
+          "assetIds": [
+            "55-make-your-move"
+          ],
+          "placement": "prompting"
+        },
+        {
+          "id": "settings-story",
+          "layout": "feature",
           "eyebrow": "Campaign & story",
           "title": "Give the moment a story.",
           "body": "Build a frame around a choice: a woman stepping into a rainy street, or two people catching the last train. Give the location, gesture and light a job in the story.",
           "note": "Two independent text-to-image results, with their exact English prompts. Use either as a starting brief for your own scene.",
           "assetIds": [
-            "55-make-your-move",
             "55-last-train"
-          ]
+          ],
+          "placement": "details"
         }
       ]
     }

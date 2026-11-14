@@ -172,22 +172,22 @@
     ],
     "referenceWorkflows": [
       {
-        "title": "Character and setting",
-        "body": "Define the person, wardrobe, location and lighting before writing the action."
+        "title": "Give the moment a purpose",
+        "body": "Two people in a late-night diner. One has something to say. Define their positions, eyelines and the mood."
       },
       {
-        "title": "Action and camera",
-        "body": "Give the scene one principal movement and one camera instruction."
+        "title": "Direct one clear movement",
+        "body": "Ask for a gentle push-in during a short exchange. Let the reaction settle before the shot ends."
       },
       {
-        "title": "Reference planning",
-        "body": "Prepare relevant source media and keep its identity with the prompt for later review."
+        "title": "Give sound a role",
+        "body": "Name the voices, room tone and rain at the window. Leave a little silence for the final beat."
       }
     ],
     "pricingCopy": {
-      "title": "Seedance 2.5 Flash pricing",
-      "subtitle": "Review the current price for the selected duration, resolution, audio and inputs before generating.",
-      "footnote": "Video inputs affect billable duration. The live quote uses the current MaxVideoAI tariff; previous render costs do not set the price of a new generation.",
+      "title": "Your settings. Your price.",
+      "subtitle": "Choose the duration, resolution, sound and references in Create. See the exact price before you generate.",
+      "footnote": "Source videos can affect the billable duration. Check the quote for your exact inputs.",
       "ctaLabel": "Create with Flash",
       "ctaHref": "/app?engine=seedance-2-5-flash"
     },
@@ -199,8 +199,8 @@
   "prompting": {
     "modelSlug": "seedance-2-5-flash",
     "section": {
-      "title": "Prompt Lab — direct a Flash scene",
-      "intro": "Adapt these scene-planning prompts to your subject, action and camera. A prompt template describes an intended result; it is not a completed generation.",
+      "title": "How to prompt Seedance 2.5 Flash",
+      "intro": "Give the scene a purpose, then direct its action, camera and sound. Start with this late-night exchange and make it your own.",
       "tip": "Change one visible choice between variants so you can compare the results.",
       "guide": null,
       "referencesTitle": null
@@ -208,24 +208,24 @@
     "tabs": [
       {
         "id": "concept",
-        "label": "Character",
-        "title": "Give the scene a clear subject",
-        "description": "Describe the character and the moment you want to see.",
-        "copy": "A courier in a red jacket pauses under the awning of a rain-soaked city street at night. She notices a familiar silhouette across the road, turns toward it and smiles. Keep her jacket, face and the wet street lighting consistent."
+        "label": "The intention",
+        "title": "The intention",
+        "description": "Start with the people and the moment.",
+        "copy": "Two people sit opposite each other in a late-night diner. One quietly asks a short question; the other looks up, smiles and pauses before answering. Keep their positions, clothes and the warm window light consistent."
       },
       {
         "id": "motion",
-        "label": "Action",
-        "title": "Make the movement readable",
-        "description": "Set an opening, one action and a final composition.",
-        "copy": "Begin with a medium view of a dancer waiting beside a sunlit studio window. She takes one step, turns smoothly and settles facing the window. Keep her hands and feet visible during the turn. Finish with a still composition."
+        "label": "The camera",
+        "title": "The camera",
+        "description": "Choose one move that follows the emotion.",
+        "copy": "Begin on a medium two-shot in the diner. Push in gently during the exchange and settle on the listener’s reaction. Keep both eyelines coherent, with no cut or sudden camera move."
       },
       {
         "id": "camera",
-        "label": "Camera",
-        "title": "Try one camera variation",
-        "description": "Keep the subject and action fixed while changing the framing.",
-        "copy": "Keep the same courier, location and action. Version A: a slow lateral tracking shot at eye level. Version B: a gentle push from a medium view to a close-up as she smiles. Avoid extra cuts."
+        "label": "The sound",
+        "title": "The sound",
+        "description": "Build a soundscape around the dialogue.",
+        "copy": "Two distinct, quiet voices in a late-night diner. Soft room tone and rain against the window. Leave a brief silence after the reply. No music."
       }
     ],
     "tabNotes": [],
@@ -236,27 +236,27 @@
     ],
     "engineWhy": [],
     "demo": {
-      "title": "Scene plan — the courier’s reaction",
+      "title": "Scene plan — a late-night exchange",
       "promptLabel": "Proposed prompt · not rendered",
-      "prompt": "A courier in a red jacket pauses under the awning of a rain-soaked city street at night. She notices a familiar silhouette across the road, turns toward it and smiles. A gentle camera push follows her reaction. Keep her jacket, face and the wet street lighting consistent.",
+      "prompt": "Two people sit opposite each other in a late-night diner. One quietly asks a short question; the other looks up, smiles and pauses before answering. Keep their positions, clothes and the warm window light consistent. Begin on a medium two-shot in the diner. Push in gently during the exchange and settle on the listener’s reaction. Keep both eyelines coherent, with no cut or sudden camera move. Two distinct, quiet voices in a late-night diner. Soft room tone and rain against the window. Leave a brief silence after the reply. No music.",
       "notes": [
         "This scene has not been rendered with Flash. Its settings and result remain to be tested."
       ],
       "summary": {
-        "subject": "A courier in a red jacket",
-        "action": "Notice, turn and smile",
-        "camera": "A gentle push toward the reaction",
-        "style": "A rainy city street at night",
+        "subject": "Two people in a late-night diner",
+        "action": "A quiet question, a smile and a reply",
+        "camera": "A gentle push toward the listener",
+        "style": "Warm window light and rain outside",
         "output": "Scene proposal; no generated result yet"
       },
       "presentationOverrides": {
         "modeLabel": "Scene plan",
         "outputLabel": "Result pending",
         "duration": "To be chosen",
-        "aspectRatio": "To be chosen",
+        "aspectRatio": "16:9",
         "audioChipMode": "media",
         "audioChipLabel": "Not rendered",
-        "altContext": "Proposed courier scene for a future Seedance 2.5 Flash test"
+        "altContext": "A planned conversation between two people in a late-night diner"
       }
     },
     "imageExamples": null
@@ -346,14 +346,13 @@
       "panels": [
         {
           "id": "performance",
-          "layout": "grid",
-          "eyebrow": "Performance & dialogue",
+          "layout": "feature",
+          "eyebrow": "Human performance",
           "title": "Something happens. We feel it.",
-          "body": "A drumstick held before the strike. A look before a reply. Start with a readable human action and a camera move that gives it space.",
+          "body": "A drumstick held before the strike. Direct the rhythm, the camera arc and the expression at the end of the take.",
           "note": "Build the shot around one readable gesture, exchange or camera movement.",
           "assetIds": [
-            "after-the-beat",
-            "the-blue-hour"
+            "after-the-beat"
           ]
         },
         {
@@ -365,7 +364,8 @@
           "note": "Give the movement a clear path through the scene.",
           "assetIds": [
             "where-gravity-ends"
-          ]
+          ],
+          "placement": "details"
         },
         {
           "id": "vertical",
@@ -378,6 +378,18 @@
             "make-an-entrance",
             "before-the-drop"
           ]
+        },
+        {
+          "id": "prompt-story",
+          "layout": "feature",
+          "eyebrow": "Prompt guide",
+          "title": "How to prompt Seedance 2.5 Flash",
+          "body": "Give the scene a purpose, then direct its action, camera and sound. Start with this late-night exchange and make it your own.",
+          "note": "Build the shot around one readable gesture, exchange or camera movement.",
+          "assetIds": [
+            "the-blue-hour"
+          ],
+          "placement": "prompting"
         }
       ],
       "shotPlans": [

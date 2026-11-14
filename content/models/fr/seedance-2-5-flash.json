@@ -172,22 +172,22 @@
     ],
     "referenceWorkflows": [
       {
-        "title": "Personnage et décor",
-        "body": "Définissez la personne, sa tenue, le lieu et la lumière avant de rédiger l’action."
+        "title": "Donner un sens au moment",
+        "body": "Deux personnes dans un diner de nuit. L’une a quelque chose à dire. Précisez leurs positions, les regards et l’ambiance."
       },
       {
-        "title": "Action et caméra",
-        "body": "Donnez à la scène un mouvement principal et une consigne de caméra."
+        "title": "Diriger un mouvement clair",
+        "body": "Demandez un léger travelling avant pendant un bref échange. Laissez la réaction se poser avant la fin du plan."
       },
       {
-        "title": "Préparer les références",
-        "body": "Rassemblez les sources utiles et conservez leur identité avec le prompt pour les examiner ensuite."
+        "title": "Donner une place au son",
+        "body": "Décrivez les voix, le bruit de la salle et la pluie sur la vitre. Gardez un silence pour le dernier temps."
       }
     ],
     "pricingCopy": {
-      "title": "Tarifs Seedance 2.5 Flash",
-      "subtitle": "Consultez le prix actuel pour la durée, la résolution, le son et les entrées choisis avant de générer.",
-      "footnote": "Les vidéos d’entrée influencent la durée facturée. Le devis utilise le tarif MaxVideoAI actuel ; le coût d’un ancien rendu ne fixe pas celui d’une nouvelle génération.",
+      "title": "Vos réglages. Votre prix.",
+      "subtitle": "Choisissez la durée, la résolution, le son et les références dans Create. Le prix exact s’affiche avant de générer.",
+      "footnote": "Les vidéos sources peuvent modifier la durée facturée. Consultez le devis correspondant à vos entrées.",
       "ctaLabel": "Créer avec Flash",
       "ctaHref": "/app?engine=seedance-2-5-flash"
     },
@@ -199,8 +199,8 @@
   "prompting": {
     "modelSlug": "seedance-2-5-flash",
     "section": {
-      "title": "Prompt Lab — diriger une scène Flash",
-      "intro": "Adaptez ces propositions de scènes à votre sujet, à l’action et à la caméra. Un modèle de prompt décrit le résultat souhaité ; ce n’est pas une génération terminée.",
+      "title": "Comment prompter Seedance 2.5 Flash",
+      "intro": "Donnez une intention à la scène, puis dirigez l’action, la caméra et le son. Partez de cet échange nocturne pour écrire votre propre moment.",
       "tip": "Changez un seul choix visible entre deux variantes pour pouvoir comparer les résultats.",
       "guide": null,
       "referencesTitle": null
@@ -208,24 +208,24 @@
     "tabs": [
       {
         "id": "concept",
-        "label": "Personnage",
-        "title": "Donner un sujet clair à la scène",
-        "description": "Décrivez le personnage et le moment que vous souhaitez voir.",
-        "copy": "Une coursière en veste rouge s’arrête sous l’auvent d’une rue urbaine détrempée, la nuit. Elle reconnaît une silhouette de l’autre côté de la chaussée, se tourne vers elle et sourit. Conserver sa veste, son visage et la lumière sur la rue mouillée."
+        "label": "L’intention",
+        "title": "L’intention",
+        "description": "Commencez par les personnes et le moment.",
+        "copy": "Deux personnes sont assises face à face dans un diner de nuit. L’une pose une courte question à voix basse ; l’autre lève les yeux, sourit et marque une pause avant de répondre. Conserver leurs positions, les vêtements et la lumière chaude de la fenêtre."
       },
       {
         "id": "motion",
-        "label": "Action",
-        "title": "Rendre le mouvement lisible",
-        "description": "Définissez un début, une action et une composition finale.",
-        "copy": "Commencer en plan moyen sur une danseuse près d’une fenêtre ensoleillée dans un studio. Elle avance d’un pas, tourne avec fluidité puis s’immobilise face à la fenêtre. Garder ses mains et ses pieds visibles pendant le tour. Terminer sur une composition fixe."
+        "label": "La caméra",
+        "title": "La caméra",
+        "description": "Choisissez un mouvement qui suit l’émotion.",
+        "copy": "Commencer sur un plan moyen des deux personnes dans le diner. Avancer doucement pendant l’échange et se poser sur la réaction de la personne qui écoute. Garder des regards cohérents, sans coupe ni mouvement brusque."
       },
       {
         "id": "camera",
-        "label": "Caméra",
-        "title": "Essayer une variante de cadrage",
-        "description": "Gardez le sujet et l’action identiques en changeant le cadrage.",
-        "copy": "Conserver la même coursière, le même lieu et la même action. Version A : un lent travelling latéral à hauteur des yeux. Version B : une légère avancée d’un plan moyen vers un gros plan lorsqu’elle sourit. Éviter les coupes supplémentaires."
+        "label": "Le son",
+        "title": "Le son",
+        "description": "Construisez une ambiance autour du dialogue.",
+        "copy": "Deux voix distinctes et calmes dans un diner de nuit. Bruit de salle discret et pluie contre la vitre. Laisser un bref silence après la réponse. Sans musique."
       }
     ],
     "tabNotes": [],
@@ -236,27 +236,27 @@
     ],
     "engineWhy": [],
     "demo": {
-      "title": "Proposition de scène — la réaction de la coursière",
+      "title": "Plan de scène — un échange nocturne",
       "promptLabel": "Prompt proposé · pas encore généré",
-      "prompt": "Une coursière en veste rouge s’arrête sous l’auvent d’une rue de ville détrempée, la nuit. Elle remarque une silhouette familière de l’autre côté de la route, se tourne vers elle et sourit. Un léger travelling avant accompagne sa réaction. Garder sa veste, son visage et l’éclairage de la rue mouillée cohérents.",
+      "prompt": "Deux personnes sont assises face à face dans un diner de nuit. L’une pose une courte question à voix basse ; l’autre lève les yeux, sourit et marque une pause avant de répondre. Conserver leurs positions, les vêtements et la lumière chaude de la fenêtre. Commencer sur un plan moyen des deux personnes dans le diner. Avancer doucement pendant l’échange et se poser sur la réaction de la personne qui écoute. Garder des regards cohérents, sans coupe ni mouvement brusque. Deux voix distinctes et calmes dans un diner de nuit. Bruit de salle discret et pluie contre la vitre. Laisser un bref silence après la réponse. Sans musique.",
       "notes": [
         "Cette scène n’a pas été générée avec Flash. Ses réglages et son résultat restent à tester."
       ],
       "summary": {
-        "subject": "Une coursière en veste rouge",
-        "action": "Remarquer, se tourner et sourire",
-        "camera": "Un léger travelling avant vers la réaction",
-        "style": "Une rue de ville pluvieuse, la nuit",
+        "subject": "Deux personnes dans un diner de nuit",
+        "action": "Une question discrète, un sourire et une réponse",
+        "camera": "Un léger travelling avant vers la personne qui écoute",
+        "style": "Lumière chaude de la fenêtre et pluie dehors",
         "output": "Proposition de scène ; aucun résultat généré pour le moment"
       },
       "presentationOverrides": {
         "modeLabel": "Proposition de scène",
         "outputLabel": "Résultat à venir",
         "duration": "À définir",
-        "aspectRatio": "À définir",
+        "aspectRatio": "16:9",
         "audioChipMode": "media",
         "audioChipLabel": "Pas encore généré",
-        "altContext": "Scène de coursière proposée pour un futur essai de Seedance 2.5 Flash"
+        "altContext": "Une conversation prévue entre deux personnes dans un diner de nuit"
       }
     },
     "imageExamples": null
@@ -346,14 +346,13 @@
       "panels": [
         {
           "id": "performance",
-          "layout": "grid",
-          "eyebrow": "Performance et dialogue",
+          "layout": "feature",
+          "eyebrow": "Le jeu humain",
           "title": "Un geste. Une émotion.",
-          "body": "Une baguette suspendue avant le premier coup. Un regard avant une réponse. Partez d’une action humaine lisible et d’un mouvement de caméra qui lui laisse de la place.",
+          "body": "Une baguette suspendue avant la frappe. Dirigez le rythme, le déplacement de caméra et l’expression à la fin du plan.",
           "note": "Construisez le plan autour d’un geste, d’un échange ou d’un mouvement de caméra lisible.",
           "assetIds": [
-            "after-the-beat",
-            "the-blue-hour"
+            "after-the-beat"
           ]
         },
         {
@@ -365,7 +364,8 @@
           "note": "Donnez au mouvement un trajet clair dans la scène.",
           "assetIds": [
             "where-gravity-ends"
-          ]
+          ],
+          "placement": "details"
         },
         {
           "id": "vertical",
@@ -378,6 +378,18 @@
             "make-an-entrance",
             "before-the-drop"
           ]
+        },
+        {
+          "id": "prompt-story",
+          "layout": "feature",
+          "eyebrow": "Guide de prompts",
+          "title": "Comment prompter Seedance 2.5 Flash",
+          "body": "Donnez une intention à la scène, puis dirigez l’action, la caméra et le son. Partez de cet échange nocturne pour écrire votre propre moment.",
+          "note": "Construisez le plan autour d’un geste, d’un échange ou d’un mouvement de caméra lisible.",
+          "assetIds": [
+            "the-blue-hour"
+          ],
+          "placement": "prompting"
         }
       ],
       "shotPlans": [

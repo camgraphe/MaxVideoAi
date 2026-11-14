@@ -294,9 +294,9 @@
       }
     ],
     "pricingCopy": {
-      "title": "Seedream 5.5 — precios actuales por imagen",
-      "subtitle": "El precio exacto actual aparece antes de confirmar. La resolución y las imágenes de referencia pueden cambiar la cotización.",
-      "footnote": "Comprueba la cotización para tus ajustes exactos antes de generar.",
+      "title": "Tus ajustes. Tu precio.",
+      "subtitle": "Elige la resolución y las referencias en Create. Verás el precio exacto antes de generar.",
+      "footnote": "El presupuesto corresponde a los ajustes y las referencias elegidos.",
       "ctaLabel": "Ver todos los precios",
       "ctaHref": "/es/precios#seedream-5-5-pricing"
     },
@@ -499,16 +499,28 @@
           ]
         },
         {
-          "id": "stories",
-          "layout": "grid",
+          "id": "prompt-story",
+          "layout": "feature",
+          "eyebrow": "Guía de prompts",
+          "title": "Cómo escribir prompts para Seedream 5.5",
+          "body": "Parte de un instante que una cámara podría captar. Describe a las personas y su interacción; después, el encuadre, la luz física, las texturas y cualquier texto exacto.",
+          "note": "Dos resultados independientes de texto a imagen, con sus prompts originales en inglés. Adapta cualquiera de estos briefs para crear tu propia escena.",
+          "assetIds": [
+            "55-make-your-move"
+          ],
+          "placement": "prompting"
+        },
+        {
+          "id": "settings-story",
+          "layout": "feature",
           "eyebrow": "Campaña y relato",
           "title": "Dale una historia al instante.",
           "body": "Construye la imagen alrededor de una decisión: una mujer que sale a una calle lluviosa o dos personas que toman el último tren. El lugar, el gesto y la luz forman parte del relato.",
           "note": "Dos resultados independientes de texto a imagen, con sus prompts originales en inglés. Adapta cualquiera de estos briefs para crear tu propia escena.",
           "assetIds": [
-            "55-make-your-move",
             "55-last-train"
-          ]
+          ],
+          "placement": "details"
         }
       ]
     }

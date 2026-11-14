@@ -1,6 +1,6 @@
 # Cinematic model pages — autonomous template review, 14 November 2026
 
-The two pilots now use an independent editorial renderer matching the approved prototypes. The earlier composition that placed a new hero inside the old page assembly was rejected and has been replaced. This candidate is local only: branch `codex/model-pages-cinematic`, implementation `a9dc45350`, visual review fixes `25e5a4c1d`, initial-HTML correction `ec0afe4cb`. No push, main merge or deployment.
+The two pilots use an independent editorial renderer based on the selected prototypes and ongoing user review. Overall template approval remains open. The earlier composition that placed a new hero inside the old page assembly was rejected and has been replaced. This candidate is local only: branch `codex/model-pages-cinematic`, implementation `a9dc45350`, visual review fixes `25e5a4c1d`, initial-HTML correction `ec0afe4cb`. No push, main merge or deployment.
 
 The integrated model-owner commits are Seedream `372a77053` and Seedance Flash `dffa9296c` (local merge `27f2ee100`). The shared Desktop checkout and both owner branches were not edited.
 
@@ -52,13 +52,27 @@ Reference and before/after captures are in the task visualization directory unde
 | Seedream 5.5 | Text inside a scene | `one-night-only` |
 | Seedream 5.5 | Skin, fabric and portrait detail | `after-the-race` |
 | Seedream 5.5 | Verified transparent PNG | `free-to-move` |
-| Seedream 5.5 | Campaign and story examples | `55-make-your-move`, `55-last-train` |
+| Seedream 5.5 | Prompt guide | `55-make-your-move` |
+| Seedream 5.5 | Settings and pricing | `55-last-train` |
 | Seedance 2.5 Flash | Hero | `midnight-run` |
-| Seedance 2.5 Flash | Performance and dialogue | `after-the-beat`, `the-blue-hour` |
-| Seedance 2.5 Flash | Fictional environment | `where-gravity-ends` |
+| Seedance 2.5 Flash | Performance | `after-the-beat` |
+| Seedance 2.5 Flash | Prompt guide and dialogue | `the-blue-hour` |
+| Seedance 2.5 Flash | Settings and pricing | `where-gravity-ends` |
 | Seedance 2.5 Flash | Vertical fashion and action | `make-an-entrance`, `before-the-drop` |
 
-There are nine unique Seedream images and six unique Flash start frames. The comparator intentionally reuses the wardrobe result as the next edit's source; it does not repeat that scene in another section. The portrait detail deliberately reuses that portrait inside its own inspection section, as in the approved template. The existing Prompt Lab is text-only: its two source results appear once in the campaign/story panel, with matching exact prompts. Logos and navigation icons are not demonstration visuals. Existing approved assets cover every placement; no additional paid generation was launched for this integration.
+There are nine unique Seedream images and six unique Flash start frames. The comparator intentionally reuses the wardrobe result as the next edit's source; it does not repeat that scene in another section. The portrait detail deliberately reuses that portrait inside its own inspection section, as in the selected template. The prompt guide and settings each have a dedicated image, moved from the former standalone gallery panels. Logos and navigation icons are not demonstration visuals. Existing approved assets cover every placement; no additional paid generation was launched for this integration.
+
+### Coherence pass: media, prompts and useful pricing
+
+Every creative and decision section now has its own visual proof. The exact-locale cinematic panel contract requires one single-image `prompting` placement and one `details` placement; the same uniqueness validation covers them and the remaining examples. This keeps the fifteen-scene inventory intact without duplicate photography. The utility FAQ, related links and final CTA are deliberately compact instead of adding decorative filler.
+
+Prompt guidance is paired with the actual scene. The Flash diner combines intention, camera and sound, with a copyable planned animation brief and a small contextual Milo alternative. Milo's workspace entry is built in the data layer using the shared marketing entry helper. The original image prompt remains available separately and retains its English attribution.
+
+The settings section pairs a unique scene with specifications and one pricing summary. Flash shows eight essential rows, with remaining technical rows in a native disclosure; all rows remain in server HTML. The desktop image stays beside the settings as the visitor scrolls. Three empty “Live quote” cards are replaced by one useful Create entry. Available exact quoted scenarios and current offers retain their original amounts, units and notes. No price calculation, provider routing or schema ownership changed. FAQ and comparison links share a compact two-column section, followed by an inline closing CTA.
+
+Current-pass screenshots are recorded under `model-page-integration/coherence-review/` in the task visualization directory. Production build (including TypeScript, lint and prebuild gates), **37 focused tests**, exposure lint and diff checks passed. `verify-coherence-http.mjs` verifies all six localized routes, canonical/hreflang, parseable schemas, distinct prompt/settings scenes, native image-page details, correct Milo entries, retained Flash technical rows, compatibility redirects and the model sitemap. Its result is `coherence-http-results.json` alongside the verifier.
+
+The compiled candidate was inspected at desktop 1440 × 1000 and mobile 390 × 844, with no document overflow at 320 px on either page. The on-image slider changed with keyboard input; portrait face/fabric selection, original zoom and Escape, composition background selection, Modify/Extend entries, technical disclosures and the video-prompt copy confirmation were exercised. Production console history contained the existing database-dependent cookie-policy warning, with no new production error observed. Earlier development-only popover-property warnings belong to the existing shared popover implementation. No authenticated generation or live tariff verification was possible without the application database. The hero media policy is unchanged and no new CWV gain is claimed.
 
 Seedream media are real Seedream outputs. Exact edit-source hashes, prompts, formats, resolution and original-file links are available. The transparent original PNG and its immutable display WebP both contain a verified non-opaque alpha channel. The preview background toggle changes only the viewer background.
 

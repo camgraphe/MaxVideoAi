@@ -4,6 +4,7 @@ import type { AppLocale } from '@/i18n/locales';
 import type { ModelEditorialImage } from './model-page-editorial-images';
 import type { ModelExamplesContent } from './model-page-examples-content';
 import type { ModelCinematicContent, ModelCinematicExamplesContent } from './model-page-cinematic-content';
+import { miloEntryHref } from '@/lib/prompt-assistance/marketing-entry';
 
 const hash = z.string().regex(/^[a-f0-9]{64}$/);
 const file = z.object({ url: z.string(), sha256: hash, width: z.number().positive(), height: z.number().positive() });
@@ -15,9 +16,9 @@ const frameSchema = z.object({
 });
 
 const ui = {
-  en: { detailSource: 'Detail from the same image', unretouched: 'No retouching', frame: 'Frame', shotPlan: 'Direct the shot', frameDirection: 'Use the original first frame to anchor the subject, lighting and composition.', animateFrame: 'Animate the supplied first frame.', videoPrompt: 'Planned video prompt', zoom: 'Inspect detail', zoomOut: 'Full frame', face: 'Face & hair', texture: 'Fabric & texture', gradient: 'Colour', before: 'Source', after: 'Edit', aboutExamples: 'About these examples', copy: 'Copy prompt', copied: 'Copied', original: 'Open original', prompt: 'Prompt & settings', source: 'Exact edit source', compare: 'Reveal the edit', background: 'Preview background', light: 'Light', dark: 'Dark', motion: 'Planned motion', sound: 'Planned sound', still: 'Start frame · GPT Image 2.6 Sunburst', sourcePrompt: 'Image prompt (English)' },
-  fr: { detailSource: 'Détail de la même image', unretouched: 'Sans retouche', frame: 'Image', shotPlan: 'Diriger le plan', frameDirection: 'Utilisez la première image originale pour guider le sujet, la lumière et la composition.', animateFrame: 'Anime la première image fournie.', videoPrompt: 'Prompt vidéo prévu', zoom: 'Inspecter les détails', zoomOut: 'Vue complète', face: 'Visage et cheveux', texture: 'Tissu et texture', gradient: 'Couleur', before: 'Source', after: 'Retouche', aboutExamples: 'À propos de ces exemples', copy: 'Copier le prompt', copied: 'Copié', original: 'Ouvrir l’original', prompt: 'Prompt et réglages', source: 'Source exacte de la retouche', compare: 'Révéler la retouche', background: 'Fond de prévisualisation', light: 'Clair', dark: 'Sombre', motion: 'Mouvement prévu', sound: 'Son prévu', still: 'Image de départ · GPT Image 2.6 Sunburst', sourcePrompt: 'Prompt de l’image (anglais)' },
-  es: { detailSource: 'Detalle de la misma imagen', unretouched: 'Sin retoques', frame: 'Fotograma', shotPlan: 'Dirigir el plano', frameDirection: 'Usa el primer fotograma original para orientar el sujeto, la luz y la composición.', animateFrame: 'Anima el primer fotograma proporcionado.', videoPrompt: 'Prompt de vídeo previsto', zoom: 'Inspeccionar detalles', zoomOut: 'Encuadre completo', face: 'Rostro y cabello', texture: 'Tejido y textura', gradient: 'Color', before: 'Origen', after: 'Edición', aboutExamples: 'Sobre estos ejemplos', copy: 'Copiar prompt', copied: 'Copiado', original: 'Abrir original', prompt: 'Prompt y ajustes', source: 'Origen exacto de la edición', compare: 'Mostrar la edición', background: 'Fondo de vista previa', light: 'Claro', dark: 'Oscuro', motion: 'Movimiento previsto', sound: 'Sonido previsto', still: 'Fotograma inicial · GPT Image 2.6 Sunburst', sourcePrompt: 'Prompt de imagen (inglés)' },
+  en: { copyVideo: 'Copy video prompt', detailSource: 'Detail from the same image', unretouched: 'No retouching', frame: 'Frame', shotPlan: 'Direct the shot', frameDirection: 'Use the original first frame to anchor the subject, lighting and composition.', animateFrame: 'Animate the supplied first frame.', videoPrompt: 'Planned video prompt', zoom: 'Inspect detail', zoomOut: 'Full frame', face: 'Face & hair', texture: 'Fabric & texture', gradient: 'Colour', before: 'Source', after: 'Edit', aboutExamples: 'About these examples', copy: 'Copy prompt', copied: 'Copied', original: 'Open original', prompt: 'Prompt & settings', source: 'Exact edit source', compare: 'Reveal the edit', background: 'Preview background', light: 'Light', dark: 'Dark', motion: 'Planned motion', sound: 'Planned sound', still: 'Start frame · GPT Image 2.6 Sunburst', sourcePrompt: 'Image prompt (English)' },
+  fr: { copyVideo: 'Copier le prompt vidéo', detailSource: 'Détail de la même image', unretouched: 'Sans retouche', frame: 'Image', shotPlan: 'Diriger le plan', frameDirection: 'Utilisez la première image originale pour guider le sujet, la lumière et la composition.', animateFrame: 'Anime la première image fournie.', videoPrompt: 'Prompt vidéo prévu', zoom: 'Inspecter les détails', zoomOut: 'Vue complète', face: 'Visage et cheveux', texture: 'Tissu et texture', gradient: 'Couleur', before: 'Source', after: 'Retouche', aboutExamples: 'À propos de ces exemples', copy: 'Copier le prompt', copied: 'Copié', original: 'Ouvrir l’original', prompt: 'Prompt et réglages', source: 'Source exacte de la retouche', compare: 'Révéler la retouche', background: 'Fond de prévisualisation', light: 'Clair', dark: 'Sombre', motion: 'Mouvement prévu', sound: 'Son prévu', still: 'Image de départ · GPT Image 2.6 Sunburst', sourcePrompt: 'Prompt de l’image (anglais)' },
+  es: { copyVideo: 'Copiar prompt de vídeo', detailSource: 'Detalle de la misma imagen', unretouched: 'Sin retoques', frame: 'Fotograma', shotPlan: 'Dirigir el plano', frameDirection: 'Usa el primer fotograma original para orientar el sujeto, la luz y la composición.', animateFrame: 'Anima el primer fotograma proporcionado.', videoPrompt: 'Prompt de vídeo previsto', zoom: 'Inspeccionar detalles', zoomOut: 'Encuadre completo', face: 'Rostro y cabello', texture: 'Tejido y textura', gradient: 'Color', before: 'Origen', after: 'Edición', aboutExamples: 'Sobre estos ejemplos', copy: 'Copiar prompt', copied: 'Copiado', original: 'Abrir original', prompt: 'Prompt y ajustes', source: 'Origen exacto de la edición', compare: 'Mostrar la edición', background: 'Fondo de vista previa', light: 'Claro', dark: 'Oscuro', motion: 'Movimiento previsto', sound: 'Sonido previsto', still: 'Fotograma inicial · GPT Image 2.6 Sunburst', sourcePrompt: 'Prompt de imagen (inglés)' },
 };
 
 export type CinematicAsset = Pick<ModelEditorialImage, 'id' | 'title' | 'prompt' | 'original' | 'display' | 'metadataLabel' | 'source' | 'alphaVerified'>;
@@ -26,6 +27,7 @@ export type CinematicPresentation = {
   examples: ModelCinematicExamplesContent;
   assets: CinematicAsset[];
   hero: CinematicAsset;
+  assistantHref: string;
   ui: typeof ui.en;
 };
 
@@ -57,5 +59,13 @@ export function buildCinematicPresentation(content: ModelCinematicContent | null
     }
     if (panel.layout === 'cutout' && (selected.length !== 1 || !selected[0]?.alphaVerified)) throw new Error('Cinematic cutout needs verified alpha');
   }
-  return { content, examples: examples.cinematic, assets, hero, ui: ui[locale] };
+  for (const placement of ['prompting', 'details']) {
+    const panels = examples.cinematic.panels.filter(panel => panel.placement === placement);
+    if (panels.length !== 1 || panels[0].assetIds.length !== 1) throw new Error(`Cinematic ${placement} needs one dedicated visual`);
+  }
+  const assistantEntry = new URL(miloEntryHref(locale), 'https://maxvideoai.com');
+  assistantEntry.pathname = content.variant === 'image' ? '/app/image' : '/app';
+  assistantEntry.searchParams.set('engine', content.modelSlug);
+  if (content.variant === 'video') assistantEntry.searchParams.set('mode', 't2v');
+  return { content, examples: examples.cinematic, assets, hero, ui: ui[locale], assistantHref: assistantEntry.pathname + assistantEntry.search };
 }

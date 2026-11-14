@@ -37,6 +37,7 @@ export const cinematicExamplesSchema = z.object({
   provenance: text,
   panels: z.array(z.object({
     id,
+    placement: z.enum(['examples', 'prompting', 'details']).optional(),
     layout: z.enum(['edit', 'feature', 'cutout', 'grid', 'shots']),
     eyebrow: text,
     title: text,
