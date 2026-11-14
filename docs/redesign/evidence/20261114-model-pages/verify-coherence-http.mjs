@@ -36,6 +36,11 @@ for (const slug of ['seedream-5-5', 'seedance-2-5-flash']) {
     assert.equal(assistant.searchParams.get('lang'), locale);
     assert.equal(assistant.searchParams.has('prompt'), false);
     if (slug === 'seedream-5-5') {
+      const benefits = [...doc.querySelectorAll('#overview .cinema-benefits a')];
+      assert.equal(benefits.length, 4);
+      for (const benefit of benefits) assert.ok(doc.querySelector(benefit.getAttribute('href')), 'Every benefit has a visible proof destination');
+      assert.equal(doc.querySelectorAll('#overview img, #overview video').length, 0, 'Overview does not duplicate another scene');
+      assert.ok(doc.querySelector('#overview .cinema-overview-source[href="https://seed.bytedance.com/en/seedream5_5"]'));
       for (const id of ['specs', 'decision-pricing', 'faq']) assert.equal(doc.getElementById(id).closest('[hidden]'), null);
       assert.ok(doc.querySelector('.cinema-detail-crop img'), 'Portrait crop is visible in initial HTML');
       assert.equal(assistant.pathname, '/app/image');

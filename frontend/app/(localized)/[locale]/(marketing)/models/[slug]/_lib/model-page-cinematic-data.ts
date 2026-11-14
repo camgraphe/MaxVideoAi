@@ -49,6 +49,12 @@ export function buildCinematicPresentation(content: ModelCinematicContent | null
   if (!hero) throw new Error('Missing reviewed cinematic hero');
   const panelIds = examples.cinematic.panels.map(panel => panel.id);
   if (new Set(panelIds).size !== panelIds.length) throw new Error('Duplicate cinematic panel');
+  if (content.overview) {
+    const targets = content.overview.benefits.map(benefit => benefit.panelId);
+    if (new Set(targets).size !== targets.length || targets.some(target => !examples.cinematic!.panels.some(panel => panel.id === target && (!panel.placement || panel.placement === 'examples')))) {
+      throw new Error('Cinematic overview benefits must link to distinct visible proof panels');
+    }
+  }
   const visualIds = [content.heroAssetId, ...examples.cinematic.panels.flatMap(panel => panel.assetIds)];
   if (new Set(visualIds).size !== visualIds.length) throw new Error('A cinematic visual has one placement; only the edit comparator may reuse its sources');
   for (const panel of examples.cinematic.panels) {

@@ -6,7 +6,7 @@ import type { ModelExamplesViewModel } from '../_lib/model-page-examples-view-mo
 import type { ModelPromptingViewModel } from '../_lib/model-page-prompting-view-model';
 import { ModelCinematicHero } from './ModelCinematicHero';
 import { ModelCinematicExamples } from './ModelCinematicExamples';
-import { ModelCinematicPrompt } from './ModelCinematicAsset';
+import { ModelCinematicOverview } from './ModelCinematicOverview';
 import { ModelCinematicPrompting } from './ModelCinematicPrompting';
 import { ModelCinematicDetails, type CinematicDetailsProps } from './ModelCinematicDetails';
 import { ModelCinematicWorkflows } from './ModelCinematicWorkflows.client';
@@ -17,7 +17,7 @@ export function ModelCinematicPage({ presentation, decision, examples, hasRender
   examples: ModelExamplesViewModel; hasRenderedVideos: boolean;
   prompting: ModelPromptingViewModel; details: CinematicDetailsProps;
 }) {
-  const { content, hero, ui } = presentation;
+  const { content } = presentation;
   return <div className={`model-cinematic-page model-cinematic-page--${content.variant}`}>
     <ModelCinematicHero presentation={presentation} decision={decision} />
     <nav className="cinema-nav" aria-label={content.overviewLabel}>
@@ -28,11 +28,7 @@ export function ModelCinematicPage({ presentation, decision, examples, hasRender
         <Link href={decision.hero.primaryCta.href} prefetch={false} className="cinema-button">{content.primaryLabel}<span aria-hidden="true">↗</span></Link>
       </div>
     </nav>
-    <section id="overview" className="cinema-wrap cinema-overview">
-      <div className="cinema-overview-copy"><p className="cinema-eyebrow">{content.proofLabel}</p><p className="cinema-intro">{content.intro}</p></div>
-      <dl className="cinema-facts">{content.facts.map(fact => <div key={fact.label}><dt>{fact.label}</dt><dd>{fact.value}</dd></div>)}</dl>
-      <ModelCinematicPrompt asset={hero} ui={ui} />
-    </section>
+    <ModelCinematicOverview presentation={presentation} />
     <ModelCinematicExamples presentation={presentation} viewModel={examples} hasRenderedVideos={hasRenderedVideos} />
     {content.workflows ? <ModelCinematicWorkflows content={content.workflows} workspaceHref={decision.hero.primaryCta.href} /> : null}
     <ModelCinematicPrompting viewModel={prompting} presentation={presentation} />

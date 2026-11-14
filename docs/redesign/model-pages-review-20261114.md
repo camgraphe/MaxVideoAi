@@ -43,6 +43,20 @@ For subsequent sections, use one reference capture, one current capture at the s
 
 Reference and before/after captures are in the task visualization directory under `model-page-integration/fidelity-review/`. The exact reference is the existing `seedream-55-cinematic-release/index.html#details` prototype. Production build, 14 focused cinematic/architecture tests, exposure lint and localized HTTP checks passed. The known local cookie-policy warning remains. The media is below the fold and lazy; no new loading-performance claim is made.
 
+## Seedream overview review
+
+The user's annotated review identified a continuous white band between the hero and the first editing proof, with an overly technical introduction. This correction is scoped to Seedream's overview in EN/FR/ES; Flash retains its existing overview.
+
+The chosen proposal is a compact graphite interlude: a two-line editorial heading, a short MaxVideoAI introduction and four links to the existing proof sections. A slight grey tint would leave much of the same visual continuity; another photograph would require a new, distinct proof or repeat a scene. The graphite treatment instead uses the existing brand palette and makes the transition to the white demonstration section explicit. No new media or paid mockup was needed for this contained layout change.
+
+Sources rechecked on 14 November: [ByteDance model page](https://seed.bytedance.com/en/seedream5_5), [official release article](https://seed.bytedance.com/en/blog/more-realistic-images-more-stable-editing-across-100-rounds-introducing-seedream-5-5), and [Higgsfield's model guide](https://higgsfield.ai/blog/seedream-5-5-higgsfield). They support the selected emphasis on iterative editing, realism, text rendering and native transparency. The overview links those capabilities to MaxVideoAI's actual selected examples. It does not turn the provider's 100-edit evaluation into a MaxVideoAI guarantee. Provider attribution remains a discreet official-source link; technical facts remain in the existing specifications and prompt guide.
+
+`ModelCinematicOverview` owns the optional presentation. The localized content defines the four benefits, and the data builder rejects missing, duplicate or non-example destinations. The hero's exact prompt and settings stay in the overview footer. No image source, hero preload, pricing logic or schema builder changes.
+
+Visual comparison points: graphite versus white section boundary; clear heading versus one large paragraph; four benefits versus the old specs strip; direct proof navigation; original prompt and provider attribution retained; two-column mobile benefit layout. The requested change intentionally replaces the old overview's copy and composition while preserving hero and navigation copy. The result is a proposal for continued user review, not a claim of final template approval. Before/after captures are in `model-page-integration/overview-review/` in the task visualization directory.
+
+Validation: production build (TypeScript, lint and prebuild gates), 38 focused tests, exposure lint and six localized HTTP checks passed. Browser comparison used the annotated viewport, 1161 × 998, and mobile 390 × 844; French and Spanish also had no horizontal document overflow at 320 px. Every benefit link reached its intended proof, and the original hero prompt disclosure opened correctly. The band measured 460 px high versus 458 px previously at the annotated width, preserving the first demonstration's arrival while changing the visual hierarchy. The hero/media loading policy is unchanged; no performance or search-ranking improvement is claimed. The work remains local.
+
 ## Visual inventory: one purpose per image
 
 | Page | Placement | Dedicated visuals |

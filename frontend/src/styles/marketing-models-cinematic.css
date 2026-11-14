@@ -56,6 +56,40 @@
 .marketing-site .model-cinematic-page .cinema-facts{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--cinema-line);border-bottom:1px solid var(--cinema-line);padding-block:26px;gap:24px}
 .marketing-site .model-cinematic-page .cinema-facts dt{font-size:11px;color:var(--cinema-muted);margin-bottom:10px}
 .marketing-site .model-cinematic-page .cinema-facts dd{font-size:16px;font-weight:500;letter-spacing:-.025em;line-height:1.4}
+/* Benefit-led interlude: a deliberate dark break between the hero and the proofs. */
+.marketing-site .model-cinematic-page .cinema-overview-band{background:#17212b;color:#edf2f6;--cinema-ink:#edf2f6;--cinema-muted:#b4c0cb;--cinema-line:#ffffff26;--cinema-surface:#263541;padding-block:54px 16px}
+.marketing-site .model-cinematic-page .cinema-overview-heading{display:grid;grid-template-columns:1fr 1fr;gap:8%;align-items:end;margin-bottom:30px}
+.marketing-site .model-cinematic-page .cinema-overview-heading .cinema-eyebrow{font-size:10px;color:#b4c0cb;margin-bottom:16px}
+.marketing-site .model-cinematic-page .cinema-overview-heading h2{font-size:clamp(34px,3.8vw,54px);letter-spacing:-.05em;line-height:1.05}
+.marketing-site .model-cinematic-page .cinema-overview-heading h2 span{display:block}
+.marketing-site .model-cinematic-page .cinema-overview-intro{font-size:18px;line-height:1.6;color:#b4c0cb;max-width:510px;padding-bottom:3px}
+.marketing-site .model-cinematic-page .cinema-benefits{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:28px;list-style:none;padding:0;margin:0}
+.marketing-site .model-cinematic-page .cinema-benefits li{min-width:0}
+.marketing-site .model-cinematic-page .cinema-benefits a{display:block;height:100%;padding:16px 0 22px;border-top:1px solid #ffffff36;transition:border-color .15s,color .15s}
+.marketing-site .model-cinematic-page .cinema-benefits a:hover{border-color:#c9d9e5;color:#fff}
+.marketing-site .model-cinematic-page .cinema-benefits a:focus-visible{outline:2px solid #c9d9e5;outline-offset:6px}
+.marketing-site .model-cinematic-page .cinema-benefit-index{display:flex;justify-content:space-between;align-items:center;font-size:10px;letter-spacing:.1em;color:#9cabb8;margin-bottom:15px}
+.marketing-site .model-cinematic-page .cinema-benefit-index svg{color:#d6e1e9;transition:transform .15s}
+.marketing-site .model-cinematic-page .cinema-benefits a:hover svg{transform:translate(2px,2px)}
+.marketing-site .model-cinematic-page .cinema-benefits h3{font-size:21px;line-height:1.2;letter-spacing:-.035em;margin-bottom:12px;text-wrap:initial}
+.marketing-site .model-cinematic-page .cinema-benefits p{font-size:13px;line-height:1.6;color:#b4c0cb}
+.marketing-site .model-cinematic-page .cinema-overview-foot{display:flex;align-items:start;gap:40px;border-top:1px solid var(--cinema-line)}
+.marketing-site .model-cinematic-page .cinema-overview-foot>.cinema-prompt{flex:1;min-width:0;border:0}
+.marketing-site .model-cinematic-page .cinema-overview-foot>.cinema-prompt>summary{font-size:11px;color:#b4c0cb;min-height:44px}
+.marketing-site .model-cinematic-page .cinema-overview-source{display:inline-flex;gap:8px;align-items:center;min-height:50px;flex-shrink:0;font-size:11px;color:#b4c0cb}
+.marketing-site .model-cinematic-page .cinema-overview-source:hover{text-decoration:underline;text-underline-offset:4px}
+@media(max-width:767px){
+ .marketing-site .model-cinematic-page .cinema-overview-band{padding-block:38px 12px}
+ .marketing-site .model-cinematic-page .cinema-overview-heading{grid-template-columns:1fr;gap:20px;margin-bottom:28px}
+ .marketing-site .model-cinematic-page .cinema-overview-intro{font-size:15px;line-height:1.65}
+ .marketing-site .model-cinematic-page .cinema-benefits{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 24px}
+ .marketing-site .model-cinematic-page .cinema-benefits a{padding-bottom:14px}
+ .marketing-site .model-cinematic-page .cinema-benefits h3{font-size:19px;line-height:1.22;margin-bottom:10px}
+ .marketing-site .model-cinematic-page .cinema-benefits p{font-size:12px}
+ .marketing-site .model-cinematic-page .cinema-overview-foot{display:block;margin-top:12px}
+ .marketing-site .model-cinematic-page .cinema-overview-source{min-height:36px;font-size:10px}
+}
+@media(prefers-reduced-motion:reduce){.marketing-site .model-cinematic-page .cinema-benefit-index svg{transition:none;transform:none!important}}
 .marketing-site .model-cinematic-page .cinema-examples-heading{padding-top:40px;padding-bottom:0}
 .marketing-site .model-cinematic-page .cinema-examples-heading h2{font-size:12px;font-weight:600;line-height:1.5;letter-spacing:.12em;text-transform:uppercase}
 .marketing-site .model-cinematic-page .cinema-examples-heading+.cinema-panel{padding-top:30px}

@@ -526,9 +526,9 @@
     }
   },
   "cinematic": {
-    "intro": "Créez des images cinématographiques avec Seedream 5.5 de ByteDance. Dirigez la scène, affinez-la avec des références et générez des PNG transparents dans le même espace image.",
+    "intro": "Créez des scènes réalistes, affinez les détails et préparez des éléments à composer avec Seedream 5.5 sur MaxVideoAI.",
     "caption": "« Première lumière » · Seedream 5.5 · Texte vers image · 2K",
-    "proofLabel": "Créé avec Seedream 5.5",
+    "proofLabel": "Seedream 5.5 sur MaxVideoAI",
     "examplesLabel": "Explorer les images",
     "pricingLabel": "Tarifs",
     "modelSlug": "seedream-5-5",
@@ -565,6 +565,38 @@
       "title": "Besoin d’aide pour le prompt ?",
       "body": "Décrivez votre idée à Milo, l’assistant IA de l’outil Create. Travaillez la formulation ensemble, puis relisez et appliquez le prompt lorsque vous êtes prêt.",
       "action": "Me faire aider par Milo"
+    },
+    "overview": {
+      "titleLines": [
+        "Créez. Affinez.",
+        "Donnez votre direction."
+      ],
+      "source": {
+        "label": "Modèle développé par ByteDance",
+        "href": "https://seed.bytedance.com/en/seedream5_5"
+      },
+      "benefits": [
+        {
+          "panelId": "refine",
+          "title": "Faites évoluer la scène.",
+          "body": "Guidez des retouches successives sur les vêtements, la lumière et les détails."
+        },
+        {
+          "panelId": "lettering",
+          "title": "Placez vos mots dans l’image.",
+          "body": "Intégrez du texte aux enseignes, aux affiches et à la scène."
+        },
+        {
+          "panelId": "moments",
+          "title": "Rapprochez-vous du réel.",
+          "body": "Explorez une peau naturelle, des tissus détaillés et une lumière réaliste."
+        },
+        {
+          "panelId": "transparency",
+          "title": "Créez sans arrière-plan.",
+          "body": "Générez des PNG transparents natifs, prêts à composer."
+        }
+      ]
     }
   }
 }

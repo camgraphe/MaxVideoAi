@@ -22,6 +22,7 @@ import { ModelCinematicWorkflows } from '../frontend/app/(localized)/[locale]/(m
 import { ModelCinematicZoom, ModelCinematicDetailCrop } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelCinematicZoom.client';
 import { ModelCinematicPromptAssistant } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelCinematicPromptAssistant';
 import { ModelCinematicPricing } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelCinematicPricing';
+import { ModelCinematicOverview } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelCinematicOverview';
 import { getPricingHubCopy } from '../frontend/app/(localized)/[locale]/(marketing)/pricing/_lib/pricingHubCopy';
 import { parseModelPromptingContent } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-prompting-content';
 
@@ -133,6 +134,32 @@ test('cinematic content is opt-in and never falls back to another locale', () =>
 test('every cinematic pilot retains its complete localized prompt-guide contract', () => {
   for (const locale of locales) for (const slug of ['seedream-5-5', 'seedance-2-5-flash']) {
     assert.ok(parseModelPromptingContent(read(slug, locale).prompting, slug, locale));
+  }
+});
+
+test('overview benefits lead to visible proof without adding duplicate photography', () => {
+  for (const locale of locales) {
+    const local = read('seedream-5-5', locale);
+    const content = parseModelCinematicContent(local.cinematic, 'seedream-5-5')!;
+    const examples = parseModelExamplesContent(local.examples, 'seedream-5-5', locale);
+    const images = listModelEditorialImages('seedream-5-5', locale, examples.editorialImages);
+    const presentation = buildCinematicPresentation(content, examples, images, locale)!;
+    const doc = new JSDOM(renderToStaticMarkup(React.createElement(ModelCinematicOverview, {presentation}))).window.document;
+    assert.equal(doc.querySelectorAll('.cinema-benefits a').length, 4);
+    for (const link of doc.querySelectorAll('.cinema-benefits a')) {
+      const id = link.getAttribute('href')!.replace('#proof-', '');
+      assert.ok(examples.cinematic!.panels.some(panel => panel.id === id && !panel.placement));
+    }
+    assert.ok(doc.querySelector('#cinema-overview-title'));
+    assert.equal(doc.querySelectorAll('img, video').length, 0);
+    assert.ok(doc.querySelector('.cinema-prompt')!.textContent!.includes(presentation.hero.prompt));
+    assert.equal(doc.querySelector('.cinema-overview-source')!.getAttribute('href'), 'https://seed.bytedance.com/en/seedream5_5');
+    const missing = structuredClone(content);
+    missing.overview!.benefits[0].panelId = 'missing-proof';
+    assert.throws(() => buildCinematicPresentation(missing, examples, images, locale), /visible proof panels/);
+    const duplicate = structuredClone(content);
+    duplicate.overview!.benefits[0].panelId = duplicate.overview!.benefits[1].panelId;
+    assert.throws(() => buildCinematicPresentation(duplicate, examples, images, locale), /distinct visible proof panels/);
   }
 });
 
@@ -261,7 +288,7 @@ test('cinematic pilots own a separate composition while the legacy model rendere
   assert.doesNotMatch(source('ModelExamplesSection.tsx'), /[Cc]inematic/);
   assert.doesNotMatch(renderer, /ModelPageContentSections|ModelCurrentDetails|ModelDecisionHeroSection|container-page|model-editorial/);
   assert.match(renderer, /content\.variant === 'video' \? <Suspense/, 'Only video details stream; image details remain in the initial visible HTML');
-  for (const section of ['ModelCinematicHero', 'ModelCinematicExamples', 'ModelCinematicPrompting', 'ModelCinematicDetails']) assert.match(renderer, new RegExp('<' + section));
+  for (const section of ['ModelCinematicHero', 'ModelCinematicOverview', 'ModelCinematicExamples', 'ModelCinematicPrompting', 'ModelCinematicDetails']) assert.match(renderer, new RegExp('<' + section));
   const details = source('ModelCinematicDetails.tsx');
   assert.match(details, /Promise\.all\(\[pricing, commercial\]\)/);
   assert.match(details, /buildModelSchemaPayloads\(\{ \.\.\.schema, pricingEngine, publicOffer \}\)/);

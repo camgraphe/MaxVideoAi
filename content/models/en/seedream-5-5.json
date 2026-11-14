@@ -526,9 +526,9 @@
     }
   },
   "cinematic": {
-    "intro": "Create cinematic images with Seedream 5.5 by ByteDance. Direct the scene, refine it with references, and create native transparent PNGs — in one image workspace.",
+    "intro": "Create lifelike scenes, refine the details and build ready-to-compose assets with Seedream 5.5 on MaxVideoAI.",
     "caption": "“First light” · Seedream 5.5 · Text to image · 2K",
-    "proofLabel": "Made with Seedream 5.5",
+    "proofLabel": "Seedream 5.5 on MaxVideoAI",
     "examplesLabel": "Explore the images",
     "pricingLabel": "Pricing",
     "modelSlug": "seedream-5-5",
@@ -565,6 +565,38 @@
       "title": "Need a hand with the prompt?",
       "body": "Describe your idea to Milo, the AI assistant in the Create tool. Work on the wording together, then review and apply the prompt when you are ready.",
       "action": "Get help from Milo"
+    },
+    "overview": {
+      "titleLines": [
+        "Create. Refine.",
+        "Make it yours."
+      ],
+      "source": {
+        "label": "Model by ByteDance",
+        "href": "https://seed.bytedance.com/en/seedream5_5"
+      },
+      "benefits": [
+        {
+          "panelId": "refine",
+          "title": "Keep shaping the scene.",
+          "body": "Guide successive edits to clothing, light and the details that matter."
+        },
+        {
+          "panelId": "lettering",
+          "title": "Give your words a place.",
+          "body": "Put text into signs, posters and the scene itself."
+        },
+        {
+          "panelId": "moments",
+          "title": "Get closer to real.",
+          "body": "Explore natural skin, tactile fabrics and lifelike lighting."
+        },
+        {
+          "panelId": "transparency",
+          "title": "Create without a background.",
+          "body": "Generate native transparent PNGs, ready to compose."
+        }
+      ]
     }
   }
 }
