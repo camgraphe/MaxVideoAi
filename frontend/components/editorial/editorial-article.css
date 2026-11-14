@@ -53,10 +53,13 @@
 .ed-transfer{display:flex;gap:18px;align-items:center;padding:12px 0 12px 14px;color:#45523c}
 .ed-transfer b{font-size:28px;line-height:1}
 .ed-sequence figcaption{font-size:14px;margin-top:24px}
-.ed-source-video iframe{width:100%;aspect-ratio:16/9;border:0;border-radius:12px}
+.ed-video-frame iframe{display:block;width:100%;height:auto;aspect-ratio:16/9;border:0;border-radius:12px}
+.ed-video-frame.is-portrait{max-width:360px;margin-inline:auto}
+.ed-video-frame.is-portrait iframe{aspect-ratio:9/16}
 .ed-source-video summary{padding:16px;background:#e8eee2;border-radius:12px;cursor:pointer}
 .ed-source-video figcaption{font-size:14px;margin-top:12px}
 @media(max-width:700px){
+ .ed-video-frame.is-portrait{max-width:none}
  .editorial-blog-page>.stack-gap-lg>:not([data-editorial-digest]){margin-left:18px;margin-right:18px}
  .ed-article{padding:0 18px;font-size:16px}
  .ed-article>header{padding:42px 0 30px}
