@@ -3,6 +3,7 @@ import { ArrowDown, ArrowUpRight } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 import type { CinematicPresentation } from '../_lib/model-page-cinematic-data';
 import type { ModelDecisionData } from '../_lib/model-page-decision-data';
+import { ModelCinematicPrompt } from './ModelCinematicAsset';
 
 export function ModelCinematicHero({ presentation: { content, hero, ui }, decision, modelName, modelsLabel, modelsHref }: {
   presentation: CinematicPresentation; decision: ModelDecisionData; modelName: string; modelsLabel: string; modelsHref: string;
@@ -34,5 +35,6 @@ export function ModelCinematicHero({ presentation: { content, hero, ui }, decisi
       <Link href={decision.hero.secondaryCta.href} prefetch={false}>{decision.hero.secondaryCta.label} ↗</Link>
       {decision.hero.quickLinks.filter(link => link.href !== decision.hero.primaryCta.href).map(link => <Link key={link.href} href={link.href} prefetch={false}>{link.label} ↗</Link>)}
     </div>
+    <ModelCinematicPrompt asset={hero} ui={ui} />
   </>;
 }

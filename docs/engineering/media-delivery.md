@@ -835,6 +835,12 @@ Remove obsolete code/configuration in the lot that replaces it. Keep compatibili
 
 ### Model editorial hero framing (redesign D81)
 
+The cinematic model-page pilots opt in through exact-locale `cinematic` content. They use a single priority image hero with fixed geometry; its original remains a separate link. Their scoped stylesheet is imported synchronously by the model route. Below-fold proofs use lazy responsive images and native prompt disclosures. Only the edit comparator and alpha-background inspector require client state.
+
+Seedream cinematic proofs extend `seedream-editorial-images.json` to exact i2i reference IDs/hashes, portrait geometry and native transparent PNG. Both original and display alpha are verified. The second edit refers to the wardrobe result, never silently to the first source. `reviewed_byteplus_output` provenance identifies the reviewed generation manifest; it does not invent a raw provider receipt.
+
+`model-cinematic-start-frames.json` is a separate illustration manifest. Its Sunburst images do not enter the public video registry or become Flash videos/VideoObjects. Original image URLs and display WebPs remain separate. Each visual has one page placement; comparison reuse is confined to the source-dependent edit control. Keep Prompt Lab images distinct from hero and Examples images. `tests/model-page-cinematic.test.ts` validates the source lineage, alpha, geometry, locale isolation and placement rule. Before replacing a start frame with a real video, use the existing public-video ownership and playback contracts and retain the actual generating model's provenance.
+
 `ModelDecisionMediaCard` declares `data-media-kind` from the resolved playable source. Model heroes use a 16:9 frame at desktop and mobile widths; video and poster use `object-fit: cover`, while image-only heroes use `contain` to preserve typography and composition. For galleries without admin curation, prefer a reviewed landscape video; preserve the order of admin-curated galleries. Video hero badges describe the selected render's audio, duration and aspect ratio; capability claims belong in the specs section. The full-render link preserves access to the original. Keep `ModelHeroMedia` priority and public playback policy unchanged. Compare equivalent production builds before claiming initial-loading gains.
 
 
