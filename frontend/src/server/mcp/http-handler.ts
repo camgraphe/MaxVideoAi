@@ -2,7 +2,7 @@ import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/
 import { isIP } from 'node:net';
 import { classifyMcpClient } from '@/server/mcp/client-family';
 
-import { getMcpRequestHost, isMcpApiHost } from '@/lib/mcp-host-routing';
+import { getMcpRequestHost } from '@/lib/mcp-host-routing';
 import { FEATURES } from '@/content/feature-flags';
 import type { AgentAccountStatusWalletDeps } from '@/server/agent-api/account-status';
 import { AgentApiError, AGENT_API_ERROR_CODES } from '@/server/agent-api/errors';
@@ -13,8 +13,11 @@ import {
   type McpConnectionBindingResult,
 } from '@/server/agent-api/mcp-funnel';
 import type { AgentPrincipal } from '@/server/agent-api/principal';
-import { resolveMcpConfig, type McpConfig } from '@/server/mcp/config';
-import { resolveMcpAgentPrincipal } from '@/server/mcp/oauth-adapter';
+import { resolveMcpRequestConfig, type McpConfig } from '@/server/mcp/config';
+import { resolveMcpDistributionProfile, type McpDistributionProfile } from '@/server/mcp/distribution-profile';
+import { resolveMcpRequestServerOptions } from '@/server/mcp/directory-capabilities';
+import { resolveMcpRequestPrincipal } from '@/server/mcp/oauth-adapter';
+import type { McpAuthenticationContext } from '@/server/mcp/oauth-resource-policy';
 import {
   createDefaultMaxVideoAiMcpServices,
   createMaxVideoAiMcpServer,
@@ -37,7 +40,7 @@ const SUPPORTED_METHODS = new Set(['GET', 'POST', 'DELETE']);
 export type McpHttpHandlerDeps = {
   enabled: boolean;
   config: McpConfig;
-  resolvePrincipal(request: Request): Promise<AgentPrincipal>;
+  resolvePrincipal(request: Request, context: McpAuthenticationContext): Promise<AgentPrincipal>;
   recordEvent?(event: McpAuditEvent): Promise<boolean>;
   recordConnection?(principal: AgentPrincipal): Promise<McpConnectionBindingResult>;
   accountStatusDeps?: AgentAccountStatusWalletDeps;
@@ -123,6 +126,7 @@ const AUDITABLE_TOOL_NAMES = new Set([
   'prepare_studio_subtitles',
   'list_saved_characters', 'get_saved_character', 'select_saved_character', 'save_character',
   'prepare_recast', 'confirm_recast', 'get_recast_quote', 'get_recast_status',
+  'prepare_character_builder', 'confirm_character_builder', 'get_character_builder_quote', 'get_character_builder_status',
   'get_account_status',
   'list_models',
   'get_model_details',
@@ -330,8 +334,13 @@ export async function handleMcpHttpRequest(
       isMcpFoundationFeatureEnabled('oauth', process.env, requestHost));
   if (!enabled) return notFound();
 
-  const config = injectedDeps?.config ?? resolveMcpConfig();
-  if (!requestHost || !isMcpApiHost(requestHost, config.apiHost)) return notFound();
+  let config: McpConfig | null;
+  try {
+    config = resolveMcpRequestConfig(requestHost, process.env, injectedDeps?.config);
+  } catch {
+    return jsonRpcError(503, -32603, 'MCP resource configuration is unavailable.');
+  }
+  if (!config) return notFound();
   if (!SUPPORTED_METHODS.has(request.method)) {
     return jsonRpcError(405, -32600, 'Unsupported HTTP method.', { Allow: 'GET, POST, DELETE' });
   }
@@ -339,9 +348,23 @@ export async function handleMcpHttpRequest(
     return jsonRpcError(406, -32600, 'MCP requires JSON or event-stream response negotiation.');
   }
 
+  let distributionProfile: McpDistributionProfile;
+  let serverOptions;
+  try {
+    distributionProfile = resolveMcpDistributionProfile(process.env, requestHost, config);
+    serverOptions = resolveMcpRequestServerOptions(requestHost, distributionProfile, process.env, {
+      ...capabilities, studioMontageCreation,
+      creatorTools: process.env.CREATOR_TOOLS_ENABLED === '1' && process.env.MCP_CREATOR_TOOLS_ENABLED === '1',
+    });
+  } catch {
+    return jsonRpcError(503, -32603, 'MCP distribution configuration is unavailable.');
+  }
+
   let principal: AgentPrincipal;
   try {
-    principal = await (injectedDeps?.resolvePrincipal ?? resolveMcpAgentPrincipal)(request);
+    principal = await (injectedDeps?.resolvePrincipal ?? resolveMcpRequestPrincipal)(request, {
+      resourceUrl: config.resourceUrl, distributionProfile,
+    });
   } catch (error) {
     if (error instanceof AgentApiError && error.code === 'AUTH_REQUIRED') return unauthorized(config, request);
     return jsonRpcError(500, -32603, 'Authentication could not be completed.');
@@ -364,11 +387,18 @@ export async function handleMcpHttpRequest(
     injectedDeps?.services ?? createDefaultMaxVideoAiMcpServices(
       config,
       resolveTrialRiskRequestContext(request.headers),
-      capabilities,
+      {
+        ...capabilities,
+        paidGeneration: serverOptions.paidGeneration ?? capabilities.paidGeneration,
+        referenceUploads: serverOptions.referenceUploads ?? capabilities.referenceUploads,
+        audioGeneration: serverOptions.audioGeneration ?? capabilities.audioGeneration,
+        creatorTools: serverOptions.creatorTools,
+        characterStudio: serverOptions.characterStudio ?? capabilities.characterStudio,
+        characterBuilder: serverOptions.characterBuilder ?? capabilities.characterBuilder,
+      },
       injectedDeps?.accountStatusDeps,
     ),
-    { ...capabilities, studioMontageCreation,
-      creatorTools: process.env.CREATOR_TOOLS_ENABLED === '1' && process.env.MCP_CREATOR_TOOLS_ENABLED === '1' },
+    serverOptions,
   );
   const transport = new WebStandardStreamableHTTPServerTransport({
     sessionIdGenerator: undefined,

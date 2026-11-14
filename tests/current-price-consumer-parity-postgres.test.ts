@@ -62,7 +62,8 @@ test('confirmed admin tariffs propagate to billing, public quotes, Pricing, mode
     for (const migration of ['08_admin_controls.sql', '09_engine_settings.sql', '27_pricing_admin_cockpit.sql', '54_customer_tariff_cells.sql', '55_customer_tariff_versions.sql']) {
       await database.pool.query(readFileSync(`neon/migrations/${migration}`, 'utf8'));
     }
-    const input = { modelId: 'pika-text-to-video', mode: 't2v', durationSec: 5, resolution: '720p' };
+    // FLUX 3 shares the same current 5s/720p scenario across the offer, unit label and Pricing presets.
+    const input = { modelId: 'flux-3', mode: 't2v', durationSec: 5, resolution: '720p' };
     const scenario = resolvePublicModelScenario(input)!;
     assert.ok(scenario);
     const [home] = buildHomePriceDemo('en');
@@ -85,7 +86,7 @@ test('confirmed admin tariffs propagate to billing, public quotes, Pricing, mode
       currency: 'USD', settingsSnapshot: { inputMode: 't2v', core: { durationSec: 5,
         resolution: '720p', aspectRatio: '16:9', audio: false } } } as never;
     const unavailable = async () => { throw new Error('unrelated product fixture absent'); };
-    async function assertPikaConsumers(cents: number) {
+    async function assertFluxConsumers(cents: number) {
       const unitUsd = cents / 500;
       assert.equal((await loadCustomerTariffScenarioDetail(entry.id, scenario.selector)).currentCents, cents);
       assert.equal((await computeCanonicalBillingSnapshot(scenario.context)).totalCents, cents);
@@ -140,22 +141,22 @@ test('confirmed admin tariffs propagate to billing, public quotes, Pricing, mode
       assert.equal((video as { finalPriceCents: number }).finalPriceCents, 999);
       return current.revision;
     }
-    const initialRevision = await assertPikaConsumers(26);
-    const update = { operation: 'update' as const, scenarioId: scenario.id, customerCents: 31 };
+    const initialRevision = await assertFluxConsumers(111);
+    const update = { operation: 'update' as const, scenarioId: scenario.id, customerCents: 116 };
     const refreshes: string[] = [];
     const preview = await previewCustomerTariffChange(update);
     assert.equal(preview.active, true);
     await confirmCustomerTariffChange(update, preview.fingerprint, actor,
       modelId => refreshes.push(modelId));
     assert.deepEqual(refreshes, [entry.id]);
-    assert.notEqual(await assertPikaConsumers(31), initialRevision);
+    assert.notEqual(await assertFluxConsumers(116), initialRevision);
     assert.deepEqual((await buildCurrentHomePriceDemo('en'))[0].steps.map(step => step.amountCents), homeInitialCents);
     const homeUpdate = { operation: 'update' as const, scenarioId: homeScenarios[0].id, customerCents: homeInitialCents[0] + 5 };
     await confirmCustomerTariffChange(homeUpdate, (await previewCustomerTariffChange(homeUpdate)).fingerprint, actor, () => {});
     assert.deepEqual((await buildCurrentHomePriceDemo('en'))[0].steps.map(step => step.amountCents),
       [homeInitialCents[0] + 5, ...homeInitialCents.slice(1)]);
     assert.equal((await database.pool.query('SELECT count(*) FROM app_customer_tariff_cell_versions')).rows[0].count, '2');
-    await database.pool.query("INSERT INTO engine_overrides (engine_id, active) VALUES ('pika-text-to-video', false)");
+    await database.pool.query("INSERT INTO engine_overrides (engine_id, active) VALUES ('flux-3', false)");
     const disabledHub = await buildCurrentPricingHubData('en', undefined, { audio: unavailable, product: unavailable });
     assert.ok(!disabledHub.video.rows.some(row => row.id === entry.id), 'current Pricing respects a disabled engine even with an approved tariff');
   } finally {

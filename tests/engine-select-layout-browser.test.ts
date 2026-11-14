@@ -141,7 +141,7 @@ test('deferred registry metadata keeps workspace model/variant geometry stable w
         ...[0, 1, 2].map(repeat => ({ width: 390, locale: 'en', engineId: 'veo-3-1', branch: 'starter', repeat } as Scenario)),
         ...[320, 390, 768, 1440].flatMap(width => (['en', 'fr', 'es'] as const).flatMap(locale => [
           { width, locale, engineId: 'minimax-h3-max', branch: 'empty', restored: true } as Scenario,
-          { width, locale, engineId: 'pika-text-to-video', branch: 'starter' } as Scenario,
+          { width, locale, engineId: 'grok-imagine-video-1-5', branch: 'starter' } as Scenario,
         ])),
         { width: 390, locale: 'fr', engineId: 'veo-3-1', branch: 'starter', cached: true },
         { width: 390, locale: 'es', engineId: 'gpt-image-2-5-flare', branch: 'image', restored: true },
@@ -225,7 +225,7 @@ test('deferred registry metadata keeps workspace model/variant geometry stable w
         assert.deepEqual(after.following, before.following);
         assert.equal(after.variantText, before.variantText);
         assert.equal(metadataShifts.length, 0, 'late metadata must not cause an eligible layout shift');
-        if (scenario.engineId === 'pika-text-to-video') assert.equal(after.variant, null, 'no permanent empty variant slot');
+        if (scenario.engineId === 'grok-imagine-video-1-5') assert.equal(after.variant, null, 'no permanent empty variant slot');
       }
       if (!baseline && index === 0) {
         const variant = page.locator('[data-selector-shell] button[aria-haspopup="listbox"]');

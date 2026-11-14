@@ -19,7 +19,7 @@ test('locked batch preserves the real selector reader while bounding database ro
     for (const file of ['27_pricing_admin_cockpit.sql', '54_customer_tariff_cells.sql', '55_customer_tariff_versions.sql']) {
       await db.pool.query(readFileSync(`neon/migrations/${file}`, 'utf8'));
     }
-    const scenario = collectSellableManualTariffCoverage().scenarios.find(row => row.modelId === 'pika-text-to-video')!;
+    const scenario = collectSellableManualTariffCoverage().scenarios.find(row => row.modelId === 'seedance-2-0-mini')!;
     await db.pool.query(`INSERT INTO app_customer_tariff_cells
       (id,selector_key,selector_json,price_json,currency,effective_from,revision,updated_by)
       VALUES ('batch-price',$1,$2,$3,'USD','2026-09-29',1,'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa')`,
@@ -101,7 +101,7 @@ test('batch reservations, historical overlaps and missing schema remain fail clo
     for (const file of ['27_pricing_admin_cockpit.sql', '54_customer_tariff_cells.sql', '55_customer_tariff_versions.sql']) {
       await db.pool.query(readFileSync(`neon/migrations/${file}`, 'utf8'));
     }
-    const scenario = collectSellableManualTariffCoverage().scenarios.find(row => row.modelId === 'pika-text-to-video')!;
+    const scenario = collectSellableManualTariffCoverage().scenarios.find(row => row.modelId === 'seedance-2-0-mini')!;
     const policy = await loadPricingPolicyOverridesWithExecutor(createQueryExecutor(db.pool));
     await db.pool.query('UPDATE app_customer_tariff_state SET active=TRUE,revision=2');
     await db.pool.query(`INSERT INTO app_customer_tariff_cell_versions

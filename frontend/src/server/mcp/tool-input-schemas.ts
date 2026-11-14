@@ -1,3 +1,4 @@
+import { characterBuilderAuthoringInput, characterBuilderQuoteInput, characterBuilderConfirmationInput } from '@/server/character-studio/authoring-request';
 import { calculateProjectBudgetInputSchema } from '@/server/mcp/tools/calculate-project-budget';
 import {compareGenerationPricesInputSchema} from '@/server/mcp/tools/compare-generation-prices';
 import { confirmGenerationInputSchema } from '@/server/mcp/tools/confirm-generation';
@@ -21,6 +22,10 @@ import {getStudioTimelineToolInputSchema,editStudioTimelineToolInputSchema} from
 import {prepareStudioExportInputSchema,confirmStudioExportInputSchema,getStudioExportInputSchema} from '@/server/mcp/tools/studio-export';
 
 export const MCP_TOOL_INPUT_SCHEMAS = {
+  prepare_character_builder: characterBuilderAuthoringInput,
+  confirm_character_builder: characterBuilderConfirmationInput,
+  get_character_builder_quote: characterBuilderQuoteInput,
+  get_character_builder_status: characterBuilderQuoteInput,
   get_account_status: getAccountStatusInputSchema,
   list_models: listModelsInputSchema,
   get_model_details: getModelDetailsInputSchema,

@@ -13,7 +13,7 @@ test('repaired model Product offers match exact public customer quotes in all lo
     const engine = engines.find((entry) => entry.id === row.engineId)!;
     assert.ok(engine, row.engineId);
     // The frozen repair matrix predates these retirements; archived models cannot sell an offer.
-    if (['sora-2', 'sora-2-pro', 'seedance-1-5-pro'].includes(engine.id)) {
+    if (['sora-2', 'sora-2-pro', 'seedance-1-5-pro', 'pika-text-to-video'].includes(engine.id)) {
       assert.equal(engine.surfaces.app.enabled, false);
       assert.equal(buildProductSchema({ engine, pricingEngine: engine.engine,
         canonical: `https://maxvideoai.com/models/${engine.modelSlug}`,

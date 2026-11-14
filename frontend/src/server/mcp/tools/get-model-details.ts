@@ -1,9 +1,12 @@
+import { withToolErrorOutput } from '@/server/mcp/output-schemas/tool-errors';
+import { getModelDetailsOutputSchema } from '@/server/mcp/output-schemas/catalog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import * as z from 'zod/v4';
 
 import type { AgentPrincipal } from '@/server/agent-api/principal';
 import type { MaxVideoAiMcpServices } from '@/server/mcp/server';
 import { runAgentTool } from '@/server/mcp/tool-result';
+import type { McpDistributionProfile } from '@/server/mcp/distribution-profile';
 
 export const getModelDetailsInputSchema = z.object({
   id: z.string().trim().min(1).max(128).describe(
@@ -15,6 +18,7 @@ export function registerGetModelDetailsTool(
   server: McpServer,
   principal: AgentPrincipal,
   services: MaxVideoAiMcpServices,
+  profile: McpDistributionProfile = 'direct',
 ): void {
   server.registerTool(
     'get_model_details',
@@ -30,13 +34,16 @@ export function registerGetModelDetailsTool(
         'If aspectRatios is empty, omit aspectRatio; if non-empty, include a supported aspectRatio.',
         'When audio is always_generated or unavailable, omit settings.audio; only send it when optional.',
         'For GPT Image edits use source/reference images and an optional mask image with the mask role; custom resolution needs imageWidth and imageHeight from live constraints.',
-        'For prompt help, use relevant reviewed official provider promptingSources and share the returned URL when useful; if empty, say no reviewed official source was returned; do not invent a guide or substitute web search.',
+        profile === 'openai-directory'
+          ? 'promptingSources contains reviewed official provider guides for prompt craft; cite a returned URL when relevant. An empty list means this response contains no reviewed guide; keep other sources distinct from these reviewed links.'
+          : 'For prompt help, use relevant reviewed official provider promptingSources and share the returned URL when useful; if empty, say no reviewed official source was returned; do not invent a guide or substitute web search.',
         'Provider guides inform prompt craft, not MaxVideoAI availability or pricing; live details also govern settings and execution.',
         'Do not use this for exact pricing, generation, hidden models, or provider guarantees.',
       ].join(' '),
       inputSchema: getModelDetailsInputSchema,
+      ...(profile === 'openai-directory' ? { outputSchema: withToolErrorOutput(getModelDetailsOutputSchema) } : {}),
       annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false },
     },
-    async ({ id }) => runAgentTool(() => services.getModelDetails(id, principal)),
+    async ({ id }) => runAgentTool(() => services.getModelDetails(id, principal), { profile, tool: 'get_model_details' }),
   );
 }

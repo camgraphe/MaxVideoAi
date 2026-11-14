@@ -127,8 +127,9 @@ test('commercial generation rights are explicit and deep-linkable in every Terms
 
 test('Terms fallback version has one source shared by pages and signup consent', () => {
   assert.match(legalLibSource, /LEGAL_FALLBACK_VERSIONS/);
-  assert.match(legalLibSource, /terms: '2026-07-12'/);
+  assert.match(legalLibSource, /terms: '2026-11-11'/);
   assert.match(termsPageSource, /LEGAL_FALLBACK_VERSIONS\.terms/);
+  assert.match(privacyPageSource, /LEGAL_FALLBACK_VERSIONS\.privacy/);
   assert.match(consentRouteSource, /LEGAL_FALLBACK_VERSIONS/);
   assert.doesNotMatch(consentRouteSource, /versions\.terms \?\? '2025-10-26'/);
 });

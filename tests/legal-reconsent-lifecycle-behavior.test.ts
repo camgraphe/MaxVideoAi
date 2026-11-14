@@ -254,7 +254,7 @@ test('failed acceptance remains blocking, accepts a fresh retry, and sends the o
     await clickAccept(fixture);
     await fixture.session(1, sessionFor());
     assert.deepEqual(JSON.parse(String(fixture.requests[1].init?.body)), {
-      documents: ['terms'], locale: 'en-US', source: 'reconsent',
+      documents: ['terms'], locale: 'en-US', source: 'reconsent', ageConfirmed: false,
     });
     await fixture.respond(1, { ok: false, error: 'Synthetic write failure' }, 503);
     assert.ok(fixture.container.querySelector('.fixed.inset-0'));
@@ -354,3 +354,61 @@ for (const failure of ['missing-session', 'rejected-lookup'] as const) {
     });
   });
 }
+
+
+test('18+ acceptance requires an explicit checkbox even when documents are already current', async () => {
+  await withPrompt(async (fixture, Prompt) => {
+    await fixture.render(React.createElement(Prompt));
+    await fixture.session(0, sessionFor());
+    await fixture.respond(0, { ...required(), documents: [], minimumAge: 18, ageConfirmationRequired: true });
+    const button = fixture.container.querySelector('button')!;
+    const checkbox = fixture.container.querySelector<HTMLInputElement>('input[type=checkbox]')!;
+    assert.equal(checkbox.checked, false);
+    assert.equal(button.disabled, true);
+    await clickAccept(fixture);
+    assert.equal(fixture.sessions.length, 1);
+    await act(async () => checkbox.click());
+    assert.equal(button.disabled, false);
+    await clickAccept(fixture);
+    await fixture.session(1, sessionFor());
+    assert.deepEqual(JSON.parse(String(fixture.requests[1].init?.body)).documents, []);
+    assert.equal(JSON.parse(String(fixture.requests[1].init?.body)).ageConfirmed, true);
+    await fixture.respond(1, accepted);
+    assert.equal(fixture.container.textContent, '');
+  });
+});
+
+test('an age checkbox is never carried to another account', async () => {
+  await withPrompt(async (fixture, Prompt) => {
+    const ageStatus = { ...required(), minimumAge: 18, ageConfirmationRequired: true };
+    await fixture.render(React.createElement(Prompt));
+    await fixture.session(0, sessionFor());
+    await fixture.respond(0, ageStatus);
+    await act(async () => fixture.container.querySelector<HTMLInputElement>('input[type=checkbox]')!.click());
+    await fixture.emit('SIGNED_IN', sessionFor('account-b', 'synthetic-token-b'));
+    await fixture.respond(1, ageStatus);
+    assert.equal(fixture.container.querySelector<HTMLInputElement>('input[type=checkbox]')!.checked, false);
+    assert.equal(fixture.container.querySelector('button')!.disabled, true);
+  });
+});
+
+
+test('email-confirmation signup keeps its optional marketing choice scoped to its account and editable before saving', async () => {
+  await withPrompt(async (fixture, Prompt) => {
+    window.localStorage.setItem('legal:signup-marketing:account-a', 'true');
+    await fixture.render(React.createElement(Prompt));
+    await fixture.session(0, sessionFor());
+    await fixture.respond(0, required());
+    const checkbox = fixture.container.querySelector<HTMLInputElement>('input[type=checkbox]')!;
+    assert.equal(checkbox.checked, true);
+    await act(async () => checkbox.click());
+    await clickAccept(fixture);
+    await fixture.session(1, sessionFor());
+    assert.equal(JSON.parse(String(fixture.requests[1].init?.body)).marketingOptIn, false);
+    await fixture.respond(1, accepted);
+    assert.equal(window.localStorage.getItem('legal:signup-marketing:account-a'), null);
+    await fixture.emit('SIGNED_IN', sessionFor('account-b', 'synthetic-token-b'));
+    await fixture.respond(2, required());
+    assert.equal(fixture.container.querySelector('input[type=checkbox]'), null);
+  });
+});

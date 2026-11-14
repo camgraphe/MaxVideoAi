@@ -6907,7 +6907,7 @@
       "privacyLabel": "Politique de confidentialité",
       "suffix": ".",
       "error": "Vous devez accepter les conditions et la politique de confidentialité pour continuer.",
-      "age": "Je confirme avoir au moins {age} ans.",
+      "age": "Je confirme avoir au moins {age} ans et avoir atteint l’âge de la majorité dans mon pays.",
       "marketing": "Oui, envoyez-moi ponctuellement des e-mails produit. Je peux me désabonner à tout moment."
     },
     "signupSuggestion": {

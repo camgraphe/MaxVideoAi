@@ -1,5 +1,7 @@
 'use client';
 
+import { audioJobMediaUrl } from '@/lib/audio-job-media';
+
 /* eslint-disable @next/next/no-img-element */
 
 import deepmerge from 'deepmerge';
@@ -125,7 +127,7 @@ function AudioJobCard({
         <audio
           controls
           preload="none"
-          src={job.audioUrl}
+          src={audioJobMediaUrl(job.jobId, 'audio')}
           aria-label={`${resolveJobLabel(job, copy)} audio`}
           className="mt-3 h-9 w-full"
         />
@@ -137,11 +139,11 @@ function AudioJobCard({
         </Button>
         <div className="flex">
           {job.videoUrl ? (
-            <ButtonLink href={job.videoUrl} target="_blank" rel="noreferrer" variant="ghost" size="sm">
+            <ButtonLink linkComponent="a" href={audioJobMediaUrl(job.jobId, 'video')} target="_blank" rel="noreferrer" variant="ghost" size="sm">
               {copy.rail.file}
             </ButtonLink>
           ) : job.audioUrl ? (
-            <ButtonLink href={job.audioUrl} target="_blank" rel="noreferrer" variant="ghost" size="sm">
+            <ButtonLink linkComponent="a" href={audioJobMediaUrl(job.jobId, 'audio')} target="_blank" rel="noreferrer" variant="ghost" size="sm">
               {copy.rail.file}
             </ButtonLink>
           ) : null}

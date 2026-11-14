@@ -1,3 +1,4 @@
+import {studioCreatorQuoteSchema} from '@/lib/studio/conversation-creator-contract';
 import {readStudioTaskMemory} from "./tasks/memory";
 import {automaticallyNameStudioProject} from './conversation-project-naming';
 import {assistanceError, reserveStudioAssistanceCall, settleStudioAssistanceCall, markStudioAssistanceUnknown, stopStudioAssistanceReplay, type AssistanceCall,type StudioLunaFallback} from './assistance-ledger';
@@ -41,11 +42,14 @@ export async function readStudioConversationProject(actor: StudioGenerationActor
       AND j.payment_status='refunded_wallet' AND refund.amount_cents=charge.amount_cents AND refund.currency=charge.currency
     WHERE t.user_id=$1 AND t.project_id=$2 AND q.auth_origin='studio-session' ORDER BY t.created_at DESC LIMIT 30`, [actor.userId, actor.projectId,STUDIO_QUOTE_SETTING_KEYS]);
   const generations = projectStudioConversationQuotes(quoteRows);
+  const creatorRows=await query<{quote:unknown}>(`SELECT to_jsonb(t)->'draft_json'->'creatorQuote' AS quote FROM studio_image_turns t
+    WHERE t.user_id=$1 AND t.project_id=$2 AND to_jsonb(t)->'draft_json'->'creatorQuote' IS NOT NULL ORDER BY t.created_at DESC LIMIT 30`,[actor.userId,actor.projectId]);
+  const creatorOperations=creatorRows.flatMap(row=>{const parsed=studioCreatorQuoteSchema.safeParse(row.quote);return parsed.success?[parsed.data]:[];});
   const authoredNotes=options.taskContext?await readStudioTaskMemory(actor,options.taskContext.message,options.taskContext.requestId):[];
   const analyses=await readStudioAnalysisFacts(actor);
   const exports = options.exportsEnabled ? await query<{safe_result: unknown}>(`SELECT safe_result FROM studio_project_commands WHERE user_id=$1 AND project_id=$2 AND command_kind='timeline_export_prepare' AND command_version=1 AND request_payload->'scope'->>'authOrigin'='studio-session' AND request_payload->'scope'->>'clientId' IS NULL ORDER BY created_at DESC LIMIT 8`,[actor.userId,actor.projectId]) : null;
   const renders=options.exportsEnabled?await readStudioConversationRenderFacts(actor):null;
-  return {...(authoredNotes.length?{authoredNotes}:{}),...(analyses.length?{analyses}:{}),...(renders?{renders}:{}),...(exports ? {exports: exports.flatMap(value => {const parsed=studioPreparedExportSchema.safeParse(value.safe_result);return parsed.success ? [parsed.data] : [];})} : {}),name: row.name, revision: Number(row.revision), memory: studioMemorySchema.parse({revision: Number(row.memory_revision ?? 0), brief: row.brief ?? '', decisions: row.decisions ?? []}), generations};
+  return {...(creatorOperations.length?{creatorOperations}:{}),...(authoredNotes.length?{authoredNotes}:{}),...(analyses.length?{analyses}:{}),...(renders?{renders}:{}),...(exports ? {exports: exports.flatMap(value => {const parsed=studioPreparedExportSchema.safeParse(value.safe_result);return parsed.success ? [parsed.data] : [];})} : {}),name: row.name, revision: Number(row.revision), memory: studioMemorySchema.parse({revision: Number(row.memory_revision ?? 0), brief: row.brief ?? '', decisions: row.decisions ?? []}), generations};
 }
 
 export async function saveStudioConversationMemory(actor: StudioGenerationActor, value: StudioConversationMemory & {projectTitle?:string|null}, executor?: TransactionQueryExecutor) {

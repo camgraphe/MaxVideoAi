@@ -52,7 +52,7 @@ test('production default reader uses inactive legacy prices, then exact active p
     for (const name of ['27_pricing_admin_cockpit.sql', '54_customer_tariff_cells.sql', '55_customer_tariff_versions.sql']) {
       await database.pool.query(readFileSync(`neon/migrations/${name}`, 'utf8'));
     }
-    const scenario = collectSellableManualTariffCoverage().scenarios.find(row => row.modelId === 'pika-text-to-video')!;
+    const scenario = collectSellableManualTariffCoverage().scenarios.find(row => row.modelId === 'seedance-2-0-mini')!;
     assert.ok(scenario);
     const policy = await loadPricingPolicyOverridesWithExecutor(createQueryExecutor(database.pool));
     const quote = () => computeCanonicalBillingSnapshot(scenario.context, {

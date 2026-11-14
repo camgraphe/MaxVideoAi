@@ -70,7 +70,7 @@ test('actual workspace handles local intent history and retires stale asynchrono
     }}));
     dom.window.history.replaceState(null,'','?intent=voice&job=linked-job&reuse=1&context=studio');
     await render('a');await tick();
-    assert.equal(dom.window.document.querySelector('section audio')?.getAttribute('src'),'https://fixture.example/old-job.mp3','recent completed audio is directly playable with compact controls');
+    assert.equal(dom.window.document.querySelector('section audio')?.getAttribute('src'),'/api/audio/media/old-job?kind=audio','recent completed audio is directly playable with compact controls');
     const linkedRestore=review.restores.at(-1);
     const intent = () => dom.window.document.querySelector('main')?.getAttribute('data-audio-creation');
     const choose = (name:string) => act(async()=>{
@@ -114,7 +114,7 @@ test('actual workspace handles local intent history and retires stale asynchrono
       const notificationsBefore=notifications;
       await act(async()=>{oldRun.resolve(generateResult('retired'));oldUpload({url:'https://fixture.example/retired.wav',name:'Retired reference'});oldRestore(generateResult('retired-job'));});
       assert.equal(notifications,notificationsBefore,'retired run cannot announce into current history');
-      assert.equal(dom.window.document.querySelector('aside > article audio')?.getAttribute('src'),`https://fixture.example/current-${transition}.mp3`);
+      assert.equal(dom.window.document.querySelector('aside > article audio')?.getAttribute('src'),`/api/audio/media/current-${transition}?kind=audio`);
       assert.equal(JSON.parse(localStorage.getItem('maxvideoai.audio.creation.v1:a')!).drafts.voice.reference,null,'late upload cannot overwrite fresh draft');
       await act(async()=>root.render(null));
     }

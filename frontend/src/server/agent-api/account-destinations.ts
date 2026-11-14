@@ -35,6 +35,9 @@ export function parseTrustedAccountUrl(value: string): URL {
     && hostname === 'maxvideoai-mcp-staging.vercel.app'
     && parsed.port === '';
   const characterStudioPreview = parsed.origin === 'https://maxvideoai-env-character-studio-test-camgraphes-projects.vercel.app';
+  const dedicatedQualification = parsed.protocol === 'https:'
+    && hostname === 'openai-review.maxvideoai.com'
+    && parsed.port === '';
   const loopback = isLoopbackHostname(hostname)
     && (parsed.protocol === 'http:' || parsed.protocol === 'https:');
 
@@ -44,12 +47,17 @@ export function parseTrustedAccountUrl(value: string): URL {
     || parsed.search
     || parsed.hash
     || parsed.pathname !== ACCOUNT_CONNECTIONS_PATH
-    || (!production && !officialStaging && !characterStudioPreview && !loopback)
+    || (!production && !officialStaging && !characterStudioPreview && !dedicatedQualification && !loopback)
   ) {
     throw new Error('Expected a trusted MaxVideoAI account URL.');
   }
 
   return parsed;
+}
+
+/** Server request origins must become an exact trusted account destination before canonical quoting. */
+export function trustedAccountUrlFromOrigin(origin = 'https://maxvideoai.com'): string {
+  return parseTrustedAccountUrl(new URL(ACCOUNT_CONNECTIONS_PATH, origin).toString()).toString();
 }
 
 function destination(

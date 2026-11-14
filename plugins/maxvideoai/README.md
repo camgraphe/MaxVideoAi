@@ -13,13 +13,13 @@ Setup guides: [Claude](docs/claude.md) · [ChatGPT](docs/chatgpt.md) · [Codex](
 ### Install the repository-validated Codex package
 
 ```sh
-codex plugin marketplace add camgraphe/maxvideoai-plugin --ref v0.3.8
+codex plugin marketplace add camgraphe/maxvideoai-plugin --ref v0.3.9
 codex plugin add maxvideoai@maxvideoai
 ```
 
 Start a new Codex task, then ask `$maxvideoai:plan` to compare a production route or `$maxvideoai:generate` to prepare a concrete request. The plugin is free to connect. The first live MaxVideoAI action opens OAuth so you can sign in or create the account you want to connect.
 
-[Public releases](https://github.com/camgraphe/maxvideoai-plugin/releases) include a versioned ZIP and SHA-256 file. Match the selected public tag to `VERSION` before installation.
+[Public releases](https://github.com/camgraphe/maxvideoai-plugin/releases) include a versioned ZIP and SHA-256 file. Match the selected public tag to `VERSION` before installation. These commands track this source version; run them only once its matching tag is published. Otherwise, use the installation guide from an existing public release.
 
 ## What does MaxVideoAI add to an AI assistant?
 

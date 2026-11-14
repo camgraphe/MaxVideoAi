@@ -229,7 +229,7 @@ test('audio upload inputs stay hidden from keyboard traversal', () => {
 test('audio history renders playable audio files inline', () => {
   assert.match(latestRendersRailSource, /<audio/, 'audio history should mount an audio element for audio jobs');
   assert.match(latestRendersRailSource, /controls/, 'audio history audio element should expose native playback controls');
-  assert.match(latestRendersRailSource, /src=\{job\.audioUrl\}/, 'audio history should play the stored job audio URL');
+  assert.match(latestRendersRailSource, /src=\{audioJobMediaUrl\(job\.jobId, 'audio'\)\}/, 'audio history should resolve owned read access without changing the stored URL');
   assert.doesNotMatch(latestRendersRailSource, /0:00 \//, 'audio history should not render a fake playback timestamp');
   assert.doesNotMatch(latestRendersRailSource, /<UIIcon icon=\{Play\}/, 'audio history should not render a fake play button');
 });

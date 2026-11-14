@@ -1,3 +1,120 @@
+## Audio request guidance — 14 November 2026 (dedicated qualification)
+
+Real ChatGPT qualification omitted the required cinematic mood and guessed output
+IDs (`original`, `0`) after receiving a generation ID. Discovery now projects each
+mode's canonical `mood.required` and values. A missing mood reports the specific
+`settings.mood` field before reference access or pricing. The prepare descriptor
+directs callers to exact `list_media` asset IDs, matched by `sourceJobId`, and never
+to invented output IDs. No default mood or weaker reference validation is added.
+
+The two added descriptor sentences alone account for the policy fingerprint change
+from `fce2c72d8134e2d7f85019f4df615090db8fa99c6e6090aff9dc5741c1201202`
+to `b707722c3e4b5356d6593771dc79af144ade441a4badaf2e5a9fa7a257d294d4`:
+removing only those sentences from collected metadata reproduces the old hash.
+The collector measures 946 bytes for Audio preparation, 1,551 instruction bytes
+and 1,927 maximum descriptor bytes. Curated decisions and fixture-contract content
+remain byte-for-byte unchanged apart from the policy fingerprint. Discovery changes
+the live catalogue revision, so unconfirmed Audio quotes must be prepared again;
+already accepted jobs remain readable. Hosted qualification is recorded separately.
+
+## Native-site Audio execution — 13 November 2026 (local candidate)
+
+The explicit `MCP_AUDIO_EXECUTION_MODE=site` option reuses the website Audio
+executor after the existing MCP reservation, without a permanent queue consumer.
+Absent this setting, the existing worker contract remains unchanged. Providers,
+pricing, ownership checks and available packs retain their canonical owners;
+catalogue revisions distinguish the execution modes. This is a local candidate,
+not an activated configuration. Hosted duration and recovery qualification remains
+required. See [MCP Audio execution](mcp-audio-execution.md).
+
+## Private Markdown media links — 12 November 2026 (local candidate)
+
+Generation recovery/presentation exposes optional `openUrl`, Studio export exposes
+`artifact.openUrl`, and Creator media exposes `openUrl` beside `readUrl`. The
+descriptors direct Markdown links to this first-party handoff while preserving
+native originals and the working generation widget/download flow. Tool count,
+feature gates, input schemas and widget URI are unchanged. The short-lived bearer
+contract, ownership checks, secret-absent fallback and revocation limit are in
+`media-delivery.md` under “MCP Markdown handoff”.
+
+The documented metadata collector gives policy fingerprint
+`a713e4a2d8434623e8ecedead988b78f1da3df12e889879f403205a411c54eb7`.
+Only this fingerprint changed in the curated fixture; all 70 decisions, 39 policy
+checks and its fixture-contract hash remain unchanged. Package version, publication
+and fresh hosted qualification are separate follow-up work.
+
+## OpenAI structured failures after discovery — 11 November 2026
+
+Hosted qualification exposed a client validation failure: SDK 1.29.0 validates
+structured errors against the advertised output schema after `tools/list`, even
+when `isError` is true. Directory output schemas now advertise both the complete
+success DTO and the existing Agent API failure. The reusable projection uses Zod
+JSON Schema metadata; server success parsing remains strict. It changes neither
+returned values, direct-profile metadata, provider gates nor business services.
+Do not drop structured errors, recovery actions or correlation IDs as a workaround.
+
+The SDK fixture now discovers tools before calls. Both business and unexpected
+error regressions failed before the correction. All 42 advertised directory
+schemas accept complete failures and reject malformed ones. Local checks: 27
+directory/output tests, 214 MCP tests (one optional skip), all 70 curated decisions,
+TypeScript and exposure pass. Lint has seven existing warnings and no errors.
+Instruction/description ceilings remain 1,998 / 1,939 bytes. Dedicated Git build `b460474d8` is READY. A real refreshed reviewer OAuth session
+discovers all 42 corrected schemas and receives ten valid responses: eight
+read successes, the expected no-matching-scenario failure and an unknown-job
+failure. Diagnostic-session revocation still rejects access; the two existing
+OpenAI sessions are preserved. Native OpenAI draft metadata rediscovery remains
+pending; see the dated qualification dossier.
+
+## OpenAI directory scan wording — 11 November 2026
+
+The dedicated OpenAI draft now completes OAuth and discovers all 42 tools. Its
+first scan flags `get_model_details` for apparent preference over alternatives.
+The directory-only descriptor now explains what reviewed `promptingSources`
+contains and distinguishes other sources, instead of prohibiting web search.
+Capabilities, schemas, prices, handlers and the direct-channel descriptor are
+unchanged. The three Audio tools remain present; their scan message requests
+further review without identifying a specific implementation defect.
+
+Local checks: 17 directory SDK contracts passed; `mcp:client:check` passed 214
+tests with one optional skip and all 70 curated decisions. The direct policy
+fingerprint remains unchanged. Directory instructions retain their 1,998-byte
+maximum; the largest directory descriptor is now 1,939 UTF-8 bytes (ceiling
+2,000). Frontend lint has zero errors and seven existing warnings. The dedicated Git deployment `95be72898` is READY; after metadata rediscovery,
+the portal scan completes `get_model_details` without findings. All 42 tool
+reviews finish; five other tools require further review without a specific
+rationale (three Audio tools, comparison and generation preparation). The portal
+retains Authorized/domain verification but shows Configuration incomplete.
+No provider execution or directory publication is inferred from discovery.
+
+## OpenAI directory rebased candidate — 11 November 2026 (initial local evidence)
+
+The dedicated directory candidate starts at main `86db1bd37` (#645), retaining
+current canonical models, pricing, private-reference checks and Character Studio.
+The `openai-directory` distribution profile adds output schemas and suppresses
+purchase handoffs; the direct channel retains its metadata and funding behavior.
+Informational model pricing links remain available. Error correlation IDs remain
+usable for support without exposing exception details. See
+[`openai-directory/README.md`](../operations/openai-directory/README.md).
+
+All nine directory capability overrides are independent, including
+`MCP_OPENAI_DIRECTORY_CHARACTER_STUDIO_ENABLED`. With every capability enabled,
+SDK discovery exposes 42 tools, instructions measure 1,998 UTF-8 bytes and the
+maximum description measures 1,927 bytes. The eight Character Studio/Recast tools
+retain exact owned references, live quote prices, explicit confirmation and
+quote-scoped recovery when execution closes. Output schemas preserve additive
+fields and include the current `middle_frame` role. No provider route is switched.
+
+Local verification: 214 MCP tests passed, one optional test skipped, and all 70
+curated selection scenarios passed with the existing policy fingerprint. The
+directory-focused suite passed 101 tests. TypeScript and exposure checks passed;
+frontend lint reports zero errors and seven warnings in untouched files. The
+OpenAI archive is candidate 0.3.13; generic source 0.3.9 is unpublished. These
+checks establish neither deployment nor OAuth, actual host selection, provider
+execution, public availability or directory acceptance. The historical extended
+account-purge branch remains separate; its evidence is not reused as qualification
+of this candidate. Public eligibility/privacy and actual review access must be
+reconciled before submission.
+
 ## 2026-10-22 — Kling V4 canonical owned subjects (offline candidate)
 
 `prepare_generation` now accepts optional ordered `subjects`, scoped by canonical validation to Kling V4 reference/edit modes. Each image/video subject points to existing zero-based `role=reference` slots; every subject reference must be an owned asset. The complete ordered request participates in the existing quote hash and stored confirmation snapshot. The seven-subject, three-video-subject envelope rejects overflow, unsupported modes and unknown fields. No arbitrary element URL or provider voice ID is accepted. Voice binding remains unavailable until a server-owned fal issuance/provenance registry can bind owner, provider account, source and returned voice ID.
@@ -872,3 +989,100 @@ tests with one intentional host skip and all 70 curated scenarios; 86 focused
 compression, capability, normalization and App tests pass. Metadata collection and
 regression checks are offline. Delivery, catalog refresh and real-host behavior
 require their own evidence.
+
+
+### 2026-11-11 — adult eligibility on the directory preparation branch
+
+The service owner approved 18+ eligibility. OAuth approval now requires an
+explicit adulthood checkbox and persists `min_age:18` for the verified session
+owner before issuing the grant. Denial remains available without the checkbox;
+failed consent storage returns 503 before approval. No MCP descriptor, capability,
+model admission or quote/confirmation contract changes in this increment.
+`tests/oauth-adult-consent.test.ts` executes the route against controlled identity,
+consent storage and grant boundaries. The legal rollout guide covers signup and
+existing-account reconsent. Real hosted OAuth qualification remains separate.
+
+## Owned private generation delivery — 11 November 2026
+
+The dedicated OpenAI qualification found that completed jobs in a private S3
+bucket were present in Media while MCP recovery returned no usable result. The
+dedicated runtime now declares its exact canonical storage base; this setting
+does not change bucket ACLs. After the existing owned-job read and public URL
+projection, agent status and recent-generation reads use the same five-minute
+private access owner as Studio, now under
+`generations/generation-media-access.ts`. The Studio import remains a facade.
+Originals, thumbnails, playback copies and last-frame artifacts retain their
+identities; only returned presentation URLs receive signatures. Cross-account
+storage objects fail closed. No generation, ledger operation or stored URL write
+is part of these reads.
+
+Three new behavioral tests reproduce the missing signatures before the fix and
+verify video artifacts, image/audio facts, canonical immutability and ownership.
+The 69 focused checks pass; MCP client checks report 214 passing, one skipped and
+70 selection scenarios. Frontend lint has seven existing warnings and no errors;
+exposure lint passes. Tool descriptors, schemas and instruction byte budgets are
+unchanged. This local result does not establish ChatGPT host presentation or
+OpenAI acceptance; hosted qualification is recorded in the dated review dossier.
+
+### 2026-11-11 — accepted export response schema
+
+The directory error-output projection now unions overlapping root property
+schemas instead of replacing the success property with the failure property.
+Previously the root `ok: false` contradicted the success branch's `ok: true`.
+A confirmed export could complete while the SDK rejected its response. The
+regression first discovers tools (which caches the SDK output validators), then
+confirms an injected export once. Both distribution profiles accept the successful
+result; directory entitlement failures remain valid after discovery. The Zod
+success parser and full success/error branches remain strict and unchanged.
+
+Validation: 18 directory contracts; 214 MCP tests pass, one skipped; 70 selection
+scenarios pass. Frontend lint: no errors, seven existing warnings. Exposure lint
+and diff checks pass. Native ChatGPT media checks are recorded separately from
+these deterministic contracts; the existing export is recovered without rerender.
+
+## Common alignment candidate — 2026-11-12
+
+The extended Audio worker path and independent Character Builder authoring tools
+retain exact quote approval and existing scope/publication owners. Read/status
+recovery is distinct from admission of a new purchase. Migrations 100/101 and their
+qualified runtime switches must be handled by the release owner; local tests do
+not establish deployed worker, paid-provider or host qualification.
+
+The plan/generate package includes `generate/references/extended-workflows.md`.
+Its actual contents now participate in the policy fingerprint alongside the
+existing references; the independent inventory assertion must include this file.
+The 70 curated offline decisions were not rewritten. Global instruction checks
+cover all 1024 combinations, including creator/Character/Builder flags, with a
+1998-byte maximum under the 2000-byte limit. Builder/creator descriptor tests keep
+per-tool guidance bounded. Marketplace-specific output schemas, distribution
+profiles and package versioning remain owned by the marketplace branch.
+
+### Directory integration of the common candidate — 12 November 2026
+
+The directory branch adds a tenth independent capability override,
+`MCP_OPENAI_DIRECTORY_CHARACTER_BUILDER_ENABLED`, propagated through both server
+registration and business-service admission. Builder authoring retains existing
+paid/reference prerequisites and quote/status reads when new execution closes.
+All four Builder tools declare success/error outputs and apply the directory's
+existing-entitlement projection; direct responses retain their original policy.
+Recovery preserves `needsAttention`, null retries and canonical `saveSource`
+separately from temporary private presentation URLs. Creator discovery retains
+`webTools`/`webHandoff` without implying MCP execution or media transfer.
+
+Offline full discovery exposes 46 directory tools with object output schemas,
+1,997 instruction bytes and a 1,939-byte maximum descriptor. The combined policy
+fingerprint is `fce2c72d8134e2d7f85019f4df615090db8fa99c6e6090aff9dc5741c1201202`;
+the 70 curated decisions and fixture contract remain unchanged. The 0.3.21 local
+package includes the extended-workflows reference in its independent archive
+inventory. Source integration and these deterministic checks do not establish
+hosted worker readiness, a successful generation or directory submission.
+
+### 2026-11-14 — Owned media generation identity
+
+A live ChatGPT Audio qualification revealed that `list_media` omitted the canonical
+`sourceJobId` while Audio reuse guidance asked the host to match it. The listing
+now projects that nullable identifier from the already owned media record and
+declares it in its output schema. It does not copy arbitrary metadata, expose a
+provider/storage URL, or add a new read. The exact DTO and ownership regression
+cover generated assets, uploads and foreign records. Tool descriptions and server
+instructions are unchanged from the measured Audio guidance above.

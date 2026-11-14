@@ -1,0 +1,29 @@
+{
+  "source": "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonECS/current/eu-central-1/index.json",
+  "publicationDate": "2026-11-11T23:46:23Z",
+  "region": "eu-central-1",
+  "rates": [
+    {
+      "usageType": "EUC1-Fargate-vCPU-Hours:perCPU",
+      "unit": "hours",
+      "usd": "0.0465600000",
+      "description": "AWS Fargate - vCPU - EU (Frankfurt)",
+      "effectiveDate": "2026-11-01T00:00:00Z"
+    },
+    {
+      "usageType": "EUC1-Fargate-GB-Hours",
+      "unit": "hours",
+      "usd": "0.0051100000",
+      "description": "AWS Fargate - Memory - EU (Frankfurt)",
+      "effectiveDate": "2026-11-01T00:00:00Z"
+    }
+  ],
+  "meaning": "public list rates, not actual task duration or account invoice",
+  "referenceSizing": {
+    "vCPU": 2,
+    "memoryGiB": 4,
+    "evidence": "peer-owned dedicated worker template; production sizing and real duration not verified"
+  },
+  "referenceComputeUsdPerHour": 0.11356,
+  "referenceComputeUsdPerMinute": 0.0018926666666666666
+}

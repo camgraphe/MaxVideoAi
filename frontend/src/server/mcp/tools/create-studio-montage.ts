@@ -1,3 +1,6 @@
+import { withToolErrorOutput } from '@/server/mcp/output-schemas/tool-errors';
+import type { McpDistributionProfile } from '@/server/mcp/distribution-profile';
+import { createStudioMontageOutputSchema } from '@/server/mcp/output-schemas/audio-montage';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 import { createStudioMontageInputSchema } from '@/lib/studio/montage-contract';
@@ -39,6 +42,7 @@ export function registerCreateStudioMontageTool(
   server: McpServer,
   principal: AgentPrincipal,
   services: MaxVideoAiMcpServices,
+  profile: McpDistributionProfile = 'direct',
 ): void {
   if (!services.createStudioMontage) {
     throw new Error('create_studio_montage service is required when its gate is enabled.');
@@ -50,6 +54,7 @@ export function registerCreateStudioMontageTool(
       description:
         'Create one persisted editable Studio project from 2–12 caller-ordered owned ready videos with measured frame-aligned trims. It preserves the requested order and returns the exact Studio destination. Reuse the exact idempotencyKey only for an exact retry of the same request; changed content requires a new key.',
       inputSchema: createStudioMontageToolInputSchema,
+      ...(profile === 'openai-directory' ? { outputSchema: withToolErrorOutput(createStudioMontageOutputSchema) } : {}),
       annotations: {
         readOnlyHint: false,
         destructiveHint: false,

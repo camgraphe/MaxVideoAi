@@ -139,14 +139,14 @@ function services(calls: unknown[], executionEnabled: boolean, recovery: AgentGe
   };
 }
 
-async function connected(t: TestContext, options: MaxVideoAiMcpServerOptions = {}, recovery: AgentGenerationStatus | null = completed) {
+async function connected(t: TestContext, options: MaxVideoAiMcpServerOptions = {}, recovery: AgentGenerationStatus | null = completed, adapt: (base: MaxVideoAiMcpServices) => MaxVideoAiMcpServices = base => base) {
   const calls: unknown[] = [];
   const settings = {
     paidGeneration: true, referenceUploads: true, montagePreparation: false,
     audioGeneration: false, studioMontageCreation: false, studioTimelineEditing: false, studioExports: false,
     ...options,
   };
-  const server = createMaxVideoAiMcpServer(principal, services(calls, settings.paidGeneration && settings.referenceUploads, recovery), settings);
+  const server = createMaxVideoAiMcpServer(principal, adapt(services(calls, settings.paidGeneration && settings.referenceUploads, recovery)), settings);
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
   await server.connect(serverTransport);
   const client = new Client({ name: 'character-studio-test', version: '1' });
@@ -361,4 +361,68 @@ test('the SDK rejects non-v4 Recast quote IDs and confirmation amounts above Pos
   ]);
   assert.deepEqual(results.map(result => result.isError), [true, true, true, true]);
   assert.deepEqual(calls, []);
+});
+
+test('directory Character Studio keeps all eight tools, exact quotes and completed recovery', async t => {
+  let confirmations = 0;
+  const { client } = await connected(t, { characterStudio: true, distributionProfile: 'openai-directory' }, completed, base => ({
+    ...base,
+    characterStudio: principal => {
+      const original = base.characterStudio!(principal);
+      return { ...original, confirmRecast: async input => { confirmations += 1; return original.confirmRecast(input); } };
+    },
+  }));
+  const tools = (await client.listTools()).tools;
+  for (const name of studioTools) {
+    const tool = tools.find(tool => tool.name === name);
+    assert.ok(tool, name);
+    assert.equal(tool.outputSchema?.type, 'object', name);
+    assert.ok(Object.keys(tool.outputSchema?.properties ?? {}).length > 0, name);
+  }
+  assert.equal(tools.some(tool => tool.name === 'create_topup_link'), false);
+  for (const [name, args] of [
+    ['list_saved_characters', {}],
+    ['select_saved_character', { characterId: '42', lookId: '57' }],
+    ['prepare_recast', settings],
+    ['confirm_recast', approval],
+    ['get_recast_quote', { quoteId }],
+    ['get_recast_status', { quoteId }],
+  ] as const) {
+    const result = await client.callTool({ name, arguments: args });
+    assert.notEqual(result.isError, true, JSON.stringify(result));
+    const text = result.content.find(part => part.type === 'text');
+    assert.ok(text && 'text' in text);
+    assert.deepEqual(JSON.parse(text.text as string), result.structuredContent);
+  }
+  assert.equal(confirmations, 1);
+});
+
+test('directory Recast funding errors retain the limitation without a checkout handoff', async t => {
+  const { client } = await connected(t, { characterStudio: true, distributionProfile: 'openai-directory' }, completed, base => ({
+    ...base,
+    characterStudio: principal => ({
+      ...base.characterStudio!(principal),
+      confirmRecast: async () => {
+        throw new AgentApiError('INSUFFICIENT_FUNDS', 'Add credits', false, { type: 'open_url', url: 'https://maxvideoai.com/billing' });
+      },
+    }),
+  }));
+  const result = await client.callTool({ name: 'confirm_recast', arguments: approval });
+  assert.equal(result.isError, true);
+  const error = (result.structuredContent as { error: { code: string; nextAction: unknown } }).error;
+  assert.equal(error.code, 'INSUFFICIENT_FUNDS');
+  assert.equal(error.nextAction, null);
+  assert.doesNotMatch(JSON.stringify(result), /https:.*billing|Add credits/);
+});
+
+test('directory Character Studio recovery remains available when execution closes', async t => {
+  const { client } = await connected(t, {
+    characterStudio: true, distributionProfile: 'openai-directory', paidGeneration: false,
+  }, null);
+  const names = (await client.listTools()).tools.map(tool => tool.name);
+  assert.equal(names.includes('confirm_recast'), false);
+  assert.ok(names.includes('get_recast_status'));
+  const result = await client.callTool({ name: 'get_recast_status', arguments: { quoteId } });
+  assert.notEqual(result.isError, true);
+  assert.deepEqual(result.structuredContent, { quoteId, jobId: null, status: 'no_job', retry: null });
 });

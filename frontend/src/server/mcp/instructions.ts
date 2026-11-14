@@ -26,7 +26,7 @@ export function buildMaxVideoAiMcpInstructions(
   }
   if (recastPurchases) {
     instructions.push(
-      'Use prepare_recast for Recast and prepare_generation otherwise. Show the exact quote. Wait for explicit user approval before confirmation. One paid attempt. Ambiguous assent gives no approval. Failure/refund needs a fresh quote and approval. Never auto-resubmit.',
+      'prepare_recast for Recast; prepare_generation for image/video. Show the exact quote. Wait for explicit user approval before confirmation. One paid attempt. Ambiguous assent gives no approval. Failure/refund needs a fresh quote and approval. Never auto-resubmit.',
       'Recover Recast with get_recast_status. Otherwise use get_generation_status or list_recent_generations before any new attempt. Present completed results only.',
     );
   } else if (capabilities.paidGeneration) {

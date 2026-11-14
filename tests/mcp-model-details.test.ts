@@ -169,10 +169,11 @@ function realRegistryDetailsDeps(): AgentModelDetailsDeps {
   };
 }
 
-test('Pika details agree with its on-request editorial guidance', async () => {
+test('Pika lifecycle closure takes precedence over its historical editorial guidance', async () => {
   const details = await getAgentModelDetails('pika-text-to-video', realRegistryDetailsDeps());
 
-  assert.equal(details.lifecycle, 'current');
+  assert.equal(details.lifecycle, 'deep_legacy');
+  assert.equal(details.generationEnabled, false);
   assert.ok(details.modes.some((mode) => mode.mode === 't2v'));
   assert.equal(details.editorialGuidance?.level, 'on_request');
   assert.equal(details.recommendedByDefault, false);

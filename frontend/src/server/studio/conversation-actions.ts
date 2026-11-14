@@ -1,3 +1,7 @@
+import type {StudioCharacterBuilderIntent} from '@/lib/studio/conversation-character-authoring-contract';
+import type {StudioCreatorTools} from './conversation-creator';
+import type {StudioCreatorPreparation,StudioCreatorQuote} from '@/lib/studio/conversation-creator-contract';
+import { readCreatorToolDiscovery } from '@/server/tools/creator-discovery';
 import type { CharacterStudioIntegration } from '@/server/character-studio/integration';
 import type { StudioRecastIntent } from '@/lib/studio/conversation-character-contract';
 import { normalizeVideoOperation } from '@/lib/video-operation';
@@ -22,12 +26,17 @@ import {priceStudioFilm} from './conversation-film-pricing';
 
 export function createStudioActionExecutor(actor: StudioGenerationActor, dependencies: {
   enabled: boolean;
+  accountUrl?: string;
+  creator?: Pick<StudioCreatorTools,'executionEnabled'|'read'|'readDocument'|'editDocument'>;
+  prepareCreator?(request:StudioCreatorPreparation):Promise<StudioCreatorQuote>;
   readProject?: typeof readStudioConversationProject;
   referenceFingerprint?: string;
   generation?: ReturnType<typeof createStudioImageGenerationService>;
   prepareImage(request: Extract<StudioActionRequest, {action: 'image.prepare'}>): Promise<PreparedGeneration>;
   mediaEnabled?: boolean;
-  character?: Pick<CharacterStudioIntegration,'list'|'get'>;
+  character?: Pick<CharacterStudioIntegration,'list'|'get'|'select'>;
+  saveCharacter?(input:{quoteId:string;name:string}):Promise<import('@/lib/studio/conversation-character-authoring-contract').StudioCharacterSaveResult>;
+  prepareCharacterBuilder?(request:StudioCharacterBuilderIntent):Promise<PreparedGeneration>;
   prepareRecast?(request:StudioRecastIntent):Promise<PreparedGeneration>;
   factories?: StudioMediaFactories;
   prepareMedia?(request: StudioMediaIntent): Promise<PreparedGeneration | PreparedAudioGeneration>;
@@ -54,6 +63,31 @@ export function createStudioActionExecutor(actor: StudioGenerationActor, depende
       if (!dependencies.enabled) throw new AgentApiError('ENGINE_UNAVAILABLE', 'Studio actions are unavailable.');
       const project = await (dependencies.readProject ?? readStudioConversationProject)(actor,{exportsEnabled:dependencies.editingEnabled&&dependencies.exportsEnabled});
       switch (request.action) {
+        case 'tools.read':
+          return {ok: true, action: request.action, data: readCreatorToolDiscovery({enabled: dependencies.creator?.executionEnabled === true,
+            accountUrl: dependencies.accountUrl ?? 'https://maxvideoai.com', surface: 'studio'})};
+        case 'character.save':
+          if(!dependencies.saveCharacter)throw new AgentApiError('ENGINE_UNAVAILABLE','Character saving is unavailable.');
+          return {ok:true,action:request.action,data:await dependencies.saveCharacter(request)};
+        case 'character.select':
+          if(!dependencies.character)throw new AgentApiError('ENGINE_UNAVAILABLE','Character selection is unavailable.');
+          return {ok:true,action:request.action,data:await dependencies.character.select({characterId:request.characterId,lookId:request.lookId})};
+        case 'character.prepare':
+          if(!dependencies.prepareCharacterBuilder)throw new AgentApiError('ENGINE_UNAVAILABLE','Character Builder preparation is unavailable.');
+          return {ok:true,action:request.action,data:await dependencies.prepareCharacterBuilder(request)};
+        case 'creator.prepare': case 'creator.subtitle-export.prepare': case 'creator.studio-subtitles.prepare':
+          if(request.action==='creator.studio-subtitles.prepare'&&!dependencies.editingEnabled)throw new AgentApiError('ENGINE_UNAVAILABLE','Studio sequence tools are unavailable.');
+          if(!dependencies.creator?.executionEnabled||!dependencies.prepareCreator)throw new AgentApiError('ENGINE_UNAVAILABLE','Creator preparation is unavailable.');
+          return {ok:true,action:request.action,data:await dependencies.prepareCreator(request)};
+        case 'creator.read':
+          if(!dependencies.creator)throw new AgentApiError('ENGINE_UNAVAILABLE','Creator recovery is unavailable.');
+          return {ok:true,action:request.action,data:await dependencies.creator.read(request)};
+        case 'creator.subtitle.read':
+          if(!dependencies.creator)throw new AgentApiError('ENGINE_UNAVAILABLE','Subtitle documents are unavailable.');
+          return {ok:true,action:request.action,data:await dependencies.creator.readDocument(request)};
+        case 'creator.subtitle.edit':
+          if(!dependencies.creator)throw new AgentApiError('ENGINE_UNAVAILABLE','Subtitle documents are unavailable.');
+          return {ok:true,action:request.action,data:await dependencies.creator.editDocument(request)};
         case 'analysis.prepare':
           if(!dependencies.analysisEnabled||!dependencies.prepareAnalysis)throw new AgentApiError('ENGINE_UNAVAILABLE','Studio analysis is unavailable.');
           return {ok:true,action:request.action,data:await dependencies.prepareAnalysis(request)};

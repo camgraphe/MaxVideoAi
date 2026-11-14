@@ -190,6 +190,7 @@ export async function listAgentMedia(
   const items = await Promise.all(
     listable.map(async ({ asset, resolved }): Promise<AgentMediaItem> => ({
       assetId: asset.publicId!,
+      sourceJobId: asset.sourceJobId ?? null,
       kind: resolved.media.kind,
       label: normalizeLabel(asset.metadata.label),
       width: normalizeDimension(asset.width),

@@ -1617,6 +1617,8 @@ const prepareAdapterImports = new Set([
   '@modelcontextprotocol/sdk/server/mcp.js', 'zod/v4',
   '@/server/agent-api/principal', '@/server/agent-api/generation-types',
   '@/server/mcp/server', '@/server/mcp/optional-tool-input', '@/server/mcp/tool-result',
+  '@/server/mcp/output-schemas/tool-errors', '@/server/mcp/output-schemas/generation',
+  '@/server/mcp/distribution-profile',
   '@/lib/video-operation', '@/lib/generation-reference-limits',
 ]);
 function assertPrepareAdapterBoundary(source: string): void {
@@ -1626,13 +1628,19 @@ function assertPrepareAdapterBoundary(source: string): void {
       assert.ok(ts.isStringLiteral(node.moduleSpecifier) && prepareAdapterImports.has(node.moduleSpecifier.text),
         `Unexpected adapter dependency: ${node.moduleSpecifier.getText(tree)}`);
       const pureSchemaOwner = node.moduleSpecifier.text === '@/lib/video-operation' ? 'VIDEO_OPERATIONS'
-        : node.moduleSpecifier.text === '@/lib/generation-reference-limits' ? 'MAX_GENERATION_REFERENCES' : null;
+        : node.moduleSpecifier.text === '@/lib/generation-reference-limits' ? 'MAX_GENERATION_REFERENCES'
+        : node.moduleSpecifier.text === '@/server/mcp/output-schemas/tool-errors' ? 'withToolErrorOutput'
+        : node.moduleSpecifier.text === '@/server/mcp/output-schemas/generation' ? 'prepareGenerationOutputSchema'
+        : node.moduleSpecifier.text === '@/server/mcp/distribution-profile' ? 'McpDistributionProfile' : null;
       if (pureSchemaOwner) {
         assert.ok(ts.isImportDeclaration(node) && node.importClause && !node.importClause.name
           && node.importClause.namedBindings && ts.isNamedImports(node.importClause.namedBindings)
           && node.importClause.namedBindings.elements.length === 1
           && (node.importClause.namedBindings.elements[0].propertyName?.text ?? node.importClause.namedBindings.elements[0].name.text) === pureSchemaOwner,
-          'Only the reviewed pure schema constant may cross this adapter boundary');
+          'Only the reviewed schema symbol or distribution type may cross this adapter boundary');
+        if (pureSchemaOwner === 'McpDistributionProfile') {
+          assert.ok(node.importClause.isTypeOnly, 'Distribution-profile access must remain type-only');
+        }
       }
     }
     assert.equal(ts.isImportEqualsDeclaration(node), false, 'Import-equals can bypass the reviewed dependency list');
@@ -1666,6 +1674,10 @@ test('adapter boundary permits provider guidance but rejects executable dependen
     `import { resolveVideoOperationEngine } from '@/lib/video-operation';`,
     `import * as operations from '@/lib/video-operation';`,
     `export { VIDEO_OPERATIONS } from '@/lib/video-operation';`,
+    `import * as outputs from '@/server/mcp/output-schemas/generation';`,
+    `export { withToolErrorOutput } from '@/server/mcp/output-schemas/tool-errors';`,
+    `import { McpDistributionProfile } from '@/server/mcp/distribution-profile';`,
+    `import { resolveMcpDistributionProfile } from '@/server/mcp/distribution-profile';`,
     `import * as ledger from '@/server/wallet';`,
     `export { createJob as run } from '@/server/jobs';`,
     `const mod = import('@/server/video-providers');`,
@@ -1675,4 +1687,14 @@ test('adapter boundary permits provider guidance but rejects executable dependen
     `services['reserveWallet']();`, `services['provider'].submit();`,
     `query('INSERT INTO app_receipts VALUES (1)');`,
   ]) assert.throws(() => assertPrepareAdapterBoundary(source), undefined, source);
+});
+
+test('archived Pika cannot prepare a quote before pricing or persistence', async () => {
+  const { listPublicAgentGenerationEngines } = await import('../frontend/src/server/agent-api/model-catalog');
+  const { deps, captures } = baseDependencies({ listPublicEngines: () => listPublicAgentGenerationEngines({
+    listEngines: async () => listFalEngines().map(entry => entry.engine), surfaceByEngineId: () => 'video',
+  }) });
+  await expectAgentError(prepareGeneration({ ...videoInput, engineId: 'pika-text-to-video' }, principal, deps), 'ENGINE_UNAVAILABLE');
+  assert.equal(captures.events.includes('pricing'), false);
+  assert.equal(captures.inserted.length, 0);
 });

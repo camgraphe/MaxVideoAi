@@ -128,6 +128,24 @@ function baseServices(overrides: Record<string, unknown> = {}): MaxVideoAiMcpSer
   } as MaxVideoAiMcpServices;
 }
 
+test('listAgentMedia exposes owned canonical job identity for exact reuse without guessing output IDs', async () => {
+  const { listAgentMedia } = await loadMediaLibrary();
+  const page = await listAgentMedia({}, principal, {
+    async listAssetPage() {
+      return { items: [
+        asset({ id: 'owned-output', source: 'saved_job_output', sourceJobId: 'job-owned', metadata: { sourceJobId: 'spoofed-job' } }),
+        asset({ id: 'upload-with-metadata', metadata: { sourceJobId: 'spoofed-job' } }),
+        asset({ id: 'foreign-output', userId: 'other-user', sourceJobId: 'job-other-user' }),
+      ], nextCursor: null, hasMore: false };
+    },
+    async createPrivatePreviewUrl() { return null; },
+  });
+  assert.equal(page.items.length, 2);
+  assert.equal(page.items.find(item => item.sourceJobId === 'job-owned')?.assetId, publicIdFor('owned-output'));
+  assert.equal(page.items[1].sourceJobId, null);
+  assert.doesNotMatch(JSON.stringify(page), /spoofed-job|job-other-user|foreign-output/);
+});
+
 test('listAgentMedia performs one unfiltered owner page read and returns safe multimodal DTOs', async () => {
   const { listAgentMedia } = await loadMediaLibrary();
   const cursor = encodeMediaLibraryCursor({
@@ -187,6 +205,7 @@ test('listAgentMedia performs one unfiltered owner page read and returns safe mu
     items: [
       {
         assetId: publicIdFor('asset-upload'),
+        sourceJobId: null,
         kind: 'image',
         label: 'Uploaded reference',
         width: 1280,
@@ -199,6 +218,7 @@ test('listAgentMedia performs one unfiltered owner page read and returns safe mu
       },
       {
         assetId: publicIdFor('asset-generated'),
+        sourceJobId: null,
         kind: 'image',
         label: 'Generated',
         width: 1280,
@@ -211,6 +231,7 @@ test('listAgentMedia performs one unfiltered owner page read and returns safe mu
       },
       {
         assetId: publicIdFor('asset-imported'),
+        sourceJobId: null,
         kind: 'image',
         label: 'Imported',
         width: 1280,
@@ -223,6 +244,7 @@ test('listAgentMedia performs one unfiltered owner page read and returns safe mu
       },
       {
         assetId: publicIdFor('asset-video'),
+        sourceJobId: null,
         kind: 'video',
         label: 'Opening shot',
         width: 1280,
@@ -235,6 +257,7 @@ test('listAgentMedia performs one unfiltered owner page read and returns safe mu
       },
       {
         assetId: publicIdFor('asset-audio'),
+        sourceJobId: null,
         kind: 'audio',
         label: 'Sound bed',
         width: null,
@@ -251,6 +274,7 @@ test('listAgentMedia performs one unfiltered owner page read and returns safe mu
   });
   assert.deepEqual(Object.keys(page.items[0] ?? {}), [
     'assetId',
+    'sourceJobId',
     'kind',
     'label',
     'width',

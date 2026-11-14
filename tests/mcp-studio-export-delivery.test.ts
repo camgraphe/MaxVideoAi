@@ -21,7 +21,7 @@ test('completed OAuth exports renew readable grants only for owned canonical ori
     builder.onLoad({filter:/.*/,namespace:'fixture'},args=>({contents:stubs[args.path],loader:'js',resolveDir:frontend}));
   }}]});
   const module = {exports:{} as any};
-  runInNewContext(bundle.outputFiles[0].text,{module,exports:module.exports,require:createRequire(resolve(frontend,'package.json')),fixture,process:{env:{NODE_ENV:'production',S3_BUCKET:'export-oauth-fixture',S3_REGION:'us-east-1',S3_PUBLIC_BASE_URL:base}},URL,Buffer,console});
+  runInNewContext(bundle.outputFiles[0].text,{module,exports:module.exports,require:createRequire(resolve(frontend,'package.json')),fixture,process:{env:{NODE_ENV:'production',S3_BUCKET:'export-oauth-fixture',S3_REGION:'us-east-1',S3_PUBLIC_BASE_URL:base,MCP_ACQUISITION_SIGNING_SECRET:'offline-export-link-secret-at-least-32-bytes'}},URL,Buffer,console});
   const project = module.exports.projectAgentStudioExportJob;
   const source = `${base}/timeline-exports/owner/film.mp4`;
   const job = {id:'export',status:'completed',progress:100,message:null,billing:{amountCents:2,currency:'USD',billingKind:'paid'},artifact:{outputUrl:'/api/studio/timeline-exports/export/media',canonicalOriginalUrl:source,outputAssetId:'asset',sizeBytes:128,mimeType:'video/mp4'}};
@@ -51,4 +51,12 @@ test('completed OAuth exports renew readable grants only for owned canonical ori
   assert.equal(unavailable.artifactDelivery,'unavailable');
   assert.equal(unavailable.artifact,null);
   assert.equal(job.artifact.outputUrl,'/api/studio/timeline-exports/export/media','Projection never mutates the saved job.');
+  const linked = await project(job,'owner',dependencies,{userId:'owner',clientId:'client',authMethod:'oauth',emailVerified:true});
+  assert.match(linked.artifact.outputUrl,/X-Amz-Signature=offline-3$/,'Native access stays unchanged.');
+  const link = new URL(linked.artifact.openUrl);
+  assert.equal(link.origin,'https://maxvideoai.com');
+  assert.equal(link.pathname,'/api/mcp/media');
+  const payload = JSON.parse(Buffer.from(link.searchParams.get('token')!.split('.')[0],'base64url').toString());
+  assert.deepEqual(payload.source,{type:'export',exportId:'export'});
+  assert.equal(payload.userId,'owner');assert.equal(payload.clientId,'client');
 });

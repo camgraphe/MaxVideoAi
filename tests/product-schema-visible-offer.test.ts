@@ -15,8 +15,9 @@ test('visible offer and Product consume the same price and selected scenario for
   for (const row of matrix.rows) {
     const engine = engines.find((entry) => entry.id === row.engineId)!;
     // The frozen repair matrix predates these retirements; archived models cannot sell an offer.
-    if (['sora-2', 'sora-2-pro', 'seedance-1-5-pro'].includes(engine.id)) {
+    if (['sora-2', 'sora-2-pro', 'seedance-1-5-pro', 'pika-text-to-video'].includes(engine.id)) {
       assert.equal(engine.surfaces.app.enabled, false);
+      assert.equal(resolveModelPublicOffer(engine, engine.engine), null);
       assert.equal(buildProductSchema({ engine, pricingEngine: engine.engine,
         canonical: `https://maxvideoai.com/models/${engine.modelSlug}`,
         description: 'Archived model', heroTitle: engine.marketingName, heroPosterAbsolute: null }), null);

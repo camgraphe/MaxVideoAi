@@ -9,6 +9,7 @@ import { refundAudioCharge } from '../frontend/src/server/audio/audio-generate-r
 import { listAudioCapabilities, listMcpAudioCapabilities } from '../frontend/src/server/agent-api/audio-capabilities';
 import { createPrepareAudioGenerationService } from '../frontend/src/server/agent-api/prepare-audio-generation';
 import { createConfirmAudioGenerationService } from '../frontend/src/server/agent-api/confirm-audio-generation';
+import { createMcpAudioExecutionDependencies } from '../frontend/src/server/agent-api/audio-execution';
 import { resolveOwnedAudioReference } from '../frontend/src/server/agent-api/audio-reference-assets';
 import { hashCanonicalGenerationRequest } from '../frontend/src/server/agent-api/generation-normalization';
 import * as videoQuotes from '../frontend/src/server/agent-api/quote-repository';
@@ -157,6 +158,48 @@ test('Audio prepare/confirm services preserve exact quote and reservation semant
     assert.equal(confirmed.status, 'completed');
     assert.equal(executions, 1);
     assert.equal((await pg.pool.query("SELECT count(*)::int n FROM app_receipts WHERE user_id=$1 AND type='charge'", [principal.userId])).rows[0].n, 1);
+  });
+
+  await t.test('site mode uses native price without dispatch schema, rejects a mode switch, and replays one paid job', async () => {
+    const principal = identity('199');
+    await seedWallet(principal, 1000);
+    const env = { FAL_KEY: 'fixture-provider-configuration', MCP_AUDIO_EXTENDED_ENABLED: 'true', MCP_AUDIO_EXECUTION_MODE: 'site' };
+    const siteCatalog = () => listMcpAudioCapabilities(env);
+    const sitePrepare = createPrepareAudioGenerationService('https://maxvideoai.com', {
+      paidGenerationEnabled: () => true, listCapabilities: siteCatalog,
+      prepareRun: (body, userId) => prepareAudioRun(body, userId, { env, pricingPolicy }),
+    });
+    const quote = await sitePrepare(sfxRequest, principal);
+    const nativeQuote = await prepare(sfxRequest, principal);
+    assert.equal(quote.price.amountCents, 5);
+    assert.equal(quote.price.amountCents, nativeQuote.price.amountCents);
+    let executions = 0;
+    const siteConfirm = createConfirmAudioGenerationService('https://maxvideoai.com', {
+      ...createMcpAudioExecutionDependencies(env),
+      paidGenerationEnabled: () => true, listCapabilities: siteCatalog,
+      executeRun: async run => {
+        executions++;
+        assert.equal(run.userId, principal.userId);
+        await completeAudioJob(run.jobId, { progress: 100, message: 'Complete', audioUrl: 'https://media.maxvideoai.com/audio/result.mp3' });
+      },
+    });
+    const workerEnv = { ...env, MCP_AUDIO_EXECUTION_MODE: 'worker', AUDIO_GENERATION_WORKER_ENABLED: 'true' };
+    const workerConfirm = createConfirmAudioGenerationService('https://maxvideoai.com', {
+      ...createMcpAudioExecutionDependencies(workerEnv),
+      paidGenerationEnabled: () => true, listCapabilities: () => listMcpAudioCapabilities(workerEnv),
+    });
+    await assert.rejects(workerConfirm({ quoteId: quote.quoteId, confirmed: true }, principal),
+      (error: unknown) => (error as { code?: string }).code === 'QUOTE_EXPIRED');
+    assert.equal((await pg.pool.query("SELECT count(*)::int n FROM app_receipts WHERE user_id=$1 AND type='charge'", [principal.userId])).rows[0].n, 0);
+    const first = await siteConfirm({ quoteId: quote.quoteId, confirmed: true }, principal);
+    const replay = await siteConfirm({ quoteId: quote.quoteId, confirmed: true }, principal);
+    assert.equal(first.status, 'completed');
+    assert.equal(replay.jobId, first.jobId);
+    assert.equal(executions, 1);
+    assert.equal((await pg.pool.query('SELECT count(*)::int n FROM app_jobs WHERE user_id=$1', [principal.userId])).rows[0].n, 1);
+    const charges = (await pg.pool.query("SELECT amount_cents FROM app_receipts WHERE user_id=$1 AND type='charge'", [principal.userId])).rows;
+    assert.deepEqual(charges, [{ amount_cents: 5 }]);
+    assert.equal((await pg.pool.query("SELECT to_regclass('audio_generation_dispatch') present")).rows[0].present, null);
   });
 
   await t.test('prepare writes only its exact expiring quote and exposes top-up facts', async () => {

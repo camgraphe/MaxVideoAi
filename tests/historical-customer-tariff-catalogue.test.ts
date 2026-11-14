@@ -24,3 +24,20 @@ test('historical tariff rehearsal cannot consume or hide the six new Nano21 fixe
   assert.equal(current().length, 6, 'ordinary current financial coverage must still include the new delta');
   assert.deepEqual(tariffDocument.cells.filter(cell => cell.selector.engineId === nano.id), cells);
 });
+
+
+test('historical financial replay restores archived Pika only within the fixture and always closes it afterward', async () => {
+  const pika = getRuntimeModelById('pika-text-to-video')!;
+  const before = structuredClone(pika);
+  const scenarios = () => collectSellableManualTariffCoverage({modelId: pika.id}).scenarios;
+  assert.equal(pika.lifecycle, 'deep_legacy');
+  assert.equal(scenarios().length, 0);
+  await assert.rejects(withHistoricalCustomerTariffCatalogue(async () => {
+    assert.ok(scenarios().length > 0, 'The complete historical money replay retains Pika checkpoints.');
+    assert.equal(pika.lifecycle, 'deep_legacy', 'A historical financial fixture must not rewrite lifecycle.');
+    assert.equal(pika.publication.pricing.published, false, 'Public pricing remains archived.');
+    throw new Error('historical replay interrupted');
+  }), /historical replay interrupted/);
+  assert.deepEqual(pika, before);
+  assert.equal(scenarios().length, 0, 'Normal maintenance and current selection must still omit archived Pika.');
+});

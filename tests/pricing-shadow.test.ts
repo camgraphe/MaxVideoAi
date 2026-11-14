@@ -139,6 +139,51 @@ test('the pricing audit reports the reviewed Gemini refresh without failing the 
   assert.match(result.stdout, /4 approved changes; 0 mismatches/u);
 });
 
+test('the real offline audit CLI replays every frozen Pika row while current admission remains closed', async () => {
+  const { getFalEngineById } = await import('../frontend/src/config/falEngines');
+  const { getRuntimeModelById } = await import('../frontend/config/model-runtime');
+  const { buildPricingAuditScenarios } = await import('../frontend/src/lib/pricing-audit/scenarios');
+  const { resolvePublicModelScenario } = await import('../frontend/server/pricing/quote-public-model-scenario');
+  const { collectCanonicalPricingOutputs } = await import('../frontend/src/lib/pricing-audit/canonical-collectors');
+  type AuditRow = Parameters<typeof collectCanonicalPricingOutputs>[0][number];
+  type Matrix = Awaited<ReturnType<typeof import('../frontend/src/lib/pricing-audit/matrix').buildPricingAuditMatrix>>;
+  const frozen = [...readFixtureRows<AuditRow>(fixturePath), ...readFixtureRows<AuditRow>(launchAdditionsFixturePath)];
+  const historicalPika = frozen.filter(row => row.scenarioId.includes(':pika-text-to-video:'));
+  assert.equal(frozen.length, 270);
+  assert.equal(historicalPika.length, 14);
+  const assertClosed = () => {
+    const model = getRuntimeModelById('pika-text-to-video')!;
+    const entry = getFalEngineById(model.id)!;
+    assert.equal(model.publication.app.published, false);
+    assert.equal(model.publication.pricing.published, false);
+    assert.equal(entry.surfaces.app.enabled, false);
+    assert.equal(entry.surfaces.pricing.includeInEstimator, false);
+    assert.equal(resolvePublicModelScenario({ modelId: model.id, mode: 't2v', durationSec: 5, resolution: '720p' }), null);
+  };
+  assertClosed();
+  assert.equal(buildPricingAuditScenarios().some(row => row.engineId === 'pika-text-to-video'), false);
+  assert.deepEqual(
+    buildPricingAuditScenarios({ scope: 'historical' }).filter(row => row.engineId === 'pika-text-to-video').map(row => row.id).sort(),
+    historicalPika.map(row => row.scenarioId).sort(),
+  );
+  const result = spawnSync('pnpm', ['--silent', 'pricing:audit', '--', '--json'], {
+    cwd: process.cwd(), encoding: 'utf8',
+    env: { ...process.env, DATABASE_URL: 'postgresql://offline-audit-must-not-connect.invalid/test' },
+  });
+  assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
+  const matrix = JSON.parse(result.stdout) as Matrix;
+  assert.deepEqual(matrix.summary, { scenarios: 270, matches: 266, approvedChanges: 4, mismatches: 0, compatibilityProfiles: 4 });
+  assert.deepEqual(new Set(matrix.rows.map(row => row.scenarioId)), new Set(frozen.map(row => row.scenarioId)));
+  for (const expected of historicalPika) {
+    const actual = matrix.rows.find(row => row.scenarioId === expected.scenarioId)!;
+    assert.equal(actual.status, 'match');
+    assert.equal(actual.currentTotalCents, expected.customerTotalCents);
+    assert.equal(actual.canonicalTotalCents, expected.customerTotalCents);
+    assert.deepEqual(actual.fieldDeltas, {});
+  }
+  assertClosed();
+});
+
 test('historical Sora and Seedance 1.5 billing and estimator evidence remains independently reproducible after retirement', async () => {
   const { collectCanonicalPricingOutputs } = await import('../frontend/src/lib/pricing-audit/canonical-collectors');
   const { buildPricingAuditScenarios } = await import('../frontend/src/lib/pricing-audit/scenarios');

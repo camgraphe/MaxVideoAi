@@ -1,5 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "ignoreCommand": "node ../scripts/ignore-openai-review-build.mjs",
   "functions": {
     "app/api/admin/pricing/tariffs/batches/confirm/route.ts": { "regions": ["cle1"] }
   },

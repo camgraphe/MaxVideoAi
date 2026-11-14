@@ -1,6 +1,9 @@
+import { isMcpApiHost, isMcpOpenaiDirectoryHost, MCP_OPENAI_DIRECTORY_RESOURCE_URL } from '@/lib/mcp-host-routing';
+
 const PRODUCTION_API_HOST = 'api.maxvideoai.com';
 export const MCP_PRODUCTION_RESOURCE_URL = `https://${PRODUCTION_API_HOST}/mcp`;
 const PRODUCTION_ACCOUNT_URL = 'https://maxvideoai.com/account/connections';
+export const MCP_OPENAI_QUALIFICATION_RESOURCE_URL = 'https://openai-review.maxvideoai.com/mcp';
 const PROTECTED_RESOURCE_PATH = '/.well-known/oauth-protected-resource/mcp';
 
 type McpConfigEnv = Readonly<Record<string, string | undefined>>;
@@ -77,4 +80,51 @@ export function resolveMcpConfig(env: McpConfigEnv = process.env): McpConfig {
     protectedResourceMetadataUrl: `${parsed.origin}${PROTECTED_RESOURCE_PATH}`,
     accountUrl,
   };
+}
+
+// Default: a separate resource backed by the primary application. Qualification
+// is an explicit, fixed-origin alternative; this routing check does not attest
+// dedicated database/Auth/storage/worker bindings. An unset enablement never
+// falls back to the direct profile on the reserved directory host.
+export function isMcpOpenaiDirectoryEligible(env: McpConfigEnv, primary: McpConfig): boolean {
+  const primaryResource = parseResourceUrl(primary.resourceUrl);
+  const profile = readOptional(env, 'MCP_OPENAI_DIRECTORY_DEPLOYMENT_PROFILE') ?? 'shared-production';
+  const expectedResource = profile === 'shared-production'
+    ? new URL(MCP_PRODUCTION_RESOURCE_URL)
+    : profile === 'dedicated-qualification' ? new URL(MCP_OPENAI_QUALIFICATION_RESOURCE_URL) : null;
+  if (!expectedResource) return false;
+  const expectedAccountUrl = profile === 'shared-production'
+    ? PRODUCTION_ACCOUNT_URL : `${expectedResource.origin}/account/connections`;
+  return env.NODE_ENV === 'production'
+    && ['VERCEL_ENV', 'VERCEL_TARGET_ENV'].every((name) => !readOptional(env, name) || readOptional(env, name) === 'production')
+    && primaryResource.protocol === 'https:' && !primaryResource.port
+    && isMcpApiHost(primary.apiHost, expectedResource.host)
+    && isMcpApiHost(primaryResource.host, expectedResource.host)
+    && primary.accountUrl === expectedAccountUrl;
+}
+
+export function resolveMcpRequestConfig(
+  requestHost: string | null,
+  env: McpConfigEnv = process.env,
+  primaryConfig?: McpConfig,
+): McpConfig | null {
+  if (!requestHost) return null;
+  if (isMcpOpenaiDirectoryHost(requestHost)) {
+    if (env.MCP_OPENAI_DIRECTORY_ENABLED !== 'true') return null;
+    const primary = primaryConfig ?? resolveMcpConfig(env);
+    if (!isMcpOpenaiDirectoryEligible(env, primary)) {
+      throw new Error('The OpenAI directory channel requires the canonical production MCP configuration or its explicit dedicated qualification profile.');
+    }
+    const resource = parseResourceUrl(MCP_OPENAI_DIRECTORY_RESOURCE_URL);
+    if (resource.protocol !== 'https:' || resource.port || isMcpApiHost(resource.host, PRODUCTION_API_HOST)) {
+      throw new Error('The OpenAI directory resource must be a separate HTTPS host without a port.');
+    }
+    return {
+      apiHost: resource.host, resourceUrl: resource.toString(),
+      protectedResourceMetadataUrl: `${resource.origin}${PROTECTED_RESOURCE_PATH}`,
+      accountUrl: primary.accountUrl,
+    };
+  }
+  const primary = primaryConfig ?? resolveMcpConfig(env);
+  return isMcpApiHost(requestHost, primary.apiHost) ? primary : null;
 }

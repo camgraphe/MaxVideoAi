@@ -112,6 +112,7 @@ export function listAudioCapabilities(env: NodeJS.ProcessEnv = process.env) {
     return { mode, engineId: config.engineId, label: config.label, output: config.audioOnly ? 'audio' : 'video_or_both',
       available: variants.some(variant => variant.available), variants,
       prompt: { required: ['music_only', 'sfx_only', 'song', 'ambience_only', 'cinematic'].includes(mode), maxChars: AUDIO_PROMPT_MAX_LENGTH },
+      mood: { required: config.requiresMood, values: config.requiresMood ? [...AUDIO_MOOD_VALUES] : [] },
       narration: config.includesVoice ? { required: true, maxChars: AUDIO_SCRIPT_MAX_LENGTH } : null,
       lyrics: mode === 'song' ? { required: true, maxChars: AUDIO_LYRICS_MAX_LENGTH } : null,
       duration: mode === 'song' ? { source: 'generated_output' } : mode === 'voice_only' ? { source: 'narration' }
@@ -131,9 +132,30 @@ export function listAudioCapabilities(env: NodeJS.ProcessEnv = process.env) {
   return { ...contract, revision: createHash('sha256').update(JSON.stringify(contract)).digest('hex') };
 }
 
-/** First public MCP Audio release: one bounded Eleven narration attempt. */
+/** Explicit site hosting reuses the native executor; absence preserves the existing worker contract. */
+export function getMcpAudioExecutionMode(env: NodeJS.ProcessEnv = process.env): 'site' | 'worker' | null {
+  if (env.MCP_AUDIO_EXECUTION_MODE === 'site') return 'site';
+  if (env.MCP_AUDIO_EXECUTION_MODE === undefined || env.MCP_AUDIO_EXECUTION_MODE === 'worker') return 'worker';
+  return null;
+}
+
+/** Publication and the selected execution path are independent of provider availability. */
+export function isMcpExtendedAudioEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
+  const execution = getMcpAudioExecutionMode(env);
+  return env.MCP_AUDIO_EXTENDED_ENABLED === 'true'
+    && (execution === 'site' || (execution === 'worker' && env.AUDIO_GENERATION_WORKER_ENABLED === 'true'));
+}
+
+/** Preserve bounded Eleven until an extended execution path is explicitly enabled. */
 export function listMcpAudioCapabilities(env: NodeJS.ProcessEnv = process.env): ReturnType<typeof listAudioCapabilities> {
   const full = listAudioCapabilities(env);
+  if (isMcpExtendedAudioEnabled(env)) {
+    const { revision: _revision, ...capabilities } = full;
+    void _revision;
+    const execution = getMcpAudioExecutionMode(env) === 'site' ? 'native-site-audio-v1' : 'durable-audio-worker-v1';
+    const revision = createHash('sha256').update(JSON.stringify({ ...capabilities, execution })).digest('hex');
+    return { ...capabilities, revision };
+  }
   const { revision: _revision, ...base } = full;
   void _revision;
   const modes = full.modes.filter(mode => mode.mode === 'voice_only').map(mode => {

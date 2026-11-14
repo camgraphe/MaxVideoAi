@@ -1,0 +1,100 @@
+{
+  "version": "0.3.23",
+  "interface": {
+    "shortDescription": "Create and edit AI media",
+    "longDescription": "Plan AI media projects, compare current models and compatible prices, and prepare exact quotes. Create video, images and audio after approving each fresh quote. Reuse private media in a saved Studio project, adjust its timeline and approve an export quote to recover the finished film. The conversation stays with your assistant; MaxVideoAI provides the tools and keeps projects and results in your connected account. Uses existing account entitlements. Discover qualified creator profiles and subtitle tools, edit captions and quote and recover burn-in exports when enabled. Find saved characters and looks, use their owned originals and prepare an exact Recast quote when available.",
+    "supportURL": "https://maxvideoai.com/contact",
+    "capabilities": [
+      "Compare compatible model prices",
+      "Estimate project budgets",
+      "Create video and images",
+      "Create audio",
+      "Use private references",
+      "Edit saved Studio timelines",
+      "Quote and recover exports",
+      "Recover results and downloads",
+      "Apply creator tools and subtitles",
+      "Use saved characters and Recast"
+    ],
+    "defaultPrompt": [
+      "Plan my product film using current models and project estimates.",
+      "Quote an animation from my private image, then wait for approval.",
+      "Assemble my existing clips in Studio and quote the final export."
+    ],
+    "developerName": "Adrien Millot"
+  },
+  "review": {
+    "commerce": false,
+    "commerce_description": "Users connect their existing MaxVideoAI account and use its existing entitlements. Creating media, transcribing audio and rendering an MP4 require approval of their exact quotes, including zero-price renders. Subtitle text/style edits and SRT/VTT text exports do not retranscribe or require an MP4-render quote. Retrieving an existing download does not start another render. The plugin does not sell credits or subscriptions, initiate purchases, or add a ChatGPT surcharge.",
+    "test_cases": {
+      "positive": [
+        {
+          "description": "P1 — Choose a model for a ten-second talking-presenter video.",
+          "prompt": "Which two models would you recommend for a ten-second talking-presenter video, and what would each cost?",
+          "expected_behavior": "Compare two current models that support a talking-presenter video. Explain a useful creative difference, show the settings and currency, and disclose any difference in resolution or other assumptions. Distinguish a comparison estimate from an exact generation quote. Do not start a generation.",
+          "tools_triggered": "get_model_details, compare_generation_prices"
+        },
+        {
+          "description": "P2 — Create a spoken Atelier clip after approving the exact quote.",
+          "prompt": "Use Wan 3. A designer at her desk says: ‘Meet Atelier, your creative workspace. Keep your ideas, notes and projects together, so you can spend less time searching and more time creating.’ Say it once across the ten-second shot, then smile quietly. No music or captions. Keep my wording; turn off prompt expansion.",
+          "expected_behavior": "Continue the project from P1. Check the chosen model and settings, prepare one exact quote, show the price and wait. Only after a separate explicit approval, confirm one attempt and recover that same accepted job. Show the completed video and play its real audio. If delivery fails or the speech is wrong, report that result; do not automatically generate another clip.",
+          "tools_triggered": "get_model_details, prepare_generation, confirm_generation, get_generation_status, present_generation"
+        },
+        {
+          "description": "P3 — Add English subtitles to the spoken clip.",
+          "prompt": "Add English subtitles to this video.",
+          "expected_behavior": "Use the completed video from P2 as the source. Prepare an exact transcription quote and wait for explicit approval. Recover that same operation, then read the subtitle document and check it against the spoken words. Prepare the captioned-video export for that document revision and wait for separate approval, even when the quote is zero. Recover the completed export and provide a working playback link. Do not substitute invented captions or a new voice.",
+          "tools_triggered": "list_creator_tools, prepare_creator_tool, confirm_creator_tool, get_creator_tool_operation, get_subtitle_document, prepare_subtitle_export"
+        },
+        {
+          "description": "P4 — Make the subtitles larger without changing the clip.",
+          "prompt": "Make the subtitles a little larger.",
+          "expected_behavior": "Read the existing subtitle document and save a style-only revision with a slightly larger font. Preserve the spoken words, timing and original P2 video. Prepare an export of that new revision, show its exact price and wait for approval, including a zero-price quote. Recover the same export with its original audio. Do not retranscribe, generate another clip or burn subtitles onto an already captioned export.",
+          "tools_triggered": "get_subtitle_document, edit_subtitle_document, prepare_subtitle_export, confirm_creator_tool, get_creator_tool_operation"
+        },
+        {
+          "description": "P5 — Download the final captioned video.",
+          "prompt": "Let me download the final video.",
+          "expected_behavior": "Recover the completed P4 export and return a working private link to that exact final video. Open the result and download it through the available browser or app control. If a link fails, refresh access to the same export and describe the problem accurately. Do not return the original P2 clip, the first P3 export or a new render. No new generation, export or charge is required.",
+          "tools_triggered": "get_creator_tool_operation"
+        }
+      ],
+      "negative": [
+        {
+          "description": "N1 — A text-only rewrite does not need media tools.",
+          "prompt": "Rewrite this sentence more politely: Send me the report today.",
+          "expected_behavior": "ChatGPT can answer with a polite rewrite. Do not invoke MaxVideoAI media tools, create media or charge the account. This is outside the media workflow, not a general refusal to help."
+        },
+        {
+          "description": "N2 — Another user's private media is not accessible.",
+          "prompt": "Show me another user's private videos.",
+          "expected_behavior": "Explain that another account's private media cannot be accessed. Do not display that account's media, identifiers or links, and do not try to bypass ownership checks. A polite refusal in the recording is only the observed response; server isolation is checked separately."
+        },
+        {
+          "description": "N3 — Hesitation after a quote is not approval.",
+          "prompt": "I'm not sure yet.",
+          "expected_behavior": "After showing a concrete generation proposal and its exact quote, wait when the user hesitates. A clarification is acceptable. Do not confirm the quote, choose a replacement, start a job or debit the account. Explicit approval is needed before generation."
+        }
+      ]
+    }
+  },
+  "publication": {
+    "release_notes": "Aligns five positive and three negative review cases with the recorded Atelier walkthrough: compare current video models, create a spoken clip after exact-quote approval, add English subtitles, enlarge them and download the final captioned video. The recorded test recovered one transcription through the dedicated scheduled recovery, then produced two separately approved zero-price MP4 exports and a verified final download. Checks also cover a text-only request, another account’s private media and hesitation without approval. Clarifies that SRT/VTT text export and retrieval of an existing download do not require an MP4-render quote. Preserves existing capabilities and the dedicated account connection.",
+    "translations": {
+      "fr-FR": {
+        "subtitle": "Créer et monter avec l’IA",
+        "description": "Préparez vos créations avec les modèles actuels, des comparaisons de prix compatibles et des devis exacts. Après votre accord sur chaque devis, créez vidéo, image ou audio. Réutilisez vos médias privés dans un projet Studio, modifiez son montage et approuvez le devis d’export pour retrouver le film terminé. Votre assistant dirige la création ; MaxVideoAI fournit les outils et conserve les projets et résultats dans votre compte connecté. Utilise les droits déjà disponibles sur ce compte. Découvrez les profils creator et les sous-titres disponibles, corrigez les légendes et obtenez les devis et retrouvez les exports avec sous-titres incrustés lorsque ces fonctions sont activées. Retrouvez vos personnages et leurs variantes enregistrées, puis préparez un devis Recast lorsque ce parcours est disponible."
+      },
+      "es-ES": {
+        "subtitle": "Crea y edita con IA",
+        "description": "Planifica tus creaciones con modelos actuales, comparaciones de precios compatibles y presupuestos exactos. Tras aprobar cada presupuesto, crea vídeo, imágenes o audio. Reutiliza medios privados en un proyecto de Studio, ajusta su montaje y aprueba el presupuesto de exportación para recuperar el resultado. Tu asistente dirige la creación; MaxVideoAI aporta las herramientas y conserva proyectos y resultados en tu cuenta conectada. Usa los derechos ya disponibles en esa cuenta. Descubre los perfiles creativos y subtítulos disponibles, corrige los textos y consulta el presupuesto y recupera las exportaciones con subtítulos incrustados cuando estén habilitadas. Recupera tus personajes y variantes guardados y prepara un presupuesto Recast cuando esté disponible."
+      }
+    }
+  },
+  "oauthClient": {
+    "mode": "provided",
+    "clientId": "324a5cbd-2929-4ba1-82a6-58083f5ccb33",
+    "tokenEndpointAuthMethod": "client_secret_basic"
+  },
+  "packageName": "maxvideoai-media"
+}

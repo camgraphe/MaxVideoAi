@@ -1483,3 +1483,77 @@ quality gains. Comparable connected-browser qualification remains separate.
 empty-body CRC32. An explicitly supplied CRC32 stays signed. Ordinary bodyful
 storage clients retain SDK integrity defaults; no global checksum setting or
 upload transport changes. The installed SDK's offline request test checks both.
+
+## Agent private generation results
+
+`src/server/generations/generation-media-access.ts` owns temporary presentation
+grants shared by Studio and the authenticated agent API. Status/recent reads
+first retain their existing account-scoped records and bounded result projection.
+Configured storage originals are signed for five minutes only after the storage
+key matches that account. Preserve original URLs in jobs, quotes and timeline
+records. Playback and last-frame fields receive the same ownership checks as
+original image/video/audio and thumbnails. The Studio module re-exports the
+shared owner for compatibility. `tests/agent-private-generation-delivery.test.ts`
+and `tests/studio-generation-media-access.test.ts` exercise these contracts.
+
+Quote-scoped Character Builder and Recast recovery compose these same owners in
+`src/server/agent-api/quote-generation-recovery.ts`. The caller supplies the
+already verified owned status; presentation adds no database or trial read.
+Retain the original quote ID and status tool for polling, including `no_job` and
+`needsAttention` with a null retry. Completed Builder images return `saveSource`
+with the canonical job ID and original image URL required by `save_character`;
+temporary signed presentation URLs must not replace that stored identity.
+`tests/character-quote-private-media.test.ts` checks signing, immutable originals,
+foreign-key rejection and first-party handoff behavior without provider calls.
+
+### MCP Markdown handoff — 12 November 2026
+
+Model-visible generation, Studio export and Creator media responses may also carry
+`openUrl`. Use that first-party link for Markdown; keep the original signed
+`videoUrl`, `outputUrl`, `readUrl` and widget download descriptor for native media.
+Hosts can append UTM parameters to Markdown links, which invalidates an S3
+signature if exposed directly. `src/server/mcp/media-link.ts` creates a separate
+read capability using domain-separated HMAC with the existing
+`MCP_ACQUISITION_SIGNING_SECRET`. No new secret, table or persistent token is used.
+An absent/invalid secret omits `openUrl` and preserves the existing native result.
+
+The capability binds audience origin, owner, issuing OAuth client, exact source
+reference, storage-key hash and an expiry of at most five minutes, capped by the
+existing read grant. `GET/HEAD /api/mcp/media` needs no web-session cookie. It
+re-reads the owned available asset/completed job/export, rejects changed storage
+identity, and redirects with a method-specific 307 and private/no-store headers.
+Only bounded outer `utm_*` parameters are ignored; no incoming query or arbitrary
+target URL reaches S3. A fixed signing date and remaining TTL prevent redemption
+from extending the capability deadline. Original bytes and stored URLs are unchanged.
+
+This is a short-lived bearer capability, like the S3 URL already issued: possession
+authorizes the exact read until expiry. The issuing client is integrity-bound;
+the route does not claim immediate OAuth-client revocation or authenticate the
+browser as that client. Renewal requires another authenticated MCP read. Tests
+cover UTM, tampering, expiry, foreign/removed/replaced media, the actual route with
+an offline database boundary, and all three additive projections. Local tests do
+not establish deployed host delivery.
+
+### Audio website handoff — 14 November 2026
+
+`GET /api/audio/media/[jobId]?kind=video|audio|source` is the authenticated,
+read-only browser handoff for Audio results. The thin route delegates to
+`src/server/audio/audio-web-media-access.ts`, reads the exact owned Audio job,
+and grants a five-minute read through `createOwnedMediaReadUrl`. It accepts no
+caller-supplied URL. Results must be completed; a stored source may be restored
+while a job is pending. Legacy source job lookup is also account-scoped. Both
+redirects and errors are private/no-store. Native players and File links resolve
+fresh access on navigation rather than retaining an expiring S3 URL.
+
+`lib/audio-job-media.ts` constructs display links only. Canonical result URLs,
+source input URLs, snapshots, quotes and receipts remain unchanged. Restored
+sources keep their original `url` and a separate account-bound `accessUrl`.
+Audio restoration depends on the account ID rather than a volatile session
+object, reuses its first job read, and publishes completed output before awaiting
+source metadata. Retired effects/manual edits cannot restore a late source.
+
+`tests/audio-web-handoff.test.ts`, `tests/audio-web-media-access.test.ts` and
+`tests/audio-web-media-route.test.ts` cover session refresh, account retirement,
+private signing, exact public fallback, legacy source ownership, authentication,
+uncached renewal and rejected arbitrary targets. The real workspace DOM test
+checks that completed history and results use this authenticated display route.

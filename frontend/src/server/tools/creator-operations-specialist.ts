@@ -1,3 +1,4 @@
+import type {McpGenerationQuote} from '@/server/agent-api/quote-repository';
 import { withDbTransaction, type TransactionQueryExecutor } from '@/lib/db';
 import { customerDisplayPrice } from '@/lib/customer-price-presentation';
 import { loadPricingPolicyOverridesWithExecutor } from '@/lib/pricing-rule-store';
@@ -31,7 +32,7 @@ async function verifySources(actor:GenerationActor,snapshot:CreatorOperationSnap
   for(const ref of snapshot.request.references){if(ref.kind!=='asset')throw new Error('Owned references required.');const asset=await resolveOwnedReferenceAssetForActor(actor,ref.assetId,{executor:tx});await resolveStudioMedia(actor.userId,{type:'asset',assetId:ref.assetId,kind:asset.mediaKind},(sql,params)=>tx.query(sql,params),{lockAsset:true});references.push({...asset,role:ref.role,...(ref.slot===undefined?{}:{slot:ref.slot})});}
   if(studioReferenceFingerprint(references)!==snapshot.referenceFingerprint)throw new AgentApiError('REFERENCE_INVALID','The selected media changed. Prepare a new quote.');
 }
-export async function prepareCreatorSpecialistQuote(actor:GenerationActor,snapshot:CreatorOperationSnapshot,enabled:boolean,dependencies:Partial<typeof defaults>&{quote?:ReturnType<typeof creatorSpecialistProfile>['quote']}={}):Promise<PreparedGeneration>{
+export async function prepareCreatorSpecialistQuote(actor:GenerationActor,snapshot:CreatorOperationSnapshot,enabled:boolean,dependencies:Partial<typeof defaults>&{quote?:ReturnType<typeof creatorSpecialistProfile>['quote'];onPrepared?:(quote:McpGenerationQuote,executor:TransactionQueryExecutor)=>Promise<void>}={}):Promise<PreparedGeneration>{
   requireReleased(enabled,snapshot.profile.id);const profile=creatorSpecialistProfile(snapshot.profile.id);const deps={...defaults,quote:profile.quote,...dependencies};
   if(!deps.storageReady()||!deps.providerReady())throw new AgentApiError('ENGINE_UNAVAILABLE','This specialist execution is not configured.');
   prepareCreatorSpecialistProvider(snapshot);
@@ -44,6 +45,7 @@ export async function prepareCreatorSpecialistQuote(actor:GenerationActor,snapsh
     const quote=await repository(actor).insertPreparedQuote({userId:actor.userId,oauthClientId:actor.clientId,request:snapshot.request,requestHash:hashCanonicalGenerationRequest(snapshot.request),catalogRevision:`creator-profile:${snapshot.profile.id}:${snapshot.profile.revision}`,pricingSnapshot:{schemaVersion:1,profileId:snapshot.profile.id,canonicalPricing:pricing},priceCents:pricing.totalCents,currency:pricing.currency,fundingMode:'wallet'},{executor:tx});
     if(!quoteMatchesActor(quote,actor))throw new Error('Quote scope mismatch.');
     await insertCreatorOperation(actor,quote,snapshot,tx);
+    await dependencies.onPrepared?.(quote,tx);
     return{quoteId:quote.quoteId,expiresAt:quote.expiresAt.toISOString(),requestHash:quote.requestHash,summary:quote.request,price:customerDisplayPrice(quote.priceCents,quote.currency),balance:{beforeCents:balance.balanceCents,afterCents:balance.balanceCents-quote.priceCents},fundingMode:'wallet',confirmationRequired:true,topupRequired:balance.balanceCents<quote.priceCents};
   });
 }

@@ -97,7 +97,8 @@ test('audio keeps its actual preview node through empty, pending, running, resul
     assert.equal(section.dataset.audioPreviewState, 'running');
     await show({ activeJob: { ...job, status: 'completed', audioUrl: '/local-output.wav' } });
     assert.equal(section.dataset.audioPreviewState, 'completed');
-    assert.equal(section.querySelector('audio')?.getAttribute('src'), '/local-output.wav');
+    assert.equal(section.querySelector('audio')?.getAttribute('src'), '/api/audio/media/local-audio?kind=audio');
+    assert.equal(section.querySelector('a')?.getAttribute('href'), '/api/audio/media/local-audio?kind=audio');
     assert.equal(section.querySelector('audio')?.getAttribute('preload'), 'none');
     assert.equal(section.querySelector('audio')?.hasAttribute('autoplay'), false);
     await show({ activeJob: { ...job, status: 'failed' } });

@@ -51,15 +51,29 @@ test('explicit schema bootstrap establishes the baseline before migrations and r
 
   const migrationFiles = readdirSync('neon/migrations')
     .filter((name) => name.endsWith('.sql'))
-    .sort();
-  for (const migrationFile of migrationFiles) {
+    // Match apply-neon-migrations.sh across the two/three-digit boundary while
+    // retaining each complete filename when independent migrations share a prefix.
+    .sort((left, right) => Number.parseInt(left, 10) - Number.parseInt(right, 10)
+      || (left < right ? -1 : left > right ? 1 : 0));
+  const applyMigration = (migrationFile: string) => {
     const migrated = spawnSync(
       testPostgresCommand('psql'),
       [postgres.databaseUrl, '--single-transaction', '-v', 'ON_ERROR_STOP=1', '-f', join('neon/migrations', migrationFile)],
       { cwd: process.cwd(), encoding: 'utf8' },
     );
     assert.equal(migrated.status, 0, `${migrationFile}: ${commandOutput(migrated)}`);
-  }
+  };
+  for (const migrationFile of migrationFiles) applyMigration(migrationFile);
+  applyMigration('100_audio_generation_dispatch.sql');
+  const dispatchForeignKeys = await postgres.pool.query(`
+    SELECT confrelid::regclass::text AS referenced_table, confdeltype, convalidated
+    FROM pg_constraint WHERE conrelid='audio_generation_dispatch'::regclass AND contype='f'
+    ORDER BY referenced_table
+  `);
+  assert.deepEqual(dispatchForeignKeys.rows, [
+    { referenced_table: 'app_jobs', confdeltype: 'r', convalidated: true },
+    { referenced_table: 'mcp_generation_quotes', confdeltype: 'r', convalidated: true },
+  ]);
 
   await postgres.pool.query(
     `INSERT INTO app_jobs (

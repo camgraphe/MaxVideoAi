@@ -204,9 +204,9 @@ async function main(): Promise<void> {
     }
     appliedCustomerOfferRepairs.add(row.id);
     return { ...row, customerTotalCents: repair.totalCents, structuredDataAmount: (repair.totalCents / 100).toFixed(2) };
-  }).filter((row) => !(['sora-2', 'sora-2-pro', 'seedance-1-5-pro'].includes(row.engineId)
+  }).filter((row) => !(['sora-2', 'sora-2-pro', 'seedance-1-5-pro', 'pika-text-to-video'].includes(row.engineId)
     && ['estimator', 'pricing-hub-video', 'workspace-preflight'].includes(row.surface)))
-    .map((row) => ['sora-2', 'sora-2-pro', 'seedance-1-5-pro'].includes(row.engineId) && row.surface === 'json-ld'
+    .map((row) => ['sora-2', 'sora-2-pro', 'seedance-1-5-pro', 'pika-text-to-video'].includes(row.engineId) && row.surface === 'json-ld'
       ? { id: row.id, surface: row.surface, engineId: row.engineId, status: 'unavailable' as const }
       : row)
     .map((row) => {

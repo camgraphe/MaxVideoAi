@@ -56,7 +56,9 @@
     "studio-tasks:worker": "tsx scripts/run-studio-task-worker.ts",
     "studio-tasks:worker:once": "tsx scripts/run-studio-task-worker.ts --once",
     "studio-analysis:worker:once": "tsx scripts/run-studio-analysis-worker.ts --once",
-    "timeline-exports:worker:once": "tsx scripts/run-timeline-export-worker.ts --once"
+    "timeline-exports:worker:once": "tsx scripts/run-timeline-export-worker.ts --once",
+    "audio-generation:worker": "tsx --tsconfig tsconfig.json scripts/run-audio-generation-worker.ts",
+    "audio-generation:worker:once": "tsx --tsconfig tsconfig.json scripts/run-audio-generation-worker.ts --once"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1040.0",
