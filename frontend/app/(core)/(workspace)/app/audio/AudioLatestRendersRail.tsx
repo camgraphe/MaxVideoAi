@@ -139,11 +139,11 @@ function AudioJobCard({
         </Button>
         <div className="flex">
           {job.videoUrl ? (
-            <ButtonLink href={audioJobMediaUrl(job.jobId, 'video')} target="_blank" rel="noreferrer" variant="ghost" size="sm">
+            <ButtonLink linkComponent="a" href={audioJobMediaUrl(job.jobId, 'video')} target="_blank" rel="noreferrer" variant="ghost" size="sm">
               {copy.rail.file}
             </ButtonLink>
           ) : job.audioUrl ? (
-            <ButtonLink href={audioJobMediaUrl(job.jobId, 'audio')} target="_blank" rel="noreferrer" variant="ghost" size="sm">
+            <ButtonLink linkComponent="a" href={audioJobMediaUrl(job.jobId, 'audio')} target="_blank" rel="noreferrer" variant="ghost" size="sm">
               {copy.rail.file}
             </ButtonLink>
           ) : null}
