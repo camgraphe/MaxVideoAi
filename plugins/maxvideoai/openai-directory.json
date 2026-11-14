@@ -1,25 +1,25 @@
 {
-  "version": "0.3.23",
+  "version": "0.3.29",
   "interface": {
     "shortDescription": "Create and edit AI media",
-    "longDescription": "Plan AI media projects, compare current models and compatible prices, and prepare exact quotes. Create video, images and audio after approving each fresh quote. Reuse private media in a saved Studio project, adjust its timeline and approve an export quote to recover the finished film. The conversation stays with your assistant; MaxVideoAI provides the tools and keeps projects and results in your connected account. Uses existing account entitlements. Discover qualified creator profiles and subtitle tools, edit captions and quote and recover burn-in exports when enabled. Find saved characters and looks, use their owned originals and prepare an exact Recast quote when available.",
+    "longDescription": "Create images, videos and audio from your ideas and references. Animate a product photo, build a character, add a voiceover or sound effects, and turn your clips into a finished video with subtitles. Choose models for your project, edit in Studio and download your results. Connect your MaxVideoAI account to get started.",
     "supportURL": "https://maxvideoai.com/contact",
     "capabilities": [
-      "Compare compatible model prices",
-      "Estimate project budgets",
-      "Create video and images",
-      "Create audio",
-      "Use private references",
-      "Edit saved Studio timelines",
-      "Quote and recover exports",
-      "Recover results and downloads",
-      "Apply creator tools and subtitles",
-      "Use saved characters and Recast"
+      "Create images and videos",
+      "Animate reference images",
+      "Create voices and sound effects",
+      "Build and reuse characters",
+      "Create scenes with Recast",
+      "Choose models for your project",
+      "Plan creative projects and budgets",
+      "Assemble and edit in Studio",
+      "Add and edit subtitles",
+      "Download your finished media"
     ],
     "defaultPrompt": [
-      "Plan my product film using current models and project estimates.",
-      "Quote an animation from my private image, then wait for approval.",
-      "Assemble my existing clips in Studio and quote the final export."
+      "Turn this product photo into a cinematic video.",
+      "Create a character for my next video.",
+      "Add a voiceover and subtitles to my clips."
     ],
     "developerName": "Adrien Millot"
   },
@@ -79,22 +79,35 @@
     }
   },
   "publication": {
-    "release_notes": "Aligns five positive and three negative review cases with the recorded Atelier walkthrough: compare current video models, create a spoken clip after exact-quote approval, add English subtitles, enlarge them and download the final captioned video. The recorded test recovered one transcription through the dedicated scheduled recovery, then produced two separately approved zero-price MP4 exports and a verified final download. Checks also cover a text-only request, another account’s private media and hesitation without approval. Clarifies that SRT/VTT text export and retrieval of an existing download do not require an MP4-render quote. Preserves existing capabilities and the dedicated account connection.",
+    "release_notes": "Revises the listing to describe creative image, video and audio workflows. Planning, model comparison and project-budget tools remain available. Existing-account usage and explicit approval of each exact quote are unchanged. The five positive and three negative Atelier test cases, reviewer account and approved walkthrough are unchanged. The walkthrough uses the stable unlisted player submitted on 14 November 2026. No purchase flow or subscription offer is added.",
     "translations": {
       "fr-FR": {
         "subtitle": "Créer et monter avec l’IA",
-        "description": "Préparez vos créations avec les modèles actuels, des comparaisons de prix compatibles et des devis exacts. Après votre accord sur chaque devis, créez vidéo, image ou audio. Réutilisez vos médias privés dans un projet Studio, modifiez son montage et approuvez le devis d’export pour retrouver le film terminé. Votre assistant dirige la création ; MaxVideoAI fournit les outils et conserve les projets et résultats dans votre compte connecté. Utilise les droits déjà disponibles sur ce compte. Découvrez les profils creator et les sous-titres disponibles, corrigez les légendes et obtenez les devis et retrouvez les exports avec sous-titres incrustés lorsque ces fonctions sont activées. Retrouvez vos personnages et leurs variantes enregistrées, puis préparez un devis Recast lorsque ce parcours est disponible."
+        "description": "Créez des images, des vidéos et du son à partir de vos idées et de vos références. Animez une photo produit, créez un personnage, ajoutez une voix off ou des bruitages et transformez vos plans en une vidéo sous-titrée. Choisissez les modèles adaptés à votre projet, montez dans Studio et téléchargez vos créations. Connectez votre compte MaxVideoAI pour commencer."
       },
       "es-ES": {
         "subtitle": "Crea y edita con IA",
-        "description": "Planifica tus creaciones con modelos actuales, comparaciones de precios compatibles y presupuestos exactos. Tras aprobar cada presupuesto, crea vídeo, imágenes o audio. Reutiliza medios privados en un proyecto de Studio, ajusta su montaje y aprueba el presupuesto de exportación para recuperar el resultado. Tu asistente dirige la creación; MaxVideoAI aporta las herramientas y conserva proyectos y resultados en tu cuenta conectada. Usa los derechos ya disponibles en esa cuenta. Descubre los perfiles creativos y subtítulos disponibles, corrige los textos y consulta el presupuesto y recupera las exportaciones con subtítulos incrustados cuando estén habilitadas. Recupera tus personajes y variantes guardados y prepara un presupuesto Recast cuando esté disponible."
+        "description": "Crea imágenes, vídeos y audio a partir de tus ideas y referencias. Anima una foto de producto, crea un personaje, añade una voz en off o efectos de sonido y convierte tus clips en un vídeo con subtítulos. Elige modelos para tu proyecto, edita en Studio y descarga tus creaciones. Conecta tu cuenta de MaxVideoAI para empezar."
       }
     }
   },
   "oauthClient": {
     "mode": "provided",
-    "clientId": "324a5cbd-2929-4ba1-82a6-58083f5ccb33",
-    "tokenEndpointAuthMethod": "client_secret_basic"
+    "clientId": "70943edb-dbf5-45f1-be3b-fa228311e515",
+    "tokenEndpointAuthMethod": "none"
   },
-  "packageName": "maxvideoai-media"
+  "packageName": "maxvideoai-openai",
+  "oauthDiscovery": {
+    "authorizationServerBase": "https://vujvontfztdzszylnsyc.supabase.co/auth/v1",
+    "authorizationUrl": "https://vujvontfztdzszylnsyc.supabase.co/auth/v1/oauth/authorize",
+    "tokenUrl": "https://vujvontfztdzszylnsyc.supabase.co/auth/v1/oauth/token",
+    "resource": "https://openai-mcp.maxvideoai.com/mcp",
+    "defaultScopes": [
+      "openid",
+      "email",
+      "profile",
+      "offline_access"
+    ]
+  },
+  "connectionUrl": "https://openai-mcp.maxvideoai.com/mcp?client=openai-directory"
 }

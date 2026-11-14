@@ -1,3 +1,32 @@
+## OpenAI generation setup wording and listing — 14 November 2026
+
+Directory package 0.3.29 leads with creative outcomes, references, models and
+editing. Its portable description matches the English directory description;
+French and Spanish localized copy follow the same scope. It preserves the
+submitted five positive and three negative review cases. The builder also
+records the public OAuth discovery and distinct connection URL already used by
+submitted package 0.3.28, with an unchanged resource audience and scopes. These
+fields reproduce the working reviewer connection; they do not configure Auth.
+
+The directory profile presents preparation as “Review image or video setup” and
+“Review audio setup”. The descriptions lead with the selected creative setup and
+its exact generation cost. They explicitly explain that only a separately approved
+confirmation consumes existing account credits. Audio no longer suggests displaying
+top-up state in this channel; insufficient entitlements stop the operation without
+purchase handoffs. Image/video comparisons remain available when requested, rather
+than being suggested after every preparation.
+
+This is a presentation change, not a removal of the execution quote. Tool names,
+schemas, handlers, annotations, quote IDs, expiry, consent and recovery are unchanged.
+The direct profile retains its existing metadata. The technical quote remains
+visible in metadata and results because it binds consent to a specific operation.
+No successful OpenAI rescan or deployment is implied by this local preparation.
+
+SDK discovery measures 1,692 bytes for image/video preparation and 1,192 bytes for
+Audio preparation, below the 2,000-byte ceiling. Existing discovery contracts check
+exact cost, explicit approval, existing-credit consumption and the no-purchase
+boundary. Current main's required-mood and exact media-ID guidance is preserved.
+
 ## Audio request guidance — 14 November 2026 (dedicated qualification)
 
 Real ChatGPT qualification omitted the required cinematic mood and guessed output
