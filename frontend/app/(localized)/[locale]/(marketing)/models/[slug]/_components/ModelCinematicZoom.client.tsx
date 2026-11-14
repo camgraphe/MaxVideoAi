@@ -4,6 +4,23 @@ import { useState } from 'react';
 import Image from 'next/image';
 import type { CinematicAsset, CinematicPresentation } from '../_lib/model-page-cinematic-data';
 
+/** The template's always-visible detail is a crop of the same reviewed display, not another render. */
+export function ModelCinematicDetailCrop({ asset, ui }: { asset: CinematicAsset; ui: CinematicPresentation['ui'] }) {
+  const [detail, setDetail] = useState<'face' | 'texture'>('face');
+  return <figure className="cinema-detail-proof">
+    <div className="cinema-detail-crop" data-detail={detail}>
+      <Image src={asset.display.url} width={asset.display.width} height={asset.display.height}
+        alt={`${ui[detail]} — ${asset.title}`} sizes="(min-width: 1440px) 1240px, (min-width: 768px) 90vw, 180vw" loading="lazy"
+        style={{ objectPosition: `50% ${detail === 'face' ? 30 : 90}%` }} />
+      <span aria-hidden="true">2×</span>
+    </div>
+    <figcaption><span>{ui.detailSource}</span><span>{ui.unretouched}</span></figcaption>
+    <div className="cinema-detail-controls" role="group" aria-label={ui.zoom}>
+      {(['face', 'texture'] as const).map(value => <button key={value} type="button" aria-pressed={detail === value} onClick={() => setDetail(value)}>{ui[value]}</button>)}
+    </div>
+  </figure>;
+}
+
 /** Inspect the original only on demand; the initial page keeps its lazy display image. */
 export function ModelCinematicZoom({ asset, ui }: { asset: CinematicAsset; ui: CinematicPresentation['ui'] }) {
   const [zoomed, setZoomed] = useState(false);

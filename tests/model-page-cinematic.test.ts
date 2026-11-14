@@ -19,7 +19,7 @@ import { buildModelDecisionData } from '../frontend/app/(localized)/[locale]/(ma
 import { ModelCinematicHero } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelCinematicHero';
 import { ModelCinematicPrompt } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelCinematicAsset';
 import { ModelCinematicWorkflows } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelCinematicWorkflows.client';
-import { ModelCinematicZoom } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelCinematicZoom.client';
+import { ModelCinematicZoom, ModelCinematicDetailCrop } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelCinematicZoom.client';
 import { ModelCinematicPromptAssistant } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelCinematicPromptAssistant';
 
 const requireFrontend = createRequire(path.resolve('frontend/package.json'));
@@ -67,6 +67,11 @@ test('portrait inspection defers the original and Milo opens the correct model w
       assert.equal(doc.querySelector('img')!.getAttribute('loading'), 'lazy');
       assert.equal(doc.querySelector('.cinema-detail-original'), null);
       assert.equal(doc.querySelector('a')!.getAttribute('href'), asset.original.url);
+      const crop = new JSDOM(renderToStaticMarkup(React.createElement(ModelCinematicDetailCrop, {asset,ui:presentation.ui}))).window.document;
+      assert.ok(crop.querySelector('.cinema-detail-crop img'), 'The detail is visible before any click');
+      assert.equal(crop.querySelector('img')!.getAttribute('loading'), 'lazy');
+      assert.equal(new URL(crop.querySelector('img')!.getAttribute('src')!, 'https://maxvideoai.com').searchParams.get('url'), asset.display.url, 'The detail uses the same reviewed image, not a new generation');
+      assert.equal(crop.querySelector('[hidden]'), null);
     }
   }
 });

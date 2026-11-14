@@ -3,6 +3,7 @@ import type { ModelExamplesViewModel } from '../_lib/model-page-examples-view-mo
 import { ModelCinematicAsset, ModelCinematicPrompt } from './ModelCinematicAsset';
 import { ModelCinematicCompare, ModelCinematicCutout } from './ModelCinematicCompare.client';
 import { ModelDecisionExamplesGallery } from './ModelDecisionExamplesGallery.client';
+import { ModelCinematicDetailCrop } from './ModelCinematicZoom.client';
 
 export function ModelCinematicExamples({ presentation, viewModel, hasRenderedVideos }: {
   presentation: CinematicPresentation; viewModel: ModelExamplesViewModel; hasRenderedVideos: boolean;
@@ -26,7 +27,7 @@ export function ModelCinematicExamples({ presentation, viewModel, hasRenderedVid
             : <div className={selected.length > 1 ? 'cinema-media-grid' : undefined}>{selected.map(asset => <ModelCinematicAsset key={asset.id} asset={asset} ui={ui} compact={selected.length > 1 || portrait} inspect={portrait}
               plan={examples.shotPlans?.find(plan => plan.assetId === asset.id)} />)}</div>}
         </div>
-        <p className="cinema-panel-note">{panel.note}</p>
+        {portrait ? <div className="cinema-portrait-inspection"><ModelCinematicDetailCrop asset={selected[0]} ui={ui} /><p className="cinema-panel-note">{panel.note}</p></div> : <p className="cinema-panel-note">{panel.note}</p>}
       </div></article>;
     })}
     <div className="cinema-wrap cinema-provenance"><details className="cinema-disclosure"><summary>{ui.aboutExamples}<span aria-hidden="true">+</span></summary><div><p>{examples.intro ?? viewModel.section.intro}</p><p>{examples.provenance}</p></div></details></div>

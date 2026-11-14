@@ -26,6 +26,23 @@ Review screenshots are under `model-page-integration/iteration-two/` in the task
 
 The loading measurements below describe the earlier autonomous renderer, before this follow-up; they are not new measurements of these interactions. This pass confirmed one initial hero request and deferred original portrait loading, but makes no new CWV claim. Nothing has been pushed or deployed.
 
+### Fidelity correction: visible portrait detail
+
+The next user review exposed a distinction missed by the earlier functional check: a working click-to-zoom did not restore the template's **always-visible magnified detail beside the portrait**. The section now includes that detail from the same reviewed image, with Face & hair / Fabric & texture controls. The original-file zoom remains available separately. This restores the portrait composition; it is not a claim that the entire page matches the approved template.
+
+For subsequent sections, use one reference capture, one current capture at the same viewport, a list of visible differences and an interaction check. Track functional acceptance separately from design fidelity. A passing build does not close a visual difference.
+
+| Portrait comparison point | Reference / correction |
+| --- | --- |
+| Composition | Full portrait on the left; text and a visible enlarged detail on the right. Restored. |
+| Initial state | The detail appears without a click and is present in initial HTML. Fixed. |
+| Source identity | The crop uses the same reviewed display source, with no new generation or retouch. Original download is unchanged. |
+| Typography and palette | Current “Look closer. Stay human.” copy and MaxVideoAI graphite palette retained intentionally. No hero copy changed. |
+| Controls | Face / fabric changes the visible crop; the existing original zoom opens and closes with Escape. Tested. |
+| Responsive layout | Desktop 1440 × 1000 / 1100 and mobile 390 × 844 inspected. Mobile detail follows the portrait; no horizontal overflow. |
+
+Reference and before/after captures are in the task visualization directory under `model-page-integration/fidelity-review/`. The exact reference is the existing `seedream-55-cinematic-release/index.html#details` prototype. Production build, 14 focused cinematic/architecture tests, exposure lint and localized HTTP checks passed. The known local cookie-policy warning remains. The media is below the fold and lazy; no new loading-performance claim is made.
+
 ## Visual inventory: one purpose per image
 
 | Page | Placement | Dedicated visuals |
@@ -41,7 +58,7 @@ The loading measurements below describe the earlier autonomous renderer, before 
 | Seedance 2.5 Flash | Fictional environment | `where-gravity-ends` |
 | Seedance 2.5 Flash | Vertical fashion and action | `make-an-entrance`, `before-the-drop` |
 
-There are nine unique Seedream images and six unique Flash start frames. The comparator intentionally reuses the wardrobe result as the next edit's source; it does not repeat that scene in another section. The existing Prompt Lab is text-only: its two source results appear once in the campaign/story panel, with matching exact prompts. Logos and navigation icons are not demonstration visuals. Existing approved assets cover every placement; no additional paid generation was launched for this integration.
+There are nine unique Seedream images and six unique Flash start frames. The comparator intentionally reuses the wardrobe result as the next edit's source; it does not repeat that scene in another section. The portrait detail deliberately reuses that portrait inside its own inspection section, as in the approved template. The existing Prompt Lab is text-only: its two source results appear once in the campaign/story panel, with matching exact prompts. Logos and navigation icons are not demonstration visuals. Existing approved assets cover every placement; no additional paid generation was launched for this integration.
 
 Seedream media are real Seedream outputs. Exact edit-source hashes, prompts, formats, resolution and original-file links are available. The transparent original PNG and its immutable display WebP both contain a verified non-opaque alpha channel. The preview background toggle changes only the viewer background.
 

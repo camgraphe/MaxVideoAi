@@ -317,3 +317,18 @@ html:has(.model-cinematic-page)::-webkit-scrollbar-thumb{background:#707b8880;bo
  .marketing-site .model-cinematic-page .cinema-prompt-assistant{display:block;padding:22px}
  .marketing-site .model-cinematic-page .cinema-prompt-assistant .cinema-button{margin-top:20px}
 }
+
+/* Keep the portrait and its visible detail together, as in the approved template. */
+.marketing-site .model-cinematic-page .cinema-portrait-inspection{grid-column:2;grid-row:2;align-self:start;margin-top:32px;min-width:0}
+.marketing-site .model-cinematic-page .cinema-detail-crop{height:240px;position:relative;overflow:hidden;background:#e8ecef}
+.marketing-site .model-cinematic-page .cinema-detail-crop img{width:100%;height:100%;object-fit:cover;transform:scale(2);display:block}
+.marketing-site .model-cinematic-page .cinema-detail-crop>span{position:absolute;right:14px;bottom:14px;font-size:12px;padding:5px 9px;background:#141b24d9;color:#edf1f5}
+.marketing-site .model-cinematic-page .cinema-detail-proof figcaption{display:flex;justify-content:space-between;gap:12px;font-size:12px;line-height:1.5;color:var(--cinema-muted);margin-top:12px}
+.marketing-site .model-cinematic-page .cinema-detail-controls button[aria-pressed=true]{background:var(--cinema-ink);color:var(--cinema-surface);border-color:var(--cinema-ink)}
+@media(min-width:768px){
+ .marketing-site .model-cinematic-page .cinema-panel--portrait .cinema-panel-inner{grid-template-columns:1fr 1fr;column-gap:clamp(36px,5vw,70px)}
+}
+@media(max-width:767px){
+ .marketing-site .model-cinematic-page .cinema-detail-crop{height:210px}
+ .marketing-site .model-cinematic-page .cinema-detail-proof figcaption{font-size:11px}
+}
