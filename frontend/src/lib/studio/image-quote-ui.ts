@@ -24,6 +24,7 @@ export function canConfirmImageQuote(
   return (
     !busy &&
     quote.recast?.confirmationEnabled !== false &&
+    quote.characterBuilder?.confirmationEnabled !== false &&
     quote.state === "prepared" &&
     Date.parse(quote.expiresAt) > now &&
     imageQuoteWalletState(quote) === "ready"

@@ -1,3 +1,6 @@
+import {studioCharacterSaveActionSchema,studioCharacterSelectActionSchema,type StudioCharacterSaveResult,type StudioCharacterSelectResult,studioCharacterBuilderActionSchema,validateStudioCharacterBuilder,STUDIO_CHARACTER_AUTHORING_DIRECTOR_TOOLS} from './conversation-character-authoring-contract';
+import {studioCreatorPrepareSchema,studioCreatorSubtitleExportSchema,studioCreatorSequenceSubtitlesSchema,studioCreatorReadSchema,studioCreatorSubtitleReadSchema,studioCreatorSubtitleEditSchema,STUDIO_CREATOR_DIRECTOR_TOOLS,type StudioCreatorQuote,type StudioCreatorOperationView} from '@/lib/studio/conversation-creator-contract';
+import type {SubtitleDocument} from '@/lib/subtitles/document';
 import type {SeedanceEditSourceFacts} from '@/lib/seedance-edit-source';
 import { z } from 'zod';
 import {studioAnalysisPrepareActionSchema,studioAnalysisReadActionSchema,STUDIO_ANALYSIS_DIRECTOR_TOOLS,type StudioPreparedAnalysis,type StudioAnalysisStatus} from './media-analysis-contract';
@@ -22,6 +25,7 @@ import type {AgentModelGuidance,AgentModelEditorialGuidance,AgentModelEditorialS
 import type {AgentModelPromptingSource} from '@/server/agent-api/model-prompting-sources';
 import type {CustomerDisplayPrice} from '@/lib/customer-price-presentation';
 import {studioCharacterGetSchema,studioCharacterListSchema,studioRecastActionSchema,validateStudioRecast,STUDIO_CHARACTER_DIRECTOR_TOOLS,type StudioCharacterDetails,type StudioCharacterList} from './conversation-character-contract';
+import type {CreatorToolDiscovery} from '@/server/tools/creator-discovery';
 import type {StudioAudioWorkflowFacts} from '@/server/studio/conversation-audio-discovery';
 
 export const studioMemorySchema = z.object({
@@ -61,6 +65,7 @@ export type StudioConversationProject = {
   analyses?:{analysisId:string;ref:ToolAssetRef;goal:string;state:StudioAnalysisStatus['state'];startSec:number;endSec:number}[];
   memory: StudioConversationMemory;
   authoredNotes?:{requestId:string;message:string;referenceIds:string[];createdAt:string;truncated:boolean}[];
+  creatorOperations?: StudioCreatorQuote[];
   generations?: {quoteId: string; surface: string; quoteState: string; jobId: string | null; status: string | null; quote?: StudioConversationQuoteFacts;
     failure?: {message: string}; walletRefund?: CustomerDisplayPrice}[];
 };
@@ -68,6 +73,7 @@ export const studioActionRequestSchema = z.discriminatedUnion('action', [
   z.object({action: z.literal('project.read')}).strict(),
   z.object({action:z.literal('project.recall'),query:z.string().trim().min(1).max(300)}).strict(),
   z.object({action: z.literal('catalog.read')}).strict(),
+  z.object({action: z.literal('tools.read')}).strict(),
   studioPricingReadSchema,
   studioPricingCompareSchema,
   z.object({action: z.literal('model.details'), modelId: z.string().trim().min(1).max(128)}).strict(),
@@ -80,8 +86,10 @@ export const studioActionRequestSchema = z.discriminatedUnion('action', [
   studioTimelineReadSchema,studioTimelineEditSchema,
   studioExportPrepareActionSchema,studioExportReadActionSchema,
   studioAnalysisPrepareActionSchema,studioAnalysisReadActionSchema,
-  studioCharacterListSchema,studioCharacterGetSchema,studioRecastActionSchema,
+  studioCharacterListSchema,studioCharacterGetSchema,studioRecastActionSchema,studioCharacterBuilderActionSchema,studioCharacterSaveActionSchema,studioCharacterSelectActionSchema,
+  studioCreatorPrepareSchema,studioCreatorSubtitleExportSchema,studioCreatorSequenceSubtitlesSchema,studioCreatorReadSchema,studioCreatorSubtitleReadSchema,studioCreatorSubtitleEditSchema,
 ]).superRefine(validateStudioVideoPrompt).superRefine((value, context) => {
+  if(value.action==='character.prepare')validateStudioCharacterBuilder(value,context);
   if(value.action==='recast.prepare')validateStudioRecast(value,context);
   if(value.action==='image.prepare')validateStudioImageReferences(value, context);
   if(value.action==='export.read'&&!!value.quoteId===!!value.exportId)context.addIssue({code:'custom',message:'Choose one quoteId or exportId.'});
@@ -99,6 +107,9 @@ export type StudioCapabilityDetails =
   | {modelId: string; label: string; surface: 'audio'; defaults: AudioCapabilities['defaults']; modes: StudioAudioMode[]; options: StudioAudioOptions; references: ('source_video'|'voice_sample')[]; outputCount: 1};
 export type StudioProjectMedia = {ref: ToolAssetRef; name: string; durationSec: number | null}[];
 export type StudioActionResult =
+  | {ok:true;action:'creator.prepare'|'creator.subtitle-export.prepare'|'creator.studio-subtitles.prepare';data:StudioCreatorQuote}
+  | {ok:true;action:'creator.read';data:StudioCreatorOperationView}
+  | {ok:true;action:'creator.subtitle.read'|'creator.subtitle.edit';data:SubtitleDocument}
   | {ok:true;action:'analysis.prepare';data:StudioPreparedAnalysis}
   | {ok:true;action:'analysis.read';data:StudioAnalysisStatus}
   | {ok: true; action: 'export.prepare'; data: StudioPreparedExport}
@@ -107,12 +118,16 @@ export type StudioActionResult =
   | {ok:true;action:'project.recall';data:NonNullable<StudioConversationProject['authoredNotes']>}
   | {ok: true; action: 'project.remember'; data: StudioConversationMemory}
   | {ok: true; action: 'catalog.read'; data: StudioImageCapability[]}
+  | {ok: true; action: 'tools.read'; data: CreatorToolDiscovery}
   | {ok: true; action: 'pricing.read'; data: StudioPricingEstimate}
   | {ok: true; action: 'pricing.compare'; data: StudioPriceComparison}
   | {ok: true; action: 'model.details'; data: StudioCapabilityDetails}
   | {ok: true; action: 'character.list'; data: StudioCharacterList}
   | {ok: true; action: 'character.get'; data: StudioCharacterDetails}
+  | {ok:true;action:'character.save';data:StudioCharacterSaveResult}
+  | {ok:true;action:'character.select';data:StudioCharacterSelectResult}
   | {ok: true; action: 'image.prepare'; data: Omit<PreparedGeneration, 'balance' | 'topupRequired'>}
+  | {ok: true; action: 'character.prepare'; data: Omit<PreparedGeneration, 'balance' | 'topupRequired'>}
   | {ok: true; action: 'recast.prepare'; data: Omit<PreparedGeneration, 'balance' | 'topupRequired'>}
   | {ok: true; action: 'generation.read'; data: AgentGenerationStatus | null}
   | {ok: true; action: 'quote.discard'; data: StudioQuoteDiscardResult}
@@ -128,6 +143,7 @@ export const STUDIO_DIRECTOR_TOOLS = [
   STUDIO_PRICING_COMPARE_TOOL,
   STUDIO_PRICING_DIRECTOR_TOOL,
   {action: 'project.read', name: 'project_read', description: 'Read this owned project, current revision, durable brief and recorded quote facts. Use the recorded price and configuration to explain an existing quote; amountCents is cents, not whole currency units. A prepared or expired quote is not a purchase, and an expired quote requires fresh preparation before confirmation.', properties: {}},
+  {action: 'tools.read', name: 'creator_tools_read', description: 'Read current Subtitles, Lip Sync, Product Photo/Video Editor, Motion Transfer and web-only tool entry facts. Use returned direct and web execution gates. Enabled direct creator tools prepare a client-reviewed quote card; otherwise use returned instance web links and explain web gates or pilot limits. Opening a link does not transfer attached media, prepare a quote or start an operation. The client selects sources and reviews the exact quote in the web tool. Never claim execution while its gate is closed or silently substitute generic image/video generation. No charge.', properties: {}},
   {action: 'catalog.read', name: 'catalog_read', description: 'Read the bounded, executable and certified creation catalog for catalog questions or Audio discovery. For open image/video recommendations or current price alternatives, start with pricing_compare instead: it already discovers compatible models. A named model can go directly to model_details. No prices are guessed.', properties: {}},
   {action: 'model.details', name: 'model_details', description: 'Inspect exact supported modes, settings, formats, durations and reference roles of a named or selected model. No preceding catalog_read is required. For an open image/video model or price alternatives, start with pricing_compare, then inspect the selected model before requested preparation; do not inspect every alternative first. Numeric min/max are range boundaries, not discrete choices; values lists are allowed choices when present, and suggested durations are examples. A missing setting applies to this model, not the whole catalog: inspect a suitable alternative before declaring the requested size or workflow unavailable. Use customImageSize in discovery for exact image dimensions, then check these constraints. Never prepare a different size or duration without the client accepting that change. Read-only; no quote, generation or charge.', properties: {modelId: {type: 'string'}}},
   {action: 'project.remember', name: 'project_remember', description: 'Replace the durable brief and decisions, preserving prior constraints. Use the memory revision just read.', properties: {
@@ -142,7 +158,7 @@ export const STUDIO_DIRECTOR_TOOLS = [
 ] as const;
 
 export function actionFromTool(name: string, value: unknown): StudioActionRequest {
-  const tool = [...STUDIO_DIRECTOR_TOOLS,...STUDIO_TASK_DIRECTOR_TOOLS, ...STUDIO_MEDIA_DIRECTOR_TOOLS,...STUDIO_EDITING_DIRECTOR_TOOLS,...STUDIO_EXPORT_DIRECTOR_TOOLS,...STUDIO_ANALYSIS_DIRECTOR_TOOLS,...STUDIO_CHARACTER_DIRECTOR_TOOLS].find(tool => tool.name === name);
+  const tool = [...STUDIO_DIRECTOR_TOOLS,...STUDIO_TASK_DIRECTOR_TOOLS, ...STUDIO_MEDIA_DIRECTOR_TOOLS,...STUDIO_EDITING_DIRECTOR_TOOLS,...STUDIO_EXPORT_DIRECTOR_TOOLS,...STUDIO_ANALYSIS_DIRECTOR_TOOLS,...STUDIO_CHARACTER_DIRECTOR_TOOLS,...STUDIO_CHARACTER_AUTHORING_DIRECTOR_TOOLS,...STUDIO_CREATOR_DIRECTOR_TOOLS].find(tool => tool.name === name);
   if (!tool || !value || typeof value !== 'object' || Array.isArray(value) || Object.hasOwn(value, 'action')) throw new Error('UNKNOWN_STUDIO_ACTION');
   // The discriminator is supplied by the server; model identity/scope arguments are rejected.
   return studioActionRequestSchema.parse({...value, action: tool.action});

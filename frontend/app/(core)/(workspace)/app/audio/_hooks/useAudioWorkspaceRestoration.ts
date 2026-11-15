@@ -1,3 +1,4 @@
+import { audioJobMediaUrl } from '@/lib/audio-job-media';
 import { generationStage } from '@/lib/generation-observation';
 import { useCallback, useEffect, useRef, type Dispatch, type MutableRefObject, type SetStateAction } from 'react';
 
@@ -56,6 +57,7 @@ import {
   resolveUiErrorMessage,
 } from '../_lib/audio-workspace-helpers';
 import type {
+  AudioJobDetail,
   ActiveAudioJobState,
   AudioResultState,
   SourceVideoState,
@@ -64,7 +66,7 @@ import type {
 type UseAudioWorkspaceRestorationArgs = {
   copy: AudioWorkspaceCopy;
   queryJobId: string | null;
-  user: unknown;
+  user: { id: string } | null | undefined;
   setActiveJob: Dispatch<SetStateAction<ActiveAudioJobState | null>>;
   setExportAudioFile: Dispatch<SetStateAction<boolean>>;
   setIntensity: Dispatch<SetStateAction<AudioIntensity>>;
@@ -126,11 +128,12 @@ export function useAudioWorkspaceRestoration({
   setVoiceProfile,
   setVoiceSample,
 }: UseAudioWorkspaceRestorationArgs): UseAudioWorkspaceRestorationResult {
-  const restoredQueryJobRef = useRef<string | null>(null);
-  const latestRestoreAttemptedRef = useRef(false);
+  const userId = user?.id;
   const manualWorkspaceOverrideRef = useRef(false);
 
   const hydrateSourceVideo = useCallback(async (input: {
+    audioJobId: string;
+    isCurrent: () => boolean;
     sourceJobId?: string | null;
     sourceVideoUrl?: string | null;
     fallbackAspectRatio?: string | null;
@@ -139,9 +142,12 @@ export function useAudioWorkspaceRestoration({
     if (sourceJobId) {
       try {
         const sourceJob = await fetchJobDetail(sourceJobId);
+        if (!input.isCurrent()) return;
         if (sourceJob.videoUrl) {
           setSourceVideo({
             url: sourceJob.videoUrl,
+            accessUrl: audioJobMediaUrl(input.audioJobId, 'source'),
+            readAccessOwnerId: userId,
             jobId: sourceJob.jobId,
             thumbUrl: sourceJob.thumbUrl ?? null,
             durationSec: typeof sourceJob.durationSec === 'number' ? sourceJob.durationSec : null,
@@ -153,18 +159,23 @@ export function useAudioWorkspaceRestoration({
           return;
         }
       } catch {
-        // Fall back to the raw URL below.
+        // Fall back to the stored source, using a fresh read grant for its metadata.
       }
     }
 
     const sourceVideoUrl = input.sourceVideoUrl?.trim() || null;
+    if (!input.isCurrent()) return;
     if (!sourceVideoUrl) {
       setSourceVideo(null);
       return;
     }
-    const durationSec = await probeVideoDuration(sourceVideoUrl);
+    const accessUrl = audioJobMediaUrl(input.audioJobId, 'source');
+    const durationSec = await probeVideoDuration(accessUrl);
+    if (!input.isCurrent()) return;
     setSourceVideo({
       url: sourceVideoUrl,
+      accessUrl,
+      readAccessOwnerId: userId,
       jobId: sourceJobId,
       thumbUrl: null,
       durationSec,
@@ -173,12 +184,11 @@ export function useAudioWorkspaceRestoration({
         ? formatCopy(copy.source.jobLabel, { id: sourceJobId })
         : copy.source.restoredLabel,
     });
-  }, [copy, setSourceVideo]);
+  }, [copy, setSourceVideo, userId]);
 
   const restoreAudioJob = useCallback(
-    async (jobId: string) => {
-      const detail = await fetchJobDetail(jobId);
-      if (manualWorkspaceOverrideRef.current) {
+    async (detail: AudioJobDetail, isCurrent: () => boolean) => {
+      if (!isCurrent()) {
         return;
       }
       const nextPack = coerceAudioPackId(detail.settingsSnapshot?.pack) ?? DEFAULT_PACK;
@@ -242,15 +252,6 @@ export function useAudioWorkspaceRestoration({
       setExportAudioFile(nextExportAudioFile);
       setVoiceSample(null);
 
-      await hydrateSourceVideo({
-        sourceJobId: detail.settingsSnapshot?.sourceJobId ?? null,
-        sourceVideoUrl:
-          detail.settingsSnapshot?.refs?.sourceVideoUrl ??
-          detail.settingsSnapshot?.sourceVideoUrl ??
-          null,
-        fallbackAspectRatio: detail.aspectRatio ?? null,
-      });
-
       const status =
         (detail.videoUrl || detail.audioUrl)
           ? 'completed'
@@ -282,6 +283,17 @@ export function useAudioWorkspaceRestoration({
       } else {
         setResult(null);
       }
+
+      await hydrateSourceVideo({
+        audioJobId: detail.jobId,
+        isCurrent,
+        sourceJobId: detail.settingsSnapshot?.sourceJobId ?? null,
+        sourceVideoUrl:
+          detail.settingsSnapshot?.refs?.sourceVideoUrl ??
+          detail.settingsSnapshot?.sourceVideoUrl ??
+          null,
+        fallbackAspectRatio: detail.aspectRatio ?? null,
+      });
     },
     [
       hydrateSourceVideo,
@@ -312,19 +324,15 @@ export function useAudioWorkspaceRestoration({
   );
 
   useEffect(() => {
-    if (!queryJobId || !user) return;
-    if (restoredQueryJobRef.current === queryJobId) return;
-    restoredQueryJobRef.current = queryJobId;
+    if (!queryJobId || !userId) return;
     let cancelled = false;
+    const isCurrent = () => !cancelled && !manualWorkspaceOverrideRef.current;
     setNotice(null);
     fetchJobDetail(queryJobId)
       .then(async (payload) => {
-        if (cancelled) return;
+        if (!isCurrent()) return;
         if (payload.surface === 'audio') {
-          await restoreAudioJob(payload.jobId);
-          return;
-        }
-        if (manualWorkspaceOverrideRef.current) {
+          await restoreAudioJob(payload, isCurrent);
           return;
         }
         if (!payload.videoUrl) {
@@ -344,21 +352,19 @@ export function useAudioWorkspaceRestoration({
         });
       })
       .catch((error) => {
-        if (!cancelled) {
-          restoredQueryJobRef.current = null;
+        if (isCurrent()) {
           setNotice(resolveUiErrorMessage(error, copy.messages.loadSourceJob, ['Unable to load job.']));
         }
       });
     return () => {
       cancelled = true;
     };
-  }, [copy, queryJobId, restoreAudioJob, setActiveJob, setNotice, setResult, setSourceVideo, user]);
+  }, [copy, queryJobId, restoreAudioJob, setActiveJob, setNotice, setResult, setSourceVideo, userId]);
 
   useEffect(() => {
-    if (queryJobId || !user) return;
-    if (latestRestoreAttemptedRef.current) return;
-    latestRestoreAttemptedRef.current = true;
+    if (queryJobId || !userId) return;
     let cancelled = false;
+    const isCurrent = () => !cancelled && !manualWorkspaceOverrideRef.current;
     authFetch('/api/jobs?surface=audio&limit=12')
       .then(async (response) => {
         const payload = (await response.json().catch(() => null)) as
@@ -370,9 +376,9 @@ export function useAudioWorkspaceRestoration({
         const latestJob =
           payload.jobs.find((job) => job.surface === 'audio' && Boolean(job.videoUrl)) ??
           null;
-        if (!latestJob || cancelled) return;
-        if (manualWorkspaceOverrideRef.current) return;
-        await restoreAudioJob(latestJob.jobId);
+        if (!latestJob || !isCurrent()) return;
+        const detail = await fetchJobDetail(latestJob.jobId);
+        await restoreAudioJob(detail, isCurrent);
       })
       .catch((error) => {
         if (!cancelled) {
@@ -382,7 +388,7 @@ export function useAudioWorkspaceRestoration({
     return () => {
       cancelled = true;
     };
-  }, [copy, queryJobId, restoreAudioJob, user]);
+  }, [copy, queryJobId, restoreAudioJob, userId]);
 
   return { manualWorkspaceOverrideRef };
 }

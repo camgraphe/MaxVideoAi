@@ -1,3 +1,6 @@
+import { withToolErrorOutput } from '@/server/mcp/output-schemas/tool-errors';
+import type { McpDistributionProfile } from '@/server/mcp/distribution-profile';
+import { createReferenceUploadLinkOutputSchema } from '@/server/mcp/output-schemas/references';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import * as z from 'zod/v4';
 
@@ -14,6 +17,7 @@ export function registerCreateReferenceUploadLinkTool(
   server: McpServer,
   principal: AgentPrincipal,
   services: MaxVideoAiMcpServices,
+  profile: McpDistributionProfile = 'direct',
 ): void {
   if (!services.createReferenceUploadLink) {
     throw new Error('create_reference_upload_link service is required when its gate is enabled.');
@@ -35,6 +39,7 @@ export function registerCreateReferenceUploadLinkTool(
         'This does not start generation or modify an existing asset.',
       ].join(' '),
       inputSchema: createReferenceUploadLinkInputSchema,
+      ...(profile === 'openai-directory' ? { outputSchema: withToolErrorOutput(createReferenceUploadLinkOutputSchema) } : {}),
       annotations: {
         readOnlyHint: false,
         destructiveHint: false,

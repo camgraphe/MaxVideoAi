@@ -458,3 +458,38 @@ Mobile completed task receipts can expand from their summary; consumed credits
 remain in that summary. Tasks with errors, reserved credits or recovery actions
 retain the full presentation. Milo's compact mode trigger opens the existing
 settings/credits dialog without changing the selected model.
+
+## Native creator operations — 12 November 2026 candidate
+
+`src/lib/studio/conversation-creator-contract.ts` owns strict creator preparation,
+operation/document recovery, subtitle edits, saved quote and exact confirmation
+shapes. `src/server/studio/conversation-creator.ts` adapts Studio-session authority
+to the existing creator/subtitle owners. Sources are attached owned media or exact
+ready project outputs; canonical owners retain source measurement, pricing,
+reservation, dispatch, finalization and refunds. Native creator execution retains
+the existing creator runtime gate. Saved-sequence subtitle preparation also
+requires timeline editing; it does not open the independent Studio MP4 gate.
+
+A canonical preparation callback records the completed Studio action in the same
+transaction as its prepared operation. `creatorQuote` is then persisted as a
+ready-turn result alongside the existing export/analysis pattern, with no generic
+`quote_id`. Lost response recovery replays the saved action receipt, preserving
+one operation. The existing conversation confirmation endpoint validates the
+saved request/tool/operation and exact displayed price before delegating to the
+canonical service. Included zero-price operations still need an explicit client
+click. Models can prepare and read, but cannot confirm purchases.
+
+The creator card/hook own schema-checked acknowledgments, an attempted flag scoped
+to account/project/turn/operation, GET-only reload recovery and serialized polling
+following server retry/attention facts. Completed documents expose their exact
+revision and sidecar links; private originals retain manual native readers and
+read-only grant renewal. No source URL/grant enters the saved quote. Trusted
+request origins become same-instance `/account/connections` destinations before
+canonical account validation.
+
+Read-only discovery also returns web entry facts for older toolbox operations,
+with `mcpExecution:false`, explicit pilot labels and no implied media transfer or
+execution. It excludes Character Builder from that web-only classification so
+its dedicated authoring integration remains authoritative. See the dated
+[creator parity evidence](../operations/assistant-mcp-alignment-2026-11-12/creator-parity.md)
+for source/live distinctions, exact tests and remaining direct-tool seams.

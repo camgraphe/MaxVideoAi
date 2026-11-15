@@ -8,7 +8,10 @@ import { fileURLToPath } from 'node:url';
 const MAX_FILES = 8;
 const TOKEN_PATTERN = /^mru_[A-Za-z0-9_-]{43}$/u;
 const ASSET_PATTERN = /^ma_[a-f0-9]{32}$/u;
-const TRUSTED_ORIGIN = 'https://maxvideoai.com';
+const TRUSTED_ORIGINS = new Set([
+  'https://maxvideoai.com',
+  'https://openai-review.maxvideoai.com',
+]);
 const MAX_BYTES_BY_KIND = Object.freeze({
   image: 25 * 1024 * 1024,
   video: 50 * 1024 * 1024,
@@ -47,7 +50,7 @@ function parseHandoffUrl(value) {
   }
   const match = parsed.pathname.match(/^\/mcp\/reference-upload\/(mru_[A-Za-z0-9_-]{43})$/u);
   if (
-    parsed.origin !== TRUSTED_ORIGIN
+    !TRUSTED_ORIGINS.has(parsed.origin)
     || parsed.username
     || parsed.password
     || parsed.search

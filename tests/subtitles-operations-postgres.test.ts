@@ -16,8 +16,13 @@ test('subtitle confirmation scopes quotes and reserves one recoverable charge; f
   const jobs=createSubtitleJobStore({validatePricing:async()=>{},preferredCurrency:async()=> 'usd'});let dispatched=0;
   const actor={authMethod:'toolbox-session' as const,userId:'owner',clientId:null};
   const dependencies={jobs,readSource:async()=>({source,originalIdentity:{id:'20000000-0000-4000-8000-000000000001',url:'https://cdn.maxvideoai.com/owned.mp4'},facts:{durationMs:10000,width:320,height:180,fps:30,hasAudio:true}}),quoteTranscription:async()=>({totalCents:17,currency:'USD',meta:{fixture:true}}),dispatch:async()=>{dispatched++;}};
-  const service=createSubtitleOperationsService(actor,{enabled:true,dependencies});
+  let checkpointId:string|undefined;
+  const onPrepared=async(operation:any,tx:any)=>{checkpointId=operation.id;assert.equal((await tx.query('SELECT id FROM subtitle_operations WHERE id=$1',[operation.id]))[0]?.id,operation.id);};
+  await assert.rejects(createSubtitleOperationsService(actor,{enabled:true,dependencies,onPrepared:async()=>{throw new Error('CHECKPOINT_REJECTED');}}).prepare({source:source.ref}),/CHECKPOINT_REJECTED/);
+  assert.equal((await pg.pool.query('SELECT count(*)::int n FROM subtitle_operations')).rows[0].n,0,'A rejected Studio checkpoint rolls back the prepared subtitle operation.');
+  const service=createSubtitleOperationsService(actor,{enabled:true,dependencies,onPrepared});
   const prepared=await service.prepare({source:source.ref,language:'eng'});
+  assert.equal(checkpointId,prepared.operationId);
   assert.equal(prepared.quote.price.amountCents,17);assert.equal(dispatched,0);
   const foreign=createSubtitleOperationsService({...actor,userId:'stranger'},{enabled:true,dependencies});
   await assert.rejects(foreign.confirm({operationId:prepared.operationId,confirmed:true}),/NOT_FOUND/);

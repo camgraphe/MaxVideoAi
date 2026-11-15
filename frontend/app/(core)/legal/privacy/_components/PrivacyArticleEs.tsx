@@ -131,7 +131,7 @@ export function PrivacyArticleEs({
 
       <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">10. Menores</h3>
-        <p>El Servicio no está dirigido a menores de 15/16 años. Si crees que un menor nos facilitó datos sin el consentimiento adecuado, avísanos para eliminarlos.</p>
+        <p>El Servicio está reservado a adultos de 18 años o más, o que hayan alcanzado la mayoría de edad en su país si es superior. Si crees que un menor nos ha facilitado datos personales, avísanos para que podamos investigar y eliminar los datos que correspondan.</p>
       </section>
 
       <section className="stack-gap-sm">
@@ -153,7 +153,7 @@ export function PrivacyArticleEs({
           />
           .
         </p>
-        <p className="text-sm text-text-muted">Información actualizada: 30 de octubre de 2026</p>
+        <p className="text-sm text-text-muted">Información actualizada: 11 de noviembre de 2026</p>
       </section>
     </article>
   );

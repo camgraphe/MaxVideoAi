@@ -1,7 +1,8 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { recordUserConsents, resolveCurrentLegalVersions, type ConsentSource, type ConsentEntry } from '@/server/legal-consents';
-import { getSupabaseAdmin } from '@/server/supabase-admin';
+import { getRouteAuthContext } from '@/lib/supabase-ssr';
+import { AGE_ATTESTATION_VERSION } from '@/lib/legal-policy';
 import { LEGAL_FALLBACK_VERSIONS } from '@/lib/legal';
 
 export const runtime = 'nodejs';
@@ -29,6 +30,10 @@ function parseClientIp(req: NextRequest): string | null {
 }
 
 export async function POST(req: NextRequest) {
+  const { userId } = await getRouteAuthContext(req);
+  if (!userId) {
+    return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
+  }
   let body: RequestBody;
   try {
     body = await req.json();
@@ -36,8 +41,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: 'Invalid JSON body' }, { status: 400 });
   }
 
-  if (!body.userId || typeof body.userId !== 'string') {
-    return NextResponse.json({ ok: false, error: 'userId is required' }, { status: 400 });
+  if (body.userId !== undefined && body.userId !== userId) {
+    return NextResponse.json({ ok: false, error: 'Consent owner does not match the authenticated account' }, { status: 403 });
   }
 
   if (body.ageConfirmed !== true) {
@@ -56,15 +61,13 @@ export async function POST(req: NextRequest) {
     }
 
     const marketingVersion = versions.privacy ?? versions.terms ?? versions.cookies ?? LEGAL_FALLBACK_VERSIONS.privacy;
-    const minAge = Number.parseInt(process.env.LEGAL_MIN_AGE ?? '15', 10);
-    const ageVersion = Number.isNaN(minAge) ? 'age_gate' : `min_age:${minAge}`;
 
     const entries: ConsentEntry[] = [
       { docKey: 'terms' as const, docVersion: versions.terms ?? LEGAL_FALLBACK_VERSIONS.terms, accepted: true, source: body.source ?? 'signup' },
       { docKey: 'privacy' as const, docVersion: versions.privacy ?? LEGAL_FALLBACK_VERSIONS.privacy, accepted: true, source: body.source ?? 'signup' },
       {
         docKey: 'age_attestation' as const,
-        docVersion: ageVersion,
+        docVersion: AGE_ATTESTATION_VERSION,
         accepted: true,
         source: body.source ?? 'signup',
       },
@@ -79,24 +82,8 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const supabaseConfigured =
-      Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL) && Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY);
-
-    if (supabaseConfigured) {
-      try {
-        const admin = getSupabaseAdmin();
-        const { data, error } = await admin.auth.admin.getUserById(body.userId);
-        if (error || !data?.user) {
-          return NextResponse.json({ ok: false, error: 'Supabase user not found' }, { status: 404 });
-        }
-      } catch (error) {
-        console.warn('[legal-consent] Supabase verification failed', error);
-        return NextResponse.json({ ok: false, error: 'Unable to verify user identity' }, { status: 500 });
-      }
-    }
-
     await recordUserConsents({
-      userId: body.userId,
+      userId,
       entries,
       ip: parseClientIp(req),
       userAgent: req.headers.get('user-agent'),

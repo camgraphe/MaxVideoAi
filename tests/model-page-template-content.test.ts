@@ -2,8 +2,16 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import test from 'node:test';
+import React from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { NextIntlClientProvider } from 'next-intl';
+import { JSDOM } from 'jsdom';
 import { fileURLToPath } from 'node:url';
 
+import { getRuntimeModelById } from '../frontend/config/model-runtime';
+import { ModelArchivePage } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelArchivePage';
+import { parseModelArchiveContent } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-archive-content';
+import { buildModelArchiveMetadata } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-archive-metadata';
 import { listFalEngines } from '../frontend/src/config/falEngines.ts';
 import { buildModelDecisionData } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-decision-data.ts';
 import { buildModelSchemaPayloads } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-schema-payloads.ts';
@@ -99,6 +107,7 @@ function readModelContentJson(locale: (typeof LOCALES)[number], slug: string) {
     prompting?: unknown;
     examples?: unknown;
     decision?: unknown;
+    archive?: unknown;
   };
 }
 
@@ -352,16 +361,69 @@ test('migrated template prompt links keep users on the Prompt Lab section', () =
 test('migrated app-enabled template links use the active engine id, not only the SEO slug', () => {
   for (const slug of MIGRATED_TEMPLATE_SLUGS) {
     const engine = getEngine(slug);
+    const model = getRuntimeModelById(engine.id);
     const expectedHref = `${engine.category === 'image' ? '/app/image' : '/app'}?engine=${engine.id}`;
 
     for (const locale of LOCALES) {
       const decision = buildModelDecisionDataFromContent({ engine, locale });
       assert.ok(decision, `${slug}/${locale} decision data should exist`);
       if (!engine.surfaces.app.enabled) {
-        assert.doesNotMatch(decision.hero.primaryCta.href, /^\/app(?:\/image)?\?engine=/);
+        const localizedArchive = readModelContentJson(locale, slug).archive;
+        // Exactly the route's localized archive guard permits retaining historical template data.
+        if (model?.lifecycle === 'deep_legacy' && localizedArchive) {
+          parseModelArchiveContent(localizedArchive);
+          continue;
+        }
+        assert.doesNotMatch(decision.hero.primaryCta.href, /^\/app(?:\/image)?\?engine=/,
+          `${slug}/${locale} disabled models without an archive cannot expose a generation CTA`);
         continue;
       }
       assert.equal(decision.hero.primaryCta.href, expectedHref, `${slug}/${locale} primary CTA should use engine.id`);
+    }
+  }
+});
+
+test('rendered Pika archives preserve localized URLs and history without generation actions', () => {
+  const engine = getEngine('pika-text-to-video');
+  const model = getRuntimeModelById(engine.id);
+  assert.ok(model);
+  assert.equal(engine.surfaces.app.enabled, false);
+  assert.equal(model.lifecycle, 'deep_legacy');
+  assert.equal(model.publication.model.published, true);
+  for (const locale of LOCALES) {
+    const archive = parseModelArchiveContent(readModelContentJson(locale, model.slug).archive);
+    const metadata = buildModelArchiveMetadata(model, archive, locale);
+    const prefix = { en: '/models/', fr: '/fr/modeles/', es: '/es/modelos/' }[locale];
+    assert.equal(metadata.alternates?.canonical, `https://maxvideoai.com${prefix}pika-text-to-video`);
+    assert.ok(archive.historyBody);
+    assert.ok(archive.alternatives.every(alternative => getRuntimeModelById(alternative.modelId)?.publication.app.published));
+    const previousReact = Object.getOwnPropertyDescriptor(globalThis, 'React');
+    Object.defineProperty(globalThis, 'React', { configurable: true, value: React });
+    try {
+      const html = renderToStaticMarkup(React.createElement(NextIntlClientProvider, { locale, messages: {}, timeZone: 'UTC',
+        children: React.createElement(ModelArchivePage, { model, value: archive, locale }) }));
+      const dom = new JSDOM(html);
+      try {
+        const document = dom.window.document;
+        assert.equal(document.querySelector('h1')?.textContent, archive.title);
+        const links = [...document.querySelectorAll<HTMLAnchorElement>('a[href]')];
+        assert.ok(links.some(link => link.getAttribute('href') === '/app/library'));
+        const examplesHref = { en: '/examples/pika', fr: '/fr/galerie/pika', es: '/es/galeria/pika' }[locale];
+        assert.ok(links.some(link => link.getAttribute('href') === examplesHref));
+        assert.deepEqual(links.map(link => link.getAttribute('href')).sort(), [
+          '/app/library', examplesHref,
+          ...archive.alternatives.map(alternative => `${prefix}${getRuntimeModelById(alternative.modelId)!.slug}`),
+        ].sort());
+        assert.equal(links.some(link => /\/app(?:\/image)?(?:\?|$)/.test(link.getAttribute('href') ?? '')), false,
+          `${locale} rendered archive must not offer a generation workspace`);
+        assert.equal(document.querySelector('button,form'), null);
+        const webpage = JSON.parse(document.querySelector('script[type="application/ld+json"]')!.textContent!);
+        assert.equal(webpage['@type'], 'WebPage');
+        assert.equal(webpage.url, metadata.alternates?.canonical);
+        assert.doesNotMatch(html, /[?&](?:amp;)?engine=pika/);
+      } finally { dom.window.close(); }
+    } finally {
+      if (previousReact) Object.defineProperty(globalThis, 'React', previousReact); else Reflect.deleteProperty(globalThis, 'React');
     }
   }
 });

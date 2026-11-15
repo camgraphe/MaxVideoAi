@@ -61,12 +61,12 @@ test('Studio price reads accept certified choices and reject unavailable models,
   let malformed=false;
   let executable=true;
   let priceCalls=0;
-  const deps={listPublicEngines: async()=>[candidate('gpt-image-2','image'),candidate('seedream','image'),candidate('gpt-image-2-5-sunburst','image')],resolveMembershipPricing: async()=>membership,
+  const deps={listPublicEngines: async()=>[candidate('gpt-image-2','image'),candidate('seedream','image'),{...candidate('gpt-image-2','image'),engine:{...candidate('gpt-image-2','image').engine,id:'uncertified-image-fixture'}}],resolveMembershipPricing: async()=>membership,
     resolveRequestExecutability:()=>({executable,reason:executable?'available' as const:'provider_unavailable' as const}),
     priceGeneration:async()=>{priceCalls++;return {priceCents:100,currency:'USD',membershipTier:'member' as const,pricingSnapshot:{totalCents:malformed?99:100,currency:'USD',membershipTier:'member'}};}};
   const generation=createStudioImageGenerationService(actor,{enabled:true,prepareDependencies:deps});
   assert.equal(typeof generation.estimate,'function');
-  await assert.rejects(generation.estimate({...input,engineId:'gpt-image-2-5-sunburst'}),{code:'ENGINE_UNAVAILABLE'});
+  await assert.rejects(generation.estimate({...input,engineId:'uncertified-image-fixture'}),{code:'ENGINE_UNAVAILABLE'});
   assert.equal(priceCalls,0,'Uncertified models must fail before the pricing function.');
   const seedreamInput={...input,engineId:'seedream',settings:{resolution:'2K',aspectRatio:'1:1'}};
   const seedreamPrice=await generation.estimate(seedreamInput);

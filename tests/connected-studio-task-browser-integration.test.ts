@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
 import {readFile,mkdir} from 'node:fs/promises';
 import {join} from 'node:path';
-import {expect} from '@playwright/test';
+import {expect,type Page} from '@playwright/test';
 import {startStudioIntegrationRuntime,summarizeStudioReadinessFailure} from './helpers/studio-integration-runtime';
 import {startStudioConnectedBrowserFixture} from './helpers/studio-connected-browser-fixture';
 import {initializeStudioConnectedFixture} from './helpers/studio-connected-fixture-data';
@@ -32,12 +32,17 @@ test('Milo modes preserve model selection, credits, references and explicit cons
   }});
   process.env.DATABASE_URL=runtime.database.databaseUrl;
   let browser:Awaited<ReturnType<typeof startStudioConnectedBrowserFixture>>|undefined;
+  let diagnosticPage:Page|undefined;
+  const errors:string[]=[],consoleErrors:string[]=[];
   try{
     await ensureBillingReceiptsSchema();
     const project=await createStudioConversationProject({userId:STUDIO_FIXTURE_OWNERS[0]},{name:'Product study',idempotencyKey:randomUUID()},{featureEnabled:true});
     const session=runtime.auth.createSession(STUDIO_FIXTURE_OWNERS[0],{clientId:'task-browser-fixture'});
     browser=await startStudioConnectedBrowserFixture({runtime,browserName:'chromium'});
     const owned=await browser.newContext(session,{viewport:{width:1440,height:900},locale:'en-US',reducedMotion:'reduce'}),page=owned.page;
+    diagnosticPage=page;
+    page.on('pageerror',error=>errors.push(error.message));
+    page.on('console',message=>{if(message.type()==='error')consoleErrors.push(message.text());});
     const assistanceActions:string[]=[];page.on('request',request=>{if(request.url().endsWith('/api/studio/assistance')&&request.method()==='POST')assistanceActions.push(request.postDataJSON().action);});
     // Keep the real endpoint and cover a selection slower than the UI matcher's default wait.
     await page.route('**/api/studio/assistance',async route=>{
@@ -73,7 +78,6 @@ test('Milo modes preserve model selection, credits, references and explicit cons
     const [,initial,assistance]=await Promise.all([
       page.goto(runtime.browserOrigin+conversationPath),loaded,assistanceLoaded,
     ]);
-    const errors:string[]=[];page.on('pageerror',error=>errors.push(error.message));
     const evidence=process.env.STUDIO_PROOF_DIRECTORY??'/tmp/studio-sol-review';await mkdir(evidence,{recursive:true});
     const initialBody=await initial.json();assert.equal(initial.status(),200,JSON.stringify(initialBody));assert.ok(initialBody.result.taskPolicyVersion);
     assert.equal(assistance.status(),200,JSON.stringify(await assistance.json()));
@@ -202,6 +206,7 @@ test('Milo modes preserve model selection, credits, references and explicit cons
     assert.equal((await runtime.database.pool.query("SELECT count(*)::int n FROM app_receipts WHERE type='charge'")).rows[0].n,0);
     assert.equal((await runtime.database.pool.query('SELECT count(*)::int n FROM mcp_generation_quotes')).rows[0].n,0);
     await page.setViewportSize({width:390,height:844});
+    assert.deepEqual(errors,[],'The completed task must have no runtime errors before the mobile reference action.');
     await page.getByRole('button',{name:'References · 1 attached',exact:true}).click();await page.getByRole('button',{name:'Remove Image 1',exact:true}).click();await page.getByRole('button',{name:'Close references',exact:true}).click();
     await page.reload();await expect(page.getByRole('button',{name:'Remove Image 1',exact:true})).toHaveCount(0);
     await message.fill('HEY!');const greetingPosted=page.waitForResponse(response=>response.url().endsWith('/image-conversation')&&response.request().method()==='POST');await send.click();assert.equal((await greetingPosted).status(),200);
@@ -210,6 +215,17 @@ test('Milo modes preserve model selection, credits, references and explicit cons
     assert.deepEqual(errors,[],'The Studio flow has no browser runtime errors');
 
   }catch(error){
+    const overlay=await diagnosticPage?.evaluate(()=>{
+      const reference=document.querySelector('button[aria-label="References · 1 attached"]');
+      const box=reference?.getBoundingClientRect();
+      return {references:box?.toJSON(),hits:box?document.elementsFromPoint(box.x+box.width/2,box.y+box.height/2).slice(0,8).map(element=>({tag:element.tagName,role:element.getAttribute('role'),label:element.getAttribute('aria-label')})):[],
+        portals:[...document.querySelectorAll('nextjs-portal')].map(host=>{
+          const text=document.createElement('div');for(const child of host.shadowRoot?.childNodes??[])text.append(child.cloneNode(true));
+          text.querySelectorAll('style,script').forEach(node=>node.remove());
+          return {text:text.textContent?.slice(0,8000),rect:host.getBoundingClientRect().toJSON()};
+        })};
+    }).catch(()=>null);
+    console.error('[studio-task-browser diagnostics]',JSON.stringify({pageErrors:errors,consoleErrors,overlay}));
     console.error(summarizeStudioReadinessFailure(runtime.readLogs(),8000));
     throw error;
   }finally{await browser?.close();await getDb().end();if(previous===undefined)delete process.env.DATABASE_URL;else process.env.DATABASE_URL=previous;await runtime.close();}

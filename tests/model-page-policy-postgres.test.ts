@@ -17,7 +17,7 @@ type Counts = Record<'policy' | 'begin' | 'state' | 'selected' | 'commit' | 'rol
 const emptyCounts = (): Counts => ({ policy: 0, begin: 0, state: 0, selected: 0, commit: 0, rollback: 0, other: 0 });
 const clone = (value: unknown) => JSON.parse(JSON.stringify(value));
 const actor = '11111111-1111-4111-8111-111111111111';
-const pikaInput = { modelId: 'pika-text-to-video', mode: 't2v', durationSec: 5, resolution: '720p' };
+const miniInput = { modelId: 'seedance-2-0-mini', mode: 't2v', durationSec: 5, resolution: '720p' };
 const locales = ['en', 'fr', 'es'] as const;
 
 function pageInput(modelId: string, locale: typeof locales[number] = 'en') {
@@ -237,16 +237,16 @@ test('active model route and real server layout share policy while preserving in
       reset(); const changed = await render(input, true);
       assert.equal(counts.policy, 1); assert.notDeepEqual(changed.snapshots, prior.snapshots);
       await database.pool.query("UPDATE app_pricing_rules SET margin_percent = 0.3 WHERE id = 'default'");
-      const scenario = pricing.resolvePublicModelScenario(pikaInput)!;
+      const scenario = pricing.resolvePublicModelScenario(miniInput)!;
       const create = { operation: 'create' as const, scenarioId: scenario.id, customerCents: 37 };
       await confirmCustomerTariffChange(create, (await previewCustomerTariffChange(create)).fingerprint, actor, () => {});
       await database.pool.query('UPDATE app_customer_tariff_state SET active = TRUE');
       const scope = pricing.createScopedPublicPricingReaders();
-      reset(); const first = await scope.quoteModel(pikaInput);
+      reset(); const first = await scope.quoteModel(miniInput);
       assert.equal(first.status, 'exact'); if (first.status === 'exact') assert.equal(first.amountCents, 37);
       const update = { operation: 'update' as const, scenarioId: scenario.id, customerCents: 41 };
       await confirmCustomerTariffChange(update, (await previewCustomerTariffChange(update)).fingerprint, actor, () => {});
-      reset(); const second = await scope.quoteModel(pikaInput);
+      reset(); const second = await scope.quoteModel(miniInput);
       assert.equal(second.status, 'exact');
       if (first.status === 'exact' && second.status === 'exact') {
         assert.equal(second.amountCents, 41); assert.notEqual(second.revision, first.revision);

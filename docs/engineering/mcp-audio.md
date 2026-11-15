@@ -73,3 +73,71 @@ Audio discovery now returns the shared reviewed Eleven stock catalog (18 names, 
 The first public MCP Audio projection is deliberately limited to standalone `voice_only` / `eleven-v4`, with all 18 reviewed voices. `listMcpAudioCapabilities` recomputes a distinct revision, removes excluded provider/music options and declares voice samples unsupported. The exact same projection is injected into public discovery, preparation and confirmation; excluded settings and modes fail before reference resolution or quoting. Historical broader quotes cannot cross this catalog revision. Web Audio and Studio retain their existing broader catalog.
 
 MCP, web Audio generation and Studio confirmation declare an 800-second function lifetime. This gives the single 300-second Eleven attempt persistence/refund headroom without newly publishing 600-second or multistage Audio modes in MCP. Existing durable-job replay and explicit-approval rules remain mandatory after an ambiguous client response. This synchronous release does not introduce crash-safe worker resumption or qualify every voice through a new paid call.
+
+## Worker-backed extended catalogue — 12 November 2026 local candidate
+
+`MCP_AUDIO_EXTENDED_ENABLED=true` together with
+`AUDIO_GENERATION_WORKER_ENABLED=true` selects the seven existing web Audio packs
+in public MCP. Existing paid/Audio publication gates still apply. Either missing
+switch retains the current Eleven-only projection. No flag was activated by the
+local implementation. Mode and variant availability continue to depend on the
+existing provider configuration/model policy; publication cannot invent Google
+music credentials, seed voice readiness or a quote. The extended catalogue has a
+different revision, so an old prepared synchronous quote must be prepared and
+approved again. Already claimed/accepted attempts are recovered before admission.
+
+`confirm-audio-generation.ts` accepts a trusted optional `enqueueRun` dependency.
+The MCP service supplies it only for the extended release. It runs inside the
+same transaction, after wallet/job reservation and quote claim. Migration
+`neon/migrations/100_audio_generation_dispatch.sql` owns the private immutable
+execution journal; no request-time schema bootstrap is added. Missing schema or
+journal/scope failure rolls back reservation, debit and claim together. The
+confirmation then returns the same saved job without awaiting providers.
+
+`audio/dispatch-repository.ts` fences one queued dispatch before work using an
+atomic PostgreSQL claim. `dispatch-integrity.ts` reconstitutes only the exact
+quote-bound normalized request, pricing, owned references and initial settings.
+`dispatch-worker.ts` re-reads account restrictions, current originals and their
+metadata before calling the existing reserved Audio executor. It never reserves
+another wallet charge. Handled failure uses the existing exact-charge refund
+owner. Existing OAuth, Toolbox and Studio scopes remain distinct.
+
+Run the external Node 22 process with FFmpeg/ffprobe and the current lockfile:
+
+```bash
+pnpm audio-generation:worker
+# Bounded one-dispatch operation, including a no-work health check:
+pnpm audio-generation:worker:once
+```
+
+The current `Dockerfile.timeline-worker` already provides Node 22, pnpm, TypeScript
+runtime and FFmpeg. A newly built immutable image of this candidate can use the
+Audio command above as its container command instead of the timeline command.
+No Audio image was built/pushed, task definition registered, compute started,
+provider contacted or secret changed in this task. Do not reuse the production
+timeline task's database/storage credentials for Review. The release owner must
+select the intended database, private input/output storage and provider identity,
+apply migration 100 explicitly, qualify queue consumption and stored outputs,
+then enable new purchase flags through the normal delivery process. A queued row
+or an enabled switch alone does not establish a live worker.
+
+Processing dispatches are never automatically reclaimed. The public bounded
+`audioDispatch` observation stops automatic host polling after ten queued minutes
+or forty-five processing minutes, on ambiguous execution, or on corrupt metadata.
+It reports `needsAttention` without claiming failure, refund or completion. The
+normal job/status/recent tools preserve the accepted job. Closing new purchases
+cannot authorize a retry or revoke already accepted work.
+
+In durable mode, a completion SQL error after validated artifacts have been
+published is ambiguous: the executor does not fail/refund that delivered attempt.
+A completed job's later quote/library projection failure also never launches or
+refunds another attempt. An operator can reconcile known storage/provider evidence.
+During a total database outage newly produced artifact/provider URLs cannot be
+journaled; this remains an explicit manual-reconciliation limit. The worker never
+buys the provider work again to recover that evidence. Synchronous callers retain
+their prior behavior.
+
+Verification uses disposable PostgreSQL 17, injected provider/media boundaries,
+a real empty-queue CLI process, reference deletion/tampering, scope mismatches,
+transaction rollback, concurrent claims and terminal/refund ordering. These tests
+are local evidence and do not certify a paid provider run or hosted deployment.

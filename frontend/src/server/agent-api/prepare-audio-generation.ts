@@ -4,6 +4,7 @@ import { withDbTransaction, type QueryExecutor, type TransactionQueryExecutor } 
 import { getActiveAccountRestriction } from '@/server/fraud-cleanup';
 import { getWalletSummary, type WalletSummary } from '@/server/wallet-summary';
 import { prepareAudioRun } from '@/server/audio/prepare-audio';
+import { AudioGenerationError } from '@/server/audio/audio-generate-validation';
 import type { PreparedAudioRun } from '@/server/audio/audio-run-reservation';
 
 import { isAudioRunCapabilityAvailable, listAudioCapabilities } from './audio-capabilities';
@@ -108,6 +109,11 @@ function spendingError(dependencies: PrepareAudioGenerationDependencies): AgentA
 
 function mapPreparationError(error: unknown): never {
   if (error instanceof AgentApiError) throw error;
+  if (error instanceof AudioGenerationError && error.code === 'audio_mood_required') {
+    throw new AgentApiError('PARAMETER_INVALID', 'Audio mood is required.', false, {
+      type: 'revise_request', field: 'settings.mood',
+    });
+  }
   const status = error && typeof error === 'object' && 'status' in error
     ? Number((error as { status?: unknown }).status)
     : 0;

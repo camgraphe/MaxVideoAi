@@ -31,10 +31,10 @@ test('first override of a versioned-only active tariff rolls back to its origina
     for (const migration of ['27_pricing_admin_cockpit.sql', '54_customer_tariff_cells.sql', '55_customer_tariff_versions.sql']) {
       await db.pool.query(readFileSync(`neon/migrations/${migration}`, 'utf8'));
     }
-    const scenario = collectSellableManualTariffCoverage().scenarios.find((row) => row.modelId === 'pika-text-to-video' &&
+    const scenario = collectSellableManualTariffCoverage().scenarios.find((row) => row.modelId === 'seedance-2-0-mini' &&
       row.selector.mode === 't2v' && row.selector.durationSec === '5' && row.selector.resolution === '720p')!;
     assert.ok(scenario);
-    cells.push({ id: 'authored-pika-cell', selector: scenario.selector, source: 'versioned', version: 1,
+    cells.push({ id: 'authored-mini-cell', selector: scenario.selector, source: 'versioned', version: 1,
       currency: 'USD', effectiveFrom: '2026-09-28T00:00:00.000Z', price: { kind: 'fixed', customerCents: 26 } });
     await db.pool.query('UPDATE app_customer_tariff_state SET active = TRUE');
     const before = await loadCustomerTariffScenarioDetail(scenario.modelId, scenario.selector);
@@ -43,7 +43,7 @@ test('first override of a versioned-only active tariff rolls back to its origina
     const proposal = { operation: 'create' as const, scenarioId: scenario.id, customerCents: 31 };
     const preview = await previewCustomerTariffChange(proposal);
     assert.equal(preview.previousCell?.source, 'versioned');
-    assert.equal(preview.previousCell?.id, 'authored-pika-cell');
+    assert.equal(preview.previousCell?.id, 'authored-mini-cell');
     const changed = await confirmCustomerTariffChange(proposal, preview.fingerprint, actor, () => {});
     assert.equal((await loadCustomerTariffScenarioDetail(scenario.modelId, scenario.selector)).currentCents, 31);
     const rollback = { operation: 'rollback' as const, scenarioId: scenario.id, eventId: changed.event.id };
@@ -102,7 +102,7 @@ test('live admin edits, stale preview rejection and rollback keep append-only ta
     for (const migration of ['27_pricing_admin_cockpit.sql', '54_customer_tariff_cells.sql', '55_customer_tariff_versions.sql']) {
       await db.pool.query(readFileSync(`neon/migrations/${migration}`, 'utf8'));
     }
-    const scenario = collectSellableManualTariffCoverage().scenarios.find((row) => row.modelId === 'pika-text-to-video' &&
+    const scenario = collectSellableManualTariffCoverage().scenarios.find((row) => row.modelId === 'seedance-2-0-mini' &&
       row.selector.mode === 't2v' && row.selector.durationSec === '5' && row.selector.resolution === '720p')!;
     assert.ok(scenario);
     const seed = { operation: 'create' as const, scenarioId: scenario.id, customerCents: 26 };

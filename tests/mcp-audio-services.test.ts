@@ -311,3 +311,144 @@ test('accepted audio promotion scopes rows to the exact owner and job before lib
   });
   assert.deepEqual(persisted, ['job:audio:0']);
 });
+
+test('worker Audio confirmation enqueues inside the reservation transaction and never executes over HTTP', async () => {
+  const canonical = normalizeAudioGenerationRequest(request);
+  const prepared = {
+    normalized: {
+      pack: 'sfx_only', prompt: request.prompt, durationSec: 8,
+      mood: null, intensity: 'standard', script: null, lyrics: null,
+      sourceVideoUrl: null, sourceJobId: null, voiceSampleUrl: null,
+      voiceModel: null, minimaxVoiceId: null, voiceGender: null,
+      voiceProfile: null, voiceDelivery: null, language: null,
+      seedAudioVoice: null, seedAudioOutputFormat: null,
+      seedAudioSampleRate: null, seedAudioSpeed: null,
+      seedAudioVolume: null, seedAudioPitch: null, musicModel: null,
+      musicBpm: null, musicEnabled: false, exportAudioFile: false,
+      locale: null, voiceMode: null, outputKind: 'audio',
+    },
+    packConfig: {
+      engineId: 'audio-sfx-only', billingProductKey: 'audio-sfx-only',
+      label: 'SFX Only', description: 'fixture', includesVoice: false,
+      audioOnly: true, requiresVideo: false, requiresMood: false,
+      requiresScript: false, supportsMusicToggle: false,
+      supportsAudioExport: false, defaultMusicEnabled: false,
+    },
+    sourceJob: null, sourceVideoUrl: null, sourceProbe: null,
+    durationSec: 8, aspectRatio: null,
+    pricingSnapshot: {
+      totalCents: 45, currency: 'USD', subtotalBeforeDiscountCents: 36,
+      base: { seconds: 8, rate: 0.1, unit: 'second', amountCents: 1 },
+      addons: [], margin: { amountCents: 9 }, platformFeeCents: 9,
+    },
+    inputKey: 'prepared-input-key',
+  } as never;
+  const pricingSnapshot = buildAudioQuotePricingSnapshot({
+    requestHash: hashCanonicalAudioRequest(canonical), references: [], prepared,
+  });
+  const quote = {
+    quoteId: '00000000-0000-4000-8000-000000000072',
+    userId: principal.userId, oauthClientId: principal.clientId,
+    request: canonical, requestHash: hashCanonicalAudioRequest(canonical),
+    catalogRevision: 'audio-catalogue-v1', pricingSnapshot,
+    priceCents: 45, currency: 'USD', fundingMode: 'wallet' as const,
+    trialFunding: null, state: 'prepared' as const, jobId: null,
+    expiresAt: new Date('2026-09-08T13:45:00.000Z'), claimedAt: null,
+    createdAt: new Date('2026-09-08T13:00:00.000Z'),
+    updatedAt: new Date('2026-09-08T13:00:00.000Z'),
+  };
+  let state: 'prepared' | 'claimed' | 'accepted' | 'failed' = 'prepared';
+  let jobId: string | null = null;
+  let transactionActive = false;
+  let reservations = 0;
+  let executions = 0;
+  let failAcceptedMutation = false;
+  let failedMarks = 0;
+  const promotions: unknown[] = [];
+  let failPromotion = false;
+  let failExecution = false;
+  let acceptedEvidence: 'valid' | 'null' | 'foreign' | 'other-job' | 'claimed' = 'valid';
+  let jobStatus: 'completed' | 'running' | 'failed' = 'running';
+  let enqueued = 0;
+  const status = () => ({
+    jobId: jobId!, surface: 'audio' as const, status: jobStatus,
+    progress: 100, message: 'Audio render complete.', priceCents: 45,
+    currency: 'USD', paymentStatus: 'paid_wallet', retryAfterSeconds: null,
+  });
+  const dependencies = {
+    paidGenerationEnabled: () => true,
+    withTransaction: async (callback: (executor: never) => Promise<unknown>) => {
+      transactionActive = true;
+      try { return await callback({ query: async () => [] } as never); }
+      finally { transactionActive = false; }
+    },
+    lockOwnedQuote: async () => ({
+      quote: { ...quote, state, jobId, claimedAt: state === 'prepared' ? null : new Date('2026-09-08T13:01:00.000Z') },
+      databaseNow: new Date('2026-09-08T13:01:00.000Z'),
+    }),
+    markQuoteExpired: async () => null,
+    getAccountRestriction: async () => null,
+    listCapabilities: () => ({
+      revision: 'audio-catalogue-v1',
+      modes: [{ mode: 'sfx_only', engineId: 'audio-sfx-only', available: true, variants: [{ settings: {}, available: true }] }],
+    }),
+    resolveReference: async () => { throw new Error('unused'); },
+    priceCurrentRun: async (_request: never, _evidence: never, _references: never, context: { userId: string }) => {
+      assert.equal(context.userId, principal.userId);
+      return prepared;
+    },
+    checkSpendingLimits: async () => ({ allowed: true }),
+    buildReservation: (currentPrepared: never, userId: string) => ({
+      initialJob: { jobId: 'aud_fixture_job', userId },
+      execution: { jobId: 'aud_fixture_job', userId, prepared: currentPrepared },
+    }),
+    reserveInitialJob: async () => {
+      assert.equal(transactionActive, true);
+      reservations += 1;
+    },
+    claimPreparedQuote: async (input: { jobId: string }) => {
+      state = 'claimed'; jobId = input.jobId;
+      return { ...quote, state, jobId, claimedAt: new Date('2026-09-08T13:01:00.000Z') };
+    },
+    enqueueRun: async (input: {quoteId: string; principal: AgentPrincipal; execution: {jobId: string; userId: string}}) => {
+      assert.equal(transactionActive, true);
+      assert.equal(state, 'claimed');
+      assert.equal(input.quoteId, quote.quoteId);
+      assert.equal(input.principal.clientId, principal.clientId);
+      assert.equal(input.execution.userId, principal.userId);
+      enqueued += 1;
+    },
+    executeRun: async () => {
+      assert.equal(transactionActive, false);
+      executions += 1;
+      if (failExecution) throw new Error('provider failed');
+      return { ok: true, jobId, status: 'completed' };
+    },
+    markQuoteAccepted: async () => {
+      if (failAcceptedMutation) throw new Error('accepted mutation unavailable');
+      state = 'accepted';
+      if (acceptedEvidence === 'null') return null;
+      return { ...quote, state: acceptedEvidence === 'claimed' ? 'claimed' : state, jobId: acceptedEvidence === 'other-job' ? 'foreign-job' : jobId, userId: acceptedEvidence === 'foreign' ? 'other' : principal.userId };
+    },
+    markQuoteFailed: async () => { failedMarks += 1; return null; },
+    promoteOutputs: async (input: {userId: string; jobId: string}) => {
+      assert.equal(transactionActive, false);
+      assert.equal(state, 'accepted');
+      promotions.push(input);
+      if (failPromotion) throw new Error('storage unavailable');
+    },
+    readAudioStatus: async () => status(),
+    accountUrl: 'https://maxvideoai.com',
+    randomUUID: () => '11111111-1111-4111-8111-111111111111',
+  } as never;
+
+  const first = await confirmAudioGeneration({ quoteId: quote.quoteId, confirmed: true }, principal, dependencies);
+  const replay = await confirmAudioGeneration({ quoteId: quote.quoteId, confirmed: true }, principal, dependencies);
+  assert.equal(first.jobId, replay.jobId);
+  assert.equal(first.status, 'running');
+  assert.equal(enqueued, 1);
+  assert.equal(reservations, 1);
+  assert.equal(executions, 0, 'HTTP confirmation must not wait for providers');
+  assert.equal(state, 'claimed');
+  assert.deepEqual(promotions, []);
+});

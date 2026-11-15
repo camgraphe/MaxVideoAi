@@ -30,8 +30,8 @@ test('default discovery is current+published while exact legacy identities prese
   const listed = await listAgentModels({}, deps);
   assert.ok(listed.length > 0);
   assert.ok(listed.every((model) => model.lifecycle === 'current'));
-  assert.deepEqual(listed.filter((model) => !model.recommendedByDefault).map((model) => model.id), ['pika-text-to-video']);
-  assert.equal(listed.some((model) => ['ltx-2-3', 'ltx-2'].includes(model.id as never)), false);
+  assert.deepEqual(listed.filter((model) => !model.recommendedByDefault).map((model) => model.id), []);
+  assert.equal(listed.some((model) => ['ltx-2-3', 'ltx-2', 'pika-text-to-video'].includes(model.id as never)), false);
   assert.deepEqual(listed.filter((model) => P0.includes(model.id as never)).map((model) => model.id).sort(), [...P0].sort());
   assert.ok(listed.filter((model) => P0.includes(model.id as never)).every((model) => model.recommendedByDefault));
   const [legacy] = await listAgentModels({ id: 'ltx-2-3' }, deps);
@@ -49,6 +49,19 @@ test('default discovery is current+published while exact legacy identities prese
   assert.equal(executable.some((entry) => entry.engine.id === 'ltx-2-3'), true);
   assert.equal(executable.some((entry) => entry.engine.id === 'ltx-2'), false);
   assert.equal((await recommendAgentModels({ id: 'ltx-2-3' }, deps)).recommendations.length, 0);
+  const exactPika = await listAgentModels({ id: 'pika-text-to-video' }, deps);
+  assert.equal(exactPika.length, 1, 'an explicit historical lookup remains readable');
+  assert.equal(exactPika[0].id, 'pika-text-to-video');
+  assert.equal(exactPika[0].lifecycle, 'deep_legacy');
+  assert.equal(exactPika[0].generationEnabled, false);
+  const pikaArchive = await getAgentModelDetails('pika-text-to-video', deps);
+  assert.equal(pikaArchive.id, 'pika-text-to-video');
+  assert.equal(pikaArchive.lifecycle, 'deep_legacy');
+  assert.equal(pikaArchive.generationEnabled, false);
+  assert.equal(pikaArchive.recommendedByDefault, false);
+  assert.equal(pikaArchive.links.model, 'https://maxvideoai.com/models/pika-text-to-video');
+  assert.equal(executable.some(entry => entry.engine.id === pikaArchive.id), false);
+  assert.equal((await recommendAgentModels({ id: pikaArchive.id }, deps)).recommendations.length, 0);
 });
 
 test('published P0 models enumerate normally and no longer require staging canary access', async () => {
@@ -95,7 +108,7 @@ test('Alibaba-backed launch models keep their provider-neutral MCP mode contract
 });
 
 test('deep-legacy and retired spending selection fail before canonical pricing is called', async () => {
-  for (const engineId of ['ltx-2', 'retired-video-fixture']) {
+  for (const engineId of ['ltx-2', 'pika-text-to-video', 'retired-video-fixture']) {
     let pricingCalls = 0;
     await assert.rejects(calculateAgentProjectBudget({ proposals: [{
       name: 'Deprecated identity',

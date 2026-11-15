@@ -31,12 +31,19 @@ test('specialized exclusions never borrow a different model endpoint',()=>{
  for(const [engine,mode,operation]of [['flux-3-max','v2v','flux-fast-edit'],['ltx-2-5-pro','reframe','ltx23-reframe'],['ltx-2-3-fast','reframe','ltx23-reframe'],['flux-3','v2v','flux-draft-enhance']])assert.throws(()=>normalizeVideoOperation(engine,mode,operation));
 });
 
+import { normalizeEngineId } from '../frontend/src/lib/engine-alias';
 import { getRuntimeModelById } from '../frontend/config/model-runtime';
-test('30 current and eight exact-ID legacy models remain distinct discovery classes',()=>{
+test('29 current, eight legacy and one archived exact-ID model retain their distinct discovery classes',()=>{
  const legacy=['lumaRay2','lumaRay2_flash','kling-2-5-turbo','kling-2-6-pro','happy-horse-1-0','wan-2-6','ltx-2-3-fast','ltx-2-3'];
- assert.equal(Object.keys(expected).filter(id=>!legacy.includes(id)).length,30);
+ const archived=['pika-text-to-video'];
+ assert.equal(Object.keys(expected).filter(id=>!legacy.includes(id)&&!archived.includes(id)).length,29);
+ assert.equal(legacy.length,8);
+ assert.equal(archived.length,1);
  for(const id of Object.keys(expected)){
-  const model=getRuntimeModelById(id)!;assert.equal(model.lifecycle,legacy.includes(id)?'legacy':'current',id);
-  assert.ok(model.publication.app.published,id);assert.ok(getFalEngineById(id),`${id}: exact discovery retained`);
+  const model=getRuntimeModelById(id)!;
+  assert.equal(model.lifecycle,archived.includes(id)?'deep_legacy':legacy.includes(id)?'legacy':'current',id);
+  assert.equal(model.publication.app.published,!archived.includes(id),id);
+  assert.ok(getFalEngineById(id),`${id}: exact historical identity retained`);
  }
+ for(const alias of ['pika-text-to-video','pika-image-to-video','pika22'])assert.equal(normalizeEngineId(alias),'pika-text-to-video');
 });

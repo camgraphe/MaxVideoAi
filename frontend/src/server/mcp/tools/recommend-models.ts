@@ -1,3 +1,6 @@
+import { withToolErrorOutput } from '@/server/mcp/output-schemas/tool-errors';
+import type { McpDistributionProfile } from '@/server/mcp/distribution-profile';
+import { recommendModelsOutputSchema } from '@/server/mcp/output-schemas/catalog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import * as z from 'zod/v4';
 
@@ -57,7 +60,8 @@ export const recommendModelsInputSchema = z.object({
 export function registerRecommendModelsTool(
   server: McpServer,
   principal: AgentPrincipal,
-  services: MaxVideoAiMcpServices
+  services: MaxVideoAiMcpServices,
+  profile: McpDistributionProfile = 'direct',
 ): void {
   server.registerTool(
     'recommend_models',
@@ -79,6 +83,7 @@ export function registerRecommendModelsTool(
         'Recommendations are capability matches with disclosed editorial preference. Do not use as an exact quote, generation command or guarantee that a provider will accept a request. Respect executable constraints and the user’s choice.',
       ].join(' '),
       inputSchema: recommendModelsInputSchema,
+      ...(profile === 'openai-directory' ? { outputSchema: withToolErrorOutput(recommendModelsOutputSchema) } : {}),
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,

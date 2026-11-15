@@ -1,3 +1,6 @@
+import { withToolErrorOutput } from '@/server/mcp/output-schemas/tool-errors';
+import type { McpDistributionProfile } from '@/server/mcp/distribution-profile';
+import { presentGenerationOutputSchema } from '@/server/mcp/output-schemas/generation';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 import {
@@ -108,6 +111,7 @@ export function registerPresentGenerationTool(
   server: McpServer,
   principal: AgentPrincipal,
   services: MaxVideoAiMcpServices,
+  profile: McpDistributionProfile = 'direct',
 ): void {
   if (!services.getGenerationStatus) {
     throw new Error('get_generation_status service is required when present_generation is enabled.');
@@ -121,9 +125,11 @@ export function registerPresentGenerationTool(
         'First verify completion with get_generation_status or list_recent_generations.',
         'Explain that the result is saved in the same connected MaxVideoAI library.',
         'If the host does not render the UI, use the returned resource link and library destination as fallback; never invent URLs.',
+        'Use openUrl when available for clickable Markdown links; native playback and the download button use the original URLs.',
         'Do not poll, generate, retry, confirm, or charge with this tool.',
       ].join(' '),
       inputSchema: getGenerationStatusInputSchema,
+      ...(profile === 'openai-directory' ? { outputSchema: withToolErrorOutput(presentGenerationOutputSchema) } : {}),
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,

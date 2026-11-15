@@ -1448,7 +1448,7 @@ for (const extension of ['mpeg', 'mp3']) {
   });
 }
 
-for (const engineId of ['sora-2', 'sora-2-pro']) {
+for (const engineId of ['sora-2', 'sora-2-pro', 'pika-text-to-video']) {
   test(`prepared ${engineId} quote cannot charge or submit after sunset`, async () => {
     const request = { ...videoRequest, engineId };
     const { dependencies, captures } = baseDependencies(request, {

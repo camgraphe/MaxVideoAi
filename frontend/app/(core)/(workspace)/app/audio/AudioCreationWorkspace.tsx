@@ -1,4 +1,6 @@
 'use client';
+
+import { audioJobMediaUrl } from '@/lib/audio-job-media';
 import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
@@ -245,7 +247,7 @@ function OwnedAudioCreationWorkspace({ userId }: { userId: string | null }) {
               <span className={styles.historyCopy}><strong>{label}</strong><small>{new Date(job.createdAt).toLocaleDateString(locale)} · {isFailed ? copy.failed : isPlayable ? copy.listen : copy.generating}</small></span>
               {isSelected ? <span className={styles.historySelected}>{copy.selected}</span> : <span className="sr-only">{copy.select}</span>}
             </button>
-            {job.audioUrl && !isFailed ? <audio className={styles.historyAudio} controls preload="none" src={job.audioUrl} aria-label={`${copy.listen}: ${label}`} onPlay={() => { if (!isSelected) void selectJob(job.jobId, job); }} /> : null}
+            {job.audioUrl && !isFailed ? <audio className={styles.historyAudio} controls preload="none" src={audioJobMediaUrl(job.jobId, 'audio')} aria-label={`${copy.listen}: ${label}`} onPlay={() => { if (!isSelected) void selectJob(job.jobId, job); }} /> : null}
           </div>;
         }) : null}
       </section>

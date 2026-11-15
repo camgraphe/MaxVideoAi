@@ -407,7 +407,7 @@ test('Kling Turbo i2v workspace preflight and generation omit unsupported framin
 });
 
 test('P1 and established public engines reject an explicit unknown mode before database work', async () => {
-  const publicEngine = getFalEngineById('pika-text-to-video')?.engine;
+  const publicEngine = getFalEngineById('kling-3-pro')?.engine;
   assert.ok(publicEngine);
 
   for (const fixture of [
@@ -465,7 +465,7 @@ test('preflight rejects unknown modes before pricing while generate keeps omitte
   assert.equal(preflightResponse.status, 400);
   assert.equal(pricingCalls, 0);
 
-  const publicEngine = getFalEngineById('pika-text-to-video')?.engine;
+  const publicEngine = getFalEngineById('kling-3-pro')?.engine;
   assert.ok(publicEngine);
   const generate = await resolveGenerateRouteContext({
     req: new NextRequest('https://maxvideoai.com/api/generate', { method: 'POST' }),

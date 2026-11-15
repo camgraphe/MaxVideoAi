@@ -26,6 +26,7 @@ test('web Audio still reserves once then executes the same runtime, preserving o
     submitted: 0,
     persistCalls: 0,
     outputCalls: 0,
+    outputFailure: false,
     failed: false,
     beforePersist: null as null | ((jobId: string) => Promise<void>),
   };
@@ -55,10 +56,10 @@ test('web Audio still reserves once then executes the same runtime, preserving o
     '@/server/audio/media': `export async function persistOriginalAudio(input){const f=globalThis.__audioWebFixture;f.persistCalls++;if(input.url!=='https://fixture.example/original.mp3')throw new Error('Original changed');if(f.beforePersist)await f.beforePersist(input.jobId);return {audioUrl:'https://fixture.example/stored-original.mp3',durationSec:123.4};} export const mixAudioTracks=()=>{throw new Error('Unexpected transcode')}; export const mixAudioIntoVideo=mixAudioTracks; export const uploadAudioRenderAudio=mixAudioTracks; export const uploadAudioRenderVideo=mixAudioTracks;`,
     '@/server/audio/providers': `export const generateClonedVoiceTrack=()=>{throw new Error('Wrong provider')};export const generateMusicTrack=generateClonedVoiceTrack;export const generateSoundDesignTrack=generateClonedVoiceTrack;export const generateStandardVoiceTrack=generateClonedVoiceTrack;`,
     '@/server/media/detect-has-audio': `export const detectMediaBufferDuration=()=>{throw new Error('Unexpected transcode probe')};`,
-    '@/server/media-library': `import {upsertLegacyJobOutputs as persist} from './frontend/server/media-library/job-outputs'; export async function upsertLegacyJobOutputs(row){await persist(row);globalThis.__audioWebFixture.outputCalls++;}`,
+    '@/server/media-library': `import {upsertLegacyJobOutputs as persist} from './frontend/server/media-library/job-outputs'; export async function upsertLegacyJobOutputs(row){if(globalThis.__audioWebFixture.outputFailure)throw new Error('https://private.invalid/output?secret=fixture');await persist(row);globalThis.__audioWebFixture.outputCalls++;}`,
     './mcp-output-assets': `export async function promoteCompletedMcpJobOutputs(){return {promoted:0,failed:0,skipped:1};}`,
   };
-  await build({ stdin: { resolveDir: process.cwd(), loader: 'ts', contents: `export {generateAudioRun} from './frontend/src/server/audio/generate-audio'; export {refundAudioCharge} from './frontend/src/server/audio/audio-generate-receipts'; export {failAudioJob} from './frontend/src/server/audio/audio-generate-jobs'; export {getDb} from '@/lib/db';` },
+  await build({ stdin: { resolveDir: process.cwd(), loader: 'ts', contents: `export {generateAudioRun,executeReservedAudioRun} from './frontend/src/server/audio/generate-audio'; export {buildAudioRunReservation} from './frontend/src/server/audio/audio-run-reservation'; export {createInitialAudioJob} from './frontend/src/server/audio/audio-generate-jobs'; export {refundAudioCharge} from './frontend/src/server/audio/audio-generate-receipts'; export {failAudioJob} from './frontend/src/server/audio/audio-generate-jobs'; export {getDb} from '@/lib/db';` },
     outfile: output, bundle: true, platform: 'node', format: 'cjs', packages: 'external', tsconfig: 'frontend/tsconfig.json',
     plugins: [{ name: 'audio-seam-boundaries', setup(builder) {
       builder.onResolve({ filter: /.*/ }, args => args.path in mocks ? { path: args.path, namespace: 'fixture' } : /^(pg|stripe|next\/server)$/.test(args.path) ? { path: requireFrontend.resolve(args.path), external: true } : undefined);
@@ -68,6 +69,9 @@ test('web Audio still reserves once then executes the same runtime, preserving o
   process.env.DATABASE_URL = database.databaseUrl;
   const runtime = requireFrontend(output) as {
     generateAudioRun: typeof import('../frontend/src/server/audio/generate-audio').generateAudioRun;
+    executeReservedAudioRun: typeof import('../frontend/src/server/audio/generate-audio').executeReservedAudioRun;
+    buildAudioRunReservation: typeof import('../frontend/src/server/audio/audio-run-reservation').buildAudioRunReservation;
+    createInitialAudioJob: typeof import('../frontend/src/server/audio/audio-generate-jobs').createInitialAudioJob;
     refundAudioCharge: typeof import('../frontend/src/server/audio/audio-generate-receipts').refundAudioCharge;
     failAudioJob: typeof import('../frontend/src/server/audio/audio-generate-jobs').failAudioJob;
     getDb(): { end(): Promise<void> };
@@ -139,5 +143,44 @@ test('web Audio still reserves once then executes the same runtime, preserving o
   assert.equal(settings.providers.tts.model, 'elevenlabs/tts/eleven-v4');
   assert.equal(settings.providers.tts.requestId, 'fal-eleven-existing');
   assert.deepEqual(settings.providers.tts.timestamps, [{characters:['H'],character_start_times_seconds:[0],character_end_times_seconds:[0.3]}]);
+
+
+  await t.test('durable completion persistence outage preserves an accepted render without refund', async () => {
+    await database.pool.query('ALTER TABLE app_receipts DROP CONSTRAINT reject_runner_refund');
+    await database.pool.query(`CREATE FUNCTION reject_audio_completion() RETURNS trigger LANGUAGE plpgsql AS $$
+      BEGIN IF NEW.status='completed' THEN RAISE EXCEPTION 'Fixture completion persistence outage'; END IF; RETURN NEW; END $$;
+      CREATE TRIGGER reject_audio_completion BEFORE UPDATE ON app_jobs FOR EACH ROW EXECUTE FUNCTION reject_audio_completion()`);
+    const reservation = runtime.buildAudioRunReservation(fixture.prepared, userId);
+    await runtime.createInitialAudioJob(reservation.initialJob);
+    const submittedBefore = fixture.submitted;
+    const persistedBefore = fixture.persistCalls;
+    await assert.rejects(runtime.executeReservedAudioRun(reservation.execution, { durableDispatch: true }),
+      (error: unknown) => (error as { code?: string }).code === 'audio_completion_reconciliation_pending');
+    assert.equal(fixture.submitted - submittedBefore, 1);
+    assert.equal(fixture.persistCalls - persistedBefore, 1);
+    const uncertain = (await database.pool.query(`SELECT status,payment_status,
+      (SELECT count(*)::int FROM app_receipts r WHERE r.job_id=j.job_id AND r.type='refund') refunds
+      FROM app_jobs j WHERE job_id=$1`, [reservation.execution.jobId])).rows[0];
+    assert.deepEqual(uncertain, { status: 'running', payment_status: 'paid_wallet', refunds: 0 });
+    await database.pool.query('DROP TRIGGER reject_audio_completion ON app_jobs');
+  });
+
+  await t.test('durable output projection errors keep private URLs out of application logs', async () => {
+    const reservation = runtime.buildAudioRunReservation(fixture.prepared, userId);
+    await runtime.createInitialAudioJob(reservation.initialJob);
+    fixture.outputFailure = true;
+    const warnings: unknown[] = [];
+    const originalWarn = console.warn;
+    console.warn = (...args) => { warnings.push(args); };
+    try {
+      const result = await runtime.executeReservedAudioRun(reservation.execution, { durableDispatch: true });
+      assert.equal(result.status, 'completed');
+      assert.equal(warnings.length, 1);
+      assert.doesNotMatch(JSON.stringify(warnings), /private\.invalid|secret=fixture/);
+      assert.doesNotMatch(warnings.map(String).join(' '), /private\.invalid|secret=fixture/);
+    } finally { console.warn = originalWarn; fixture.outputFailure = false; }
+    assert.equal((await database.pool.query("SELECT count(*)::int n FROM app_receipts WHERE job_id=$1 AND type='refund'", [reservation.execution.jobId])).rows[0].n, 0);
+  });
+
 
 });

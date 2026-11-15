@@ -74,10 +74,12 @@ export async function createSignedDownloadUrl(
     expiresInSeconds,
     downloadFilename,
     method = 'GET',
+    signingDate,
   }: {
     expiresInSeconds: number;
     downloadFilename?: string;
     method?: 'GET' | 'HEAD';
+    signingDate?: Date;
   },
 ): Promise<string> {
   const client = getS3Client();
@@ -94,7 +96,7 @@ export async function createSignedDownloadUrl(
       ? { ResponseContentDisposition: `attachment; filename="${safeDownloadFilename}"` }
       : {}),
   });
-  return getSignedUrl(client, command, { expiresIn: expiresInSeconds });
+  return getSignedUrl(client, command, { expiresIn: expiresInSeconds, ...(signingDate ? {signingDate} : {}) });
 }
 const OWNED_MEDIA_STORAGE_PREFIXES = [
   'renders/images',

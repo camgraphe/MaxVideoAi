@@ -1,7 +1,7 @@
 import {assertSubtitlePurchaseAllowed,recordSubtitlePurchase,recordSubtitleRefund} from './billing';
 import {revalidateSubtitlePricing,isIncludedSubtitleExport} from './pricing';
 import {randomUUID} from 'node:crypto';
-import {query,withDbTransaction} from '@/lib/db';
+import {query,withDbTransaction,type TransactionQueryExecutor} from '@/lib/db';
 import {reserveWalletChargeInExecutor} from '@/lib/wallet';
 import {getUserPreferredCurrency} from '@/lib/currency';
 import {requireGenerationActor,type GenerationActor} from '../agent-api/generation-actor';
@@ -28,13 +28,13 @@ function assertSubtitlePrice(kind:SubtitleOperationRecord['operation_kind'],requ
 }
 export function createSubtitleJobStore(overrides:Partial<typeof defaults>={}){
   const dependencies={...defaults,...overrides};
-  async function prepare(actor:GenerationActor,kind:SubtitleOperationRecord['operation_kind'],request:SubtitleOperationRequest,pricing:SubtitlePricing,exportEstimate?:Record<string,unknown>){
+  async function prepare(actor:GenerationActor,kind:SubtitleOperationRecord['operation_kind'],request:SubtitleOperationRequest,pricing:SubtitlePricing,exportEstimate?:Record<string,unknown>,onPrepared?:(operation:SubtitleOperationRecord,executor:TransactionQueryExecutor)=>Promise<void>){
     requireGenerationActor(actor);
     assertSubtitlePrice(kind,request,pricing);
     return dependencies.transaction(async executor=>{
     await dependencies.assertPurchaseAllowed(actor,pricing,executor,false);
     const id=randomUUID();const rows=await executor.query<SubtitleOperationRecord>(`INSERT INTO subtitle_operations(id,user_id,auth_origin,oauth_client_id,studio_project_id,operation_kind,request_snapshot,pricing_snapshot,export_estimate,expires_at)
-      VALUES($1,$2,$3,$4,$5,$6,$7::jsonb,$8::jsonb,$9::jsonb,NOW()+INTERVAL '5 minutes') RETURNING *`,[id,...actorValues(actor),kind,JSON.stringify(request),JSON.stringify(pricing),exportEstimate?JSON.stringify(exportEstimate):null]);return rows[0];});
+      VALUES($1,$2,$3,$4,$5,$6,$7::jsonb,$8::jsonb,$9::jsonb,NOW()+INTERVAL '5 minutes') RETURNING *`,[id,...actorValues(actor),kind,JSON.stringify(request),JSON.stringify(pricing),exportEstimate?JSON.stringify(exportEstimate):null]);await onPrepared?.(rows[0],executor);return rows[0];});
   }
   async function read(actor:GenerationActor,id:string){const rows=await dependencies.query<SubtitleOperationRecord>(`SELECT o.* FROM subtitle_operations o LEFT JOIN app_jobs j ON j.job_id=o.job_id WHERE ${owned} AND j.hidden IS NOT TRUE`,[id,...actorValues(actor)]);if(!rows[0])throw new Error('SUBTITLE_OPERATION_NOT_FOUND');return rows[0];}
   async function reserve(actor:GenerationActor,id:string){

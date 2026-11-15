@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { getAudioPackConfig, type AudioGenerateRequestBody } from '@/lib/audio-generation';
 import { computeCanonicalAudioBillingSnapshot } from '@/server/pricing/quote-billing';
+import { createOwnedMediaReadUrl } from '@/server/owned-media-read-access';
 import { inspectSourceVideo, resolveAudioAspectRatio } from './media';
 import { loadSourceJob } from './audio-generate-jobs';
 import { AudioGenerationError, resolveAudioRenderDuration, validateAudioGenerateRequest } from './audio-generate-validation';
@@ -51,7 +52,10 @@ export async function prepareAudioRun(body: AudioGenerateRequestBody, userId: st
   }
 
   const needsSourceProbe = Boolean(sourceVideoUrl) && (packConfig.requiresVideo || normalized.pack === 'music_only');
-  const sourceProbe = needsSourceProbe && sourceVideoUrl ? await (dependencies.inspectSourceVideo ?? inspectSourceVideo)(sourceVideoUrl) : null;
+  // The read grant is transient; quote identity and persisted references keep the original.
+  const sourceProbe = needsSourceProbe && sourceVideoUrl
+    ? await (dependencies.inspectSourceVideo ?? inspectSourceVideo)(await createOwnedMediaReadUrl({ url: sourceVideoUrl, userId }))
+    : null;
   const probedDurationSec = sourceProbe?.durationSec ?? null;
   const durationSec = resolveAudioRenderDuration({
     pack: normalized.pack,

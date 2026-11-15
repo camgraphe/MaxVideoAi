@@ -1,0 +1,860 @@
+{
+  "reviewedAt": "2026-11-11",
+  "branch": "codex/openai-directory-20261111",
+  "baseCommit": "86db1bd37b683fb7c90aec15d1c4ea57cb9b4b06",
+  "baseVerifiedAgainstRemoteMain": true,
+  "historicalCandidatePreserved": "5c700f2e5853de2a329b005da812ee5f96553bf9",
+  "directoryVersion": "0.3.14",
+  "genericSourceVersion": "0.3.9",
+  "genericSourcePublished": false,
+  "appPublishedModels": 54,
+  "allCapabilitiesDirectoryToolCount": 42,
+  "maximumEnabledInstructionBytes": 1998,
+  "maximumToolDescriptionBytes": 1939,
+  "verification": {
+    "mcpClient": {
+      "passed": 214,
+      "failed": 0,
+      "skipped": 1,
+      "curatedSelectionScenariosPassed": 70,
+      "rerunAfterOAuthPackageChange": true,
+      "rerunAfterDirectoryScanWording": true
+    },
+    "directoryFocused": {
+      "passed": 101,
+      "failed": 0
+    },
+    "packageAfterFinalCopyEdits": {
+      "passed": 4,
+      "failed": 0,
+      "deterministic": true,
+      "version": "0.3.14"
+    },
+    "existingLegalAndProviderPrivacyTests": {
+      "passed": 24,
+      "failed": 0
+    },
+    "typescript": "passed",
+    "frontendLint": {
+      "errors": 0,
+      "warnings": 7,
+      "warningFilesChanged": false
+    },
+    "exposure": "passed",
+    "diffCheck": "passed",
+    "suiteCountsOverlap": true,
+    "adultEligibilityAndAuth": {
+      "passed": 148,
+      "failed": 0,
+      "externalIdentityAndGrantBoundaries": "fixtures"
+    },
+    "adultLegalMigration": {
+      "passed": 1,
+      "failed": 0,
+      "database": "disposable PostgreSQL 17",
+      "normalDatabaseUsed": false
+    },
+    "additionalLegalCopy": {
+      "passed": 19,
+      "failed": 0
+    },
+    "privacyFallbackContract": {
+      "passed": 7,
+      "failed": 0
+    },
+    "fullApplicationBuild": {
+      "status": "passed",
+      "staticPages": 1034,
+      "externalDatabaseConfigured": false
+    },
+    "localLegalHttp": {
+      "passed": 9,
+      "failed": 0,
+      "coverage": "terms/privacy/subprocessors in EN/FR/ES; canonical, hreflang, JSON-LD parse where present, adult copy and document versions"
+    },
+    "localBrowser": {
+      "termsFrench": "18+ clause and version visible",
+      "signupEnglish": "18+ checkbox visible and initially unchecked",
+      "liveSignupExecuted": false
+    },
+    "dedicatedBuildAndDomainProof": {
+      "passed": 19,
+      "failed": 0,
+      "normalPreviewBranchRefusal": true,
+      "configurationOnly": true
+    },
+    "localDomainChallengeHttp": {
+      "passed": 4,
+      "failed": 0,
+      "externalDatabaseUsed": false,
+      "scope": "exact body on dedicated host; 404 normal/local hosts and forwarded-host spoof",
+      "transport": "node:http explicit Host",
+      "unrelatedAuthRouteWarning": "server without Auth keys reported missing Supabase env; authenticated routes were not qualified"
+    },
+    "dedicatedSchemaUpgrade": {
+      "localPostgres17TestsPassed": 3,
+      "localTestsFailed": 0,
+      "hostedPostgresVersion": "18.6",
+      "migrationsApplied": 33,
+      "expectedColumnsCompared": 1301,
+      "missingColumns": 0,
+      "columnDefinitionDifferences": 0,
+      "finalTableCount": 138,
+      "timelineExportGuardInstalled": true,
+      "poolerConnectionVerified": true,
+      "jobs": 0,
+      "receipts": 0,
+      "profiles": 0,
+      "consents": 0
+    },
+    "pushedBranchIsolation": {
+      "commit": "dc768b7dc",
+      "vercelStatus": "success",
+      "vercelDescription": "Canceled by Ignored Build Step",
+      "normalRuntimeDeployed": false,
+      "proofUrl": "https://vercel.com/camgraphes-projects/maxvideoai/7swqtpJQHmHqWpZZjX87nnHtfJJE"
+    },
+    "firstHostedHttps": {
+      "passed": true,
+      "siteStatus": 200,
+      "loginStatus": 200,
+      "challengeStatus": 200,
+      "challengeExact": true,
+      "protectedResourceStatus": 200,
+      "authorizationMetadataStatus": 200,
+      "unauthenticatedMcpStatus": 401,
+      "correctWwwAuthenticate": true
+    },
+    "hostedReviewerLogin": {
+      "passed": true,
+      "termsAcceptedWithOwnerApproval": true,
+      "signedOut": true,
+      "profiles": 1,
+      "userConsents": 4,
+      "jobs": 0,
+      "receipts": 0,
+      "walletDisplayedUSD": 0
+    },
+    "localOAuthAuthorizationProbe": {
+      "pkce": "S256",
+      "status": 302,
+      "consentOrigin": "https://openai-review.maxvideoai.com",
+      "unregisteredCallbackStatus": 400,
+      "tokenIssued": false
+    },
+    "directoryMetadataAfterScan": {
+      "passed": 17,
+      "failed": 0,
+      "runtimeCommit": "95be72898e05ed1ec9c5e8d5fef168847c63c741",
+      "scope": "directory-only description; direct profile unchanged"
+    },
+    "hostedOAuthGrant": {
+      "passed": true,
+      "ownerApprovedHookAndGrant": true,
+      "scope": [
+        "openid",
+        "email",
+        "profile",
+        "offline_access"
+      ],
+      "pkce": "S256",
+      "clientId": "324a5cbd-2929-4ba1-82a6-58083f5ccb33",
+      "mcpResource": "https://openai-mcp.maxvideoai.com/mcp",
+      "portalAuthentication": "Authorized",
+      "discoveredTools": 42,
+      "publicTools": 41,
+      "privateTools": [
+        "get_generation_download"
+      ],
+      "refreshTested": true,
+      "revocationTested": true,
+      "tokenClaimsDirectlyInspected": true,
+      "evidence": ".local/openai-directory-20261111/evidence/openai-mcp-inspection.json",
+      "reconnectionTested": true,
+      "reconnectionScope": "same existing grant, no new scopes or account",
+      "revocationScope": "diagnostic OAuth session only; full client grant preserved",
+      "openaiNativeAutomaticRefreshTested": false
+    },
+    "postOAuthApplicationCounts": {
+      "jobs": 0,
+      "receipts": 0,
+      "profiles": 1,
+      "consents": 4,
+      "projectId": "lingering-glade-93540258",
+      "checkedAt": "2026-11-11T17:18:48.825639+00:00"
+    },
+    "pushedDescriptionBranchIsolation": {
+      "commit": "95be72898e05ed1ec9c5e8d5fef168847c63c741",
+      "normalProjectDeployment": "dpl_6jYvVDmRSzcsCTENSUvT1mQthSjn",
+      "normalProjectState": "CANCELED",
+      "testProjectDeployment": "dpl_FTEAU3LTzoEvTwuJpycAN5Kez2Ed",
+      "testProjectState": "READY",
+      "cronDisabledAfterBuild": true
+    },
+    "postDescriptionHttp": {
+      "login": 200,
+      "advertisedProtectedResourceMetadata": 200,
+      "unauthenticatedMcp": 401,
+      "correctChallenge": true
+    },
+    "hostedOAuthLifecycle": {
+      "passed": true,
+      "pkce": "S256",
+      "refreshHttpStatus": 200,
+      "resourceAudiencePreserved": true,
+      "ordinaryLoginRejectedHttpStatus": 401,
+      "revokedRefreshHttpStatus": 400,
+      "revokedMcpHttpStatus": 401,
+      "existingOpenaiSessionsPreserved": 2,
+      "fullClientGrantRevoked": false,
+      "sessionSetFingerprint": "027e11bd6fa2683f473223560f6ea0ed",
+      "evidence": ".local/openai-directory-20261111/evidence/oauth-lifecycle-2026-11-11T17-38-32-031Z.json"
+    },
+    "postOAuthLifecycleApplicationCounts": {
+      "checkedAt": "2026-11-11T17:45:46.950Z",
+      "projectId": "lingering-glade-93540258",
+      "jobs": 0,
+      "receipts": 0,
+      "profiles": 1,
+      "consents": 4,
+      "generationQuotes": 0,
+      "oauthSessions": 2,
+      "oauthSessionSetFingerprint": "027e11bd6fa2683f473223560f6ea0ed",
+      "existingOpenaiSessionsUnchanged": true
+    },
+    "hostedNoSpendCalls": {
+      "successfulTools": [
+        "get_account_status",
+        "list_models",
+        "get_model_details",
+        "list_audio_capabilities",
+        "list_media",
+        "list_recent_generations",
+        "list_saved_characters",
+        "list_creator_tools"
+      ],
+      "imageCatalogLimit": 10,
+      "listedImageModels": 10,
+      "executableImageModes": 0,
+      "audioAvailable": false,
+      "providerKeysConfigured": false,
+      "comparisonWireError": "PARAMETER_INVALID / no_matching_scenario",
+      "comparisonSdkFailure": "fixed: structured PARAMETER_INVALID now delivered after discovery",
+      "paidGenerations": 0,
+      "quotesCreated": 0,
+      "missingJobFailure": "JOB_FAILED / Generation not found."
+    },
+    "structuredErrorCorrection": {
+      "stage": "deployed and verified on dedicated test runtime",
+      "focusedTestsPassed": 27,
+      "mcpTestsPassed": 214,
+      "mcpTestsSkipped": 1,
+      "selectionScenariosPassed": 70,
+      "typescript": "passed",
+      "lintErrors": 0,
+      "lintExistingWarnings": 7,
+      "directoryTools": 42,
+      "directProfileUnchanged": true,
+      "malformedSuccessStillRejected": true,
+      "failureBeforeFix": 2,
+      "evidence": ".local/openai-directory-20261111/evidence/output-error-focused.log",
+      "commit": "b460474d8c7a724ba00d15dce3d236765a7e1ce3",
+      "deploymentId": "dpl_skjVvZDPJJW3fVQ8hhT6PfL6oPYH",
+      "hostedToolResponses": 10,
+      "hostedSuccessResponses": 8,
+      "hostedExpectedFailures": 2,
+      "hostedSchemaFailures": 0,
+      "hostedAll42ErrorAlternativesVerified": true,
+      "openaiDraftSchemaRediscoveryPending": true,
+      "hostedEvidence": ".local/openai-directory-20261111/evidence/oauth-lifecycle-2026-11-11T17-59-46-367Z.json"
+    },
+    "postOutputCorrectionApplicationCounts": {
+      "checkedAt": "2026-11-11T18:00:44.654Z",
+      "projectId": "lingering-glade-93540258",
+      "jobs": 0,
+      "receipts": 0,
+      "profiles": 1,
+      "consents": 4,
+      "generationQuotes": 0,
+      "oauthSessions": 2,
+      "oauthSessionSetFingerprint": "027e11bd6fa2683f473223560f6ea0ed",
+      "existingOpenaiSessionsUnchanged": true
+    },
+    "pushedOutputCorrectionBranchIsolation": {
+      "commit": "b460474d8c7a724ba00d15dce3d236765a7e1ce3",
+      "normalProjectStatus": "success",
+      "normalProjectDescription": "Canceled by Ignored Build Step",
+      "normalRuntimeDeployed": false,
+      "proofUrl": "https://vercel.com/camgraphes-projects/maxvideoai/TrDneDZ6PfDpweVev9S1YL6eDsX7"
+    }
+  },
+  "archive": {
+    "relativePath": ".local/openai-directory-20261111/package-0.3.14/maxvideoai-openai-directory-0.3.14.zip",
+    "sha256": "46a86cf4251273772e1a699483cb1055139aed7e2f2bda0196bdd47b34e15ade",
+    "members": [
+      "LICENSE",
+      "assets/logo-mark.svg",
+      "checksums.json",
+      "mcp.json",
+      "plugin.json",
+      "scripts/import-reference-files.mjs",
+      "skills/generate/SKILL.md",
+      "skills/generate/agents/openai.yaml",
+      "skills/generate/references/generation-safety.md",
+      "skills/generate/references/reference-inputs.md",
+      "skills/plan/SKILL.md",
+      "skills/plan/agents/openai.yaml",
+      "skills/plan/references/budget-planning.md"
+    ],
+    "memberChecksumsVerified": true
+  },
+  "unchangedAreas": [
+    "frontend/config/model-registry.json",
+    "frontend/config/engine-catalog.json",
+    "frontend/config/model-runtime.json",
+    "frontend/src/server/video-providers",
+    "frontend/src/server/images",
+    "frontend/src/server/generations",
+    "frontend/src/server/studio",
+    "supabase",
+    "pnpm-lock.yaml"
+  ],
+  "scope": {
+    "productionTouched": false,
+    "normalDatabasesAccessed": false,
+    "providerGenerationCalls": 0,
+    "pushed": true,
+    "deployed": true,
+    "submitted": false,
+    "published": false,
+    "providerContacted": false,
+    "newPaidOperations": 6,
+    "cumulativeSpendReconciled": false,
+    "dedicatedAuthRestored": true,
+    "dedicatedEmptyHostingProjectCreated": true,
+    "migrationsAppliedToHostedDatabases": true,
+    "draftUploaded": true,
+    "dedicatedHostingEnvironmentConfigured": true,
+    "dedicatedSecretsRetrievedAndStoredWithOwnerApproval": true,
+    "dedicatedReviewerAuthCreated": true,
+    "dedicatedHostingDeployed": true,
+    "newPaidOperationsDescription": "Neon schema window, first build, first hosted test window, OAuth login window, OAuth grant/scan window, directory description rebuild; not an invoice or transaction count."
+  },
+  "limits": [
+    "Hosted OAuth, PKCE, refreshed token access and diagnostic-session revocation pass. Existing OpenAI grant and both sessions preserved. Full-grant revocation and native ChatGPT functional scenarios remain incomplete.",
+    "No paid provider generations or reviewer video recorded. Provider credentials, reviewer entitlements/media and export workers remain to qualify.",
+    "Core Auth/Neon/S3 credentials are installed on the dedicated project. Provider credentials and workers remain incomplete; eight internal application secrets are installed; configuration checks do not qualify runtime behavior.",
+    "18+ eligibility implemented on the branch and migration applied to the dedicated database; dedicated test deployment only. This is self-attestation, not documentary age verification.",
+    "Applicable account-specific direct-provider clauses still require alignment with the routes used for qualification.",
+    "Current-main account-deletion request behavior retained; full account erasure not executed.",
+    "Vercel sourceFilesOutsideRootDirectory PATCH was rejected and not applied; creation response and current read confirm it was already true by default. No further change needed.",
+    "Latest rescan is Configured/Authorized/Domain verified. Three generic audio further-review findings remain; no specific rationale was returned. Reviewer credentials, demo and paid end-to-end qualification still pending. No functionality removed."
+  ],
+  "portal": {
+    "browser": "Chrome",
+    "organization": "MaxVideoAI",
+    "project": "MaxVideoAI",
+    "residency": "Global",
+    "residencyVerified": true,
+    "identityVerified": true,
+    "identityFlowCompletedByOwner": true,
+    "identityType": "Individual",
+    "identityStatus": "Verified",
+    "identityStatusVerifiedInPortal": true,
+    "identityStatusCheckedAt": "2026-11-11T14:40:00+01:00",
+    "uploadBlockedByIdentityVerification": false,
+    "zipUploaded": true,
+    "settingsChanged": false,
+    "pluginId": "plugin_asdk_app_6af49bb426f08191a95f4331a3cb3739",
+    "appId": "asdk_app_6af49bb426f08191a95f4331a3cb3739",
+    "draftId": "appsub_6af49bb42730819199847f39ad7a8dd0",
+    "draftVersion": "0.3.15",
+    "reviewStatus": "Not submitted",
+    "publicationStatus": "Not published",
+    "metadataStatus": "No findings",
+    "skillsStatus": "Checks passed",
+    "mcpConfiguration": "Configured",
+    "domainVerified": true,
+    "oauthMetadataDiscovered": true,
+    "toolDiscoveryCompleted": true,
+    "reviewInformation": {
+      "positiveCasesComplete": 5,
+      "negativeCasesComplete": 3,
+      "translationsImported": [
+        "fr-FR",
+        "es-ES"
+      ],
+      "releaseNotesImported": true,
+      "missing": [
+        "reviewer credentials",
+        "demo recording URL"
+      ],
+      "realScenariosExecuted": false
+    },
+    "draftStatusCheckedAt": "2026-11-11T17:30:29.278Z",
+    "draftUrl": "https://platform.openai.com/plugins/manage/plugin_asdk_app_6af49bb426f08191a95f4331a3cb3739?tab=mcp&version=appsub_6af49bb42730819199847f39ad7a8dd0&mcp=server%3Amaxvideoai",
+    "skillsStatusVerifiedInPortal": true,
+    "skillsEvidence": ".local/openai-directory-20261111/portal/skills-passed.jpg",
+    "oauthSecretTransmitted": true,
+    "oauthConnected": true,
+    "oauthClientDeclarationMatchesUploadedPackage": true,
+    "oauthRecoveryDiagnostic": {
+      "checkedAt": "2026-11-11T17:30:29.278Z",
+      "originalConnectionClientMissing": true,
+      "downloadedPackageFilesIdentical": 13,
+      "newServerKeyRejected": true,
+      "originalDraftPreserved": true,
+      "diagnosticPluginId": "plugin_asdk_app_6af49bb426f08191a95f4331a3cb3739",
+      "diagnosticDraftId": "appsub_6af49bb42730819199847f39ad7a8dd0",
+      "diagnosticPackageName": "maxvideoai-oauth-test",
+      "diagnosticVersion": "0.3.15",
+      "diagnosticSha256": "9f44db9f5c7d287050a7a10701cfaff763768ce17fbc6704bcff552428907906",
+      "mcpManifestUnchanged": true,
+      "skillsUnchanged": true,
+      "savedConnectionClientRecognized": true,
+      "secretFieldVisible": true,
+      "secretTransmissionApproval": "explicit owner approval received",
+      "secretTransmitted": true,
+      "oauthConnected": true,
+      "callbackKnown": true,
+      "submitted": false,
+      "published": false,
+      "runtimeChanged": true,
+      "databaseReactivated": true,
+      "persistentSqlWrites": true,
+      "authSettingsChanged": true,
+      "evidence": ".local/openai-directory-20261111/evidence/oauth-recovery-diagnosis.json",
+      "secretStoredConfirmedByPortal": true,
+      "callbackUri": "https://chatgpt.com/connector/oauth/jx_aF3Nv59jf",
+      "authorizationReachedReviewerConsent": true,
+      "nextApproval": null,
+      "oauthClientCallbackUpdated": true,
+      "databasePausedAfterLogin": true,
+      "hookActivationAndGrantApproved": true,
+      "databaseReactivatedForGrant": true,
+      "toolDiscoveryCompleted": true,
+      "toolCount": 42,
+      "runtimeChange": "Directory-only wording correction after initial OAuth grant; not the OAuth fix",
+      "databasePausedAfterFinalScan": true,
+      "reconnectUsedExistingGrant": true,
+      "reconnectBlankSecretError": "Portal said blank keeps secret, but saving blank returned mcp_validation for missing static client details; resupplying the same authorized client secret succeeded."
+    },
+    "originalDraft": {
+      "pluginId": "plugin_asdk_app_6af4711f72f08191bf141a80553b9c9d",
+      "appId": "asdk_app_6af4711f72f08191bf141a80553b9c9d",
+      "draftId": "appsub_6af4711f73788191b4b0e16925c30444",
+      "draftVersion": "0.3.14",
+      "draftUrl": "https://platform.openai.com/plugins/manage/plugin_asdk_app_6af4711f72f08191bf141a80553b9c9d?tab=details&version=appsub_6af4711f73788191b4b0e16925c30444",
+      "mcpConfiguration": "Domain verified; OAuth client displayed but Connect reports client ID missing",
+      "toolDiscoveryCompleted": false,
+      "oauthConnected": false
+    },
+    "diagnosticIdentityRequiresReconciliationBeforeSubmission": true,
+    "firstMcpScan": {
+      "checkedAt": "2026-11-11T17:08:32Z",
+      "safetyStatus": "SCANNED_OK",
+      "tools": 42,
+      "findings": [
+        {
+          "tool": "get_model_details",
+          "issues": [
+            "This tool's description appears to compare the plugin with alternatives, disparage them, or instruct the model to prefer this plugin."
+          ]
+        },
+        {
+          "tool": "list_audio_capabilities",
+          "issues": [
+            "This new tool definition needs further review before it can be published."
+          ]
+        },
+        {
+          "tool": "prepare_audio_generation",
+          "issues": [
+            "This new tool definition needs further review before it can be published."
+          ]
+        },
+        {
+          "tool": "confirm_audio_generation",
+          "issues": [
+            "This new tool definition needs further review before it can be published."
+          ]
+        }
+      ],
+      "blockingFilterItemsObserved": 0,
+      "findingSeverityNotInferredFromGenericWording": true,
+      "wordingCorrectionCommit": "95be72898e05ed1ec9c5e8d5fef168847c63c741",
+      "correctionRescan": "completed after metadata rediscovery; get_model_details finding cleared"
+    },
+    "finalMcpScan": {
+      "checkedAt": "2026-11-11T17:30:29.278Z",
+      "scanId": "asdk_app_6af49bb426f08191a95f4331a3cb3739~AppsSDKContinuousScan_fad90b999eb081918d24c6b6eb22586c",
+      "scanTime": "2026-11-11T17:28:57.779265+00:00",
+      "completedAt": "2026-11-11T17:29:04.285946+00:00",
+      "runtimeProblem": null,
+      "toolsReviewed": 42,
+      "modelDetailsReviewComplete": true,
+      "modelDetailsFindings": [],
+      "newWordingVerified": true,
+      "remainingFindings": [
+        {
+          "tool": "compare_generation_prices",
+          "issues": [
+            "This new tool definition needs further review before it can be published."
+          ]
+        },
+        {
+          "tool": "list_audio_capabilities",
+          "issues": [
+            "This new tool definition needs further review before it can be published."
+          ]
+        },
+        {
+          "tool": "prepare_audio_generation",
+          "issues": [
+            "This new tool definition needs further review before it can be published."
+          ]
+        },
+        {
+          "tool": "confirm_audio_generation",
+          "issues": [
+            "This new tool definition needs further review before it can be published."
+          ]
+        },
+        {
+          "tool": "prepare_generation",
+          "issues": [
+            "This new tool definition needs further review before it can be published."
+          ]
+        }
+      ],
+      "blockingFilterItemsObserved": 0,
+      "portalConfigurationBadge": "Configuration incomplete",
+      "incompleteBadgeCauseNotEstablished": true,
+      "authentication": "Authorized",
+      "domainVerified": true,
+      "evidence": ".local/openai-directory-20261111/evidence/openai-final-scan-state.json"
+    },
+    "postErrorSchemaScan": {
+      "checkedAt": "2026-11-11T18:27:11Z",
+      "tools": 42,
+      "remainingTools": [
+        "list_audio_capabilities",
+        "prepare_audio_generation",
+        "confirm_audio_generation"
+      ],
+      "message": "This new tool definition needs further review before it can be published.",
+      "clearedTools": [
+        "compare_generation_prices",
+        "prepare_generation"
+      ],
+      "scannedCompareSchemaIncludesAnyOf": true,
+      "configuration": "Configured",
+      "authentication": "Authorized",
+      "domainVerified": true,
+      "humanReviewSubmitted": false,
+      "evidence": ".local/openai-directory-20261111/evidence/openai-findings-after-error-schema.json"
+    }
+  },
+  "dedicatedAuth": {
+    "projectId": "ajwofjldwawdwtioekuc",
+    "status": "ACTIVE_HEALTHY",
+    "plan": "Free",
+    "oauthServerEnabled": true,
+    "siteUrl": "https://openai-review.maxvideoai.com",
+    "authorizationPath": "/oauth/consent",
+    "dynamicClientRegistration": false,
+    "registeredOAuthApps": 1,
+    "redirectUrls": [],
+    "accessTokenHook": {
+      "schema": "maxvideoai_review_auth",
+      "function": "custom_access_token_hook",
+      "enabled": true,
+      "allowlistedClients": 1,
+      "authAdminExecute": true,
+      "anonExecute": false,
+      "authenticatedExecute": false,
+      "functionalChecksPassed": 8,
+      "functionalChecksRolledBack": true,
+      "authRuntimeVerified": true,
+      "activationApproval": "explicit owner action-time approval received and applied",
+      "roleSimulation": "SET ROLE supabase_auth_admin denied; connector-role functional tests and effective privileges checked separately",
+      "runtimeEvidence": "OpenAI Authorized and authenticated tools/list accepted all 42 tools; token claims not directly retrieved"
+    },
+    "settingsChangedDuringInspection": true,
+    "sqlReadOnly": false,
+    "keyValidation": {
+      "projectId": "ajwofjldwawdwtioekuc",
+      "validKeySettingsStatus": 200,
+      "invalidKeySettingsStatus": 401,
+      "keyAcceptedByGateway": true,
+      "publicJwksStatus": 200,
+      "signingAlgorithms": [
+        "ES256"
+      ],
+      "adminPermissionsExercised": false,
+      "userDataRead": false,
+      "writes": false
+    },
+    "serverKeyType": "existing legacy service_role; private local file and dedicated Vercel Secret",
+    "newApiKeysCreated": false,
+    "reviewerAccount": {
+      "projectId": "ajwofjldwawdwtioekuc",
+      "created": true,
+      "syntheticIdentity": true,
+      "emailConfirmationRequired": false,
+      "adminCreateUserUsed": true,
+      "invitationSent": false,
+      "passwordLoginVerified": true,
+      "verificationSessionSignedOut": true,
+      "mcpOAuthTested": true,
+      "applicationDatabaseSeeded": false,
+      "reviewerReady": false,
+      "userDataFromOtherAccountsRead": false,
+      "explicitOwnerApproval": true,
+      "credentialsInPublicPackage": false,
+      "credentialsEnteredInOpenaiPortal": false,
+      "hostedLoginAndSignOutPassed": true,
+      "legalConsentAcceptedWithOwnerApproval": true
+    },
+    "oauthClient": {
+      "id": "324a5cbd-2929-4ba1-82a6-58083f5ccb33",
+      "method": "client_secret_basic",
+      "redirectUris": [
+        "http://127.0.0.1:8766/callback",
+        "https://chatgpt.com/connector/oauth/jx_aF3Nv59jf"
+      ],
+      "callbackPurpose": "Observed OpenAI callback plus temporary local diagnostic",
+      "openaiCallbackKnown": true,
+      "secretStoredLocally": true,
+      "secretSentToOpenAI": true,
+      "secretDestinationPluginId": "plugin_asdk_app_6af49bb426f08191a95f4331a3cb3739",
+      "secretTransmissionApprovedByOwner": true
+    }
+  },
+  "dedicatedHosting": {
+    "projectId": "prj_UCIR8ODoPEK3bLF30ID94gvyDs5C",
+    "nodeVersion": "22.x",
+    "sourceFilesOutsideRootDirectory": true,
+    "outsideRootSource": "already true in creation response; not changed by refused PATCH",
+    "gitLinked": true,
+    "deployed": true,
+    "localGitGuardPrepared": true,
+    "localDomainProofPrepared": true,
+    "configurationGuardDoesNotCertifyPermissionsOrCosts": true,
+    "environment": {
+      "projectId": "prj_UCIR8ODoPEK3bLF30ID94gvyDs5C",
+      "projectName": "maxvideoai-openai-review-20261111",
+      "variableCount": 37,
+      "secretCount": 12,
+      "configValuesCompared": 24,
+      "publicValuesMatchPreparedPayload": true,
+      "secretValuesReadBack": false,
+      "target": "production of dedicated test project",
+      "gitLinked": true,
+      "deploymentTargets": 0,
+      "directoryChannelEnabled": true,
+      "normalProjectAccessed": false,
+      "newInternalSecrets": 8
+    },
+    "gitLinkApproval": {
+      "status": "explicit owner approval received",
+      "attemptExecuted": true,
+      "reason": "Automatic approval review rejected persistent GitHub repository access and possible automatic deployments",
+      "exactProject": "prj_UCIR8ODoPEK3bLF30ID94gvyDs5C",
+      "firstHostingBudgetEUR": 1,
+      "includedInTotalBudgetEUR": 20
+    },
+    "productionBranch": "codex/openai-directory-20261111",
+    "cronsEnabled": false,
+    "domains": [
+      "openai-review.maxvideoai.com",
+      "openai-mcp.maxvideoai.com"
+    ],
+    "deployment": {
+      "id": "dpl_skjVvZDPJJW3fVQ8hhT6PfL6oPYH",
+      "state": "READY",
+      "source": "git",
+      "sha": "b460474d8c7a724ba00d15dce3d236765a7e1ce3",
+      "target": "production of dedicated test project only",
+      "aliases": [
+        "openai-mcp.maxvideoai.com",
+        "openai-review.maxvideoai.com",
+        "maxvideoai-openai-review-20261111.vercel.app",
+        "maxvideoai-openai-review-20261111-camgraphes-projects.vercel.app",
+        "maxvideoai-openai-review-2026111-git-5cf06b-camgraphes-projects.vercel.app"
+      ]
+    },
+    "projectLevelBuildIsolation": {
+      "registered": true,
+      "buildBranch": "codex/openai-directory-20261111",
+      "otherRefs": "skip",
+      "mainAttemptId": "dpl_BqQ7E43D5P4MSKVbX7GuxVJ7yPhx",
+      "mainAttemptState": "CANCELED"
+    },
+    "firstDeployment": {
+      "id": "dpl_83goM2ssi7ZwKTqCf4uJup52jFXY",
+      "state": "READY",
+      "source": "git",
+      "sha": "5312a21fa05ed6bd0f85f08bca4970b6e5be1f8d",
+      "target": "production of dedicated project only"
+    },
+    "descriptionCorrectionDeployment": {
+      "id": "dpl_FTEAU3LTzoEvTwuJpycAN5Kez2Ed",
+      "state": "READY",
+      "source": "git",
+      "sha": "95be72898e05ed1ec9c5e8d5fef168847c63c741",
+      "target": "production of dedicated test project only",
+      "aliases": [
+        "openai-mcp.maxvideoai.com",
+        "openai-review.maxvideoai.com",
+        "maxvideoai-openai-review-20261111.vercel.app",
+        "maxvideoai-openai-review-20261111-camgraphes-projects.vercel.app",
+        "maxvideoai-openai-review-2026111-git-5cf06b-camgraphes-projects.vercel.app"
+      ]
+    }
+  },
+  "dedicatedStorage": {
+    "checkedAt": "2026-11-11T14:17:16.897109+00:00",
+    "bucket": "maxvideoai-openai-review-20261008-5c187a87",
+    "keyCount": 0,
+    "truncated": false,
+    "returnedBytes": 0,
+    "objectsRead": false,
+    "objectsWritten": false,
+    "scope": "dedicated web IAM credentials; ListObjectsV2 metadata only",
+    "authorization": "explicit owner approval in this chat on 2026-11-11",
+    "completeInventory": true,
+    "historicalSpendReconciled": false,
+    "otherBucketsAccessed": false,
+    "writePermissionsTested": false,
+    "workerCredentialsTested": false
+  },
+  "dedicatedExportCluster": {
+    "name": "maxvideoai-openai-review-export",
+    "runningTasks": 0,
+    "pendingTasks": 0,
+    "services": 0,
+    "tasksStarted": false
+  },
+  "dedicatedDatabase": {
+    "projectId": "lingering-glade-93540258",
+    "endpointId": "ep-orange-lake-b2yfb7ss",
+    "disabled": false,
+    "state": "enabled for qualification; pause after probes",
+    "computeCU": 0.25,
+    "idleSuspendSeconds": 300,
+    "connectionStringPrepared": true,
+    "sqlConnectionOpened": true,
+    "costIndication": {
+      "projectId": "lingering-glade-93540258",
+      "metricTotals": {
+        "compute_unit_seconds": 420,
+        "root_branch_bytes_month": 41692863,
+        "instant_restore_bytes_month": 483774,
+        "public_network_transfer_bytes": 113598
+      },
+      "indicativePublicRateCostUSD": 0.027056,
+      "source": "https://neon.com/pricing.md",
+      "pricePageUpdated": "2026-11-04",
+      "readOn": "2026-11-11",
+      "invoice": false,
+      "vercelMarketplaceBillingReconciled": false,
+      "awsHistoricalBillingReconciled": false,
+      "periods": "October and November 2026, November incomplete",
+      "activated": false,
+      "snapshotBeforeCurrentUpgrade": true
+    },
+    "migrationsApplied": 33,
+    "tables": 138,
+    "poolerVerified": true,
+    "lastUpgradeFinishedAt": "2026-11-11T14:57:38Z",
+    "activationWindow": {
+      "startedAt": "2026-11-11T14:50:54Z",
+      "suspendedAt": "2026-11-11T14:57:38Z",
+      "seconds": 404,
+      "indicativeComputeUSD": 0.002974,
+      "invoice": false
+    },
+    "lastPausedAt": "2026-11-11T18:00:57Z",
+    "hostedTestWindow": {
+      "enabledAt": "2026-11-11T16:06:30Z",
+      "disabledAt": "2026-11-11T16:30:00Z",
+      "computeCU": 0.25,
+      "estimatedMaximumComputeUSD": 0.0104
+    },
+    "oauthGrantScanWindow": {
+      "startedAt": "2026-11-11T17:07:01Z",
+      "suspendedAt": "2026-11-11T17:30:52Z",
+      "computeCU": 0.25,
+      "maximumContinuousComputeUSD": 0.010534,
+      "invoice": false
+    },
+    "oauthLifecycleWindow": {
+      "enabledAt": "2026-11-11T17:38:22Z",
+      "suspendedAt": "2026-11-11T17:46:01Z",
+      "seconds": 459,
+      "computeCU": 0.25,
+      "maximumContinuousComputeUSD": 0.003379,
+      "invoice": false
+    },
+    "outputCorrectionWindow": {
+      "enabledAt": "2026-11-11T17:59:35Z",
+      "suspendedAt": "2026-11-11T18:00:57Z",
+      "seconds": 82,
+      "computeCU": 0.25,
+      "maximumContinuousComputeUSD": 0.000604,
+      "invoice": false
+    },
+    "providerQualificationWindow": {
+      "enabledAt": "2026-11-11T18:22:42Z",
+      "suspendedAt": null
+    }
+  },
+  "latestMainObservedThroughCoordinatedDeployment": "c501acf9ed4e139914a7502c8b3498ce758d59c8",
+  "baseVerifiedAgainstRemoteMainAt": "2026-11-11 before PR #646",
+  "candidateIncludesLatestMain": true,
+  "firstHostingBudget": {
+    "capEUR": 1,
+    "includedInTotalEUR": 20,
+    "buildMinutes": 8.79053,
+    "estimatedBuildUSD": 0.06154,
+    "billingReconciled": false,
+    "excludes": [
+      "storage",
+      "requests",
+      "functions"
+    ],
+    "paidGenerations": 0,
+    "secondBuildMinutes": 7.24822,
+    "secondBuildEstimatedUSD": 0.050738,
+    "totalTwoBuildsEstimatedUSD": 0.112278,
+    "thirdBuildMinutes": 6.4282666667,
+    "thirdBuildEstimatedUSD": 0.044998,
+    "totalThreeBuildsEstimatedUSD": 0.157276
+  },
+  "currentMainIntegration": {
+    "main": "c501acf9ed4e139914a7502c8b3498ce758d59c8",
+    "mergeCommit": "79079b03fd46896fba6d0ca529865c9ef85bf497",
+    "conflicts": false,
+    "focusedTestsPassed": 46,
+    "productionMerged": false
+  },
+  "dedicatedFal": {
+    "resourceId": "ir_2nvjpbVow2ACOApI",
+    "resourceName": "MaxVideoAI-OpenAI-Review-20261111",
+    "installationId": "icfg_CBi8osAgAONokUgpUhsre9Go",
+    "project": "maxvideoai-openai-review-20261111",
+    "target": [
+      "production"
+    ],
+    "envName": "FAL_KEY",
+    "explicitOwnerCreationAndConnectionApproval": true,
+    "resourceCreated": true,
+    "connected": true,
+    "newSubscriptionAccepted": false,
+    "topupPerformed": false,
+    "paidCalls": 0,
+    "billingScope": "existing prepaid installation, shared balance; test resource is not a separate financial cap",
+    "newDeploymentRequired": true
+  }
+}

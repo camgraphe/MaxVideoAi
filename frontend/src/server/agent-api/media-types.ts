@@ -4,6 +4,7 @@ export type AgentMediaKind = CanonicalReferenceMediaKind;
 
 export type AgentMediaItem = {
   assetId: string;
+  sourceJobId: string | null;
   kind: AgentMediaKind;
   label: string | null;
   width: number | null;

@@ -6899,7 +6899,7 @@
       "privacyLabel": "Política de privacidad",
       "suffix": ".",
       "error": "Debes aceptar los términos y la política de privacidad para continuar.",
-      "age": "Confirmo que tengo al menos {age} años.",
+      "age": "Confirmo que tengo al menos {age} años y he alcanzado la mayoría de edad en mi país.",
       "marketing": "Sí, quiero recibir correos ocasionales sobre el producto. Puedo cancelar cuando quiera."
     },
     "signupSuggestion": {

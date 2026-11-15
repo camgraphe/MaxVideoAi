@@ -18,12 +18,12 @@ test('charge transaction checks the current revision and locks out a concurrent 
   Object.assign(process.env, { DATABASE_URL: db.databaseUrl, NODE_ENV: 'development', PRICING_SANDBOX: '1' });
   try {
     await db.pool.query('CREATE TABLE app_customer_tariff_state (singleton BOOLEAN PRIMARY KEY, revision BIGINT, active BOOLEAN); INSERT INTO app_customer_tariff_state VALUES (TRUE, 7, TRUE)');
-    await assert.rejects(withDbTransaction((executor) => lockQuotedCustomerTariffRevision(executor, 'pika-text-to-video',
+    await assert.rejects(withDbTransaction((executor) => lockQuotedCustomerTariffRevision(executor, 'seedance-2-0-mini',
       { meta: { pricingMode: 'manual_tariff', customerTariffRevision: 6 } })), /review the current price/i);
-    await assert.rejects(withDbTransaction((executor) => lockQuotedCustomerTariffRevision(executor, 'pika-text-to-video',
+    await assert.rejects(withDbTransaction((executor) => lockQuotedCustomerTariffRevision(executor, 'seedance-2-0-mini',
       { meta: {} })), /review the current price/i);
     await withDbTransaction(async (executor) => {
-      await lockQuotedCustomerTariffRevision(executor, 'pika-text-to-video', snapshot);
+      await lockQuotedCustomerTariffRevision(executor, 'seedance-2-0-mini', snapshot);
       const editor = await db.pool.connect();
       try {
         await editor.query("SET lock_timeout = '50ms'");
@@ -31,7 +31,7 @@ test('charge transaction checks the current revision and locks out a concurrent 
       } finally { editor.release(); }
     });
     await db.pool.query('UPDATE app_customer_tariff_state SET revision = 8');
-    await assert.rejects(withDbTransaction((executor) => lockQuotedCustomerTariffRevision(executor, 'pika-text-to-video', snapshot)), /review the current price/i);
+    await assert.rejects(withDbTransaction((executor) => lockQuotedCustomerTariffRevision(executor, 'seedance-2-0-mini', snapshot)), /review the current price/i);
   } finally {
     await getDb().end().catch(() => undefined); await db.cleanup();
     for (const [key, value] of Object.entries(old)) { if (value === undefined) delete process.env[key]; else process.env[key] = value; }

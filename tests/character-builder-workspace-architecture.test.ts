@@ -399,7 +399,29 @@ test('saved library presentation and overlays stay outside the workspace orchest
   assert.match(transitions, /beginDraftIntent/);
   assert.match(transitions, /buildStudioLookDraft/);
   const runner = readFileSync(join(root, 'frontend/src/server/tools/character-builder/runner.ts'), 'utf8');
-  assert.match(runner, /sanitizeRequest\(await resolveStudioLookRequest\(input\)\)/);
+  assert.match(runner, /prepareCharacterBuilderRequest\(await resolveStudioLookRequest\(input\)\)/);
+});
+
+test('web and assistant authoring share pure character recipe preparation', () => {
+  const preparation = readFileSync(join(root, 'frontend/src/server/tools/character-builder/preparation.ts'), 'utf8');
+  const runner = readFileSync(join(root, 'frontend/src/server/tools/character-builder/runner.ts'), 'utf8');
+  const authoring = readFileSync(join(root, 'frontend/server/character-studio/authoring-preparation.ts'), 'utf8');
+  const recovery = readFileSync(join(root, 'frontend/server/character-studio/authoring.ts'), 'utf8');
+
+  assert.match(preparation, /import \{ sanitizeRequest \} from '\.\/sanitize'/);
+  assert.match(preparation, /const request = sanitizeRequest\(input\)/);
+  assert.match(preparation, /const prompt = buildPrompt\(request\)/);
+  assert.match(preparation, /const settingsSnapshot = buildSettingsSnapshot\(request,/);
+  assert.doesNotMatch(preparation, /executeImageGeneration|resolveStudioLookRequest|createCreatorGenerationService/, 'pure preparation must not take over ownership, billing, or provider execution');
+
+  assert.match(runner, /from '\.\/preparation'/);
+  for (const transport of [authoring, recovery]) {
+    assert.match(transport, /from '@\/server\/tools\/character-builder\/preparation'/);
+  }
+  for (const transport of [runner, authoring, recovery]) {
+    assert.match(transport, /prepareCharacterBuilderRequest\(/, 'web, assistant preparation, and quote revalidation must use the same recipe owner');
+    assert.doesNotMatch(transport, /\bsanitizeRequest\b/, 'transports must not fork recipe sanitization');
+  }
 });
 
 test('Recast portrait selection delegates its account library and dialog outside the composer', () => {

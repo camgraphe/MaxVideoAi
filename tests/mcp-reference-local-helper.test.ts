@@ -169,3 +169,38 @@ test('local helper rejects an oversized private file before allocating its conte
   assert.equal(reads, 0);
   assert.equal(requests, 0);
 });
+
+test('the local helper accepts the exact dedicated handoff and keeps foreign-origin tokens off the network', async () => {
+  const url = `https://openai-review.maxvideoai.com/mcp/reference-upload/${firstToken}`;
+  assert.deepEqual(parseReferenceImportArguments(['--upload', url, '/private/reference.png']), [
+    { handoffUrl: url, filePath: '/private/reference.png' },
+  ]);
+  for (const bad of [
+    `https://openai-review.maxvideoai.com.attacker.test/mcp/reference-upload/${firstToken}`,
+    `https://openai-review.maxvideoai.com:444/mcp/reference-upload/${firstToken}`,
+    `http://openai-review.maxvideoai.com/mcp/reference-upload/${firstToken}`,
+    `${url}?forward=evil`, `${url}#copied`,
+    `https://user:password@openai-review.maxvideoai.com/mcp/reference-upload/${firstToken}`,
+  ]) {
+    assert.throws(() => parseReferenceImportArguments(['--upload', bad, '/private/reference.png']), /trusted MaxVideoAI upload link/);
+  }
+  const requests: Array<{ url: string; authorization: string | null }> = [];
+  const result = await importReferenceFiles([{ handoffUrl: url, filePath: '/private/reference.png' }], {
+    statFile: async () => ({ isFile: () => true, size: 4 }),
+    readFile: async () => Buffer.from('test'),
+    fetchImpl: async (input, init) => {
+      const requestUrl = String(input);
+      requests.push({ url: requestUrl, authorization: new Headers(init?.headers).get('authorization') });
+      if (requestUrl.endsWith('/start')) return Response.json({ ok: true, uploadId: 'review-upload', chunkBytes: 4, totalParts: 1 });
+      if (requestUrl.endsWith('/part')) return Response.json({ ok: true });
+      if (requestUrl.endsWith('/complete')) return Response.json({ ok: true, assetId: `ma_${'a'.repeat(32)}`, mediaKind: 'image' });
+      throw new Error('Unexpected upload path');
+    },
+  });
+  assert.deepEqual(requests.map((request) => request.url), ['start', 'part', 'complete'].map((stage) => `https://openai-review.maxvideoai.com/api/mcp/reference-upload/${firstToken}/${stage}`));
+  assert.ok(requests.every((request) => request.authorization === `Bearer ${firstToken}`));
+  assert.deepEqual(result, {
+    assets: [{ index: 0, fileName: 'reference.png', assetId: `ma_${'a'.repeat(32)}`, mediaKind: 'image' }],
+    failures: [],
+  });
+});

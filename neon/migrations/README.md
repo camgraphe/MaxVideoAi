@@ -247,3 +247,13 @@ Updating a Character Studio preview requires checking both Milo migrations even
 when the Character Studio 93–95 migrations are already present. Production keeps
 its independently verified migration state; preview qualification does not apply
 DDL to production.
+
+
+Migration ordering uses the numeric filename prefix, then the complete filename
+for independent migrations with the same prefix. The official runner preserves
+that order across the two/three-digit boundary: `30_mcp_paid_generation.sql`
+precedes every `99_*.sql`, then `100_audio_generation_dispatch.sql` and
+`101_character_builder_quotes.sql`. The prefix alone is not a unique migration
+identity; do not rename an already applied independent migration merely because
+another file shares its number. Test ordering with the fake-psql runner regression,
+never by applying the complete directory to a live database for a check.

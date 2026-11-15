@@ -60,7 +60,7 @@ export function ImageQuoteCard({
   return (
     <div className={styles.quote} aria-label={t('Creation quote', 'Devis de création', "Presupuesto de creación")}>
       <div className={styles.quoteTop}>
-        <span>{quote.recast ? 'Character Recast' : presentation.title}</span>
+        <span>{quote.characterBuilder?'Character Builder':quote.recast ? 'Character Recast' : presentation.title}</span>
         <strong>{price}</strong>
       </div>
       <p className={styles.muted}>
@@ -84,13 +84,13 @@ export function ImageQuoteCard({
       </p>}
       {assemblyError&&!['STUDIO_REVISION_CONFLICT','EXTENSION_SOURCE_CHANGED'].includes(assemblyError)&&turn.extensionAssembly?.state==='pending'&&onRetryAssembly&&<button onClick={onRetryAssembly}>{t('Retry assembly','Reprendre l’assemblage', "Reintentar montaje")}</button>}
       <details>
-        <summary>{t('View direction and settings', 'Voir la direction et les réglages', "Ver dirección y ajustes")}</summary>
+        <summary>{quote.characterBuilder?t('View character recipe','Voir la recette du personnage','Ver receta del personaje'):t('View direction and settings', 'Voir la direction et les réglages', "Ver dirección y ajustes")}</summary>
         <p style={{whiteSpace:'pre-wrap'}}>{presentation.direction}</p>
       </details>
       {!failed&&quote.summary.surface==='video'&&quote.summary.engineId==='kling-v4'&&Array.isArray(quote.summary.settings.multiPrompt)&&onEditShotPlan&&quote.state==='prepared'&&<StudioShotPlanEditor
         key={quote.quoteId} engineId={quote.summary.engineId} shots={quote.summary.settings.multiPrompt} locale={locale==='fr'?'fr':'en'} busy={busy}
         onEditing={()=>setEditingShots(true)} onDraft={onEditShotPlan}/>}
-      {!failed && (quote.state === 'prepared' || expired) && !quote.recast && (
+      {!failed && (quote.state === 'prepared' || expired) && !quote.recast && !quote.characterBuilder && (
         <p className={styles.muted}>
           {t('Want a different model, resolution, duration or budget? Ask for a new quote to compare prices and possible savings.',
             'Envie d’un autre modèle, d’une autre résolution ou durée, ou d’un autre budget ? Demandez un nouveau devis pour comparer les tarifs et les économies possibles.', "¿Quieres otro modelo, resolución, duración o presupuesto? Pide un nuevo presupuesto para comparar precios y posibles ahorros.")}
@@ -113,12 +113,14 @@ export function ImageQuoteCard({
           <p>{safetyHelp.next}</p>
           <a href={safetyHelp.policyUrl} target="_blank" rel="noopener noreferrer">{safetyHelp.policy}</a>
         </details>}
-      </> : quote.recast?.confirmationEnabled === false && (quote.state==='prepared'||expired)
+      </> : quote.characterBuilder?.confirmationEnabled===false&&(quote.state==='prepared'||expired)
+        ? <p className={styles.muted}>{t('Character Builder confirmation is currently unavailable.','La confirmation Character Builder est actuellement indisponible.','La confirmación de Character Builder no está disponible en este momento.')}</p>
+        : quote.recast?.confirmationEnabled === false && (quote.state==='prepared'||expired)
         ? <p className={styles.muted}>{t('Recast confirmation is currently unavailable.','La confirmation Recast est actuellement indisponible.','La confirmación de Recast no está disponible en este momento.')}</p>
         : editingShots ? <p className={styles.muted}>{t('Send the revised request to prepare a new quote before confirming.','Envoyez la demande révisée pour préparer un nouveau devis avant de confirmer.', "Envía la solicitud revisada para preparar un nuevo presupuesto antes de confirmar.")}</p> : ready ? (
         <>
           <button className={styles.primary} onClick={onConfirm}>
-            {quote.recast ? t('Confirm Recast','Confirmer Recast','Confirmar Recast') : presentation.create} · {price}
+            {quote.characterBuilder?t('Confirm character','Confirmer le personnage','Confirmar personaje'):quote.recast ? t('Confirm Recast','Confirmer Recast','Confirmar Recast') : presentation.create} · {price}
           </button>
           <small>{t('Charged only when you confirm.', 'Ce montant est débité uniquement à la confirmation.', "Solo se cobra cuando confirmas.")}</small>
         </>

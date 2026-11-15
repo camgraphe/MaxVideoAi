@@ -1,4 +1,6 @@
 'use client';
+
+import { audioJobMediaUrl } from '@/lib/audio-job-media';
 import { findElevenVoice } from '@/lib/audio-eleven-voices';
 import type { ReactNode } from 'react';
 import { Download, RotateCcw } from 'lucide-react';
@@ -12,9 +14,9 @@ export function AudioCreationResults({ copy, result, pending, onReuse, children 
     {pending > 0 ? <div className={styles.status} role="status">{copy.generating}{pending > 1 ? ` (${pending})` : ''}<small>{copy.generatingHint}</small></div> : null}
     {result?.audioUrl || result?.videoUrl ? <article className={styles.player}>
       <strong>{result.engineLabel ?? copy.output}</strong>
-      {result.videoUrl ? <video key={result.videoUrl} controls preload="none" src={result.videoUrl} poster={result.thumbUrl ?? undefined} /> : null}
-      {result.audioUrl ? <audio key={result.audioUrl} controls preload="none" src={result.audioUrl} aria-label={copy.output} /> : null}
-      <div className={styles.playerActions}><a href={result.audioUrl ?? result.videoUrl ?? ''} target="_blank" rel="noreferrer" download aria-label={copy.download} title={copy.download}><Download size={18} aria-hidden /></a>{result.settingsSnapshot ? <button type="button" onClick={onReuse} aria-label={copy.reuse} title={copy.reuse}><RotateCcw size={18} aria-hidden /></button> : null}</div>
+      {result.videoUrl ? <video key={result.videoUrl} controls preload="none" src={audioJobMediaUrl(result.jobId, 'video')} poster={result.thumbUrl ?? undefined} /> : null}
+      {result.audioUrl ? <audio key={result.audioUrl} controls preload="none" src={audioJobMediaUrl(result.jobId, 'audio')} aria-label={copy.output} /> : null}
+      <div className={styles.playerActions}><a href={audioJobMediaUrl(result.jobId, result.audioUrl ? 'audio' : 'video')} target="_blank" rel="noreferrer" download aria-label={copy.download} title={copy.download}><Download size={18} aria-hidden /></a>{result.settingsSnapshot ? <button type="button" onClick={onReuse} aria-label={copy.reuse} title={copy.reuse}><RotateCcw size={18} aria-hidden /></button> : null}</div>
       <details className={styles.metadata}><summary>{copy.details}</summary><dl>
         {result.settingsSnapshot?.elevenVoiceId ? <><dt>{copy.voice}</dt><dd>{findElevenVoice(result.settingsSnapshot.elevenVoiceId)?.name ?? result.settingsSnapshot.elevenVoiceId}</dd></> : null}
         <dt>Job</dt><dd>{result.jobId}</dd>

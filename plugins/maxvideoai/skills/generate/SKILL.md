@@ -1,7 +1,7 @@
 ---
 name: generate
 description: |
-  Generate AI video or image media with MaxVideoAI. Use when: a selected AI video or image request needs an exact price or exact quote, explicit approval of a fresh quote, a generation action, job status, result presentation, or result recovery. Includes animating an image and creating a YouTube Short, Reel, TikTok, or ad from a concrete request. Chain from plan after a model is chosen, or use directly when the request is already concrete. NOT for: open-ended project planning, model comparison, or a budget or pricing estimate before a request is selected (use plan).
+  Generate AI video or image media with MaxVideoAI. Use when: a selected AI video or image request needs an exact price or exact quote, explicit approval of a fresh quote, a generation action, job status, result presentation, or result recovery. Includes animating an image and creating a YouTube Short, Reel, TikTok, or ad from a concrete request. Also use for a selected audio or voice, music or SFX request, Character Studio identity or look creation, Recast, creator tools, subtitles, and a saved Studio edit or export. Chain from plan after a model is chosen, or use directly when the request is already concrete. NOT for: open-ended project planning, model comparison, or a budget or pricing estimate before a request is selected (use plan).
 ---
 
 # Generate with MaxVideoAI
@@ -164,6 +164,11 @@ that quote and direct the user to the exact returned MaxVideoAI destination.
 Payment stays on MaxVideoAI. The old quote becomes invalid. After the user says
 funding is complete, call `get_account_status`, then `prepare_generation` again,
 show the fresh exact quote, and wait for explicit approval before confirmation.
+
+## Other media workflows
+
+For Audio, Character Studio, Recast, creator tools, subtitles or Studio edit/export,
+read [the selected workflow](references/extended-workflows.md) for discovery, quote and recovery tools.
 
 ## Failure policy
 

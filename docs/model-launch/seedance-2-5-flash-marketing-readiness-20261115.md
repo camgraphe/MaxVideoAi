@@ -1,6 +1,7 @@
 # Seedance 2.5 Flash marketing readiness — 15 November 2026
 
-This audit covers the `codex/seedance-25-flash` candidate. The separate model-page
+This audit covers the `codex/seedance-25-flash` candidate, synchronized with
+`main` through `3d49f113f`. The separate model-page
 design task owns the final visual assembly and editorial renders. No production
 publication, tariff activation or paid render was performed during this audit.
 
@@ -45,7 +46,7 @@ pending editorial videos.
 
 ## Verification on this candidate
 
-- Full build passed: **1,038 generated pages**, including the registry, machine-SEO
+- Full build passed after synchronization: **1,039 generated pages**, including the registry, machine-SEO
   and public-media prebuild checks. Seven existing build warnings remain.
 - **72 rendered routes** passed in EN/FR/ES: model, six VS, eight Best-for, examples
   hub/family, comparison/Best hubs, benchmark, pricing, models hub, PAYG and home.
@@ -72,7 +73,18 @@ pending editorial videos.
   attribution/curation and MCP guidance.
 - **25 disposable-PG17 tests** passed: catalog pagination, admin curation,
   independent marketing publication, canonical price propagation and all
-  **6,804** native Seedance tariff classes.
+  **6,804** native Seedance tariff classes. This complete selection was rerun
+  successfully after synchronization, as were the 72 routes and delivery checks.
+- All eleven conflicts with `main` were resolved. Flash remains in the active
+  catalogs while Pika's retirement and frozen historical pricing replay are
+  preserved. **381 tests** covering the affected catalog, tariff, public-pricing
+  and Studio contracts passed.
+- The final full fast run recorded **11,404 passes, one skip and two failures**.
+  One is the unchanged fifteen-record GitHub proof freshness gate described
+  below. The other was an architecture test scanning a temporary `.next` folder
+  concurrently removed by the build; all **three** tests in that file passed
+  when rerun after the build completed. The proof freshness gate remains open;
+  the complete fast lane is not claimed green.
 - Frontend lint, public-exposure checks, configured launch-asset projections and
   `git diff --check` passed.
 
@@ -89,8 +101,8 @@ production customer transaction or field Core Web Vitals.
 2. Refresh the production pricing snapshot and activate the prepared Flash ×1.6
    and standard 2.5 ×2 grids through the existing admin workflow. Complete all
    native batch receipts/cache refreshes and verify displayed current prices.
-3. Reconcile the final combined candidate with current `main` and pass required
-   Quality CI. The earlier full fast run's unrelated GitHub marketing-proof
+3. Keep the final combined design/integration candidate current with `main` and
+   pass required Quality CI. The full fast run's unrelated GitHub marketing-proof
    freshness failure still needs its normal evidence review; this audit does not
    advance those proof dates or claim that gate passed.
 4. Follow the repository delivery policy and verify both production domains after

@@ -264,6 +264,10 @@ export async function collectPolicyFingerprintInput(): Promise<PolicyFingerprint
         )), 'utf8'),
       },
       references: {
+        'generate/extended-workflows.md': readFileSync(fileURLToPath(new URL(
+          '../../../plugins/maxvideoai/skills/generate/references/extended-workflows.md',
+          import.meta.url
+        )), 'utf8'),
         'generate/generation-safety.md': readFileSync(fileURLToPath(new URL(
           '../../../plugins/maxvideoai/skills/generate/references/generation-safety.md',
           import.meta.url

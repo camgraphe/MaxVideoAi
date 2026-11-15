@@ -3,7 +3,7 @@ import type { AgentPrincipal } from './principal';
 import { AgentApiError } from './errors';
 import { getActiveAccountRestriction } from '@/server/fraud-cleanup';
 import { createCreatorOperationsService } from '@/server/tools/creator-operations';
-import { listCreatorToolProfiles } from '@/server/tools/creator-profiles';
+import { readCreatorToolDiscovery } from '@/server/tools/creator-discovery';
 import { createSubtitleOperationsService } from '@/server/subtitles/operations';
 import { subtitleRepository } from '@/server/subtitles/repository';
 import { serializeSubtitles } from '@/lib/subtitles/serialize';
@@ -30,7 +30,8 @@ export function asCreatorAgentError(error: unknown): AgentApiError {
   if (code.includes('UNAVAILABLE') || code.startsWith('MISSING_')) return new AgentApiError('ENGINE_UNAVAILABLE', 'This tool is currently unavailable.');
   return new AgentApiError('PARAMETER_INVALID', 'Check the selected media, duration, settings and document revision.');
 }
-export function createAgentCreatorToolsService(options: { enabled: boolean }): CreatorMcpServices {
+export function createAgentCreatorToolsService(options: { enabled: boolean; accountUrl: string; requestOrigin?:string }): CreatorMcpServices {
+  const delivery = (principal:AgentPrincipal) => options.requestOrigin ? {principal,origin:options.requestOrigin} : undefined;
   const creators = (principal: AgentPrincipal) => createCreatorOperationsService(principal, options);
   const subtitles = (principal: AgentPrincipal) => createSubtitleOperationsService(principal, options);
   async function authorize(principal: AgentPrincipal) {
@@ -45,11 +46,7 @@ export function createAgentCreatorToolsService(options: { enabled: boolean }): C
   }
   return {
     async list() {
-      return { tools: CREATOR_TOOL_IDS.map(id => ({ id, source: id === 'subtitles' ? ['audio', 'video']
-        : id === 'lip-sync' ? ['image+audio', 'video+audio'] : id === 'motion-transfer' ? ['image+video'] : [id === 'product-photo-editor' ? 'image' : 'video'],
-        profiles: id === 'subtitles' ? [{ id: 'scribe-v2', editing: 'text, timing and style; no new transcription', exports: ['srt', 'vtt', 'mp4 from video source'] }]
-          : listCreatorToolProfiles(options).filter(profile => profile.toolId === id),
-      })), requiresExactQuoteApproval: true, statusPolling: 'Follow retry.afterSeconds; null ends automatic polling.' };
+      return readCreatorToolDiscovery(options);
     },
     async prepare(value, principal) {
       await authorize(principal);
@@ -63,10 +60,10 @@ export function createAgentCreatorToolsService(options: { enabled: boolean }): C
     async confirm(input, principal) {
       await authorize(principal);
       const result = await (input.toolId === 'subtitles' ? subtitles(principal) : creators(principal)).confirm({ operationId: input.operationId, confirmed: input.confirmed });
-      return withRetry(await withCreatorMediaReadAccess(principal.userId, result));
+      return withRetry(await withCreatorMediaReadAccess(principal.userId, result,delivery(principal)));
     },
     async status(input, principal) {
-      return withRetry(await withCreatorMediaReadAccess(principal.userId, await (input.toolId === 'subtitles' ? subtitles(principal) : creators(principal)).status(input.operationId)));
+      return withRetry(await withCreatorMediaReadAccess(principal.userId, await (input.toolId === 'subtitles' ? subtitles(principal) : creators(principal)).status(input.operationId),delivery(principal)));
     },
     async readDocument(input, principal) { return { document: await readDocument(input, principal) }; },
     async editDocument(input, principal) {

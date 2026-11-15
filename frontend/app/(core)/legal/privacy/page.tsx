@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { LegalVersionBadge } from '@/components/legal/LegalVersionBadge';
-import { formatLegalDate, getLegalDocument } from '@/lib/legal';
+import { formatLegalDate, getLegalDocument, LEGAL_FALLBACK_VERSIONS } from '@/lib/legal';
 import type { AppLocale } from '@/i18n/locales';
 import { PrivacyArticle } from './_components/PrivacyArticle';
 import { HEADER_COPY, METADATA_COPY } from './_lib/privacy-page-copy';
@@ -28,7 +28,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function PrivacyPage() {
   const locale = await resolveLocale();
   const document = await getLegalDocument('privacy');
-  const version = document?.version ?? '2025-10-26';
+  const version = document?.version ?? LEGAL_FALLBACK_VERSIONS.privacy;
   const effective = formatLegalDate(document?.publishedAt ?? `${version}T00:00:00Z`, locale);
   const header = HEADER_COPY[locale] ?? HEADER_COPY.en;
   const links = {

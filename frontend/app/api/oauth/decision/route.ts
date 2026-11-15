@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getMcpRequestHost } from '@/lib/mcp-host-routing';
 import { createSupabaseRouteClient } from '@/lib/supabase-ssr';
+import { AGE_ATTESTATION_VERSION } from '@/lib/legal-policy';
+import { recordUserConsents } from '@/server/legal-consents';
 import * as mcpFunnel from '@/server/agent-api/mcp-funnel';
 import { isMcpFoundationFeatureEnabled } from '@/server/mcp/feature-access';
 import {
@@ -47,6 +49,21 @@ export async function POST(request: NextRequest) {
     return jsonError('authorization_failed', 400);
   }
   const oauthClientId = authorization.data.client.id;
+
+  if (decision === 'approve') {
+    if (form?.get('age_confirmed') !== 'true') return jsonError('adult_confirmation_required', 422);
+    try {
+      await recordUserConsents({
+        userId: user.id,
+        entries: [{ docKey: 'age_attestation', docVersion: AGE_ATTESTATION_VERSION, accepted: true, source: 'oauth' }],
+        defaultSource: 'reconsent',
+        userAgent: request.headers.get('user-agent'),
+        ip: request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? null,
+      });
+    } catch {
+      return jsonError('consent_storage_unavailable', 503);
+    }
+  }
 
   const result =
     decision === 'approve'

@@ -18,7 +18,7 @@ import type { AgentPublicGenerationEngine } from "../frontend/src/server/agent-a
 
 for (const scenario of [
   { engineId: 'gpt-image-2-5-flare', mode: 'i2i' },
-  ...['gpt-image-2-6-flare', 'gpt-image-2-6-sunburst'].flatMap(engineId =>
+  ...['gpt-image-2-5-sunburst', 'gpt-image-2-6-flare', 'gpt-image-2-6-sunburst'].flatMap(engineId =>
     ['t2i', 'i2i'].map(mode => ({ engineId, mode }))),
 ]) test(`${scenario.engineId}/${scenario.mode} keeps the prepared snapshot through Studio and MCP confirmation`, async (t) => {
   const pg = await startDisposablePostgres("studio-flare-edit");
@@ -120,6 +120,15 @@ for (const scenario of [
       assert.equal(provider.captures.filter(call => call.quoteId === prepared.quoteId).length, 1);
       const capture = provider.captures.find(call => call.quoteId === prepared.quoteId)!;
       assert.equal(capture.body.engineId, scenario.engineId);
+      if (scenario.engineId === 'gpt-image-2-5-sunburst') {
+        const stored = (await pg.pool.query('SELECT settings_snapshot FROM app_jobs WHERE job_id=$1', [prepared.quoteId])).rows[0];
+        assert.deepEqual(stored.settings_snapshot.settings, request.settings);
+        assert.equal(stored.settings_snapshot.engineId, scenario.engineId);
+        const recovered = transport === 'studio' ? await studio.recover(prepared.quoteId)
+          : await mcp.getGenerationStatus!({jobId: prepared.quoteId}, principal('flare-owner'));
+        assert.equal(recovered?.jobId, prepared.quoteId);
+        assert.equal(provider.captures.filter(call => call.quoteId === prepared.quoteId).length, 1, 'Recovery must not dispatch again');
+      }
       if (gpt26) {
         assert.equal(prepared.price.amountCents, scenario.mode === 't2i' ? 10 : 13);
         assert.equal(capture.body.complexity, 'high');

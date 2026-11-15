@@ -1,0 +1,17 @@
+{
+  "projectId": "prj_UCIR8ODoPEK3bLF30ID94gvyDs5C",
+  "teamId": "team_rUdjN9tY7X7x1VLMOHQ1Pv0s",
+  "gitOwner": "camgraphe",
+  "gitRepository": "MaxVideoAi",
+  "gitBranch": "codex/openai-directory-20261111",
+  "profile": "dedicated-qualification",
+  "primaryOrigin": "https://openai-review.maxvideoai.com",
+  "directoryOrigin": "https://openai-mcp.maxvideoai.com",
+  "supabaseUrl": "https://ajwofjldwawdwtioekuc.supabase.co",
+  "databaseHosts": [
+    "ep-orange-lake-b2yfb7ss.c-6.eu-central-1.aws.neon.tech",
+    "ep-orange-lake-b2yfb7ss-pooler.c-6.eu-central-1.aws.neon.tech"
+  ],
+  "storageBucket": "maxvideoai-openai-review-20261008-5c187a87",
+  "storageRegion": "eu-central-1"
+}

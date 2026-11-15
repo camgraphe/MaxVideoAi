@@ -1,3 +1,4 @@
+import {STUDIO_CHARACTER_LIBRARY_DIRECTOR_TOOLS} from './conversation-character-authoring-contract';
 import { z } from 'zod';
 import { RECAST_FRAMINGS, RECAST_RESOLUTIONS } from '@/lib/character-studio-recast-format';
 import { mediaExcerptDuration } from '@/lib/media-excerpt-timing';
@@ -58,6 +59,7 @@ const trackProperty = (kind:'audio'|'video') => ({anyOf:[
 const imageRefs = conversationMediaRefProperties(true,['image']).anyOf;
 
 export const STUDIO_CHARACTER_DIRECTOR_TOOLS = [
+  ...STUDIO_CHARACTER_LIBRARY_DIRECTOR_TOOLS,
   {action:'character.list',name:'character_list',description:'Find saved Character Studio identities by exact name, case-insensitively. Use null name to browse, null cursor for the first page. Duplicate names have distinct IDs. No generation or wallet charge.',properties:{name:optionalName,cursor:optionalId}},
   {action:'character.get',name:'character_get',description:'Read one saved character by exact ID and find a saved look by exact name, case-insensitively. Use null lookName to browse and null lookCursor for the first page. Ask which look if multiple match. No generation or wallet charge.',properties:{characterId:idProperty,lookName:optionalName,lookCursor:optionalId}},
   {action:'recast.prepare',name:'recast_prepare',description:'Prepare one exact Character Studio Recast quote. Use an exact saved character and look ID, an attached portrait or a ready project image. Select each optional video and audio range independently, preserving the requested source times. Each passage is up to 15 seconds and video passage plus output is up to 30 seconds. Product, video and audio must be attached or ready project outputs. Preserve exact dialogue and direction, output duration, resolution and framing. Null for omitted sources; never use a URL. Success ends this turn for client confirmation.',properties:{

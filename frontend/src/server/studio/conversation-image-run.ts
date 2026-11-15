@@ -1,3 +1,8 @@
+import {trustedAccountUrlFromOrigin} from '@/server/agent-api/account-destinations';
+import {saveStudioConversationCharacter,prepareStudioConversationCharacterBuilder,type StudioCharacterBuilderFactory} from './conversation-character-authoring';
+import {createCharacterBuilderAuthoringService} from '@/server/character-studio/authoring';
+import {createStudioCreatorToolsService,type StudioCreatorFactory} from './conversation-creator';
+import {isCreatorExecutionEnabled} from '@/server/tools/creator-execution-gates';
 import {STUDIO_TASK_POLICY_VERSION,STUDIO_TASK_V3_POLICY_VERSION} from '@/lib/studio/task-budget-contract';
 import {createCharacterStudioIntegration} from '@/server/character-studio/integration';
 import {prepareStudioConversationRecast,type StudioCharacterFactory} from './conversation-character';
@@ -79,9 +84,16 @@ export async function resumeStudioImageAction(options: {
   references: ResolvedReference[]; referenceFingerprint: string; enabled: boolean; factory: ImageGenerationFactory;
   factories?: StudioMediaFactories; mediaEnabled?: boolean;editingEnabled?:boolean;
   characterEnabled?:boolean;characterFactory?:StudioCharacterFactory;
+  characterBuilderEnabled?:boolean;characterBuilderFactory?:StudioCharacterBuilderFactory;requestOrigin?:string;
 }) {
   const {actor, turn, factory} = options;
   const draft = turn.draft_json;
+  if(draft?.characterBuilder){
+    const callId='resume-quote-'+turn.lease_id;
+    const prior=await beginStudioAction(actor,turn,callId,draft.characterBuilder);
+    if(prior)return prior;
+    return prepareStudioConversationCharacterBuilder(options,draft.characterBuilder,callId);
+  }
   if (draft?.recast) {
     if (!options.characterEnabled) throw new AgentApiError('ENGINE_UNAVAILABLE','Studio Recast preparation is unavailable.');
     const callId = 'resume-quote-' + turn.lease_id;
@@ -142,6 +154,8 @@ export async function runStudioImageActions(options: {
   assistancePolicy?: StudioAssistancePolicy;countInputTokens?: (params: ResponseCreateParamsNonStreaming) => Promise<number>;
   factories?: StudioMediaFactories; mediaEnabled?: boolean;editingEnabled?: boolean;exportsEnabled?: boolean;
   characterEnabled?:boolean;characterFactory?:StudioCharacterFactory;
+  characterBuilderEnabled?:boolean;characterBuilderFactory?:StudioCharacterBuilderFactory;
+  creatorEnabled?:boolean;creatorFactory?:StudioCreatorFactory;
   requestOrigin?: string;exportDependencies?: Partial<StudioExportDependencies>;
 }) {
   const {actor, turn, input, factory} = options;
@@ -158,11 +172,17 @@ export async function runStudioImageActions(options: {
   const analysis=createStudioAnalysisService(actor,{assistancePolicy:policy});
   const hasGreetingCheckpoint=studioGreetingReply(input.message,options.references.length>0)
     ? (await query<{exists:boolean}>('SELECT EXISTS(SELECT 1 FROM studio_conversation_responses WHERE user_id=$1 AND project_id=$2 AND request_id=$3) exists',[actor.userId,actor.projectId,turn.request_id]))[0].exists:false;
-  const director = createStudioConversationDirector({model: assistance?.model,runtimePolicy:assistance?.tariff_snapshot?.runtime,modelForNextCall:()=>currentModel,createResponse: options.createResponse, mediaEnabled: options.mediaEnabled,characterEnabled:options.characterEnabled,editingEnabled: options.editingEnabled,exportsEnabled: options.exportsEnabled,analysisEnabled,analysisProfiles:{video:!!analysisPolicy?.video,audio:!!analysisPolicy?.audio},assistanceCreditsEnabled:policy.credits===true,taskExecution:options.taskExecution,localGreetingEnabled:!options.responseReplayOnly&&!hasGreetingCheckpoint});
+  const creator=(options.creatorFactory??createStudioCreatorToolsService)(actor,{enabled:options.enabled&&(options.creatorEnabled??isCreatorExecutionEnabled()),accountUrl:options.requestOrigin,
+    attachedRefs:options.references.map(ref=>({type:'asset' as const,assetId:ref.assetId,kind:ref.mediaKind??'image'}))});
+  const director = createStudioConversationDirector({creatorEnabled:creator.executionEnabled,model: assistance?.model,runtimePolicy:assistance?.tariff_snapshot?.runtime,modelForNextCall:()=>currentModel,createResponse: options.createResponse, mediaEnabled: options.mediaEnabled,characterEnabled:options.characterEnabled,characterBuilderEnabled:options.characterBuilderEnabled,editingEnabled: options.editingEnabled,exportsEnabled: options.exportsEnabled,analysisEnabled,analysisProfiles:{video:!!analysisPolicy?.video,audio:!!analysisPolicy?.audio},assistanceCreditsEnabled:policy.credits===true,taskExecution:options.taskExecution,localGreetingEnabled:!options.responseReplayOnly&&!hasGreetingCheckpoint});
   const character = () => (options.characterFactory ?? createCharacterStudioIntegration)(actor,{executionEnabled:options.characterEnabled===true});
   let currentCallId: string;
-  const execute = createStudioActionExecutor(actor, {referenceFingerprint:options.referenceFingerprint,enabled: options.enabled, generation, factories: options.factories, mediaEnabled: options.mediaEnabled,
+  const execute = createStudioActionExecutor(actor, {accountUrl:options.requestOrigin,referenceFingerprint:options.referenceFingerprint,enabled: options.enabled, generation, factories: options.factories, mediaEnabled: options.mediaEnabled,
+    creator,prepareCreator:action=>creator.prepare(action,async(quote,executor)=>{await completeStudioAction(actor,turn,currentCallId,{ok:true,action:action.action,data:quote},executor);}),
     character:options.characterEnabled ? character() : undefined,
+    saveCharacter:options.characterEnabled?request=>saveStudioConversationCharacter(actor,request,
+      (options.characterBuilderFactory??createCharacterBuilderAuthoringService)(actor,{executionEnabled:options.characterBuilderEnabled===true,accountUrl:trustedAccountUrlFromOrigin(options.requestOrigin)}),character()):undefined,
+    prepareCharacterBuilder:options.characterBuilderEnabled?action=>prepareStudioConversationCharacterBuilder(options,action,currentCallId):undefined,
     prepareRecast:options.characterEnabled ? action=>prepareStudioConversationRecast(options,action,currentCallId) : undefined,
     recallProject:options.taskExecution?text=>recallStudioTaskMemory(actor,text):undefined,
     analysisEnabled,
@@ -223,6 +243,7 @@ export async function runStudioImageActions(options: {
     recover: async quoteId => {
       const saved = (await listImageTurns(actor)).find(turn => turn.quote_id === quoteId);
       if (!saved) throw new AgentApiError('QUOTE_EXPIRED', 'This generation is not available in this conversation.');
+      if(saved.draft_json?.characterBuilder)return (options.characterBuilderFactory??createCharacterBuilderAuthoringService)(actor,{executionEnabled:options.characterBuilderEnabled===true,accountUrl:trustedAccountUrlFromOrigin(options.requestOrigin)}).recover({quoteId});
       if (saved.draft_json?.recast) return character().recoverRecast({quoteId});
       const surface = draftSurface(saved.draft_json);
       return options.factories ? options.factories[surface](actor, {enabled: options.enabled}).recover(quoteId) : generation.recover(quoteId);

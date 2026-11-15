@@ -1,3 +1,6 @@
+import { withToolErrorOutput } from '@/server/mcp/output-schemas/tool-errors';
+import type { McpDistributionProfile } from '@/server/mcp/distribution-profile';
+import { listMediaOutputSchema } from '@/server/mcp/output-schemas/references';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import * as z from 'zod/v4';
 
@@ -15,6 +18,7 @@ export function registerListMediaTool(
   server: McpServer,
   principal: AgentPrincipal,
   services: MaxVideoAiMcpServices,
+  profile: McpDistributionProfile = 'direct',
 ): void {
   if (!services.listMedia) {
     throw new Error('list_media service is required when its gate is enabled.');
@@ -26,6 +30,7 @@ export function registerListMediaTool(
       description:
         'Use this when the user needs reusable private MaxVideoAI image, video, or audio asset IDs; filter by the required media kind and use only the returned safe metadata and controlled previews. Do not use it to upload files, expose storage or provider URLs, or start generation.',
       inputSchema: listMediaInputSchema,
+      ...(profile === 'openai-directory' ? { outputSchema: withToolErrorOutput(listMediaOutputSchema) } : {}),
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,

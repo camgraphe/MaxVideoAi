@@ -1,4 +1,7 @@
+import { withToolErrorOutput } from '@/server/mcp/output-schemas/tool-errors';
 import { AUDIO_ELEVEN_VOICE_IDS } from '@/lib/audio-eleven-voices';
+import type { McpDistributionProfile } from '@/server/mcp/distribution-profile';
+import { prepareAudioGenerationOutputSchema } from '@/server/mcp/output-schemas/audio-montage';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import * as z from 'zod/v4';
 
@@ -84,6 +87,7 @@ export function registerPrepareAudioGenerationTool(
   server: McpServer,
   principal: AgentPrincipal,
   services: MaxVideoAiMcpServices,
+  profile: McpDistributionProfile = 'direct',
 ): void {
   if (!services.prepareAudioGeneration) {
     throw new Error('prepare_audio_generation service is required when Audio publication is enabled.');
@@ -91,23 +95,30 @@ export function registerPrepareAudioGenerationTool(
   server.registerTool(
     'prepare_audio_generation',
     {
-      title: 'Prepare a MaxVideoAI Audio generation',
+      title: profile === 'openai-directory' ? 'Review audio setup' : 'Prepare a MaxVideoAI Audio generation',
       description: [
-        'Use this to validate one complete Audio request and save an exact short-lived quote without debiting the wallet or contacting a provider.',
+        profile === 'openai-directory'
+          ? 'Validate the selected audio setup and save its exact generation cost for review. This saves a temporary execution quote without consuming credits or contacting a provider.'
+          : 'Use this to validate one complete Audio request and save an exact short-lived quote without debiting the wallet or contacting a provider.',
         'Read list_audio_capabilities first for a currently available mode, exact settings and owned reference roles.',
-        'Display exact cents, currency, expiry, balance and top-up state; wait for explicit approval of that exact quote before confirm_audio_generation.',
+        'Supply settings.mood when the selected mode marks mood.required; choose an allowed value matching the request or ask if unclear.',
+        'For existing media, use an exact assetId returned by list_media (match sourceJobId when a generation is named). Never invent a job-output outputId such as original or 0; use only returned IDs.',
+        profile === 'openai-directory'
+          ? 'Present the audio setup, exact cost, currency, expiry and available account balance. Explain that confirmation consumes existing account credits; wait for explicit approval of that exact quote before confirm_audio_generation. If existing account entitlements are insufficient, explain the limitation and stop; purchases are unavailable in this integration.'
+          : 'Display exact cents, currency, expiry, balance and top-up state; wait for explicit approval of that exact quote before confirm_audio_generation.',
         'Treat expiresAt as UTC; definitive expiry comes from QUOTE_EXPIRED.',
         'Missing required assets block an exact quote.',
         'A failed or refunded attempt requires a fresh quote and new approval.',
         'Never infer approval from discussion or funding.',
       ].join(' '),
       inputSchema: prepareAudioGenerationInputSchema,
+      ...(profile === 'openai-directory' ? { outputSchema: withToolErrorOutput(prepareAudioGenerationOutputSchema) } : {}),
       annotations: {
         readOnlyHint: false,
         destructiveHint: false,
         openWorldHint: false,
       },
     },
-    async (input) => runAgentTool(() => services.prepareAudioGeneration!(input, principal)),
+    async (input) => runAgentTool(() => services.prepareAudioGeneration!(input, principal), { profile, tool: 'prepare_audio_generation' }),
   );
 }

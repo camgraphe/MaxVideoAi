@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
+import { LEGAL_MIN_AGE } from '@/lib/legal-policy';
+import { clearSignupMarketingPreference, readSignupMarketingPreference } from '@/lib/signup-consent-preferences';
 import { Button } from '@/components/ui/Button';
 import { readLastKnownUserId } from '@/lib/last-known';
 import { readBrowserSession } from '@/lib/supabase-auth-cleanup';
@@ -19,6 +21,8 @@ type ReconsentStatus =
   | null
   | {
       needsReconsent: boolean;
+      ageConfirmationRequired: boolean;
+      minimumAge: number;
       shouldBlock: boolean;
       mode: 'soft' | 'hard';
       graceEndsAt: string | null;
@@ -28,6 +32,8 @@ type ReconsentStatus =
 type ApiResponse = {
   ok: boolean;
   needsReconsent?: boolean;
+  ageConfirmationRequired?: boolean;
+  minimumAge?: number;
   shouldBlock?: boolean;
   mode?: 'soft' | 'hard';
   graceEndsAt?: string | null;
@@ -104,6 +110,8 @@ async function fetchStatus(headers: Headers): Promise<ReconsentStatus> {
         needsReconsent: false,
         shouldBlock: false,
         mode: json.mode ?? 'soft',
+        ageConfirmationRequired: Boolean(json.ageConfirmationRequired),
+        minimumAge: json.minimumAge ?? LEGAL_MIN_AGE,
         graceEndsAt: json.graceEndsAt ?? null,
         documents: json.documents ?? [],
       };
@@ -112,6 +120,8 @@ async function fetchStatus(headers: Headers): Promise<ReconsentStatus> {
       needsReconsent: true,
       shouldBlock: Boolean(json.shouldBlock),
       mode: json.mode ?? 'soft',
+      ageConfirmationRequired: Boolean(json.ageConfirmationRequired),
+      minimumAge: json.minimumAge ?? LEGAL_MIN_AGE,
       graceEndsAt: json.graceEndsAt ?? null,
       documents: json.documents ?? [],
     };
@@ -121,7 +131,7 @@ async function fetchStatus(headers: Headers): Promise<ReconsentStatus> {
   }
 }
 
-async function acceptDocuments(documents: DocumentStatus[], headers: Headers): Promise<ReconsentStatus> {
+async function acceptDocuments(documents: DocumentStatus[], headers: Headers, ageConfirmed: boolean, marketingOptIn: boolean | null): Promise<ReconsentStatus> {
   const locale = typeof navigator !== 'undefined' ? navigator.language ?? null : null;
   headers.set('Content-Type', 'application/json');
 
@@ -133,6 +143,8 @@ async function acceptDocuments(documents: DocumentStatus[], headers: Headers): P
       documents: documents.map((doc) => doc.key),
       locale,
       source: 'reconsent',
+      ageConfirmed,
+      ...(marketingOptIn === null ? {} : { marketingOptIn }),
     }),
   });
   const json = (await res.json()) as ApiResponse;
@@ -144,6 +156,8 @@ async function acceptDocuments(documents: DocumentStatus[], headers: Headers): P
       needsReconsent: false,
       shouldBlock: false,
       mode: json.mode ?? 'soft',
+      ageConfirmationRequired: Boolean(json.ageConfirmationRequired),
+      minimumAge: json.minimumAge ?? LEGAL_MIN_AGE,
       graceEndsAt: json.graceEndsAt ?? null,
       documents: json.documents ?? [],
     };
@@ -152,6 +166,8 @@ async function acceptDocuments(documents: DocumentStatus[], headers: Headers): P
     needsReconsent: true,
     shouldBlock: Boolean(json.shouldBlock),
     mode: json.mode ?? 'soft',
+    ageConfirmationRequired: Boolean(json.ageConfirmationRequired),
+    minimumAge: json.minimumAge ?? LEGAL_MIN_AGE,
     graceEndsAt: json.graceEndsAt ?? null,
     documents: json.documents ?? [],
   };
@@ -165,10 +181,18 @@ export function ReconsentPrompt({ enabled = true }: ReconsentPromptProps) {
   const [status, setStatus] = useState<ReconsentStatus>(null);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [ageConfirmed, setAgeConfirmed] = useState(false);
+  const ageConfirmedRef = useRef(false);
+  const [marketingPreference, setMarketingPreference] = useState<boolean | null>(null);
+  const marketingPreferenceRef = useRef<boolean | null>(null);
   const acceptRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     setStatus(null);
+    ageConfirmedRef.current = false;
+    setAgeConfirmed(false);
+    marketingPreferenceRef.current = null;
+    setMarketingPreference(null);
     setError(null);
     setSubmitting(false);
     if (!enabled) return;
@@ -184,6 +208,18 @@ export function ReconsentPrompt({ enabled = true }: ReconsentPromptProps) {
     let subscriptionPromise: Promise<void> | null = null;
 
     const commitStatus = (next: ReconsentStatus) => {
+      if (next === null) {
+        marketingPreferenceRef.current = null;
+        setMarketingPreference(null);
+      } else if (scope?.userId && currentStatus === null) {
+        const preference = readSignupMarketingPreference(scope.userId);
+        marketingPreferenceRef.current = preference;
+        setMarketingPreference(preference);
+      }
+      if (next === null || !next.ageConfirmationRequired) {
+        ageConfirmedRef.current = false;
+        setAgeConfirmed(false);
+      }
       currentStatus = next;
       setStatus(next);
     };
@@ -263,7 +299,10 @@ export function ReconsentPrompt({ enabled = true }: ReconsentPromptProps) {
     }
 
     acceptRef.current = async () => {
-      if (!active || pendingWrite !== null || !scope || !currentStatus?.documents.length) return;
+      if (!active || pendingWrite !== null || !scope || !currentStatus?.needsReconsent) return;
+      if (currentStatus.ageConfirmationRequired && !ageConfirmedRef.current) return;
+      const confirmedAge = ageConfirmedRef.current;
+      const confirmedMarketingPreference = marketingPreferenceRef.current;
       const userId = scope.userId;
       const documents = currentStatus.documents;
       // A response read before acceptance must never undo its authoritative result.
@@ -284,7 +323,8 @@ export function ReconsentPrompt({ enabled = true }: ReconsentPromptProps) {
           return;
         }
         scope = { userId, token: session.access_token };
-        const next = await acceptDocuments(documents, sessionHeaders(session));
+        const next = await acceptDocuments(documents, sessionHeaders(session), confirmedAge, confirmedMarketingPreference);
+        clearSignupMarketingPreference(userId);
         if (isCurrent()) commitStatus(next);
       } catch (err) {
         if (isCurrent()) setError(err instanceof Error ? err.message : 'Failed to record consent.');
@@ -359,13 +399,40 @@ export function ReconsentPrompt({ enabled = true }: ReconsentPromptProps) {
         })}
       </ul>
 
+      {status.ageConfirmationRequired ? (
+        <label className="flex items-start gap-3 text-sm text-text-secondary">
+          <input
+            type="checkbox"
+            checked={ageConfirmed}
+            disabled={submitting}
+            onChange={(event) => {
+              ageConfirmedRef.current = event.target.checked;
+              setAgeConfirmed(event.target.checked);
+            }}
+            className="mt-1"
+          />
+          <span>I confirm I am at least {status.minimumAge} years old and have reached the age of legal majority in my country.</span>
+        </label>
+      ) : null}
+
       {error ? <p className="text-sm text-[var(--warning)]">{error}</p> : null}
+
+      {marketingPreference !== null ? (
+        <label className="flex items-start gap-3 text-sm text-text-secondary">
+          <input type="checkbox" checked={marketingPreference} disabled={submitting} className="mt-1"
+            onChange={(event) => {
+              marketingPreferenceRef.current = event.target.checked;
+              setMarketingPreference(event.target.checked);
+            }} />
+          <span>Send me occasional product emails. I can unsubscribe anytime.</span>
+        </label>
+      ) : null}
 
       <Button
         type="button"
         size="sm"
         onClick={handleAccept}
-        disabled={submitting}
+        disabled={submitting || (status.ageConfirmationRequired && !ageConfirmed)}
         className="w-full px-3 py-2 text-sm"
       >
         {submitting ? 'Saving…' : 'Accept and continue'}

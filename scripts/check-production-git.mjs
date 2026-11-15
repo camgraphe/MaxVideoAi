@@ -1,9 +1,15 @@
 import { pathToFileURL } from 'node:url';
+import { checkOpenaiReviewEnvironment, OPENAI_REVIEW } from './lib/openai-review-environment.mjs';
 
 export const PRODUCTION_PROJECT_ID = 'prj_CA8KpDAwYzihVJZyDNnEUrDszaMu';
 export const STAGING_PROJECT_ID = 'prj_OsS8N2tQBAvjxnPO2rGDWbLJeReJ';
 
 export function checkProductionGit(env) {
+  if (env.VERCEL_PROJECT_ID === OPENAI_REVIEW.projectId
+    || env.MCP_OPENAI_DIRECTORY_DEPLOYMENT_PROFILE === OPENAI_REVIEW.profile
+    || env.VERCEL_GIT_COMMIT_REF === OPENAI_REVIEW.gitBranch) {
+    return checkOpenaiReviewEnvironment(env);
+  }
   if (env.VERCEL_ENV !== 'production') return 'Local/preview build: production Git gate not applicable.';
   // This separate, non-public project has its own immutable-HEAD deployment script.
   if (env.VERCEL_PROJECT_ID === STAGING_PROJECT_ID) return 'Dedicated MCP staging project: staging release policy applies.';

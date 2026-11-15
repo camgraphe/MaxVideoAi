@@ -170,6 +170,9 @@ Examples, specifications and Milo now reflect qualified audio-only references
 and MP4/MOV. The benchmark dossier records eight completed technical canaries
 separately from zero quality-scored samples; its eleven editorial scores remain
 unchanged.
+The branch is also synchronized with `main` through `3d49f113f`; the final build
+generates 1,039 pages. The readiness audit records the additional merge-contract
+checks and the unchanged GitHub-proof freshness gate.
 
 | Surface | Owning source and candidate behavior |
 | --- | --- |

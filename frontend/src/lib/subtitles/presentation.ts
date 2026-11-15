@@ -3,7 +3,11 @@ import type {SubtitleDocument,SubtitleStyle} from './document';
 export function subtitleAtTime(document:Pick<SubtitleDocument,'segments'|'words'|'style'>,timeMs:number){
   const segment=document.segments.find(value=>timeMs>=value.startMs&&timeMs<value.endMs)??null;
   const words=segment?.alignment==='aligned'?document.words.filter(word=>segment.wordIds.includes(word.id)):[];
-  return {segment,words,activeWordId:words.find(word=>timeMs>=word.startMs&&timeMs<word.endMs)?.id??null};
+  // Keep the last spoken word lit through gaps inside this caption. The next
+  // word still starts at its recorded onset, and the segment bounds remain exact.
+  const activeWord=words.find(word=>timeMs>=word.startMs&&timeMs<word.endMs)
+    ?? [...words].reverse().find(word=>timeMs>=word.endMs);
+  return {segment,words,activeWordId:activeWord?.id??null};
 }
 export function subtitleLayout(style:SubtitleStyle,width:number,height:number){
   const fontSize=Math.max(1,Math.min(width,height)*style.fontSizePercent/100);

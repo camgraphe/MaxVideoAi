@@ -2,6 +2,7 @@ import { AgentApiError } from '@/server/agent-api/errors';
 import type { AgentPrincipal } from '@/server/agent-api/principal';
 import { readRequestBearerAccessToken } from '@/lib/request-auth';
 import { createSupabaseRouteClient } from '@/lib/supabase-ssr';
+import { directoryOAuthResourcePolicy, satisfiesOAuthResourcePolicy, type McpAuthenticationContext, type OAuthResourcePolicy } from './oauth-resource-policy';
 import {
   createDirectMcpAcquisition,
   type McpConnectionAcquisition,
@@ -11,6 +12,10 @@ export type OAuthClaims = {
   sub?: unknown;
   client_id?: unknown;
   email_verified?: unknown;
+  iss?: unknown;
+  aud?: unknown;
+  exp?: unknown;
+  nbf?: unknown;
 };
 
 export type OAuthUser = {
@@ -36,6 +41,7 @@ export type OAuthAdapterDeps = {
   hasActiveGrant(
     accessToken: string,
     clientId: string,
+    requiredScopes?: readonly string[],
   ): Promise<boolean>;
 };
 
@@ -49,6 +55,7 @@ export async function hasActiveOAuthGrant(
   accessToken: string,
   clientId: string,
   deps: ActiveOAuthGrantLookupDeps = {},
+  requiredScopes: readonly string[] = [],
 ): Promise<boolean> {
   const supabaseUrl = deps.supabaseUrl ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = deps.anonKey ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -74,6 +81,11 @@ export async function hasActiveOAuthGrant(
       const client = (grant as { client?: unknown }).client;
       if (!client || typeof client !== 'object' || (client as { id?: unknown }).id !== clientId) {
         continue;
+      }
+      if (requiredScopes.length > 0) {
+        const scopes = (grant as { scopes?: unknown }).scopes;
+        if (!Array.isArray(scopes) || !scopes.every(scope => typeof scope === 'string')
+          || !requiredScopes.every(scope => scopes.includes(scope))) continue;
       }
       return true;
     }
@@ -112,8 +124,8 @@ const defaultOAuthAdapterDeps: OAuthAdapterDeps = {
       },
     };
   },
-  async hasActiveGrant(accessToken, clientId) {
-    return hasActiveOAuthGrant(accessToken, clientId);
+  async hasActiveGrant(accessToken, clientId, requiredScopes) {
+    return hasActiveOAuthGrant(accessToken, clientId, {}, requiredScopes);
   },
 };
 
@@ -125,6 +137,7 @@ async function resolveOAuthPrincipal(
   request: Request,
   deps: OAuthAdapterDeps,
   requireClientBinding: boolean,
+  resourcePolicy?: OAuthResourcePolicy,
 ): Promise<AgentPrincipal> {
   const accessToken = readRequestBearerAccessToken(request);
   if (!accessToken) {
@@ -140,6 +153,11 @@ async function resolveOAuthPrincipal(
   if (claimsResult.error || !subject) {
     throw authenticationRequired();
   }
+  // getClaims verifies the signed token first. Resource policy never comes from
+  // token fields, forwarded headers, tool arguments or editable user_metadata.
+  if (resourcePolicy && !satisfiesOAuthResourcePolicy(claimsResult.data!.claims, resourcePolicy)) {
+    throw authenticationRequired();
+  }
 
   const rawClientId = claimsResult.data?.claims.client_id;
   const clientId = typeof rawClientId === 'string' && rawClientId.trim() ? rawClientId.trim() : null;
@@ -151,7 +169,7 @@ async function resolveOAuthPrincipal(
   // Neither check should infer token generations from lossy timestamps.
   const userPromise = auth.getUser(accessToken);
   const activeGrantPromise = clientId
-    ? deps.hasActiveGrant(accessToken, clientId).catch(() => false)
+    ? deps.hasActiveGrant(accessToken, clientId, resourcePolicy?.requiredGrantScopes).catch(() => false)
     : Promise.resolve(true);
   const [userResult, hasActiveGrant] = await Promise.all([
     userPromise,
@@ -184,8 +202,21 @@ export function resolveAgentPrincipal(
 export function resolveMcpAgentPrincipal(
   request: Request,
   deps: OAuthAdapterDeps = defaultOAuthAdapterDeps,
+  resourcePolicy?: OAuthResourcePolicy,
 ): Promise<AgentPrincipal> {
-  return resolveOAuthPrincipal(request, deps, true);
+  return resolveOAuthPrincipal(request, deps, true, resourcePolicy);
+}
+
+export function resolveMcpRequestPrincipal(
+  request: Request,
+  context: McpAuthenticationContext,
+  deps: OAuthAdapterDeps = defaultOAuthAdapterDeps,
+  env: Readonly<Record<string, string | undefined>> = process.env,
+): Promise<AgentPrincipal> {
+  const policy = context.distributionProfile === 'openai-directory'
+    ? directoryOAuthResourcePolicy(context.resourceUrl, env.NEXT_PUBLIC_SUPABASE_URL ?? '')
+    : undefined;
+  return resolveMcpAgentPrincipal(request, deps, policy);
 }
 
 export type AuthenticatedMcpConnection = {

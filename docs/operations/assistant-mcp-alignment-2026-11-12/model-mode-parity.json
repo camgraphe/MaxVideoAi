@@ -1,0 +1,8 @@
+{
+  "evidence": "offline source projection against observed live catalogue; executable I/O substituted, no real generation",
+  "sourceCatalogModels": 53,
+  "sourceCatalogModePairs": 177,
+  "liveModels": 43,
+  "liveModelModePairs": 145,
+  "missingFromMiloSource": []
+}

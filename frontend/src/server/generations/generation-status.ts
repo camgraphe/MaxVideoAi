@@ -53,6 +53,7 @@ export type AgentGenerationStatus = {
   seedanceWorkflow?: { step: 'draft' | 'final'; draftJobId: string; eligibility?: SeedanceWorkflowView['eligibility'];
     expiresAt?: string | null; finalJobId?: string | null; finalizationAvailable?: boolean };
   failureCode?: string;
+  needsAttention?: boolean;
   funding?: 'included_trial';
   entitlementState?: 'reserved' | 'consumed' | 'released';
   result: AgentGenerationResult | null;

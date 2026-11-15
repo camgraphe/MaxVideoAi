@@ -6,6 +6,7 @@ import type {TimelineExportJobResponse} from '@/server/timeline-exports/contract
 import {requireOAuthGenerationActor} from './generation-actor';
 import {AgentApiError} from './errors';
 import type {AgentPrincipal} from './principal';
+import {createMcpMediaLink} from '@/server/mcp/media-link';
 
 const identifier = z.string().trim().min(1).max(128).regex(/^[a-zA-Z0-9._:-]+$/u);
 const qualityPreset = z.enum(['draft','standard','high']);
@@ -24,7 +25,7 @@ export const preparedStudioExportOutputSchema = z.object({
 }).strict();
 export const agentStudioExportJobSchema = z.object({
   id:z.string().min(1),status:z.enum(['queued','rendering','completed','failed','canceled']),progress:z.number(),message:z.string().nullable(),billing:money.optional(),
-  artifact:z.object({outputUrl:z.string().url(),outputAssetId:z.string().nullable(),sizeBytes:z.number().nullable(),mimeType:z.string().nullable()}).strict().nullable(),
+  artifact:z.object({outputUrl:z.string().url(),openUrl:z.string().url().optional(),outputAssetId:z.string().nullable(),sizeBytes:z.number().nullable(),mimeType:z.string().nullable()}).strict().nullable(),
   artifactDelivery:z.literal('unavailable').optional(),
 }).strict();
 export const confirmStudioExportOutputSchema = z.object({ok:z.literal(true),export:agentStudioExportJobSchema,reused:z.boolean()}).strict();
@@ -35,7 +36,7 @@ export type AgentStudioExportObservation = z.infer<typeof getStudioExportOutputS
 export type AgentStudioExportDependencies = StudioExportDependencies & {readGrant?:typeof createTimelineExportReadUrl};
 
 /** Transient OAuth-host delivery only. Canonical originals, grants and worker fields never enter a saved receipt. */
-export async function projectAgentStudioExportJob(job:TimelineExportJobResponse,userId:string,dependencies:Pick<AgentStudioExportDependencies,'requestOrigin'|'readGrant'>):Promise<AgentStudioExportJob>{
+export async function projectAgentStudioExportJob(job:TimelineExportJobResponse,userId:string,dependencies:Pick<AgentStudioExportDependencies,'requestOrigin'|'readGrant'>,principal?:AgentPrincipal):Promise<AgentStudioExportJob>{
   const result = {id:job.id,status:job.status,progress:job.progress,message:job.message,...(job.billing?{billing:{...job.billing}}:{}),artifact:null};
   if(job.status!=='completed')return result;
   if(!job.artifact)return job.status==='completed'?{...result,artifactDelivery:'unavailable'}:result;
@@ -46,7 +47,9 @@ export async function projectAgentStudioExportJob(job:TimelineExportJobResponse,
     if(new URL(canonical).pathname.startsWith('/api/studio/timeline-exports/'))throw new Error('EXPORT_MEDIA_UNAVAILABLE');
     const outputUrl = await (dependencies.readGrant??createTimelineExportReadUrl)({url:canonical,userId,requestOrigin:dependencies.requestOrigin,method:'GET',expiresInSeconds:300});
     if(!/^https?:\/\//u.test(outputUrl))throw new Error('EXPORT_MEDIA_UNAVAILABLE');
-    return {...result,artifact:{outputUrl,outputAssetId:job.artifact.outputAssetId,sizeBytes:job.artifact.sizeBytes,mimeType:job.artifact.mimeType}};
+    const openUrl = principal?.userId===userId ? createMcpMediaLink({principal,origin:dependencies.requestOrigin,
+      source:{type:'export',exportId:job.id},url:outputUrl}) : null;
+    return {...result,artifact:{outputUrl,...(openUrl?{openUrl}:{}),outputAssetId:job.artifact.outputAssetId,sizeBytes:job.artifact.sizeBytes,mimeType:job.artifact.mimeType}};
   }catch{return {...result,artifactDelivery:'unavailable'};}
 }
 
@@ -72,7 +75,7 @@ export function createAgentStudioExportService(dependencies:AgentStudioExportDep
       if(!input.success)throw new AgentApiError('CONFIRMATION_REQUIRED','Confirm the exact scoped export quote before starting a render.');
       try{
         const result = await confirmStudioTimelineExport(currentActor,input.data,dependencies);
-        return {ok:true,export:await projectAgentStudioExportJob(result.export,currentActor.userId,dependencies),reused:result.reused};
+        return {ok:true,export:await projectAgentStudioExportJob(result.export,currentActor.userId,dependencies,principal),reused:result.reused};
       }catch(error){throw asStudioExportAgentError(error);}
     },
     async read(rawInput:GetAgentStudioExportInput,principal:AgentPrincipal):Promise<AgentStudioExportObservation>{
@@ -81,7 +84,7 @@ export function createAgentStudioExportService(dependencies:AgentStudioExportDep
       if(!input.success)throw new AgentApiError('PARAMETER_INVALID','Provide the owned project and exact export quoteId.');
       try{
         const job = await readStudioTimelineExport(currentActor,input.data,dependencies);
-        return {quoteId:input.data.quoteId,export:job?await projectAgentStudioExportJob(job,currentActor.userId,dependencies):null};
+        return {quoteId:input.data.quoteId,export:job?await projectAgentStudioExportJob(job,currentActor.userId,dependencies,principal):null};
       }catch(error){throw asStudioExportAgentError(error);}
     },
   };

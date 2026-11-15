@@ -598,5 +598,32 @@
     ],
     "fallbackItems": null,
     "showWhenEmpty": true
+  },
+  "archive": {
+    "title": "Pika 2.2 : génération fermée",
+    "intro": "Pika 2.2 est archivé sur MaxVideoAI. Les nouvelles générations sont fermées. Choisissez un modèle actuel pour votre prochaine vidéo ; vos résultats Pika existants restent accessibles dans votre bibliothèque.",
+    "alternativesTitle": "Choisissez un modèle pour votre prochaine vidéo",
+    "chooseLabel": "Découvrir ce modèle",
+    "historyTitle": "Vos vidéos existantes",
+    "historyBody": "Vos vidéos MaxVideoAI existantes restent dans votre bibliothèque. Vous pouvez consulter et télécharger les résultats disponibles. Choisissez un autre modèle pour créer une nouvelle vidéo ; ses réglages et son prix seront présentés avant la génération.",
+    "historyLabel": "Ouvrir ma bibliothèque",
+    "examplesLabel": "Voir les exemples historiques Pika",
+    "alternatives": [
+      {
+        "modelId": "seedance-2-5",
+        "title": "Seedance 2.5",
+        "description": "Explorez les plans longs et les références multimodales. Vérifiez le mode choisi et le devis avant de générer."
+      },
+      {
+        "modelId": "minimax-h3",
+        "title": "MiniMax H3",
+        "description": "Créez depuis un texte, une image ou des références, avec audio natif. Vérifiez les réglages adaptés à votre plan."
+      },
+      {
+        "modelId": "wan-3",
+        "title": "Wan 3",
+        "description": "Explorez les parcours texte, image et références, ainsi que l’édition et l’extension lorsqu’elles sont disponibles."
+      }
+    ]
   }
 }

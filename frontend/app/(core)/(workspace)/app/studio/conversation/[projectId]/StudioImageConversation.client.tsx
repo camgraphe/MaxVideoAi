@@ -9,6 +9,7 @@ import {useStudioAssistance} from './_hooks/useStudioAssistance';
 import {StudioAssistance} from './_components/StudioAssistance.client';
 import { useImageConversation } from "./_hooks/useImageConversation";
 import {useConversationExtensions} from './_hooks/useConversationExtensions';
+import {ConversationCreatorOperation} from './_components/ConversationCreatorOperation.client';
 import {ConversationExportQuote} from "./_components/ConversationExportQuote.client";
 import {ConversationTask} from './_components/ConversationTask.client';
 import {STUDIO_TASK_POLICY_VERSION,STUDIO_TASK_PROFILES} from '@/lib/studio/task-budget-contract';
@@ -293,7 +294,7 @@ function StudioImageConversationWorkspace({
                     composerRegion.current?.querySelector('textarea')?.focus();
                   }}
                   onConfirm={() =>
-                    void studio.confirm(turn.requestId,turn.quote!.quoteId,turn.quote!.recast?turn.quote!.price:undefined)
+                    void studio.confirm(turn.requestId,turn.quote!.quoteId,(turn.quote!.recast||turn.quote!.characterBuilder)?turn.quote!.price:undefined)
                   }
                   onRenew={() => {
                     if(tasksEnabled){setText(turn.message);setShotPlanRevision(turn.shotPlanRevision);shelf.restore(imageTurnRetryInput(turn));composerRegion.current?.querySelector('textarea')?.focus();return;}
@@ -308,6 +309,9 @@ function StudioImageConversationWorkspace({
                     });
                   }}
                 />
+                {(turn.creatorQuote||turn.creatorOperation)&&<ConversationCreatorOperation turn={turn} projectId={projectId}
+                  accountKey={accountKey} locale={locale} busy={studio.busy} onChange={studio.refresh}
+                  onRenew={()=>{setText(turn.message);setShotPlanRevision(turn.shotPlanRevision);shelf.restore(imageTurnRetryInput(turn));composerRegion.current?.querySelector('textarea')?.focus();}}/>}
                 {exportsEnabled && turn.exportQuote && <ConversationExportQuote quote={turn.exportQuote} jobs={exports.jobs} busy={studio.busy} locale={locale} onChange={exports.refresh} onRenew={()=>{const message=locale==='fr'?`Prépare un nouveau devis d’export ${turn.exportQuote!.qualityPreset} pour le montage actuel, ${turn.exportQuote!.includeAudio?'avec':'sans'} audio.`:`Prepare a fresh ${turn.exportQuote!.qualityPreset} export quote for the current cut, ${turn.exportQuote!.includeAudio?'with':'without'} audio.`;if(tasksEnabled){setText(message);shelf.clear();composerRegion.current?.querySelector('textarea')?.focus();}else void studio.submit({requestId:crypto.randomUUID(),message,references:[]});}}/>}
                 {turn.analysisQuote&&<ConversationAnalysis quote={turn.analysisQuote} projectId={projectId} accountKey={accountKey} locale={locale} busy={studio.busy} onConfirmed={()=>void assistance.refresh()} onRenew={()=>{shelf.restore(imageTurnRetryInput(turn));setText(turn.message);composerRegion.current?.querySelector('textarea')?.focus();}}/>}
                 {turn.generation?.result && <ConversationMedia result={turn.generation.result} locale={locale} />}

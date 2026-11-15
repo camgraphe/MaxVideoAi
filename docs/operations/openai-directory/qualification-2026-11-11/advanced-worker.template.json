@@ -1,0 +1,469 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Proposed advanced subtitle qualification: reuse dedicated export worker; add only dedicated Fal secret. No normal resources.",
+  "Parameters": {
+    "ImageDigest": {
+      "Type": "String",
+      "AllowedPattern": "sha256:[a-f0-9]{64}",
+      "Description": "Immutable digest of the locally qualified image after its dedicated ECR push."
+    }
+  },
+  "Resources": {
+    "Vpc": {
+      "Type": "AWS::EC2::VPC",
+      "Properties": {
+        "CidrBlock": "10.249.0.0/24",
+        "EnableDnsSupport": true,
+        "EnableDnsHostnames": true,
+        "Tags": [
+          {
+            "Key": "purpose",
+            "Value": "openai-dedicated-qualification"
+          }
+        ]
+      }
+    },
+    "Gateway": {
+      "Type": "AWS::EC2::InternetGateway",
+      "Properties": {
+        "Tags": [
+          {
+            "Key": "purpose",
+            "Value": "openai-dedicated-qualification"
+          }
+        ]
+      }
+    },
+    "GatewayAttachment": {
+      "Type": "AWS::EC2::VPCGatewayAttachment",
+      "Properties": {
+        "VpcId": {
+          "Ref": "Vpc"
+        },
+        "InternetGatewayId": {
+          "Ref": "Gateway"
+        }
+      }
+    },
+    "Subnet": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": {
+          "Ref": "Vpc"
+        },
+        "CidrBlock": "10.249.0.0/26",
+        "AvailabilityZone": {
+          "Fn::Select": [
+            0,
+            {
+              "Fn::GetAZs": ""
+            }
+          ]
+        },
+        "MapPublicIpOnLaunch": false,
+        "Tags": [
+          {
+            "Key": "purpose",
+            "Value": "openai-dedicated-qualification"
+          }
+        ]
+      }
+    },
+    "Routes": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "VpcId": {
+          "Ref": "Vpc"
+        },
+        "Tags": [
+          {
+            "Key": "purpose",
+            "Value": "openai-dedicated-qualification"
+          }
+        ]
+      }
+    },
+    "InternetRoute": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "Routes"
+        },
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "GatewayId": {
+          "Ref": "Gateway"
+        }
+      },
+      "DependsOn": "GatewayAttachment"
+    },
+    "SubnetRoutes": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "SubnetId": {
+          "Ref": "Subnet"
+        },
+        "RouteTableId": {
+          "Ref": "Routes"
+        }
+      }
+    },
+    "WorkerSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Dedicated OpenAI renderer outbound TLS and PostgreSQL only",
+        "VpcId": {
+          "Ref": "Vpc"
+        },
+        "SecurityGroupIngress": [],
+        "SecurityGroupEgress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 443,
+            "ToPort": 443,
+            "CidrIp": "0.0.0.0/0"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 5432,
+            "ToPort": 5432,
+            "CidrIp": "0.0.0.0/0"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "purpose",
+            "Value": "openai-dedicated-qualification"
+          }
+        ]
+      }
+    },
+    "Logs": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/ecs/maxvideoai-openai-review-20261111-export",
+        "RetentionInDays": 7,
+        "Tags": [
+          {
+            "Key": "purpose",
+            "Value": "openai-dedicated-qualification"
+          }
+        ]
+      }
+    },
+    "ExecutionRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": "maxvideoai-openai-review-20261111-export-exec",
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "ecs-tasks.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole",
+              "Condition": {
+                "StringEquals": {
+                  "aws:SourceAccount": "469541406686"
+                },
+                "ArnLike": {
+                  "aws:SourceArn": "arn:aws:ecs:eu-central-1:469541406686:*"
+                }
+              }
+            }
+          ]
+        },
+        "Tags": [
+          {
+            "Key": "purpose",
+            "Value": "openai-dedicated-qualification"
+          }
+        ],
+        "Policies": [
+          {
+            "PolicyName": "DedicatedImageLogsAndSecrets",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "ecr:GetAuthorizationToken"
+                  ],
+                  "Resource": "*"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "ecr:BatchCheckLayerAvailability",
+                    "ecr:GetDownloadUrlForLayer",
+                    "ecr:BatchGetImage"
+                  ],
+                  "Resource": "arn:aws:ecr:eu-central-1:469541406686:repository/maxvideoai-openai-review-export"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents"
+                  ],
+                  "Resource": {
+                    "Fn::GetAtt": [
+                      "Logs",
+                      "Arn"
+                    ]
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "ssm:GetParameters"
+                  ],
+                  "Resource": [
+                    "arn:aws:ssm:eu-central-1:469541406686:parameter/maxvideoai/openai-review-20261111/export/DATABASE_URL",
+                    "arn:aws:ssm:eu-central-1:469541406686:parameter/maxvideoai/openai-review-20261111/export/S3_ACCESS_KEY_ID",
+                    "arn:aws:ssm:eu-central-1:469541406686:parameter/maxvideoai/openai-review-20261111/export/S3_SECRET_ACCESS_KEY",
+                    "arn:aws:ssm:eu-central-1:469541406686:parameter/maxvideoai/openai-review-20261111/export/FAL_KEY"
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "TaskRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": "maxvideoai-openai-review-20261111-export-task",
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "ecs-tasks.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole",
+              "Condition": {
+                "StringEquals": {
+                  "aws:SourceAccount": "469541406686"
+                },
+                "ArnLike": {
+                  "aws:SourceArn": "arn:aws:ecs:eu-central-1:469541406686:*"
+                }
+              }
+            }
+          ]
+        },
+        "Tags": [
+          {
+            "Key": "purpose",
+            "Value": "openai-dedicated-qualification"
+          }
+        ]
+      }
+    },
+    "WorkerTask": {
+      "Type": "AWS::ECS::TaskDefinition",
+      "Properties": {
+        "Family": "maxvideoai-openai-review-20261111-export",
+        "NetworkMode": "awsvpc",
+        "RequiresCompatibilities": [
+          "FARGATE"
+        ],
+        "Cpu": "2048",
+        "Memory": "4096",
+        "RuntimePlatform": {
+          "CpuArchitecture": "X86_64",
+          "OperatingSystemFamily": "LINUX"
+        },
+        "ExecutionRoleArn": {
+          "Fn::GetAtt": [
+            "ExecutionRole",
+            "Arn"
+          ]
+        },
+        "TaskRoleArn": {
+          "Fn::GetAtt": [
+            "TaskRole",
+            "Arn"
+          ]
+        },
+        "ContainerDefinitions": [
+          {
+            "Name": "timeline-export-worker",
+            "Image": {
+              "Fn::Sub": "469541406686.dkr.ecr.eu-central-1.amazonaws.com/maxvideoai-openai-review-export@${ImageDigest}"
+            },
+            "Essential": true,
+            "Environment": [
+              {
+                "Name": "NODE_ENV",
+                "Value": "production"
+              },
+              {
+                "Name": "NEXT_PUBLIC_SITE_URL",
+                "Value": "https://openai-review.maxvideoai.com"
+              },
+              {
+                "Name": "S3_BUCKET",
+                "Value": "maxvideoai-openai-review-20261008-5c187a87"
+              },
+              {
+                "Name": "S3_REGION",
+                "Value": "eu-central-1"
+              },
+              {
+                "Name": "S3_CACHE_CONTROL",
+                "Value": "private, max-age=3600"
+              },
+              {
+                "Name": "TIMELINE_EXPORT_RENDER_TIMEOUT_MS",
+                "Value": "600000"
+              }
+            ],
+            "Secrets": [
+              {
+                "Name": "DATABASE_URL",
+                "ValueFrom": "arn:aws:ssm:eu-central-1:469541406686:parameter/maxvideoai/openai-review-20261111/export/DATABASE_URL"
+              },
+              {
+                "Name": "S3_ACCESS_KEY_ID",
+                "ValueFrom": "arn:aws:ssm:eu-central-1:469541406686:parameter/maxvideoai/openai-review-20261111/export/S3_ACCESS_KEY_ID"
+              },
+              {
+                "Name": "S3_SECRET_ACCESS_KEY",
+                "ValueFrom": "arn:aws:ssm:eu-central-1:469541406686:parameter/maxvideoai/openai-review-20261111/export/S3_SECRET_ACCESS_KEY"
+              },
+              {
+                "Name": "FAL_KEY",
+                "ValueFrom": "arn:aws:ssm:eu-central-1:469541406686:parameter/maxvideoai/openai-review-20261111/export/FAL_KEY"
+              }
+            ],
+            "LogConfiguration": {
+              "LogDriver": "awslogs",
+              "Options": {
+                "awslogs-group": {
+                  "Ref": "Logs"
+                },
+                "awslogs-region": "eu-central-1",
+                "awslogs-stream-prefix": "qualification"
+              }
+            },
+            "StopTimeout": 30
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "purpose",
+            "Value": "openai-dedicated-qualification"
+          }
+        ]
+      }
+    },
+    "Launcher": {
+      "Type": "AWS::IAM::User",
+      "Properties": {
+        "UserName": "maxvideoai-openai-review-20261111-export-launcher",
+        "Path": "/maxvideoai-openai-review/",
+        "Tags": [
+          {
+            "Key": "purpose",
+            "Value": "openai-dedicated-qualification"
+          }
+        ],
+        "Policies": [
+          {
+            "PolicyName": "LaunchDedicatedReviewExportsOnly",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "ecs:RunTask"
+                  ],
+                  "Resource": {
+                    "Ref": "WorkerTask"
+                  },
+                  "Condition": {
+                    "ArnEquals": {
+                      "ecs:cluster": "arn:aws:ecs:eu-central-1:469541406686:cluster/maxvideoai-openai-review-export"
+                    }
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "ecs:TagResource"
+                  ],
+                  "Resource": "arn:aws:ecs:eu-central-1:469541406686:task/maxvideoai-openai-review-export/*",
+                  "Condition": {
+                    "StringEquals": {
+                      "ecs:CreateAction": "RunTask"
+                    }
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "iam:PassRole"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::GetAtt": [
+                        "ExecutionRole",
+                        "Arn"
+                      ]
+                    },
+                    {
+                      "Fn::GetAtt": [
+                        "TaskRole",
+                        "Arn"
+                      ]
+                    }
+                  ],
+                  "Condition": {
+                    "StringEquals": {
+                      "iam:PassedToService": "ecs-tasks.amazonaws.com"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "Repository": {
+      "Value": "469541406686.dkr.ecr.eu-central-1.amazonaws.com/maxvideoai-openai-review-export"
+    },
+    "TaskDefinition": {
+      "Value": {
+        "Ref": "WorkerTask"
+      }
+    },
+    "Subnet": {
+      "Value": {
+        "Ref": "Subnet"
+      }
+    },
+    "SecurityGroup": {
+      "Value": {
+        "Ref": "WorkerSecurityGroup"
+      }
+    },
+    "LauncherUser": {
+      "Value": {
+        "Ref": "Launcher"
+      }
+    },
+    "Cluster": {
+      "Value": "arn:aws:ecs:eu-central-1:469541406686:cluster/maxvideoai-openai-review-export"
+    }
+  }
+}

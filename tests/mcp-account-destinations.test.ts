@@ -132,3 +132,24 @@ test('generation destinations encode owned job IDs as query data instead of path
     /valid owned job ID/,
   );
 });
+
+
+test('dedicated account destinations and owned-job recovery stay on the exact review application', () => {
+  const accountUrl = 'https://openai-review.maxvideoai.com/account/connections';
+  const destinations = buildAgentAccountDestinations(accountUrl);
+  assert.ok(Object.values(destinations).every((item) => new URL(item.url).origin === 'https://openai-review.maxvideoai.com'));
+  assert.equal(destinations.connections.url, accountUrl);
+  assert.equal(destinations.library.url, 'https://openai-review.maxvideoai.com/app/library');
+  assert.equal(buildAgentGenerationDestination(accountUrl, 'image', 'owned-job').url,
+    'https://openai-review.maxvideoai.com/app/image?job=owned-job');
+  for (const value of [
+    'https://openai-review.maxvideoai.com.attacker.test/account/connections',
+    'http://openai-review.maxvideoai.com/account/connections',
+    'https://openai-review.maxvideoai.com:444/account/connections',
+    `${accountUrl}?next=outside`, `${accountUrl}#copied`,
+    'https://user:password@openai-review.maxvideoai.com/account/connections',
+  ]) {
+    assert.throws(() => buildAgentAccountDestinations(value), /trusted MaxVideoAI account URL/);
+    assert.throws(() => buildAgentGenerationDestination(value, 'video', 'owned-job'), /trusted MaxVideoAI account URL/);
+  }
+});

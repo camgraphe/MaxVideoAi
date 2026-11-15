@@ -1,3 +1,5 @@
+import {STUDIO_CHARACTER_AUTHORING_DIRECTOR_TOOLS} from '@/lib/studio/conversation-character-authoring-contract';
+import {STUDIO_CREATOR_DIRECTOR_TOOLS} from '@/lib/studio/conversation-creator-contract';
 import OpenAI from 'openai';
 import {studioReasoning} from './assistance-reasoning';
 import {STUDIO_ANALYSIS_DIRECTOR_TOOLS,studioAnalysisDirectorTools} from '@/lib/studio/media-analysis-contract';
@@ -102,7 +104,7 @@ function freezeStudioFilmResponse(response:StudioDirectorResponse,filmDuration:n
 import type {StudioTaskExecution} from "./tasks/execution";
 import {isStudioConstraintMismatch,isStudioComparisonMismatch,studioComparisonFingerprint,studioComparisonAttemptFingerprint,studioRepeatedComparisonReply,studioRecoveredComparisonReply} from './conversation-comparison-recovery';
 
-export function createStudioConversationDirector(options: {model?: StudioAssistantModel;runtimePolicy?:MiloRuntimePolicy;modelForNextCall?:()=>StudioAssistantModel;createResponse?: StudioResponseCreator; mediaEnabled?: boolean;characterEnabled?:boolean;editingEnabled?: boolean;exportsEnabled?: boolean;analysisEnabled?:boolean;analysisProfiles?:{video:boolean;audio:boolean};assistanceCreditsEnabled?: boolean;taskExecution?:StudioTaskExecution;localGreetingEnabled?:boolean} = {}) {
+export function createStudioConversationDirector(options: {model?: StudioAssistantModel;runtimePolicy?:MiloRuntimePolicy;modelForNextCall?:()=>StudioAssistantModel;createResponse?: StudioResponseCreator; mediaEnabled?: boolean;characterEnabled?:boolean;characterBuilderEnabled?:boolean;creatorEnabled?:boolean;editingEnabled?: boolean;exportsEnabled?: boolean;analysisEnabled?:boolean;analysisProfiles?:{video:boolean;audio:boolean};assistanceCreditsEnabled?: boolean;taskExecution?:StudioTaskExecution;localGreetingEnabled?:boolean} = {}) {
   return async (context: StudioDirectorContext): Promise<ImageDraft> => {
     const locale=studioConversationLanguage(context.message,context.history,context.locale??options.taskExecution?.locale??'en');
     const greeting=studioGreetingReply(context.message,context.references.length>0);
@@ -155,7 +157,7 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
     const maxResponses=options.taskExecution?.maxCalls??4;
     for (let index = 0; index < maxResponses; index++) {
       const analysisTools=options.analysisEnabled?studioAnalysisDirectorTools(options.analysisProfiles??{video:true,audio:true}):context.project.analyses?.length?[STUDIO_ANALYSIS_DIRECTOR_TOOLS[1]]:[];
-      const availableTools = [...STUDIO_DIRECTOR_TOOLS,...(options.taskExecution?STUDIO_TASK_DIRECTOR_TOOLS:[]), ...(options.mediaEnabled ? STUDIO_MEDIA_DIRECTOR_TOOLS : []),...(characterEnabled ? STUDIO_CHARACTER_DIRECTOR_TOOLS : []),...(options.editingEnabled ? STUDIO_EDITING_DIRECTOR_TOOLS : []),...(options.exportsEnabled ? STUDIO_EXPORT_DIRECTOR_TOOLS : []),...analysisTools]
+      const availableTools = [...STUDIO_DIRECTOR_TOOLS,...STUDIO_CREATOR_DIRECTOR_TOOLS.filter(tool=>(!tool.action.endsWith('.prepare')||options.creatorEnabled)&&(tool.action!=='creator.studio-subtitles.prepare'||options.editingEnabled)),...(options.taskExecution?STUDIO_TASK_DIRECTOR_TOOLS:[]), ...(options.mediaEnabled ? STUDIO_MEDIA_DIRECTOR_TOOLS : []),...(characterEnabled ? STUDIO_CHARACTER_DIRECTOR_TOOLS : []),...(characterEnabled&&options.characterBuilderEnabled?STUDIO_CHARACTER_AUTHORING_DIRECTOR_TOOLS:[]),...(options.editingEnabled ? STUDIO_EDITING_DIRECTOR_TOOLS : []),...(options.exportsEnabled ? STUDIO_EXPORT_DIRECTOR_TOOLS : []),...analysisTools]
         .filter(tool=>!selectedFilmPlan||tool.action!=='pricing.compare');
       // A final comparison renders its own reply; other reads need another Response.
       // Older checkpointed reads remain recoverable during paid-response replay.
@@ -242,6 +244,9 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
         throw new AgentApiError('ENGINE_UNAVAILABLE','Studio character tools are unavailable.');
       if(freshResponse&&!options.analysisEnabled&&action.action==='analysis.prepare')throw new AgentApiError('ENGINE_UNAVAILABLE','Studio analysis tools are unavailable.');
       if(action.action==="project.recall"&&!options.taskExecution)throw new AgentApiError("ENGINE_UNAVAILABLE","Task memory is unavailable.");
+      if(freshResponse&&action.action==='character.prepare'&&(!characterEnabled||!options.characterBuilderEnabled))throw new AgentApiError('ENGINE_UNAVAILABLE','Character Builder preparation is unavailable.');
+      if(action.action==='creator.studio-subtitles.prepare'&&!options.editingEnabled)throw new AgentApiError('ENGINE_UNAVAILABLE','Studio sequence tools are unavailable.');
+      if(action.action.startsWith('creator.')&&action.action.endsWith('.prepare')&&!options.creatorEnabled)throw new AgentApiError('ENGINE_UNAVAILABLE','Creator preparation is unavailable.');
       const comparisonFingerprint=studioComparisonFingerprint(action);
       if(failedFilmComparison&&(action.action!=='pricing.compare'||action.filmDurationSec!==failedFilmComparison.request.filmDurationSec||studioComparisonAttemptFingerprint(action)===failedFilmComparison.fingerprint))
         return studioFailedFilmComparisonReply(failedFilmComparison.request,failedFilmComparison.result,locale);
@@ -283,6 +288,11 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
       if(attemptFingerprint&&isStudioConstraintMismatch(result,context.referenceFingerprint))failedInputs.set(attemptFingerprint,result);
       if(revalidatedCachedComparison||(comparisonReplayOnly&&action.action==='pricing.compare'))recoveredComparison=result;
       if(comparisonFingerprint&&isStudioComparisonMismatch(result))failedComparisons.set(comparisonFingerprint,result);
+      if(action.action==='creator.prepare'||action.action==='creator.subtitle-export.prepare'||action.action==='creator.studio-subtitles.prepare'){
+        if(!result.ok)throw new AgentApiError(result.error.code,result.error.message,result.error.retryable,result.error.nextAction);
+        if(result.action!==action.action)throw new AgentApiError('INTERNAL_ERROR','Studio could not recover the creator quote.');
+        return {reply:projectStudioReply(action.reply),image:null,creatorQuote:result.data};
+      }
       if(action.action==='analysis.prepare'){
         if(!result.ok)throw new AgentApiError(result.error.code,result.error.message,result.error.retryable,result.error.nextAction);
         if(result.action!=='analysis.prepare')throw new AgentApiError('INTERNAL_ERROR','Studio could not recover the analysis quote.');
@@ -323,6 +333,11 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
         continue;
       }
       if (result.ok && result.action === 'timeline.edit' && result.data.changed && !('replayed' in result&&result.replayed)) completedEdits++;
+      if(action.action==='character.prepare'){
+        if(!result.ok)throw new AgentApiError(result.error.code,result.error.message,result.error.retryable);
+        if(result.action!=='character.prepare')throw new AgentApiError('INTERNAL_ERROR','Studio could not recover the Character Builder quote.');
+        return {reply:projectStudioReply(action.reply),image:null,characterBuilder:{...action,reply:projectStudioReply(action.reply)}};
+      }
       if (action.action === 'recast.prepare') {
         if (!result.ok) throw new AgentApiError(result.error.code,result.error.message,result.error.retryable,result.error.nextAction);
         if (result.action !== 'recast.prepare') throw new AgentApiError('INTERNAL_ERROR','Studio could not recover the Recast quote.');

@@ -1,0 +1,236 @@
+{
+  "date": "2026-11-12",
+  "runtimeCommit": "a2d769069f16f9b2934f69df83a6311142cbb407",
+  "finalSourceCommit": "60a1f3a8115cbd1c81fde7886fdbd5a2c88ebf52",
+  "includedMain": "371ee9eaf6178b1b9c2579148bb59d7125699534",
+  "boundary": "Local source and offline/provider-double qualification only. No push, remote migration, paid generation, production deployment or host certification.",
+  "knownBrowserBaselineFailure": "connected-studio-conversation-browser-integration.test.ts: unchanged Header useId hydration warning after restore session selection, also on untouched main371ee9e. No suppression.",
+  "logs": [
+    {
+      "name": "mcp",
+      "localLog": "/private/tmp/assistant-client-final-6-20261112.log",
+      "sha256": "d214756eb52cd398fe1ad6010befa6a294c3146ce4287e9ec2c1ee32b2946a3f",
+      "bytes": 67136,
+      "tapSummary": {
+        "tests": 228,
+        "pass": 227,
+        "fail": 0,
+        "skipped": 1,
+        "cancelled": 0
+      }
+    },
+    {
+      "name": "audio-builder",
+      "localLog": "/private/tmp/assistant-audio-builder-final-20261112.log",
+      "sha256": "cce4f4d155da34bf3f1245015d6d635cc3dce08dc1dfd41e556a372a8ef56359",
+      "bytes": 11424,
+      "tapSummary": {
+        "tests": 46,
+        "pass": 46,
+        "fail": 0,
+        "skipped": 0,
+        "cancelled": 0
+      }
+    },
+    {
+      "name": "subtitle-creator",
+      "localLog": "/private/tmp/assistant-subtitle-all-final-20261112.log",
+      "sha256": "75dd9f52d2e18af36d23d2e202f8d9a7308a68d26b42b7ed1f8f8c80c8d0881c",
+      "bytes": 10894,
+      "tapSummary": {
+        "tests": 40,
+        "pass": 40,
+        "fail": 0,
+        "skipped": 0,
+        "cancelled": 0
+      }
+    },
+    {
+      "name": "editor",
+      "localLog": "/private/tmp/assistant-qa-editor-serial-20261112.log",
+      "sha256": "f45717494e2832eda78f8644c9780a350d289e4e47ce06d2523129ecfb9cc4e5",
+      "bytes": 369166,
+      "tapSummary": {
+        "tests": 1602,
+        "pass": 1601,
+        "fail": 0,
+        "skipped": 1,
+        "cancelled": 0
+      }
+    },
+    {
+      "name": "build",
+      "localLog": "/private/tmp/assistant-build-serial-20261112.log",
+      "sha256": "86c86ae3fd5ba386e0b0bf850c60840e420040d741b8c20202e7caa162236763",
+      "bytes": 74885,
+      "tapSummary": {
+        "tests": 60,
+        "pass": 60,
+        "fail": 0,
+        "skipped": 0,
+        "cancelled": 0
+      }
+    },
+    {
+      "name": "browser",
+      "localLog": "/private/tmp/assistant-browser-serial-20261112.log",
+      "sha256": "8f92031ae7e56a8d7e85f2d9768a7e20237557524c9d7552eb089e04a9b20348",
+      "bytes": 99663,
+      "tapSummary": {
+        "tests": 329,
+        "pass": 328,
+        "fail": 1,
+        "skipped": 0,
+        "cancelled": 0
+      }
+    },
+    {
+      "name": "financial",
+      "localLog": "/private/tmp/assistant-financial-tariffs-final-2-20261112.log",
+      "sha256": "1e442ba6428847da668197c3547ee009fbc98a5e2b94eb7a651f5fa498acb7f1",
+      "bytes": 1388,
+      "tapSummary": {
+        "tests": 2,
+        "pass": 2,
+        "fail": 0,
+        "skipped": 0,
+        "cancelled": 0
+      }
+    },
+    {
+      "name": "offline-pricing-followup",
+      "localLog": "/private/tmp/creator-pricing-offline-final.log",
+      "sha256": "dcedf64f61ea92e94d3580c06eeda36329de4007eb7b123bddd254f063743b78",
+      "bytes": 22174,
+      "tapSummary": {
+        "tests": 91,
+        "pass": 91,
+        "fail": 0,
+        "skipped": 0,
+        "cancelled": 0
+      }
+    },
+    {
+      "name": "current-archive-followup",
+      "localLog": "/private/tmp/audio-worker-pika-group2-after.log",
+      "sha256": "fd4bdee7f49aca6f7be4b216a025dad9b4836e30e55abefaec6270f21aa117e1",
+      "bytes": 941521,
+      "tapSummary": {
+        "tests": 85,
+        "pass": 85,
+        "fail": 0,
+        "skipped": 0,
+        "cancelled": 0
+      }
+    },
+    {
+      "name": "archive-route-ssr-followup",
+      "localLog": "/private/tmp/audio-worker-archive-guard.log",
+      "sha256": "3787bd0964ece19b3d3c56af3f45cffabad3ceed56db21e1601ec728bf0fcda1",
+      "bytes": 11758,
+      "tapSummary": {
+        "tests": 47,
+        "pass": 47,
+        "fail": 0,
+        "skipped": 0,
+        "cancelled": 0
+      }
+    },
+    {
+      "name": "workspace-recall-payg-followup",
+      "localLog": "/private/tmp/assistant-character-fixtures-focused-20261112.log",
+      "sha256": "cf2f3710538aa9ce7c6291d6cd0f301d51cc46ac063274fcbd26fab466308901",
+      "bytes": 33727,
+      "tapSummary": {
+        "tests": 164,
+        "pass": 164,
+        "fail": 0,
+        "skipped": 0,
+        "cancelled": 0
+      }
+    },
+    {
+      "name": "final-fast",
+      "localLog": "/private/tmp/assistant-verified-fast-20261112.log",
+      "sha256": "2677da1d204612414a6c097d1944a6d0700c3c143cad6e59db2ddc225523c6cd",
+      "bytes": 4058023,
+      "exitCode": 0
+    },
+    {
+      "name": "final-typescript",
+      "localLog": "/private/tmp/assistant-verified-typescript-20261112.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "exitCode": 0
+    },
+    {
+      "name": "final-eslint",
+      "localLog": "/private/tmp/assistant-verified-eslint-20261112.log",
+      "sha256": "dec96c5b0dd3fd023d1a78190720d5565739e29051274760e8c1f4a2afdb067e",
+      "bytes": 3405,
+      "exitCode": 0
+    },
+    {
+      "name": "final-exposure",
+      "localLog": "/private/tmp/assistant-verified-exposure-20261112.log",
+      "sha256": "5fa2e24ad291922c3f760922c61148239a3412eb123e793644fa985713d8cb99",
+      "bytes": 115,
+      "exitCode": 0
+    },
+    {
+      "name": "final-diff",
+      "localLog": "/private/tmp/assistant-verified-diff-20261112.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "exitCode": 0
+    }
+  ],
+  "finalFastAndStatic": {
+    "commit": "60a1f3a8115cbd1c81fde7886fdbd5a2c88ebf52",
+    "fileCount": 1697,
+    "concurrency": 2,
+    "startedAt": 1794499815.617505,
+    "status": "passed",
+    "checks": [
+      {
+        "name": "fast",
+        "exitCode": 0,
+        "seconds": 858.493,
+        "log": "/private/tmp/assistant-verified-fast-20261112.log"
+      },
+      {
+        "name": "typescript",
+        "exitCode": 0,
+        "seconds": 37.184,
+        "log": "/private/tmp/assistant-verified-typescript-20261112.log"
+      },
+      {
+        "name": "eslint",
+        "exitCode": 0,
+        "seconds": 14.764,
+        "log": "/private/tmp/assistant-verified-eslint-20261112.log"
+      },
+      {
+        "name": "exposure",
+        "exitCode": 0,
+        "seconds": 0.688,
+        "log": "/private/tmp/assistant-verified-exposure-20261112.log"
+      },
+      {
+        "name": "diff",
+        "exitCode": 0,
+        "seconds": 0.049,
+        "log": "/private/tmp/assistant-verified-diff-20261112.log"
+      }
+    ]
+  },
+  "finalFastTapSummary": {
+    "tests": 11227,
+    "pass": 11226,
+    "fail": 0,
+    "skipped": 1,
+    "cancelled": 0
+  },
+  "finalizedAt": "2026-11-12T16:26:28.073941+00:00",
+  "latestMainVerified": "371ee9eaf6178b1b9c2579148bb59d7125699534"
+}

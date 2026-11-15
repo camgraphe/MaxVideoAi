@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { getGenerationModelIdentity, isArchivedGenerationModel } from '../frontend/lib/model-generation-policy';
-import { getBaseEngines } from '../frontend/src/lib/engines';
+import { getBaseEngines, getBaseEngineIncludingHidden } from '../frontend/src/lib/engines';
 import type { EngineCaps } from '../frontend/types/engines';
 import {
   buildVideoSettingsSnapshotFromSharedVideo,
@@ -10,9 +10,10 @@ import {
 } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-video-settings';
 
 const allEngines = getBaseEngines();
-const pika = allEngines.find(engine => engine.id === 'pika-text-to-video')!;
+const pika = getBaseEngineIncludingHidden('pika-text-to-video')!;
+const current = allEngines.find(engine => engine.id === 'kling-3-pro')!;
 const alternative = allEngines.find(engine => engine.id === 'seedance-2-0')!;
-assert.ok(pika && alternative);
+assert.ok(pika && alternative && current);
 
 function resolve(snapshot: unknown, engines: EngineCaps[], createLocalId = () => 'local') {
   return resolveVideoSettingsSnapshot(snapshot, {
@@ -35,28 +36,25 @@ const pikaAliases = [...new Set([
 ])];
 for (const mode of ['t2v', 'i2v']) {
   for (const id of pikaAliases) {
-    test(`unavailable Pika ${mode} rejects ${id} before resolving references`, () => {
-      let referenceIds = 0;
-      const snapshot = saved(id, mode);
-      const before = structuredClone(snapshot);
-      assert.throws(() => resolve(snapshot, [alternative], () => { referenceIds += 1; return 'local'; }), {
-        name: 'UnavailableVideoSettingsEngineError', engineId: pika.id,
+    for (const includeHidden of [false, true]) {
+      test(`historical Pika ${mode} restores ${id} with hidden entry ${includeHidden}`, () => {
+        const snapshot = saved(id, mode);
+        const before = structuredClone(snapshot);
+        const resolved = resolve(snapshot, includeHidden ? [alternative, pika] : [alternative]);
+        assert.equal(resolved.engine.id, pika.id, 'archive recall must not substitute a current model');
+        assert.equal(resolved.mode, mode);
+        assert.equal(resolved.prompt, 'Saved shot');
+        assert.deepEqual(snapshot, before);
+        assert.equal(isArchivedGenerationModel(id), true, 'reading old settings does not reopen generation');
+        assert.equal(allEngines.some(engine => engine.id === pika.id), false, 'Pika stays outside the current generation catalogue');
       });
-      assert.deepEqual(snapshot, before);
-      assert.equal(referenceIds, 0);
-    });
-    test(`available Pika ${mode} restores canonical identity from ${id}`, () => {
-      const resolved = resolve(saved(id, mode), [alternative, pika]);
-      assert.equal(resolved.engine.id, pika.id);
-      assert.equal(resolved.mode, mode);
-      assert.equal(resolved.prompt, 'Saved shot');
-    });
+    }
   }
 }
 
 for (const engine of allEngines.filter(engine => getGenerationModelIdentity(engine.id) && !isArchivedGenerationModel(engine.id))) {
   test(`known unavailable ${engine.id} cannot recall into another model`, () => {
-    const fallback = engine.id === alternative.id ? pika : alternative;
+    const fallback = engine.id === alternative.id ? current : alternative;
     const identity = getGenerationModelIdentity(engine.id)!;
     for (const id of [engine.id, ...identity.aliases.internal, ...identity.aliases.publicSlugs]) {
       // Engine-input aliases take precedence over public-route aliases (e.g. veo3).
@@ -93,7 +91,27 @@ for (const [engineId, expected] of [['sora-2', 'sora-2'], ['openai-sora-2', 'sor
   });
 }
 
-test('legacy tile and shared-video recall reject the same unavailable alias', () => {
+test('legacy tile and shared-video recall reject the same unavailable current model', () => {
+  const tile = buildVideoSettingsSnapshotFromTile({
+    id: 'legacy-wan', engineId: 'wan-3', prompt: 'Legacy shot',
+    durationSec: 5, aspectRatio: '16:9', iterationCount: 1,
+  });
+  const shared = buildVideoSettingsSnapshotFromSharedVideo({
+    id: 'legacy-wan', engineId: 'wan-3', engineLabel: 'Wan 3',
+    prompt: 'Legacy shot', durationSec: 5, createdAt: '',
+  });
+  for (const snapshot of [tile, shared]) {
+    const before = structuredClone(snapshot);
+    let referenceIds = 0;
+    assert.throws(() => resolve(snapshot, [alternative], () => { referenceIds += 1; return 'local'; }), {
+      name: 'UnavailableVideoSettingsEngineError', engineId: 'wan-3',
+    });
+    assert.deepEqual(snapshot, before);
+    assert.equal(referenceIds, 0, 'refused recall must stop before resolving references');
+  }
+});
+
+test('legacy Pika tile and shared-video recall retain archived identity without public generation', () => {
   const tile = buildVideoSettingsSnapshotFromTile({
     id: 'legacy-pika', engineId: 'pika-image-to-video', prompt: 'Legacy shot',
     durationSec: 5, aspectRatio: '16:9', iterationCount: 1,
@@ -103,8 +121,8 @@ test('legacy tile and shared-video recall reject the same unavailable alias', ()
     prompt: 'Legacy shot', durationSec: 5, createdAt: '',
   });
   for (const snapshot of [tile, shared]) {
-    assert.throws(() => resolve(snapshot, [alternative]), {
-      name: 'UnavailableVideoSettingsEngineError', engineId: pika.id,
-    });
+    assert.equal(resolve(snapshot, [current]).engine.id, pika.id);
+    assert.equal(isArchivedGenerationModel(pika.id), true);
+    assert.equal(allEngines.some(engine => engine.id === pika.id), false);
   }
 });

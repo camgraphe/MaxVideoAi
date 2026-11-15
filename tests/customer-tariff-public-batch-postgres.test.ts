@@ -93,7 +93,7 @@ test('watch context batches canonical current quotes without changing any snapsh
   try { loader = await import('../frontend/server/example-watch-detail-loader'); }
   finally { if (!cache) delete react.cache; }
   await withTariffReaderFixture(async ({ database, commands }) => {
-    const coverage = collectSellableManualTariffCoverage().scenarios.filter(row => row.modelId === 'pika-text-to-video');
+    const coverage = collectSellableManualTariffCoverage().scenarios.filter(row => row.modelId === 'seedance-2-0-mini');
     const scenarios = [coverage[0], coverage.find(row => tariffSelectorKey(row.selector) !== tariffSelectorKey(coverage[0].selector))!];
     assert.ok(scenarios.every(Boolean));
     for (const [index, scenario] of scenarios.entries()) await insert(database.pool, `watch-${index}`, scenario.selector);

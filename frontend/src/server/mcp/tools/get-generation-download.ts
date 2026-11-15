@@ -1,3 +1,5 @@
+import { withToolErrorOutput } from '@/server/mcp/output-schemas/tool-errors';
+import type { McpDistributionProfile } from '@/server/mcp/distribution-profile';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import * as z from 'zod/v4';
 
@@ -20,6 +22,7 @@ export function registerGetGenerationDownloadTool(
   server: McpServer,
   principal: AgentPrincipal,
   services: MaxVideoAiMcpServices,
+  profile: McpDistributionProfile = 'direct',
 ): void {
   if (!services.getGenerationStatus) {
     throw new Error('get_generation_status service is required when generation downloads are enabled.');
@@ -31,7 +34,7 @@ export function registerGetGenerationDownloadTool(
       description:
         'Use this from the MaxVideoAI result app to create a fresh short-lived attachment URL for one completed owned generation.',
       inputSchema: getGenerationStatusInputSchema.extend({ outputRole: z.enum(['primary', 'last_frame']).optional() }).strict(),
-      outputSchema: generationDownloadOutputSchema,
+      outputSchema: withToolErrorOutput(generationDownloadOutputSchema, profile),
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,

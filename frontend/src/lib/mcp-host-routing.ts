@@ -1,3 +1,10 @@
+import openaiDirectory from '@/config/mcp-openai-directory.json';
+
+// Authored candidate address, reserved even before activation. Routing it to
+// the transport lets the server return a closed response instead of marketing.
+export const MCP_OPENAI_DIRECTORY_RESOURCE_URL = openaiDirectory.resourceUrl;
+const OPENAI_DIRECTORY_HOST = new URL(MCP_OPENAI_DIRECTORY_RESOURCE_URL).host;
+
 function normalizedHost(host: string): string | null {
   const trimmed = host.trim();
   if (!trimmed || trimmed.includes(',') || /[\s/@?#]/.test(trimmed)) return null;
@@ -40,6 +47,10 @@ export function isMcpApiHost(host: string, configuredApiHost: string): boolean {
   return actual != null && configured != null && actual === configured;
 }
 
+export function isMcpOpenaiDirectoryHost(host: string): boolean {
+  return isMcpApiHost(host, OPENAI_DIRECTORY_HOST);
+}
+
 export function getMcpApiRewritePath(
   host: string,
   pathname: string,
@@ -50,12 +61,13 @@ export function getMcpApiRewritePath(
     accept?: string | null;
   } = {},
 ): '/api/mcp' | null {
-  if (pathname !== '/mcp' || !isMcpApiHost(host, configuredApiHost)) return null;
+  const isDirectoryHost = isMcpOpenaiDirectoryHost(host);
+  if (pathname !== '/mcp' || (!isDirectoryHost && !isMcpApiHost(host, configuredApiHost))) return null;
   const method = options.method?.toUpperCase();
   const accept = options.accept?.toLowerCase() ?? '';
   const isHtmlNavigation = (method === 'GET' || method === 'HEAD')
     && accept.includes('text/html')
     && !accept.includes('application/json')
     && !accept.includes('text/event-stream');
-  return options.allowHtmlMarketing && isHtmlNavigation ? null : '/api/mcp';
+  return !isDirectoryHost && options.allowHtmlMarketing && isHtmlNavigation ? null : '/api/mcp';
 }

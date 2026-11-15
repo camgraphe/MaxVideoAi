@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { type QueryExecutor } from '@/lib/db';
+import type { McpGenerationQuote } from '@/server/agent-api/quote-repository';
+import { type TransactionQueryExecutor, type QueryExecutor } from '@/lib/db';
 import { creatorOperationInputSchema } from '@/lib/toolbox/creator-tools';
 import { requireGenerationActor, studioReferenceFingerprint, type GenerationActor } from '@/server/agent-api/generation-actor';
 import { hashCanonicalGenerationRequest, stableJson } from '@/server/agent-api/generation-normalization';
@@ -17,7 +18,7 @@ export { creatorOperationInputSchema, prepareCreatorOperation };
 
 const defaults={prepare:prepareCreatorOperation,revalidate:revalidateCreatorSources,finalize:finalizeCreatorOperation,generation:createCreatorGenerationService,
   read:store.readCreatorOperation,insert:store.insertCreatorOperation,claim:store.claimCreatorFinalization,settle:store.settleCreatorFinalization,markRunning:store.markCreatorRunning,markFailed:store.markCreatorFailed};
-export type CreatorOperationsOptions={enabled:boolean;generationOptions?:Omit<CreatorGenerationOptions,'enabled'|'toolId'|'expectedReferenceFingerprint'|'onQuotePrepared'|'onQuoteLocked'>;dependencies?:Partial<typeof defaults>};
+export type CreatorOperationsOptions={enabled:boolean;generationOptions?:Omit<CreatorGenerationOptions,'enabled'|'toolId'|'expectedReferenceFingerprint'|'onQuotePrepared'|'onQuoteLocked'>;dependencies?:Partial<typeof defaults>;onPrepared?:(quote:McpGenerationQuote,snapshot:store.CreatorOperationSnapshot,executor:TransactionQueryExecutor)=>Promise<void>};
 function validateSnapshot(row:store.StoredCreatorOperation):void {
   const profile=CREATOR_PROFILES.find(entry=>entry.id===row.profile_id);
   if(!profile||profile.qualification==='closed'||profile.revision!==row.profile_revision||row.snapshot.profile.id!==profile.id) throw new AgentApiError('ENGINE_UNAVAILABLE','This tool profile requires a new qualification.');
@@ -75,8 +76,8 @@ export function createCreatorOperationsService(actor:GenerationActor,options:Cre
       }
       const snapshot={...prepared,referenceFingerprint:studioReferenceFingerprint(references)};
       const quote=prepared.profile.qualification==='tool-specific'
-        ? await prepareCreatorSpecialistQuote(actor,snapshot,options.enabled)
-        : await service({toolId:prepared.input.toolId,expectedReferenceFingerprint:snapshot.referenceFingerprint,onQuotePrepared:(stored,tx)=>deps.insert(actor,stored,snapshot,tx)}).prepare(prepared.request);
+        ? await prepareCreatorSpecialistQuote(actor,snapshot,options.enabled,{onPrepared:(stored,tx)=>options.onPrepared?.(stored,snapshot,tx)??Promise.resolve()})
+        : await service({toolId:prepared.input.toolId,expectedReferenceFingerprint:snapshot.referenceFingerprint,onQuotePrepared:async(stored,tx)=>{await deps.insert(actor,stored,snapshot,tx);await options.onPrepared?.(stored,snapshot,tx);}}).prepare(prepared.request);
       return {operationId:quote.quoteId,quoteId:quote.quoteId,quote,operation:{toolId:prepared.input.toolId,profile:prepared.profile,expectedDurationSec:prepared.expectedDurationSec,...(prepared.outputTiming ? {outputTiming:prepared.outputTiming} : {}),audioPolicy:prepared.audioPolicy,sourceAssets:prepared.input.inputs.map(entry=>entry.source)}};
     },
     async confirm(value:unknown) {

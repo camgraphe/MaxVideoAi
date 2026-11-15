@@ -23,6 +23,8 @@ import {
   type AuthFieldErrors,
   type AuthFieldName,
 } from '../_lib/login-validation';
+import { LEGAL_MIN_AGE } from '@/lib/legal-policy';
+import { rememberSignupMarketingPreference } from '@/lib/signup-consent-preferences';
 import { submitPasswordSignupConsents } from '../_lib/login-signup-consents';
 import { requestPasswordReset } from '../_lib/login-password-reset';
 import { usePasswordAuthSubmission } from './usePasswordAuthSubmission';
@@ -32,8 +34,7 @@ import { useLoginAuthHashSession } from './useLoginAuthHashSession';
 import { useLoginNextTarget } from './useLoginNextTarget';
 import { useLoginOAuthCodeExchange } from './useLoginOAuthCodeExchange';
 
-const MIN_AGE_ENV = Number.parseInt(process.env.NEXT_PUBLIC_LEGAL_MIN_AGE ?? '15', 10);
-const LEGAL_MIN_AGE = Number.isNaN(MIN_AGE_ENV) ? 15 : MIN_AGE_ENV;
+// The same policy owns signup wording and the server attestation version.
 
 type UseLoginPageControllerOptions = {
   initialMode: AuthMode;
@@ -314,11 +315,11 @@ export function useLoginPageController({
     clearFieldError('acceptTerms');
   }, [clearFieldError]);
 
-  async function submitSignupConsents(userId: string) {
+  async function submitSignupConsents(userId: string, accessToken: string) {
     try {
       const res = await fetch('/api/legal/consents', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
         credentials: 'include',
         body: JSON.stringify({
           userId,
@@ -371,12 +372,15 @@ export function useLoginPageController({
         return;
       }
 
-      // The SDK may already have created the account after navigation. Persist
-      // the consent captured by this submission before ignoring its stale UI.
+      // Persist consent only with the authenticated signup session. Email-confirmation
+      // signups accept the current documents and age policy after their first login.
+      if (!data.session && data.user?.identities?.length) {
+        rememberSignupMarketingPreference(data.user.id, marketingOptIn);
+      }
       try {
         const consentsSaved = await submitPasswordSignupConsents(data, submitSignupConsents);
         if (!isCurrent()) return;
-        if (!consentsSaved) {
+        if (!consentsSaved && !data.user?.identities?.length) {
           setStatusTone('info');
           setStatus(authCopy.feedback.confirmEmail);
           return;

@@ -1,0 +1,108 @@
+{
+  "inputs": {
+    "recommend": {
+      "id": "pika-text-to-video",
+      "mode": "t2v"
+    },
+    "compare": {
+      "surface": "video",
+      "mode": "t2v",
+      "prompt": "A toy boat floating on a pond.",
+      "candidateModelIds": [
+        "pika-text-to-video"
+      ],
+      "settings": {
+        "durationSec": 5,
+        "resolution": "720p",
+        "aspectRatio": "16:9"
+      },
+      "references": []
+    },
+    "budget": {
+      "proposals": [
+        {
+          "name": "Pika availability audit",
+          "lines": [
+            {
+              "purpose": "Availability check only",
+              "engineId": "pika-text-to-video",
+              "mode": "t2v",
+              "settings": {
+                "durationSec": 5,
+                "resolution": "720p",
+                "aspectRatio": "16:9"
+              },
+              "clipCount": 1,
+              "attemptsPerClip": 1
+            }
+          ]
+        }
+      ]
+    },
+    "prepare": {
+      "surface": "video",
+      "engineId": "pika-text-to-video",
+      "mode": "t2v",
+      "prompt": "A toy boat floating on a pond.",
+      "settings": {
+        "durationSec": 5,
+        "resolution": "720p",
+        "aspectRatio": "16:9"
+      },
+      "references": [],
+      "outputCount": 1
+    }
+  },
+  "results": [
+    {
+      "recommendations": [],
+      "nextAction": "clarify_requirements",
+      "message": "No public model matches all requested capabilities. Relax or clarify one or more requirements."
+    },
+    {
+      "ok": false,
+      "error": {
+        "code": "PARAMETER_INVALID",
+        "message": "No current model could be verified and priced for all these constraints and references. Keep the requirements; use the returned mode facts to explain the mismatch or unavailable pricing. No quote or generation was created.",
+        "retryable": false,
+        "nextAction": {
+          "type": "generation_comparison",
+          "reason": "no_matching_scenario",
+          "surface": "video",
+          "mode": "t2v",
+          "requestedDurationSec": 5,
+          "durationMismatch": false,
+          "constraintMismatch": false,
+          "catalogFingerprint": "f58efafd69a2f80685313d6854b3cf4875cbaea90faf708e4657d63e1c155648",
+          "models": [],
+          "modelsTruncated": false,
+          "validationFailures": [],
+          "validationFailuresTruncated": false
+        }
+      }
+    },
+    {
+      "ok": false,
+      "error": {
+        "code": "ENGINE_UNAVAILABLE",
+        "message": "The selected model is not currently available.",
+        "retryable": false,
+        "nextAction": {
+          "type": "edit_project_line",
+          "proposalIndex": 0,
+          "lineIndex": 0,
+          "field": "engineId"
+        }
+      }
+    },
+    {
+      "ok": false,
+      "error": {
+        "code": "ENGINE_UNAVAILABLE",
+        "message": "The selected model is not publicly available.",
+        "retryable": false,
+        "nextAction": null
+      }
+    }
+  ]
+}
