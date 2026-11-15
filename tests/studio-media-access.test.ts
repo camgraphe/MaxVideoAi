@@ -8,7 +8,7 @@ const assetA = `ma_${'a'.repeat(32)}`;
 const assetB = `ma_${'b'.repeat(32)}`;
 
 test('private Studio playback renews only canonical project members and signs GET without disposition', async () => {
-  const signed: Array<{ key: string; options: { expiresInSeconds: number; downloadFilename?: string } }> = [];
+  const signed: Array<{ key: string; options: { expiresInSeconds: number; downloadFilename?: string; signingDate?: Date } }> = [];
   const result = await renewStudioProjectMediaAccess({ userId: owner }, {
     projectId: 'project-1', assetIds: [assetA, assetB, assetA],
   }, {
@@ -27,9 +27,11 @@ test('private Studio playback renews only canonical project members and signs GE
       signed.push({ key, options });
       return 'https://private.invalid/a.mp4?signature=exact';
     },
-    now: () => new Date('2026-09-08T10:00:00.000Z'),
+    now: () => new Date('2026-09-08T10:00:00.987Z'),
   });
-  assert.deepEqual(signed, [{ key: `media-assets/${owner}/a.mp4`, options: { expiresInSeconds: 300 } }]);
+  assert.deepEqual(signed, [{ key: `media-assets/${owner}/a.mp4`, options: {
+    expiresInSeconds: 300, signingDate: new Date('2026-09-08T10:00:00.000Z'),
+  } }], 'The signer and returned expiry share one clock at S3 whole-second precision.');
   assert.deepEqual(result, {
     projectId: 'project-1',
     assets: [

@@ -99,8 +99,10 @@ export async function renewStudioProjectMediaAccess(
         throw new Error('MEDIA_NOT_AVAILABLE');
       }
       if (resolved.originalAccess.type === 'owned-storage') {
-        const signedAt = now();
-        const url = await sign(resolved.originalAccess.storageKey, { expiresInSeconds: MEDIA_ACCESS_TTL_SECONDS });
+        // S3 encodes signing time in whole seconds. Pin that same instant for
+        // the signature and its advertised expiry, including slow signers.
+        const signedAt = new Date(Math.floor(now().getTime() / 1_000) * 1_000);
+        const url = await sign(resolved.originalAccess.storageKey, { expiresInSeconds: MEDIA_ACCESS_TTL_SECONDS, signingDate: signedAt });
         assets.push({
           assetId,
           url,

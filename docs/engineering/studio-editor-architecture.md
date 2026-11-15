@@ -224,6 +224,10 @@ Preview and MP4 rendering consume the same saved
 must use these reads rather than trial mutations. Pure edit, DOM playback, MCP
 schema and opt-in synthetic FFmpeg/Chromium rendering tests cover this contract.
 
+Private project-media renewal pins the S3 signing date and returned `expiresAt`
+to the same whole-second clock reading. Signing latency must not extend the
+signature beyond the advertised 300-second grant.
+
 `useConversationTimeline` owns periodic preview refresh. Its polling waits for all current-project reads to settle, including a forced replacement for a refused grant that still appears valid to the browser clock. Explicit refreshes, revisioned edits and lifecycle invalidations retain their epoch ordering. Pending grant replacements belong to the project path and survive superseded or failed reads until the winning successful canonical response replaces those grants. A late journal response must not lose that renewal intent; the obsolete response still cannot reset canonical revisions. Replacement sources and decoder retry keys commit atomically in the hook; completing an obsolete or failed request never retries the refused source. Grant retention and retry keys never cross project boundaries. Read counts belong to each project path and are released in `finally`, so failed or obsolete reads cannot release another project's polling gate. `tests/studio-conversation-timeline-refresh-dom.test.ts` exercises the real hook with deferred responses; the connected montage browser test deliberately delivers the initial journal while renewal is pending, tests both response orders with the old URL persistently refused, and retains separate preview/new-grant diagnostic flags without exposing signed URLs.
 
 The 2026-10-06 branch candidate adds bounded atomic assembly (up to 12 insertions)
