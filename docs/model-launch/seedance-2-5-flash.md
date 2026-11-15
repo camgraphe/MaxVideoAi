@@ -163,6 +163,14 @@ Local PG17 verification exercised all 6,804 classes through those native admin t
 
 ## Surface audit
 
+The [15 November marketing readiness audit](seedance-2-5-flash-marketing-readiness-20261115.md)
+records the latest 72-route verification, 33 direct-link destinations, gallery
+publication/reuse checks and exact placements for the pending editorial videos.
+Examples, specifications and Milo now reflect qualified audio-only references
+and MP4/MOV. The benchmark dossier records eight completed technical canaries
+separately from zero quality-scored samples; its eleven editorial scores remain
+unchanged.
+
 | Surface | Owning source and candidate behavior |
 | --- | --- |
 | Model identity, aliases, picker variant | `config/model-registry.json`; independent Flash identity, grouped with Seedance variants. Model, examples, compare, app, pricing and sitemap publication are enabled in this branch; model and comparison indexing are enabled. Generated runtime/catalog/roster are regenerated. |
@@ -258,7 +266,7 @@ latency remains a separate measured series with its existing sample thresholds.
 1. Complete local provider, canonical quote, MCP/Studio projection, recovery and PostgreSQL checks. Offline mocks are not provider canaries.
 2. Provider access and all five workflows are verified at the combinations above. Preserve their exact output/timing contracts, run the affected application charging and recovery tests, and verify final runtime configuration. These direct adapter canaries do not establish an end-to-end production customer transaction.
 3. Validate literal tariff proposals against the current database and apply through the existing admin batch preview/confirmation path. Track all 31 receipts and complete any pending refresh; verify visible prices after cache revalidation. Flash activation and standard repricing are separate from a successful code build.
-4. Finalize the separate page design and exact Flash media/launch assets with the marketing task. Review the launch-state copy against actual qualified modes, reassess provisional scores when real outputs exist, and verify registry, launch-assets, localized SEO and browser checks.
+4. Finalize the separate page design and exact Flash media/launch assets with the marketing task, using the placements in the readiness audit. Reassess provisional scores when controlled quality evidence is available, and verify the final media, registry, launch-assets, localized SEO and browser checks.
 5. Follow `docs/deployment/github-vercel.md`: clean committed candidate, PR, required Quality CI, current main, reviewed production release and both-domain verification.
 
 Relevant Flash environment keys: `BYTEPLUS_ARK_SEEDANCE_2_5_FLASH_MODEL_ID`, `SEEDANCE_2_5_FLASH_BYTEPLUS_ENABLED`, `SEEDANCE_2_5_FLASH_PROVIDER`, `SEEDANCE_2_5_FLASH_BYTEPLUS_ADMIN_ONLY`, `SEEDANCE_2_5_FLASH_BYTEPLUS_MODES`. Closing these controls must not prevent recovery of an already accepted job.

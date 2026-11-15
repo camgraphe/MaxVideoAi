@@ -1979,11 +1979,12 @@
     {
       "modelSlug": "seedance-2-5-flash",
       "sources": [
-        "https://console.byteplus.com/ark/region:ap-southeast-1/model/detail?name=dreamina-seedance-2-5-flash"
+        "https://console.byteplus.com/ark/region:ap-southeast-1/model/detail?name=dreamina-seedance-2-5-flash",
+        "https://ai.byteplus.com/ark/region:ap-southeast-1/docs/create-video-generation-task-api"
       ],
       "provenance": {
-        "basis": "maxvideoai-release-candidate-contract",
-        "note": "Release candidate prepared from the BytePlus console card reviewed 2026-11-13 and the separate Flash adapter. API admission and each exposed mode must be qualified before release; both authorized attempts returned 404 without a task ID. This row describes intended controls, not measured quality or latency."
+        "basis": "maxvideoai-qualified-adapter-contract",
+        "note": "Exact Flash API and output qualification on 2026-11-15: eight owned outputs completed, including seven adapter canaries across all five workflows. MP4/MOV, audio-only references, first/last frames, generated audio and Auto were exercised. Modify inherits source framing and approximate timing; Extend returns the new segment. See docs/model-launch/seedance-2-5-flash-qualification-20261115.json. These checks do not establish controlled quality or production latency."
       },
       "keySpecs": {
         "textToVideo": "Supported",
@@ -1994,7 +1995,7 @@
         "firstLastFrame": "Supported (start image + optional end image)",
         "referenceImageStyle": "Up to 10 image references",
         "referenceVideo": "Up to 5 video references",
-        "referenceAudio": "Up to 5 audio references; visual input required",
+        "referenceAudio": "Up to 5 audio references",
         "maxResolution": "480p / 720p",
         "maxDuration": "4–30s",
         "aspectRatios": [
@@ -2009,7 +2010,8 @@
           "24 fps"
         ],
         "outputFormats": [
-          "MP4"
+          "MP4",
+          "MOV"
         ],
         "audioOutput": "Optional generated audio",
         "nativeAudioGeneration": "Optional",

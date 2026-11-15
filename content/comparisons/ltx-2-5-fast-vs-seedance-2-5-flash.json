@@ -40,6 +40,10 @@
         "label": "LTX 2.5 Fast"
       },
       {
+        "href": "/examples/seedance",
+        "label": "Seedance video examples"
+      },
+      {
         "href": "/ai-video-engines/seedance-2-5-vs-seedance-2-5-flash",
         "label": "Standard vs Flash"
       },
@@ -119,6 +123,10 @@
         "label": "LTX 2.5 Fast"
       },
       {
+        "href": "/fr/galerie/seedance",
+        "label": "Exemples vidéo Seedance"
+      },
+      {
         "href": "/fr/comparatif/seedance-2-5-vs-seedance-2-5-flash",
         "label": "Standard contre Flash"
       },
@@ -196,6 +204,10 @@
       {
         "href": "/es/modelos/ltx-2-5-fast",
         "label": "LTX 2.5 Fast"
+      },
+      {
+        "href": "/es/galeria/seedance",
+        "label": "Ejemplos de vídeo Seedance"
       },
       {
         "href": "/es/comparativa/seedance-2-5-vs-seedance-2-5-flash",

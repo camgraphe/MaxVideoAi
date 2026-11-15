@@ -40,6 +40,10 @@
         "label": "MiniMax H3"
       },
       {
+        "href": "/examples/seedance",
+        "label": "Seedance video examples"
+      },
+      {
         "href": "/ai-video-engines/seedance-2-5-vs-seedance-2-5-flash",
         "label": "Standard vs Flash"
       },
@@ -119,6 +123,10 @@
         "label": "MiniMax H3"
       },
       {
+        "href": "/fr/galerie/seedance",
+        "label": "Exemples vidéo Seedance"
+      },
+      {
         "href": "/fr/comparatif/seedance-2-5-vs-seedance-2-5-flash",
         "label": "Standard contre Flash"
       },
@@ -196,6 +204,10 @@
       {
         "href": "/es/modelos/minimax-h3",
         "label": "MiniMax H3"
+      },
+      {
+        "href": "/es/galeria/seedance",
+        "label": "Ejemplos de vídeo Seedance"
       },
       {
         "href": "/es/comparativa/seedance-2-5-vs-seedance-2-5-flash",

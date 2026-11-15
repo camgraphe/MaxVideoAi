@@ -49,6 +49,8 @@ test('six complete Flash comparisons reach discovery, localized indexing and ass
       assert.equal(content.topCards?.length, 4);
       assert.equal(content.faq?.items.length, 5);
       assert.ok(content.primaryLinks!.some(link => link.href.endsWith(`/models/${flash}`) || link.href.endsWith(`/modeles/${flash}`) || link.href.endsWith(`/modelos/${flash}`)));
+      const examplesPrefix = locale === 'en' ? '/examples' : locale === 'fr' ? '/fr/galerie' : '/es/galeria';
+      assert.ok(content.primaryLinks!.some(link => link.href === `${examplesPrefix}/seedance`));
       assert.ok(trainingPolicy.pageTargets.includes(prefix + pair));
       assert.doesNotMatch(JSON.stringify(content), /\$\s*\d|\d+(?:\.\d+)?\s*(?:USD|EUR)|\.mp4|\.webm/);
     }
@@ -88,10 +90,13 @@ test('Seedance family copy keeps canonical identity, earlier explanations and ex
   closed.find(model => model.id === flash)!.publication.examples.includeInFamilyCopy = false;
   const families = buildModelFamilyDefinitions(models);
   assert.equal(families.find(family => family.id === 'seedance')!.defaultModelSlug, 'seedance-2-0');
+  assert.equal(families.find(family => family.id === 'seedance')!.navLabel, 'Seedance');
   for (const locale of ['en', 'fr', 'es'] as const) {
     const baseline = getLocalizedModelData(locale, families, closed).seedance!;
     const current = getLocalizedModelData(locale, families, models).seedance!;
     assert.match(current.summary!, /Seedance 2\.5 Flash/);
+    assert.match(current.strengthsLimits!, /MP4.*MOV/);
+    assert.doesNotMatch(current.strengthsLimits!, /visual input required|entrée visuelle nécessaire|entrada visual necesaria/);
     assert.equal(current.metaTitle, baseline.metaTitle);
     assert.deepEqual(current.faq.slice(0, baseline.faq.length), baseline.faq);
     assert.equal(current.faq.length, baseline.faq.length + 1);

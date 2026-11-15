@@ -4,7 +4,7 @@ import type { CanonicalExampleModelSlug, LocalizedModelDescriptor } from '@/lib/
 export const EN_SEEDANCE_FLASH_ADDITION = {
   summary: 'Seedance 2.5 Flash adds a distinct 4–30 second workflow at 480p or 720p. Standard 2.5 keeps its 1080p and native Draft-to-final options; earlier Seedance examples retain their actual model and settings.',
   promptPatterns: 'For Flash, give each image, video or audio reference a clear role. Describe the action in order, then the camera and sound. Keep the source clip separate when editing or extending a video.',
-  strengthsLimits: 'Flash accepts up to 10 images, 5 videos and 5 audio references, with a visual input required alongside audio references. It does not provide 1080p, 4K or native Draft-to-final. Compare the complete result and the current quote, not the variant name.',
+  strengthsLimits: 'Flash accepts up to 10 images, 5 videos and 5 audio references, including audio-only references. MP4 and MOV outputs are available. It does not provide 1080p, 4K or native Draft-to-final. Compare the complete result and the current quote, not the variant name.',
   faq: [{ question: 'How should I compare Seedance 2.5 Flash and standard examples?', answer: 'Keep each clip’s model, prompt and settings together. Flash outputs 480p or 720p for 4–30 second scenes; standard 2.5 also offers 1080p and native Draft-to-final. Reference limits differ. Use the standard-versus-Flash comparison and check a new quote before recreating a scene.' }],
 } satisfies Pick<LocalizedModelDescriptor, 'summary' | 'promptPatterns' | 'strengthsLimits' | 'faq'>;
 

@@ -256,10 +256,10 @@
       "controllability": 8.3,
       "speedStability": 7.1,
       "pricing": 8.4,
-      "last_updated": "2026-11-14",
+      "last_updated": "2026-11-15",
       "reviewStatus": "editorial-estimated",
       "evidenceFile": "seedance-2-5-flash-evidence.v1.json",
-      "reviewNote": "Eleven provisional editorial estimates from exact-model documentation, attributed first-person reports and prepared MaxVideoAI tariffs. No owned or controlled Flash output; text, lip sync and sequencing remain low-confidence priors.",
+      "reviewNote": "Eleven provisional editorial estimates from exact-model documentation, attributed first-person reports and prepared MaxVideoAI tariffs. Eight owned technical canaries qualify API workflows and output handling, not a controlled quality benchmark; text, lip sync and sequencing remain low-confidence priors.",
       "reviewConfidence": {
         "fidelity": "low",
         "visualQuality": "low",

@@ -2,13 +2,14 @@
   "version": "1.0.0",
   "modelSlug": "seedance-2-5-flash",
   "modelVersion": "dreamina-seedance-2-5-flash-261115",
-  "reviewedAt": "2026-11-14",
+  "reviewedAt": "2026-11-15",
   "reviewStatus": "editorial-estimated",
   "methodologyFile": "benchmark-methodology.v1.json",
   "scoreFile": "engine-scores.v1.json",
   "editorialReview": {
     "basis": "Exact-model documentation and attributed first-person reports; conservative editorial judgments on the existing 0–10 scale.",
-    "ownedCompletedSamples": 0,
+    "ownedCompletedSamples": 8,
+    "ownedQualityScoredSamples": 0,
     "controlledBenchmark": false,
     "independentReviewCompleted": false,
     "overall": 8.0,
@@ -51,8 +52,8 @@
     {
       "id": "byteplus-pricing",
       "title": "BytePlus ModelArk pricing",
-      "url": "https://console.byteplus.com/ark/region:ap-southeast-1/docs/model-pricing",
-      "accessedAt": "2026-11-13",
+      "url": "https://ai.byteplus.com/ark/region:ap-southeast-1/docs/model-pricing",
+      "accessedAt": "2026-11-15",
       "kind": "official-supplier-list",
       "observation": "Flash LIST rates are USD 0.007 per 1,000 tokens without video input and USD 0.0043 with video input. Supplier offers and account discounts are not customer tariffs."
     },
@@ -63,6 +64,15 @@
       "kind": "local-release-candidate",
       "observation": "Prepared native admin imports use Flash LIST ×1.6 and standard 2.5 LIST ×2. For 5-second 16:9 text-to-video, prepared Flash customer amounts are USD 0.54 at 480p and USD 1.21 at 720p; standard amounts are USD 1.03 and USD 2.32. These are preparation evidence, not active production quotes.",
       "limits": "The value estimate assumes the reviewed tariff candidate is activated. Public price components must still use the current canonical quote and never this dossier."
+    },
+    {
+      "id": "maxvideoai-flash-qualification",
+      "title": "MaxVideoAI exact-model API and output qualification",
+      "path": "docs/model-launch/seedance-2-5-flash-qualification-20261115.json",
+      "accessedAt": "2026-11-15",
+      "kind": "owned-technical-canaries",
+      "observation": "Eight exact-model outputs completed: the initial 4-second canary documented in the launch dossier and seven adapter canaries covering the five workflows, audio, Auto, first/last frames, mixed and audio-only references, MP4 and MOV. Outputs were decoded and their settings, token usage and hashes recorded.",
+      "limits": "Technical acceptance and format checks are not a controlled quality benchmark. These samples do not change the eleven editorial scores or establish production median/P90 latency."
     }
   ],
   "criterionAssessments": {
@@ -145,21 +155,21 @@
     }
   },
   "publicCopy": {
-    "en": "Provisional editorial estimates from documentation and early external test reports; confidence is limited. No controlled MaxVideoAI test yet.",
-    "fr": "Estimations éditoriales provisoires fondées sur la documentation et de premiers tests externes ; confiance limitée. Aucun test contrôlé MaxVideoAI à ce stade.",
-    "es": "Estimaciones editoriales provisionales basadas en documentación y primeras pruebas externas; confianza limitada. Sin prueba controlada de MaxVideoAI por ahora."
+    "en": "Provisional editorial estimates from documentation and early external test reports; confidence is limited. No controlled MaxVideoAI quality benchmark yet.",
+    "fr": "Estimations éditoriales provisoires fondées sur la documentation et de premiers tests externes ; confiance limitée. Aucun benchmark de qualité contrôlé par MaxVideoAI à ce stade.",
+    "es": "Estimaciones editoriales provisionales basadas en documentación y primeras pruebas externas; confianza limitada. Sin evaluación de calidad controlada de MaxVideoAI por ahora."
   },
   "limitations": [
     "The retrieved sources publish no directly comparable numerical Flash benchmark; all eleven points are MaxVideoAI editorial judgments.",
     "Prompts are not outputs. Reported external observations were not reproduced or independently scored here.",
     "Capability-only priors for text, lip sync and sequencing are not evidence of successful execution or observed failures.",
     "Commercial sources may select favorable outputs. Sample counts, retries and exclusions are incomplete.",
-    "No owned Flash render completed: the two authorized BytePlus attempts returned 404 before task creation. Their failures do not measure image quality or runtime latency.",
-    "Exact-mode API qualification, real launch media and tariff activation remain release checks; marketing publication settings do not establish them.",
+    "Eight owned Flash renders completed on 15 November. They qualify representative API workflows and output handling, not controlled visual quality, text rendering, lip sync or multi-shot accuracy.",
+    "Application release validation, reviewed launch media and tariff activation remain release checks; marketing publication settings do not establish them.",
     "MaxVideoAI sells access to these models. Scores must not be presented as an independent laboratory ranking."
   ],
   "nextReview": [
-    "Run the existing prompt pack after exact Flash API access works and paid scope is authorized.",
+    "Run and score the existing quality prompt pack when that separate paid scope is authorized; exact Flash API access is now verified.",
     "Replace weak priors first: product text, speaking-face synchronization and explicit multi-shot continuity.",
     "Reassess value against activated canonical quotes and keep operational latency in its separate production metric."
   ]

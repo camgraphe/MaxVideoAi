@@ -14,8 +14,8 @@ const neutralInternalHrefPattern = /^\/(?:(?:models|examples|ai-video-engines)\/
 const generationInternalHrefPattern = /^\/app\?engine=[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const internalHrefPatternsByLocale: Record<AppLocale, readonly RegExp[]> = {
   en: [neutralInternalHrefPattern, generationInternalHrefPattern],
-  fr: [neutralInternalHrefPattern, generationInternalHrefPattern, /^\/fr\/(?:(?:modeles|exemples|comparatif)\/[^\s]+|tarifs(?:#[^\s]+)?)$/],
-  es: [neutralInternalHrefPattern, generationInternalHrefPattern, /^\/es\/(?:(?:modelos|ejemplos|comparativa)\/[^\s]+|precios(?:#[^\s]+)?)$/],
+  fr: [neutralInternalHrefPattern, generationInternalHrefPattern, /^\/fr\/(?:(?:modeles|galerie|exemples|comparatif)\/[^\s]+|tarifs(?:#[^\s]+)?)$/],
+  es: [neutralInternalHrefPattern, generationInternalHrefPattern, /^\/es\/(?:(?:modelos|galeria|ejemplos|comparativa)\/[^\s]+|precios(?:#[^\s]+)?)$/],
 };
 
 const metaSchema = z.object({

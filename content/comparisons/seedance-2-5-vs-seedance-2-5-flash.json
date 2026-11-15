@@ -40,6 +40,10 @@
         "label": "Seedance 2.5"
       },
       {
+        "href": "/examples/seedance",
+        "label": "Seedance video examples"
+      },
+      {
         "href": "/ai-video-engines/best-for/fast-drafts",
         "label": "Models for creative iteration"
       },
@@ -115,6 +119,10 @@
         "label": "Seedance 2.5"
       },
       {
+        "href": "/fr/galerie/seedance",
+        "label": "Exemples vidéo Seedance"
+      },
+      {
         "href": "/fr/comparatif/best-for/fast-drafts",
         "label": "Modèles pour itérer"
       },
@@ -188,6 +196,10 @@
       {
         "href": "/es/modelos/seedance-2-5",
         "label": "Seedance 2.5"
+      },
+      {
+        "href": "/es/galeria/seedance",
+        "label": "Ejemplos de vídeo Seedance"
       },
       {
         "href": "/es/comparativa/best-for/fast-drafts",

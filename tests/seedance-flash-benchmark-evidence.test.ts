@@ -23,7 +23,8 @@ test('Flash estimates resolve their own evidence and disclose the three capabili
   assert.ok(row);
   assert.equal(row.reviewStatus, 'editorial-estimated');
   assert.equal(row.evidenceFile, 'seedance-2-5-flash-evidence.v1.json');
-  assert.equal(evidence.editorialReview.ownedCompletedSamples, 0);
+  assert.equal(evidence.editorialReview.ownedCompletedSamples, 8);
+  assert.equal(evidence.editorialReview.ownedQualityScoredSamples, 0);
   assert.equal(evidence.editorialReview.controlledBenchmark, false);
   assert.equal(evidence.editorialReview.independentReviewCompleted, false);
   assert.deepEqual(Object.keys(evidence.criterionAssessments).sort(), methodology.criteria.map(item => item.id).sort());
@@ -52,6 +53,9 @@ test('App, comparison hub and comparison detail preserve the same Flash estimate
   assert.equal(hub.reviews[evidence.modelSlug], 'editorial-estimated');
   assert.equal(comparisons.get(evidence.modelSlug)?.review?.status, 'editorial-estimated');
   assert.match(getAgentModelGuidance(evidence.modelSlug)!.considerations.join(' '), /provisional editorial estimates/);
+  const guidance = getAgentModelGuidance(evidence.modelSlug)!.considerations.join(' ');
+  assert.match(guidance, /audio-only references and MP4\/MOV output are supported/);
+  assert.doesNotMatch(guidance, /audio-only references are not supported/);
 });
 
 test('the public Flash table has all eleven qualified scores and only the necessary methodology link', async () => {
