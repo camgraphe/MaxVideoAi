@@ -118,6 +118,10 @@
         {
           "label": "Les outils de Seedance 2.5 Flash",
           "href": "#specs"
+        },
+        {
+          "label": "Exemples Seedance",
+          "href": "/fr/galerie/seedance"
         }
       ]
     },

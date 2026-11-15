@@ -118,6 +118,10 @@
         {
           "label": "Controles de Seedance 2.5 Flash",
           "href": "#specs"
+        },
+        {
+          "label": "Ejemplos Seedance",
+          "href": "/es/galeria/seedance"
         }
       ]
     },

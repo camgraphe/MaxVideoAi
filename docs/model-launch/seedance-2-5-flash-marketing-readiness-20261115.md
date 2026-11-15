@@ -5,6 +5,17 @@ This audit covers the `codex/seedance-25-flash` candidate, synchronized with
 design task owns the final visual assembly and editorial renders. No production
 publication, tariff activation or paid render was performed during this audit.
 
+The gallery scope is limited to adding Flash to the existing Seedance family and
+its existing publication, curation and linking flows. Examples route components,
+gallery styles, readers and layout remain unchanged from `main`. The canonical
+family URLs and previous model/video identities are preserved. Flash's localized
+model-page quick links include the Seedance family gallery, including before the
+first Flash video is published. This work does not redesign the Examples pages.
+This link-only follow-up passed 42 family/navigation tests and 25 model-content
+tests. Browser checks verified reciprocal links in the rendered model, family
+and VS pages in all three locales (nine pages), with an empty local gallery.
+The full build recorded below predates this localized link addition.
+
 ## Discovery and content
 
 | Surface | Verified candidate behavior |
