@@ -7,7 +7,6 @@ export const SEEDANCE_MODELARK_IMAGE_FORMATS = ['jpg', 'jpeg', 'png', 'webp', 'b
 /** Authored creative fields shared by the current ModelArk Seedance models. */
 export function withSeedanceModelArkOptions(engine: EngineCaps): EngineCaps {
   if (!isUnifiedSeedanceEngineId(engine.id) || !engine.inputSchema) return engine;
-  const flagship = engine.id === 'seedance-2-5';
   const series25 = isSeedance25EngineId(engine.id);
   const { image: images, video: videos, audio: audios } = seedanceModelArkReferenceLimits(engine.id);
   const adaptField = (field: EngineInputField): EngineInputField => {
@@ -22,7 +21,7 @@ export function withSeedanceModelArkOptions(engine: EngineCaps): EngineCaps {
     return field;
   };
   const outputs: EngineInputField[] = [
-    ...(flagship ? [{ id: 'output_format', type: 'enum' as const, label: 'Output format', values: ['mp4', 'mov'], default: 'mp4',
+    ...(series25 ? [{ id: 'output_format', type: 'enum' as const, label: 'Output format', values: ['mp4', 'mov'], default: 'mp4',
       description: 'MP4 for sharing; MOV preserves professional colour and audio fidelity. The original remains available to download.' }] : []),
   ];
   const required = (engine.inputSchema.required ?? []).map(adaptField);
@@ -37,8 +36,8 @@ export function withSeedanceModelArkOptions(engine: EngineCaps): EngineCaps {
       maxCombinedVideoDurationSec: series25 ? 30.2 : 15,
       maxCombinedAudioDurationSec: series25 ? 30 : 15,
       supportedFormats: [...SEEDANCE_MODELARK_IMAGE_FORMATS, 'mp4', 'mov', 'mp3', 'wav'],
-      atLeastOneReferenceField: flagship ? ['image_urls','video_urls','audio_urls'] : ['image_urls','video_urls'],
-      referenceAudioRequiresVisual: !flagship,
+      atLeastOneReferenceField: series25 ? ['image_urls','video_urls','audio_urls'] : ['image_urls','video_urls'],
+      referenceAudioRequiresVisual: !series25,
     },
   } };
 }

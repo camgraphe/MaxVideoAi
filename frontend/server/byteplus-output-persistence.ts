@@ -53,9 +53,10 @@ export function bytePlusRequestedOutputOptions(job: BytePlusPendingJob) {
   const advanced = isRecord(settings.advanced) ? settings.advanced : {};
   const extra = isRecord(advanced.extraInputValues) ? advanced.extraInputValues : {};
   const core = isRecord(settings.core) ? settings.core : {};
-  const requiresCompatiblePlayback = job.engine_id === 'seedance-2-5'
-    && (extra.output_format === 'mov' || core.resolution === '1080p');
-  return { outputFormat: job.engine_id === 'seedance-2-5' && extra.output_format === 'mov' ? 'mov' as const : 'mp4' as const,
+  const outputFormat = isSeedance25EngineId(job.engine_id) && extra.output_format === 'mov' ? 'mov' as const : 'mp4' as const;
+  const requiresCompatiblePlayback = outputFormat === 'mov'
+    || (job.engine_id === 'seedance-2-5' && core.resolution === '1080p');
+  return { outputFormat,
     requiresCompatiblePlayback,
     returnLastFrame: /^seedance-/.test(job.engine_id) && extra.return_last_frame === true };
 }

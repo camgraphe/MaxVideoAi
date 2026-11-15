@@ -17950,6 +17950,8 @@
             "type": "video",
             "label": "Source video",
             "description": "Required source video for video-to-video editing.",
+            "minDurationSec": 4,
+            "maxDurationSec": 30,
             "modes": [
               "v2v"
             ],
@@ -17965,6 +17967,11 @@
             "type": "video",
             "label": "Reference video clips (up to 5)",
             "description": "Optional motion or pacing references. Keep all reference videos within 30 seconds in total.",
+            "minDurationSec": 2,
+            "minDurationSecByMode": {
+              "v2v": 4
+            },
+            "maxDurationSec": 30.2,
             "modes": [
               "ref2v",
               "v2v"
@@ -17978,6 +17985,8 @@
             "type": "video",
             "label": "Source clips to extend (up to 5)",
             "description": "Extend a source clip or connect source clips within the combined video duration limit.",
+            "minDurationSec": 2,
+            "maxDurationSec": 30.2,
             "modes": [
               "extend"
             ],
@@ -17994,6 +18003,8 @@
             "type": "audio",
             "label": "Reference audio clips (up to 5)",
             "description": "Optional audio references for reference-to-video or video-to-video.",
+            "minDurationSec": 2,
+            "maxDurationSec": 30,
             "modes": [
               "ref2v",
               "v2v",
@@ -18015,6 +18026,17 @@
               "wav"
             ],
             "source": "either"
+          },
+          {
+            "id": "output_format",
+            "type": "enum",
+            "label": "Output format",
+            "values": [
+              "mp4",
+              "mov"
+            ],
+            "default": "mp4",
+            "description": "MP4 for sharing; MOV preserves professional colour and audio fidelity. The original remains available to download."
           }
         ],
         "referenceBudget": {
@@ -18075,9 +18097,10 @@
           "maxCombinedAudioDurationSec": 30,
           "atLeastOneReferenceField": [
             "image_urls",
-            "video_urls"
+            "video_urls",
+            "audio_urls"
           ],
-          "referenceAudioRequiresVisual": true
+          "referenceAudioRequiresVisual": false
         }
       },
       "pricingDetails": {
@@ -18166,7 +18189,7 @@
         "currency": "USD",
         "notes": "Price is calculated before generation based on duration, resolution, and whether a source video is used."
       },
-      "updatedAt": "2026-11-13T00:00:00Z",
+      "updatedAt": "2026-11-15T00:00:00Z",
       "ttlSec": 600,
       "providerMeta": {
         "provider": "byteplus_modelark",
@@ -18361,7 +18384,7 @@
           ],
           "maxUploadMB": 200,
           "audioToggle": true,
-          "notes": "Use up to 10 images, 5 video clips, and 5 audio clips, with 20 unique references total. images: jpg, jpeg, png, webp, bmp, tif, tiff, gif, heic, heif; video: mp4, mov; audio: mp3, wav"
+          "notes": "Use up to 10 images, 5 video clips, and 5 audio clips, with 20 unique references total. Audio-only references are supported. images: jpg, jpeg, png, webp, bmp, tif, tiff, gif, heic, heif; video: mp4, mov; audio: mp3, wav"
         }
       },
       {
@@ -18430,7 +18453,7 @@
           ],
           "maxUploadMB": 200,
           "audioToggle": true,
-          "notes": "Edit one source video with optional image, video and audio references; 4-30 seconds, up to 720p, landscape, square, or vertical, with generated audio. images: jpg, jpeg, png, webp, bmp, tif, tiff, gif, heic, heif; video: mp4, mov; audio: mp3, wav"
+          "notes": "Edit one 4-30 second source video with optional image, video and audio references. Output inherits source framing and approximate timing and may be up to 0.4 seconds shorter. Choose 480p or 720p, MP4 or MOV, and generated audio. images: jpg, jpeg, png, webp, bmp, tif, tiff, gif, heic, heif; video: mp4, mov; audio: mp3, wav"
         }
       },
       {
@@ -18500,7 +18523,7 @@
           ],
           "maxUploadMB": 200,
           "audioToggle": true,
-          "notes": "Continue one to five source clips with optional image and audio references; 4-30 seconds, up to 720p, landscape, square, or vertical, with generated audio. images: jpg, jpeg, png, webp, bmp, tif, tiff, gif, heic, heif; video: mp4, mov; audio: mp3, wav"
+          "notes": "Continue one to five source clips with optional image and audio references. Request 4-30 seconds or Auto for the new segment; output inherits source framing. Specify forward or backward extension in the prompt. Assemble the new segment with the source separately. images: jpg, jpeg, png, webp, bmp, tif, tiff, gif, heic, heif; video: mp4, mov; audio: mp3, wav"
         }
       }
     ],

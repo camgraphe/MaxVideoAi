@@ -10,6 +10,7 @@ import { query } from '@/lib/db';
 import {
   hasFieldSpecificMediaConstraint,
   resolveEngineMediaFieldConstraint,
+  resolveMediaFieldMinDuration,
   validateMediaFileAgainstConstraint,
   validateImageAspectRatio,
 } from '@/lib/media-field-constraints';
@@ -220,7 +221,7 @@ export async function validateGenerationMediaConstraints(params: {
         (field.type === 'image' && typeof params.inputSchema?.constraints?.minImageSidePx === 'number') ||
         (field.type === 'video' &&
           typeof params.inputSchema?.constraints?.minVideoPixelCount === 'number') ||
-        typeof field.minDurationSec === 'number' ||
+        typeof resolveMediaFieldMinDuration(field, params.mode) === 'number' ||
         typeof field.maxDurationSec === 'number')
   );
   if (!constrainedFields.length) return { ok: true };
@@ -508,9 +509,10 @@ export async function validateGenerationMediaConstraints(params: {
         : field.type === 'audio'
           ? params.inputSchema?.constraints?.maxCombinedAudioDurationSec
           : undefined;
+    const minDurationSec = resolveMediaFieldMinDuration(field, params.mode);
     const requiresTrustedDuration =
       (field.type === 'video' || field.type === 'audio') &&
-      (typeof field.minDurationSec === 'number' ||
+      (typeof minDurationSec === 'number' ||
         typeof field.maxDurationSec === 'number' ||
         typeof combinedDurationLimit === 'number');
     if ((field.type === 'video' || field.type === 'audio') && requiresTrustedDuration) {
@@ -538,15 +540,15 @@ export async function validateGenerationMediaConstraints(params: {
       // Pricing consumes these references, including facts measured above.
       trustedReference.durationSec = durationSec;
       const belowMinimum =
-        typeof field.minDurationSec === 'number' && durationSec < field.minDurationSec;
+        typeof minDurationSec === 'number' && durationSec < minDurationSec;
       const aboveMaximum =
         typeof field.maxDurationSec === 'number' && durationSec > field.maxDurationSec;
       if (belowMinimum || aboveMaximum) {
         return failure({
           error: 'MEDIA_DURATION_UNSUPPORTED',
           fieldId: candidate.fieldId,
-          message: `Each ${field.type} reference must be between ${field.minDurationSec ?? 0} and ${field.maxDurationSec ?? 'the provider maximum'} seconds.`,
-          minDurationSec: field.minDurationSec,
+          message: `Each ${field.type} reference must be between ${minDurationSec ?? 0} and ${field.maxDurationSec ?? 'the provider maximum'} seconds.`,
+          minDurationSec,
           maxDurationSec: field.maxDurationSec,
           durationSec,
         });

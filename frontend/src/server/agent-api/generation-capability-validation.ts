@@ -1,4 +1,5 @@
 import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
+import { resolveMediaFieldMinDuration } from '@/lib/media-field-constraints';
 import { isWan3EngineId } from '@/lib/wan3-pricing';
 import { getWanReferenceValidationMessage } from '@/lib/wan-image-failure-messages';
 import { hasPromptDirectedNativeAudio } from '@/lib/prompt-directed-audio';
@@ -778,8 +779,9 @@ function validateTrustedReferenceDuration(
   const sourcePlusOutputMaximum = field.id === 'video_url'
     ? constraints?.maxSourcePlusOutputDurationSec
     : undefined;
+  const minDurationSec = resolveMediaFieldMinDuration(field, toEngineGenerationMode(candidate.engine.id, request.mode));
   if (
-    field.minDurationSec === undefined
+    minDurationSec === undefined
     && field.maxDurationSec === undefined
     && combinedLimit === undefined
     && exclusiveMaximum === undefined
@@ -813,7 +815,7 @@ function validateTrustedReferenceDuration(
     || durationSec <= 0
   ) fail('references', 'reference_invalid', 'duration_unverified');
   if (
-    (typeof field.minDurationSec === 'number' && durationSec < field.minDurationSec)
+    (typeof minDurationSec === 'number' && durationSec < minDurationSec)
     || (typeof field.maxDurationSec === 'number' && durationSec > field.maxDurationSec)
     || (typeof exclusiveMaximum === 'number' && durationSec >= exclusiveMaximum)
     || (

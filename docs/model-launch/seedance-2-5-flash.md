@@ -1,4 +1,4 @@
-# Seedance 2.5 Flash — integration candidate, 14 November 2026
+# Seedance 2.5 Flash — integration candidate, 15 November 2026
 
 ## Identity and evidence
 
@@ -6,8 +6,8 @@
 - Direct ModelArk ID: `dreamina-seedance-2-5-flash-261115`, `https://ark.ap-southeast.bytepluses.com/api/v3`. No Fal or LAS fallback.
 - The account activation row was observed as **Activated**. Activation is separate from a successful generation.
 - [Official model card](https://console.byteplus.com/ark/region:ap-southeast-1/model/detail?name=dreamina-seedance-2-5-flash): up to 30 seconds, 480p/720p, up to 10 images, 5 videos and 5 audio references; multimodal generation and editing.
-- [Official pricing](https://console.byteplus.com/ark/region:ap-southeast-1/docs/model-pricing), checked 2026-11-13: $0.007/1,000 tokens without video input and $0.0043/1,000 with video input. No 1080p, 4K or offline inference. Actual provider usage remains authoritative.
-- [Task API](https://console.byteplus.com/ark/region:ap-southeast-1/docs/create-video-generation-task-api) still announces general API availability for 2026-11-15 at 14:00 UTC+8. Its detailed parameters describe standard 2.5. Flash account activation does not establish those advanced capabilities.
+- [Official pricing](https://ai.byteplus.com/ark/region:ap-southeast-1/docs/model-pricing), rechecked 2026-11-15: $0.007/1,000 tokens without video input and $0.0043/1,000 with video input. No 1080p, 4K or offline inference. Actual provider usage remains authoritative.
+- [Task API](https://console.byteplus.com/ark/region:ap-southeast-1/docs/create-video-generation-task-api), rechecked 2026-11-15 after opening, now explicitly includes Flash in the 2.5-series contracts: audio-only references, MP4/MOV, first/last frames, source-timed editing and extension. Seed, fixed-camera controls, Draft/final and output above 720p are not supported for Flash.
 
 ### Authorized account test
 
@@ -21,7 +21,7 @@ Initial request ID:
 A read-only `GET /api/v3/models` using the same existing project credential
 returned HTTP 200 and 35 visible model versions, including
 `dreamina-seedance-2-5-260628` but no Flash version. The account console still
-showed Flash as **Activated**. This establishes a current API admission blocker,
+showed Flash as **Activated**. This established an API admission blocker at that time,
 not a successful render or a definitive cause. No completion usage or billing
 receipt was returned. The documentation still announced 15 November API access
 when rechecked. Private request/response evidence stays under
@@ -47,11 +47,85 @@ reuses its existing nested/flat response-code parser for create, retrieve and
 delete failures. Offline regressions preserve status, code and sanitized messages
 and verify that no automatic retry or fallback is introduced.
 
-The adapter prepares the five ModelArk workflows (text, first/last frames, multimodal references, edit, extension). The 4–30-second range, Auto, six explicit ratios plus Auto, 24 FPS, source-derived edit timing/framing, input formats and duration budgets reuse the documented 2.5 protocol. They remain **candidate parameters pending exact Flash qualification**. At Adrien's request on 14 November, the branch prepares public catalog and indexing settings directly for launch, without a separate prelaunch marketing stage. Provider execution still uses its existing environment and per-mode controls; only `t2v` is admitted by default when explicitly enabling a canary. Validate final provider settings before release.
+### Successful account retest — 15 November 2026
 
-Flash has independent 10/5/5 limits at schema and provider boundaries. MOV output, native Draft/final, 1080p, 4K and audio-only references are not admitted. Optional watermark and return-last-frame remain retired product controls. Input MOV clips are different from MOV output.
+Adrien authorized one new attempt after the announced opening time. The same
+credential now lists 36 models, including `dreamina-seedance-2-5-flash-261115`.
+One direct HTTPS submission of the unchanged cup prompt, 4 seconds, 480p, 16:9
+and audio off returned HTTP **200** and task `cgt-20261116001501-rhdgo`.
+Read-only polling then returned **succeeded** for that exact Flash version.
 
-The 2.5-series raster/minimum formula is an estimate for Flash. It reproduces the published Flash 5-second 16:9 examples ($0.34/$0.76 without video at 480p/720p; the source duration also contributes with video). This does not replace returned usage or a completed Flash raster check. No signed Flash discount was established; do not inherit another Seedance model's contract.
+The downloaded original was decoded and verified: H.264, **854 × 480**, **24 FPS**,
+**97 frames / 4.041667 seconds**, 2,392,304 bytes and **no audio stream**.
+BytePlus reported **38,830 completion and total tokens**. At the LIST rate
+recorded above, this usage corresponds to **$0.27181**; this is a calculation,
+not a queried provider billing receipt. The application response normalizer
+also maps this real response to `completed` with its output and token usage.
+
+Private evidence is in `.local/seedance-25-flash/direct-retest-20261115-receipt.json`,
+`direct-retest-20261115-verification.json` and
+`seedance-2-5-flash-4s-480p-20261115.mp4`. The output SHA-256 is
+`4c4210d9ae0e83bcfa3e72958ca11f241494503271fa598c63671bb3abbafe5d`.
+This resolves the observed provider-access blocker for the tested text-to-video
+request. It does not qualify other modes, settings, paid application orchestration
+or customer billing. No runtime switch, active tariff or deployment was changed.
+
+### Extended qualification — 15 November 2026
+
+Following Adrien's request to finish all available options, seven distinct calls
+through the application payload builder and ModelArk client completed successfully.
+Each had one fenced submission. The reserved LIST estimate was $4.49 including
+Auto's 30-second maximum; returned usage totals **$2.407223** at the published
+LIST rates. No production flag, active tariff, wallet or deployment was changed.
+The sanitized [qualification evidence](seedance-2-5-flash-qualification-20261115.json)
+records task IDs, settings, usage, original hashes and decoded media metadata.
+
+| Scenario | Verified original |
+| --- | --- |
+| T2V, 720p, 9:16, audio on | 720×1280, 24 FPS, 4.041667s video, AAC audio |
+| I2V, first and last frames, audio off | 854×480, 24 FPS, 4.041667s, no audio |
+| Omni image + video + audio, square | 640×640, 24 FPS, 4.041667s video, AAC audio |
+| Modify, MOV, audio off | QuickTime/H.264 YUV444, 854×480, 3.708333s, no audio |
+| Extend forward, MP4, audio off | Separate 4.000000s continuation, 854×480, no audio |
+| Audio-only Omni, square | 640×640, 24 FPS, 4.041667s video, AAC audio |
+| Auto duration and adaptive format | Provider selected 854×480 and 4.041667s |
+
+Modify preserved the source framing and shortened its 4.041667s duration by
+0.333334s, within the documented 0.4s allowance. Its customer quote remains based
+on trusted source timing; actual shorter output does not reprice or refund it.
+Extend returned only the new segment, not an eight-second assembled video.
+Direction remains prompt-driven; Studio retains explicit assembly rather than
+assuming every prompt requests a forward append. Multi-source transitions and
+backward extension are documented options, not separate successful canaries here.
+
+The actual MOV canary also passed the application's original-copy and compatible
+playback owners locally, with storage/network replaced by local fixtures. Its
+original SHA-256 stayed unchanged; the separate MP4 is H.264/YUV420, 854×480,
+89 frames and 3.708333s without audio. Flash now selects this same durable MOV
+path for all modes, independently of the retired last-frame option.
+
+The five ModelArk workflows are now qualified at the combinations above; this
+does not certify every resolution, duration, reference count or content case.
+The branch defaults to all five modes when its existing execution switch is
+enabled, while preserving independent activation and admin controls. At Adrien's
+request, public catalog and indexing settings are prepared directly for launch.
+Validate the final runtime configuration before release.
+
+Flash has independent 10/5/5 limits at schema and provider boundaries. MP4/MOV
+and audio-only references are admitted. Native Draft/final, 1080p and 4K are not.
+Optional watermark and return-last-frame remain retired product controls.
+Input video references require 2s minimum, or 4s for all Modify video inputs;
+audio references require 2–30s. Video references retain the existing 30.2s
+frame/container tolerance and cumulative budget, while the primary Modify source
+keeps its exact 4–30s pricing contract. Shared schema minima reach selection,
+excerpt preparation, web execution and canonical MCP/Studio validation.
+
+The 2.5-series raster/minimum formula remains an estimate: the qualified 480p
+16:9/square and 720p portrait outputs match their configured raster classes,
+while actual frame count and returned usage remain authoritative for supplier
+accounting. It reproduces the published Flash 5-second examples ($0.34/$0.76
+without video at 480p/720p). No signed Flash discount was established; do not
+inherit another Seedance model's contract.
 
 ## Commercial decisions
 
@@ -106,6 +180,22 @@ Local PG17 verification exercised all 6,804 classes through those native admin t
 | Navigation, footer, family pages, PAYG, assistants | Curated model/comparison links, Seedance family explanations, example-page onward links and PAYG discovery include Flash. PAYG and model price cards use canonical quotes. Assistant guidance, llms.txt and AI-training page targets include the new routes and preserve estimate qualifications. |
 
 ## Qualification and release
+
+### Final option qualification on 15 November
+
+- Fourteen focused schema, canonical admission, payload and actual settings-DOM
+  tests pass, including Flash Auto/MOV and audio-only submission.
+- Eight PostgreSQL financial/recovery tests pass on disposable PG17, including
+  native admin tariffs, immutable paid prices and durable Flash edits.
+- After correcting Flash's MOV persistence selection, thirteen media/recovery
+  tests pass, including both 2.5 variants, a projection outage, exact original
+  preservation and a single charge.
+- TypeScript, lint (seven existing warnings), public exposure and registry checks
+  pass. The full fast run has 11,218 passes, one skip and one unrelated failure:
+  fifteen existing GitHub marketing assets have `lastReviewedAt` on 16 October
+  and crossed their 30-day review limit on 15 November. The manifest and its test
+  are unchanged from this branch's existing HEAD. Refresh those proofs through
+  their normal review workflow before release; do not merely advance their dates.
 
 ### Offline preparation on 14 November
 
@@ -166,7 +256,7 @@ assistant-facing guidance retains the qualification. Production median/P90
 latency remains a separate measured series with its existing sample thresholds.
 
 1. Complete local provider, canonical quote, MCP/Studio projection, recovery and PostgreSQL checks. Offline mocks are not provider canaries.
-2. Resolve the observed Flash API admission blocker. Both approved provider attempts above were refused; before any later paid submission, establish its authorized scope, then verify API acceptance, output, usage and raster. Qualify additional reference/edit/extension modes independently before widening `SEEDANCE_2_5_FLASH_BYTEPLUS_MODES`.
+2. Provider access and all five workflows are verified at the combinations above. Preserve their exact output/timing contracts, run the affected application charging and recovery tests, and verify final runtime configuration. These direct adapter canaries do not establish an end-to-end production customer transaction.
 3. Validate literal tariff proposals against the current database and apply through the existing admin batch preview/confirmation path. Track all 31 receipts and complete any pending refresh; verify visible prices after cache revalidation. Flash activation and standard repricing are separate from a successful code build.
 4. Finalize the separate page design and exact Flash media/launch assets with the marketing task. Review the launch-state copy against actual qualified modes, reassess provisional scores when real outputs exist, and verify registry, launch-assets, localized SEO and browser checks.
 5. Follow `docs/deployment/github-vercel.md`: clean committed candidate, PR, required Quality CI, current main, reviewed production release and both-domain verification.

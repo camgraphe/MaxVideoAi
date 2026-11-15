@@ -18,7 +18,7 @@
       },
       {
         "title": "Flash controls",
-        "body": "Create 4–30 second scenes at 480p or 720p. Flash accepts up to 10 image, 5 video and 5 audio references, with visual input required for audio references. It does not include 1080p, 4K or the standard model’s native Draft-to-final workflow."
+        "body": "Create 4–30 second scenes at 480p or 720p. Flash accepts up to 10 image, 5 video and 5 audio references, including audio-only references and MP4 or MOV output. It does not include 1080p, 4K or the standard model’s native Draft-to-final workflow."
       },
       {
         "title": "Compare the current quote",
@@ -93,7 +93,7 @@
       },
       {
         "title": "Les outils de Flash",
-        "body": "Créez des scènes de 4 à 30 secondes en 480p ou 720p. Flash accepte jusqu’à 10 images, 5 vidéos et 5 références audio ; une entrée visuelle est nécessaire avec les références sonores. Il ne propose ni 1080p, ni 4K, ni parcours natif Draft vers rendu final du modèle standard."
+        "body": "Créez des scènes de 4 à 30 secondes en 480p ou 720p. Flash accepte jusqu’à 10 images, 5 vidéos et 5 références audio ; les références audio seules sont acceptées. Il ne propose ni 1080p, ni 4K, ni parcours natif Draft vers rendu final du modèle standard."
       },
       {
         "title": "Comparer le devis actuel",
@@ -168,7 +168,7 @@
       },
       {
         "title": "Controles de Flash",
-        "body": "Crea escenas de 4 a 30 segundos a 480p o 720p. Flash acepta hasta 10 imágenes, 5 vídeos y 5 referencias de audio; el audio requiere una entrada visual. No incluye 1080p, 4K ni el flujo nativo de Draft a resultado final del modelo estándar."
+        "body": "Crea escenas de 4 a 30 segundos a 480p o 720p. Flash acepta hasta 10 imágenes, 5 vídeos y 5 referencias de audio; se admiten referencias solo de audio. No incluye 1080p, 4K ni el flujo nativo de Draft a resultado final del modelo estándar."
       },
       {
         "title": "Comparar el presupuesto actual",

@@ -9,7 +9,7 @@
     "heroIntro": "A longer 720p scene or a short scene with 4K options. MiniMax H3 offers 5–15 second scenes with native audio, mixed references and output options up to 4K. Seedance 2.5 Flash offers 4–30 seconds at 480p or 720p with optional generated audio. Output size and available controls describe the workflow, not a quality winner.",
     "quickVerdict": {
       "title": "Choose by the job",
-      "body": "H3 can accept an audio-only reference brief, while Seedance Flash requires a visual input alongside audio references. H3 video inputs guide a new scene; Flash provides distinct editing and extension workflows. Keep those tasks separate when comparing results."
+      "body": "Both H3 and Seedance Flash accept audio-only reference briefs. H3 video inputs guide a new scene; Flash provides distinct editing and extension workflows. Keep those tasks separate when comparing results."
     },
     "topCards": [
       {
@@ -18,7 +18,7 @@
       },
       {
         "title": "Flash controls",
-        "body": "Create 4–30 second scenes at 480p or 720p. Flash accepts up to 10 image, 5 video and 5 audio references, with visual input required for audio references. It does not include 1080p, 4K or the standard model’s native Draft-to-final workflow."
+        "body": "Create 4–30 second scenes at 480p or 720p. Flash accepts up to 10 image, 5 video and 5 audio references, including audio-only references and MP4 or MOV output. It does not include 1080p, 4K or the standard model’s native Draft-to-final workflow."
       },
       {
         "title": "Compare the current quote",
@@ -58,7 +58,7 @@
       "items": [
         {
           "question": "What is the main difference?",
-          "answer": "H3 can accept an audio-only reference brief, while Seedance Flash requires a visual input alongside audio references. H3 video inputs guide a new scene; Flash provides distinct editing and extension workflows. Keep those tasks separate when comparing results."
+          "answer": "Both H3 and Seedance Flash accept audio-only reference briefs. H3 video inputs guide a new scene; Flash provides distinct editing and extension workflows. Keep those tasks separate when comparing results."
         },
         {
           "question": "Does Seedance 2.5 Flash offer 4K?",
@@ -88,7 +88,7 @@
     "heroIntro": "Une scène 720p plus longue ou une scène courte avec option 4K. MiniMax H3 propose des scènes de 5 à 15 secondes avec audio natif, références mixtes et options jusqu’en 4K. Seedance 2.5 Flash propose 4–30 secondes en 480p ou 720p avec son généré facultatif. Le format et les outils décrivent le parcours, pas un vainqueur en qualité.",
     "quickVerdict": {
       "title": "Choisir selon le travail",
-      "body": "H3 accepte un brief de références uniquement sonores ; Seedance Flash exige une entrée visuelle avec ses références audio. Les vidéos fournies à H3 guident une nouvelle scène ; Flash propose des parcours distincts de modification et d’extension. Séparez ces tâches pour comparer les résultats."
+      "body": "H3 et Seedance Flash acceptent tous deux des références uniquement sonores. Les vidéos fournies à H3 guident une nouvelle scène ; Flash propose des parcours distincts de modification et d’extension. Séparez ces tâches pour comparer les résultats."
     },
     "topCards": [
       {
@@ -97,7 +97,7 @@
       },
       {
         "title": "Les outils de Flash",
-        "body": "Créez des scènes de 4 à 30 secondes en 480p ou 720p. Flash accepte jusqu’à 10 images, 5 vidéos et 5 références audio ; une entrée visuelle est nécessaire avec les références sonores. Il ne propose ni 1080p, ni 4K, ni parcours natif Draft vers rendu final du modèle standard."
+        "body": "Créez des scènes de 4 à 30 secondes en 480p ou 720p. Flash accepte jusqu’à 10 images, 5 vidéos et 5 références audio ; les références audio seules sont acceptées. Il ne propose ni 1080p, ni 4K, ni parcours natif Draft vers rendu final du modèle standard."
       },
       {
         "title": "Comparer le devis actuel",
@@ -137,7 +137,7 @@
       "items": [
         {
           "question": "Quelle est la différence principale ?",
-          "answer": "H3 accepte un brief de références uniquement sonores ; Seedance Flash exige une entrée visuelle avec ses références audio. Les vidéos fournies à H3 guident une nouvelle scène ; Flash propose des parcours distincts de modification et d’extension. Séparez ces tâches pour comparer les résultats."
+          "answer": "H3 et Seedance Flash acceptent tous deux des références uniquement sonores. Les vidéos fournies à H3 guident une nouvelle scène ; Flash propose des parcours distincts de modification et d’extension. Séparez ces tâches pour comparer les résultats."
         },
         {
           "question": "Seedance 2.5 Flash propose-t-il la 4K ?",
@@ -167,7 +167,7 @@
     "heroIntro": "Una escena 720p más larga o una escena corta con opción 4K. MiniMax H3 ofrece escenas de 5 a 15 segundos con audio nativo, referencias mixtas y opciones hasta 4K. Seedance 2.5 Flash ofrece 4–30 segundos a 480p o 720p con audio generado opcional. El formato y los controles describen el flujo, no un ganador en calidad.",
     "quickVerdict": {
       "title": "Elegir según el trabajo",
-      "body": "H3 admite referencias solo de audio; Seedance Flash requiere una entrada visual junto a las referencias sonoras. Los vídeos de H3 guían una escena nueva; Flash ofrece edición y extensión separadas. Distingue esas tareas al comparar resultados."
+      "body": "H3 y Seedance Flash admiten referencias solo de audio. Los vídeos de H3 guían una escena nueva; Flash ofrece edición y extensión separadas. Distingue esas tareas al comparar resultados."
     },
     "topCards": [
       {
@@ -176,7 +176,7 @@
       },
       {
         "title": "Controles de Flash",
-        "body": "Crea escenas de 4 a 30 segundos a 480p o 720p. Flash acepta hasta 10 imágenes, 5 vídeos y 5 referencias de audio; el audio requiere una entrada visual. No incluye 1080p, 4K ni el flujo nativo de Draft a resultado final del modelo estándar."
+        "body": "Crea escenas de 4 a 30 segundos a 480p o 720p. Flash acepta hasta 10 imágenes, 5 vídeos y 5 referencias de audio; se admiten referencias solo de audio. No incluye 1080p, 4K ni el flujo nativo de Draft a resultado final del modelo estándar."
       },
       {
         "title": "Comparar el presupuesto actual",
@@ -216,7 +216,7 @@
       "items": [
         {
           "question": "¿Cuál es la diferencia principal?",
-          "answer": "H3 admite referencias solo de audio; Seedance Flash requiere una entrada visual junto a las referencias sonoras. Los vídeos de H3 guían una escena nueva; Flash ofrece edición y extensión separadas. Distingue esas tareas al comparar resultados."
+          "answer": "H3 y Seedance Flash admiten referencias solo de audio. Los vídeos de H3 guían una escena nueva; Flash ofrece edición y extensión separadas. Distingue esas tareas al comparar resultados."
         },
         {
           "question": "¿Seedance 2.5 Flash ofrece 4K?",

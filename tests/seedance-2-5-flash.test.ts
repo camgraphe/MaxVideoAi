@@ -43,7 +43,7 @@ test('Flash has independent admission and never borrows the flagship activation'
   } finally { Object.assign(ENV, before); }
 });
 
-test('Flash preserves its explicit 10/5/5 schema without flagship MOV or Draft', () => {
+test('Flash preserves its 10/5/5 schema and exposes documented MOV and audio-only references without Draft', () => {
   assert.equal(isUnifiedSeedanceEngineId(id), true);
   assert.deepEqual(engine.resolutions, ['480p', '720p']);
   assert.deepEqual(seedanceAutomaticDurationBounds(id), { min: 4, max: 30 });
@@ -53,7 +53,10 @@ test('Flash preserves its explicit 10/5/5 schema without flagship MOV or Draft',
   for (const [fieldId, maximum] of [['image_urls', 10], ['video_urls', 5], ['audio_urls', 5], ['extension_source_videos', 5]] as const) {
     assert.equal(fields.find(f => f.id === fieldId)?.maxCount, maximum);
   }
-  assert.equal(fields.some(f => ['output_format', 'draft', 'watermark', 'return_last_frame'].includes(f.id)), false);
+  assert.deepEqual(fields.find(f => f.id === 'output_format')?.values, ['mp4', 'mov']);
+  assert.equal(engine.inputSchema?.constraints?.referenceAudioRequiresVisual, false);
+  assert.deepEqual(engine.inputSchema?.constraints?.atLeastOneReferenceField, ['image_urls', 'video_urls', 'audio_urls']);
+  assert.equal(fields.some(f => ['draft', 'watermark', 'return_last_frame'].includes(f.id)), false);
   assert.equal(payload().duration, 30);
   assert.equal(payload({ durationOption: 'auto' }).duration, -1);
 });
@@ -65,10 +68,12 @@ test('provider rejects over-limit Flash references even without a supplied schem
     { referenceImageUrls: urls(11, 'png') }, { referenceImageUrls: urls(1, 'png'), referenceVideoUrls: urls(6, 'mp4') },
     { referenceImageUrls: urls(1, 'png'), referenceAudioUrls: urls(6, 'wav') },
   ]) assert.throws(() => payload({ mode: 'ref2v', ...overrides }), { code: 'BYTEPLUS_REFERENCE_TYPE_BUDGET_EXCEEDED' });
-  assert.throws(() => payload({ outputFormat: 'mov' }), { code: 'BYTEPLUS_OUTPUT_FORMAT_UNSUPPORTED' });
+  assert.equal(payload({ outputFormat: 'mov' }).output_format, 'mov');
   for (const resolution of ['1080p', '4k'] as const) assert.throws(() => payload({ resolution, allowedResolutions: [resolution] }), { code: 'BYTEPLUS_FLASH_OPTIONS_UNSUPPORTED' });
   assert.throws(() => payload({ transport: 'las' }), { code: 'BYTEPLUS_FLASH_OPTIONS_UNSUPPORTED' });
-  assert.throws(() => payload({ mode: 'ref2v', referenceAudioUrls: urls(1, 'wav') }), { code: 'REFERENCE_MEDIA_REQUIRED' });
+  const audioOnly = payload({ mode: 'ref2v', referenceAudioUrls: urls(1, 'wav') });
+  assert.equal(audioOnly.content.filter(item => item.type === 'audio_url').length, 1);
+  assert.throws(() => payload({ mode: 'ref2v' }), { code: 'REFERENCE_URL_REQUIRED' });
 });
 
 test('five ordered extension sources survive the execution guard; six are refused', () => {

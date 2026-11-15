@@ -1,4 +1,5 @@
 import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
+import { resolveMediaFieldMinDuration } from '@/lib/media-field-constraints';
 import { isWan3EngineId } from '@/lib/wan3-pricing';
 import { hasPromptDirectedNativeAudio } from '@/lib/prompt-directed-audio';
 import { isGptImage26EngineId } from '@/lib/image/gptImage26';
@@ -123,6 +124,7 @@ function projectReferenceDuration(
   mode: AgentGenerationMode,
 ): AgentModelReferenceFieldDetails['durationSec'] | null {
   if (field.type !== 'video' && field.type !== 'audio') return null;
+  const minDurationSec = resolveMediaFieldMinDuration(field, toEngineGenerationMode(engine.id, mode));
   const combinedModes = engine.inputSchema?.constraints?.combinedDurationModes;
   const combinedLimitsApply = !Array.isArray(combinedModes)
     || combinedModes.includes(toEngineGenerationMode(engine.id, mode));
@@ -130,12 +132,12 @@ function projectReferenceDuration(
     ? engine.inputSchema?.constraints?.maxCombinedVideoDurationSec
     : engine.inputSchema?.constraints?.maxCombinedAudioDurationSec;
   if (
-    typeof field.minDurationSec !== 'number'
+    typeof minDurationSec !== 'number'
     && typeof field.maxDurationSec !== 'number'
     && typeof combinedMax !== 'number'
   ) return null;
   return Object.freeze({
-    min: typeof field.minDurationSec === 'number' ? field.minDurationSec : null,
+    min: typeof minDurationSec === 'number' ? minDurationSec : null,
     max: typeof field.maxDurationSec === 'number' ? field.maxDurationSec : null,
     combinedMax: typeof combinedMax === 'number' ? combinedMax : null,
   });

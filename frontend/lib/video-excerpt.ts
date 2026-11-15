@@ -1,6 +1,6 @@
 import type { EngineCaps, Mode } from '@/types/engines';
 import { getVideoWorkflowSourceField, isVideoSourceWorkflow, type VideoSourceWorkflow } from '@/lib/video-source-workflow';
-import { resolveEngineMediaFieldConstraint, validateMediaFileAgainstConstraint } from '@/lib/media-field-constraints';
+import { resolveEngineMediaFieldConstraint, resolveMediaFieldMinDuration, validateMediaFileAgainstConstraint } from '@/lib/media-field-constraints';
 import { videoDurationPolicy } from '@/lib/video-workflow-capabilities';
 import { mediaExcerptDuration } from '@/lib/media-excerpt-timing';
 
@@ -36,7 +36,7 @@ export function getVideoExcerptLimits(engine: EngineCaps, mode: VideoSourceWorkf
   if (!field) return null;
   return {
     sourceFieldId: field.id,
-    minDurationSec: positive(field.minDurationSec),
+    minDurationSec: positive(resolveMediaFieldMinDuration(field, mode)),
     maxDurationSec: positive(field.maxDurationSec) ?? positive(engine.inputLimits?.videoMaxDurationSec)
       ?? positive(engine.inputSchema?.constraints?.maxVideoDurationSec),
     maxSizeMB: positive(field.maxSizeMB) ?? positive(engine.inputLimits?.videoMaxMB)
@@ -61,7 +61,7 @@ export function getMediaExcerptLimits(engine: EngineCaps, mode: Mode, fieldId: s
     return getVideoExcerptLimits(engine, mode);
   return {
     sourceFieldId: fieldId,
-    minDurationSec: positive(field.minDurationSec),
+    minDurationSec: positive(resolveMediaFieldMinDuration(field, mode)),
     maxDurationSec: positive(field.maxDurationSec) ?? positive(audio ? engine.inputLimits?.audioMaxDurationSec : engine.inputLimits?.videoMaxDurationSec)
       ?? positive(audio ? engine.inputSchema?.constraints?.maxAudioDurationSec : engine.inputSchema?.constraints?.maxVideoDurationSec),
     maxSizeMB: positive(constraint.maxSizeMB),

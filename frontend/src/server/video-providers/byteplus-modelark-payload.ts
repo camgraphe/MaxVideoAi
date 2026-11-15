@@ -119,8 +119,8 @@ export function buildBytePlusSeedancePayload(params: {
     || (params.watermark !== undefined && typeof params.watermark !== 'boolean')) {
     throw new BytePlusModelArkError('Invalid video output options.', { code: 'BYTEPLUS_OUTPUT_OPTIONS_INVALID' });
   }
-  if (params.outputFormat === 'mov' && (!isSeedance25 || isSeedance25Flash || params.transport === 'las')) {
-    throw new BytePlusModelArkError('MOV output requires Seedance 2.5 ModelArk.', { code: 'BYTEPLUS_OUTPUT_FORMAT_UNSUPPORTED' });
+  if (params.outputFormat === 'mov' && (!isSeedance25 || params.transport === 'las')) {
+    throw new BytePlusModelArkError('MOV output requires a Seedance 2.5 series ModelArk model.', { code: 'BYTEPLUS_OUTPUT_FORMAT_UNSUPPORTED' });
   }
   const imageUrl = typeof params.imageUrl === 'string' ? params.imageUrl.trim() : '';
   const endImageUrl = typeof params.endImageUrl === 'string' ? params.endImageUrl.trim() : '';
@@ -309,7 +309,7 @@ export function buildBytePlusSeedancePayload(params: {
       code: 'REFERENCE_URL_REQUIRED',
     });
   }
-  if (mode === 'ref2v' && (!isSeedance25 || isSeedance25Flash) && referenceImageUrls.length + referenceVideoUrls.length === 0) {
+  if (mode === 'ref2v' && !isSeedance25 && referenceImageUrls.length + referenceVideoUrls.length === 0) {
     throw new BytePlusModelArkError('At least one reference image or video URL is required for BytePlus Seedance reference-to-video.', {
       code: 'REFERENCE_MEDIA_REQUIRED',
     });

@@ -527,7 +527,12 @@ controls. Focused coverage lives in `video-continuation`,
 ### Seedance output artifacts — 14 October 2026
 
 BytePlus completion preserves requested MOV and Seedance 2.5 1080p MP4 originals
-byte-for-byte in durable storage. MOV and documented HEVC outputs receive a separate
+byte-for-byte in durable storage. The MOV path includes Seedance 2.5 Flash, even
+without a last-frame request or an Edit workflow. The recorded engine and output
+format select original copying, compatible playback and durable recovery;
+`byteplus-output-recovery-postgres.test.ts` exercises both variants through a
+projection outage while preserving the original and single charge.
+MOV and documented HEVC outputs receive a separate
 full-duration H264/yuv420p/AAC `playbackVideoUrl`; the existing four-second silent
 `previewVideoUrl` remains an incidental gallery preview. Downloads, reuse, editing
 and original links always retain the original URL. Encoding uses the packaged

@@ -6,12 +6,14 @@ import { mapLegacyJobRowToOutputs, type LegacyJobMediaRow } from '../frontend/se
 import { createPaidGenerationTestSchema, startDisposablePostgres } from './helpers/disposable-postgres';
 import { claimGenerationPoll } from '../frontend/server/generation-poll-state';
 
-test('MOV and JPEG checkpoints recover partial copies and projections without another debit or completed original loss',
+for (const engineId of ['seedance-2-5', 'seedance-2-5-flash']) {
+test(`${engineId} MOV checkpoints recover partial copies and projections without another debit or completed original loss`,
   { timeout: 90_000, concurrency: false }, async () => {
     const db = await startDisposablePostgres('byteplus-output-recovery');
     const query = async <T,>(sql: string, params?: unknown[]): Promise<T[]> => (await db.pool.query(sql, params)).rows;
     let lookups = 0, originals = 0, playbacks = 0, frames = 0, projections = 0;
-    let frameUnavailable = true, projectionUnavailable = true;
+    const legacyLastFrame = engineId === 'seedance-2-5';
+    let frameUnavailable = legacyLastFrame, projectionUnavailable = true;
     let projected: LegacyJobMediaRow | null = null;
     const original = 'https://media.maxvideoai.com/renders/owner/original.mov';
     const frame = { url: 'https://media.maxvideoai.com/renders/owner/last.jpg', mimeType: 'image/jpeg',
@@ -22,9 +24,11 @@ test('MOV and JPEG checkpoints recover partial copies and projections without an
       await db.pool.query(readFileSync('neon/migrations/47_generation_poll_state.sql', 'utf8'));
       await db.pool.query(`INSERT INTO app_jobs(job_id,user_id,engine_id,engine_label,provider,provider_job_id,status,
         duration_sec,aspect_ratio,payment_status,final_price_cents,currency,settings_snapshot,updated_at)
-        VALUES ('mov-frame','owner','seedance-2-5','Seedance 2.5','byteplus_modelark','cgt-owned','running',4,
+        VALUES ('mov-frame','owner',$2,$2,'byteplus_modelark','cgt-owned','running',4,
         '16:9','paid_wallet',71,'USD',$1,now()-interval '1 minute')`, [{ byteplusTransport: 'modelark', inputMode: 't2v',
-        core: { resolution: '720p', aspectRatio: '16:9' }, advanced: { extraInputValues: { output_format: 'mov', return_last_frame: true } } }]);
+        core: { resolution: '720p', aspectRatio: '16:9' }, advanced: { extraInputValues: {
+          output_format: 'mov', ...(legacyLastFrame ? { return_last_frame: true } : {}),
+        } } }, engineId]);
       await db.pool.query("INSERT INTO app_receipts(user_id,type,amount_cents,currency,job_id) VALUES ('owner','charge',71,'USD','mov-frame')");
       const poll = async () => {
         await db.pool.query(`UPDATE app_jobs SET updated_at=now()-interval '1 minute',
@@ -33,12 +37,14 @@ test('MOV and JPEG checkpoints recover partial copies and projections without an
           queryFn: query,
           getBytePlusModelArkClientFn: () => ({ retrieveTask: async () => { lookups++;
             return { providerJobId: 'cgt-owned', status: 'completed', rawStatus: 'succeeded',
-              videoUrl: 'https://supplier.test/source.mov', lastFrameUrl: 'https://supplier.test/last.jpg',
+              videoUrl: 'https://supplier.test/source.mov', lastFrameUrl: legacyLastFrame ? 'https://supplier.test/last.jpg' : null,
               outputFormat: 'mov', message: null, usage: { totalTokens: 100000 }, raw: {} }; } }) as never,
-          copyBytePlusVideoOriginalFn: async () => { originals++; return original; },
+          copyBytePlusVideoOriginalFn: async (input: { outputFormat: string }) => {
+            assert.equal(input.outputFormat, 'mov'); originals++; return original;
+          },
           ensureBytePlusCompatiblePlaybackFn: async () => { playbacks++; return 'https://media.maxvideoai.com/renders/owner/playback.mp4'; },
           copyBytePlusLastFrameFn: async () => { frames++; if (frameUnavailable) throw new Error('frame unavailable'); return frame; },
-          ensureFastStartVideoFn: async () => 'https://media.maxvideoai.com/wrong.mp4',
+          ensureFastStartVideoFn: async () => { throw new Error('MOV originals must not use the MP4 copy path.'); },
           ensureJobThumbnailFn: async () => 'https://media.maxvideoai.com/poster.jpg',
           upsertLegacyJobOutputsFn: async row => { projections++; if (projectionUnavailable) throw new Error('projection unavailable'); projected = row; },
           recordBytePlusPollEventFn: async () => undefined, applyBytePlusTrialOutcomeSafelyFn: async () => undefined,
@@ -48,7 +54,7 @@ test('MOV and JPEG checkpoints recover partial copies and projections without an
       const read = async () => (await query<{ status: string; video_url: string; settings_snapshot: Record<string, unknown> }>("SELECT * FROM app_jobs WHERE job_id='mov-frame'"))[0];
       const nextPoll = () => db.pool.query("UPDATE generation_poll_state SET started_at=now()-interval '1 minute',lease_until=now()-interval '1 second' WHERE job_id='mov-frame'");
       await poll();
-      assert.equal((await read()).video_url, original, 'original must checkpoint before the frame copy fails');
+      assert.equal((await read()).video_url, original, 'original must checkpoint before an artifact or projection fails');
       assert.equal((await read()).status, 'processing');
       frameUnavailable = false;
       await nextPoll();
@@ -61,15 +67,16 @@ test('MOV and JPEG checkpoints recover partial copies and projections without an
       assert.equal((await read()).video_url, original);
       assert.equal(originals, 1);
       assert.equal(playbacks, 1);
-      assert.equal(frames, 2);
-      assert.equal(lookups, 2, 'all copied artifacts survive expired provider output URLs');
+      assert.equal(frames, legacyLastFrame ? 2 : 0);
+      assert.equal(lookups, legacyLastFrame ? 2 : 1, 'all copied artifacts survive expired provider output URLs');
       const outputs = mapLegacyJobRowToOutputs(projected!);
-      assert.equal(outputs.find(output => output.kind === 'image')?.metadata.role, 'last_frame');
+      assert.equal(outputs.find(output => output.kind === 'image')?.metadata.role, legacyLastFrame ? 'last_frame' : undefined);
       assert.equal(outputs.find(output => output.kind === 'video')?.metadata.playbackVideoUrl, 'https://media.maxvideoai.com/renders/owner/playback.mp4');
       assert.ok(projections >= 2);
       assert.deepEqual((await query("SELECT type,amount_cents FROM app_receipts WHERE job_id='mov-frame'")), [{ type: 'charge', amount_cents: 71 }]);
     } finally { await db.cleanup(); }
   });
+}
 
 test('BytePlus artifact lease prevents duplicate long copies while other pollers retain their normal default',
   { timeout: 90_000 }, async () => {

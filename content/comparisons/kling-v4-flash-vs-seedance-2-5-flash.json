@@ -9,7 +9,7 @@
     "heroIntro": "Two Flash models with different reference and editing controls. Kling 4.0 Flash generates 3–20 second scenes at 720p with native audio directed in the prompt. Seedance 2.5 Flash offers 4–30 seconds at 480p or 720p, optional generated audio and separate edit and extension workflows. The shared Flash name does not establish equal latency or quality.",
     "quickVerdict": {
       "title": "Choose by the job",
-      "body": "Kling Flash accepts an opening image and visual references, but has no end-frame control, audio switch, Modify or Extend here. Seedance Flash separates these source workflows and can accept audio references alongside visual inputs. Video reference guidance is different from editing a source clip."
+      "body": "Kling Flash accepts an opening image and visual references, but has no end-frame control, audio switch, Modify or Extend here. Seedance Flash separates these source workflows and accepts audio references alone or alongside visual inputs. Video reference guidance is different from editing a source clip."
     },
     "topCards": [
       {
@@ -18,7 +18,7 @@
       },
       {
         "title": "Flash controls",
-        "body": "Create 4–30 second scenes at 480p or 720p. Flash accepts up to 10 image, 5 video and 5 audio references, with visual input required for audio references. It does not include 1080p, 4K or the standard model’s native Draft-to-final workflow."
+        "body": "Create 4–30 second scenes at 480p or 720p. Flash accepts up to 10 image, 5 video and 5 audio references, including audio-only references and MP4 or MOV output. It does not include 1080p, 4K or the standard model’s native Draft-to-final workflow."
       },
       {
         "title": "Compare the current quote",
@@ -58,7 +58,7 @@
       "items": [
         {
           "question": "What is the main difference?",
-          "answer": "Kling Flash accepts an opening image and visual references, but has no end-frame control, audio switch, Modify or Extend here. Seedance Flash separates these source workflows and can accept audio references alongside visual inputs. Video reference guidance is different from editing a source clip."
+          "answer": "Kling Flash accepts an opening image and visual references, but has no end-frame control, audio switch, Modify or Extend here. Seedance Flash separates these source workflows and accepts audio references alone or alongside visual inputs. Video reference guidance is different from editing a source clip."
         },
         {
           "question": "Does Seedance 2.5 Flash offer 4K?",
@@ -88,7 +88,7 @@
     "heroIntro": "Deux modèles Flash, des références et outils de modification différents. Kling 4.0 Flash génère des scènes de 3 à 20 secondes en 720p avec un audio natif dirigé dans le prompt. Seedance 2.5 Flash propose 4–30 secondes en 480p ou 720p, un son généré facultatif et des parcours distincts de modification et d’extension. Le nom Flash commun ne prouve ni délai ni qualité identiques.",
     "quickVerdict": {
       "title": "Choisir selon le travail",
-      "body": "Kling Flash accepte une image de départ et des références visuelles, mais ne propose ici ni image de fin, ni interrupteur audio, ni Modify ou Extend. Seedance Flash distingue ces parcours sur source et accepte des références sonores avec des entrées visuelles. Guider par une vidéo de référence diffère de modifier un clip source."
+      "body": "Kling Flash accepte une image de départ et des références visuelles, mais ne propose ici ni image de fin, ni interrupteur audio, ni Modify ou Extend. Seedance Flash distingue ces parcours sur source et accepte des références sonores seules ou avec des entrées visuelles. Guider par une vidéo de référence diffère de modifier un clip source."
     },
     "topCards": [
       {
@@ -97,7 +97,7 @@
       },
       {
         "title": "Les outils de Flash",
-        "body": "Créez des scènes de 4 à 30 secondes en 480p ou 720p. Flash accepte jusqu’à 10 images, 5 vidéos et 5 références audio ; une entrée visuelle est nécessaire avec les références sonores. Il ne propose ni 1080p, ni 4K, ni parcours natif Draft vers rendu final du modèle standard."
+        "body": "Créez des scènes de 4 à 30 secondes en 480p ou 720p. Flash accepte jusqu’à 10 images, 5 vidéos et 5 références audio ; les références audio seules sont acceptées. Il ne propose ni 1080p, ni 4K, ni parcours natif Draft vers rendu final du modèle standard."
       },
       {
         "title": "Comparer le devis actuel",
@@ -137,7 +137,7 @@
       "items": [
         {
           "question": "Quelle est la différence principale ?",
-          "answer": "Kling Flash accepte une image de départ et des références visuelles, mais ne propose ici ni image de fin, ni interrupteur audio, ni Modify ou Extend. Seedance Flash distingue ces parcours sur source et accepte des références sonores avec des entrées visuelles. Guider par une vidéo de référence diffère de modifier un clip source."
+          "answer": "Kling Flash accepte une image de départ et des références visuelles, mais ne propose ici ni image de fin, ni interrupteur audio, ni Modify ou Extend. Seedance Flash distingue ces parcours sur source et accepte des références sonores seules ou avec des entrées visuelles. Guider par une vidéo de référence diffère de modifier un clip source."
         },
         {
           "question": "Seedance 2.5 Flash propose-t-il la 4K ?",
@@ -167,7 +167,7 @@
     "heroIntro": "Dos modelos Flash con controles de referencias y edición distintos. Kling 4.0 Flash genera escenas de 3 a 20 segundos a 720p con audio nativo dirigido en el prompt. Seedance 2.5 Flash ofrece 4–30 segundos a 480p o 720p, audio generado opcional y flujos separados de edición y extensión. Compartir el nombre Flash no demuestra la misma velocidad ni calidad.",
     "quickVerdict": {
       "title": "Elegir según el trabajo",
-      "body": "Kling Flash acepta una imagen inicial y referencias visuales, pero aquí no ofrece imagen final, interruptor de audio, Modify ni Extend. Seedance Flash separa esos flujos y admite referencias de audio junto a entradas visuales. Guiar con una referencia de vídeo es distinto de editar un clip fuente."
+      "body": "Kling Flash acepta una imagen inicial y referencias visuales, pero aquí no ofrece imagen final, interruptor de audio, Modify ni Extend. Seedance Flash separa esos flujos y admite referencias de audio solas o junto a entradas visuales. Guiar con una referencia de vídeo es distinto de editar un clip fuente."
     },
     "topCards": [
       {
@@ -176,7 +176,7 @@
       },
       {
         "title": "Controles de Flash",
-        "body": "Crea escenas de 4 a 30 segundos a 480p o 720p. Flash acepta hasta 10 imágenes, 5 vídeos y 5 referencias de audio; el audio requiere una entrada visual. No incluye 1080p, 4K ni el flujo nativo de Draft a resultado final del modelo estándar."
+        "body": "Crea escenas de 4 a 30 segundos a 480p o 720p. Flash acepta hasta 10 imágenes, 5 vídeos y 5 referencias de audio; se admiten referencias solo de audio. No incluye 1080p, 4K ni el flujo nativo de Draft a resultado final del modelo estándar."
       },
       {
         "title": "Comparar el presupuesto actual",
@@ -216,7 +216,7 @@
       "items": [
         {
           "question": "¿Cuál es la diferencia principal?",
-          "answer": "Kling Flash acepta una imagen inicial y referencias visuales, pero aquí no ofrece imagen final, interruptor de audio, Modify ni Extend. Seedance Flash separa esos flujos y admite referencias de audio junto a entradas visuales. Guiar con una referencia de vídeo es distinto de editar un clip fuente."
+          "answer": "Kling Flash acepta una imagen inicial y referencias visuales, pero aquí no ofrece imagen final, interruptor de audio, Modify ni Extend. Seedance Flash separa esos flujos y admite referencias de audio solas o junto a entradas visuales. Guiar con una referencia de vídeo es distinto de editar un clip fuente."
         },
         {
           "question": "¿Seedance 2.5 Flash ofrece 4K?",

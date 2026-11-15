@@ -126,6 +126,8 @@ const SEEDANCE_2_5_ENGINE: EngineCaps = withSeedanceModelArkOptions({
         type: 'video',
         label: 'Source video',
         description: 'Required source video for video-to-video editing.',
+        minDurationSec: 4,
+        maxDurationSec: 30,
         modes: ['v2v'],
         requiredInModes: ['v2v'],
         minCount: 1,
@@ -137,6 +139,9 @@ const SEEDANCE_2_5_ENGINE: EngineCaps = withSeedanceModelArkOptions({
         type: 'video',
         label: `Reference video clips (up to ${FLASH_MAX_VIDEOS})`,
         description: 'Optional motion or pacing references. Keep all reference videos within 30 seconds in total.',
+        minDurationSec: 2,
+        minDurationSecByMode: { v2v: 4 },
+        maxDurationSec: 30.2,
         modes: ['ref2v'],
         minCount: 0,
         maxCount: FLASH_MAX_VIDEOS,
@@ -147,6 +152,8 @@ const SEEDANCE_2_5_ENGINE: EngineCaps = withSeedanceModelArkOptions({
         type: 'video',
         label: `Source clips to extend (up to ${FLASH_MAX_VIDEOS})`,
         description: 'Extend a source clip or connect source clips, within 30 seconds in total.',
+        minDurationSec: 2,
+        maxDurationSec: 30.2,
         modes: ['extend'],
         requiredInModes: ['extend'],
         minCount: 1,
@@ -159,6 +166,8 @@ const SEEDANCE_2_5_ENGINE: EngineCaps = withSeedanceModelArkOptions({
         type: 'audio',
         label: `Reference audio clips (up to ${FLASH_MAX_AUDIO})`,
         description: 'Optional audio references for reference-to-video or video-to-video.',
+        minDurationSec: 2,
+        maxDurationSec: 30,
         modes: ['ref2v', 'v2v'],
         minCount: 0,
         maxCount: FLASH_MAX_AUDIO,
@@ -209,7 +218,7 @@ const SEEDANCE_2_5_ENGINE: EngineCaps = withSeedanceModelArkOptions({
     notes:
       'Price is calculated before generation based on duration, resolution, and whether a source video is used.',
   },
-  updatedAt: '2026-11-13T00:00:00Z',
+  updatedAt: '2026-11-15T00:00:00Z',
   ttlSec: 600,
   providerMeta: {
     provider: 'byteplus_modelark',
@@ -233,9 +242,9 @@ function seedance25Mode(mode: Seedance25Mode): RawFalEngineEntry['modes'][number
   const workflowNotes: Record<Seedance25Mode, string> = {
     t2v: 'Create 4-30 second videos up to 720p in landscape, square, or vertical formats with generated audio available.',
     i2v: 'Animate one start image with an optional end image; 4-30 seconds, up to 720p, landscape, square, or vertical, with generated audio.',
-    ref2v: `Use up to ${FLASH_MAX_IMAGES} images, ${FLASH_MAX_VIDEOS} video clips, and ${FLASH_MAX_AUDIO} audio clips, with ${FLASH_MAX_REFERENCES} unique references total.`,
-    v2v: 'Edit one source video with optional image, video and audio references; 4-30 seconds, up to 720p, landscape, square, or vertical, with generated audio.',
-    extend: 'Continue one to five source clips with optional image and audio references; 4-30 seconds, up to 720p, landscape, square, or vertical, with generated audio.',
+    ref2v: `Use up to ${FLASH_MAX_IMAGES} images, ${FLASH_MAX_VIDEOS} video clips, and ${FLASH_MAX_AUDIO} audio clips, with ${FLASH_MAX_REFERENCES} unique references total. Audio-only references are supported.`,
+    v2v: 'Edit one 4-30 second source video with optional image, video and audio references. Output inherits source framing and approximate timing and may be up to 0.4 seconds shorter. Choose 480p or 720p, MP4 or MOV, and generated audio.',
+    extend: 'Continue one to five source clips with optional image and audio references. Request 4-30 seconds or Auto for the new segment; output inherits source framing. Specify forward or backward extension in the prompt. Assemble the new segment with the source separately.',
   };
 
   return {

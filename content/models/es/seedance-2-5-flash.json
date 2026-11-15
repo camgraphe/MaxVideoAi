@@ -58,7 +58,7 @@
     },
     {
       "label": "Referencias",
-      "body": "Hasta 10 imágenes, 5 vídeos y 5 pistas de audio; el audio requiere una entrada visual"
+      "body": "Hasta 10 imágenes, 5 vídeos y 5 pistas de audio; se admiten referencias solo de audio"
     },
     {
       "label": "Flujos",
@@ -77,7 +77,7 @@
     },
     {
       "q": "¿Qué referencias puedo usar?",
-      "a": "Hasta 10 imágenes, 5 vídeos y 5 pistas de audio, dentro de los límites del modo elegido. El audio requiere una entrada visual. La edición y extensión tienen sus propios controles de vídeo fuente."
+      "a": "Hasta 10 imágenes, 5 vídeos y 5 pistas de audio, dentro de los límites del modo elegido. Se admiten referencias solo de audio. Las salidas MP4 y MOV están disponibles. La edición y extensión tienen sus propios controles de vídeo fuente."
     },
     {
       "q": "¿Flash incluye 1080p, 4K o Draft nativo?",

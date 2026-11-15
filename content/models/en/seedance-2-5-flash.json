@@ -58,7 +58,7 @@
     },
     {
       "label": "References",
-      "body": "Up to 10 images, 5 videos and 5 audio clips; audio references require a visual input"
+      "body": "Up to 10 images, 5 videos and 5 audio clips; audio-only references are supported"
     },
     {
       "label": "Workflows",
@@ -77,7 +77,7 @@
     },
     {
       "q": "What references can I use?",
-      "a": "Up to 10 images, 5 videos and 5 audio clips, within the selected mode’s limits. Audio references require a visual input. Edit and extension use their own source-video controls."
+      "a": "Up to 10 images, 5 videos and 5 audio clips, within the selected mode’s limits. Audio-only references are supported. MP4 and MOV outputs are available. Edit and extension use their own source-video controls."
     },
     {
       "q": "Does Flash include 1080p, 4K or native Draft/final?",

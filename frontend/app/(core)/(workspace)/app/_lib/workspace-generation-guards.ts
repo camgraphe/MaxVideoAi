@@ -7,6 +7,7 @@ import {
   LUMA_RAY2_ERROR_UNSUPPORTED,
 } from '@/lib/luma-ray2';
 import { isHappyHorseEngineId } from '@/lib/happy-horse-workflow';
+import { isSeedance25EngineId } from '@/lib/seedance-model-variants';
 import { isArchivedGenerationModel, archivedGenerationMessage } from '@/lib/model-generation-policy';
 import { getEngineModeUnavailableMessage } from '@/lib/engine-mode-availability';
 import type { EngineCaps, EngineInputSchema, Mode } from '@/types/engines';
@@ -218,10 +219,12 @@ export function getGenerationIterationGuardMessage(options: GenerationIterationG
   if (isReferenceImageMode) {
     if (options.isUnifiedSeedance) {
       if (options.referenceImageUrls.length === 0 && options.referenceVideoUrls.length === 0
-        && !(options.selectedEngineId === 'seedance-2-5' && options.referenceAudioUrls.length > 0)) {
+        && !(isSeedance25EngineId(options.selectedEngineId) && options.referenceAudioUrls.length > 0)) {
         return options.referenceAudioUrls.length > 0
           ? options.addReferenceMediaBeforeAudioMessage ?? 'Add reference media before adding audio.'
-          : 'Add at least one reference image or reference video before running Seedance Reference → Video.';
+          : isSeedance25EngineId(options.selectedEngineId)
+            ? 'Add at least one reference image, video or audio clip before running Seedance Reference → Video.'
+            : 'Add at least one reference image or reference video before running Seedance Reference → Video.';
       }
     } else if (usesSchemaReferences) {
       const constraints = options.inputSchema?.constraints;

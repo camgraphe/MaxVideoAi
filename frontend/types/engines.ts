@@ -185,6 +185,7 @@ export interface EngineInputField {
   source?: 'upload' | 'url' | 'either';
   engineParam?: string;
   minDurationSec?: number;
+  minDurationSecByMode?: Partial<Record<Mode, number>>;
   maxDurationSec?: number;
   maxSizeMB?: number;
   imageAspectRatio?: { min: number; max: number };

@@ -58,7 +58,7 @@
     },
     {
       "label": "Références",
-      "body": "Jusqu’à 10 images, 5 vidéos et 5 pistes audio ; une entrée visuelle est nécessaire avec les références sonores"
+      "body": "Jusqu’à 10 images, 5 vidéos et 5 pistes audio ; les références audio seules sont acceptées"
     },
     {
       "label": "Parcours",
@@ -77,7 +77,7 @@
     },
     {
       "q": "Quelles références puis-je utiliser ?",
-      "a": "Jusqu’à 10 images, 5 vidéos et 5 pistes audio, dans les limites du mode choisi. Les références audio exigent une entrée visuelle. Modification et extension ont leurs propres contrôles de vidéo source."
+      "a": "Jusqu’à 10 images, 5 vidéos et 5 pistes audio, dans les limites du mode choisi. Les références audio seules sont acceptées. Les sorties MP4 et MOV sont disponibles. Modification et extension ont leurs propres contrôles de vidéo source."
     },
     {
       "q": "Flash propose-t-il le 1080p, la 4K ou le Draft natif ?",
