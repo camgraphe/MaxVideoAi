@@ -172,16 +172,16 @@
       "width": 1450,
       "height": 525,
       "sha256": "148e174affcabdcb69e5a575bfaf4654c59118a4824ded6c96f279e324ca30b6",
-      "claim": "Current public MaxVideoAI home page showing the light pay-as-you-go hero, primary generation and examples actions, and a colorful MiniMax H3 Max video frame.",
+      "claim": "Public MaxVideoAI home page captured on 16 September 2026 showing the light pay-as-you-go hero, creation and examples actions, and a MiniMax H3 Max frame. Retained as a dated composite source; it does not certify the current default featured model or navigation.",
       "placements": [
         "plugin_readme",
         "root_readme"
       ],
-      "alt": "Current public MaxVideoAI home page with pay-as-you-go messaging and a colorful MiniMax H3 Max video frame",
+      "alt": "Dated September 2026 MaxVideoAI home page with pay-as-you-go creation actions and a MiniMax H3 Max frame",
       "reviewTrigger": "Refresh after a material home-page, primary-action, or featured-video change, or within 30 days of publication review.",
       "approvedBy": "MaxVideoAI owner",
-      "lastReviewedAt": "2026-10-16T00:53:15.167Z",
-      "lastReviewedRevision": "16e92f3d0831aa89743316cbf7f87f642c4bb7fb",
+      "lastReviewedAt": "2026-11-15T18:40:36.194Z",
+      "lastReviewedRevision": "3d49f113fbebb2471395fc42e4a1fcaffec2e616",
       "freshnessStatus": "current"
     },
     {
@@ -223,16 +223,16 @@
       "width": 1010,
       "height": 595,
       "sha256": "78178525675e1f0622123531d986a0a635a6f081e2129a54a1c7ea3e5844a168",
-      "claim": "Current public MaxVideoAI MCP result section showing a controlled Claude Desktop capture with a finished video, a saved-to-Library label, and a first-party MaxVideoAI action; it is Claude-specific evidence, not proof for every supported client.",
+      "claim": "Public MaxVideoAI MCP result section captured on 16 September 2026, showing a completed video, saved-to-Library label and first-party action from the Claude Desktop controlled staging test dated 26 August 2026. The live public page still discloses that historical result; this is not current native-host certification or a current price quote.",
       "placements": [
         "plugin_readme",
         "root_readme"
       ],
-      "alt": "Public MaxVideoAI MCP result section with a finished video shown in Claude and saved to the MaxVideoAI Library",
+      "alt": "Dated public MaxVideoAI MCP section showing the August 2026 controlled Claude Desktop result saved to the Library",
       "reviewTrigger": "Refresh after a material MCP result-section, Claude evidence, or Library-continuity claim change, or within 30 days of publication review.",
       "approvedBy": "MaxVideoAI owner",
-      "lastReviewedAt": "2026-10-16T00:53:15.167Z",
-      "lastReviewedRevision": "16e92f3d0831aa89743316cbf7f87f642c4bb7fb",
+      "lastReviewedAt": "2026-11-15T18:40:36.194Z",
+      "lastReviewedRevision": "3d49f113fbebb2471395fc42e4a1fcaffec2e616",
       "freshnessStatus": "current"
     },
     {
@@ -240,24 +240,24 @@
       "path": "plugins/maxvideoai/assets/screenshots/maxvideoai-workspace-live.webp",
       "kind": "product_proof",
       "state": "publishable_proof",
-      "capturedAt": "2026-09-16T00:07:39Z",
+      "capturedAt": "2026-11-15T18:38:55.743Z",
       "sourceEnvironment": "production",
       "host": "MaxVideoAI web app",
       "hostVersion": null,
-      "maxvideoaiRevision": "5423599b472ae6d6e31beb3e8a5c59e23d3a1a83",
+      "maxvideoaiRevision": "3d49f113fbebb2471395fc42e4a1fcaffec2e616",
       "width": 1268,
       "height": 713,
-      "sha256": "0db61a42da7a8378cd6ad0e6199e0d6d5366f74179c28f02db76e1a86e432bd3",
-      "claim": "Current public MaxVideoAI home page showing the pay-as-you-go proposition, primary generation and examples actions, and a colorful MiniMax H3 Max video frame.",
+      "sha256": "2a830f498580d1b82beea982626e6261abfbfc71a3ad5701a9b5f4093ccd61f9",
+      "claim": "Public MaxVideoAI home page captured on 15 November 2026 showing the pay-as-you-go proposition, primary creation and examples actions, and the default FLUX 3 Max film preview.",
       "placements": [
         "plugin_readme",
         "root_readme"
       ],
-      "alt": "Current public MaxVideoAI home page with pay-as-you-go messaging and a colorful MiniMax H3 Max video frame",
+      "alt": "MaxVideoAI home page captured in November 2026 with pay-as-you-go creation actions and a FLUX 3 Max film preview",
       "reviewTrigger": "Refresh after a material home-page, primary-action, or featured-video change, or within 30 days of publication review.",
       "approvedBy": "MaxVideoAI owner",
-      "lastReviewedAt": "2026-10-16T00:53:15.167Z",
-      "lastReviewedRevision": "16e92f3d0831aa89743316cbf7f87f642c4bb7fb",
+      "lastReviewedAt": "2026-11-15T18:40:36.194Z",
+      "lastReviewedRevision": "3d49f113fbebb2471395fc42e4a1fcaffec2e616",
       "freshnessStatus": "current"
     },
     {
@@ -265,24 +265,24 @@
       "path": "plugins/maxvideoai/assets/screenshots/maxvideoai-examples-gallery-live.webp",
       "kind": "product_proof",
       "state": "publishable_proof",
-      "capturedAt": "2026-10-16T00:53:15.167Z",
+      "capturedAt": "2026-11-15T18:39:00.922Z",
       "sourceEnvironment": "production",
       "host": "MaxVideoAI website",
       "hostVersion": null,
-      "maxvideoaiRevision": "16e92f3d0831aa89743316cbf7f87f642c4bb7fb",
+      "maxvideoaiRevision": "3d49f113fbebb2471395fc42e4a1fcaffec2e616",
       "width": 1268,
       "height": 713,
-      "sha256": "da706017d044165bf2b5a031282f073d101e685bc898997498b60f77cee8e464",
-      "claim": "Public MaxVideoAI examples gallery captured on 16 October 2026, showing brand filters and four opening cards for Wan 3 Prime, Seedance 2.0 Fast and FLUX 3.",
+      "sha256": "6985623659109a3d38d91584056dfec4a787cf5282fa093f99097d3972d8de17",
+      "claim": "Public MaxVideoAI examples gallery captured on 15 November 2026, showing brand filters and four opening cards for Wan 3 Prime, Seedance 2.0 Fast and Kling 4.0 with prompt excerpts and current-price cues.",
       "placements": [
         "plugin_readme",
         "root_readme"
       ],
-      "alt": "MaxVideoAI examples gallery with brand filters and four opening video cards for Wan, Seedance and FLUX",
+      "alt": "MaxVideoAI examples gallery with brand filters and four opening video cards for Wan, Seedance and Kling",
       "reviewTrigger": "Refresh after a material gallery hero, brand filters, featured previews, or model labels change, or within 30 days of publication review.",
       "approvedBy": "MaxVideoAI owner",
-      "lastReviewedAt": "2026-10-16T00:53:15.167Z",
-      "lastReviewedRevision": "16e92f3d0831aa89743316cbf7f87f642c4bb7fb",
+      "lastReviewedAt": "2026-11-15T18:40:36.194Z",
+      "lastReviewedRevision": "3d49f113fbebb2471395fc42e4a1fcaffec2e616",
       "freshnessStatus": "current"
     },
     {
@@ -290,24 +290,24 @@
       "path": "plugins/maxvideoai/assets/screenshots/maxvideoai-engine-scoreboard-live.webp",
       "kind": "product_proof",
       "state": "publishable_proof",
-      "capturedAt": "2026-09-16T00:07:39Z",
+      "capturedAt": "2026-11-15T18:39:05.907Z",
       "sourceEnvironment": "production",
       "host": "MaxVideoAI website",
       "hostVersion": null,
-      "maxvideoaiRevision": "5423599b472ae6d6e31beb3e8a5c59e23d3a1a83",
+      "maxvideoaiRevision": "3d49f113fbebb2471395fc42e4a1fcaffec2e616",
       "width": 1268,
       "height": 713,
-      "sha256": "4c3250adbd1ce14ae8075b6410285e6a25bf3e789bb4ba6c667637f13998871d",
-      "claim": "Current public comparison detail showing MiniMax H3 and Seedance 2.5 side by side with editorial scores, strengths, and colorful independent video examples.",
+      "sha256": "0c197cee50923d8e7d5c36700dc7258d88cb0ce9bb0782e34007e792539759b1",
+      "claim": "Public MiniMax H3 versus Seedance 2.5 comparison captured on 15 November 2026, showing editorial scores of 8.5 and 9.1, higher-rated areas and independent examples made with different prompts and settings; it is not an identical-prompt benchmark.",
       "placements": [
         "plugin_readme",
         "root_readme"
       ],
-      "alt": "MaxVideoAI side-by-side comparison of MiniMax H3 and Seedance 2.5 with scores, strengths, and colorful independent video examples",
+      "alt": "MaxVideoAI comparison of MiniMax H3 and Seedance 2.5 editorial scores, higher-rated areas and independent video examples",
       "reviewTrigger": "Refresh after a material comparison-hub, benchmark-presentation, engine, or score change, or within 30 days of publication review.",
       "approvedBy": "MaxVideoAI owner",
-      "lastReviewedAt": "2026-10-16T00:53:15.167Z",
-      "lastReviewedRevision": "16e92f3d0831aa89743316cbf7f87f642c4bb7fb",
+      "lastReviewedAt": "2026-11-15T18:40:36.194Z",
+      "lastReviewedRevision": "3d49f113fbebb2471395fc42e4a1fcaffec2e616",
       "freshnessStatus": "current"
     },
     {
@@ -323,16 +323,16 @@
       "width": 1268,
       "height": 713,
       "sha256": "8946be5b7d566e279fd42653c91b8192c394d25511616f6f7331152d98c6eba1",
-      "claim": "Current public MaxVideoAI model-directory hero showing Browse models and Compare engines actions, pricing and specification cues, and colorful model artwork.",
+      "claim": "Public MaxVideoAI model-directory hero captured on 16 September 2026, with Browse models and Compare engines actions, pricing and specification cues, and model artwork. Those bounded hero claims were revalidated; the capture is not a frozen current model catalogue.",
       "placements": [
         "plugin_readme",
         "root_readme"
       ],
-      "alt": "Public MaxVideoAI model-directory hero with Browse models and Compare engines actions, pricing and specification cues, and colorful model artwork",
+      "alt": "Dated MaxVideoAI model-directory hero with Browse models and Compare engines actions, pricing cues and model artwork",
       "reviewTrigger": "Refresh after a material model-directory hero, actions, pricing or specification cues, or artwork change, or within 30 days of publication review.",
       "approvedBy": "MaxVideoAI owner",
-      "lastReviewedAt": "2026-10-16T00:53:15.167Z",
-      "lastReviewedRevision": "16e92f3d0831aa89743316cbf7f87f642c4bb7fb",
+      "lastReviewedAt": "2026-11-15T18:40:36.194Z",
+      "lastReviewedRevision": "3d49f113fbebb2471395fc42e4a1fcaffec2e616",
       "freshnessStatus": "current"
     },
     {
@@ -340,24 +340,24 @@
       "path": "plugins/maxvideoai/assets/screenshots/maxvideoai-pricing-comparison-live.webp",
       "kind": "product_proof",
       "state": "publishable_proof",
-      "capturedAt": "2026-10-16T00:53:15.167Z",
+      "capturedAt": "2026-11-15T18:39:10.284Z",
       "sourceEnvironment": "production",
       "host": "MaxVideoAI website",
       "hostVersion": null,
-      "maxvideoaiRevision": "16e92f3d0831aa89743316cbf7f87f642c4bb7fb",
+      "maxvideoaiRevision": "3d49f113fbebb2471395fc42e4a1fcaffec2e616",
       "width": 1268,
       "height": 713,
-      "sha256": "8ee47ccfd17748c4cb76a708df9a28947377f8d1317e6b37bc8661be6f3c932f",
-      "claim": "Current public MaxVideoAI pricing page showing three pay-as-you-go video starting-point prices plus navigation tabs for Image, Audio, and Tools & Upscale.",
+      "sha256": "265e8cdedf8f7fdb0c05ba34d752241af8da03d89ec77087ea6e78a2b8595b0a",
+      "claim": "Public MaxVideoAI pricing page captured on 15 November 2026 showing three pay-as-you-go video starting points at $0.39, $1.10 and $1.64, plus Image, Audio and Tools & Upscale navigation. These are dated preset display prices; the exact live request quote remains authoritative.",
       "placements": [
         "plugin_readme",
         "root_readme"
       ],
-      "alt": "MaxVideoAI pricing comparison with current scenarios and video, image, audio, and tools navigation",
+      "alt": "MaxVideoAI pricing captured in November 2026 with three video starting points and video, image, audio and tools navigation",
       "reviewTrigger": "Refresh after a material pricing, scenario-card, or pricing-navigation change, or within 30 days of publication review.",
       "approvedBy": "MaxVideoAI owner",
-      "lastReviewedAt": "2026-10-16T00:53:15.167Z",
-      "lastReviewedRevision": "16e92f3d0831aa89743316cbf7f87f642c4bb7fb",
+      "lastReviewedAt": "2026-11-15T18:40:36.194Z",
+      "lastReviewedRevision": "3d49f113fbebb2471395fc42e4a1fcaffec2e616",
       "freshnessStatus": "current"
     },
     {
@@ -365,24 +365,24 @@
       "path": "plugins/maxvideoai/assets/screenshots/maxvideoai-tools-workflow-live.webp",
       "kind": "product_proof",
       "state": "publishable_proof",
-      "capturedAt": "2026-09-16T00:07:39Z",
+      "capturedAt": "2026-11-15T18:39:14.999Z",
       "sourceEnvironment": "production",
       "host": "MaxVideoAI website",
       "hostVersion": null,
-      "maxvideoaiRevision": "5423599b472ae6d6e31beb3e8a5c59e23d3a1a83",
+      "maxvideoaiRevision": "3d49f113fbebb2471395fc42e4a1fcaffec2e616",
       "width": 1268,
       "height": 713,
-      "sha256": "33597a2c78736780c0e3afa8a34ee99239130f0f4c076683eb31b99584da307b",
-      "claim": "Current public MaxVideoAI tools page showing character-sheet, image, and production-preparation workflows with colorful first-party examples.",
+      "sha256": "91b5771417a07b67195fcca42590b4eba0abd46f8e61ace2ac3468e45226dfcc",
+      "claim": "Public MaxVideoAI tools hero captured on 15 November 2026, showing Character Studio, camera-angle and upscale presentation examples and links to preparation workflows; it does not certify a run or output from every listed tool.",
       "placements": [
         "plugin_readme",
         "root_readme"
       ],
-      "alt": "MaxVideoAI tools page with a character sheet and colorful image and production-preparation workflows",
+      "alt": "MaxVideoAI tools page with a Character Studio portrait and camera-angle and upscale presentation examples",
       "reviewTrigger": "Refresh after a material tools-directory, featured-tool, or workflow-presentation change, or within 30 days of publication review.",
       "approvedBy": "MaxVideoAI owner",
-      "lastReviewedAt": "2026-10-16T00:53:15.167Z",
-      "lastReviewedRevision": "16e92f3d0831aa89743316cbf7f87f642c4bb7fb",
+      "lastReviewedAt": "2026-11-15T18:40:36.194Z",
+      "lastReviewedRevision": "3d49f113fbebb2471395fc42e4a1fcaffec2e616",
       "freshnessStatus": "current"
     },
     {
@@ -390,24 +390,24 @@
       "path": "plugins/maxvideoai/assets/screenshots/maxvideoai-assistant-workflow-live.webp",
       "kind": "product_proof",
       "state": "publishable_proof",
-      "capturedAt": "2026-09-16T00:07:39Z",
+      "capturedAt": "2026-11-15T18:39:19.698Z",
       "sourceEnvironment": "production",
       "host": "MaxVideoAI website",
       "hostVersion": null,
-      "maxvideoaiRevision": "5423599b472ae6d6e31beb3e8a5c59e23d3a1a83",
+      "maxvideoaiRevision": "3d49f113fbebb2471395fc42e4a1fcaffec2e616",
       "width": 1268,
       "height": 713,
-      "sha256": "6b701b4e340ed09317ac92fc2bb20a1b141e61036d68921e5e9b1786dff7114c",
-      "claim": "Current public MaxVideoAI MCP page showing Claude, ChatGPT, Codex, OpenClaw, and n8n as public paths, plus Cursor, GitHub Copilot, Gemini CLI, and Microsoft Copilot marked in preparation; the page does not itself prove native execution in every client.",
+      "sha256": "9f0db96693053b383885db14f2d50fbe407919ac45b6a2760af326a490290c48",
+      "claim": "Public MaxVideoAI MCP integration grid captured on 15 November 2026 showing Claude, ChatGPT, Codex, OpenClaw and n8n as public paths, plus Cursor, GitHub Copilot, Gemini CLI and Microsoft Copilot in preparation. The displayed host-plan labels are public-page copy, not independent native-host requalification.",
       "placements": [
         "plugin_readme",
         "root_readme"
       ],
-      "alt": "MaxVideoAI MCP integration grid with five public paths and four clients marked in preparation",
+      "alt": "MaxVideoAI MCP integration grid captured in November 2026 with five public paths and four clients in preparation",
       "reviewTrigger": "Refresh after a material assistant-entry, integration, conversation, or MCP marketing change, or within 30 days of publication review.",
       "approvedBy": "MaxVideoAI owner",
-      "lastReviewedAt": "2026-10-16T00:53:15.167Z",
-      "lastReviewedRevision": "16e92f3d0831aa89743316cbf7f87f642c4bb7fb",
+      "lastReviewedAt": "2026-11-15T18:40:36.194Z",
+      "lastReviewedRevision": "3d49f113fbebb2471395fc42e4a1fcaffec2e616",
       "freshnessStatus": "current"
     },
     {
@@ -451,16 +451,16 @@
       "width": 1600,
       "height": 900,
       "sha256": "89ac4da5122bd4d1a9f5ad4af99b39089006f89368f0dde16e9f3e7299f7d2a1",
-      "claim": "Proof-led light composite pairing the current public MaxVideoAI home page with the public MCP Claude-result section; the editorial layer is decorative and the composite does not extend Claude-specific evidence to other clients.",
+      "claim": "Proof-led light composite pairing the MaxVideoAI home page captured on 16 September 2026 with the public MCP Claude-result section; the editorial layer is decorative and the composite does not extend Claude-specific evidence to other clients. The embedded interfaces are dated captures, not a current-interface certification.",
       "placements": [
         "plugin_readme",
         "root_readme"
       ],
-      "alt": "Current MaxVideoAI home page paired with the public MCP section showing a completed video result in Claude",
+      "alt": "Dated September 2026 MaxVideoAI home page paired with the public MCP section showing a completed video result in Claude",
       "reviewTrigger": "Refresh after a material home-page or MCP result-section change, when either source proof expires, or within 30 days of publication review.",
       "approvedBy": "MaxVideoAI owner",
-      "lastReviewedAt": "2026-10-16T00:53:15.167Z",
-      "lastReviewedRevision": "16e92f3d0831aa89743316cbf7f87f642c4bb7fb",
+      "lastReviewedAt": "2026-11-15T18:40:36.194Z",
+      "lastReviewedRevision": "3d49f113fbebb2471395fc42e4a1fcaffec2e616",
       "freshnessStatus": "current",
       "sourceProofIds": [
         "maxvideoai-workspace-production",
@@ -482,16 +482,16 @@
       "width": 1600,
       "height": 900,
       "sha256": "feafd6def0995f10dffed1a0f2ee25dde128c82d113fd61809f748e6cb96a7a4",
-      "claim": "Proof-led light composite showing the current public MaxVideoAI home page beside the public MCP Claude-result section; it does not depict a verified brief, quote, approval, or execution in every listed client.",
+      "claim": "Proof-led light composite showing the MaxVideoAI home page captured on 16 September 2026 beside the public MCP Claude-result section; it does not depict a verified brief, quote, approval, or execution in every listed client. The embedded interfaces are dated captures, not a current-interface certification.",
       "placements": [
         "plugin_readme",
         "root_readme"
       ],
-      "alt": "Current MaxVideoAI home page paired with the public MCP result section for Claude",
+      "alt": "Dated September 2026 MaxVideoAI home page paired with the public MCP result section for Claude",
       "reviewTrigger": "Refresh when the home-page or MCP result-section source proof changes, when either proof expires, or within 30 days of publication review.",
       "approvedBy": "MaxVideoAI owner",
-      "lastReviewedAt": "2026-10-16T00:53:15.167Z",
-      "lastReviewedRevision": "16e92f3d0831aa89743316cbf7f87f642c4bb7fb",
+      "lastReviewedAt": "2026-11-15T18:40:36.194Z",
+      "lastReviewedRevision": "3d49f113fbebb2471395fc42e4a1fcaffec2e616",
       "freshnessStatus": "current",
       "sourceProofIds": [
         "maxvideoai-workspace-production",
@@ -513,16 +513,16 @@
       "width": 480,
       "height": 640,
       "sha256": "1a801ed2e7e03397074550f8daba1d66c39f9f95611988f7fd5b8ae4349d9c0c",
-      "claim": "Proof-led narrow composite pairing the current public MaxVideoAI home page with the public MCP Claude-result section; it does not prove a current budget, quote, price, approval, or native host execution.",
+      "claim": "Proof-led narrow composite pairing the MaxVideoAI home page captured on 16 September 2026 with the public MCP Claude-result section; it does not prove a current budget, quote, price, approval, or native host execution. The embedded interfaces are dated captures, not a current-interface certification.",
       "placements": [
         "plugin_readme",
         "root_readme"
       ],
-      "alt": "Narrow composite of the current MaxVideoAI home page and public MCP Claude-result section",
+      "alt": "Narrow composite of the dated September 2026 MaxVideoAI home page and public MCP Claude-result section",
       "reviewTrigger": "Refresh after a material home-page or MCP result-section change, when source proof expires, or within 30 days of publication review.",
       "approvedBy": "MaxVideoAI owner",
-      "lastReviewedAt": "2026-10-16T00:53:15.167Z",
-      "lastReviewedRevision": "16e92f3d0831aa89743316cbf7f87f642c4bb7fb",
+      "lastReviewedAt": "2026-11-15T18:40:36.194Z",
+      "lastReviewedRevision": "3d49f113fbebb2471395fc42e4a1fcaffec2e616",
       "freshnessStatus": "current",
       "sourceProofIds": [
         "maxvideoai-workspace-production",
@@ -544,23 +544,23 @@
       "width": 1600,
       "height": 900,
       "sha256": "d9cf166c867bbe6c71062f4b168f1d5883535669477f946608d12cd08df1d422",
-      "claim": "Proof-led light composite pairing the public MCP Claude-result section with the current public MaxVideoAI home page; it supports Claude-specific result and saved-to-Library continuity only.",
+      "claim": "Proof-led light composite pairing the public MCP Claude-result section with the MaxVideoAI home page captured on 16 September 2026; it supports Claude-specific result and saved-to-Library continuity only. The embedded interfaces are dated captures, not a current-interface certification.",
       "placements": [
         "plugin_readme",
         "root_readme"
       ],
-      "alt": "Public MaxVideoAI MCP Claude-result section paired with the current MaxVideoAI home page",
+      "alt": "Public MaxVideoAI MCP Claude-result section paired with the dated September 2026 MaxVideoAI home page",
       "reviewTrigger": "Refresh after a material home-page, MCP result-section, or Claude continuity claim change, when either proof expires, or within 30 days of publication review.",
       "approvedBy": "MaxVideoAI owner",
-      "lastReviewedAt": "2026-10-16T00:53:15.167Z",
-      "lastReviewedRevision": "16e92f3d0831aa89743316cbf7f87f642c4bb7fb",
+      "lastReviewedAt": "2026-11-15T18:40:36.194Z",
+      "lastReviewedRevision": "3d49f113fbebb2471395fc42e4a1fcaffec2e616",
       "freshnessStatus": "current",
       "sourceProofIds": [
         "maxvideoai-workspace-production",
         "maxvideoai-library-continuity-production"
       ],
       "editorialSourceId": "maxvideoai-editorial-branch-converge-source",
-      "compositionMethod": "Deterministic Sharp composition; both current production source screenshots are downscaled only over a low-opacity editorial background."
+      "compositionMethod": "Deterministic Sharp composition; both original production source screenshots are downscaled only over a low-opacity editorial background."
     },
     {
       "id": "github-social-preview",
@@ -575,22 +575,22 @@
       "width": 1280,
       "height": 640,
       "sha256": "35ffaa3802032ff3e740e565b6159556731516595c8a14bc05e184365999064b",
-      "claim": "Repository social card using the current public MaxVideoAI home page and MCP Claude-result section; client names describe documented public paths and the image contains no native ChatGPT, Claude, or Codex host proof beyond the embedded Claude-specific public evidence.",
+      "claim": "Repository social card using the MaxVideoAI home page captured on 16 September 2026 and MCP Claude-result section; client names describe documented public paths and the image contains no native ChatGPT, Claude, or Codex host proof beyond the embedded Claude-specific public evidence. The embedded interfaces are dated captures, not a current-interface certification.",
       "placements": [
         "repository_social"
       ],
-      "alt": "Light MaxVideoAI GitHub social card for assistants and automations with current public product proof",
+      "alt": "Light MaxVideoAI GitHub social card for assistants and automations with dated September 2026 public product captures",
       "reviewTrigger": "Refresh after a material public-page change, integration wording change, source-proof expiry, or repository social update.",
       "approvedBy": "MaxVideoAI owner",
-      "lastReviewedAt": "2026-10-16T00:53:15.167Z",
-      "lastReviewedRevision": "16e92f3d0831aa89743316cbf7f87f642c4bb7fb",
+      "lastReviewedAt": "2026-11-15T18:40:36.194Z",
+      "lastReviewedRevision": "3d49f113fbebb2471395fc42e4a1fcaffec2e616",
       "freshnessStatus": "current",
       "sourceProofIds": [
         "maxvideoai-workspace-production",
         "maxvideoai-library-continuity-production"
       ],
       "editorialSourceId": "maxvideoai-editorial-branch-converge-source",
-      "compositionMethod": "Deterministic Sharp composition with two complete downscaled public captures, current client-path copy, and a restrained light editorial background."
+      "compositionMethod": "Deterministic Sharp composition with two complete downscaled public captures, client-path copy, and a restrained light editorial background."
     },
     {
       "id": "release-0-3-0",
@@ -722,23 +722,23 @@
       "width": 1200,
       "height": 675,
       "sha256": "dc70c17da2541172fd07747abe3a4af115928be89da6bdab0a3b1bfaa02b658e",
-      "claim": "Directory thumbnail using the current public MaxVideoAI home page and MCP Claude-result section; client names describe documented public paths and it contains no native ChatGPT, Claude, or Codex host proof beyond the embedded Claude-specific public evidence.",
+      "claim": "Directory thumbnail using the MaxVideoAI home page captured on 16 September 2026 and MCP Claude-result section; client names describe documented public paths and it contains no native ChatGPT, Claude, or Codex host proof beyond the embedded Claude-specific public evidence. The embedded interfaces are dated captures, not a current-interface certification.",
       "placements": [
         "mcp_directories",
         "marketplace_directory"
       ],
-      "alt": "Light MaxVideoAI directory thumbnail for assistants and automations with current public product proof",
+      "alt": "Light MaxVideoAI directory thumbnail for assistants and automations with dated September 2026 public product captures",
       "reviewTrigger": "Refresh before directory submission if dimensions, copy, compatibility status, or either source proof changes.",
       "approvedBy": "MaxVideoAI owner",
-      "lastReviewedAt": "2026-10-16T00:53:15.167Z",
-      "lastReviewedRevision": "16e92f3d0831aa89743316cbf7f87f642c4bb7fb",
+      "lastReviewedAt": "2026-11-15T18:40:36.194Z",
+      "lastReviewedRevision": "3d49f113fbebb2471395fc42e4a1fcaffec2e616",
       "freshnessStatus": "current",
       "sourceProofIds": [
         "maxvideoai-workspace-production",
         "maxvideoai-library-continuity-production"
       ],
       "editorialSourceId": "maxvideoai-editorial-branch-converge-source",
-      "compositionMethod": "Deterministic Sharp composition using two complete downscaled public captures, current client-path copy, and a restrained light editorial background."
+      "compositionMethod": "Deterministic Sharp composition using two complete downscaled public captures, client-path copy, and a restrained light editorial background."
     }
   ]
 }

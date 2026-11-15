@@ -9,6 +9,8 @@ import { computeCanonicalFinishingBillingSnapshot } from '../frontend/server/pri
 import { runFinishingTool } from '../frontend/src/server/tools/finishing-run';
 import { refreshFinishingTool } from '../frontend/src/server/tools/finishing-status';
 import { validateFinishingOutputFacts } from '../frontend/src/server/tools/finishing-output';
+import { parseToolVideoMetadata } from '../frontend/src/server/tools/toolbox-video-metadata';
+import { finishingOutputFailureCode } from '../frontend/src/server/tools/finishing-errors';
 import type { PreparedFinishingTool } from '../frontend/src/server/tools/finishing-prepare';
 import { buildRecentGenerationSurfaceFilterClause } from '../frontend/src/server/generations/recent-generations';
 
@@ -95,6 +97,7 @@ test('stale quotes fail before a debit; duplicate attempts never call the provid
     reserve: async () => { calls.push('reserve'); if (existing) return { created: false, status: 'completed', result }; existing = true; return { created: true, status: 'pending', result: null }; },
     execute: async () => { calls.push('execute'); return { request_id: 'fal-fixture' } as never; },
     submitted: async () => { calls.push('submitted'); }, fail: async () => { calls.push('refund'); },
+    status: async () => ({ jobId: 'fixture', status: 'failed', result: null, error: null, errorCode: 'TOOL_PROVIDER_FAILED' as const, refunded: true }),
   };
   const request = { block: prepared.block, requestId: 'f11b7f5c-18a4-4b31-845a-a64eaab89b30', acceptedQuote: { totalCents: 24, currency: 'USD' } };
   await assert.rejects(runFinishingTool(request, 'owner', dependencies), /QUOTE_CHANGED/);
@@ -105,7 +108,7 @@ test('stale quotes fail before a debit; duplicate attempts never call the provid
   assert.equal(first.jobId, repeated.jobId);
   assert.equal(calls.filter(call => call === 'execute').length, 1);
   existing = false;
-  await assert.rejects(runFinishingTool(request, 'owner', { ...dependencies, execute: async () => { throw new Error('provider failed'); } }), /provider failed/);
+  await assert.rejects(runFinishingTool(request, 'owner', { ...dependencies, execute: async () => { throw new Error('provider failed'); } }), /TOOL_PROVIDER_FAILED/);
   assert.equal(calls.at(-1), 'refund');
 });
 
@@ -184,4 +187,47 @@ test('a late provider result after the observation deadline never claims or pers
   }, { signal: controller.signal });
   assert.equal(result, status);
   assert.deepEqual({ claims, persists, refunds }, { claims: 0, persists: 0, refunds: 0 });
+});
+
+test('finishing failures retain a safe moderation or output cause when settling a refund', async () => {
+  const prepared = await preparedFixture();
+  const messages: string[] = [];
+  const deps = {
+    read: async () => ({ status: 'queued', payment_status: 'paid_wallet', provider_job_id: 'provider', updated_at: new Date().toISOString(), settings_snapshot: { preparedTool: prepared } }),
+    status: async () => ({ jobId: 'job', status: 'failed', result: null, error: null }),
+    poll: async () => ({ status: 'COMPLETED' } as never),
+    result: async () => ({ data: {}, requestId: 'provider' }),
+    claim: async () => true,
+    fail: async (_user: string, _job: string, message: string) => { messages.push(message); },
+  };
+  await refreshFinishingTool('owner', 'job', { ...deps, result: async () => {
+    throw { status: 422, body: { detail: [{ type: 'content_policy_violation', input: 'https://private.example/signed?token=secret' }] } };
+  } });
+  assert.equal(messages.at(-1), 'TOOL_CONTENT_BLOCKED');
+  await refreshFinishingTool('owner', 'job', { ...deps, persist: async () => { throw new Error('Unexpected output dimensions.'); } });
+  assert.equal(messages.at(-1), 'TOOL_OUTPUT_INVALID');
+  await refreshFinishingTool('owner', 'job', { ...deps, persist: async () => { throw new Error('storage connection failed https://private.example/?token=secret'); } });
+  assert.equal(messages.at(-1), 'TOOL_OUTPUT_SAVE_FAILED');
+});
+
+test('a completion that wins a submission-error race remains a paid success', async () => {
+  const prepared = await preparedFixture();
+  const result: ToolResult = { toolId: 'denoise', version: 1, jobId: 'race', sourceAssets: [source], outputs: [{ asset: { type: 'job-output', jobId: 'race', outputId: 'race:video:0', kind: 'video' }, kind: 'video', originalUrl: 'https://owned.example/result.mp4' }] };
+  let failures = 0;
+  const state = await runFinishingTool({ block: prepared.block, requestId: 'f11b7f5c-18a4-4b31-845a-a64eaab89b30', acceptedQuote: { totalCents: 25, currency: 'USD' } }, 'owner', {
+    prepare: async () => prepared, requireReleased: () => {}, storageReady: () => true,
+    reserve: async () => ({ created: true, status: 'pending', result: null }),
+    execute: async () => ({ request_id: 'provider' } as never),
+    submitted: async () => { throw new Error('Commit acknowledgement lost'); },
+    fail: async () => { failures++; },
+    status: async () => ({ jobId: 'race', status: 'completed', result, error: null, errorCode: null, refunded: false }),
+  });
+  assert.equal(failures, 1);
+  assert.equal(state.status, 'completed');
+  assert.equal(state.result, result);
+});
+
+test('missing measured output cadence is an invalid-output failure, not a storage failure', () => {
+  assert.throws(() => parseToolVideoMetadata({ streams: [{ codec_type: 'video', width: 1920, height: 1080, avg_frame_rate: '0/0' }], format: { duration: '2' } }),
+    error => finishingOutputFailureCode(error) === 'TOOL_OUTPUT_INVALID');
 });

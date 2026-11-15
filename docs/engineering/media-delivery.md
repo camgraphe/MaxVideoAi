@@ -548,6 +548,18 @@ other providers retain the shared two-minute default. Local FFprobe fixtures ver
 MOV/PCM and ten-bit HEVC conversion; physical Safari/iOS remains separate browser
 qualification and is not established by these checks.
 
+## Finishing output verification
+
+`src/server/tools/toolbox-video-metadata.ts` owns bounded local-file FFprobe reads for tool sources and already downloaded finishing outputs. Source URL reads retain the configured upload limit (50 MiB by default), pinned transport, account-scoped cache and concurrency guard. Provider output downloads remain bounded at 500 MiB; `finishing-output.ts` probes their existing bytes before uploading or publishing, so a larger valid result is never fetched again through the source-import limit. Temporary local probe files are removed on success and failure.
+
+`lib/video-display-dimensions.ts` resolves display axes from the FFprobe display matrix, with legacy rotate tags as a fallback. Quoting and output integrity compare displayed dimensions; do not accept arbitrary swapped dimensions without rotation evidence. Duration, cadence, audio and requested resolution checks remain enforced.
+
+Video target-mode upscale eligibility is checked by `resolveUpscalePricingContext` before pricing reads or wallet reservation, shared by the quote and execution paths. The source short edge must be below the target. Factor-mode processing and recovery of an already accepted job retain their existing semantics.
+
+Finishing failures store a safe `toolFailureCode` in the existing settings snapshot and an English customer message in `app_jobs.message`. Public reads expose the allowlisted cause and a separate settled-refund boolean. EN/FR/ES clients translate the cause and announce a refund only when payment state is `refunded_wallet`. Never expose raw provider diagnostics or signed media URLs. Historical refunded jobs are not resubmitted or rewritten by these fixes.
+
+Coverage: `toolbox-finishing-output`, `toolbox-video-metadata`, `upscale-preflight`, `toolbox-finishing-terminal-postgres` and `toolbox-failure-messages-dom`.
+
 ## Playback and Core Web Vitals
 
 The homepage poster must remain discoverable in server-rendered HTML with its existing responsive source, dimensions and critical priority. Do not make it depend on hydration, a video download or an idle callback. Initial media scheduling and an explicit Play action have different priorities.

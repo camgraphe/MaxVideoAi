@@ -16,15 +16,15 @@ MaxVideoAI is a multi-model AI video production platform for turning a brief int
 
 MaxVideoAI brings model choice, prompts, references, settings, live pricing, previews, results, and next-shot context into one production workspace. That workspace is the main product; the GitHub plugin extends the same production path to Claude, ChatGPT, Codex, OpenClaw, and a bounded self-hosted n8n workflow later in this page.
 
-![Public MaxVideoAI home page with a colorful MiniMax H3 Max film preview and pay-as-you-go creation actions](plugins/maxvideoai/assets/screenshots/maxvideoai-workspace-live.webp)
+![Public MaxVideoAI home page with a FLUX 3 Max film preview and pay-as-you-go creation actions](plugins/maxvideoai/assets/screenshots/maxvideoai-workspace-live.webp)
 
-*The current public production experience, captured from production on September 16, 2026.*
+*Public homepage captured from production on November 15, 2026.*
 
 ## What can you make with MaxVideoAI?
 
 Use MaxVideoAI to develop a single shot, animate an image, build a multi-shot sequence, create supporting images or audio, and continue from earlier work. The workspace keeps model selection, prompts, references, settings, price, previews, results, and the Library in one production path instead of scattering them across provider tabs.
 
-![MaxVideoAI examples gallery with brand filters and four opening video cards for Wan, Seedance and FLUX](plugins/maxvideoai/assets/screenshots/maxvideoai-examples-gallery-live.webp)
+![MaxVideoAI examples gallery with brand filters and four opening video cards for Wan, Seedance and Kling](plugins/maxvideoai/assets/screenshots/maxvideoai-examples-gallery-live.webp)
 
 Every public example opens into its prompt, settings, model, duration, and current price estimate. Browse the [AI video examples gallery](https://maxvideoai.com/examples), then recreate a useful starting point in your own workspace.
 
@@ -39,11 +39,11 @@ Every public example opens into its prompt, settings, model, duration, and curre
 
 MaxVideoAI compares AI video engines by workflow, supported inputs, duration, resolution, audio, pricing, strengths, and a documented editorial score. The side-by-side hub is designed for an actual production decision: choose two engines, inspect the trade-offs, open the detailed matchup, and move to the model that fits the shot.
 
-![MaxVideoAI comparison page showing MiniMax H3 and Seedance 2.5 scores, strengths, and colorful video examples](plugins/maxvideoai/assets/screenshots/maxvideoai-engine-scoreboard-live.webp)
+![MaxVideoAI comparison page showing MiniMax H3 and Seedance 2.5 editorial scores, higher-rated areas and independent video examples](plugins/maxvideoai/assets/screenshots/maxvideoai-engine-scoreboard-live.webp)
 
 The broader [model directory](https://maxvideoai.com/models) adds recommended starting points and routes for video, image, audio, and preparation work.
 
-![MaxVideoAI model directory with colorful MiniMax and Kling examples beside current model discovery actions](plugins/maxvideoai/assets/screenshots/maxvideoai-model-directory-live.webp)
+![September 2026 MaxVideoAI model-directory hero with MiniMax and Kling examples beside model discovery actions](plugins/maxvideoai/assets/screenshots/maxvideoai-model-directory-live.webp)
 
 Model families such as Sora, Veo, Kling, Seedance, LTX, MiniMax, Wan, Happy Horse, Gemini Omni, and Pika are examples rather than a frozen catalogue. Use the live directory for current availability and pricing.
 
@@ -51,7 +51,7 @@ Model families such as Sora, Veo, Kling, Seedance, LTX, MiniMax, Wan, Happy Hors
 
 MaxVideoAI is pay as you go. The pricing surface compares common scenarios across video, image, audio, and production tools, while the workspace shows the live price for the selected request before launch. In the assistant workflow, a concrete request becomes an exact quote and one explicit approval authorizes one paid attempt.
 
-![MaxVideoAI pricing page with three current video starting points and navigation across video, image, audio, and tools](plugins/maxvideoai/assets/screenshots/maxvideoai-pricing-comparison-live.webp)
+![MaxVideoAI pricing captured on November 15, 2026 with three video starting points and video, image, audio and tools navigation](plugins/maxvideoai/assets/screenshots/maxvideoai-pricing-comparison-live.webp)
 
 1. Choose the model, mode, duration, resolution, and supported extras.
 2. Compare the current [AI video pricing](https://maxvideoai.com/pricing).
@@ -62,7 +62,7 @@ MaxVideoAI is pay as you go. The pricing surface compares common scenarios acros
 
 The public [production toolbox](https://maxvideoai.com/tools) brings repeatable preparation and finishing work into the same product path. Build a consistent character sheet, explore camera angles, refine or remove an image background, and finish a video without pretending that every useful step needs a new generation model.
 
-![MaxVideoAI tools page showing a colorful character sheet, camera-angle work, image refinement, and video finishing options](plugins/maxvideoai/assets/screenshots/maxvideoai-tools-workflow-live.webp)
+![MaxVideoAI tools page showing a Character Studio portrait and camera-angle and upscale presentation examples](plugins/maxvideoai/assets/screenshots/maxvideoai-tools-workflow-live.webp)
 
 Tool availability and price still come from the live product. The exact input, output, and billing boundary is shown before a tool runs.
 
@@ -70,7 +70,9 @@ Tool availability and price still come from the live product. The exact input, o
 
 Supported workflows can use image, video, or audio references for composition, subject, motion, timing, or sound direction. The selected model and mode determine the accepted reference roles and limits. Finished results and reusable assets remain in the connected MaxVideoAI Library, ready for the next shot or another production route.
 
-![Public MaxVideoAI MCP page showing a finished colorful video in Claude with confirmation that it was saved to the connected Library](plugins/maxvideoai/assets/screenshots/maxvideoai-library-continuity-production.jpg)
+![September 2026 public-page capture of a controlled Claude Desktop staging result saved to the connected MaxVideoAI Library](plugins/maxvideoai/assets/screenshots/maxvideoai-library-continuity-production.jpg)
+
+*Controlled Claude Desktop staging test from August 26, 2026; public-page capture from September 16, revalidated November 15. This dated demonstration does not certify current host execution or pricing.*
 
 [Open the Library](https://maxvideoai.com/app/library) to browse saved media and continue where the production stopped.
 

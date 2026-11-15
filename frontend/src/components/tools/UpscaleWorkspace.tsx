@@ -1,4 +1,5 @@
 'use client';
+import { isToolFailureCode, toolFailureMessage } from '@/lib/toolbox/errors';
 
 /* eslint-disable @next/next/no-img-element */
 
@@ -288,7 +289,8 @@ export function UpscaleSession({ auth, initialKind }: { auth: ReturnType<typeof 
       void mutate();
     } catch (runError) {
       refreshQuote();
-      setError(runError instanceof Error ? runError.message : 'Upscale failed.');
+      const code = runError && typeof runError === 'object' && 'code' in runError ? runError.code : null;
+      setError(isToolFailureCode(code) ? toolFailureMessage(code, locale) : runError instanceof Error ? runError.message : 'Upscale failed.');
     } finally {
       runningRef.current = false;
       setRunning(false);

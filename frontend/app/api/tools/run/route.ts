@@ -5,6 +5,8 @@ import { getActiveAccountRestriction } from '@/server/fraud-cleanup';
 import { requireCurrentWebPricingPolicy } from '@/server/pricing/web-pricing-policy';
 import { runFinishingTool } from '@/server/tools/finishing-run';
 import { refreshFinishingTool } from '@/server/tools/finishing-status';
+import { FinishingExecutionError } from '@/server/tools/finishing-errors';
+import { isToolFailureCode } from '@/lib/toolbox/errors';
 export const runtime = 'nodejs';
 export const maxDuration = 800;
 const headers = { 'Cache-Control': 'private, no-store' };
@@ -19,8 +21,8 @@ export async function POST(req: NextRequest) {
   catch (error) {
     const code = error instanceof Error ? error.message : '';
     const status = code === 'TOOL_QUALIFICATION_REQUIRED' || code === 'TOOL_STORAGE_UNAVAILABLE' ? 503 : code === 'QUOTE_CHANGED' || code === 'REQUEST_CONFLICT' ? 409 : code === 'INSUFFICIENT_FUNDS' ? 402 : 422;
-    const publicCode = ['TOOL_QUALIFICATION_REQUIRED', 'TOOL_STORAGE_UNAVAILABLE', 'QUOTE_CHANGED', 'REQUEST_CONFLICT', 'INSUFFICIENT_FUNDS', 'CURRENCY_MISMATCH', 'SOURCE_UNAVAILABLE'].includes(code) ? code : 'TOOL_RUN_FAILED';
-    return NextResponse.json({ ok: false, error: publicCode }, { status, headers });
+    const publicCode = isToolFailureCode(code) || ['REQUEST_CONFLICT', 'CURRENCY_MISMATCH'].includes(code) ? code : 'TOOL_RUN_FAILED';
+    return NextResponse.json({ ok: false, error: publicCode, refunded: error instanceof FinishingExecutionError && error.refunded }, { status, headers });
   }
 }
 export async function GET(req: NextRequest) {

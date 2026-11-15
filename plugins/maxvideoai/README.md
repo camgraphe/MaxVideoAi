@@ -25,7 +25,7 @@ Start a new Codex task, then ask `$maxvideoai:plan` to compare a production rout
 
 The assistant owns the creative conversation; MaxVideoAI supplies current product truth and the controlled execution path. It can read live model details, compare compatible options, calculate complete project budgets, select account-owned media, validate concrete settings, return an exact quote, submit one approved attempt, follow the accepted job, and present the finished result.
 
-![Public MaxVideoAI home page with a colorful MiniMax H3 Max film preview and pay-as-you-go creation actions](assets/screenshots/maxvideoai-workspace-live.webp)
+![Public MaxVideoAI home page captured in November 2026 with a FLUX 3 Max film preview and pay-as-you-go creation actions](assets/screenshots/maxvideoai-workspace-live.webp)
 
 The same connected account and Library are used on the website and through the plugin. There is no separate plugin subscription; approved generations use existing MaxVideoAI credits at current pay-as-you-go prices.
 
@@ -58,7 +58,7 @@ Connect → OAuth on first use → plan without spending → prepare quote → a
 
 Start from a brief, a supported private reference, or a public example. The plugin can help turn that material into a shot plan and a model-aware request, while the MaxVideoAI gallery gives you concrete prompts, settings, durations, and current price estimates to inspect before building your own version.
 
-![MaxVideoAI examples gallery with brand filters and four opening video cards for Wan, Seedance and FLUX](assets/screenshots/maxvideoai-examples-gallery-live.webp)
+![MaxVideoAI examples gallery with brand filters and four opening video cards for Wan, Seedance and Kling](assets/screenshots/maxvideoai-examples-gallery-live.webp)
 
 [Explore AI video examples](https://maxvideoai.com/examples) or copy one of the [four practical agent workflows](examples/README.md).
 
@@ -66,7 +66,7 @@ Start from a brief, a supported private reference, or a public example. The plug
 
 Use `$maxvideoai:plan` in Codex or `/maxvideoai:plan` in Claude Code. Planning reads current model facts and builds comparable, named production routes without authorizing generation. Ask for one consistent-model route, a deliberate model mix, a quality-focused plan, or a credible lower-cost alternative using the same shot assumptions.
 
-![MaxVideoAI comparison page showing MiniMax H3 and Seedance 2.5 scores, strengths, and colorful video examples](assets/screenshots/maxvideoai-engine-scoreboard-live.webp)
+![MaxVideoAI comparison page showing MiniMax H3 and Seedance 2.5 editorial scores, higher-rated areas and independent video examples](assets/screenshots/maxvideoai-engine-scoreboard-live.webp)
 
 The [engine comparison hub](https://maxvideoai.com/ai-video-engines) and [model directory](https://maxvideoai.com/models) expose the current decision surface. A recommendation is a capability match for the brief, not a guarantee of provider availability or a paid quote.
 
@@ -74,7 +74,7 @@ The [engine comparison hub](https://maxvideoai.com/ai-video-engines) and [model 
 
 A project budget is useful while you are choosing a direction. When the model, prompt, settings, and required references are concrete, `$maxvideoai:generate` or `/maxvideoai:generate` prepares the exact price for that request. Nothing is submitted as paid work until you explicitly approve that quote, and the approval covers one attempt.
 
-![MaxVideoAI pricing page with three current video starting points and navigation across video, image, audio, and tools](assets/screenshots/maxvideoai-pricing-comparison-live.webp)
+![MaxVideoAI pricing captured on November 15, 2026 with three video starting points and video, image, audio and tools navigation](assets/screenshots/maxvideoai-pricing-comparison-live.webp)
 
 1. **Plan:** compare current model options and complete project budgets without spending credits.
 2. **Prepare:** validate the selected request and supported private references.
@@ -86,7 +86,7 @@ A project budget is useful while you are choosing a direction. When the model, p
 
 The public [MaxVideoAI toolbox](https://maxvideoai.com/tools) covers repeatable work around generation: character sheets, camera-angle exploration, image refinement, background removal, and video finishing. It keeps the next production step visible without implying that every tool is part of this plugin package or available through every MCP host.
 
-![MaxVideoAI tools page showing a colorful character sheet, camera-angle work, image refinement, and video finishing options](assets/screenshots/maxvideoai-tools-workflow-live.webp)
+![MaxVideoAI tools page showing a Character Studio portrait and camera-angle and upscale presentation examples](assets/screenshots/maxvideoai-tools-workflow-live.webp)
 
 Use the live tool page for current inputs and prices. The remote MCP exposes only the capabilities in its current tool contract.
 
@@ -96,7 +96,9 @@ The current live MCP surface covers video and image planning, quoting, generatio
 
 Compatible ChatGPT or Claude surfaces can import authorized attachments and generated results as private MaxVideoAI assets without a public URL or Computer Use. Codex and Claude Code use the packaged local helper when a host cannot expose a temporary file handle directly. The helper reads local bytes itself; it does not publish the file or pass a raw local path to the MCP server.
 
-![Public MaxVideoAI MCP page showing a finished colorful video in Claude with confirmation that it was saved to the connected Library](assets/screenshots/maxvideoai-library-continuity-production.jpg)
+![September 2026 public-page capture of a controlled Claude Desktop staging result saved to the connected MaxVideoAI Library](assets/screenshots/maxvideoai-library-continuity-production.jpg)
+
+*Controlled Claude Desktop staging test from August 26, 2026; public-page capture from September 16, revalidated November 15. This dated demonstration does not certify current host execution or pricing.*
 
 Private references and finished generations remain in the connected MaxVideoAI Library. If a response is interrupted after submission, recover the accepted job or recent generation before preparing another paid attempt. Read [privacy and permissions](docs/privacy-and-permissions.md) and [reference input handling](skills/generate/references/reference-inputs.md) for the complete boundary.
 

@@ -4,6 +4,8 @@ import { reserveWalletChargeInExecutor } from '@/lib/wallet';
 import { getUserPreferredCurrency } from '@/lib/currency';
 import type { ToolResult } from '@/lib/toolbox/contract';
 import type { PreparedFinishingTool } from './finishing-prepare';
+import { storedFinishingFailureCode } from './finishing-errors';
+import { toolFailureMessage } from '@/lib/toolbox/errors';
 
 const defaultDependencies = { query, withDbTransaction, ensureBillingSchema, isDatabaseConfigured, getUserPreferredCurrency };
 export function createFinishingJobStore(dependencies: Partial<typeof defaultDependencies> = {}) {
@@ -50,6 +52,7 @@ async function completeFinishingJob(userId: string, jobId: string, result: ToolR
 }
 
 async function failFinishingJob(userId: string, jobId: string, message: string, requestId: string | null) {
+  const errorCode = storedFinishingFailureCode(message);
   await withDbTransaction(async executor => {
     await executor.query('SELECT pg_advisory_xact_lock(hashtext($1))', [jobId]);
     // Refund the stored charge exactly, once. A completed job can never be refunded here.
@@ -59,19 +62,22 @@ async function failFinishingJob(userId: string, jobId: string, message: string, 
       FROM app_jobs WHERE job_id=$1 AND user_id=$2 AND surface='tool' AND status <> 'completed' AND payment_status='paid_wallet'
       ON CONFLICT DO NOTHING`, [jobId, userId]);
     await executor.query(`UPDATE app_jobs SET status='failed', progress=0, payment_status='refunded_wallet',
-      provider_job_id=COALESCE($3,provider_job_id), message=$4, provisional=FALSE, updated_at=NOW()
-      WHERE job_id=$1 AND user_id=$2 AND surface='tool' AND status <> 'completed' AND payment_status='paid_wallet'`, [jobId, userId, requestId, message]);
+      provider_job_id=COALESCE($3,provider_job_id), message=$4, provisional=FALSE, updated_at=NOW(),
+      settings_snapshot=COALESCE(settings_snapshot,'{}'::jsonb) || jsonb_build_object('toolFailureCode',$5::text)
+      WHERE job_id=$1 AND user_id=$2 AND surface='tool' AND status <> 'completed' AND payment_status='paid_wallet'`, [jobId, userId, requestId, toolFailureMessage(errorCode, 'en'), errorCode]);
   });
 }
 
 async function readFinishingJob(userId: string, jobId: string, options: { includeHidden?: boolean } = {}) {
-  const rows = await query<{ status: string; payment_status: string | null; settings_snapshot: { toolResult?: ToolResult }; message: string | null }>(
+  const rows = await query<{ status: string; payment_status: string | null; settings_snapshot: { toolResult?: ToolResult; toolFailureCode?: string }; message: string | null }>(
     `SELECT status,payment_status,settings_snapshot,message FROM app_jobs
       WHERE job_id=$1 AND user_id=$2 AND surface='tool' AND (hidden IS NOT TRUE OR $3::boolean)`, [jobId, userId, options.includeHidden === true]);
   if (!rows[0]) throw new Error('JOB_UNAVAILABLE');
-  return { jobId, status: rows[0].status, result: rows[0].settings_snapshot.toolResult ?? null, error: rows[0].status === 'failed'
-    ? rows[0].payment_status === 'refunded_wallet' ? 'Tool processing failed. The charge was refunded.' : 'Tool processing failed. Payment reconciliation is pending.'
-    : null };
+  const failed = rows[0].status === 'failed';
+  const errorCode = failed ? storedFinishingFailureCode(rows[0].settings_snapshot.toolFailureCode ?? rows[0].message) : null;
+  const refunded = failed && rows[0].payment_status === 'refunded_wallet';
+  return { jobId, status: rows[0].status, result: rows[0].settings_snapshot.toolResult ?? null,
+    errorCode, refunded, error: failed ? toolFailureMessage(errorCode, 'en', refunded) : null };
 }
 
 async function markFinishingSubmitted(userId: string, jobId: string, requestId: string) {

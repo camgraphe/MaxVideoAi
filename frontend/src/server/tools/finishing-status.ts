@@ -1,6 +1,7 @@
 import { getFalClient } from '@/lib/fal-client';
 import { claimFinishingCompletion, completeFinishingJob, failFinishingJob, readFinishingExecution, readFinishingJob } from './finishing-jobs';
 import { persistFinishingOutput } from './finishing-output';
+import { finishingOutputFailureCode, finishingProviderFailureCode } from './finishing-errors';
 
 const defaults = {
   read: readFinishingExecution, status: readFinishingJob, claim: claimFinishingCompletion,
@@ -17,12 +18,12 @@ export async function refreshFinishingTool(userId: string, jobId: string, depend
   if (job.status === 'completed') return deps.status(userId, jobId);
   if (job.status === 'failed') {
     // Reconcile a paid failure left by an older polling owner without resubmitting.
-    if (job.payment_status === 'paid_wallet') await deps.fail(userId, jobId, 'Tool processing failed.', job.provider_job_id);
+    if (job.payment_status === 'paid_wallet') await deps.fail(userId, jobId, 'TOOL_RUN_FAILED', job.provider_job_id);
     return deps.status(userId, jobId);
   }
   if (!job.provider_job_id) {
     // An interrupted submission without a durable provider ID must not lock a wallet forever.
-    if (Date.now() - new Date(job.updated_at).getTime() > 15 * 60_000) await deps.fail(userId, jobId, 'Submission interrupted.', null);
+    if (Date.now() - new Date(job.updated_at).getTime() > 15 * 60_000) await deps.fail(userId, jobId, 'TOOL_SUBMISSION_INTERRUPTED', null);
     return deps.status(userId, jobId);
   }
   const signal = options.signal ?? AbortSignal.timeout(10_000);
@@ -35,7 +36,7 @@ export async function refreshFinishingTool(userId: string, jobId: string, depend
   } catch (error) {
     // A transport outage is not a failed generation. fal uses 422 for failed results.
     if (typeof error === 'object' && error !== null && 'status' in error && error.status === 422) {
-      await deps.fail(userId, jobId, 'Provider processing failed.', job.provider_job_id);
+      await deps.fail(userId, jobId, finishingProviderFailureCode(error), job.provider_job_id);
     }
     return deps.status(userId, jobId);
   }
@@ -46,8 +47,8 @@ export async function refreshFinishingTool(userId: string, jobId: string, depend
   try {
     const result = await deps.persist(userId, jobId, prepared, output);
     await deps.complete(userId, jobId, result, job.provider_job_id);
-  } catch {
-    await deps.fail(userId, jobId, 'Unable to preserve the tool result.', job.provider_job_id);
+  } catch (error) {
+    await deps.fail(userId, jobId, finishingOutputFailureCode(error), job.provider_job_id);
   }
   return deps.status(userId, jobId);
 }

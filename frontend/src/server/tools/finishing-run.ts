@@ -6,12 +6,14 @@ import { validateToolBlock } from '@/lib/toolbox/contract';
 import { matchesAcceptedToolQuote } from '@/lib/toolbox/quote';
 import { prepareFinishingTool } from './finishing-prepare';
 import { requireFinishingProfileReleased } from './finishing-release';
-import { reserveFinishingJob, markFinishingSubmitted, failFinishingJob } from './finishing-jobs';
+import { reserveFinishingJob, markFinishingSubmitted, failFinishingJob, readFinishingJob } from './finishing-jobs';
+import { FinishingExecutionError, finishingProviderFailureCode } from './finishing-errors';
 
 const requestSchema = z.object({ block: z.unknown(), requestId: z.string().uuid(), acceptedQuote: z.object({ totalCents: z.number().int().positive(), currency: z.literal('USD') }).strict() }).strict();
 const defaults = {
   prepare: prepareFinishingTool, requireReleased: requireFinishingProfileReleased, storageReady: isStorageConfigured,
   reserve: reserveFinishingJob, submitted: markFinishingSubmitted, fail: failFinishingJob,
+  status: readFinishingJob,
   execute: async (endpoint: string, input: Record<string, unknown>) => getFalClient().queue.submit(endpoint, { input }),
 };
 /** One server owner for standalone/embedded callers. No debit or provider submission during preparation. */
@@ -26,7 +28,9 @@ export async function runFinishingTool(value: unknown, userId: string, dependenc
   const jobId = `tool_finish_${createHash('sha256').update(JSON.stringify([userId, request.requestId])).digest('hex')}`;
   const fingerprint = createHash('sha256').update(JSON.stringify([prepared.block, prepared.profile.id, prepared.source.url, prepared.facts, prepared.pricing.totalCents, prepared.pricing.currency])).digest('hex');
   const reservation = await deps.reserve(userId, jobId, fingerprint, prepared);
-  if (!reservation.created) return { ok: true, jobId, status: reservation.status, result: reservation.result };
+  if (!reservation.created) return reservation.status === 'failed'
+    ? { ok: true, ...await deps.status(userId, jobId) }
+    : { ok: true, jobId, status: reservation.status, result: reservation.result };
   let providerRequestId: string | null = null;
   try {
     const response = await deps.execute(prepared.profile.endpoint, prepared.input);
@@ -35,7 +39,10 @@ export async function runFinishingTool(value: unknown, userId: string, dependenc
     await deps.submitted(userId, jobId, providerRequestId);
     return { ok: true, jobId, status: 'queued', result: null };
   } catch (error) {
-    await deps.fail(userId, jobId, 'Tool processing failed.', providerRequestId);
-    throw error;
+    const code = finishingProviderFailureCode(error);
+    await deps.fail(userId, jobId, code, providerRequestId);
+    const settled = await deps.status(userId, jobId);
+    if (settled.status !== 'failed') return { ok: true, ...settled };
+    throw new FinishingExecutionError(settled.errorCode ?? code, settled.refunded === true);
   }
 }

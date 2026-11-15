@@ -122,7 +122,7 @@ export function UpscaleRecipePanel({
       {running || priceLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <WandSparkles className="h-4 w-4" />}
       {running ? toolbox.processing : priceLoading ? toolbox.priceLoading : toolbox.upscale}{!running && !priceLoading && priceLabel !== '—' ? ` · ${priceLabel}` : ''}
     </Button>
-    {quoteError ? <button type="button" className="min-h-11 text-xs underline" onClick={onRefreshQuote} disabled={running}>{toolbox.retryPrice}</button> : null}
+    {quoteError ? <><p role="alert" className="mt-3 text-xs text-error">{quoteError}</p><button type="button" className="min-h-11 text-xs underline" onClick={onRefreshQuote} disabled={running}>{toolbox.retryPrice}</button></> : null}
     {message ? <p role="status" className="mt-3 text-xs text-text-muted">{message}</p> : null}
     {error ? <p role="alert" className="mt-3 text-xs text-error">{error}</p> : null}
   </section>;

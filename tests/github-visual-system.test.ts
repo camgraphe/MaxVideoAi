@@ -12,6 +12,8 @@ const manifest = JSON.parse(readFileSync('docs/marketing/github-asset-manifest.j
     kind: string;
     state: string;
     sha256: string;
+    capturedAt?: string | null;
+    maxvideoaiRevision?: string | null;
     claim: string;
     alt: string;
     reviewTrigger: string;
@@ -98,7 +100,7 @@ test('ships the registered visual-system outputs at their exact target dimension
   );
 });
 
-test('ships seven distinct current public product captures for the proof-led README journey', async () => {
+test('ships seven distinct reviewed public product captures for the proof-led README journey', async () => {
   const hashes = new Set<string>();
   for (const [path, [expectedWidth, expectedHeight]] of liveScreenshotDimensions) {
     const bytes = readFileSync(path);
@@ -136,11 +138,15 @@ test('model-directory capture provenance describes only the visible public hero'
   const record = manifest.assets.find((asset) => asset.id === 'maxvideoai-model-directory-live');
   assert.ok(record);
   for (const text of [record.claim, record.alt]) {
-    assert.match(text, /public.*model.directory hero/i);
+    assert.match(text, /model.directory hero/i);
     assert.match(text, /Browse models.*Compare engines/i);
-    assert.match(text, /pricing.*specification cues/i);
-    assert.match(text, /colorful model artwork/i);
+    assert.match(text, /pricing.*cues/i);
+    assert.match(text, /model artwork/i);
   }
+  assert.match(record.claim, /Public.*captured on 16 September 2026.*pricing and specification cues/i);
+  assert.match(record.alt, /Dated.*model.directory hero/i);
+  assert.equal(record.capturedAt, '2026-09-16T00:07:39Z');
+  assert.equal(record.maxvideoaiRevision, '5423599b472ae6d6e31beb3e8a5c59e23d3a1a83');
   for (const text of [record.claim, record.alt, record.reviewTrigger]) {
     assert.doesNotMatch(text, /recommended starting points|capability summaries|editorial scores/i);
     assert.doesNotMatch(text, /recommendation|ranking|generation|assistant execution/i);
@@ -148,7 +154,7 @@ test('model-directory capture provenance describes only the visible public hero'
   assert.match(record.reviewTrigger, /hero.*actions.*pricing.*specification cues.*artwork/i);
 });
 
-test('gallery capture provenance matches the current four-card opening', () => {
+test('gallery capture provenance matches the November four-card opening', () => {
   const record = manifest.assets.find((asset) => asset.id === 'maxvideoai-examples-gallery-live');
   assert.ok(record);
   for (const text of [record.claim, record.alt, record.reviewTrigger]) {
@@ -156,10 +162,12 @@ test('gallery capture provenance matches the current four-card opening', () => {
   }
   for (const text of [record.claim, record.alt]) {
     assert.match(text, /MaxVideoAI examples gallery.*brand filters.*four opening/i);
-    assert.match(text, /Wan.*Seedance.*FLUX/i);
+    assert.match(text, /Wan.*Seedance.*Kling/i);
+    assert.doesNotMatch(text, /FLUX 3/i);
     assert.doesNotMatch(text, /cinematic Paris|animated runner previews|partial model labels/i);
   }
-  assert.match(record.claim, /Wan 3 Prime.*Seedance 2\.0 Fast.*FLUX 3/i);
+  assert.match(record.claim, /Wan 3 Prime.*Seedance 2\.0 Fast.*Kling 4\.0/i);
+  assert.match(record.claim, /prompt excerpts and current.price cues/i);
   assert.match(record.reviewTrigger, /gallery hero.*filters.*previews.*model labels/i);
 });
 
@@ -169,12 +177,13 @@ test('pricing capture provenance separates video prices from other-category navi
   for (const text of [record.claim, record.alt]) {
     assert.doesNotMatch(text, /prices across video, image, audio, and tools/i);
   }
-  assert.match(record.claim, /three.*video starting.point prices/i);
-  assert.match(record.claim, /navigation tabs for Image, Audio, and Tools/i);
-  assert.match(record.alt, /video, image, audio, and tools navigation/i);
+  assert.match(record.claim, /three.*video starting points at \$0\.39, \$1\.10 and \$1\.64/i);
+  assert.match(record.claim, /Image, Audio and Tools & Upscale navigation/i);
+  assert.match(record.claim, /dated preset display prices.*exact live request quote remains authoritative/i);
+  assert.match(record.alt, /video, image, audio and tools navigation/i);
 });
 
-test('comparison capture provenance describes visible strengths instead of collapsed trade-offs', () => {
+test('comparison capture provenance describes visible editorial scores and higher-rated areas', () => {
   const record = manifest.assets.find((asset) => asset.id === 'maxvideoai-engine-scoreboard-live');
   assert.ok(record);
   for (const text of [record.claim, record.alt, record.reviewTrigger]) {
@@ -182,16 +191,19 @@ test('comparison capture provenance describes visible strengths instead of colla
   }
   for (const text of [record.claim, record.alt]) {
     assert.match(text, /MiniMax H3.*Seedance 2\.5/i);
-    assert.match(text, /scores.*strengths.*colorful independent video examples/i);
+    assert.match(text, /editorial scores.*higher-rated areas.*independent (?:video )?examples/i);
   }
+  assert.match(record.claim, /editorial scores of 8\.5 and 9\.1/i);
+  assert.match(record.claim, /different prompts and settings.*not an identical.prompt benchmark/i);
 });
 
 test('narrow composite provenance disclaims current price proof without denying historical price pixels', () => {
   const record = manifest.assets.find((asset) => asset.id === 'model-choice-and-budget');
   assert.ok(record);
   assert.doesNotMatch(record.claim, /does not show|no price pixels/i);
-  assert.match(record.claim, /public MaxVideoAI home page.*public MCP Claude.result section/i);
+  assert.match(record.claim, /MaxVideoAI home page captured on 16 September 2026.*public MCP Claude.result section/i);
   assert.match(record.claim, /does not prove a current budget, quote, price, approval, or native host execution/i);
+  assert.match(record.claim, /dated captures, not a current.interface certification/i);
 });
 
 test('ships a dedicated editorial hero without presenting it as product or host proof', async () => {
@@ -250,7 +262,7 @@ test('composition code uses only accepted public proof sources, stays light, and
   assert.match(modelRecord?.claim ?? '', /does not prove a current budget, quote, price, approval, or native host execution/i);
 });
 
-test('the narrow proof uses the complete current public page instead of stale workspace-coordinate crops', () => {
+test('the narrow proof uses the complete retained public page instead of workspace-coordinate crops', () => {
   const source = readFileSync('scripts/compose-github-visual-system.mjs', 'utf8');
   const functionBody = source.match(/async function modelChoiceAndBudget\(\) \{([\s\S]*?)\n\}/)?.[1] ?? '';
 

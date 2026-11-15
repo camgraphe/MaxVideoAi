@@ -49,3 +49,14 @@ test('video facts never invent 30 fps and measure audio presence', () => {
   assert.equal(parsed.fps,24000/1001);
   assert.equal(parsed.hasAudio,true);
 });
+
+test('tool metadata measures display dimensions for rotated phone videos', () => {
+  for (const rotation of [-90, 90, 270, 450]) {
+    const parsed = parseToolVideoMetadata({ streams: [{ codec_type: 'video', width: 1920, height: 1080, avg_frame_rate: '24/1', side_data_list: [{ rotation }] }], format: { duration: '23.3' } });
+    assert.deepEqual([parsed.width, parsed.height], [1080, 1920]);
+  }
+  const tagged = parseToolVideoMetadata({ streams: [{ width: 1920, height: 1080, r_frame_rate: '24/1', tags: { rotate: '90' } }], format: { duration: '1' } });
+  assert.deepEqual([tagged.width, tagged.height], [1080, 1920]);
+  const unchanged = parseToolVideoMetadata({ streams: [{ width: 1920, height: 1080, r_frame_rate: '24/1', side_data_list: [{ rotation: 180 }], tags: { rotate: '90' } }], format: { duration: '1' } });
+  assert.deepEqual([unchanged.width, unchanged.height], [1920, 1080]);
+});
