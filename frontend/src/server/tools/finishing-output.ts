@@ -5,18 +5,21 @@ import { createUploadVideoThumbnail } from '@/server/upload-thumbnails';
 import { upsertJobOutputs } from '@/server/media-library';
 import type { ToolResult } from '@/lib/toolbox/contract';
 import type { PreparedFinishingTool } from './finishing-prepare';
-import { readToolVideoMetadata } from './toolbox-video-metadata';
+import { MAX_TOOL_OUTPUT_BYTES, readToolVideoBufferMetadata } from './toolbox-video-metadata';
 
-const downloadOutput = createBoundedMediaDownloader({ accepted: ['video/mp4', 'video/quicktime', 'video/webm'], maxBytes: 500 * 1024 * 1024 });
-export async function persistFinishingOutput(userId: string, jobId: string, prepared: PreparedFinishingTool, data: unknown): Promise<ToolResult> {
+const downloadOutput = createBoundedMediaDownloader({ accepted: ['video/mp4', 'video/quicktime', 'video/webm'], maxBytes: MAX_TOOL_OUTPUT_BYTES });
+const defaults = { download: downloadOutput, upload: uploadFileBuffer, thumbnail: createUploadVideoThumbnail, upsert: upsertJobOutputs };
+export async function persistFinishingOutput(userId: string, jobId: string, prepared: PreparedFinishingTool, data: unknown, dependencies: Partial<typeof defaults> = {}): Promise<ToolResult> {
+  const deps = { ...defaults, ...dependencies };
   const output = z.object({ video: z.object({ url: z.string().url().refine(url => url.startsWith('https://')) }) }).parse(data).video;
-  const file = await downloadOutput({ file_id: jobId, download_url: output.url });
-  const stored = await uploadFileBuffer({ data: Buffer.from(file.bytes), mime: file.mimeType, userId, prefix: 'tool-results', fileName: `${prepared.block.toolId}.${file.mimeType === 'video/webm' ? 'webm' : file.mimeType === 'video/quicktime' ? 'mov' : 'mp4'}` });
-  const facts = await readToolVideoMetadata(stored.url, userId);
+  const file = await deps.download({ file_id: jobId, download_url: output.url });
+  const bytes = Buffer.isBuffer(file.bytes) ? file.bytes : Buffer.from(file.bytes);
+  const facts = await readToolVideoBufferMetadata(bytes);
   validateFinishingOutputFacts(prepared, facts);
-  const thumbnailUrl = await createUploadVideoThumbnail({ data: Buffer.from(file.bytes), userId, fileName: jobId });
+  const stored = await deps.upload({ data: bytes, mime: file.mimeType, userId, prefix: 'tool-results', fileName: `${prepared.block.toolId}.${file.mimeType === 'video/webm' ? 'webm' : file.mimeType === 'video/quicktime' ? 'mov' : 'mp4'}` });
+  const thumbnailUrl = await deps.thumbnail({ data: bytes, userId, fileName: jobId });
   const outputId = `${jobId}:video:0`;
-  await upsertJobOutputs([{ id: outputId, jobId, userId, kind: 'video', url: stored.url, storageUrl: stored.url,
+  await deps.upsert([{ id: outputId, jobId, userId, kind: 'video', url: stored.url, storageUrl: stored.url,
     thumbUrl: thumbnailUrl, previewUrl: null, mimeType: file.mimeType, width: facts.width, height: facts.height, durationSec: Math.ceil(facts.durationSec), position: 0, status: 'ready',
     metadata: { toolId: prepared.block.toolId, profileId: prepared.profile.id, sourceAssets: prepared.block.inputs, mediaFacts: facts } }]);
   return { toolId: prepared.block.toolId, version: 1, jobId, sourceAssets: prepared.block.inputs,

@@ -2,6 +2,7 @@ import type { UpscaleMediaType, UpscaleMode, UpscaleTargetResolution, UpscaleToo
 import { toolboxCopy } from '../../toolbox-copy';
 import { useToolQuote } from '../../useToolQuote';
 import type { UploadedAsset } from '../_lib/upscale-workspace-types';
+import { toolFailureMessage } from '@/lib/toolbox/errors';
 
 export function useUpscalePricingPreview(params: {
   copy: { priceLoading: string; priceReady: string; priceUnavailable: string; priceVideoMissing: string };
@@ -15,7 +16,7 @@ export function useUpscalePricingPreview(params: {
     priceHint: quote.error ? params.copy.priceUnavailable : quote.loading ? params.copy.priceLoading : quote.ready ? params.copy.priceReady : toolboxCopy(params.locale).emptyHint,
     pricePreview: { ready: quote.ready, totalCents: quote.quote?.totalCents ?? null, currency: quote.quote?.currency ?? 'USD' },
     acceptedQuote: quote.quote,
-    quoteError: quote.error,
+    quoteError: quote.errorCode ? toolFailureMessage(quote.errorCode, params.locale) : quote.error ? params.copy.priceUnavailable : null,
     priceLoading: quote.loading,
     refreshQuote: quote.refresh,
   };

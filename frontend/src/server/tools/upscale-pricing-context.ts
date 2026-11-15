@@ -2,6 +2,8 @@ import { computeBillingProductSnapshot, repriceCanonicalFixedProductSnapshot } f
 import {
   estimateImageUpscaleCostUsd,
   estimateVideoUpscaleCostUsd,
+  getTargetResolutionHeight,
+  resolveUpscaleMode,
 } from '@/lib/tools-upscale';
 import { resolveDynamicToolPriceMultiplier } from '@/lib/tools-dynamic-pricing';
 import type { PricingSnapshot } from '@/types/engines';
@@ -38,6 +40,13 @@ export async function resolveUpscalePricingContext({
   pricing: PricingSnapshot;
   pricingEstimate: UpscalePricingEstimate;
 }> {
+  if (input.mediaType === 'video' && videoMetadata && targetResolution
+    && resolveUpscaleMode(engine, input.mode) === 'target'
+    && Math.min(videoMetadata.width, videoMetadata.height) >= getTargetResolutionHeight(targetResolution)) {
+    throw new UpscaleToolError('This video is already at or above the selected resolution. Choose a higher resolution or factor mode.', {
+      status: 422, code: 'UPSCALE_TARGET_NOT_LARGER',
+    });
+  }
   try {
     let pricing = await computeBillingProductSnapshot({
       productKey: billingProductKey,
