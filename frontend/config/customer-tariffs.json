@@ -103,6 +103,699 @@
         "kind": "fixed",
         "customerCents": 23
       }
+    },
+    {
+      "id": "seedream-5-5-fixed-t2i-1k-20261113",
+      "source": "versioned",
+      "version": 1,
+      "currency": "USD",
+      "effectiveFrom": "2026-11-13T00:00:00.000Z",
+      "selector": {
+        "engineId": "seedream-5-5",
+        "mode": "t2i",
+        "resolution": "1K",
+        "durationSec": "1"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 3
+      }
+    },
+    {
+      "id": "seedream-5-5-fixed-t2i-1_5k-20261113",
+      "source": "versioned",
+      "version": 1,
+      "currency": "USD",
+      "effectiveFrom": "2026-11-13T00:00:00.000Z",
+      "selector": {
+        "engineId": "seedream-5-5",
+        "mode": "t2i",
+        "resolution": "1.5K",
+        "durationSec": "1"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 3
+      }
+    },
+    {
+      "id": "seedream-5-5-fixed-t2i-2k-20261113",
+      "source": "versioned",
+      "version": 1,
+      "currency": "USD",
+      "effectiveFrom": "2026-11-13T00:00:00.000Z",
+      "selector": {
+        "engineId": "seedream-5-5",
+        "mode": "t2i",
+        "resolution": "2K",
+        "durationSec": "1"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 6
+      }
+    },
+    {
+      "id": "seedream-5-5-fixed-i2i-1k-sources-1-20261113",
+      "source": "versioned",
+      "version": 1,
+      "currency": "USD",
+      "effectiveFrom": "2026-11-13T00:00:00.000Z",
+      "selector": {
+        "engineId": "seedream-5-5",
+        "mode": "i2i",
+        "resolution": "1K",
+        "durationSec": "1",
+        "inputImageCount": "1"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 4
+      }
+    },
+    {
+      "id": "seedream-5-5-fixed-i2i-1k-sources-2-20261113",
+      "source": "versioned",
+      "version": 1,
+      "currency": "USD",
+      "effectiveFrom": "2026-11-13T00:00:00.000Z",
+      "selector": {
+        "engineId": "seedream-5-5",
+        "mode": "i2i",
+        "resolution": "1K",
+        "durationSec": "1",
+        "inputImageCount": "2"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 6
+      }
+    },
+    {
+      "id": "seedream-5-5-fixed-i2i-1k-sources-3-20261113",
+      "source": "versioned",
+      "version": 1,
+      "currency": "USD",
+      "effectiveFrom": "2026-11-13T00:00:00.000Z",
+      "selector": {
+        "engineId": "seedream-5-5",
+        "mode": "i2i",
+        "resolution": "1K",
+        "durationSec": "1",
+        "inputImageCount": "3"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 6
+      }
+    },
+    {
+      "id": "seedream-5-5-fixed-i2i-1k-sources-4-20261113",
+      "source": "versioned",
+      "version": 1,
+      "currency": "USD",
+      "effectiveFrom": "2026-11-13T00:00:00.000Z",
+      "selector": {
+        "engineId": "seedream-5-5",
+        "mode": "i2i",
+        "resolution": "1K",
+        "durationSec": "1",
+        "inputImageCount": "4"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 7
+      }
+    },
+    {
+      "id": "seedream-5-5-fixed-i2i-1k-sources-5-20261113",
+      "source": "versioned",
+      "version": 1,
+      "currency": "USD",
+      "effectiveFrom": "2026-11-13T00:00:00.000Z",
+      "selector": {
+        "engineId": "seedream-5-5",
+        "mode": "i2i",
+        "resolution": "1K",
+        "durationSec": "1",
+        "inputImageCount": "5"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 8
+      }
+    },
+    {
+      "id": "seedream-5-5-fixed-i2i-1k-sources-6-20261113",
+      "source": "versioned",
+      "version": 1,
+      "currency": "USD",
+      "effectiveFrom": "2026-11-13T00:00:00.000Z",
+      "selector": {
+        "engineId": "seedream-5-5",
+        "mode": "i2i",
+        "resolution": "1K",
+        "durationSec": "1",
+        "inputImageCount": "6"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 10
+      }
+    },
+    {
+      "id": "seedream-5-5-fixed-i2i-1k-sources-7-20261113",
+      "source": "versioned",
+      "version": 1,
+      "currency": "USD",
+      "effectiveFrom": "2026-11-13T00:00:00.000Z",
+      "selector": {
+        "engineId": "seedream-5-5",
+        "mode": "i2i",
+        "resolution": "1K",
+        "durationSec": "1",
+        "inputImageCount": "7"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 11
+      }
+    },
+    {
+      "id": "seedream-5-5-fixed-i2i-1k-sources-8-20261113",
+      "source": "versioned",
+      "version": 1,
+      "currency": "USD",
+      "effectiveFrom": "2026-11-13T00:00:00.000Z",
+      "selector": {
+        "engineId": "seedream-5-5",
+        "mode": "i2i",
+        "resolution": "1K",
+        "durationSec": "1",
+        "inputImageCount": "8"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 11
+      }
+    },
+    {
+      "id": "seedream-5-5-fixed-i2i-1k-sources-9-20261113",
+      "source": "versioned",
+      "version": 1,
+      "currency": "USD",
+      "effectiveFrom": "2026-11-13T00:00:00.000Z",
+      "selector": {
+        "engineId": "seedream-5-5",
+        "mode": "i2i",
+        "resolution": "1K",
+        "durationSec": "1",
+        "inputImageCount": "9"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 12
+      }
+    },
+    {
+      "id": "seedream-5-5-fixed-i2i-1k-sources-10-20261113",
+      "source": "versioned",
+      "version": 1,
+      "currency": "USD",
+      "effectiveFrom": "2026-11-13T00:00:00.000Z",
+      "selector": {
+        "engineId": "seedream-5-5",
+        "mode": "i2i",
+        "resolution": "1K",
+        "durationSec": "1",
+        "inputImageCount": "10"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 13
+      }
+    },
+    {
+      "id": "seedream-5-5-fixed-i2i-1_5k-sources-1-20261113",
+      "source": "versioned",
+      "version": 1,
+      "currency": "USD",
+      "effectiveFrom": "2026-11-13T00:00:00.000Z",
+      "selector": {
+        "engineId": "seedream-5-5",
+        "mode": "i2i",
+        "resolution": "1.5K",
+        "durationSec": "1",
+        "inputImageCount": "1"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 4
+      }
+    },
+    {
+      "id": "seedream-5-5-fixed-i2i-1_5k-sources-2-20261113",
+      "source": "versioned",
+      "version": 1,
+      "currency": "USD",
+      "effectiveFrom": "2026-11-13T00:00:00.000Z",
+      "selector": {
+        "engineId": "seedream-5-5",
+        "mode": "i2i",
+        "resolution": "1.5K",
+        "durationSec": "1",
+        "inputImageCount": "2"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 6
+      }
+    },
+    {
+      "id": "seedream-5-5-fixed-i2i-1_5k-sources-3-20261113",
+      "source": "versioned",
+      "version": 1,
+      "currency": "USD",
+      "effectiveFrom": "2026-11-13T00:00:00.000Z",
+      "selector": {
+        "engineId": "seedream-5-5",
+        "mode": "i2i",
+        "resolution": "1.5K",
+        "durationSec": "1",
+        "inputImageCount": "3"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 6
+      }
+    },
+    {
+      "id": "seedream-5-5-fixed-i2i-1_5k-sources-4-20261113",
+      "source": "versioned",
+      "version": 1,
+      "currency": "USD",
+      "effectiveFrom": "2026-11-13T00:00:00.000Z",
+      "selector": {
+        "engineId": "seedream-5-5",
+        "mode": "i2i",
+        "resolution": "1.5K",
+        "durationSec": "1",
+        "inputImageCount": "4"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 7
+      }
+    },
+    {
+      "id": "seedream-5-5-fixed-i2i-1_5k-sources-5-20261113",
+      "source": "versioned",
+      "version": 1,
+      "currency": "USD",
+      "effectiveFrom": "2026-11-13T00:00:00.000Z",
+      "selector": {
+        "engineId": "seedream-5-5",
+        "mode": "i2i",
+        "resolution": "1.5K",
+        "durationSec": "1",
+        "inputImageCount": "5"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 8
+      }
+    },
+    {
+      "id": "seedream-5-5-fixed-i2i-1_5k-sources-6-20261113",
+      "source": "versioned",
+      "version": 1,
+      "currency": "USD",
+      "effectiveFrom": "2026-11-13T00:00:00.000Z",
+      "selector": {
+        "engineId": "seedream-5-5",
+        "mode": "i2i",
+        "resolution": "1.5K",
+        "durationSec": "1",
+        "inputImageCount": "6"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 10
+      }
+    },
+    {
+      "id": "seedream-5-5-fixed-i2i-1_5k-sources-7-20261113",
+      "source": "versioned",
+      "version": 1,
+      "currency": "USD",
+      "effectiveFrom": "2026-11-13T00:00:00.000Z",
+      "selector": {
+        "engineId": "seedream-5-5",
+        "mode": "i2i",
+        "resolution": "1.5K",
+        "durationSec": "1",
+        "inputImageCount": "7"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 11
+      }
+    },
+    {
+      "id": "seedream-5-5-fixed-i2i-1_5k-sources-8-20261113",
+      "source": "versioned",
+      "version": 1,
+      "currency": "USD",
+      "effectiveFrom": "2026-11-13T00:00:00.000Z",
+      "selector": {
+        "engineId": "seedream-5-5",
+        "mode": "i2i",
+        "resolution": "1.5K",
+        "durationSec": "1",
+        "inputImageCount": "8"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 11
+      }
+    },
+    {
+      "id": "seedream-5-5-fixed-i2i-1_5k-sources-9-20261113",
+      "source": "versioned",
+      "version": 1,
+      "currency": "USD",
+      "effectiveFrom": "2026-11-13T00:00:00.000Z",
+      "selector": {
+        "engineId": "seedream-5-5",
+        "mode": "i2i",
+        "resolution": "1.5K",
+        "durationSec": "1",
+        "inputImageCount": "9"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 12
+      }
+    },
+    {
+      "id": "seedream-5-5-fixed-i2i-1_5k-sources-10-20261113",
+      "source": "versioned",
+      "version": 1,
+      "currency": "USD",
+      "effectiveFrom": "2026-11-13T00:00:00.000Z",
+      "selector": {
+        "engineId": "seedream-5-5",
+        "mode": "i2i",
+        "resolution": "1.5K",
+        "durationSec": "1",
+        "inputImageCount": "10"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 13
+      }
+    },
+    {
+      "id": "seedream-5-5-fixed-i2i-2k-sources-1-20261113",
+      "source": "versioned",
+      "version": 1,
+      "currency": "USD",
+      "effectiveFrom": "2026-11-13T00:00:00.000Z",
+      "selector": {
+        "engineId": "seedream-5-5",
+        "mode": "i2i",
+        "resolution": "2K",
+        "durationSec": "1",
+        "inputImageCount": "1"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 6
+      }
+    },
+    {
+      "id": "seedream-5-5-fixed-i2i-2k-sources-2-20261113",
+      "source": "versioned",
+      "version": 1,
+      "currency": "USD",
+      "effectiveFrom": "2026-11-13T00:00:00.000Z",
+      "selector": {
+        "engineId": "seedream-5-5",
+        "mode": "i2i",
+        "resolution": "2K",
+        "durationSec": "1",
+        "inputImageCount": "2"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 7
+      }
+    },
+    {
+      "id": "seedream-5-5-fixed-i2i-2k-sources-3-20261113",
+      "source": "versioned",
+      "version": 1,
+      "currency": "USD",
+      "effectiveFrom": "2026-11-13T00:00:00.000Z",
+      "selector": {
+        "engineId": "seedream-5-5",
+        "mode": "i2i",
+        "resolution": "2K",
+        "durationSec": "1",
+        "inputImageCount": "3"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 8
+      }
+    },
+    {
+      "id": "seedream-5-5-fixed-i2i-2k-sources-4-20261113",
+      "source": "versioned",
+      "version": 1,
+      "currency": "USD",
+      "effectiveFrom": "2026-11-13T00:00:00.000Z",
+      "selector": {
+        "engineId": "seedream-5-5",
+        "mode": "i2i",
+        "resolution": "2K",
+        "durationSec": "1",
+        "inputImageCount": "4"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 10
+      }
+    },
+    {
+      "id": "seedream-5-5-fixed-i2i-2k-sources-5-20261113",
+      "source": "versioned",
+      "version": 1,
+      "currency": "USD",
+      "effectiveFrom": "2026-11-13T00:00:00.000Z",
+      "selector": {
+        "engineId": "seedream-5-5",
+        "mode": "i2i",
+        "resolution": "2K",
+        "durationSec": "1",
+        "inputImageCount": "5"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 11
+      }
+    },
+    {
+      "id": "seedream-5-5-fixed-i2i-2k-sources-6-20261113",
+      "source": "versioned",
+      "version": 1,
+      "currency": "USD",
+      "effectiveFrom": "2026-11-13T00:00:00.000Z",
+      "selector": {
+        "engineId": "seedream-5-5",
+        "mode": "i2i",
+        "resolution": "2K",
+        "durationSec": "1",
+        "inputImageCount": "6"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 11
+      }
+    },
+    {
+      "id": "seedream-5-5-fixed-i2i-2k-sources-7-20261113",
+      "source": "versioned",
+      "version": 1,
+      "currency": "USD",
+      "effectiveFrom": "2026-11-13T00:00:00.000Z",
+      "selector": {
+        "engineId": "seedream-5-5",
+        "mode": "i2i",
+        "resolution": "2K",
+        "durationSec": "1",
+        "inputImageCount": "7"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 12
+      }
+    },
+    {
+      "id": "seedream-5-5-fixed-i2i-2k-sources-8-20261113",
+      "source": "versioned",
+      "version": 1,
+      "currency": "USD",
+      "effectiveFrom": "2026-11-13T00:00:00.000Z",
+      "selector": {
+        "engineId": "seedream-5-5",
+        "mode": "i2i",
+        "resolution": "2K",
+        "durationSec": "1",
+        "inputImageCount": "8"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 13
+      }
+    },
+    {
+      "id": "seedream-5-5-fixed-i2i-2k-sources-9-20261113",
+      "source": "versioned",
+      "version": 1,
+      "currency": "USD",
+      "effectiveFrom": "2026-11-13T00:00:00.000Z",
+      "selector": {
+        "engineId": "seedream-5-5",
+        "mode": "i2i",
+        "resolution": "2K",
+        "durationSec": "1",
+        "inputImageCount": "9"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 15
+      }
+    },
+    {
+      "id": "seedream-5-5-fixed-i2i-2k-sources-10-20261113",
+      "source": "versioned",
+      "version": 1,
+      "currency": "USD",
+      "effectiveFrom": "2026-11-13T00:00:00.000Z",
+      "selector": {
+        "engineId": "seedream-5-5",
+        "mode": "i2i",
+        "resolution": "2K",
+        "durationSec": "1",
+        "inputImageCount": "10"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 16
+      }
+    },
+    {
+      "id": "seedream-5-0-flash-fixed-t2i-1k-20261113",
+      "source": "versioned",
+      "version": 1,
+      "currency": "USD",
+      "effectiveFrom": "2026-11-13T00:00:00.000Z",
+      "selector": {
+        "engineId": "seedream-5-0-flash",
+        "mode": "t2i",
+        "resolution": "1K",
+        "durationSec": "1"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 3
+      }
+    },
+    {
+      "id": "seedream-5-0-flash-fixed-t2i-1_5k-20261113",
+      "source": "versioned",
+      "version": 1,
+      "currency": "USD",
+      "effectiveFrom": "2026-11-13T00:00:00.000Z",
+      "selector": {
+        "engineId": "seedream-5-0-flash",
+        "mode": "t2i",
+        "resolution": "1.5K",
+        "durationSec": "1"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 3
+      }
+    },
+    {
+      "id": "seedream-5-0-flash-fixed-t2i-2k-20261113",
+      "source": "versioned",
+      "version": 1,
+      "currency": "USD",
+      "effectiveFrom": "2026-11-13T00:00:00.000Z",
+      "selector": {
+        "engineId": "seedream-5-0-flash",
+        "mode": "t2i",
+        "resolution": "2K",
+        "durationSec": "1"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 3
+      }
+    },
+    {
+      "id": "seedream-5-0-flash-fixed-i2i-1k-20261113",
+      "source": "versioned",
+      "version": 1,
+      "currency": "USD",
+      "effectiveFrom": "2026-11-13T00:00:00.000Z",
+      "selector": {
+        "engineId": "seedream-5-0-flash",
+        "mode": "i2i",
+        "resolution": "1K",
+        "durationSec": "1"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 3
+      }
+    },
+    {
+      "id": "seedream-5-0-flash-fixed-i2i-1_5k-20261113",
+      "source": "versioned",
+      "version": 1,
+      "currency": "USD",
+      "effectiveFrom": "2026-11-13T00:00:00.000Z",
+      "selector": {
+        "engineId": "seedream-5-0-flash",
+        "mode": "i2i",
+        "resolution": "1.5K",
+        "durationSec": "1"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 3
+      }
+    },
+    {
+      "id": "seedream-5-0-flash-fixed-i2i-2k-20261113",
+      "source": "versioned",
+      "version": 1,
+      "currency": "USD",
+      "effectiveFrom": "2026-11-13T00:00:00.000Z",
+      "selector": {
+        "engineId": "seedream-5-0-flash",
+        "mode": "i2i",
+        "resolution": "2K",
+        "durationSec": "1"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 3
+      }
     }
   ]
 }

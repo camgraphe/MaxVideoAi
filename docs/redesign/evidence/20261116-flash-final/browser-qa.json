@@ -1,0 +1,85 @@
+{
+  "unloaded": [
+    {
+      "preload": "none",
+      "paused": true,
+      "ready": 0
+    },
+    {
+      "preload": "none",
+      "paused": true,
+      "ready": 0
+    },
+    {
+      "preload": "none",
+      "paused": true,
+      "ready": 0
+    },
+    {
+      "preload": "none",
+      "paused": true,
+      "ready": 0
+    },
+    {
+      "preload": "none",
+      "paused": true,
+      "ready": 0
+    },
+    {
+      "preload": "none",
+      "paused": true,
+      "ready": 0
+    },
+    {
+      "preload": "none",
+      "paused": true,
+      "ready": 0
+    }
+  ],
+  "initialVideoRequests": 0,
+  "comparison": [
+    {
+      "paused": false,
+      "muted": true,
+      "time": 1.022072,
+      "rate": 1
+    },
+    {
+      "paused": false,
+      "muted": true,
+      "time": 1.010528,
+      "rate": 1
+    }
+  ],
+  "dialogue": {
+    "paused": false,
+    "muted": false,
+    "duration": 18.08
+  },
+  "reuse": "/app?lang=en&engine=seedance-2-5-flash&mode=t2v&videoPrompt=the-blue-hour",
+  "milo": "/app?lang=en&engine=seedance-2-5-flash&mode=t2v&videoPrompt=the-blue-hour&assistant=milo&refine=example",
+  "meta": [
+    {
+      "path": "/models/seedance-2-5-flash",
+      "status": 200,
+      "canonical": "https://maxvideoai.com/models/seedance-2-5-flash",
+      "alternates": 4,
+      "jsonld": 5
+    },
+    {
+      "path": "/fr/modeles/seedance-2-5-flash",
+      "status": 200,
+      "canonical": "https://maxvideoai.com/fr/modeles/seedance-2-5-flash",
+      "alternates": 4,
+      "jsonld": 5
+    },
+    {
+      "path": "/es/modelos/seedance-2-5-flash",
+      "status": 200,
+      "canonical": "https://maxvideoai.com/es/modelos/seedance-2-5-flash",
+      "alternates": 4,
+      "jsonld": 5
+    }
+  ],
+  "errors": []
+}

@@ -50,6 +50,7 @@ import {
 } from '../_lib/workspace-video-settings';
 import { buildWorkspaceStoryboardHandoffState } from '../_lib/workspace-storyboard-handoff';
 import { sharedVideoLoadFailureCopy } from '../_lib/workspace-shared-video-copy';
+import { useVideoEditorialPreset } from './useVideoEditorialPreset';
 import { resolveRecalledWorkspaceEngine, UnavailableVideoSettingsEngineError, unavailableVideoSettingsCopy } from '../_lib/workspace-recall-engine';
 
 type MemberTier = 'Member' | 'Plus' | 'Pro';
@@ -78,6 +79,7 @@ type VideoSettingsHydrationOptions = {
 };
 
 type UseWorkspaceVideoSettingsOptions = {
+  form?: FormState | null;
   locale?: string;
   accountScope?: string | null;
   activeDraftReady?: boolean;
@@ -123,6 +125,7 @@ type UseWorkspaceVideoSettingsOptions = {
 };
 
 export function useWorkspaceVideoSettings({
+  form,
   locale = 'en',
   accountScope,
   activeDraftReady = true,
@@ -835,7 +838,14 @@ export function useWorkspaceVideoSettings({
     storageScope,
   ]);
 
+  const editorialPromptPending = useVideoEditorialPreset({
+    searchString, ready: activeDraftReady && authChecked && hydratedForScope === storageScope,
+    accountScope: accountScope ?? null, engineId: form?.engineId, mode: form?.mode,
+    applySnapshot: applyVideoSettingsSnapshot, onError: setNotice, locale,
+  });
+
   return {
+    editorialPromptPending,
     sharedVideoImportPending,
     recallPending,
     recallBlocked,

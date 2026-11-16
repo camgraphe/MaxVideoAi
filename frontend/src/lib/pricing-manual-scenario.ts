@@ -1,3 +1,4 @@
+import { isNewSeedreamEngineId, seedreamNewModelPricingUsage } from '@/lib/image/seedream-pricing';
 import { NANO21_ENGINE_ID, normalizeNano21Settings, assertNano21Scenario } from '@/lib/nano-banana-2-1';
 import { isFluxLtxSourceOperation, fluxLtxDurationBounds } from '../../lib/flux-ltx-operations';
 import { isH3SourceOperation } from '../../lib/h3-source-operations';
@@ -100,6 +101,12 @@ export function buildManualTariffScenario(context: PricingContext, facts: Pricin
 } {
   if (facts.engineId !== context.engine.id) throw new Error('Manual tariff engine and facts disagree');
   assertSeedanceWorkflowPricing(context);
+  if (isNewSeedreamEngineId(facts.engineId)) {
+    const usage = seedreamNewModelPricingUsage(context, facts.currency);
+    return { selector: { engineId: facts.engineId, mode: usage.mode, resolution: usage.resolution, durationSec: '1',
+      ...(facts.engineId === 'seedream-5-5' && usage.mode === 'i2i' ? { inputImageCount: String(usage.inputImages) } : {}) },
+      quantities: { output_units: 1, input_images: usage.inputImages } };
+  }
   if (isGptImage26EngineId(facts.engineId)) {
     return gptImage26ManualTariffScenario(facts.engineId, context);
   }

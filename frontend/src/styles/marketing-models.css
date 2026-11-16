@@ -41,7 +41,7 @@
 .marketing-site .model-story-paths article+article{border-left:1px solid var(--model-rule)}
 .marketing-site .model-story-paths article h2{font-size:24px;line-height:1.2;letter-spacing:-.035em;font-weight:500}
 .marketing-site .model-story-paths article>div>div:first-child{background:transparent;border-radius:0;color:#8b5426}
-.marketing-site .model-editorial :is(#prompting,#tips,#compare,#specs,#safety,#faq){scroll-margin-top:140px}
+.marketing-site .model-editorial :is(#text-to-image,#prompting,#tips,#compare,#specs,#safety,#faq){scroll-margin-top:140px}
 @media(max-width:900px){
  .marketing-site .model-story-grid{grid-template-columns:1fr;gap:24px}
  .marketing-site .model-story-copy{padding:0}

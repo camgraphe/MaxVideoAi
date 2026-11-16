@@ -1,0 +1,635 @@
+{
+  "marketingName": "Seedream 5.5",
+  "versionLabel": "5.5",
+  "seo": {
+    "title": "Seedream 5.5 : générateur et éditeur d’images IA | MaxVideoAI",
+    "description": "Créez et retouchez des images avec Seedream 5.5 de ByteDance sur MaxVideoAI. Jusqu’à 10 références, sorties 1K à 2K et PNG transparents natifs."
+  },
+  "overview": "Seedream 5.5 transforme un brief visuel en image fixe, puis permet de la faire évoluer par des retouches guidées. Construisez un portrait expressif, une scène à deux ou une campagne dont le texte appartient au décor, puis affinez les détails qui comptent.",
+  "pricingNotes": "Le prix exact du moment s’affiche avant la confirmation. La résolution et les images de référence peuvent modifier le devis.",
+  "hero": {
+    "title": "Seedream 5.5 — Retouches précises et PNG transparents",
+    "intro": "Donnez à la scène un personnage, une intention et un lieu. Créez une image de cinéma, affinez-la avec 10 références maximum ou choisissez un PNG transparent pour un élément visuel distinct.",
+    "badge": "Texte → Image · Image → Image · 1K / 1.5K / 2K",
+    "ctaPrimary": {
+      "label": "Créer avec Seedream 5.5",
+      "href": "/app/image?engine=seedream-5-5"
+    },
+    "secondaryLinks": [
+      {
+        "label": "Découvrir Seedream 5.0 Flash",
+        "href": "/fr/modeles/seedream-5-0-flash"
+      },
+      {
+        "label": "Découvrir Seedream 5.0 Lite",
+        "href": "/fr/modeles/seedream"
+      },
+      {
+        "label": "Découvrir Seedream 5.0 Pro",
+        "href": "/fr/modeles/seedream-5-0-pro"
+      }
+    ]
+  },
+  "bestUseCases": {
+    "title": "Pour quels usages ?",
+    "items": [
+      {
+        "title": "Personnages expressifs et scènes à deux",
+        "icon": "product"
+      },
+      {
+        "title": "Campagnes avec texte intégré au décor",
+        "icon": "imageToVideo"
+      },
+      {
+        "title": "Retouches guidées et éléments PNG transparents",
+        "icon": "layout"
+      }
+    ]
+  },
+  "tips": {
+    "title": "Conseils de création et de retouche",
+    "items": [
+      "Décrivez l’action de chaque personne, la direction de son regard et la place de ses mains dans la scène.",
+      "Pour une retouche, indiquez le visage, la tenue et le cadrage à préserver avant de nommer un changement. Vérifiez chaque nouvelle image avant de continuer.",
+      "Placez le texte exact entre guillemets et précisez son support physique. Relisez chaque lettre dans le résultat.",
+      "Pour une future ouverture vidéo, laissez de l’espace autour des personnages et séparez premier plan, sujet et arrière-plan.",
+      "Choisissez PNG et un fond transparent pour obtenir un élément avec canal alpha."
+    ]
+  },
+  "prompts": [
+    {
+      "title": "Sortie de métro — MAKE YOUR MOVE",
+      "prompt": "A compelling live-action feature-film still, 16:9 widescreen. A fictional woman in her late twenties in a deep burgundy trench coat has just emerged from a Parisian metro stairway into a rain-soaked street at blue hour. She is caught mid-stride, turning toward someone just outside the frame, alert and full of intent; her face is clearly visible, her coat moves in the wind. Several adults cross the street behind her; a passing taxi adds a soft streak of warm light. A large physically printed illuminated advertising panel, nearly front-facing on the right side of the street, reads exactly \"MAKE YOUR MOVE\" in three beautifully spaced lines of bold off-white sans-serif capitals. These are the only prominent words. The panel belongs naturally to the real location. Reflections on wet pavement, cinematic cyan and amber practical lighting, natural skin texture, believable hands, coherent perspective, rich deep blacks with detail. Shot on a 40mm anamorphic lens, restrained film grain, subtle halation, sophisticated campaign-film composition. The woman and the sign remain comfortably inside the central 80 percent of the image. A real human story in progress, evocative and dynamic, not a posed stock photograph. A single cohesive photograph with no borders or added graphic overlay."
+    },
+    {
+      "title": "Le dernier train — un instant à deux",
+      "prompt": "A cinematic live-action film still, 16:9 widescreen, from a beautifully photographed contemporary drama. On an almost empty covered railway platform at night, a fictional woman around thirty wearing a forest-green jacket reaches back to take the hand of a fictional man around thirty-five in a dark wool coat. They are both walking toward a waiting train; she turns toward him with a small spontaneous smile, while he looks at her with concern and affection. Their faces and connected hands are readable and anatomically natural. Warm light spills from the open train door behind them into the cool blue rain beyond the platform roof. A station worker and two adult travellers remain small in the background, adding scale and a believable lived-in setting. The image catches a real transition, coat hems moving and one foot just leaving the ground. Strong foreground, middle ground and background separation, glistening pavement, delicate steam in the distance, fine natural skin texture and wool detail. 50mm cinema lens, softly rolled highlights, subtle film grain, realistic color separation, intimate and emotionally charged without melodrama. Carefully composed with both people fully legible and room around them for a later camera move. One cohesive physical location, a film frame rather than a fashion pose, no title or graphic overlay."
+    }
+  ],
+  "faqs": [
+    {
+      "q": "Qu’est-ce que Seedream 5.5 et que peut-on créer ?",
+      "a": "Seedream 5.5 est un modèle de génération et de retouche d’images IA développé par ByteDance. Sur MaxVideoAI, utilisez du texte ou jusqu’à 10 images de référence pour créer des portraits, des scènes cinématographiques, des visuels de campagne et des PNG transparents. Chaque demande produit une image fixe."
+    },
+    {
+      "q": "Quelle différence entre Seedream 5.5 et Seedream 5.0 Pro ?",
+      "a": "ByteDance présente la version 5.5 comme une avancée pour les retouches successives, le réalisme et le texte, avec une sortie PNG transparente native. Sur MaxVideoAI, elle propose aussi le 1K, le 1.5K et le 2K, contre le 2K uniquement pour Pro. Les deux acceptent jusqu’à 10 références et produisent une image par demande. Les exemples ci-dessus sont des résultats sélectionnés, pas un comparatif contrôlé entre les deux modèles."
+    },
+    {
+      "q": "Comment faire évoluer la même scène ?",
+      "a": "Réutilisez l’image retenue comme référence. Précisez ce qui doit rester, demandez un changement ciblé, puis vérifiez le résultat avant la retouche suivante."
+    },
+    {
+      "q": "Peut-on créer un fond transparent ?",
+      "a": "Oui. Choisissez le format PNG et le réglage de fond transparent. Le JPEG convient à une scène opaque."
+    },
+    {
+      "q": "Quels formats et résolutions sont disponibles ?",
+      "a": "MaxVideoAI propose 1K, 1.5K et 2K, en JPEG ou PNG. La retouche accepte 10 références maximum pour une image de sortie ; choisissez Lite pour les séries."
+    },
+    {
+      "q": "Peut-on ensuite animer l’image ?",
+      "a": "Enregistrez l’image, puis choisissez un modèle vidéo pour une génération distincte. Une silhouette lisible, des mains nettes et de l’espace autour du sujet facilitent la préparation du premier plan."
+    },
+    {
+      "q": "Combien coûte Seedream 5.5 sur MaxVideoAI ?",
+      "a": "MaxVideoAI utilise des crédits à la demande, sans abonnement obligatoire. Choisissez la résolution et les références dans Create, puis vérifiez le prix avant de générer. Chaque nouvelle génération ou retouche possède son propre devis."
+    }
+  ],
+  "custom": {
+    "heroEyebrow": "Images IA · ByteDance",
+    "heroSupportLine": "Retouches précises et PNG transparents",
+    "heroSpecChips": [
+      {
+        "label": "Texte → Image",
+        "icon": "textToVideo"
+      },
+      {
+        "label": "Image → Image",
+        "icon": "imageToVideo"
+      },
+      {
+        "label": "1K / 1.5K / 2K",
+        "icon": "resolution"
+      },
+      {
+        "label": "Une image générée par requête"
+      }
+    ],
+    "whyTitle": "Construire la scène, puis affiner les détails",
+    "heroDesc1": "Partez d’une idée visuelle complète : qui est présent, ce qui se passe et d’où vient la lumière. Un brief précis donne à chaque retouche des éléments clairs à préserver.",
+    "heroDesc2": "Gardez l’image retenue comme référence pour la suite. Contrôlez visages, mains et lettres après chaque retouche ; utilisez un PNG transparent si le livrable doit être sans fond.",
+    "heroHighlights": [
+      "Des personnages dans un lieu réel||Donnez à chacun une action, une expression et une place dans le cadre.",
+      "Des retouches guidées||Séparez les détails à préserver du prochain changement.",
+      "Des éléments PNG transparents||Choisissez PNG et un fond transparent pour un sujet ou un élément visuel isolé."
+    ],
+    "specSections": [
+      {
+        "title": "Réglages de l’image",
+        "items": [
+          "Créez à partir d’un prompt ou retouchez des images de référence.",
+          "Choisissez 1K, 1.5K ou 2K.",
+          "Jusqu’à 10 images de référence",
+          "Une image générée par requête",
+          "Téléchargez en JPEG ou PNG."
+        ]
+      }
+    ],
+    "strengths": [
+      "Personnages expressifs et scènes à deux",
+      "Campagnes avec texte intégré au décor",
+      "Retouches guidées et éléments PNG transparents"
+    ],
+    "boundaries": [
+      "Une image générée par requête",
+      "Choisissez PNG et un fond transparent pour obtenir une image avec canal alpha.",
+      "Relisez le texte et contrôlez les détails avant publication."
+    ],
+    "relatedTitle": "Les modèles image Seedream",
+    "relatedSubtitle": "Choisissez le workflow image adapté à la prochaine étape.",
+    "relatedItems": [
+      {
+        "brand": "ByteDance",
+        "title": "Seedream 5.0 Flash",
+        "modelSlug": "seedream-5-0-flash",
+        "description": "Explorez cadrages, expressions et idées de campagne, une image à la fois, en 1K, 1.5K ou 2K.",
+        "ctaLabel": "Découvrir Seedream 5.0 Flash"
+      },
+      {
+        "brand": "ByteDance",
+        "title": "Seedream 5.0 Lite",
+        "modelSlug": "seedream",
+        "description": "Explorez en série des images de personnage, produit ou storyboard avant de retenir les plans à développer.",
+        "ctaLabel": "Découvrir Seedream 5.0 Lite"
+      },
+      {
+        "brand": "ByteDance",
+        "title": "Seedream 5.0 Pro",
+        "modelSlug": "seedream-5-0-pro",
+        "description": "Créez un portrait détaillé, un visuel de campagne ou une infographie en 2K, avec une sortie JPEG ou PNG.",
+        "ctaLabel": "Découvrir Seedream 5.0 Pro"
+      }
+    ],
+    "safetyTitle": "Créer des images de façon responsable",
+    "safetyRules": [
+      "Utilisez des images que vous avez le droit de retoucher.",
+      "Respectez le consentement et les droits des personnes représentées.",
+      "Les règles de sécurité du fournisseur s’appliquent aux prompts et aux références."
+    ]
+  },
+  "decision": {
+    "modelSlug": "seedream-5-5",
+    "hero": {
+      "eyebrow": "Images IA · ByteDance",
+      "title": "Seedream 5.5 — Retouches précises et PNG transparents",
+      "subtitle": "Donnez une histoire à l’image. Affinez l’essentiel.",
+      "subtitleHighlights": [
+        "Donnez une histoire à l’image. Affinez l’essentiel"
+      ],
+      "paragraph": "Un regard sur un quai, un manteau sous la pluie, un message peint sur un mur : partez d’un instant précis. Seedream 5.5 crée et retouche une image en 1K, 1.5K ou 2K, en JPEG ou PNG, avec une option de fond transparent pour le PNG.",
+      "primaryCta": {
+        "label": "Créer avec Seedream 5.5",
+        "href": "/app/image?engine=seedream-5-5"
+      },
+      "secondaryCta": {
+        "label": "Découvrir Seedream 5.0 Flash",
+        "href": "/fr/modeles/seedream-5-0-flash"
+      },
+      "quickLinks": [
+        {
+          "label": "Ouvrir le générateur d’images",
+          "href": "/app/image?engine=seedream-5-5"
+        },
+        {
+          "label": "Voir les tarifs",
+          "href": "/fr/tarifs#seedream-5-5-pricing"
+        },
+        {
+          "label": "Exemples de prompts",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "MAKE YOUR MOVE — généré avec Seedream 5.5",
+      "description": "Une image de rue cinématographique en 2K, avec un personnage, la pluie et une affiche lisible. Examinez les originaux et leurs prompts ci-dessous avant d’utiliser une image pour une génération vidéo distincte.",
+      "renderLabel": "Voir les exemples originaux",
+      "badges": [
+        "Texte → Image",
+        "2K",
+        "16:9"
+      ],
+      "altContext": "MAKE YOUR MOVE — une campagne urbaine cinématographique"
+    },
+    "features": [
+      {
+        "title": "Partez d’un instant humain",
+        "body": "Un petit geste, une expression lisible et un lieu précis donnent une direction au portrait ou à la scène. Décrivez peau, cheveux et vêtements comme des matières physiques.",
+        "tone": "quality"
+      },
+      {
+        "title": "Retouchez avec une intention claire",
+        "body": "Utilisez 10 références maximum pour les personnages, la tenue, le lieu ou le style. Nommez ce qui doit rester et changez un élément à la fois ; vérifiez le résultat avant la retouche suivante.",
+        "tone": "reference"
+      },
+      {
+        "title": "Inscrivez le message dans la scène",
+        "body": "Précisez les mots exacts, les retours à la ligne et le support : panneau de gare, affiche imprimée ou mur peint. Gardez un texte assez court pour le contrôler.",
+        "tone": "quality"
+      },
+      {
+        "title": "Préparez l’usage suivant",
+        "body": "Créez un JPEG ou PNG en 1K, 1.5K ou 2K. Choisissez un PNG transparent pour un élément isolé, ou gardez une scène opaque comme image de départ pour un modèle vidéo distinct.",
+        "tone": "quality"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Seedream 5.0 Flash",
+        "body": "Explorez un autre modèle à image unique en 1K–2K. Consultez son devis avec les réglages souhaités.",
+        "cta": {
+          "label": "Découvrir Seedream 5.0 Flash",
+          "href": "/fr/modeles/seedream-5-0-flash"
+        }
+      },
+      {
+        "title": "Seedream 5.0 Lite",
+        "body": "Besoin de 3K, de 4K ou d’un lot d’images liées ? Explorez les résolutions et les séries proposées par Lite.",
+        "cta": {
+          "label": "Découvrir Seedream 5.0 Lite",
+          "href": "/fr/modeles/seedream"
+        }
+      },
+      {
+        "title": "Seedream 5.0 Pro",
+        "body": "Retrouvez le modèle Pro précédent pour une image 2K, guidée par jusqu’à 10 références.",
+        "cta": {
+          "label": "Découvrir Seedream 5.0 Pro",
+          "href": "/fr/modeles/seedream-5-0-pro"
+        }
+      },
+      {
+        "title": "Animez votre image",
+        "body": "Choisissez un modèle vidéo pour votre image finale. Comparez les parcours image-vers-vidéo avant de préparer le mouvement.",
+        "cta": {
+          "label": "Comparer les modèles image-vers-vidéo",
+          "href": "/fr/comparatif/best-for/image-to-video"
+        }
+      },
+      {
+        "title": "Exemples de prompts",
+        "body": "Essayez un brief original en anglais pour une scène humaine. Adaptez personnages, action et lieu, puis contrôlez mains et lettres dans le résultat.",
+        "cta": {
+          "label": "Exemples de prompts",
+          "href": "#prompting"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Donnez un rôle à chaque référence",
+        "body": "Précisez quelle image définit la personne, les vêtements ou le lieu. Vous pouvez guider un résultat avec jusqu’à 10 images de référence."
+      },
+      {
+        "title": "Repartez de la dernière retouche",
+        "body": "Utilisez le résultat précédent comme nouvelle référence. Indiquez ce qui doit rester, puis demandez une modification. Pour une scène opaque, gardez le fond sur Opaque."
+      },
+      {
+        "title": "Obtenez un fond transparent",
+        "body": "Sélectionnez PNG et Transparent dans Create. Décrivez le sujet isolé et laissez de l’espace autour de ses contours. Le JPEG ne conserve pas la transparence."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Consultez le prix avant de générer.",
+      "subtitle": "Des crédits à la demande. Sans abonnement obligatoire.",
+      "footnote": "Chaque génération ou retouche fait l’objet de son propre devis.",
+      "ctaLabel": "Voir tous les tarifs",
+      "ctaHref": "/fr/tarifs#seedream-5-5-pricing"
+    },
+    "meta": {
+      "title": "Seedream 5.5 : générateur et éditeur d’images IA | MaxVideoAI",
+      "description": "Créez et retouchez des images avec Seedream 5.5 de ByteDance sur MaxVideoAI. Jusqu’à 10 références, sorties 1K à 2K et PNG transparents natifs."
+    }
+  },
+  "prompting": {
+    "modelSlug": "seedream-5-5",
+    "section": {
+      "title": "Comment rédiger un prompt pour Seedream 5.5",
+      "intro": "Décrivez l’action, le cadrage et la lumière. Mettez le texte exact entre guillemets. Partez de cet exemple ou affinez votre idée avec Milo.",
+      "tip": null,
+      "guide": {
+        "label": "Guide officiel du modèle",
+        "href": "https://docs.byteplus.com/en/docs/modelark/seedream-5-5"
+      },
+      "referencesTitle": "Utiliser des images de référence"
+    },
+    "tabs": [],
+    "tabNotes": [],
+    "globalPrinciples": [
+      "Vérifiez les lettres, les visages et les mains avant d’utiliser le résultat.",
+      "Pour une première image de vidéo, gardez une pose lisible et de la place pour le mouvement. Seedream crée l’image fixe ; animez-la dans une génération vidéo séparée."
+    ],
+    "engineWhy": [],
+    "demo": null,
+    "imageExamples": {
+      "title": "Seedream 5.5 — exemples de prompts",
+      "intro": "Prompts originaux en anglais pour des scènes humaines et des visuels de campagne. Copiez un brief, puis adaptez le lieu, les personnages et le texte exact à votre projet.",
+      "workspaceLabel": "Ouvrir le générateur d’images",
+      "items": [
+        {
+          "id": "55-make-your-move",
+          "title": "Sortie de métro — MAKE YOUR MOVE",
+          "badge": "Texte → Image",
+          "kind": "image",
+          "prompt": "A compelling live-action feature-film still, 16:9 widescreen. A fictional woman in her late twenties in a deep burgundy trench coat has just emerged from a Parisian metro stairway into a rain-soaked street at blue hour. She is caught mid-stride, turning toward someone just outside the frame, alert and full of intent; her face is clearly visible, her coat moves in the wind. Several adults cross the street behind her; a passing taxi adds a soft streak of warm light. A large physically printed illuminated advertising panel, nearly front-facing on the right side of the street, reads exactly \"MAKE YOUR MOVE\" in three beautifully spaced lines of bold off-white sans-serif capitals. These are the only prominent words. The panel belongs naturally to the real location. Reflections on wet pavement, cinematic cyan and amber practical lighting, natural skin texture, believable hands, coherent perspective, rich deep blacks with detail. Shot on a 40mm anamorphic lens, restrained film grain, subtle halation, sophisticated campaign-film composition. The woman and the sign remain comfortably inside the central 80 percent of the image. A real human story in progress, evocative and dynamic, not a posed stock photograph. A single cohesive photograph with no borders or added graphic overlay."
+        },
+        {
+          "id": "55-last-train",
+          "title": "Le dernier train — un instant à deux",
+          "badge": "Texte → Image",
+          "kind": "image",
+          "prompt": "A cinematic live-action film still, 16:9 widescreen, from a beautifully photographed contemporary drama. On an almost empty covered railway platform at night, a fictional woman around thirty wearing a forest-green jacket reaches back to take the hand of a fictional man around thirty-five in a dark wool coat. They are both walking toward a waiting train; she turns toward him with a small spontaneous smile, while he looks at her with concern and affection. Their faces and connected hands are readable and anatomically natural. Warm light spills from the open train door behind them into the cool blue rain beyond the platform roof. A station worker and two adult travellers remain small in the background, adding scale and a believable lived-in setting. The image catches a real transition, coat hems moving and one foot just leaving the ground. Strong foreground, middle ground and background separation, glistening pavement, delicate steam in the distance, fine natural skin texture and wool detail. 50mm cinema lens, softly rolled highlights, subtle film grain, realistic color separation, intimate and emotionally charged without melodrama. Carefully composed with both people fully legible and room around them for a later camera move. One cohesive physical location, a film frame rather than a fashion pose, no title or graphic overlay."
+        }
+      ]
+    },
+    "recipe": {
+      "label": "L’idée derrière cette image",
+      "excerpt": "Une femme en manteau bordeaux sort du métro parisien à l’heure bleue. Elle se tourne vers quelqu’un hors champ. La pluie reflète les lumières cyan et ambrées. Une affiche éclairée porte les mots « MAKE YOUR MOVE ».",
+      "note": "Version raccourcie pour expliquer la scène. Les boutons sous l’image reprennent le prompt original complet.",
+      "factors": [
+        {
+          "icon": "subject",
+          "title": "Sujet et action",
+          "body": "Donnez au sujet une action claire et une direction de regard."
+        },
+        {
+          "icon": "framing",
+          "title": "Cadrez le moment",
+          "body": "Choisissez le format, la distance de la caméra et la place des sujets."
+        },
+        {
+          "icon": "light",
+          "title": "Lumière et matière",
+          "body": "Précisez la source de lumière, sa direction et les textures recherchées."
+        },
+        {
+          "icon": "text",
+          "title": "Placez les mots",
+          "body": "Citez les mots exacts, leur support, leur position et les retours à la ligne."
+        }
+      ]
+    }
+  },
+  "examples": {
+    "modelSlug": "seedream-5-5",
+    "section": {
+      "title": "Exemples d’images Seedream 5.5",
+      "intro": "Explorez de vraies images Seedream 5.5, puis consultez les prompts exacts, les originaux et les sources de retouche. Chaque exemple présente un résultat sélectionné, sans garantir le même rendu à chaque génération.",
+      "defaultCtaLabel": null,
+      "recreateLabel": "Créer avec Seedream 5.5",
+      "afterGallery": "Examinez l’expression, les mains, la lumière et le cadrage. Enregistrez l’image originale, puis utilisez-la comme première image d’une génération image-vers-vidéo distincte.",
+      "videoWorkflowLabel": "Découvrir l’image-vers-vidéo avec Seedance 2.5"
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "Tout"
+      },
+      {
+        "id": "product",
+        "label": "Images produit"
+      },
+      {
+        "id": "edit",
+        "label": "Retouches"
+      },
+      {
+        "id": "typography",
+        "label": "Texte et mise en page"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "image-proof-1",
+        "title": "Texte vers image",
+        "body": "Décrivez une image fixe.",
+        "icon": "image"
+      },
+      {
+        "id": "image-proof-2",
+        "title": "Retouches guidées",
+        "body": "Guidez une retouche avec 10 images maximum.",
+        "icon": "pen"
+      },
+      {
+        "id": "image-proof-3",
+        "title": "Choix de résolution",
+        "body": "Choisissez 1K, 1.5K ou 2K.",
+        "icon": "maximize"
+      },
+      {
+        "id": "image-proof-4",
+        "title": "Devis exact",
+        "body": "Consultez le prix actuel avant confirmation.",
+        "icon": "shield"
+      },
+      {
+        "id": "image-proof-5",
+        "title": "Images réutilisables",
+        "body": "Enregistrez le résultat avant une génération vidéo distincte.",
+        "icon": "sparkles"
+      }
+    ],
+    "fallbackItems": null,
+    "showWhenEmpty": false,
+    "editorialImages": [
+      {
+        "id": "55-make-your-move",
+        "title": "MAKE YOUR MOVE — une campagne urbaine cinématographique"
+      },
+      {
+        "id": "55-last-train",
+        "title": "Le dernier train — deux personnages sous la pluie"
+      },
+      {
+        "id": "backstage-original",
+        "title": "Avant le lever de rideau — scène originale"
+      },
+      {
+        "id": "backstage-wardrobe",
+        "title": "Changer la tenue"
+      },
+      {
+        "id": "backstage-light",
+        "title": "Changer la lumière"
+      },
+      {
+        "id": "one-night-only",
+        "title": "Un soir seulement — du texte dans la scène"
+      },
+      {
+        "id": "after-the-race",
+        "title": "Après la course — détails de peau et de tissu"
+      },
+      {
+        "id": "free-to-move",
+        "title": "Libre de bouger — PNG transparent natif"
+      },
+      {
+        "id": "55-above-the-clouds",
+        "title": "Au-dessus des nuages — lumière, laine et vent"
+      }
+    ],
+    "cinematic": {
+      "provenance": "Images générées et vérifiées les 13 et 14 novembre 2026 avec Seedream 5.5 via BytePlus. Personnes et scènes créées par IA. Chaque retouche utilise l’image précédente comme unique référence.",
+      "panels": [
+        {
+          "id": "refine",
+          "layout": "edit",
+          "eyebrow": "Retouche image vers image",
+          "title": "La même scène. Une nouvelle direction.",
+          "body": "Une veste émeraude devient ivoire. Puis la lumière chaude du théâtre devient bleu froid. Comparez chaque retouche à sa véritable source, avec le curseur ou au clavier.",
+          "note": "Chaque demande utilise une référence : original → nouvelle tenue → nouvelle lumière. Vérifiez le visage, les mains, les rideaux et le cadrage ; certains détails peuvent évoluer.",
+          "assetIds": [
+            "backstage-original",
+            "backstage-wardrobe",
+            "backstage-light"
+          ]
+        },
+        {
+          "id": "lettering",
+          "layout": "feature",
+          "eyebrow": "Texte dans l’image",
+          "title": "Donnez une place à vos mots.",
+          "body": "Une entrée de théâtre, un personnage qui passe et un message court dans la scène. Donnez au texte une surface, un emplacement et une raison d’être là.",
+          "note": "Le prompt demande « ONE NIGHT ONLY ». Ce résultat sélectionné permet de l’examiner ; vérifiez chaque lettre avant publication.",
+          "assetIds": [
+            "one-night-only"
+          ]
+        },
+        {
+          "id": "moments",
+          "layout": "feature",
+          "eyebrow": "Génération d’images cinématographiques",
+          "title": "De près, les détails comptent.",
+          "body": "Une coureuse reprend son souffle. Examinez la peau, les mèches de cheveux et la texture des vêtements de ce portrait rapproché, puis ouvrez l’original en plein format.",
+          "note": "Ce résultat sélectionné illustre un brief de portrait. Vérifiez les détails du visage et l’anatomie avant d’utiliser une image générée.",
+          "assetIds": [
+            "after-the-race"
+          ]
+        },
+        {
+          "id": "transparency",
+          "layout": "cutout",
+          "eyebrow": "PNG transparent natif",
+          "title": "Libre de bouger. Prêt à composer.",
+          "body": "Générez un sujet isolé avec un véritable canal alpha. Changez le fond de prévisualisation pour examiner les contours, puis ouvrez le PNG original intact.",
+          "note": "La danseuse est la même image sur chaque fond. La transparence a été vérifiée dans cet original et sa copie WebP ; aucun détourage n’est appliqué ici.",
+          "assetIds": [
+            "free-to-move"
+          ]
+        },
+        {
+          "id": "prompt-story",
+          "layout": "feature",
+          "eyebrow": "Guide de prompts",
+          "title": "Comment rédiger un prompt pour Seedream 5.5",
+          "body": "Partez d’un instant qu’une caméra pourrait saisir. Décrivez les personnages et leur interaction, puis le cadrage, la lumière physique, les textures et le texte éventuel.",
+          "note": "Deux créations indépendantes à partir de texte, avec leurs prompts anglais exacts. Adaptez l’un de ces briefs pour construire votre propre scène.",
+          "assetIds": [
+            "55-make-your-move"
+          ],
+          "placement": "prompting"
+        },
+        {
+          "id": "settings-story",
+          "layout": "feature",
+          "eyebrow": "Campagne et récit",
+          "title": "Donnez une histoire à l’instant.",
+          "body": "Composez l’image autour d’un choix : une femme qui s’avance dans une rue pluvieuse, ou deux personnes qui prennent le dernier train. Le lieu, le geste et la lumière participent au récit.",
+          "note": "Deux créations indépendantes à partir de texte, avec leurs prompts anglais exacts. Adaptez l’un de ces briefs pour construire votre propre scène.",
+          "assetIds": [
+            "55-last-train"
+          ],
+          "placement": "details"
+        }
+      ]
+    }
+  },
+  "cinematic": {
+    "intro": "Créez des scènes réalistes, affinez les détails et préparez des éléments à composer avec Seedream 5.5 sur MaxVideoAI.",
+    "caption": "« Au-dessus des nuages »\nSeedream 5.5 · Texte vers image · 2K",
+    "proofLabel": "Seedream 5.5 sur MaxVideoAI",
+    "examplesLabel": "Explorer les images",
+    "pricingLabel": "Tarifs",
+    "modelSlug": "seedream-5-5",
+    "variant": "image",
+    "heroAssetId": "55-above-the-clouds",
+    "facts": [
+      {
+        "label": "Création et retouche",
+        "value": "Texte + images de référence"
+      },
+      {
+        "label": "Résolution",
+        "value": "1K · 1.5K · 2K"
+      },
+      {
+        "label": "Références",
+        "value": "Jusqu’à 10 images"
+      },
+      {
+        "label": "Sortie",
+        "value": "JPEG · PNG · transparence"
+      }
+    ],
+    "titleLines": [
+      "Seedream 5.5"
+    ],
+    "subtitle": "Donnez vie à la scène que vous imaginez.",
+    "primaryLabel": "Créer une image",
+    "byline": "Sur MaxVideoAI",
+    "overviewLabel": "Présentation",
+    "detailsLabel": "Détails",
+    "promptingLabel": "Guide de prompts",
+    "promptAssistant": {
+      "title": "Milo — assistant IA pour vos prompts",
+      "action": "Aide-moi à transformer mon idée en scène cinématographique.",
+      "body": "Discutez avec Milo dans le champ de prompt de Create. Relisez et appliquez votre prompt, puis consultez le prix avant de générer."
+    },
+    "overview": {
+      "titleLines": [
+        "Créez. Affinez.",
+        "Donnez votre direction."
+      ],
+      "source": {
+        "label": "Modèle développé par ByteDance",
+        "href": "https://seed.bytedance.com/en/seedream5_5"
+      },
+      "benefits": [
+        {
+          "panelId": "refine",
+          "title": "Faites évoluer la scène.",
+          "body": "Guidez des retouches successives sur les vêtements, la lumière et les détails."
+        },
+        {
+          "panelId": "lettering",
+          "title": "Placez vos mots dans l’image.",
+          "body": "Intégrez du texte aux enseignes, aux affiches et à la scène."
+        },
+        {
+          "panelId": "moments",
+          "title": "Rapprochez-vous du réel.",
+          "body": "Explorez une peau naturelle, des tissus détaillés et une lumière réaliste."
+        },
+        {
+          "panelId": "transparency",
+          "title": "Créez sans arrière-plan.",
+          "body": "Générez des PNG transparents natifs, prêts à composer."
+        }
+      ]
+    }
+  }
+}

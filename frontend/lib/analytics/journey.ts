@@ -603,7 +603,7 @@ const ENGINE_IDS = new Set([
   'dreamina-seedance-2-0-mini', 'ltx-2-3-pro', 'minimax-h3-max', 'wan-3', 'wan-3-prime',
   'ltx-2-5-fast', 'ltx-2-5-pro', 'grok-imagine-video-1-5', 'flux-3-max', 'flux-3', 'flux-3-draft',
   'happy-horse-1-0', 'happy-horse-1-1', 'seedance-2-0-mini', 'seedance-1-5-pro',
-  'seedance-2-0', 'seedance-2-0-fast', 'seedance-2-5', 'seedream', 'seedream-5-0-pro',
+  'seedance-2-0', 'seedance-2-0-fast', 'seedance-2-5','seedance-2-5-flash', 'seedream', 'seedream-5-0-pro', 'seedream-5-5', 'seedream-5-0-flash',
   'nano-banana', 'nano-banana-2', 'nano-banana-2-1', 'nano-banana-lite', 'nano-banana-pro', 'gemini-omni-flash',
   'veo-3-1', 'veo-3-1-fast', 'veo-3-1-lite', 'kling-2-5-turbo', 'kling-2-6-pro',
   'kling-3-4k', 'kling-3-pro', 'kling-3-standard', 'kling-o3-4k', 'kling-o3-pro',
@@ -615,6 +615,7 @@ const ENGINE_IDS = new Set([
   'bria-video-background-removal-v3',
 ]);
 const CTA_NAMES = new Set([
+  'choose_model', 'copy_prompt', 'copy_specs', 'download_specs',
   'milo_try', 'home_milo', 'studio_open', 'mcp_setup_guide', 'mcp_choose_integration',
   'reuse_example', 'view_example_details',
   'pricing_scenario',
@@ -628,6 +629,7 @@ const CTA_NAMES = new Set([
   ...ENGINE_IDS,
 ]);
 const CTA_LOCATIONS = new Set([
+  'model_workflow', 'model_specs', 'model_hero', 'model_nav', 'model_prompt', 'model_prompt_guide', 'model_pricing', 'model_related',
   'creator_tool_hero', 'creator_tool_final', 'creator_tools_hub',
   'milo_hero', 'milo_closing', 'home_conversation', 'studio_hero', 'studio_closing', 'integration_hero', 'mcp_hero',
   'examples_hero', 'examples_gallery', 'watch_hero', 'watch_sidebar',

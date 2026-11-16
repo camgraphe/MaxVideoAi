@@ -1,0 +1,413 @@
+{
+  "verifiedOn": "2026-11-15",
+  "scope": "Seven single-submission provider-adapter calls; no production activation, customer tariff or wallet mutation. Evidence does not certify every combination of inputs.",
+  "apiSource": "https://ai.byteplus.com/ark/region:ap-southeast-1/docs/create-video-generation-task-api",
+  "pricingSource": "https://ai.byteplus.com/ark/region:ap-southeast-1/docs/model-pricing",
+  "priceBasis": "Public LIST multiplied by actual returned completion tokens; not a provider invoice.",
+  "reservedSupplierEstimateUsd": 4.49,
+  "calculatedListCostUsd": 2.407223,
+  "cases": [
+    {
+      "name": "t2v-720-audio",
+      "mode": "t2v",
+      "model": "dreamina-seedance-2-5-flash-261115",
+      "providerJobId": "cgt-20261116002632-m1rwn",
+      "submittedAt": "2026-11-15T16:26:31.319Z",
+      "completedBy": "2026-11-15T16:29:05.820Z",
+      "requested": {
+        "resolution": "720p",
+        "ratio": "9:16",
+        "duration": 4,
+        "generate_audio": true,
+        "output_format": null,
+        "omni_reference_task_type": null
+      },
+      "references": {
+        "image": 0,
+        "video": 0,
+        "audio": 0
+      },
+      "providerStatus": "completed",
+      "usage": {
+        "totalTokens": 87300,
+        "completionTokens": 87300
+      },
+      "calculatedListCostUsd": 0.6111,
+      "outputSha256": "b44ef503342588e02899a3677c5eae6a7bc3935616a9ae37bd93e87b04ce8ff4",
+      "outputMetadata": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "codec_type": "video",
+            "width": 720,
+            "height": 1280,
+            "pix_fmt": "yuv420p",
+            "r_frame_rate": "24/1",
+            "duration": "4.041667",
+            "nb_read_frames": "97"
+          },
+          {
+            "codec_name": "aac",
+            "codec_type": "audio",
+            "r_frame_rate": "0/0",
+            "duration": "4.064000",
+            "nb_read_frames": "127"
+          }
+        ],
+        "format": {
+          "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+          "duration": "4.064000",
+          "size": "5796468",
+          "tags": {
+            "major_brand": "isom"
+          }
+        }
+      }
+    },
+    {
+      "name": "i2v-first-last",
+      "mode": "i2v",
+      "model": "dreamina-seedance-2-5-flash-261115",
+      "providerJobId": "cgt-20261116002634-f517z",
+      "submittedAt": "2026-11-15T16:26:32.605Z",
+      "completedBy": "2026-11-15T16:29:09.570Z",
+      "requested": {
+        "resolution": "480p",
+        "ratio": null,
+        "duration": 4,
+        "generate_audio": false,
+        "output_format": null,
+        "omni_reference_task_type": null
+      },
+      "references": {
+        "image": 2,
+        "video": 0,
+        "audio": 0
+      },
+      "providerStatus": "completed",
+      "usage": {
+        "totalTokens": 38830,
+        "completionTokens": 38830
+      },
+      "calculatedListCostUsd": 0.27181,
+      "outputSha256": "1e7fce6b621cd2f603551b763071a84c8bd6c5f0c10f57218915cf0ee72e3ed2",
+      "outputMetadata": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "codec_type": "video",
+            "width": 854,
+            "height": 480,
+            "pix_fmt": "yuv420p",
+            "r_frame_rate": "24/1",
+            "duration": "4.041667",
+            "nb_read_frames": "97"
+          }
+        ],
+        "format": {
+          "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+          "duration": "4.041667",
+          "size": "1594021",
+          "tags": {
+            "major_brand": "isom"
+          }
+        }
+      }
+    },
+    {
+      "name": "ref2v-multimodal",
+      "mode": "ref2v",
+      "model": "dreamina-seedance-2-5-flash-261115",
+      "providerJobId": "cgt-20261116002636-cifbe",
+      "submittedAt": "2026-11-15T16:26:34.527Z",
+      "completedBy": "2026-11-15T16:29:13.152Z",
+      "requested": {
+        "resolution": "480p",
+        "ratio": "1:1",
+        "duration": 4,
+        "generate_audio": true,
+        "output_format": null,
+        "omni_reference_task_type": null
+      },
+      "references": {
+        "image": 1,
+        "video": 1,
+        "audio": 1
+      },
+      "providerStatus": "completed",
+      "usage": {
+        "totalTokens": 77200,
+        "completionTokens": 77200
+      },
+      "calculatedListCostUsd": 0.33196,
+      "outputSha256": "017ad7b09d617399191960ec645e92104b69b171f57f5cf95d3d10fcccffc13d",
+      "outputMetadata": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "codec_type": "video",
+            "width": 640,
+            "height": 640,
+            "pix_fmt": "yuv420p",
+            "r_frame_rate": "24/1",
+            "duration": "4.041667",
+            "nb_read_frames": "97"
+          },
+          {
+            "codec_name": "aac",
+            "codec_type": "audio",
+            "r_frame_rate": "0/0",
+            "duration": "4.064000",
+            "nb_read_frames": "127"
+          }
+        ],
+        "format": {
+          "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+          "duration": "4.064000",
+          "size": "2416480",
+          "tags": {
+            "major_brand": "isom"
+          }
+        }
+      }
+    },
+    {
+      "name": "modify-mov",
+      "mode": "v2v",
+      "model": "dreamina-seedance-2-5-flash-261115",
+      "providerJobId": "cgt-20261116002640-mrehx",
+      "submittedAt": "2026-11-15T16:26:39.517Z",
+      "completedBy": "2026-11-15T16:29:17.464Z",
+      "requested": {
+        "resolution": "480p",
+        "ratio": "adaptive",
+        "duration": -1,
+        "generate_audio": false,
+        "output_format": "mov",
+        "omni_reference_task_type": "edit"
+      },
+      "references": {
+        "image": 0,
+        "video": 1,
+        "audio": 0
+      },
+      "providerStatus": "completed",
+      "usage": {
+        "totalTokens": 74057,
+        "completionTokens": 74057
+      },
+      "calculatedListCostUsd": 0.318445,
+      "outputSha256": "ced50a98b08bffa592a6cef680ac89125c9451de56fa313013589f7a752fea6b",
+      "outputMetadata": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "codec_type": "video",
+            "width": 854,
+            "height": 480,
+            "pix_fmt": "yuv444p",
+            "r_frame_rate": "24/1",
+            "duration": "3.708333",
+            "nb_read_frames": "89"
+          }
+        ],
+        "format": {
+          "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+          "duration": "3.708333",
+          "size": "1892502",
+          "tags": {
+            "major_brand": "qt  "
+          }
+        }
+      }
+    },
+    {
+      "name": "extend-forward",
+      "mode": "extend",
+      "model": "dreamina-seedance-2-5-flash-261115",
+      "providerJobId": "cgt-20261116002643-og9vj",
+      "submittedAt": "2026-11-15T16:26:42.399Z",
+      "completedBy": "2026-11-15T16:29:24.106Z",
+      "requested": {
+        "resolution": "480p",
+        "ratio": "adaptive",
+        "duration": 4,
+        "generate_audio": false,
+        "output_format": null,
+        "omni_reference_task_type": "extend"
+      },
+      "references": {
+        "image": 0,
+        "video": 1,
+        "audio": 0
+      },
+      "providerStatus": "completed",
+      "usage": {
+        "totalTokens": 76860,
+        "completionTokens": 76860
+      },
+      "calculatedListCostUsd": 0.330498,
+      "outputSha256": "be5e149795b6347767a8901bd0a97d713bc2833b63e658dfd854bb379d9cd1c2",
+      "outputMetadata": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "codec_type": "video",
+            "width": 854,
+            "height": 480,
+            "pix_fmt": "yuv420p",
+            "r_frame_rate": "24/1",
+            "duration": "4.000000",
+            "nb_read_frames": "96"
+          }
+        ],
+        "format": {
+          "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+          "duration": "4.000000",
+          "size": "1949588",
+          "tags": {
+            "major_brand": "isom"
+          }
+        }
+      }
+    },
+    {
+      "name": "ref2v-audio-only",
+      "mode": "ref2v",
+      "model": "dreamina-seedance-2-5-flash-261115",
+      "providerJobId": "cgt-20261116002648-1lz9q",
+      "submittedAt": "2026-11-15T16:26:46.227Z",
+      "completedBy": "2026-11-15T16:29:28.133Z",
+      "requested": {
+        "resolution": "480p",
+        "ratio": "1:1",
+        "duration": 4,
+        "generate_audio": true,
+        "output_format": null,
+        "omni_reference_task_type": null
+      },
+      "references": {
+        "image": 0,
+        "video": 0,
+        "audio": 1
+      },
+      "providerStatus": "completed",
+      "usage": {
+        "totalTokens": 38800,
+        "completionTokens": 38800
+      },
+      "calculatedListCostUsd": 0.2716,
+      "outputSha256": "56a73a4def428cb0d6f76033593061cc0f0772bd9e7f8710c418b19461f7fcf4",
+      "outputMetadata": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "codec_type": "video",
+            "width": 640,
+            "height": 640,
+            "pix_fmt": "yuv420p",
+            "r_frame_rate": "24/1",
+            "duration": "4.041667",
+            "nb_read_frames": "97"
+          },
+          {
+            "codec_name": "aac",
+            "codec_type": "audio",
+            "r_frame_rate": "0/0",
+            "duration": "4.064000",
+            "nb_read_frames": "127"
+          }
+        ],
+        "format": {
+          "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+          "duration": "4.064000",
+          "size": "2123931",
+          "tags": {
+            "major_brand": "isom"
+          }
+        }
+      }
+    },
+    {
+      "name": "t2v-auto",
+      "mode": "t2v",
+      "model": "dreamina-seedance-2-5-flash-261115",
+      "providerJobId": "cgt-20261116002652-dfexe",
+      "submittedAt": "2026-11-15T16:26:51.088Z",
+      "completedBy": "2026-11-15T16:29:33.307Z",
+      "requested": {
+        "resolution": "480p",
+        "ratio": "adaptive",
+        "duration": -1,
+        "generate_audio": false,
+        "output_format": null,
+        "omni_reference_task_type": null
+      },
+      "references": {
+        "image": 0,
+        "video": 0,
+        "audio": 0
+      },
+      "providerStatus": "completed",
+      "usage": {
+        "totalTokens": 38830,
+        "completionTokens": 38830
+      },
+      "calculatedListCostUsd": 0.27181,
+      "outputSha256": "d7b1413bf7348580f869770dcef23f771716f2a2f245221491c7dcc93a126b04",
+      "outputMetadata": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "codec_type": "video",
+            "width": 854,
+            "height": 480,
+            "pix_fmt": "yuv420p",
+            "r_frame_rate": "24/1",
+            "duration": "4.041667",
+            "nb_read_frames": "97"
+          }
+        ],
+        "format": {
+          "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+          "duration": "4.041667",
+          "size": "2341510",
+          "tags": {
+            "major_brand": "isom"
+          }
+        }
+      }
+    }
+  ],
+  "localMovDeliveryVerification": {
+    "originalVerified": true,
+    "originalSha256": "ced50a98b08bffa592a6cef680ac89125c9451de56fa313013589f7a752fea6b",
+    "providerSource": "modify-mov",
+    "networkCalls": 0,
+    "storageWrites": 0,
+    "playback": {
+      "codec": "h264",
+      "pixelFormat": "yuv420p",
+      "width": 854,
+      "height": 480,
+      "frames": 89,
+      "durationSec": 3.708333,
+      "hasAudio": false,
+      "sha256": "43b3903eac221ac91010965591bb601c8172d4e98dcb9f5a67caea946fdade4f"
+    }
+  }
+}

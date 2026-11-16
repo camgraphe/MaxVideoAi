@@ -36,6 +36,15 @@ In the admin library, open **Import publication**, choose the JSON manifest, rev
 
 Retry an incomplete import with the same manifest. The fingerprint covers the public publication and recipe, its export provenance and required file declarations. Historical entries outside the selected closure and declaration order do not affect retry identity. A matching ready import returns the existing copy. A live lease, a different manifest or copy, and a deleting or retired identity return a conflict. Promotion from a personal job cannot take over an incomplete import.
 
+## Direct BytePlus results
+
+Completed Flash renders already imported as private owned assets use the separate
+[BytePlus marketing importer](byteplus-marketing-import.md). It creates a private
+independent publication with actual provider provenance, without a native app job,
+payment or pre-existing public export. Public imports and private provider adoption
+share `import-copy.ts` for copying, leases and readiness while retaining separate
+source validation. Existing galleries and placement controls are unchanged.
+
 ## Public compatibility
 
 `marketingVideoReader` is used only by public/editorial read owners. It overlays ready publications over the existing `app_jobs` identity in the same SQL request. Personal activity, billing, job reads and private share tokens keep their own owners. No public page route, video ID, redirect, canonical slug, hreflang, editorial approval or sitemap publication rule changes. Output dimensions are retained independently of personal output rows.

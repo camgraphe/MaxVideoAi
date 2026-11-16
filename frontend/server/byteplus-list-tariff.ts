@@ -1,3 +1,5 @@
+import { quoteNewSeedreamListCost, type SeedreamListModel } from '@/lib/image/seedream-pricing';
+
 /** Public ModelArk list prices. Account discounts and invoices have separate provenance. */
 export const BYTEPLUS_MODELARK_LIST_PRICE_SOURCE = {
   url: 'https://docs.byteplus.com/en/docs/ModelArk/1544106',
@@ -5,8 +7,13 @@ export const BYTEPLUS_MODELARK_LIST_PRICE_SOURCE = {
   currency: 'USD',
 } as const;
 
+export const BYTEPLUS_SEEDANCE_25_FLASH_LIST_PRICE_SOURCE = {
+  url: 'https://console.byteplus.com/ark/region:ap-southeast-1/docs/model-pricing',
+  checkedAt: '2026-11-13', currency: 'USD',
+} as const;
+
 type VideoRate = Readonly<{ noVideoInput: number; videoInput: number }>;
-type VideoProfile = 'seedance15' | 'standard' | 'fast' | 'mini' | 'seedance25';
+type VideoProfile = 'seedance15' | 'standard' | 'fast' | 'mini' | 'seedance25' | 'seedance25Flash';
 
 const LIMITED_CAMPAIGN = {
   startsAt: '2026-08-07T06:00:00.000Z',
@@ -28,6 +35,10 @@ const VIDEO_RATES_USD_PER_1K_TOKENS: Readonly<Record<Exclude<VideoProfile, 'seed
   mini: {
     '480p': { noVideoInput: 0.0035, videoInput: 0.0021 },
     '720p': { noVideoInput: 0.0035, videoInput: 0.0021 },
+  },
+  seedance25Flash: {
+    '480p': { noVideoInput: 0.007, videoInput: 0.0043 },
+    '720p': { noVideoInput: 0.007, videoInput: 0.0043 },
   },
   seedance25: {
     '480p': { noVideoInput: 0.0107, videoInput: 0.0064 },
@@ -66,7 +77,7 @@ export function getBytePlusVideoListRate(input: {
     unitPriceUsdPer1kTokens,
     unit: 'USD / 1,000 tokens' as const,
     status: 'published_list' as const,
-    source: BYTEPLUS_MODELARK_LIST_PRICE_SOURCE,
+    source: input.profile === 'seedance25Flash' ? BYTEPLUS_SEEDANCE_25_FLASH_LIST_PRICE_SOURCE : BYTEPLUS_MODELARK_LIST_PRICE_SOURCE,
     promotion: promotionFactor === null ? null : {
       unitPriceUsdPer1kTokens: Number((unitPriceUsdPer1kTokens * promotionFactor).toFixed(9)),
       ...LIMITED_CAMPAIGN,
@@ -110,10 +121,11 @@ export function getSeedance25StepListRate(input: {
 
 /** Estimates a successful Seedream generation from actual output pixel counts. */
 export function quoteSeedreamListCost(input: {
-  model: 'lite' | 'pro';
+  model: SeedreamListModel;
   outputPixels: number[];
   inputImages: number;
 }) {
+  if (input.model === 'flash' || input.model === '5.5') return quoteNewSeedreamListCost(input as typeof input & { model: 'flash' | '5.5' });
   if (!Number.isSafeInteger(input.inputImages) || input.inputImages < 0 ||
       input.outputPixels.some((pixels) => !Number.isSafeInteger(pixels) || pixels < 1)) {
     throw new Error('Invalid Seedream usage.');

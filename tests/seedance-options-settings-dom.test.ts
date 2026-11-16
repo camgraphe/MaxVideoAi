@@ -11,7 +11,7 @@ import { summarizeWorkspaceInputSchema } from '../frontend/app/(core)/(workspace
 import { coerceFormState } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-engine-helpers';
 
 test('restoring Seedance Auto retains its choice and maximum pricing duration', () => {
-  for (const engine of getBaseEngines().filter(candidate => ['seedance-2-0', 'seedance-2-0-fast', 'seedance-2-0-mini', 'seedance-2-5'].includes(candidate.id))) {
+  for (const engine of getBaseEngines().filter(candidate => ['seedance-2-0', 'seedance-2-0-fast', 'seedance-2-0-mini', 'seedance-2-5', 'seedance-2-5-flash'].includes(candidate.id))) {
     const restored = coerceFormState(engine, 't2v', { engineId: engine.id, mode: 't2v', durationSec: 5, durationOption: 'auto',
       resolution: '720p', aspectRatio: '16:9', fps: 24, iterations: 1, audio: false, extraInputValues: {} });
     assert.equal(restored.durationOption, 'auto');
@@ -30,7 +30,7 @@ test('Seedance settings retain Auto and MOV while hiding retired output switches
   const durations: Array<string | number> = [], values: Record<string, unknown> = {};
   const noop = () => {};
   try {
-    for (const engineId of ['seedance-2-0', 'seedance-2-0-fast', 'seedance-2-0-mini', 'seedance-2-5']) {
+    for (const engineId of ['seedance-2-0', 'seedance-2-0-fast', 'seedance-2-0-mini', 'seedance-2-5', 'seedance-2-5-flash']) {
       const engine = getBaseEngines().find(candidate => candidate.id === engineId)!;
       const fields = summarizeWorkspaceInputSchema({ selectedEngine: engine, activeMode: 't2v', allowsUnifiedVeoFirstLast: false,
         isUnifiedHappyHorse: false, isUnifiedSeedance: true, isUnifiedGeminiOmni: false, uiLocale: 'fr' }).secondaryFields;
@@ -62,7 +62,7 @@ test('Seedance settings retain Auto and MOV while hiding retired output switches
       assert.equal(values.return_last_frame, undefined);
       assert.equal(values.watermark, undefined);
       const format = dom.window.document.querySelector('select');
-      if (engineId === 'seedance-2-5') {
+      if (engineId === 'seedance-2-5' || engineId === 'seedance-2-5-flash') {
         assert.ok(format);
         await act(async () => { format.value = 'mov'; format.dispatchEvent(new dom.window.Event('change', { bubbles: true })); });
         assert.equal(values.output_format, 'mov');

@@ -1,3 +1,4 @@
+import { isSeedance25EngineId } from '@/lib/seedance-model-variants';
 import type { EngineInputSchema, Mode, PricingSnapshot } from '@/types/engines';
 import { query } from '@/lib/db';
 import {
@@ -131,7 +132,7 @@ export async function submitBytePlusGenerateTask(params: {
   let acceptedProviderJobId: string | null = null;
   let submissionTransport: 'modelark' | 'las' = 'las';
   let sanitizeMediaDiagnostics: (value: unknown) => unknown = value => value;
-  const reliableLasSubmission = params.engineId === 'seedance-2-5' && params.mode === 'v2v';
+  const reliableLasSubmission = isSeedance25EngineId(params.engineId) && params.mode === 'v2v';
   const uncertainResponse = (): BytePlusSubmissionResult => ({ ok: false, status: 503, body: {
     ok: false, error: 'BYTEPLUS_SUBMISSION_UNCERTAIN', jobId: params.jobId,
     paymentStatus: params.paymentStatus, message: 'Submission is being checked. Do not submit again.',
@@ -197,7 +198,7 @@ export async function submitBytePlusGenerateTask(params: {
           : undefined,
       resolution: params.effectiveResolution,
       ratio: params.aspectRatio,
-      ...(params.engineId === 'seedance-2-5' ? { inheritSourceAspectRatio: true } : {}),
+      ...(isSeedance25EngineId(params.engineId) ? { inheritSourceAspectRatio: true } : {}),
       generateAudio,
       ...(params.engineId === 'seedance-1-5-pro' && typeof params.cameraFixed === 'boolean'
         ? { cameraFixed: params.cameraFixed } : {}),

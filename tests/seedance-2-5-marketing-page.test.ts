@@ -153,6 +153,7 @@ test('the three priority Seedance 2.5 comparisons remain published while best-fo
   for (const slug of priorityComparisonSlugs) assert.ok(serializedSeedance25Slugs.has(slug));
   assert.ok(serializedSeedance25Slugs.has('minimax-h3-vs-seedance-2-5'));
   assert.deepEqual(compareConfig.relatedComparisons['seedance-2-0-vs-seedance-2-5'], [
+    'seedance-2-5-vs-seedance-2-5-flash',
     'seedance-2-0-vs-seedance-2-0-fast',
     'kling-3-pro-vs-seedance-2-5',
     'seedance-2-5-vs-veo-3-1',

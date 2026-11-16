@@ -1,0 +1,124 @@
+{
+  "routes": [
+    {
+      "path": "/models/seedream-5-5",
+      "status": 200,
+      "canonical": "https://maxvideoai.com/models/seedream-5-5",
+      "alternates": 4,
+      "schemas": 5
+    },
+    {
+      "path": "/fr/modeles/seedream-5-5",
+      "status": 200,
+      "canonical": "https://maxvideoai.com/fr/modeles/seedream-5-5",
+      "alternates": 4,
+      "schemas": 5
+    },
+    {
+      "path": "/es/modelos/seedream-5-5",
+      "status": 200,
+      "canonical": "https://maxvideoai.com/es/modelos/seedream-5-5",
+      "alternates": 4,
+      "schemas": 5
+    },
+    {
+      "path": "/models/seedance-2-5-flash",
+      "status": 200,
+      "canonical": "https://maxvideoai.com/models/seedance-2-5-flash",
+      "alternates": 4,
+      "schemas": 5
+    },
+    {
+      "path": "/fr/modeles/seedance-2-5-flash",
+      "status": 200,
+      "canonical": "https://maxvideoai.com/fr/modeles/seedance-2-5-flash",
+      "alternates": 4,
+      "schemas": 5
+    },
+    {
+      "path": "/es/modelos/seedance-2-5-flash",
+      "status": 200,
+      "canonical": "https://maxvideoai.com/es/modelos/seedance-2-5-flash",
+      "alternates": 4,
+      "schemas": 5
+    }
+  ],
+  "legacy": [
+    {
+      "slug": "seedream-5-0-pro",
+      "status": 200,
+      "cinematic": false
+    },
+    {
+      "slug": "seedance-2-5",
+      "status": 200,
+      "cinematic": false
+    },
+    {
+      "slug": "kling-3-pro",
+      "status": 200,
+      "cinematic": false
+    }
+  ],
+  "gallery": {
+    "cards": 4,
+    "initialVideoRequests": 0,
+    "dialogs": 4,
+    "noFilters": true,
+    "documentationLink": false,
+    "sizes": [
+      {
+        "width": 356,
+        "height": 200
+      },
+      {
+        "width": 356,
+        "height": 200
+      },
+      {
+        "width": 113,
+        "height": 200
+      },
+      {
+        "width": 113,
+        "height": 200
+      }
+    ],
+    "mobileOverflow": false,
+    "horizontalScroll": true,
+    "familyPage": true,
+    "reviewWatchNoindex": true
+  },
+  "errors": [],
+  "consoleErrors": [
+    "Invalid DOM property `%s`. Did you mean `%s`? popovertarget popoverTarget",
+    "Invalid DOM property `%s`. Did you mean `%s`? popovertargetaction popoverTargetAction",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "Invalid DOM property `%s`. Did you mean `%s`? popovertarget popoverTarget",
+    "Invalid DOM property `%s`. Did you mean `%s`? popovertargetaction popoverTargetAction",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "Invalid DOM property `%s`. Did you mean `%s`? popovertarget popoverTarget",
+    "Invalid DOM property `%s`. Did you mean `%s`? popovertargetaction popoverTargetAction",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "Invalid DOM property `%s`. Did you mean `%s`? popovertarget popoverTarget",
+    "Invalid DOM property `%s`. Did you mean `%s`? popovertargetaction popoverTargetAction",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "Invalid DOM property `%s`. Did you mean `%s`? popovertarget popoverTarget",
+    "Invalid DOM property `%s`. Did you mean `%s`? popovertargetaction popoverTargetAction",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "Invalid DOM property `%s`. Did you mean `%s`? popovertarget popoverTarget",
+    "Invalid DOM property `%s`. Did you mean `%s`? popovertargetaction popoverTargetAction",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "Invalid DOM property `%s`. Did you mean `%s`? popovertarget popoverTarget",
+    "Invalid DOM property `%s`. Did you mean `%s`? popovertargetaction popoverTargetAction",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "Invalid DOM property `%s`. Did you mean `%s`? popovertarget popoverTarget",
+    "Invalid DOM property `%s`. Did you mean `%s`? popovertargetaction popoverTargetAction",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "Invalid DOM property `%s`. Did you mean `%s`? popovertarget popoverTarget",
+    "Invalid DOM property `%s`. Did you mean `%s`? popovertargetaction popoverTargetAction",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+  ]
+}

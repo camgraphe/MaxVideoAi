@@ -49,6 +49,7 @@ test('guidance exposes exactly the reviewed engine records without pricing data'
     'minimax-h3-max',
     'seedance-2-0-mini',
     'seedance-2-5',
+    'seedance-2-5-flash',
     'wan-3',
     'wan-3-prime',
   ]);

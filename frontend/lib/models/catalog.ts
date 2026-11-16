@@ -44,6 +44,8 @@ export const CURRENT_MODEL_CATALOG_PRIORITY = [
   'gpt-image-2-5-flare',
   'gpt-image-2-5-sunburst',
   'gpt-image-2',
+  'seedream-5-5',
+  'seedream-5-0-flash',
   'seedream',
   'seedream-5-0-pro',
   'nano-banana-lite',

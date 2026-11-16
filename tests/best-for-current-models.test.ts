@@ -11,7 +11,8 @@ const EXPECTED_SHORTLISTS: Record<string, string[]> = {
     "kling-o3-pro",
     "minimax-h3",
     "flux-3",
-    "luma-ray-3-2"
+    "luma-ray-3-2",
+    "seedance-2-5-flash"
   ],
   "cinematic-realism": [
     "seedance-2-5",
@@ -25,21 +26,24 @@ const EXPECTED_SHORTLISTS: Record<string, string[]> = {
     "kling-o3-pro",
     "minimax-h3",
     "wan-3-prime",
-    "grok-imagine-video-1-5"
+    "grok-imagine-video-1-5",
+    "seedance-2-5-flash"
   ],
   "reference-to-video": [
     "seedance-2-5",
     "minimax-h3",
     "kling-o3-pro",
     "wan-3-prime",
-    "gemini-omni-flash"
+    "gemini-omni-flash",
+    "seedance-2-5-flash"
   ],
   "multi-shot-video": [
     "seedance-2-5",
     "kling-o3-pro",
     "wan-3-prime",
     "minimax-h3",
-    "wan-3"
+    "wan-3",
+    "seedance-2-5-flash"
   ],
   "4k-video": [
     "kling-o3-4k",
@@ -53,21 +57,24 @@ const EXPECTED_SHORTLISTS: Record<string, string[]> = {
     "kling-o3-pro",
     "minimax-h3",
     "wan-3-prime",
-    "gemini-omni-flash"
+    "gemini-omni-flash",
+    "seedance-2-5-flash"
   ],
   "ugc-ads": [
     "minimax-h3",
     "seedance-2-5",
     "happy-horse-1-1",
     "grok-imagine-video-1-5",
-    "veo-3-1"
+    "veo-3-1",
+    "seedance-2-5-flash"
   ],
   "product-videos": [
     "seedance-2-5",
     "kling-o3-pro",
     "wan-3-prime",
     "flux-3",
-    "ltx-2-5-pro"
+    "ltx-2-5-pro",
+    "seedance-2-5-flash"
   ],
   "lipsync-dialogue": [
     "minimax-h3",
@@ -81,7 +88,8 @@ const EXPECTED_SHORTLISTS: Record<string, string[]> = {
     "seedance-2-0-fast",
     "flux-3-draft",
     "veo-3-1-lite",
-    "kling-3-turbo-standard"
+    "kling-3-turbo-standard",
+    "seedance-2-5-flash"
   ],
   "stylized-anime": [
     "seedance-2-5",
@@ -113,7 +121,7 @@ function extractRankedModelSlugs(source: string, prefix: string): string[] {
   return Array.from(source.matchAll(pattern), (match) => match[1]);
 }
 
-test('best-for rankings use the reviewed October 19 editorial selections', () => {
+test('best-for rankings retain the reviewed order and add the Flash workflow option', () => {
   const bySlug = new Map(BEST_FOR_PAGES.map((entry) => [entry.slug, entry.topPicks ?? []]));
 
   assert.equal(bySlug.size, 12);

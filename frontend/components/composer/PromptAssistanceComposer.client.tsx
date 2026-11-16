@@ -4,7 +4,7 @@ import { PromptAssistancePanel } from './PromptAssistancePanel.client';
 import { usePromptAssistancePreview, type PromptAssistanceContext } from './usePromptAssistancePreview';
 import { promptAssistanceCopy } from './prompt-assistance-copy';
 import styles from './prompt-assistance.module.css';
-import { isMiloEntry } from '@/lib/prompt-assistance/marketing-entry';
+import { isMiloEntry, isMiloRefineEntry, miloRefineWelcome } from '@/lib/prompt-assistance/marketing-entry';
 import { Maximize2, Minimize2, SquarePen, Sparkles, ChevronDown, CircleHelp, ScanSearch } from 'lucide-react';
 import { useComposerWorkspaceControls } from './ComposerWorkspaceControls.client';
 import { MILO_LEVELS, miloLevelForModel } from '@/lib/studio/assistance-contract';
@@ -45,7 +45,9 @@ export function PromptAssistanceComposer({ context, locale, modelLabel, draftTex
   const lastAssistant=state.messages.findLast(item=>item.role==='assistant');
   const analysisRecommendation=lastAssistant?.analysisRequest?{id:lastAssistant.id,request:lastAssistant.analysisRequest}:undefined;
   const entryDismissed = useRef(false);
+  const [refineEntry, setRefineEntry] = useState(false);
   useEffect(() => {
+    setRefineEntry(isMiloRefineEntry(window.location.search));
     if (!disabledReason && !entryDismissed.current && isMiloEntry(window.location.search)) dispatch({ type: 'mode', mode: 'milo' });
   }, [context.scopeKey, disabledReason, dispatch]);
   const helpLabel = locale.startsWith('fr') ? 'Découvrir Milo' : locale.startsWith('es') ? 'Conocer a Milo' : 'Meet Milo';
@@ -133,6 +135,7 @@ export function PromptAssistanceComposer({ context, locale, modelLabel, draftTex
       {milo ? <PromptAssistancePanel key={context.scopeKey} modelControl={controls?.modelControl} locale={locale} modelLabel={modelLabel} inputReadOnly={controller.transport.loading || controller.transport.loadError} sendBlocked={!!controller.transport.exhausted} showConversationControl={!!controller.transport.exhausted || controller.transport.recovery || !!controller.transport.error || controller.transport.previousAvailable || controller.transport.loading} messages={state.messages} proposal={state.proposal ? { text: state.proposal.text, target, stale: state.proposal.revision !== state.revision } : null}
         reasoningControl={<button type="button" ref={creditsTrigger} className={styles.miloTrigger} aria-label="Milo settings and credits" aria-haspopup="dialog" aria-expanded={creditsOpen} onClick={() => { setCreditsOpen(true); void credits.refresh(); }}><Sparkles size={15} aria-hidden/><strong>Milo</strong><span className={styles.miloLevel} data-assistance-level data-verified={levelVerified} aria-busy={Boolean(loadingStatus)} title={levelVerified?undefined:loadingStatus??'Milo availability is unverified.'}><span>{levelLabel??'…'}</span></span><ChevronDown size={12} aria-hidden/></button>}
         identityStatus={loadingStatus}
+        entryWelcome={refineEntry && draftText.trim() && state.messages.length === 0 && !state.proposal ? miloRefineWelcome(locale) : undefined}
         helpControl={<a className={styles.helpLink} href={helpHref} target="_blank" rel="noopener noreferrer" aria-label={helpLabel} title={helpLabel}><CircleHelp size={15} aria-hidden/></a>}
         conversationControl={<><button type="button" className={styles.expandConversation} aria-label={copy.newChat} title={copy.newChat} disabled={analysisBusy || controller.transport.analysisPending || blocked} onClick={() => { if(controller.newChat()){setExpandedConversation(false);setPerceptionRevision(0);} }}><SquarePen size={14} aria-hidden/><span>{copy.newChat}</span></button><button className={styles.expandConversation} type="button" aria-label={expandedConversation ? copy.collapse : copy.expand} title={expandedConversation ? copy.collapse : copy.expand} aria-expanded={expandedConversation} onClick={() => setExpandedConversation(value => !value)}>{expandedConversation ? <Minimize2 size={14} aria-hidden /> : <Maximize2 size={14} aria-hidden />}<span>{expandedConversation ? copy.collapse : copy.expand}</span></button></>}
         message={state.message} pending={PROMPT_ASSISTANCE_LIVE ? controller.transport.waiting : Boolean(state.pending)} blocked={blocked || liveBlocked} maxLength={maxLength} messageRef={controller.input}

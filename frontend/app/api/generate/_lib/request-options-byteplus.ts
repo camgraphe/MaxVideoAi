@@ -1,3 +1,4 @@
+import { isSeedance25EngineId } from '@/lib/seedance-model-variants';
 import { requireBytePlusSeedanceProfile } from '@/server/video-providers/byteplus-modelark';
 import type { Mode } from '@/types/engines';
 import { getBytePlusSeedanceModeResolutions } from '@/lib/byteplus-mode-capabilities';
@@ -83,7 +84,7 @@ export function normalizeBytePlusOptions(params: {
     };
   }
   const inheritsSourceAspectRatio =
-    params.engineId === 'seedance-2-5' && params.mode === 'i2v';
+    isSeedance25EngineId(params.engineId) && params.mode === 'i2v';
   const bytePlusAspectRatio =
     isSeedanceAdaptiveAspect(params.aspectRatio) && automaticBounds
       ? 'auto'

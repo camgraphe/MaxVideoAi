@@ -7,6 +7,7 @@ import { sanitizePublicVideoPricingSnapshot } from './public-pricing';
 
 type RecordValue = Record<string, unknown>;
 export const MARKETING_PUBLICATION_IMPORT_SCHEMA = 'maxvideoai-marketing-publication/v1';
+export const BYTEPLUS_MARKETING_SCHEMA = 'maxvideoai-byteplus-marketing/v1';
 export type MarketingSource = { job: RecordValue; output?: RecordValue | null; poster_url?: string | null };
 export type MarketingCopyPlan = {
   videoId: string;

@@ -146,7 +146,7 @@ const MODEL_FAMILY_SOURCES = [
   {
     id: 'seedance',
     label: 'Seedance',
-    navLabel: 'Seedance 2.0',
+    navLabel: 'Seedance',
     brandId: 'bytedance',
     defaultModelId: 'seedance-2-0',
     routeAliases: ['seedance-1-5-pro', 'seedance-2-0', 'seedance-2-0-fast', 'dreamina-seedance-2-0-mini'],

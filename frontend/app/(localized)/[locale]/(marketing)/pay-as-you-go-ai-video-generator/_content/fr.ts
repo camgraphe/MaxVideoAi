@@ -1,5 +1,4 @@
 import type { PayAsYouGoContent } from './types';
-
 export const frPayAsYouGoContent = {
   metadata: {
     title: 'Générateur de vidéos IA sans abonnement, paiement à l’usage',
@@ -68,6 +67,7 @@ export const frPayAsYouGoContent = {
       'kling-3-turbo-pro': { family: 'Kling 3.0 Turbo', title: 'Kling 3.0 Turbo Pro pour une sortie 1080p détaillée', body: 'Choisissez Turbo Pro pour un mouvement 1080p soigné, les détails produit, le guidage par image et les séquences multi-plans.' },
       'kling-3-turbo-standard': { family: 'Kling 3.0 Turbo', title: 'Kling 3.0 Turbo Standard pour des brouillons 720p efficaces', body: 'Choisissez Turbo Standard pour itérer plus vite en 720p avec mouvement cohérent, guidage par image et essais multi-plans.' },
       'minimax-h3-max': { family: 'MiniMax H3', title: 'MiniMax H3 Max pour une finition visuelle premium', body: 'Choisissez H3 Max pour la finition visuelle, le respect du prompt, l’audio natif et une production texte ou image vers vidéo ciblée.' },
+      "seedance-2-5-flash": {"family": "Seedance 2.5 Flash", "title": "Seedance 2.5 Flash pour des variantes créatives plus longues", "body": "Créez des scènes de 4 à 30 secondes en 480p ou 720p avec son optionnel et références mixtes. Comparez le devis actuel selon les entrées ; standard 2.5 conserve ses options distinctes 1080p et Draft natif vers rendu final."},
       'seedance-2-5': { family: 'Seedance 2.5', title: 'Seedance 2.5 pour la vidéo cinématique de 30 secondes', body: 'Envisagez Seedance 2.5 pour les workflows cinématiques, image-to-video, guidés par références, multi-plans, produit et UGC, puis gardez Seedance 2.0 dans la sélection quand une sortie 4K est nécessaire.' },
       'seedance-2-0': { family: 'Seedance 2', title: 'Seedance 2.0 pour la livraison Seedance 4K', body: 'Gardez Seedance 2.0 comme alternative pour les workflows plus courts avec audio natif et références quand la sortie Seedance finale doit être en 4K.' },
       'kling-3-pro': { family: 'Kling', title: 'Kling pour un contrôle fiable du mouvement', body: 'Utilisez Kling pour des mouvements de caméra fiables, des plans produit, des éléments et de la vidéo guidée par image sans abonnement.' },
@@ -196,6 +196,7 @@ export const frPayAsYouGoContent = {
     items: {
       "flux-3-max": {"query": "prix flux 3 max", "title": "Tarifs FLUX 3 Max", "body": "Comparez un court essai texte-vers-vidéo, puis vérifiez le devis pour vos images clés, références et réglages finaux."},
       "minimax-h3": {"query": "prix minimax h3", "title": "Tarifs MiniMax H3", "body": "Cet exemple utilise une résolution native prise en charge. Comparez les modèles avec la même durée, la même résolution et les mêmes références."},
+      "seedance-2-5-flash": {"query": "prix seedance 2.5 flash", "title": "Tarifs Seedance 2.5 Flash", "body": "Consultez le devis actuel selon la durée, la résolution, le son et les références. Les vidéos d’entrée influencent la durée facturée ; une génération Flash est distincte d’un Draft natif Seedance standard."},
       "seedance-2-5": {"query": "prix seedance 2.5", "title": "Tarifs Seedance 2.5", "body": "Vérifiez le prix de votre scène selon sa durée, sa résolution et ses références. Les générations Draft et finales ont des devis distincts."},
       'kling-v4': { query: 'prix de Kling 4.0', title: 'Prix de Kling 4.0 selon le mode', body: 'Vérifiez le mode, la durée de sortie et la résolution. En génération par références et en édition, la durée des vidéos fournies influe aussi sur le devis ; comparez les mêmes entrées.' },
       'gemini-omni-flash': { query: 'prix de Gemini Omni Flash 1.2', title: 'Consulter le prix de Gemini Omni Flash 1.2', body: 'Consultez la route Google directe pour la vidéo multimodale rapide, l’audio natif et les workflows multi-plans.' },
@@ -256,6 +257,7 @@ export const frPayAsYouGoContent = {
     labels: {
       "flux-3-max": "Courte scène FLUX 3 Max",
       "minimax-h3": "Essai MiniMax H3 en résolution native",
+      "seedance-2-5-flash": "Courte scène Seedance 2.5 Flash",
       "seedance-2-5": "Courte scène Seedance 2.5",
       'kling-v4': 'Scène texte vers vidéo avec Kling 4.0',
       'gemini-omni-flash': 'Essai multimodal avec Gemini Omni Flash 1.1',

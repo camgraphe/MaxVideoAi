@@ -1,7 +1,7 @@
 import type { AssetBrowserAsset } from '@/components/library/AssetLibraryBrowser';
 import type { EngineCaps } from '@/types/engines';
 import { isEngineModeRuntimeAvailable } from '@/lib/engine-mode-availability';
-import { resolveEngineMediaFieldConstraint, validateMediaFileAgainstConstraint } from '@/lib/media-field-constraints';
+import { resolveEngineMediaFieldConstraint, resolveMediaFieldMinDuration, validateMediaFileAgainstConstraint } from '@/lib/media-field-constraints';
 
 export type VideoContinuationMode = 'extend' | 'v2v';
 
@@ -17,8 +17,9 @@ export function getVideoContinuationEngine(
     if (mode === 'extend' && engine.id.startsWith('veo-') && !sourceEngineId?.startsWith('veo-')) return false;
     return [...engine.inputSchema?.required ?? [], ...engine.inputSchema?.optional ?? []].some(field => {
       if (field.type !== 'video' || (field.modes?.length && !field.modes.includes(mode))) return false;
+      const minDurationSec = resolveMediaFieldMinDuration(field, mode);
       if (typeof asset.durationSec === 'number' && Number.isFinite(asset.durationSec) && asset.durationSec > 0
-        && ((field.minDurationSec != null && asset.durationSec < field.minDurationSec)
+        && ((minDurationSec != null && asset.durationSec < minDurationSec)
           || (field.maxDurationSec != null && asset.durationSec > field.maxDurationSec))) return false;
       const constraint = resolveEngineMediaFieldConstraint({ engine, field });
       // Missing facts are qualified at the destination. Do not infer a codec from an opaque read URL.

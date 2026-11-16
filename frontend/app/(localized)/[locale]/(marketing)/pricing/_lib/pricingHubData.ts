@@ -1,3 +1,4 @@
+import { isNewSeedreamEngineId } from '@/lib/image/seedream-pricing';
 import type { AppLocale } from '@/i18n/locales';
 import type { PublicModelQuoteInput } from '@/lib/pricing-public-model-contract';
 import { localePathnames } from '@/i18n/locales';
@@ -824,6 +825,8 @@ export function buildVideoHighlights(rows: VideoPricingRow[], locale: AppLocale)
 }
 
 function quoteImageScenarioCents(engine: EngineCaps, preset: ImagePriceScenario) {
+  // New native tariffs are read through the current canonical server owner.
+  if (isNewSeedreamEngineId(engine.id)) return null;
   try {
     const mode = preset.mode ?? 't2i';
     const quantity = Math.max(1, Math.floor(preset.quantity ?? 1));
@@ -962,7 +965,7 @@ function buildImageLinks(entry: FalEngineEntry, locale: AppLocale): PricingHubLi
   if (entry.surfaces.modelPage.indexable) {
     links.push({ label: copy.links.model, href: buildLocalizedMarketingHref(locale, 'models', entry.modelSlug) });
   }
-  links.push({ label: copy.links.imageApp, href: '/app/image' });
+  links.push({ label: copy.links.imageApp, href: `/app/image?engine=${encodeURIComponent(entry.id)}` });
   return links;
 }
 
@@ -974,7 +977,9 @@ function formatImageSizeSummary(resolutions: string[], locale: AppLocale) {
   if (normalized.some((resolution) => resolution.includes('portrait') || resolution.includes('9:16'))) labels.add(copy.quote.portrait);
   if (normalized.some((resolution) => resolution.includes('landscape') || resolution.includes('16:9'))) labels.add(copy.quote.landscape);
   if (normalized.includes('1k') || normalized.some((resolution) => resolution.includes('1024'))) labels.add('1K');
+  if (normalized.includes('1.5k')) labels.add('1.5K');
   if (normalized.includes('2k') || normalized.some((resolution) => resolution.includes('2048'))) labels.add('2K');
+  if (normalized.includes('3k')) labels.add('3K');
   if (
     normalized.includes('4k') ||
     normalized.includes('4K'.toLowerCase()) ||

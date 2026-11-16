@@ -1,0 +1,399 @@
+{
+  "source": "/Users/adrienmillot/Documents/ChatGPT/OUTREACH/sources/2026-11-08/gsc-position-24h-diagnostic/daily-28d",
+  "window": "2026-10-10 through 2026-11-06",
+  "note": "Query and page reports are separate; no query-to-page attribution. Query export is capped at 1000 rows.",
+  "Filtres": [
+    {
+      "Filtre": "Type de recherche",
+      "Valeur": "Web (textuel)"
+    },
+    {
+      "Filtre": "Date",
+      "Valeur": "Les 28 derniers jours"
+    }
+  ],
+  "Graphique": [
+    {
+      "Date": "2026-10-10",
+      "Clics": "53",
+      "Impressions": "2525",
+      "CTR": "2.1%",
+      "Position": "11"
+    },
+    {
+      "Date": "2026-11-06",
+      "Clics": "64",
+      "Impressions": "3180",
+      "CTR": "2.01%",
+      "Position": "13.1"
+    }
+  ],
+  "Requêtes": [
+    {
+      "Requêtes les plus fréquentes": "seedream 5.0 pro",
+      "Clics": "11",
+      "Impressions": "185",
+      "CTR": "5.95%",
+      "Position": "26.17"
+    },
+    {
+      "Requêtes les plus fréquentes": "seedream 5.0 pro free",
+      "Clics": "5",
+      "Impressions": "13",
+      "CTR": "38.46%",
+      "Position": "65.38"
+    },
+    {
+      "Requêtes les plus fréquentes": "seedream 5.0 pro spicy",
+      "Clics": "3",
+      "Impressions": "9",
+      "CTR": "33.33%",
+      "Position": "34.11"
+    },
+    {
+      "Requêtes les plus fréquentes": "seedream 5 pro free",
+      "Clics": "3",
+      "Impressions": "6",
+      "CTR": "50%",
+      "Position": "66.83"
+    },
+    {
+      "Requêtes les plus fréquentes": "seedream 5.0",
+      "Clics": "2",
+      "Impressions": "112",
+      "CTR": "1.79%",
+      "Position": "30.58"
+    },
+    {
+      "Requêtes les plus fréquentes": "seedream 5 pro",
+      "Clics": "2",
+      "Impressions": "27",
+      "CTR": "7.41%",
+      "Position": "27.15"
+    },
+    {
+      "Requêtes les plus fréquentes": "seedream5.0 pro",
+      "Clics": "2",
+      "Impressions": "4",
+      "CTR": "50%",
+      "Position": "37"
+    },
+    {
+      "Requêtes les plus fréquentes": "seedream 5 image generator",
+      "Clics": "2",
+      "Impressions": "2",
+      "CTR": "100%",
+      "Position": "88.5"
+    },
+    {
+      "Requêtes les plus fréquentes": "seedream",
+      "Clics": "1",
+      "Impressions": "129",
+      "CTR": "0.78%",
+      "Position": "39.71"
+    },
+    {
+      "Requêtes les plus fréquentes": "seedream pro 5.0",
+      "Clics": "1",
+      "Impressions": "2",
+      "CTR": "50%",
+      "Position": "21.5"
+    },
+    {
+      "Requêtes les plus fréquentes": "seedream video generator",
+      "Clics": "1",
+      "Impressions": "2",
+      "CTR": "50%",
+      "Position": "37"
+    },
+    {
+      "Requêtes les plus fréquentes": "нейросети seedream",
+      "Clics": "1",
+      "Impressions": "2",
+      "CTR": "50%",
+      "Position": "90.5"
+    },
+    {
+      "Requêtes les plus fréquentes": "seedream 5.0 official website",
+      "Clics": "1",
+      "Impressions": "1",
+      "CTR": "100%",
+      "Position": "37"
+    },
+    {
+      "Requêtes les plus fréquentes": "seedream 5",
+      "Clics": "0",
+      "Impressions": "65",
+      "CTR": "0%",
+      "Position": "53.05"
+    },
+    {
+      "Requêtes les plus fréquentes": "seedreams",
+      "Clics": "0",
+      "Impressions": "55",
+      "CTR": "0%",
+      "Position": "21.95"
+    },
+    {
+      "Requêtes les plus fréquentes": "seedream 5.0 pro playground",
+      "Clics": "0",
+      "Impressions": "53",
+      "CTR": "0%",
+      "Position": "21.75"
+    },
+    {
+      "Requêtes les plus fréquentes": "seedream 5.0 nsfw",
+      "Clics": "0",
+      "Impressions": "46",
+      "CTR": "0%",
+      "Position": "14.2"
+    },
+    {
+      "Requêtes les plus fréquentes": "seedream 5 nsfw",
+      "Clics": "0",
+      "Impressions": "40",
+      "CTR": "0%",
+      "Position": "18.98"
+    },
+    {
+      "Requêtes les plus fréquentes": "seedream 5.0 pro nsfw",
+      "Clics": "0",
+      "Impressions": "38",
+      "CTR": "0%",
+      "Position": "12.79"
+    },
+    {
+      "Requêtes les plus fréquentes": "seedream 5.0 pro pricing",
+      "Clics": "0",
+      "Impressions": "36",
+      "CTR": "0%",
+      "Position": "14.22"
+    },
+    {
+      "Requêtes les plus fréquentes": "seedream pricing",
+      "Clics": "0",
+      "Impressions": "30",
+      "CTR": "0%",
+      "Position": "19.67"
+    },
+    {
+      "Requêtes les plus fréquentes": "seedream 5 uncensored",
+      "Clics": "0",
+      "Impressions": "28",
+      "CTR": "0%",
+      "Position": "18.14"
+    },
+    {
+      "Requêtes les plus fréquentes": "seedream ai",
+      "Clics": "0",
+      "Impressions": "28",
+      "CTR": "0%",
+      "Position": "53.43"
+    },
+    {
+      "Requêtes les plus fréquentes": "seedream avaliação",
+      "Clics": "0",
+      "Impressions": "21",
+      "CTR": "0%",
+      "Position": "12.62"
+    },
+    {
+      "Requêtes les plus fréquentes": "seedream ai nsfw",
+      "Clics": "0",
+      "Impressions": "20",
+      "CTR": "0%",
+      "Position": "17.3"
+    },
+    {
+      "Requêtes les plus fréquentes": "is seedream uncensored",
+      "Clics": "0",
+      "Impressions": "17",
+      "CTR": "0%",
+      "Position": "26.35"
+    },
+    {
+      "Requêtes les plus fréquentes": "seedream 5.0 pro api",
+      "Clics": "0",
+      "Impressions": "16",
+      "CTR": "0%",
+      "Position": "26.44"
+    },
+    {
+      "Requêtes les plus fréquentes": "seedream 5.0 lite",
+      "Clics": "0",
+      "Impressions": "15",
+      "CTR": "0%",
+      "Position": "27.07"
+    },
+    {
+      "Requêtes les plus fréquentes": "avis sur seedream",
+      "Clics": "0",
+      "Impressions": "14",
+      "CTR": "0%",
+      "Position": "30.07"
+    },
+    {
+      "Requêtes les plus fréquentes": "seedream 5 pro uncensored",
+      "Clics": "0",
+      "Impressions": "13",
+      "CTR": "0%",
+      "Position": "15.69"
+    },
+    {
+      "Requêtes les plus fréquentes": "seedream.info",
+      "Clics": "0",
+      "Impressions": "12",
+      "CTR": "0%",
+      "Position": "3.42"
+    },
+    {
+      "Requêtes les plus fréquentes": "seedream 5.5",
+      "Clics": "0",
+      "Impressions": "12",
+      "CTR": "0%",
+      "Position": "52"
+    },
+    {
+      "Requêtes les plus fréquentes": "seedream video",
+      "Clics": "0",
+      "Impressions": "9",
+      "CTR": "0%",
+      "Position": "33.11"
+    },
+    {
+      "Requêtes les plus fréquentes": "seedream 2.0",
+      "Clics": "0",
+      "Impressions": "8",
+      "CTR": "0%",
+      "Position": "26.12"
+    },
+    {
+      "Requêtes les plus fréquentes": "seedream ai image generator",
+      "Clics": "0",
+      "Impressions": "8",
+      "CTR": "0%",
+      "Position": "72.38"
+    },
+    {
+      "Requêtes les plus fréquentes": "seedream gambar video prompt guidelines terbaru 2025 2026",
+      "Clics": "0",
+      "Impressions": "7",
+      "CTR": "0%",
+      "Position": "9.43"
+    },
+    {
+      "Requêtes les plus fréquentes": "nsfw seedream",
+      "Clics": "0",
+      "Impressions": "7",
+      "CTR": "0%",
+      "Position": "10.71"
+    },
+    {
+      "Requêtes les plus fréquentes": "seedream v5 pro",
+      "Clics": "0",
+      "Impressions": "7",
+      "CTR": "0%",
+      "Position": "17.57"
+    },
+    {
+      "Requêtes les plus fréquentes": "seedream model",
+      "Clics": "0",
+      "Impressions": "7",
+      "CTR": "0%",
+      "Position": "22.43"
+    },
+    {
+      "Requêtes les plus fréquentes": "seedream image",
+      "Clics": "0",
+      "Impressions": "7",
+      "CTR": "0%",
+      "Position": "29.14"
+    },
+    {
+      "Requêtes les plus fréquentes": "seedream 5 pro nsfw",
+      "Clics": "0",
+      "Impressions": "7",
+      "CTR": "0%",
+      "Position": "31"
+    },
+    {
+      "Requêtes les plus fréquentes": "seedance vs seedream",
+      "Clics": "0",
+      "Impressions": "6",
+      "CTR": "0%",
+      "Position": "25.67"
+    },
+    {
+      "Requêtes les plus fréquentes": "seedream 5.0 flash",
+      "Clics": "0",
+      "Impressions": "6",
+      "CTR": "0%",
+      "Position": "40"
+    },
+    {
+      "Requêtes les plus fréquentes": "seedream 5.0 pro uncensored",
+      "Clics": "0",
+      "Impressions": "6",
+      "CTR": "0%",
+      "Position": "42.5"
+    },
+    {
+      "Requêtes les plus fréquentes": "seedream 4",
+      "Clics": "0",
+      "Impressions": "6",
+      "CTR": "0%",
+      "Position": "81"
+    },
+    {
+      "Requêtes les plus fréquentes": "seedream vs seedance",
+      "Clics": "0",
+      "Impressions": "5",
+      "CTR": "0%",
+      "Position": "21.6"
+    }
+  ],
+  "Pages": [
+    {
+      "Pages les plus populaires": "https://maxvideoai.com/models/seedream-5-0-pro",
+      "Clics": "39",
+      "Impressions": "1069",
+      "CTR": "3.65%",
+      "Position": "22.13"
+    },
+    {
+      "Pages les plus populaires": "https://maxvideoai.com/models/seedream",
+      "Clics": "8",
+      "Impressions": "1086",
+      "CTR": "0.74%",
+      "Position": "27.16"
+    },
+    {
+      "Pages les plus populaires": "https://maxvideoai.com/fr/modeles/seedream-5-0-pro",
+      "Clics": "4",
+      "Impressions": "103",
+      "CTR": "3.88%",
+      "Position": "11.53"
+    },
+    {
+      "Pages les plus populaires": "https://maxvideoai.com/es/modelos/seedream-5-0-pro",
+      "Clics": "1",
+      "Impressions": "64",
+      "CTR": "1.56%",
+      "Position": "14.17"
+    },
+    {
+      "Pages les plus populaires": "https://maxvideoai.com/fr/modeles/seedream",
+      "Clics": "0",
+      "Impressions": "33",
+      "CTR": "0%",
+      "Position": "20.42"
+    },
+    {
+      "Pages les plus populaires": "https://maxvideoai.com/es/modelos/seedream",
+      "Clics": "0",
+      "Impressions": "6",
+      "CTR": "0%",
+      "Position": "37.83"
+    }
+  ]
+}

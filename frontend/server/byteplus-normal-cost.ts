@@ -1,3 +1,4 @@
+import { isNewSeedreamEngineId, seedreamListModelForEngine, seedreamNewModelPricingUsage } from '@/lib/image/seedream-pricing';
 import type { PricingContext } from '@/lib/pricing-context';
 import { isSeedance2TokenPricing } from '@/lib/seedance-2-pricing';
 import { resolveSeedreamProviderSize, seedreamPricingInputCount } from '@/lib/image/seedream';
@@ -21,7 +22,7 @@ type NormalUsage = {
   inputImages?: number;
 };
 const VIDEO_PROFILES = { 'seedance-2-0': 'standard', 'seedance-2-0-fast': 'fast',
-  'seedance-2-0-mini': 'mini', 'seedance-2-5': 'seedance25' } as const;
+  'seedance-2-0-mini': 'mini', 'seedance-2-5': 'seedance25', 'seedance-2-5-flash': 'seedance25Flash' } as const;
 
 /** The same dated normal-task LIST estimate serves admin comparison and manual settlement. */
 export function bytePlusNormalListCost(usage: NormalUsage) {
@@ -31,9 +32,9 @@ export function bytePlusNormalListCost(usage: NormalUsage) {
         ? quoteSeedance25LasListCost({ resolution: usage.resolution,
           outputDurationSec: usage.outputDurationSec ?? NaN, inputVideoDurationSec: usage.inputVideoDurationSec }) : null;
     }
-    if (usage.engineId === 'seedream' || usage.engineId === 'seedream-5-0-pro') {
+    if (seedreamListModelForEngine(usage.engineId)) {
       if (!usage.outputPixels?.length || usage.inputImages == null) return null;
-      const list = quoteSeedreamListCost({ model: usage.engineId === 'seedream' ? 'lite' : 'pro',
+      const list = quoteSeedreamListCost({ model: seedreamListModelForEngine(usage.engineId)!,
         outputPixels: usage.outputPixels, inputImages: usage.inputImages });
       return { amountUsd: list.totalUsd, unitPriceUsdPer1kTokens: null,
         sourceUrl: list.source.url, checkedAt: list.source.checkedAt };
@@ -51,7 +52,7 @@ export function normalBytePlusSupplierCost(context: PricingContext, at: string) 
   context = normalizeSeedancePricingContext(context);
   const { engine, resolution, mode } = context;
   const declared = engine.providerMeta?.provider;
-  const image = engine.id === 'seedream' || engine.id === 'seedream-5-0-pro';
+  const image = seedreamListModelForEngine(engine.id) !== null;
   if (image ? declared !== 'byteplus_modelark' : !resolveBytePlusSeedanceRouteProfile(engine.id, declared)) return null;
   if (!context.workflowStep && isSeedance25LasInputPricing(engine.id, mode)) {
     const usage: NormalUsage = { engineId: engine.id, resolution, transport: 'las', billingInputType: 'video_input',
@@ -64,7 +65,12 @@ export function normalBytePlusSupplierCost(context: PricingContext, at: string) 
   }
   const usage: NormalUsage = { engineId: engine.id, resolution,
     ...(!context.workflowStep && isSeedance25EditInputPricing(engine.id, mode) ? { transport: 'modelark' as const } : {}) };
-  if (image) {
+  if (image && isNewSeedreamEngineId(engine.id)) {
+    let pricing;
+    try { pricing = seedreamNewModelPricingUsage(context); } catch { return null; }
+    usage.outputPixels = [pricing.outputPixels];
+    usage.inputImages = pricing.inputImages;
+  } else if (image) {
     const quantity = context.durationSec;
     const dimensions = /^(\d+)x(\d+)$/.exec(resolveSeedreamProviderSize(resolution, context.aspectRatio));
     if (!dimensions || !Number.isSafeInteger(quantity) || quantity < 1 || quantity > 15) return null;

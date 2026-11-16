@@ -1,0 +1,657 @@
+{
+  "marketingName": "Seedance 2.5 Flash",
+  "versionLabel": "2.5 Flash",
+  "seo": {
+    "title": "Seedance 2.5 Flash : génération et retouche vidéo IA | MaxVideoAI",
+    "description": "Créez des vidéos de 4 à 30 s avec Seedance 2.5 Flash : 480p/720p, audio, références, retouche et extension. Préparez votre prompt avec Milo et consultez le prix."
+  },
+  "overview": "Créez des vidéos de 4 à 30 secondes à partir de texte, d’une première image ou de références, en 480p ou 720p avec audio généré en option. Composez avec Create, retouchez avec Modify ou poursuivez un plan avec Extend.",
+  "hero": {
+    "title": "Seedance 2.5 Flash — préparez vos prochaines scènes",
+    "intro": "Créez des vidéos de 4 à 30 secondes à partir de texte, d’une première image ou de références, en 480p ou 720p avec audio généré en option. Composez avec Create, retouchez avec Modify ou poursuivez un plan avec Extend.",
+    "badge": "480p / 720p · 4–30 s",
+    "ctaPrimary": {
+      "label": "Créer avec Flash",
+      "href": "/app?engine=seedance-2-5-flash"
+    },
+    "secondaryLinks": [
+      {
+        "label": "Découvrir Seedance 2.5",
+        "href": "/fr/modeles/seedance-2-5"
+      },
+      {
+        "label": "Voir la galerie Seedance",
+        "href": "/fr/galerie/seedance"
+      }
+    ]
+  },
+  "bestUseCases": {
+    "title": "Que créer avec Flash",
+    "items": [
+      {
+        "title": "Un moment de personnage autour d’un regard, d’un geste ou d’une réaction",
+        "icon": "users"
+      },
+      {
+        "title": "Une scène d’action avec un mouvement lisible et une fin précise",
+        "icon": "camera"
+      },
+      {
+        "title": "Une révélation cinématographique au cadrage et à la lumière maîtrisés",
+        "icon": "storyboard"
+      },
+      {
+        "title": "Des variantes créatives qui changent un seul choix visuel à la fois",
+        "icon": "product"
+      }
+    ]
+  },
+  "technicalOverviewTitle": "Caractéristiques",
+  "technicalOverview": [
+    {
+      "label": "Durée",
+      "body": "4 à 30 secondes par clip généré"
+    },
+    {
+      "label": "Sortie",
+      "body": "480p ou 720p"
+    },
+    {
+      "label": "Références",
+      "body": "Jusqu’à 10 images, 5 vidéos et 5 pistes audio ; les références audio seules sont acceptées"
+    },
+    {
+      "label": "Parcours",
+      "body": "Créer depuis du texte, une image ou des références ; modifier ou prolonger une vidéo source"
+    }
+  ],
+  "tips": [
+    "Décrivez une action visible avant de détailler la caméra.",
+    "Gardez le personnage, le lieu et la lumière cohérents entre les variantes.",
+    "Les prompts ci-dessous sont des pistes de préparation, pas des rendus Flash déjà réalisés."
+  ],
+  "faqs": [
+    {
+      "q": "Qu’est-ce que Seedance 2.5 Flash ?",
+      "a": "Seedance 2.5 Flash est un modèle de génération vidéo IA de ByteDance, piloté par du texte, des images et des références multimodales. Cette intégration MaxVideoAI propose des sorties en 480p ou 720p, de 4 à 30 secondes, avec audio en option et des actions Create, Modify et Extend distinctes."
+    },
+    {
+      "q": "Comment créer une vidéo avec Seedance 2.5 Flash ?",
+      "a": "Ouvrez Create avec Flash et décrivez la scène, l’action, la caméra et le son. Ajoutez une première image, une image de fin optionnelle ou les références acceptées par le mode choisi. Sélectionnez les réglages, consultez le prix et générez. Choisissez Modify ou Extend pour partir d’une vidéo existante."
+    },
+    {
+      "q": "Quelles références image, vidéo et audio peut-on utiliser ?",
+      "a": "Flash accepte jusqu’à 10 images, 5 vidéos et 5 extraits audio, selon le mode. Les images guident le sujet ou le décor, les vidéos le mouvement et le cadrage, et l’audio le son. Les vidéos de référence partagent une limite totale de 30 secondes. Les références audio seules sont acceptées. Les sorties sont disponibles en MP4 ou MOV."
+    },
+    {
+      "q": "Seedance 2.5 Flash peut-il générer du son ?",
+      "a": "Oui. Activez l’audio généré et décrivez les dialogues, l’ambiance ou les effets sonores avec l’action. Une référence audio guide la demande ; elle ne remplace pas l’activation de la sortie audio. Vérifiez la synchronisation et l’intelligibilité du résultat."
+    },
+    {
+      "q": "Quelle différence entre Modify et Extend ?",
+      "a": "Modify demande une retouche dans une vidéo source et suit son format et sa durée approximative. Extend demande une suite avant ou après le plan source. Choisissez l’extrait et décrivez précisément la retouche ou la continuation ; vérifiez le mouvement, l’identité et le son du résultat."
+    },
+    {
+      "q": "Quelle différence entre Flash et Seedance 2.5 standard ?",
+      "a": "Dans MaxVideoAI, Flash propose du 480p ou du 720p. Seedance 2.5 standard propose aussi le 1080p et un parcours natif Draft vers final, avec d’autres limites de références. Une génération Flash ordinaire n’est pas un Draft finalisable. Comparez les réglages et les devis actuels selon votre besoin."
+    },
+    {
+      "q": "Combien coûte Seedance 2.5 Flash ?",
+      "a": "Le prix dépend de la durée, de la résolution, de l’audio et des sources sélectionnées. Les vidéos de référence peuvent influer sur la durée facturable. Consultez le devis exact dans Create avant chaque génération ou retouche ; la page des tarifs permet une comparaison plus large."
+    },
+    {
+      "q": "Milo peut-il m’aider à écrire le prompt vidéo ?",
+      "a": "Oui. Milo est l’assistant IA intégré à l’éditeur de prompt de Create. Expliquez la scène avec vos mots, discutez de l’action, de la caméra ou du son, puis relisez et appliquez le prompt proposé. Vous choisissez les réglages et confirmez le prix affiché."
+    },
+    {
+      "q": "Quels exemples sont de vraies vidéos Seedance 2.5 Flash ?",
+      "a": "La batteuse, le ballet source/résultat, la tenue source/retouche, le dialogue au diner et la scène orbitale ont été générés avec Seedance 2.5 Flash. La référence au manteau rouge vient de Seedream 5.5. Extend reste une timeline illustrée ; le héros et l’aperçu de galerie sont des images fixes. Chaque vraie démonstration comprend le prompt envoyé. L’acceptation des références et la qualité peuvent varier."
+    }
+  ],
+  "decision": {
+    "modelSlug": "seedance-2-5-flash",
+    "hero": {
+      "eyebrow": "BYTEDANCE · 480p / 720p · 4–30 s",
+      "title": "Seedance 2.5 Flash",
+      "subtitle": "Dirigez l’action. Explorez les variantes.",
+      "subtitleHighlights": [
+        "Dirigez l’action."
+      ],
+      "paragraph": "Partez d’un texte, d’une image de départ ou d’un brief de références. Dirigez l’action et la caméra, choisissez la durée et le son, puis utilisez le devis actuel pour préparer votre prochaine variante.",
+      "primaryCta": {
+        "label": "Créer avec Flash",
+        "href": "/app?engine=seedance-2-5-flash"
+      },
+      "secondaryCta": {
+        "label": "Comparer les versions Seedance",
+        "href": "/fr/comparatif/seedance-2-5-vs-seedance-2-5-flash"
+      },
+      "quickLinks": [
+        {
+          "label": "Personnage",
+          "href": "#prompting"
+        },
+        {
+          "label": "Les outils de Seedance 2.5 Flash",
+          "href": "#specs"
+        },
+        {
+          "label": "Exemples Seedance",
+          "href": "/fr/galerie/seedance"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Dirigez votre scène avec Seedance 2.5 Flash",
+      "description": "Composez une scène de 4 à 30 secondes à partir de texte, d’images clés ou de références visuelles.",
+      "renderLabel": "Voir l’exemple",
+      "badges": [
+        "480p / 720p"
+      ],
+      "altContext": "Direction de scène Seedance 2.5 Flash"
+    },
+    "features": [
+      {
+        "title": "Jusqu’à 30 secondes",
+        "body": "Construisez une mise en place, une action visible et une conclusion dans une même scène.",
+        "tone": "duration"
+      },
+      {
+        "title": "480p ou 720p",
+        "body": "Choisissez le 480p pour un premier essai ou le 720p selon votre brief.",
+        "tone": "quality"
+      },
+      {
+        "title": "Références multimodales",
+        "body": "Guidez le sujet et le mouvement par des références image, vidéo et audio.",
+        "tone": "reference"
+      },
+      {
+        "title": "Créer, modifier et prolonger",
+        "body": "Créez une scène, modifiez une source ou continuez un clip par un parcours d’extension distinct.",
+        "tone": "continuity"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Préparer un moment de personnage",
+        "body": "Choisissez une expression ou un geste, puis décrivez comment la caméra le révèle.",
+        "cta": {
+          "label": "Ouvrir le labo de prompts",
+          "href": "#prompting"
+        }
+      },
+      {
+        "title": "Comparer standard et Flash",
+        "body": "Choisissez Seedance 2.5 standard pour le 1080p ou le parcours natif Draft vers rendu final. Flash possède ses propres réglages 480p/720p et limites de références.",
+        "cta": {
+          "label": "Comparer les versions Seedance",
+          "href": "/fr/comparatif/seedance-2-5-vs-seedance-2-5-flash"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Donner un sens au moment",
+        "body": "Deux personnes dans un diner de nuit. L’une a quelque chose à dire. Précisez leurs positions, les regards et l’ambiance."
+      },
+      {
+        "title": "Diriger un mouvement clair",
+        "body": "Demandez un léger travelling avant pendant un bref échange. Laissez la réaction se poser avant la fin du plan."
+      },
+      {
+        "title": "Donner une place au son",
+        "body": "Décrivez les voix, le bruit de la salle et la pluie sur la vitre. Gardez un silence pour le dernier temps."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Vos réglages. Votre prix.",
+      "subtitle": "Choisissez la durée, la résolution, le son et les références dans Create. Le prix exact s’affiche avant de générer.",
+      "footnote": "Les vidéos sources peuvent modifier la durée facturée. Consultez le devis correspondant à vos entrées.",
+      "ctaLabel": "Voir tous les tarifs",
+      "ctaHref": "/fr/tarifs"
+    },
+    "meta": {
+      "title": "Seedance 2.5 Flash : génération et retouche vidéo IA | MaxVideoAI",
+      "description": "Créez des vidéos de 4 à 30 s avec Seedance 2.5 Flash : 480p/720p, audio, références, retouche et extension. Préparez votre prompt avec Milo et consultez le prix."
+    }
+  },
+  "prompting": {
+    "modelSlug": "seedance-2-5-flash",
+    "section": {
+      "title": "Comment prompter Seedance 2.5 Flash",
+      "intro": "Écrivez la scène avant son découpage. Chaque coupe sert une action, une réplique ou une réaction ; laissez le temps aux moments importants.",
+      "tip": "Changez un seul choix visible entre deux variantes pour pouvoir comparer les résultats.",
+      "guide": {
+        "label": "Documentation du modèle",
+        "href": "https://ai.byteplus.com/ark/region:ap-southeast-1/docs/seedance-2-5-prompt-guide"
+      },
+      "referencesTitle": null
+    },
+    "tabs": [],
+    "tabNotes": [],
+    "globalPrinciples": [
+      "Commencez par la situation et le changement à montrer.",
+      "Utilisez des timings continus si cela aide ; accordez du temps au jeu plutôt que de diviser uniformément le clip.",
+      "Conservez les visages, tenues, directions à l’écran et accessoires récurrents.",
+      "Nommez chaque interlocuteur, écrivez ses mots exacts et distinguez paroles, effets et ambiance.",
+      "Pour les références, identifiez chaque fichier dans son ordre d’ajout et expliquez son rôle."
+    ],
+    "engineWhy": [],
+    "demo": {
+      "title": "Le dernier train — une conversation en six plans",
+      "promptLabel": "Prompt vidéo original",
+      "prompt": "Create an eighteen-second live-action dramatic scene in a late-night diner. Two original fictional adults reconnect over coffee while rain falls outside. The scene moves from a gently teasing question to an unexpectedly honest admission, then a small invitation to stay. Edit on changes in attention and emotion, using the unequal shot lengths below. The quick insert is a punctuation mark; let the answer and final exchange breathe.\n\nCAST AND CONTINUITY: Nora, a woman in her early thirties with dark shoulder-length hair loosely tucked behind one ear, wears a charcoal wool coat over a cream shirt. She sits on screen left, facing right. Elias, a man in his late thirties with short dark curls and light stubble, wears a dark brown jacket over a muted burgundy sweater. He sits on screen right, facing left. Two off-white coffee mugs sit on the small wooden table. Keep the same faces, clothing, seats, mugs and rain-streaked window across every cut. Stay on one side of the conversation axis with matching eyelines. Warm pendant light shapes their faces against the cool blue window; readable faces, restrained amber-blue colour, natural skin and subtle film grain.\n\nSOUND THROUGHOUT: Natural English dialogue with two distinct voices. Nora has a clear, low, lightly amused voice; Elias has a warm, slightly rough voice and an unhurried delivery. Only the named speaker talks; the listener listens with relaxed lips. Precise natural lip synchronization, small breaths and real pauses. Quiet rain on glass and a low ventilation sound continue underneath every cut. Dialogue is close and intelligible. No background music, score, narration or subtitles.\n\n0-2 seconds — Establishing two-shot, eye level, 35mm feel. Nora is already looking at Elias as he settles into the booth. He slides his mug a little closer. A small ceramic scrape connects into the next shot. The camera makes a restrained lateral drift; the diner feels intimate and lived in. No speech yet.\n\n2-6 seconds — Cut to Nora's medium close-up over Elias's soft foreground shoulder, 50mm feel. The camera is settled. She studies him with a half-smile and asks in natural English, \"Did you really miss the last train?\" Her curiosity is warmer than her words. Let her finish the question before cutting. Elias remains silent.\n\n6-7 seconds — A brief table insert. Elias's thumb stops moving against the mug handle. He is deciding whether to answer honestly. Hear a soft breath over the unchanged rain. The mug stays on the table. No speech.\n\n7-12 seconds — Cut to Elias's matching medium close-up over Nora's shoulder, 65mm feel. A very slow push-in accompanies the admission. He meets her eyes and says, \"I took the long way. I wanted to see you.\" A small pause separates the two sentences. His expression opens rather than becoming theatrical; hold the end of the look. Nora does not speak over him.\n\n12-14 seconds — Cut closer on Nora's silent reaction. The teasing smile fades into a brief, touched surprise, then returns more softly. Keep this shot still. Her eyes stay on Elias. Only the continuous diner ambience and a quiet breath.\n\n14-18 seconds — Return to the original two-shot with the same screen positions and slightly tighter framing. Nora leans a little toward him and says, \"Then stay a little longer.\" Elias answers with a relieved smile, without speaking. Hold their shared look for the final moment; the rain continues. End inside the scene, without a fade or title.\n\nUse motivated straight cuts at the described narrative beats, never a rapid montage. Keep room tone continuous, voices distinct and the physical scene coherent. No music, extra dialogue, subtitles or on-screen text.",
+      "notes": [
+        "Vraie génération texte-vers-vidéo de 18 secondes avec son natif. Voici le prompt complet envoyé ; les timings donnent une direction, sans garantir un montage à l’image près. Réutilisez-le dans Create ou préparez une variante avec Milo."
+      ],
+      "summary": {
+        "subject": "Présentez les personnages, le lieu et ce qui change entre eux.",
+        "action": "Décrivez le moment décisif, les gestes et les réactions dans l’ordre du récit.",
+        "camera": "Choisissez les cadrages et les coupes pour chaque moment. Le timing suit le récit, pas des divisions égales.",
+        "style": "Warm diner light, cool rain outside",
+        "output": "18s · 720p · 16:9"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Text to video",
+        "outputLabel": "Seedance 2.5 Flash",
+        "duration": "18s",
+        "aspectRatio": "16:9",
+        "audioChipMode": "media",
+        "audioChipLabel": "Son natif",
+        "altContext": "Le dernier train — une conversation en six plans"
+      }
+    },
+    "imageExamples": null,
+    "recipe": {
+      "label": "L’idée derrière ce plan",
+      "excerpt": "Elle parle d’un train manqué. Une main s’immobilise sur une tasse. Sa réponse change l’atmosphère. Les durées inégales suivent la question, l’aveu et l’invitation à rester.",
+      "note": "Le prompt anglais complet se trouve sous le film, avec les actions réutiliser, copier et affiner avec Milo.",
+      "factors": [
+        {
+          "icon": "subject",
+          "title": "La scène",
+          "body": "Présentez les personnages, le lieu et ce qui change entre eux."
+        },
+        {
+          "icon": "motion",
+          "title": "L’action",
+          "body": "Décrivez le moment décisif, les gestes et les réactions dans l’ordre du récit."
+        },
+        {
+          "icon": "framing",
+          "title": "La caméra",
+          "body": "Choisissez les cadrages et les coupes pour chaque moment. Le timing suit le récit, pas des divisions égales."
+        },
+        {
+          "icon": "sound",
+          "title": "Le son",
+          "body": "Attribuez les répliques, laissez des pauses et maintenez l’ambiance entre les coupes."
+        }
+      ]
+    }
+  },
+  "examples": {
+    "modelSlug": "seedance-2-5-flash",
+    "showWhenEmpty": false,
+    "section": {
+      "title": "Exemples Seedance 2.5 Flash",
+      "intro": "Examinez les vidéos Flash avec leurs prompts et réglages d’origine. La galerie Seedance conserve le modèle exact utilisé pour chaque clip.",
+      "defaultCtaLabel": "Voir la galerie Seedance",
+      "recreateLabel": null
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "Tous"
+      },
+      {
+        "id": "cinematic",
+        "label": "Cinéma"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "identity",
+        "icon": "users",
+        "title": "Suivre le personnage",
+        "body": "Comparez le visage et la tenue tout au long du clip."
+      },
+      {
+        "id": "action",
+        "icon": "zap",
+        "title": "Lire l’action",
+        "body": "Observez les contacts, l’équilibre et les changements de direction."
+      },
+      {
+        "id": "camera",
+        "icon": "maximize",
+        "title": "Observer le cadrage",
+        "body": "Vérifiez comment la caméra accompagne le mouvement principal."
+      },
+      {
+        "id": "source",
+        "icon": "shield",
+        "title": "Conserver la source",
+        "body": "Pour une démonstration de référence ou de retouche, examinez l’entrée originale avec le résultat."
+      },
+      {
+        "id": "prompt",
+        "icon": "pen",
+        "title": "Examiner le prompt",
+        "body": "Ouvrez les instructions originales et les réglages enregistrés avant de préparer une variante."
+      }
+    ],
+    "fallbackItems": null,
+    "cinematic": {
+      "title": "Exemples Seedance 2.5 Flash",
+      "intro": "Cinq scènes, cinq intentions créatives. Explorez les mouvements de caméra, les actions et les ambiances sonores qui peuvent transformer une image de départ en film.",
+      "assetTitles": [
+        {
+          "id": "midnight-run",
+          "title": "Course de minuit — travelling au ras du sol"
+        },
+        {
+          "id": "after-the-beat",
+          "title": "Après le tempo — une performance live"
+        },
+        {
+          "id": "the-blue-hour",
+          "title": "Le dernier train — une conversation en six plans"
+        },
+        {
+          "id": "where-gravity-ends",
+          "title": "Première lumière — une rencontre orbitale"
+        },
+        {
+          "id": "make-an-entrance",
+          "title": "Faire son entrée — mode en vertical"
+        },
+        {
+          "id": "before-the-drop",
+          "title": "Avant la descente — action en vertical"
+        }
+      ],
+      "provenance": "Create, le transfert de mouvement, la retouche de tenue, le dialogue au diner et la scène orbitale montrent de vraies vidéos Seedance 2.5 Flash. La référence au manteau rouge vient de Seedream 5.5. Extend reste un fonctionnement illustré ; le héros et l’aperçu de galerie sont des images fixes.",
+      "panels": [
+        {
+          "id": "create",
+          "layout": "feature",
+          "eyebrow": "Create · texte, images et références",
+          "title": "Une idée. Puis le mouvement.",
+          "body": "Transformez un prompt en un nouveau plan, animez une première image ou guidez la scène avec des références. Utilisez les images pour le sujet et le décor, la vidéo pour le mouvement et l’audio pour le son à suivre.",
+          "note": "Les références audio seules sont acceptées. Les vidéos de référence partagent un budget total de 30 secondes.",
+          "assetIds": [
+            "after-the-beat"
+          ]
+        },
+        {
+          "id": "modify",
+          "layout": "feature",
+          "eyebrow": "Modify · retouche vidéo",
+          "title": "Le même plan. Une autre intention.",
+          "body": "Remplacez un personnage, changez une action, ajoutez ou retirez des objets, ou retravaillez la tenue, le décor, la lumière et le son. Décrivez le changement et ce que vous voulez préserver.",
+          "note": "Modify suit la durée de la source choisie. Sélectionnez votre extrait avant de demander la modification.",
+          "assetIds": [
+            "make-an-entrance"
+          ]
+        },
+        {
+          "id": "extend",
+          "layout": "feature",
+          "eyebrow": "Extend · prolongement vidéo",
+          "title": "Le moment peut continuer.",
+          "body": "Prolongez une vidéo existante en décrivant la suite. Laissez une action se terminer, maintenez une réaction ou ajoutez une introduction avant le plan original.",
+          "note": "Décrivez la suite dans le prompt. Vérifiez le raccord, la caméra et le son avant d’assembler votre séquence.",
+          "assetIds": [
+            "before-the-drop"
+          ]
+        },
+        {
+          "id": "worlds",
+          "layout": "feature",
+          "eyebrow": "Création d’univers",
+          "title": "Rendre l’impossible tangible.",
+          "body": "Un explorateur entre dans une galerie orbitale alors qu’une planète à anneaux apparaît. Définissez le trajet de caméra, l’échelle et une lumière physique.",
+          "note": "Donnez au mouvement un trajet clair dans la scène.",
+          "assetIds": [
+            "where-gravity-ends"
+          ],
+          "placement": "details"
+        },
+        {
+          "id": "prompt-story",
+          "layout": "feature",
+          "eyebrow": "Guide de prompts",
+          "title": "Comment prompter Seedance 2.5 Flash",
+          "body": "Donnez une intention à la scène, puis dirigez l’action, la caméra et le son. Partez de cet échange nocturne pour écrire votre propre moment.",
+          "note": "Adaptez la durée de chaque plan au moment du récit ; conservez la cohérence du dialogue et de l’ambiance entre les coupes.",
+          "assetIds": [
+            "the-blue-hour"
+          ],
+          "placement": "prompting"
+        }
+      ],
+      "shotPlans": [
+        {
+          "assetId": "after-the-beat",
+          "motion": "Un court fill de batterie. La caméra tourne autour de l’instrument et termine sur son expression.",
+          "sound": "Caisse claire, toms, résonance des cymbales et ambiance lointaine du toit."
+        },
+        {
+          "assetId": "the-blue-hour",
+          "motion": "Elle parle d’un train manqué. Une main s’immobilise sur une tasse. Sa réponse change l’atmosphère. Les durées inégales suivent la question, l’aveu et l’invitation à rester.",
+          "sound": "Attribuez les répliques, laissez des pauses et maintenez l’ambiance entre les coupes.",
+          "prompt": "Create an eighteen-second live-action dramatic scene in a late-night diner. Two original fictional adults reconnect over coffee while rain falls outside. The scene moves from a gently teasing question to an unexpectedly honest admission, then a small invitation to stay. Edit on changes in attention and emotion, using the unequal shot lengths below. The quick insert is a punctuation mark; let the answer and final exchange breathe.\n\nCAST AND CONTINUITY: Nora, a woman in her early thirties with dark shoulder-length hair loosely tucked behind one ear, wears a charcoal wool coat over a cream shirt. She sits on screen left, facing right. Elias, a man in his late thirties with short dark curls and light stubble, wears a dark brown jacket over a muted burgundy sweater. He sits on screen right, facing left. Two off-white coffee mugs sit on the small wooden table. Keep the same faces, clothing, seats, mugs and rain-streaked window across every cut. Stay on one side of the conversation axis with matching eyelines. Warm pendant light shapes their faces against the cool blue window; readable faces, restrained amber-blue colour, natural skin and subtle film grain.\n\nSOUND THROUGHOUT: Natural English dialogue with two distinct voices. Nora has a clear, low, lightly amused voice; Elias has a warm, slightly rough voice and an unhurried delivery. Only the named speaker talks; the listener listens with relaxed lips. Precise natural lip synchronization, small breaths and real pauses. Quiet rain on glass and a low ventilation sound continue underneath every cut. Dialogue is close and intelligible. No background music, score, narration or subtitles.\n\n0-2 seconds — Establishing two-shot, eye level, 35mm feel. Nora is already looking at Elias as he settles into the booth. He slides his mug a little closer. A small ceramic scrape connects into the next shot. The camera makes a restrained lateral drift; the diner feels intimate and lived in. No speech yet.\n\n2-6 seconds — Cut to Nora's medium close-up over Elias's soft foreground shoulder, 50mm feel. The camera is settled. She studies him with a half-smile and asks in natural English, \"Did you really miss the last train?\" Her curiosity is warmer than her words. Let her finish the question before cutting. Elias remains silent.\n\n6-7 seconds — A brief table insert. Elias's thumb stops moving against the mug handle. He is deciding whether to answer honestly. Hear a soft breath over the unchanged rain. The mug stays on the table. No speech.\n\n7-12 seconds — Cut to Elias's matching medium close-up over Nora's shoulder, 65mm feel. A very slow push-in accompanies the admission. He meets her eyes and says, \"I took the long way. I wanted to see you.\" A small pause separates the two sentences. His expression opens rather than becoming theatrical; hold the end of the look. Nora does not speak over him.\n\n12-14 seconds — Cut closer on Nora's silent reaction. The teasing smile fades into a brief, touched surprise, then returns more softly. Keep this shot still. Her eyes stay on Elias. Only the continuous diner ambience and a quiet breath.\n\n14-18 seconds — Return to the original two-shot with the same screen positions and slightly tighter framing. Nora leans a little toward him and says, \"Then stay a little longer.\" Elias answers with a relieved smile, without speaking. Hold their shared look for the final moment; the rain continues. End inside the scene, without a fade or title.\n\nUse motivated straight cuts at the described narrative beats, never a rapid montage. Keep room tone continuous, voices distinct and the physical scene coherent. No music, extra dialogue, subtitles or on-screen text.",
+          "proofNote": "Vraie génération texte-vers-vidéo de 18 secondes avec son natif. Voici le prompt complet envoyé ; les timings donnent une direction, sans garantir un montage à l’image près. Réutilisez-le dans Create ou préparez une variante avec Milo."
+        },
+        {
+          "assetId": "where-gravity-ends",
+          "motion": "Un explorateur entre dans une galerie orbitale ; le travelling latéral révèle une immense planète à anneaux.",
+          "sound": "Ventilation, pas mesurés et légère résonance mécanique. Sans dialogue ni musique.",
+          "prompt": "An eight-second continuous cinematic science-fiction shot: an original fictional adult male surveyor steps into the observation gallery of an immense orbital station as dawn rises over a pale turquoise ringed planet. Photorealistic feature-film production design, luminous and expansive rather than dark.\n\nThe man is in his early forties, with close-cropped black hair, dark skin and a short neat beard. His face is clearly visible. He wears a worn off-white technical flight suit with slate-blue fabric panels and subtle copper hardware, no helmet, carrying a compact field case at his side. Begin in a medium three-quarter profile as he walks past a tall rib of the station's architecture. The camera tracks beside him and slowly arcs outward into a wider view. He stops at the observation rail and lifts his gaze. As the camera clears the foreground rib, the vast curved planet and its thin sunlit rings appear beyond the panoramic window, with one tiny maintenance craft crossing slowly in the distance to establish scale. Finish on the man in the left third, his face caught by soft golden reflected light, and the planet filling the luminous right side.\n\nThe gallery has pale ceramic panels, brushed metal ribs, a polished dark floor and a large physically plausible viewing window. Dust motes catch the sunrise, a faint reflection of his silhouette moves across the glass, and the immense planet remains stable. Beautiful cool whites, muted teal and warm dawn light; tactile clothing, natural skin, believable human motion, restrained lens bloom and deep cinematic perspective. One unbroken, smooth camera move at natural speed. Sound: quiet ventilation, two measured boot steps and a soft mechanical resonance as the view opens. No dialogue, music, subtitles, holographic UI or logos.",
+          "proofNote": "Vraie génération texte-vers-vidéo : 8 secondes, 720p, 16:9 et son natif. Aucune image de référence. Réutilisez ce prompt exact dans Create ou retravaillez-le avec Milo."
+        },
+        {
+          "assetId": "make-an-entrance",
+          "motion": "Accompagner la marche sous la colonnade ; laisser le manteau bouger naturellement dans la lumière.",
+          "sound": "Des pas et le froissement du tissu dans un couloir de pierre ouvert."
+        },
+        {
+          "assetId": "before-the-drop",
+          "motion": "Une descente contrôlée, puis un court accompagnement, en gardant la planche et le corps lisibles.",
+          "sound": "Roues sur le béton, impact à la réception et brève ambiance extérieure."
+        }
+      ],
+      "gallery": {
+        "navLabel": "Galerie",
+        "title": "D’autres scènes. D’autres possibilités.",
+        "intro": "Découvrez de vraies vidéos Seedance avec leurs prompts et réglages. Chaque exemple indique la version utilisée. Les vidéos Flash rejoindront cette page après vérification.",
+        "linkLabel": "Explorer la galerie Seedance",
+        "previewLabel": "Image de concept · Sunburst",
+        "previewAssetId": "before-the-drop"
+      }
+    }
+  },
+  "cinematic": {
+    "intro": "Créez des vidéos de 4 à 30 secondes à partir de texte, d’une première image ou de références, en 480p ou 720p avec audio généré en option. Composez avec Create, retouchez avec Modify ou poursuivez un plan avec Extend.",
+    "caption": "Concept frame · GPT Image 2.6 Sunburst",
+    "proofLabel": "De la première image au film",
+    "examplesLabel": "Explorer les scènes",
+    "pricingLabel": "Prix et comparatif",
+    "modelSlug": "seedance-2-5-flash",
+    "variant": "video",
+    "heroAssetId": "midnight-run",
+    "facts": [
+      {
+        "label": "Durée",
+        "value": "Jusqu’à 30 secondes"
+      },
+      {
+        "label": "Résolution",
+        "value": "480p · 720p"
+      },
+      {
+        "label": "Références",
+        "value": "10 images · 5 vidéos · 5 audios"
+      },
+      {
+        "label": "Direction",
+        "value": "Mouvement · caméra · son"
+      }
+    ],
+    "titleLines": [
+      "Seedance 2.5 Flash"
+    ],
+    "subtitle": "Créez. Modifiez. Continuez l’histoire.",
+    "primaryLabel": "Créer avec Flash",
+    "byline": "Générateur vidéo IA · Sur MaxVideoAI",
+    "overviewLabel": "Présentation",
+    "detailsLabel": "Détails",
+    "promptingLabel": "Guide de prompts",
+    "workflows": {
+      "eyebrow": "CRÉER · PROLONGER · MODIFIER",
+      "title": "Une scène. Plusieurs suites possibles.",
+      "intro": "Créez un plan, prolongez une vidéo ou modifiez une scène existante. Choisissez le parcours avant de préparer vos références.",
+      "note": "Créer lance un nouveau plan. Prolonger et Modifier utilisent les vidéos source choisies dans l’espace de travail. Vérifiez le devis exact avant de générer.",
+      "action": "Ouvrir l’espace vidéo",
+      "items": [
+        {
+          "id": "create",
+          "title": "Créer",
+          "body": "Transformez du texte, une image ou des références en un nouveau plan.",
+          "input": "Première image et direction",
+          "output": "Un nouveau plan",
+          "steps": [
+            "Décrire la scène",
+            "Ajouter les références",
+            "Choisir les réglages et vérifier le devis"
+          ],
+          "action": "Créer une vidéo",
+          "prompt": "Animate the supplied first frame as one continuous six-second cinematic shot. On the rooftop at dusk, the drummer brings her raised stick down into a short, deliberate two-beat fill on the visible drums, followed by one clear cymbal strike. She then lifts her gaze and lets the cymbal ring. Keep the action readable at natural speed, with distinct stick contact and rebound. Preserve her face, hair, clothing, drum kit and rooftop layout. Keep the original camera angle with only a very slow, subtle push toward her; keep both hands in frame. A breeze moves a few locks of hair. Native audio: close, dry drum hits aligned with the visible strikes, a bright cymbal attack with a natural decay, and quiet distant city ambience. No dialogue, background music, cuts, slow motion, lettering or logos.",
+          "inspect": "Un bref rythme, un coup de cymbale et un regard suspendu. Regardez le geste et écoutez le son généré.",
+          "limits": [
+            {
+              "label": "Nouveau clip",
+              "value": "4–30 secondes"
+            },
+            {
+              "label": "Sortie",
+              "value": "480p ou 720p"
+            },
+            {
+              "label": "Références",
+              "value": "10 images · 5 vidéos · 5 audios maximum"
+            }
+          ],
+          "focus": {
+            "eyebrow": "FOCUS CREATE · MOTION CONTROL",
+            "title": "Reprenez le mouvement. Changez la scène.",
+            "body": "Donnez au mouvement un autre personnage et un autre décor. Ici, un ballet en studio guide une femme en manteau rouge dans la même séquence, dans une rue ensoleillée. Son image de référence a été créée avec Seedream 5.5.",
+            "referenceLabel": "Vidéo 1 · Ballet en studio",
+            "referenceSteps": [
+              "Port de bras",
+              "Arabesque",
+              "Tour"
+            ],
+            "imageLabel": "Image 1 · Personnage créé avec Seedream 5.5",
+            "caption": "Seedance 2.5 Flash · 8 s · 720p · Lecture synchronisée",
+            "id": "focus-motion-control",
+            "assetId": "make-an-entrance",
+            "prompt": "Use Video 1 as the reference for the ballet choreography and its exact timing. Use Image 1 for the woman's identity, short dark hair, gold earrings and outfit: vermilion trench coat, cream blouse, wide-leg cream trousers and cream boots. In one continuous eight-second shot, this woman performs the same flowing port de bras, leg extension into arabesque, lowering of the leg and controlled turn as the dancer in Video 1. Preserve the order, tempo, weight shifts and arm paths of the actual reference performance. Her red coat and cream clothing follow the movement naturally; do not copy the reference dancer's leotard or skirt. Place her in a sunlit Parisian side street with pale stone facades, a cafe awning and a few distant pedestrians. Keep a clear area of paving around her, with no traffic passing in front. Warm afternoon side light, natural shadows and a cinematic fashion-film look. Use a stationary full-length camera with enough lateral space to keep both hands, the entire extended leg and both feet inside the frame even at the widest arabesque. Frame slightly wider than Video 1 at maximum extension, while keeping the woman the clear main subject. Transfer the movement and timing, not the rehearsal studio, ballet costume or tight edge framing. No colonnade or seaside setting. Natural body proportions, stable supporting foot and believable contact between boots and paving. Native audio: light boot contact following her steps and quiet distant street ambience, no speech or music. No cuts, slow motion, text or logos.",
+            "resultLabel": "Résultat · Ballet dans la rue",
+            "promptLabel": "Prompt et réglages",
+            "promptNote": "Seedance 2.5 Flash · 8 s · 720p. La source et le résultat sont lus ensemble, sans son, à leur vitesse d’origine. Ajoutez vos propres références image et vidéo pour réutiliser ce prompt."
+          },
+          "compactFacts": "4–30 secondes · 480p / 720p · Audio en option",
+          "promptLabel": "Prompt et réglages",
+          "proofLabel": "Créé avec Seedance 2.5 Flash · 6 s · 720p · Son",
+          "proofNote": "Voici le prompt exact utilisé pour cette vidéo. Réutilisez-le dans Create ou affinez-le avec Milo. Ajoutez la première image originale, puis vérifiez les réglages et le prix avant de générer."
+        },
+        {
+          "id": "modify",
+          "title": "Modifier",
+          "body": "Donnez une nouvelle direction à un clip existant.",
+          "input": "Manteau ivoire · source",
+          "output": "Manteau bleu · retouche",
+          "steps": [
+            "Choisir la vidéo source",
+            "Décrire la modification ciblée",
+            "Ajouter les références utiles et vérifier le devis"
+          ],
+          "action": "Ouvrir Modify",
+          "prompt": "Edit Video 1. Change only the woman's ivory wool coat to a rich, deep petrol-blue wool coat throughout the entire clip. Preserve the original coat design, cut, length, lapels, fastenings and wool texture; recolour the fabric while retaining its original folds, shading and moving hem. Keep her face, hair, body, charcoal shirt, trousers, shoes and gestures unchanged. Preserve her exact walking rhythm, foot contacts, glance, camera path, framing, stone colonnade, courtyard, daylight and shadows. Keep the original footsteps, cloth rustle and courtyard ambience. This is a targeted wardrobe colour edit of Video 1, with the same continuous shot and temporal progression. No added speech, music, captions or logos.",
+          "inspect": "Déplacez la barre pour comparer la tenue en mouvement. Les deux originaux sont lus ensemble, sans son.",
+          "limits": [
+            {
+              "label": "Clip source",
+              "value": "4–30 secondes"
+            },
+            {
+              "label": "Durée de sortie",
+              "value": "Durée proche de la source"
+            },
+            {
+              "label": "Cadre",
+              "value": "Conserve le ratio source"
+            }
+          ],
+          "proofLabel": "Seedance 2.5 Flash · 720p · Original + retouche vidéo",
+          "proofNote": "Vraie retouche vidéo. Source : 6,04 s ; résultat : 5,71 s. Les originaux inchangés sont lus à leur vitesse native, jusqu’à la fin du plus court. Vérifiez aussi le visage, les boutons et le tissu. Ajoutez votre vidéo source dans Modify : le prompt seul ne joint pas cet exemple.",
+          "promptSummary": "Passez le manteau ivoire en bleu pétrole. Gardez la même scène et le même mouvement."
+        },
+        {
+          "id": "extend",
+          "title": "Prolonger",
+          "body": "Continuez l’action avant ou après le clip source.",
+          "input": "Fin du clip source",
+          "output": "La suite de l’action",
+          "steps": [
+            "Choisir la vidéo source",
+            "Décrire la suite",
+            "Vérifier les réglages et le devis"
+          ],
+          "action": "Ouvrir Extend",
+          "prompt": "Extend the supplied source clip forward. The skateboarder rolls down into the bowl and rides smoothly out into the sunlight. Continue the direction of travel and follow with a low camera. Preserve the skater, board, coastal setting and afternoon light. Continue the wheel sound and sea breeze.",
+          "inspect": "Observez le raccord : le mouvement, le corps, la caméra, la lumière et le son doivent se poursuivre naturellement.",
+          "limits": [
+            {
+              "label": "Clips sources",
+              "value": "5 maximum · 30 secondes cumulées"
+            },
+            {
+              "label": "Nouveau segment",
+              "value": "4–30 secondes"
+            },
+            {
+              "label": "Cadre",
+              "value": "Conserve le ratio de la source choisie"
+            }
+          ],
+          "timeline": {
+            "label": "Exemple de timeline : source de 6 secondes suivie de 4 secondes supplémentaires",
+            "source": "Clip source",
+            "continuation": "Prolonger",
+            "note": "Fonctionnement illustré · source + nouveau segment. Assemblez les clips au montage."
+          },
+          "proofNote": "Un fonctionnement illustré de la prolongation. Ajoutez votre source, décrivez la suite et vérifiez le devis. Inspectez le segment généré avant de l’assembler avec votre clip original."
+        }
+      ],
+      "conceptLabel": "Images conceptuelles · démonstrations vidéo à venir",
+      "briefLabel": "La retouche",
+      "limitsLabel": "À savoir avant de créer",
+      "inspectLabel": "Les détails à observer",
+      "source": {
+        "label": "Documentation du modèle",
+        "href": "https://docs.byteplus.com/en/docs/modelark/seedance-2-5"
+      },
+      "promptNote": "Utilisez ce prompt dans Create. Ajoutez vos références ou votre vidéo source, puis vérifiez les réglages et le prix actuel. Réutiliser le prompt ne joint pas automatiquement les médias de cet exemple.",
+      "imageDetailsLabel": "À propos de l’image de départ"
+    },
+    "promptAssistant": {
+      "title": "Milo — assistant IA pour vos prompts",
+      "action": "Aide-moi à transformer mon idée en scène cinématographique.",
+      "body": "Décrivez votre idée dans le chat intégré à l’éditeur de prompt de Create. Milo vous aide à rédiger un prompt que vous pouvez relire et appliquer. Consultez le prix avant de générer."
+    }
+  }
+}

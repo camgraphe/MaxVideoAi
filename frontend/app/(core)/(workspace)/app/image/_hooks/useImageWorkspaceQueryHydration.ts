@@ -30,12 +30,14 @@ import {
   type ReferenceSlotValue,
 } from '../_lib/image-workspace-types';
 import { IMAGE_STORYBOARD_PRESET } from '../_lib/image-workspace-storyboard';
+import { useImageEditorialPreset } from './useImageEditorialPreset';
 
 type SearchParamsReader = {
   get(name: string): string | null;
 } | null | undefined;
 
 interface UseImageWorkspaceQueryHydrationParams {
+  storageHydrated: boolean;
   engines: ImageEngineOption[];
   genericError: string;
   searchParams: SearchParamsReader;
@@ -67,6 +69,7 @@ interface UseImageWorkspaceQueryHydrationParams {
 }
 
 export function useImageWorkspaceQueryHydration({
+  storageHydrated,
   engines,
   genericError,
   searchParams,
@@ -379,6 +382,9 @@ export function useImageWorkspaceQueryHydration({
       setWatermark,
     ]
   );
+
+  useImageEditorialPreset({ searchParams, storageHydrated, availableEngineIds: engines.map(engine => engine.id),
+    applySnapshot: applyImageSettingsSnapshot, onError: setError, errorMessage: genericError });
 
   useEffect(() => {
     if (!requestedJobId) return;

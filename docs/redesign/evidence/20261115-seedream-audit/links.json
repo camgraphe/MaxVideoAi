@@ -1,0 +1,2326 @@
+[
+  {
+    "href": "/examples",
+    "uses": [
+      {
+        "href": "/examples",
+        "text": "Examples",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/examples",
+        "text": "All examples",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/examples",
+        "text": "All examplesVideos and prompts from every model.",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/examples"
+  },
+  {
+    "href": "/ai-video-engines",
+    "uses": [
+      {
+        "href": "/ai-video-engines",
+        "text": "Compare",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/ai-video-engines",
+        "text": "All comparisons",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/ai-video-engines",
+        "text": "All comparisons",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/ai-video-engines",
+        "text": "All comparisons",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/ai-video-engines"
+  },
+  {
+    "href": "/",
+    "uses": [
+      {
+        "href": "/",
+        "text": "MaxVideoAI",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/",
+        "text": "MaxVideo AI",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/"
+  },
+  {
+    "href": "/models",
+    "uses": [
+      {
+        "href": "/models",
+        "text": "Models",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/models",
+        "text": "All models",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/models",
+        "text": "All models",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/models",
+        "text": "All models",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/models"
+  },
+  {
+    "href": "/login?mode=signin&next=%2Fapp&lang=en",
+    "uses": [
+      {
+        "href": "/login?mode=signin&next=%2Fapp&lang=en",
+        "text": "Log inLog in",
+        "scope": "shell",
+        "panel": false,
+        "analytics": "cta_click"
+      },
+      {
+        "href": "/login?mode=signin&next=%2Fapp&lang=en",
+        "text": "Log in",
+        "scope": "shell",
+        "panel": false,
+        "analytics": "cta_click"
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/login?mode=signin&next=%2Fapp"
+  },
+  {
+    "href": "/tools",
+    "uses": [
+      {
+        "href": "/tools",
+        "text": "Tools",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/tools",
+        "text": "All tools",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/tools",
+        "text": "All tools",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/tools",
+        "text": "All tools",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/tools"
+  },
+  {
+    "href": "/mcp",
+    "uses": [
+      {
+        "href": "/mcp",
+        "text": "AssistantsMCP",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/mcp",
+        "text": "Explore assistants & MCP",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/mcp",
+        "text": "Discover MaxVideoAI MCP",
+        "scope": "shell",
+        "panel": false,
+        "analytics": "cta_click"
+      },
+      {
+        "href": "/mcp",
+        "text": "Explore assistants & MCP",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/mcp",
+        "text": "How MCP works",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/mcp"
+  },
+  {
+    "href": "/pricing",
+    "uses": [
+      {
+        "href": "/pricing",
+        "text": "Pricing",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/pricing",
+        "text": "Pricing",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/pricing",
+        "text": "Pricing",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/pricing",
+        "text": "Pricing",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/pricing"
+  },
+  {
+    "href": "/app/image",
+    "uses": [
+      {
+        "href": "/app/image",
+        "text": "Image",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/app/image",
+        "text": "Generate image",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/app/image"
+  },
+  {
+    "href": "#examples",
+    "uses": [
+      {
+        "href": "#examples",
+        "text": "Explore the images",
+        "scope": "model",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "#examples",
+        "text": "Explore the images",
+        "scope": "model",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/models/seedream-5-5",
+    "anchor": true,
+    "hash": "examples"
+  },
+  {
+    "href": "#proof-refine",
+    "uses": [
+      {
+        "href": "#proof-refine",
+        "text": "Keep shaping the scene.Guide successive edits to clothing, light and the details that matter.",
+        "scope": "model",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/models/seedream-5-5",
+    "anchor": true,
+    "hash": "proof-refine"
+  },
+  {
+    "href": "#proof-lettering",
+    "uses": [
+      {
+        "href": "#proof-lettering",
+        "text": "Give your words a place.Put text into signs, posters and the scene itself.",
+        "scope": "model",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/models/seedream-5-5",
+    "anchor": true,
+    "hash": "proof-lettering"
+  },
+  {
+    "href": "#proof-moments",
+    "uses": [
+      {
+        "href": "#proof-moments",
+        "text": "Get closer to real.Explore natural skin, tactile fabrics and lifelike lighting.",
+        "scope": "model",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/models/seedream-5-5",
+    "anchor": true,
+    "hash": "proof-moments"
+  },
+  {
+    "href": "#proof-transparency",
+    "uses": [
+      {
+        "href": "#proof-transparency",
+        "text": "Create without a background.Generate native transparent PNGs, ready to compose.",
+        "scope": "model",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/models/seedream-5-5",
+    "anchor": true,
+    "hash": "proof-transparency"
+  },
+  {
+    "href": "#top",
+    "uses": [
+      {
+        "href": "#top",
+        "text": "Seedream 5.5",
+        "scope": "model",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/models/seedream-5-5",
+    "anchor": true,
+    "hash": "top"
+  },
+  {
+    "href": "#overview",
+    "uses": [
+      {
+        "href": "#overview",
+        "text": "Overview",
+        "scope": "model",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/models/seedream-5-5",
+    "anchor": true,
+    "hash": "overview"
+  },
+  {
+    "href": "#prompting",
+    "uses": [
+      {
+        "href": "#prompting",
+        "text": "Prompt guide",
+        "scope": "model",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/models/seedream-5-5",
+    "anchor": true,
+    "hash": "prompting"
+  },
+  {
+    "href": "#specs",
+    "uses": [
+      {
+        "href": "#specs",
+        "text": "Details",
+        "scope": "model",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/models/seedream-5-5",
+    "anchor": true,
+    "hash": "specs"
+  },
+  {
+    "href": "#decision-pricing",
+    "uses": [
+      {
+        "href": "#decision-pricing",
+        "text": "Pricing",
+        "scope": "model",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/models/seedream-5-5",
+    "anchor": true,
+    "hash": "decision-pricing"
+  },
+  {
+    "href": "#faq",
+    "uses": [
+      {
+        "href": "#faq",
+        "text": "FAQ",
+        "scope": "model",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/models/seedream-5-5",
+    "anchor": true,
+    "hash": "faq"
+  },
+  {
+    "href": "/app/audio",
+    "uses": [
+      {
+        "href": "/app/audio",
+        "text": "Audio",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/app/audio",
+        "text": "Generate audio",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/app/audio"
+  },
+  {
+    "href": "/app",
+    "uses": [
+      {
+        "href": "/app",
+        "text": "Start creating",
+        "scope": "shell",
+        "panel": false,
+        "analytics": "cta_click"
+      },
+      {
+        "href": "/app",
+        "text": "Video",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/app",
+        "text": "Start creating",
+        "scope": "shell",
+        "panel": false,
+        "analytics": "cta_click"
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/app"
+  },
+  {
+    "href": "/assets/model-examples/seedream-5-5/0f01d7c64f2eaca38bfabd67de2da1fc3412af795836064c7577a33a6ec29538.jpg",
+    "uses": [
+      {
+        "href": "/assets/model-examples/seedream-5-5/0f01d7c64f2eaca38bfabd67de2da1fc3412af795836064c7577a33a6ec29538.jpg",
+        "text": "Exact edit source",
+        "scope": "model",
+        "panel": true,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/assets/model-examples/seedream-5-5/0f01d7c64f2eaca38bfabd67de2da1fc3412af795836064c7577a33a6ec29538.jpg"
+  },
+  {
+    "href": "/assets/model-examples/seedream-5-5/7d0328b2bdd1635ea6d115787f7d3a25e91dc907a42a768969663f9c2cc3d9d3.jpg",
+    "uses": [
+      {
+        "href": "/assets/model-examples/seedream-5-5/7d0328b2bdd1635ea6d115787f7d3a25e91dc907a42a768969663f9c2cc3d9d3.jpg",
+        "text": "Open original",
+        "scope": "model",
+        "panel": true,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/assets/model-examples/seedream-5-5/7d0328b2bdd1635ea6d115787f7d3a25e91dc907a42a768969663f9c2cc3d9d3.jpg"
+  },
+  {
+    "href": "/app/image?engine=seedream-5-5",
+    "uses": [
+      {
+        "href": "/app/image?engine=seedream-5-5",
+        "text": "Create an image",
+        "scope": "model",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5",
+        "text": "Create an image",
+        "scope": "model",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5",
+        "text": "Create with Seedream 5.5",
+        "scope": "model",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/app/image?engine=seedream-5-5"
+  },
+  {
+    "href": "/assets/model-examples/seedream-5-5/16b4e38576933c2c96969c00c281af474ec13f3302d79ac9b5217deaaf3bd328.jpg",
+    "uses": [
+      {
+        "href": "/assets/model-examples/seedream-5-5/16b4e38576933c2c96969c00c281af474ec13f3302d79ac9b5217deaaf3bd328.jpg",
+        "text": "",
+        "scope": "model",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/assets/model-examples/seedream-5-5/16b4e38576933c2c96969c00c281af474ec13f3302d79ac9b5217deaaf3bd328.jpg",
+        "text": "Open original",
+        "scope": "model",
+        "panel": true,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/assets/model-examples/seedream-5-5/16b4e38576933c2c96969c00c281af474ec13f3302d79ac9b5217deaaf3bd328.jpg"
+  },
+  {
+    "href": "/app/image?engine=seedream-5-5&example=backstage-wardrobe&lang=en&assistant=milo&refine=example",
+    "uses": [
+      {
+        "href": "/app/image?engine=seedream-5-5&example=backstage-wardrobe&lang=en&assistant=milo&refine=example",
+        "text": "Refine with Milo",
+        "scope": "model",
+        "panel": true,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/app/image?engine=seedream-5-5&example=backstage-wardrobe&assistant=milo&refine=example"
+  },
+  {
+    "href": "/app/image?engine=seedream-5-5&example=backstage-wardrobe&lang=en",
+    "uses": [
+      {
+        "href": "/app/image?engine=seedream-5-5&example=backstage-wardrobe&lang=en",
+        "text": "Use this prompt",
+        "scope": "model",
+        "panel": true,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/app/image?engine=seedream-5-5&example=backstage-wardrobe"
+  },
+  {
+    "href": "/assets/model-examples/seedream-5-5/7f42f3ee1c931bd1a0c993e7da0c186864b5ddc81cb803240b64912e77bd4a96.jpg",
+    "uses": [
+      {
+        "href": "/assets/model-examples/seedream-5-5/7f42f3ee1c931bd1a0c993e7da0c186864b5ddc81cb803240b64912e77bd4a96.jpg",
+        "text": "Open original ↗",
+        "scope": "model",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/assets/model-examples/seedream-5-5/7f42f3ee1c931bd1a0c993e7da0c186864b5ddc81cb803240b64912e77bd4a96.jpg",
+        "text": "Open original",
+        "scope": "model",
+        "panel": true,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/assets/model-examples/seedream-5-5/7f42f3ee1c931bd1a0c993e7da0c186864b5ddc81cb803240b64912e77bd4a96.jpg"
+  },
+  {
+    "href": "/app/image?engine=seedream-5-5&example=one-night-only&lang=en",
+    "uses": [
+      {
+        "href": "/app/image?engine=seedream-5-5&example=one-night-only&lang=en",
+        "text": "Use this prompt",
+        "scope": "model",
+        "panel": true,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/app/image?engine=seedream-5-5&example=one-night-only"
+  },
+  {
+    "href": "/app/image?engine=seedream-5-5&example=one-night-only&lang=en&assistant=milo&refine=example",
+    "uses": [
+      {
+        "href": "/app/image?engine=seedream-5-5&example=one-night-only&lang=en&assistant=milo&refine=example",
+        "text": "Refine with Milo",
+        "scope": "model",
+        "panel": true,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/app/image?engine=seedream-5-5&example=one-night-only&assistant=milo&refine=example"
+  },
+  {
+    "href": "/assets/model-examples/seedream-5-5/d9a6189fa888558a3a6415efcc407c529227bebac45d64ef5a5db3e384948cf3.png",
+    "uses": [
+      {
+        "href": "/assets/model-examples/seedream-5-5/d9a6189fa888558a3a6415efcc407c529227bebac45d64ef5a5db3e384948cf3.png",
+        "text": "Open original",
+        "scope": "model",
+        "panel": true,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/assets/model-examples/seedream-5-5/d9a6189fa888558a3a6415efcc407c529227bebac45d64ef5a5db3e384948cf3.png"
+  },
+  {
+    "href": "/app/image?engine=seedream-5-5&example=after-the-race&lang=en",
+    "uses": [
+      {
+        "href": "/app/image?engine=seedream-5-5&example=after-the-race&lang=en",
+        "text": "Use this prompt",
+        "scope": "model",
+        "panel": true,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/app/image?engine=seedream-5-5&example=after-the-race"
+  },
+  {
+    "href": "/assets/model-examples/seedream-5-5/2535f7148cd673f38f2aabd776127690bdcca5fee1631e701eb6b550bf5dca70.jpg",
+    "uses": [
+      {
+        "href": "/assets/model-examples/seedream-5-5/2535f7148cd673f38f2aabd776127690bdcca5fee1631e701eb6b550bf5dca70.jpg",
+        "text": "",
+        "scope": "model",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/assets/model-examples/seedream-5-5/2535f7148cd673f38f2aabd776127690bdcca5fee1631e701eb6b550bf5dca70.jpg",
+        "text": "Open original",
+        "scope": "model",
+        "panel": true,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/assets/model-examples/seedream-5-5/2535f7148cd673f38f2aabd776127690bdcca5fee1631e701eb6b550bf5dca70.jpg"
+  },
+  {
+    "href": "/app/image?engine=seedream-5-5&example=after-the-race&lang=en&assistant=milo&refine=example",
+    "uses": [
+      {
+        "href": "/app/image?engine=seedream-5-5&example=after-the-race&lang=en&assistant=milo&refine=example",
+        "text": "Refine with Milo",
+        "scope": "model",
+        "panel": true,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/app/image?engine=seedream-5-5&example=after-the-race&assistant=milo&refine=example"
+  },
+  {
+    "href": "/app/image?engine=seedream-5-5&example=free-to-move&lang=en&assistant=milo&refine=example",
+    "uses": [
+      {
+        "href": "/app/image?engine=seedream-5-5&example=free-to-move&lang=en&assistant=milo&refine=example",
+        "text": "Refine with Milo",
+        "scope": "model",
+        "panel": true,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/app/image?engine=seedream-5-5&example=free-to-move&assistant=milo&refine=example"
+  },
+  {
+    "href": "/app/image?engine=seedream-5-5&example=free-to-move&lang=en",
+    "uses": [
+      {
+        "href": "/app/image?engine=seedream-5-5&example=free-to-move&lang=en",
+        "text": "Use this prompt",
+        "scope": "model",
+        "panel": true,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/app/image?engine=seedream-5-5&example=free-to-move"
+  },
+  {
+    "href": "https://docs.byteplus.com/en/docs/modelark/seedream-5-5",
+    "uses": [
+      {
+        "href": "https://docs.byteplus.com/en/docs/modelark/seedream-5-5",
+        "text": "Official model guide ↗",
+        "scope": "model",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "external": true
+  },
+  {
+    "href": "/assets/model-examples/seedream-5-5/9c2ccca85c7306afc4bba3bbe4e1a80a58812188277592719b5e2327ef47e0ef.jpg",
+    "uses": [
+      {
+        "href": "/assets/model-examples/seedream-5-5/9c2ccca85c7306afc4bba3bbe4e1a80a58812188277592719b5e2327ef47e0ef.jpg",
+        "text": "",
+        "scope": "model",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/assets/model-examples/seedream-5-5/9c2ccca85c7306afc4bba3bbe4e1a80a58812188277592719b5e2327ef47e0ef.jpg",
+        "text": "Open original",
+        "scope": "model",
+        "panel": true,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/assets/model-examples/seedream-5-5/9c2ccca85c7306afc4bba3bbe4e1a80a58812188277592719b5e2327ef47e0ef.jpg"
+  },
+  {
+    "href": "/app/image?engine=seedream-5-5&example=55-make-your-move&lang=en&assistant=milo&refine=example",
+    "uses": [
+      {
+        "href": "/app/image?engine=seedream-5-5&example=55-make-your-move&lang=en&assistant=milo&refine=example",
+        "text": "Refine with Milo",
+        "scope": "model",
+        "panel": true,
+        "analytics": null
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5&example=55-make-your-move&lang=en&assistant=milo&refine=example",
+        "text": "Refine with Milo",
+        "scope": "model",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/app/image?engine=seedream-5-5&example=55-make-your-move&assistant=milo&refine=example"
+  },
+  {
+    "href": "/app/image?assistant=milo&lang=en&engine=seedream-5-5",
+    "uses": [
+      {
+        "href": "/app/image?assistant=milo&lang=en&engine=seedream-5-5",
+        "text": "MiloHelp me turn my idea into a cinematic scene.",
+        "scope": "model",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/app/image?assistant=milo&engine=seedream-5-5"
+  },
+  {
+    "href": "https://maxvideoai.com/models/seedream-5-5#specs",
+    "uses": [
+      {
+        "href": "https://maxvideoai.com/models/seedream-5-5#specs",
+        "text": "Source: MaxVideoAI",
+        "scope": "model",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "external": true
+  },
+  {
+    "href": "https://seed.bytedance.com/en/seedream5_5",
+    "uses": [
+      {
+        "href": "https://seed.bytedance.com/en/seedream5_5",
+        "text": "Model by ByteDance",
+        "scope": "model",
+        "panel": true,
+        "analytics": null
+      }
+    ],
+    "external": true
+  },
+  {
+    "href": "/app/image?engine=seedream-5-5&example=55-make-your-move&lang=en",
+    "uses": [
+      {
+        "href": "/app/image?engine=seedream-5-5&example=55-make-your-move&lang=en",
+        "text": "Use this prompt",
+        "scope": "model",
+        "panel": true,
+        "analytics": null
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5&example=55-make-your-move&lang=en",
+        "text": "Use this prompt",
+        "scope": "model",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/app/image?engine=seedream-5-5&example=55-make-your-move"
+  },
+  {
+    "href": "/app/image?engine=seedream-5-5&example=55-last-train&lang=en",
+    "uses": [
+      {
+        "href": "/app/image?engine=seedream-5-5&example=55-last-train&lang=en",
+        "text": "Use this prompt",
+        "scope": "model",
+        "panel": true,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/app/image?engine=seedream-5-5&example=55-last-train"
+  },
+  {
+    "href": "/assets/model-examples/seedream-5-5/41c6a5808f6cc946ae8f3034ecbc3504f79aa8a8d57302eeb790563d6e4f2d8a.jpg",
+    "uses": [
+      {
+        "href": "/assets/model-examples/seedream-5-5/41c6a5808f6cc946ae8f3034ecbc3504f79aa8a8d57302eeb790563d6e4f2d8a.jpg",
+        "text": "Open original",
+        "scope": "model",
+        "panel": true,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/assets/model-examples/seedream-5-5/41c6a5808f6cc946ae8f3034ecbc3504f79aa8a8d57302eeb790563d6e4f2d8a.jpg"
+  },
+  {
+    "href": "/pricing#seedream-5-5-pricing",
+    "uses": [
+      {
+        "href": "/pricing#seedream-5-5-pricing",
+        "text": "View full pricing ↗",
+        "scope": "model",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/pricing",
+    "anchor": true,
+    "hash": "seedream-5-5-pricing"
+  },
+  {
+    "href": "/app/image?engine=seedream-5-5&example=55-last-train&lang=en&assistant=milo&refine=example",
+    "uses": [
+      {
+        "href": "/app/image?engine=seedream-5-5&example=55-last-train&lang=en&assistant=milo&refine=example",
+        "text": "Refine with Milo",
+        "scope": "model",
+        "panel": true,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/app/image?engine=seedream-5-5&example=55-last-train&assistant=milo&refine=example"
+  },
+  {
+    "href": "/app/image?engine=seedream-5-5&example=55-above-the-clouds&lang=en",
+    "uses": [
+      {
+        "href": "/app/image?engine=seedream-5-5&example=55-above-the-clouds&lang=en",
+        "text": "Use this prompt",
+        "scope": "model",
+        "panel": true,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/app/image?engine=seedream-5-5&example=55-above-the-clouds"
+  },
+  {
+    "href": "/app/image?engine=seedream-5-5&example=55-above-the-clouds&lang=en&assistant=milo&refine=example",
+    "uses": [
+      {
+        "href": "/app/image?engine=seedream-5-5&example=55-above-the-clouds&lang=en&assistant=milo&refine=example",
+        "text": "Refine with Milo",
+        "scope": "model",
+        "panel": true,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/app/image?engine=seedream-5-5&example=55-above-the-clouds&assistant=milo&refine=example"
+  },
+  {
+    "href": "/models/seedream-5-0-flash",
+    "uses": [
+      {
+        "href": "/models/seedream-5-0-flash",
+        "text": "Seedream 5.0 FlashExplore another 1K–2K single-image workflow. Check its quote with the settings you need.",
+        "scope": "model",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/models/seedream-5-0-flash"
+  },
+  {
+    "href": "/models/seedream",
+    "uses": [
+      {
+        "href": "/models/seedream",
+        "text": "Seedream 5.0 LiteNeed 3K, 4K or a batch of related images? Explore Lite’s resolution and image-set options.",
+        "scope": "model",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/models/seedream"
+  },
+  {
+    "href": "/models/seedream-5-0-pro",
+    "uses": [
+      {
+        "href": "/models/seedream-5-0-pro",
+        "text": "Seedream 5.0 ProWork with the previous Pro model for one 2K image, with up to 10 reference images.",
+        "scope": "model",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/models/seedream-5-0-pro"
+  },
+  {
+    "href": "/integrations/chatgpt",
+    "uses": [
+      {
+        "href": "/integrations/chatgpt",
+        "text": "ChatGPT",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/integrations/chatgpt",
+        "text": "ChatGPT",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/integrations/chatgpt"
+  },
+  {
+    "href": "/integrations/openclaw",
+    "uses": [
+      {
+        "href": "/integrations/openclaw",
+        "text": "OpenClaw",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/integrations/openclaw",
+        "text": "OpenClaw",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/integrations/openclaw"
+  },
+  {
+    "href": "/integrations/codex",
+    "uses": [
+      {
+        "href": "/integrations/codex",
+        "text": "Codex",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/integrations/codex",
+        "text": "Codex",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/integrations/codex"
+  },
+  {
+    "href": "/integrations/claude",
+    "uses": [
+      {
+        "href": "/integrations/claude",
+        "text": "Claude",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/integrations/claude",
+        "text": "Claude",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/integrations/claude"
+  },
+  {
+    "href": "/integrations/n8n",
+    "uses": [
+      {
+        "href": "/integrations/n8n",
+        "text": "n8n",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/integrations/n8n",
+        "text": "n8n",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/integrations/n8n"
+  },
+  {
+    "href": "/docs/mcp",
+    "uses": [
+      {
+        "href": "/docs/mcp",
+        "text": "MCP documentation",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/docs/mcp",
+        "text": "MCP server documentation",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/docs/mcp"
+  },
+  {
+    "href": "/models/seedance-2-5-flash",
+    "uses": [
+      {
+        "href": "/models/seedance-2-5-flash",
+        "text": "Seedance 2.5 Flash",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/models/seedance-2-5-flash",
+        "text": "Seedance 2.5 FlashNew",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/models/seedance-2-5-flash"
+  },
+  {
+    "href": "/models/flux-3-max",
+    "uses": [
+      {
+        "href": "/models/flux-3-max",
+        "text": "FLUX 3 Max",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/models/flux-3-max",
+        "text": "FLUX 3 MaxNew",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 500,
+    "final": "http://localhost:3116/models/flux-3-max"
+  },
+  {
+    "href": "/models/minimax-h3",
+    "uses": [
+      {
+        "href": "/models/minimax-h3",
+        "text": "MiniMax H3",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/models/minimax-h3",
+        "text": "MiniMax H3New",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 500,
+    "final": "http://localhost:3116/models/minimax-h3"
+  },
+  {
+    "href": "/models/kling-v4",
+    "uses": [
+      {
+        "href": "/models/kling-v4",
+        "text": "Kling 4.0",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/models/kling-v4",
+        "text": "Kling 4.0New",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/models/kling-v4"
+  },
+  {
+    "href": "/models/seedance-2-5",
+    "uses": [
+      {
+        "href": "/models/seedance-2-5",
+        "text": "Seedance 2.5",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/models/seedance-2-5",
+        "text": "Seedance 2.5New",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 500,
+    "final": "http://localhost:3116/models/seedance-2-5"
+  },
+  {
+    "href": "/models/kling-3-pro",
+    "uses": [
+      {
+        "href": "/models/kling-3-pro",
+        "text": "Kling 3 Pro",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/models/kling-3-pro",
+        "text": "Kling 3 Pro",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 500,
+    "final": "http://localhost:3116/models/kling-3-pro"
+  },
+  {
+    "href": "/models/veo-3-1",
+    "uses": [
+      {
+        "href": "/models/veo-3-1",
+        "text": "Veo 3.1",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/models/veo-3-1",
+        "text": "Veo 3.1",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 500,
+    "final": "http://localhost:3116/models/veo-3-1"
+  },
+  {
+    "href": "/models/wan-3-prime",
+    "uses": [
+      {
+        "href": "/models/wan-3-prime",
+        "text": "Wan 3 Prime",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/models/wan-3-prime",
+        "text": "Wan 3 PrimeNew",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 500,
+    "final": "http://localhost:3116/models/wan-3-prime"
+  },
+  {
+    "href": "/models/wan-3",
+    "uses": [
+      {
+        "href": "/models/wan-3",
+        "text": "Wan 3",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/models/wan-3",
+        "text": "Wan 3New",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 500,
+    "final": "http://localhost:3116/models/wan-3"
+  },
+  {
+    "href": "/models/ltx-2-5-pro",
+    "uses": [
+      {
+        "href": "/models/ltx-2-5-pro",
+        "text": "LTX 2.5 Pro",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/models/ltx-2-5-pro",
+        "text": "LTX 2.5 Pro",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 500,
+    "final": "http://localhost:3116/models/ltx-2-5-pro"
+  },
+  {
+    "href": "/ai-video-engines/kling-v4-vs-seedance-2-5",
+    "uses": [
+      {
+        "href": "/ai-video-engines/kling-v4-vs-seedance-2-5",
+        "text": "Kling 4.0 vs Seedance 2.5",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/ai-video-engines/kling-v4-vs-seedance-2-5",
+        "text": "Kling 4.0 vs Seedance 2.5",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/ai-video-engines/kling-v4-vs-seedance-2-5"
+  },
+  {
+    "href": "/ai-video-engines/seedance-2-5-vs-seedance-2-5-flash",
+    "uses": [
+      {
+        "href": "/ai-video-engines/seedance-2-5-vs-seedance-2-5-flash",
+        "text": "Seedance 2.5 vs Flash",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/ai-video-engines/seedance-2-5-vs-seedance-2-5-flash",
+        "text": "Seedance 2.5 vs Flash",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/ai-video-engines/seedance-2-5-vs-seedance-2-5-flash"
+  },
+  {
+    "href": "/ai-video-engines/kling-3-pro-vs-seedance-2-5",
+    "uses": [
+      {
+        "href": "/ai-video-engines/kling-3-pro-vs-seedance-2-5",
+        "text": "Kling 3 Pro vs Seedance 2.5",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/ai-video-engines/kling-3-pro-vs-seedance-2-5",
+        "text": "Kling 3 Pro vs Seedance 2.5",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/ai-video-engines/kling-3-pro-vs-seedance-2-5"
+  },
+  {
+    "href": "/ai-video-engines/minimax-h3-vs-seedance-2-5",
+    "uses": [
+      {
+        "href": "/ai-video-engines/minimax-h3-vs-seedance-2-5",
+        "text": "MiniMax H3 vs Seedance 2.5",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/ai-video-engines/minimax-h3-vs-seedance-2-5",
+        "text": "MiniMax H3 vs Seedance 2.5",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/ai-video-engines/minimax-h3-vs-seedance-2-5"
+  },
+  {
+    "href": "/ai-video-engines/seedance-2-0-vs-seedance-2-0-fast",
+    "uses": [
+      {
+        "href": "/ai-video-engines/seedance-2-0-vs-seedance-2-0-fast",
+        "text": "Seedance 2.0 vs Fast",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/ai-video-engines/seedance-2-0-vs-seedance-2-0-fast",
+        "text": "Seedance 2.0 vs Fast",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/ai-video-engines/seedance-2-0-vs-seedance-2-0-fast"
+  },
+  {
+    "href": "/ai-video-engines/gemini-omni-flash-vs-veo-3-1",
+    "uses": [
+      {
+        "href": "/ai-video-engines/gemini-omni-flash-vs-veo-3-1",
+        "text": "Gemini Omni Flash 1.2 vs Veo 3.1",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/ai-video-engines/gemini-omni-flash-vs-veo-3-1",
+        "text": "Gemini Omni Flash 1.2 vs Veo 3.1",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/ai-video-engines/gemini-omni-flash-vs-veo-3-1"
+  },
+  {
+    "href": "/examples/ltx",
+    "uses": [
+      {
+        "href": "/examples/ltx",
+        "text": "LTX examples",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/examples/ltx",
+        "text": "LTX",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/examples/ltx"
+  },
+  {
+    "href": "/examples/kling",
+    "uses": [
+      {
+        "href": "/examples/kling",
+        "text": "Kling examples",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/examples/kling",
+        "text": "Kling",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/examples/kling"
+  },
+  {
+    "href": "/ai-video-engines/best-for",
+    "uses": [
+      {
+        "href": "/ai-video-engines/best-for",
+        "text": "Best models by use case",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/ai-video-engines/best-for",
+        "text": "All use-case guides",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/ai-video-engines/best-for",
+        "text": "Best models by use case",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/ai-video-engines/best-for"
+  },
+  {
+    "href": "/blog/compare-ai-video-platforms",
+    "uses": [
+      {
+        "href": "/blog/compare-ai-video-platforms",
+        "text": "AI video platform guide",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/blog/compare-ai-video-platforms",
+        "text": "AI video platform guide",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/blog/compare-ai-video-platforms"
+  },
+  {
+    "href": "/examples/wan",
+    "uses": [
+      {
+        "href": "/examples/wan",
+        "text": "Wan examples",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/examples/wan",
+        "text": "Wan",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/examples/wan"
+  },
+  {
+    "href": "/examples/seedance",
+    "uses": [
+      {
+        "href": "/examples/seedance",
+        "text": "Seedance examples",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/examples/seedance",
+        "text": "Seedance",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/examples/seedance"
+  },
+  {
+    "href": "/examples/veo",
+    "uses": [
+      {
+        "href": "/examples/veo",
+        "text": "Veo examples",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/examples/veo",
+        "text": "Veo",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/examples/veo"
+  },
+  {
+    "href": "/examples/happy-horse",
+    "uses": [
+      {
+        "href": "/examples/happy-horse",
+        "text": "Happy Horse examples",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/examples/happy-horse",
+        "text": "Happy Horse",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/examples/happy-horse"
+  },
+  {
+    "href": "/examples/hailuo",
+    "uses": [
+      {
+        "href": "/examples/hailuo",
+        "text": "MiniMax examples",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/examples/hailuo",
+        "text": "MiniMax",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/examples/hailuo"
+  },
+  {
+    "href": "/tools/character-builder",
+    "uses": [
+      {
+        "href": "/tools/character-builder",
+        "text": "Character Studio",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/tools/character-builder",
+        "text": "Character Studio",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/tools/character-builder"
+  },
+  {
+    "href": "/tools/angle",
+    "uses": [
+      {
+        "href": "/tools/angle",
+        "text": "Change the camera angle",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/tools/angle",
+        "text": "Change Camera Angle",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/tools/angle"
+  },
+  {
+    "href": "/contact",
+    "uses": [
+      {
+        "href": "/contact",
+        "text": "Contact",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/contact"
+  },
+  {
+    "href": "/ai-video-prompt-generator",
+    "uses": [
+      {
+        "href": "/ai-video-prompt-generator",
+        "text": "Milo · AI prompt assistant",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/ai-video-prompt-generator"
+  },
+  {
+    "href": "/docs/get-started",
+    "uses": [
+      {
+        "href": "/docs/get-started",
+        "text": "Getting started",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/docs/get-started",
+        "text": "Getting started",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/docs/get-started"
+  },
+  {
+    "href": "/status",
+    "uses": [
+      {
+        "href": "/status",
+        "text": "Service status",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/status"
+  },
+  {
+    "href": "/company",
+    "uses": [
+      {
+        "href": "/company",
+        "text": "Company & Trust",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/company"
+  },
+  {
+    "href": "/pay-as-you-go-ai-video-generator",
+    "uses": [
+      {
+        "href": "/pay-as-you-go-ai-video-generator",
+        "text": "Pay-as-you-go AI video",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/pay-as-you-go-ai-video-generator"
+  },
+  {
+    "href": "/blog",
+    "uses": [
+      {
+        "href": "/blog",
+        "text": "Blog",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/blog",
+        "text": "Blog",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/blog"
+  },
+  {
+    "href": "/models/minimax-h3-max",
+    "uses": [
+      {
+        "href": "/models/minimax-h3-max",
+        "text": "MiniMax H3 MaxNew",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 500,
+    "final": "http://localhost:3116/models/minimax-h3-max"
+  },
+  {
+    "href": "/models/kling-v4-flash",
+    "uses": [
+      {
+        "href": "/models/kling-v4-flash",
+        "text": "Kling 4.0 FlashNew",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 500,
+    "final": "http://localhost:3116/models/kling-v4-flash"
+  },
+  {
+    "href": "/return-policy",
+    "uses": [
+      {
+        "href": "/return-policy",
+        "text": "Refund & Return Policy",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/return-policy"
+  },
+  {
+    "href": "/legal",
+    "uses": [
+      {
+        "href": "/legal",
+        "text": "Legal Center",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/legal"
+  },
+  {
+    "href": "/models/kling-3-turbo-pro",
+    "uses": [
+      {
+        "href": "/models/kling-3-turbo-pro",
+        "text": "Kling 3 Turbo Pro",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 500,
+    "final": "http://localhost:3116/models/kling-3-turbo-pro"
+  },
+  {
+    "href": "/models/ltx-2-5-fast",
+    "uses": [
+      {
+        "href": "/models/ltx-2-5-fast",
+        "text": "LTX 2.5 Fast",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 500,
+    "final": "http://localhost:3116/models/ltx-2-5-fast"
+  },
+  {
+    "href": "/ai-video-engines/best-for/cinematic-realism",
+    "uses": [
+      {
+        "href": "/ai-video-engines/best-for/cinematic-realism",
+        "text": "Cinematic realism",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/ai-video-engines/best-for/cinematic-realism",
+        "text": "Cinematic realism",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/ai-video-engines/best-for/cinematic-realism"
+  },
+  {
+    "href": "/ai-video-engines/best-for/image-to-video",
+    "uses": [
+      {
+        "href": "/ai-video-engines/best-for/image-to-video",
+        "text": "Image-to-video",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/ai-video-engines/best-for/image-to-video",
+        "text": "Image-to-video",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/ai-video-engines/best-for/image-to-video"
+  },
+  {
+    "href": "/ai-video-engines/best-for/fast-drafts",
+    "uses": [
+      {
+        "href": "/ai-video-engines/best-for/fast-drafts",
+        "text": "Fast drafts",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/ai-video-engines/best-for/fast-drafts",
+        "text": "Fast drafts",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/ai-video-engines/best-for/fast-drafts"
+  },
+  {
+    "href": "/ai-video-engines/best-for/ads",
+    "uses": [
+      {
+        "href": "/ai-video-engines/best-for/ads",
+        "text": "Product ads",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/ai-video-engines/best-for/ads",
+        "text": "Product ads",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/ai-video-engines/best-for/ads"
+  },
+  {
+    "href": "/models/flux-3",
+    "uses": [
+      {
+        "href": "/models/flux-3",
+        "text": "FLUX 3",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 500,
+    "final": "http://localhost:3116/models/flux-3"
+  },
+  {
+    "href": "/models/gemini-omni-flash",
+    "uses": [
+      {
+        "href": "/models/gemini-omni-flash",
+        "text": "Gemini Omni Flash 1.2",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 500,
+    "final": "http://localhost:3116/models/gemini-omni-flash"
+  },
+  {
+    "href": "/models/gpt-image-2-6-flare",
+    "uses": [
+      {
+        "href": "/models/gpt-image-2-6-flare",
+        "text": "GPT Image 2.6 Flare",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/models/gpt-image-2-6-flare"
+  },
+  {
+    "href": "/models/gpt-image-2-6-sunburst",
+    "uses": [
+      {
+        "href": "/models/gpt-image-2-6-sunburst",
+        "text": "GPT Image 2.6 Sunburst",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/models/gpt-image-2-6-sunburst"
+  },
+  {
+    "href": "/examples/luma",
+    "uses": [
+      {
+        "href": "/examples/luma",
+        "text": "Luma Ray",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/examples/luma"
+  },
+  {
+    "href": "/models/gpt-image-2-5-flare",
+    "uses": [
+      {
+        "href": "/models/gpt-image-2-5-flare",
+        "text": "GPT Image 2.5 Flare",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/models/gpt-image-2-5-flare"
+  },
+  {
+    "href": "/examples/grok",
+    "uses": [
+      {
+        "href": "/examples/grok",
+        "text": "Grok Imagine Video",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/examples/grok"
+  },
+  {
+    "href": "/examples/pika",
+    "uses": [
+      {
+        "href": "/examples/pika",
+        "text": "Pika",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/examples/pika"
+  },
+  {
+    "href": "/examples/flux",
+    "uses": [
+      {
+        "href": "/examples/flux",
+        "text": "FLUX",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/examples/flux"
+  },
+  {
+    "href": "/ai-video-engines/kling-v4-vs-kling-v4-flash",
+    "uses": [
+      {
+        "href": "/ai-video-engines/kling-v4-vs-kling-v4-flash",
+        "text": "Kling 4.0 vs Kling 4.0 Flash",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/ai-video-engines/kling-v4-vs-kling-v4-flash"
+  },
+  {
+    "href": "/ai-video-engines/kling-v4-vs-wan-3-prime",
+    "uses": [
+      {
+        "href": "/ai-video-engines/kling-v4-vs-wan-3-prime",
+        "text": "Kling 4.0 vs Wan 3 Prime",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/ai-video-engines/kling-v4-vs-wan-3-prime"
+  },
+  {
+    "href": "/ai-video-engines/seedance-2-5-vs-wan-3",
+    "uses": [
+      {
+        "href": "/ai-video-engines/seedance-2-5-vs-wan-3",
+        "text": "Seedance 2.5 vs Wan 3",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/ai-video-engines/seedance-2-5-vs-wan-3"
+  },
+  {
+    "href": "/ai-video-engines/minimax-h3-vs-minimax-h3-max",
+    "uses": [
+      {
+        "href": "/ai-video-engines/minimax-h3-vs-minimax-h3-max",
+        "text": "MiniMax H3 vs H3 Max",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/ai-video-engines/minimax-h3-vs-minimax-h3-max"
+  },
+  {
+    "href": "/ai-video-engines/ltx-2-5-fast-vs-ltx-2-5-pro",
+    "uses": [
+      {
+        "href": "/ai-video-engines/ltx-2-5-fast-vs-ltx-2-5-pro",
+        "text": "LTX 2.5 Fast vs Pro",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/ai-video-engines/ltx-2-5-fast-vs-ltx-2-5-pro"
+  },
+  {
+    "href": "/ai-video-engines/wan-3-vs-wan-3-prime",
+    "uses": [
+      {
+        "href": "/ai-video-engines/wan-3-vs-wan-3-prime",
+        "text": "Wan 3 vs Wan 3 Prime",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/ai-video-engines/wan-3-vs-wan-3-prime"
+  },
+  {
+    "href": "/studio",
+    "uses": [
+      {
+        "href": "/studio",
+        "text": "StudioYour creative workspace with AI.",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/studio"
+  },
+  {
+    "href": "/tools/upscale",
+    "uses": [
+      {
+        "href": "/tools/upscale",
+        "text": "AI Upscale",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/tools/upscale"
+  },
+  {
+    "href": "/openart-alternative",
+    "uses": [
+      {
+        "href": "/openart-alternative",
+        "text": "MaxVideoAI vs OpenArt",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/openart-alternative"
+  },
+  {
+    "href": "/higgsfield-alternative",
+    "uses": [
+      {
+        "href": "/higgsfield-alternative",
+        "text": "MaxVideoAI vs Higgsfield",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/higgsfield-alternative"
+  },
+  {
+    "href": "/tools/product-photo-editor",
+    "uses": [
+      {
+        "href": "/tools/product-photo-editor",
+        "text": "Product Photo Editor",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/tools/product-photo-editor"
+  },
+  {
+    "href": "/tools/subtitles",
+    "uses": [
+      {
+        "href": "/tools/subtitles",
+        "text": "Video subtitles",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/tools/subtitles"
+  },
+  {
+    "href": "/tools/lip-sync",
+    "uses": [
+      {
+        "href": "/tools/lip-sync",
+        "text": "Lip Sync",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/tools/lip-sync"
+  },
+  {
+    "href": "/tools/background-removal",
+    "uses": [
+      {
+        "href": "/tools/background-removal",
+        "text": "Remove a video background",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/tools/background-removal"
+  },
+  {
+    "href": "/tools/product-video-editor",
+    "uses": [
+      {
+        "href": "/tools/product-video-editor",
+        "text": "Product Video Editor",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/tools/product-video-editor"
+  },
+  {
+    "href": "/tools/motion-transfer",
+    "uses": [
+      {
+        "href": "/tools/motion-transfer",
+        "text": "Motion Transfer",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/tools/motion-transfer"
+  }
+]

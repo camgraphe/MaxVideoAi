@@ -144,6 +144,41 @@ account-purge branch remains separate; its evidence is not reused as qualificati
 of this candidate. Public eligibility/privacy and actual review access must be
 reconciled before submission.
 
+## 2026-11-13 — Seedream 5.5 and 5.0 Flash catalog integration (source candidate)
+
+`seedream-5-5` and `seedream-5-0-flash` use the canonical image catalog in MCP
+and Studio, with independent exact-version editorial status and reviewed official
+BytePlus prompting sources. Both expose text-to-image and image-to-image, one
+generated image, up to ten source images, and the direct API's 1K, 1.5K and 2K
+tiers. Studio certification covers the existing request/quote/dispatch adapters;
+it does not establish provider-account access or measured image quality.
+
+New-version edit references retain caller order through canonical slots, saved
+Studio drafts and quote hashes. Existing Lite/Pro canonical request shapes are
+unchanged for recovery. Studio admits ten references for the single-image
+Seedream models, including Pro, instead of the generic eight-reference default.
+An omitted Studio tier uses the authored image-schema default after the existing
+ratio-specific preset mapping. Explicit settings remain authoritative; MCP base
+control defaults retain their existing null projection and caller ownership.
+
+Seedream 5.5 exposes the native background setting. Transparent output requires
+PNG, validated before canonical pricing and app wallet reservation. Layer
+decomposition and OCR are not exposed by this integration. No global instruction,
+tool descriptor, transport schema or paid-approval rule changes are required;
+the existing metadata budgets and curated policy remain applicable.
+
+`tests/seedream-latest-surfaces.test.ts` covers bounded app tier admission, Studio
+image certification, exact model discovery, ten-source limits, transparent-output
+validation, default resolution, ordered saved drafts and composer persistence.
+The initial focused surface/normalization/Studio/details suite passed 71 tests
+without provider calls. `tests/seedream-latest-composer-dom.test.ts` additionally
+executes the real model picker, schema-driven settings controls and image
+submission hook for both versions. It verifies the 2K and encoding defaults,
+5.5 transparent-background selection, ten unchanged sources and one submitted
+output, with only authentication, current-price reads and the outbound API
+replaced by offline fixtures. Deployment, provider-account activation and real-host
+metadata refresh remain separate release checks; no paid generation was launched.
+
 ## 2026-10-22 — Kling V4 canonical owned subjects (offline candidate)
 
 `prepare_generation` now accepts optional ordered `subjects`, scoped by canonical validation to Kling V4 reference/edit modes. Each image/video subject points to existing zero-based `role=reference` slots; every subject reference must be an owned asset. The complete ordered request participates in the existing quote hash and stored confirmation snapshot. The seven-subject, three-video-subject envelope rejects overflow, unsupported modes and unknown fields. No arbitrary element URL or provider voice ID is accepted. Voice binding remains unavailable until a server-owned fal issuance/provenance registry can bind owner, provider account, source and returned voice ID.

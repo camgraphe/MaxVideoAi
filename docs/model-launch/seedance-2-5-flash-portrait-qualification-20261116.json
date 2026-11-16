@@ -1,0 +1,109 @@
+{
+  "verifiedOn": "2026-11-16",
+  "scope": "One separately authorized reference-to-video request with a new original Seedream 5.5 text-to-image character and an original Flash ballet video. This exact input combination completed successfully; general portrait acceptance and trusted-output eligibility are not established.",
+  "provider": "byteplus_modelark",
+  "model": "dreamina-seedance-2-5-flash-261115",
+  "mode": "ref2v",
+  "providerJobId": "cgt-20261116203504-xv0wi",
+  "providerStatus": "succeeded",
+  "submittedAt": "2026-11-16T12:34:49.078Z",
+  "completedBy": "2026-11-16T12:37:13.525Z",
+  "request": {
+    "sha256": "e0e1c341bb3cb121ca4c951129b0fbc61efcfb4a24c50e716dc4ef0943e0c464",
+    "planSha256": "1c0487010b54e6c6d2461983fa0cd4e394b1f0863b0d95fffd79e2dc58d393d6",
+    "resolution": "720p",
+    "ratio": "3:4",
+    "duration": 8,
+    "generate_audio": true,
+    "output_format": "mp4",
+    "omni_reference_task_type": "reference",
+    "submissionCount": 1,
+    "automaticRetries": false
+  },
+  "references": {
+    "image": {
+      "role": "reference_image",
+      "sourceModel": "dola-seedream-5-5-261028",
+      "sourceMode": "text-to-image",
+      "sourceReferenceImageCount": 0,
+      "transport": "Exact URL from original provider response",
+      "mimeType": "image/png",
+      "width": 1776,
+      "height": 2368,
+      "bytes": 5456350,
+      "sha256": "cd99b3d1dc90af7fa4867e042475edf4d04e607a83cb4d4801b23df67dd00207",
+      "preflightGetHashVerified": true,
+      "secondaryTransformations": false
+    },
+    "video": {
+      "role": "reference_video",
+      "sourceModel": "dreamina-seedance-2-5-flash-261115",
+      "providerJobId": "cgt-20261116201000-sz7f3",
+      "bytes": 6523215,
+      "sha256": "6f5402f9817f325236b73baedad539e67dd1e7c4c7198e2b4c5c7aa3d2972bc0",
+      "preflightGetHashVerified": true,
+      "secondaryTransformations": false
+    },
+    "audioReferenceCount": 0
+  },
+  "usage": {
+    "totalTokens": 348683,
+    "completionTokens": 348683
+  },
+  "cost": {
+    "basis": "Public LIST multiplied by actual returned completion tokens; not a provider invoice or customer charge",
+    "listUsdPerMillionTokensWithVideoInput": 4.3,
+    "calculatedListUsd": 1.4993369,
+    "reservedListEstimateUsd": 1.8,
+    "providerInvoiceHardCap": false,
+    "actualSupplierInvoiceVerified": false,
+    "pricingSource": "https://ai.byteplus.com/ark/region:ap-southeast-1/docs/model-pricing"
+  },
+  "output": {
+    "mimeType": "video/mp4",
+    "bytes": 5386188,
+    "sha256": "831fa208f0925d32f6607d28abf5a212cabc15d911e49ed5ab3a53781d8585d2",
+    "videoCodec": "h264",
+    "width": 834,
+    "height": 1112,
+    "frameRate": "24/1",
+    "decodedVideoFrames": 193,
+    "videoDurationSec": 8.041667,
+    "audioCodec": "aac",
+    "audioDurationSec": 8.064,
+    "containerDurationSec": 8.064,
+    "independentHashAndDecodeCheck": true
+  },
+  "evidence": {
+    "receiptSha256": "9a89d6de01d688f459119048dec637a061df714df572e717d770e61e3e20963e",
+    "journalSha256": "403d0d877be5c011d15fd2d74c50406e1ad12e0498b94865123a9a108181b44a",
+    "qaReportSha256": "6299b54e7fdd0c497b061836cb108ff8124e018a3cf15fa455a3becd40b1b537",
+    "submissionHttpStatus": 200,
+    "submissionRequestId": "021794832504403c195b830dbec85207d05ecc18a972ce643e27b"
+  },
+  "review": {
+    "method": "Matched original source/result frames every 0.5 seconds, plus full-resolution inspection at 3.5 seconds; no retiming",
+    "observedMovement": "Port de bras, leg extension/arabesque, lowering, turn and arm reopening correspond to the reference sequence.",
+    "observedAppearance": "Target red coat, cream clothing, short dark bob and sunny street retained.",
+    "framingLimitation": "Left fingertips leave the frame near the peak arabesque, also present in the source. Wider framing requested but not fully obtained.",
+    "fullAudioSynchronizationAudited": false,
+    "qualityScoredBenchmarkSample": false,
+    "creativeApproval": "pending_user_review"
+  },
+  "delivery": {
+    "privateImportVerified": true,
+    "marketingPublicationAuthorized": false,
+    "nativeApplicationJobCreated": false,
+    "customerBillingMutated": false,
+    "tariffsChanged": false,
+    "deployed": false
+  },
+  "policyBoundary": {
+    "source": "https://ai.byteplus.com/ark/region:ap-southeast-1/docs/seedance-portrait-asset-guide",
+    "checkedOn": "2026-11-16",
+    "seedream55ExplicitlyListedAsTrusted": false,
+    "trustedOutputMechanismUseProven": false,
+    "generalPortraitAcceptanceEstablished": false,
+    "priorRejectedExternalImageRetriedOrTransformed": false
+  }
+}

@@ -131,3 +131,9 @@ stable React setters. Schema-derived controls/default resets remain in
 `useImageSettingsFields`, and account-scoped reads/debounced lifecycle writes
 remain in `useImageComposerPersistence`. New fields must survive both snapshot
 hydration and the writer; the DOM lifecycle tests exercise that round trip.
+
+`src/server/images/image-generation-normalization.ts` owns schema-based output
+format, quality, background and style normalization, including transparent PNG
+validation. The image execution orchestrator delegates these controls before
+pricing and wallet reservation. Preserve typed errors, engine response identity
+and caller-owned defaults when changing this boundary.

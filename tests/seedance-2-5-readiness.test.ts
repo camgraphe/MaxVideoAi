@@ -63,6 +63,7 @@ test('Seedance 2.5 is the public flagship across every product surface', () => {
     'kling-3-pro',
     'veo-3-1',
     'kling-v4',
+    'seedance-2-5-flash',
   ]);
   assert.deepEqual(model.publication.compare.publishedPairIds, [
     'seedance-2-0',
@@ -72,6 +73,7 @@ test('Seedance 2.5 is the public flagship across every product surface', () => {
     'veo-3-1',
     'wan-3',
     'kling-v4',
+    'seedance-2-5-flash',
   ]);
   assert.equal(model.publication.app.discoveryRank, -3);
   assert.equal(model.publication.app.variantGroup, 'seedance-2-0');
@@ -98,9 +100,10 @@ test('Seedance 2.5 is the public flagship across every product surface', () => {
 test('Seedance publication ranks and reciprocal flagship comparison pairs stay exact', () => {
   const expectedRanks = new Map([
     ['seedance-2-5', 0],
-    ['seedance-2-0', 1],
-    ['seedance-2-0-fast', 2],
-    ['seedance-2-0-mini', 3],
+    ['seedance-2-5-flash', 1],
+    ['seedance-2-0', 2],
+    ['seedance-2-0-fast', 3],
+    ['seedance-2-0-mini', 4],
   ]);
   for (const [modelId, expectedRank] of expectedRanks) {
     assert.equal(getRuntimeModelById(modelId)?.publication.examples.familyRank, expectedRank, modelId);

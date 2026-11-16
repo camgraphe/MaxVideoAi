@@ -1,0 +1,44 @@
+[
+  {
+    "path": "/models/seedream-5-5",
+    "h1": "Seedream 5.5",
+    "heroCount": 1,
+    "scrollWidth": 320,
+    "width": 320
+  },
+  {
+    "path": "/models/seedance-2-5-flash",
+    "h1": "Seedance 2.5 Flash",
+    "heroCount": 1,
+    "scrollWidth": 320,
+    "width": 320
+  },
+  {
+    "path": "/fr/modeles/seedream-5-5",
+    "h1": "Seedream 5.5",
+    "heroCount": 1,
+    "scrollWidth": 320,
+    "width": 320
+  },
+  {
+    "path": "/fr/modeles/seedance-2-5-flash",
+    "h1": "Seedance 2.5 Flash",
+    "heroCount": 1,
+    "scrollWidth": 320,
+    "width": 320
+  },
+  {
+    "path": "/es/modelos/seedream-5-5",
+    "h1": "Seedream 5.5",
+    "heroCount": 1,
+    "scrollWidth": 320,
+    "width": 320
+  },
+  {
+    "path": "/es/modelos/seedance-2-5-flash",
+    "h1": "Seedance 2.5 Flash",
+    "heroCount": 1,
+    "scrollWidth": 320,
+    "width": 320
+  }
+]

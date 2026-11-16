@@ -1,3 +1,4 @@
+import { isNewSeedreamEngineId } from '@/lib/image/seedream-pricing';
 import { isGptImage26EngineId } from '@/lib/image/gptImage26';
 import { gptImage26TariffContexts } from './gpt-image-26-tariff-contexts';
 import { NANO21_ENGINE_ID, NANO21_DEFAULT_MAX_OUTPUT_TOKENS } from '@/lib/nano-banana-2-1';
@@ -56,11 +57,11 @@ type PricingDimension = {
 };
 
 function mediaDimensions(modelId: string, mode: string, durationSec: number): PricingDimension[] {
-  if (['seedance-2-0', 'seedance-2-0-fast', 'seedance-2-0-mini', 'seedance-2-5'].includes(modelId) && mode === 'ref2v') {
+  if (['seedance-2-0', 'seedance-2-0-fast', 'seedance-2-0-mini', 'seedance-2-5', 'seedance-2-5-flash'].includes(modelId) && mode === 'ref2v') {
     return [false, true].map(hasVideoInput => ({ context: { hasVideoInput,
       ...(hasVideoInput ? { inputVideoDurationSec: 2 } : {}) } }));
   }
-  if (['seedance-2-0', 'seedance-2-0-fast', 'seedance-2-0-mini', 'seedance-2-5'].includes(modelId) && ['v2v', 'extend'].includes(mode)) {
+  if (['seedance-2-0', 'seedance-2-0-fast', 'seedance-2-0-mini', 'seedance-2-5', 'seedance-2-5-flash'].includes(modelId) && ['v2v', 'extend'].includes(mode)) {
     return [{ context: { hasVideoInput: true, inputVideoDurationSec: 2 } }];
   }
   if ((modelId === 'wan-3' || modelId === 'wan-3-prime') && ['ref2v', 'v2v', 'extend'].includes(mode)) {
@@ -131,6 +132,17 @@ export function collectSellableManualTariffCoverage(scope: { modelId?: string; m
     for (const modeConfig of entry.modes) {
       const mode = modeConfig.mode;
       if (scope.mode !== undefined && mode !== scope.mode) continue;
+      if (isNewSeedreamEngineId(entry.id)) {
+        if (mode !== 't2i' && mode !== 'i2i') continue;
+        const sourceCounts = mode === 't2i' ? [0] : entry.id === 'seedream-5-5'
+          ? Array.from({ length: 10 }, (_, index) => index + 1) : [1];
+        for (const resolution of ['1K', '1.5K', '2K']) for (const inputImageCount of sourceCounts) {
+          const context: PricingContext = { engine: entry.engine, mode, durationSec: 1, resolution,
+            aspectRatio: '1:1', inputImageCount, referenceImageCount: 0 };
+          scenarios.push(buildManualTariffCoverageScenario(context, `${entry.id}:${mode}:${resolution}:${inputImageCount}`));
+        }
+        continue;
+      }
       if (entry.id === NANO21_ENGINE_ID) {
         for (const context of nano21ManualTariffContexts(entry.engine, mode)) {
           scenarios.push(buildManualTariffCoverageScenario(context, `${entry.id}:${mode}:${context.resolution}`));

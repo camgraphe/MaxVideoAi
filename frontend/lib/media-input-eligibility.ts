@@ -1,5 +1,5 @@
 import type { EngineCaps, EngineInputField, Mode } from '@/types/engines';
-import { resolveEngineMediaFieldConstraint, validateImageAspectRatio, validateMediaFileAgainstConstraint } from '@/lib/media-field-constraints';
+import { resolveEngineMediaFieldConstraint, resolveMediaFieldMinDuration, validateImageAspectRatio, validateMediaFileAgainstConstraint } from '@/lib/media-field-constraints';
 import { getMediaExcerptDurationIssue, getMediaExcerptImportMode, getMediaExcerptLimits, VIDEO_EXCERPT_PREPARATION_LIMITS } from '@/lib/video-excerpt';
 import { isVideoSourceWorkflow } from '@/lib/video-source-workflow';
 import { getImageDimensionViolation, normalizeMinimumImageSide } from '@/lib/image-dimension-constraints';
@@ -57,7 +57,7 @@ export function getMediaInputEligibility({ asset, field, engine, mode, context =
   const constraints = engine ? resolveEngineMediaFieldConstraint({ engine, field }) : {
     maxSizeMB: field.maxSizeMB, acceptedMimeTypes: field.acceptedMimeTypes ?? [], acceptedFileExtensions: field.acceptedFileExtensions ?? [],
   };
-  const minDurationSec = field.minDurationSec ?? excerpt?.minDurationSec;
+  const minDurationSec = resolveMediaFieldMinDuration(field, mode) ?? excerpt?.minDurationSec;
   const maxDuration = field.maxDurationSec ?? excerpt?.maxDurationSec
     ?? (asset.kind === 'audio' ? engine?.inputLimits.audioMaxDurationSec ?? engine?.inputSchema?.constraints?.maxAudioDurationSec
       : asset.kind === 'video' ? engine?.inputLimits.videoMaxDurationSec ?? engine?.inputSchema?.constraints?.maxVideoDurationSec : undefined);

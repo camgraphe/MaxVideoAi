@@ -31,12 +31,17 @@ function validRecord() {
 test('official prompting sources are reviewed, model-scoped, immutable, and free of pricing claims', () => {
   const records = listAgentModelPromptingSourceRecords();
   const sourcesByModel = new Map<string, number>();
+  const addedReviewDates: Record<string, string> = {
+    'byteplus-seedream-5-5-prompting': '2026-11-13',
+    'byteplus-seedream-5-0-flash-prompting': '2026-11-13',
+  };
 
   assert.ok(records.length >= 9);
   for (const record of records) {
     assert.match(record.id, /^[a-z0-9]+(?:-[a-z0-9]+)*$/);
     assert.match(record.url, /^https:\/\//);
-    assert.match(record.reviewedAt, /^2026-(08-28|09-01|09-15|10-22|11-05)$/);
+    if (Object.hasOwn(addedReviewDates, record.id)) assert.equal(record.reviewedAt, addedReviewDates[record.id]);
+    else assert.match(record.reviewedAt, /^2026-(08-28|09-01|09-15|10-22|11-05)$/);
     assert.ok(record.modelIds.length >= 1);
     assert.ok(record.modes.length >= 1);
     assert.ok(Object.isFrozen(record));
@@ -68,6 +73,26 @@ test('official prompting sources are reviewed, model-scoped, immutable, and free
   assert.equal(Object.isFrozen(veo), true);
   assert.equal(Object.isFrozen(veo[0]), true);
   assert.deepEqual(getAgentModelPromptingSources('unknown-model'), []);
+});
+
+test('latest Seedream prompting sources retain their exact version, official guide and reviewed date', () => {
+  for (const [modelId, sourceId, url] of [
+    ['seedream-5-5', 'byteplus-seedream-5-5-prompting', 'https://docs.byteplus.com/en/docs/modelark/seedream-5-5'],
+    ['seedream-5-0-flash', 'byteplus-seedream-5-0-flash-prompting', 'https://docs.byteplus.com/en/docs/ModelArk/seedream-5-0-pro'],
+  ]) {
+    const record = listAgentModelPromptingSourceRecords().find(record => record.id === sourceId);
+    assert.ok(record);
+    assert.deepEqual(record.modelIds, [modelId]);
+    assert.equal(record.url, url);
+    assert.equal(record.provider, 'BytePlus');
+    assert.equal(record.reviewedAt, '2026-11-13');
+    assert.deepEqual(record.modes, ['t2i', 'i2i']);
+    const sources = getAgentModelPromptingSources(modelId);
+    assert.equal(sources.length, 1);
+    assert.equal(sources[0].id, sourceId);
+    assert.equal(sources[0].kind, 'official_provider');
+    assert.ok(Object.isFrozen(sources[0]));
+  }
 });
 
 test('Wan prompting uses the exact frozen Task 1 owner URL, never a distributor URL', () => {

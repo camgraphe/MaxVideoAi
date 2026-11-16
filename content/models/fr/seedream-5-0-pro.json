@@ -5,11 +5,11 @@
     "title": "Seedream 5.0 Pro - génération image professionnelle ByteDance | MaxVideoAI",
     "description": "Créez des images professionnelles, infographies denses, edits visuels et assets 2K avec Seedream 5.0 Pro dans MaxVideoAI."
   },
-  "overview": "Seedream 5.0 Pro est la route image professionnelle ByteDance dans MaxVideoAI. Utilisez-le pour les infographies denses, edits avancés, layouts multilingues, images cinématiques et frames propres avant animation.",
+  "overview": "Seedream 5.0 Pro est le modèle image ByteDance pour les portraits détaillés, scènes de cinéma, campagnes multilingues et infographies denses dans MaxVideoAI. Créez ou retouchez une image 2K, comme visuel final ou comme point de départ d’un projet vidéo distinct.",
   "pricingNotes": "Seedream 5.0 Pro est exposé comme une sortie professionnelle à image unique. MaxVideoAI affiche le devis exact avant génération.",
   "hero": {
     "title": "Seedream 5.0 Pro - production image professionnelle",
-    "intro": "Utilisez Seedream Pro pour les stills détaillés, infographies structurées, edits contrôlés et images 2K prêtes campagne.",
+    "intro": "Créez un portrait détaillé, une rencontre cinématographique ou une infographie avec un ordre de lecture clair. Pro produit une image 2K par requête.",
     "badge": "Texte -> Image · Image -> Image · 2K",
     "ctaPrimary": {
       "label": "Lancer Seedream Pro",
@@ -29,29 +29,38 @@
   "tips": {
     "title": "Notes de production",
     "items": [
-      "Utilisez Pro quand la composition doit gérer hiérarchie, labels, texte ou détails denses.",
-      "Structurez le brief: sujet, layout, hiérarchie visuelle, textes, matières et lumière.",
-      "Utilisez Seedream Lite pour les batches rapides; Pro sort une image professionnelle par requête."
+      "Pour un portrait, décrivez l’expression, le regard et la lumière avant les détails de peau, cheveux et tissu.",
+      "Pour une infographie, définissez l’ordre de lecture et les libellés exacts. Contrôlez les lettres et les informations dans le résultat.",
+      "Pour une retouche, attribuez un rôle à chaque référence et indiquez ce qui reste avant ce qui change.",
+      "Avant l’animation, contrôlez visage et mains, gardez une silhouette lisible et de la place pour le mouvement de caméra."
     ]
   },
   "prompts": [
     {
-      "title": "Infographie ville énergie",
-      "prompt": "Crée une infographie cinématique dense sur un quartier d'énergie propre, carte en couches, labels lisibles, callouts de données, overlays UI en verre, lumière éditoriale premium."
-    },
-    {
-      "title": "Edit campagne",
-      "prompt": "Transforme ces références en visuel de campagne cohérent: préserve la forme produit, fusionne le décor architectural, ajoute un rim light dramatique et garde une typographie propre."
+      "title": "Une histoire de quartier — STAY CURIOUS",
+      "prompt": "A beautifully photographed live-action feature-film still, 16:9 widescreen. A fictional woman around twenty-eight with short dark curls and a textured deep-blue blazer steps out of a tiny neighborhood bakery, holding the door naturally for a fictional man around thirty-two in a charcoal jacket. They are caught in an unposed shared laugh as they begin to walk down the street, both faces clearly readable and full of character. Her hair and jacket move in a light breeze. Warm light from the bakery's open doorway and ovens spills onto their faces, contrasted with the cool blue-hour city outside. Three small adult pedestrians add life farther down the sidewalk. Behind the two main characters, an elegant physically painted street advertising panel reads exactly \"STAY CURIOUS\" in two large cream lines on a rich burgundy background. The letters are part of the real location and remain crisp and readable. Fine skin texture, individual hair strands, tactile wool and linen, delicate bakery steam and believable natural hands. Composition at waist-level with a 35mm cinema lens, foreground depth, subtly glowing practical lights, restrained grain and rich cinematic color separation. The people are the clear focus; the frame feels like the beginning of a human story and has breathing room for a future tracking shot. A premium film scene, not a posed fashion shoot or a product still life. One coherent photographic image, no collage, border or graphic title overlay."
     }
   ],
   "faqs": [
     {
-      "q": "Quelle différence entre Seedream 5.0 Pro et Lite ?",
-      "a": "Utilisez Pro pour les finales professionnelles, infographies denses, edits complexes et stills 2K. Utilisez Lite pour les sets rapides et la préparation de références."
+      "q": "Quelle différence entre Seedream 5.0 Pro, Lite, Flash et 5.5 ?",
+      "a": "Pro produit une image 2K pour les portraits détaillés, campagnes et infographies. Lite propose des séries ; Flash est la variante rapide de la famille 5.0 ; 5.5 ajoute une option de PNG transparent à son workflow de création et de retouche."
     },
     {
-      "q": "Seedream 5.0 Pro supporte-t-il les batches ?",
-      "a": "Non. MaxVideoAI expose Seedream 5.0 Pro comme une image générée par requête, conformément à la route provider directe."
+      "q": "Peut-on utiliser plusieurs images de référence ?",
+      "a": "Oui. Jusqu’à 10 références guident une seule image générée. Attribuez un rôle à chacune : personne, tenue, lieu ou style visuel."
+    },
+    {
+      "q": "Pro peut-il créer du texte et des infographies ?",
+      "a": "Vous pouvez demander un texte exact, des libellés multilingues et une mise en page claire. Relisez chaque lettre et vérifiez les informations avant publication."
+    },
+    {
+      "q": "Pro peut-il générer une série en une requête ?",
+      "a": "MaxVideoAI renvoie une image 2K par requête, en JPEG ou PNG. Choisissez Seedream 5.0 Lite pour des séries d’images liées."
+    },
+    {
+      "q": "Comment préparer une image pour l’animation ?",
+      "a": "Choisissez une pose lisible, un visage et des mains clairs, avec de l’espace autour du sujet. Enregistrez l’image et préparez le mouvement dans un modèle vidéo distinct, avec ses propres réglages et son devis."
     }
   ],
   "decision": {
@@ -63,7 +72,7 @@
       "subtitleHighlights": [
         "Composez l’image, soignez chaque détail"
       ],
-      "paragraph": "Seedream 5.0 Pro génère et retouche des images IA pour vos infographies, compositions multilingues et visuels de campagne. Créez une image en 2K ou préparez une référence à animer avec un modèle vidéo.",
+      "paragraph": "Construisez un portrait autour d’une expression, une campagne autour d’un personnage ou une infographie autour d’une hiérarchie claire. Seedream 5.0 Pro crée et retouche une image fixe 2K, avec 10 références maximum pour guider personnages, matières et composition.",
       "primaryCta": {
         "label": "Lancer Seedream Pro",
         "href": "/app/image?engine=seedream-5-0-pro"
@@ -92,42 +101,42 @@
       ]
     },
     "media": {
-      "caption": "Seedream 5.0 Pro exemple",
-      "description": "Utilisez Seedream Pro pour les stills détaillés, infographies structurées, edits contrôlés et images 2K prêtes campagne.",
-      "renderLabel": "Voir l’image",
+      "caption": "STAY CURIOUS — généré avec Seedream 5.0 Pro",
+      "description": "Deux personnages partagent un rire à l’heure bleue : expressions naturelles, vêtements texturés et lumière chaude qui déborde dans la rue. Ouvrez ci-dessous l’image originale 2K et son prompt.",
+      "renderLabel": "Voir l’exemple original",
       "badges": [
-        "Texte -> Image",
-        "Image -> Image",
-        "2K"
+        "Texte → Image",
+        "2K",
+        "16:9"
       ],
-      "altContext": "Seedream 5.0 Pro - production image professionnelle"
+      "altContext": "STAY CURIOUS — expressions et lumière de cinéma"
     },
     "features": [
       {
-        "title": "Capacités",
-        "body": "Seedream 5.0 Pro est la route image professionnelle ByteDance dans MaxVideoAI. Utilisez-le pour les infographies denses, edits avancés, layouts multilingues, images cinématiques et frames propres avant animation.",
+        "title": "Le détail humain",
+        "body": "Construisez un portrait avec une texture de peau naturelle, des cheveux distincts et des vêtements tangibles. Une expression discrète et un regard précis donnent une intention au personnage.",
         "tone": "quality"
       },
       {
-        "title": "Workflow",
-        "body": "Utilisez Seedream Pro pour les stills détaillés, infographies structurées, edits contrôlés et images 2K prêtes campagne.",
+        "title": "Un texte avec un ordre de lecture",
+        "body": "Définissez le titre, les libellés et leur placement. Utilisez Pro pour une campagne multilingue ou une infographie détaillée, puis relisez le texte dans l’image générée.",
+        "tone": "quality"
+      },
+      {
+        "title": "Des retouches guidées",
+        "body": "Attribuez 10 références maximum au sujet, à la tenue, au fond ou au style. Nommez les détails à préserver avant de décrire le changement.",
         "tone": "reference"
       },
       {
-        "title": "Sortie",
-        "body": "Texte -> Image · Image -> Image · 2K",
-        "tone": "duration"
-      },
-      {
-        "title": "Prix en direct",
-        "body": "Seedream 5.0 Pro est exposé comme une sortie professionnelle à image unique. MaxVideoAI affiche le devis exact avant génération.",
-        "tone": "price"
+        "title": "Une image détaillée en 2K",
+        "body": "Créez une seule image en JPEG ou PNG. Enregistrez le visuel retenu pour la livraison ou comme source d’une génération vidéo distincte.",
+        "tone": "quality"
       }
     ],
     "decisionCards": [
       {
         "title": "Ouvrir Seedream Lite",
-        "body": "Seedream 5.0 Pro est la route image professionnelle ByteDance dans MaxVideoAI. Utilisez-le pour les infographies denses, edits avancés, layouts multilingues, images cinématiques et frames propres avant animation.",
+        "body": "Explorez en série des images de personnage, produit ou storyboard avant de retenir les plans à développer.",
         "cta": {
           "label": "Ouvrir Seedream Lite",
           "href": "/fr/modeles/seedream"
@@ -135,7 +144,7 @@
       },
       {
         "title": "Animer avec Seedance 2.0",
-        "body": "Utilisez Seedream Pro pour les stills détaillés, infographies structurées, edits contrôlés et images 2K prêtes campagne.",
+        "body": "Enregistrez une image avec visage, mains et silhouette lisibles. Ouvrez Seedance pour un brief de mouvement et un devis distincts.",
         "cta": {
           "label": "Animer avec Seedance 2.0",
           "href": "/fr/modeles/seedance-2-0"
@@ -143,35 +152,51 @@
       },
       {
         "title": "Besoin d’exemples de prompts ?",
-        "body": "Ouvrez le Prompt Lab pour partir d’une structure claire.",
+        "body": "Partez d’un sujet, d’une expression et d’une hiérarchie clairs. Utilisez les exemples de prompts pour construire le brief.",
         "cta": {
           "label": "Exemples de prompts",
           "href": "#prompting"
+        }
+      },
+      {
+        "title": "Découvrir Seedream 5.5",
+        "body": "Affinez une scène par des retouches guidées ou créez un élément PNG transparent. Une image par requête.",
+        "cta": {
+          "label": "Découvrir Seedream 5.5",
+          "href": "/fr/modeles/seedream-5-5"
+        }
+      },
+      {
+        "title": "Découvrir Seedream 5.0 Flash",
+        "body": "Explorez cadrages, expressions et idées de campagne, une image à la fois, en 1K, 1.5K ou 2K.",
+        "cta": {
+          "label": "Découvrir Seedream 5.0 Flash",
+          "href": "/fr/modeles/seedream-5-0-flash"
         }
       }
     ],
     "referenceWorkflows": [
       {
-        "title": "Text-to-image",
-        "body": "Utilisez Seedream Pro pour les stills détaillés, infographies structurées, edits contrôlés et images 2K prêtes campagne."
+        "title": "Diriger le portrait",
+        "body": "Choisissez l’expression, le regard et la distance de caméra. Décrivez la lumière et quelques détails physiques : mèches, maille ou texture de peau."
       },
       {
-        "title": "Image-to-image",
-        "body": "Seedream 5.0 Pro est la route image professionnelle ByteDance dans MaxVideoAI. Utilisez-le pour les infographies denses, edits avancés, layouts multilingues, images cinématiques et frames propres avant animation."
+        "title": "Structurer la campagne",
+        "body": "Donnez au personnage, au produit et au texte des places claires. Mettez les mots exacts entre guillemets et définissez un ordre de lecture simple."
       },
       {
-        "title": "Réglages de sortie",
-        "body": "Texte -> Image · Image -> Image · 2K"
+        "title": "Cibler la retouche",
+        "body": "Identifiez les références et les détails à préserver. Demandez une modification ciblée, puis comparez visage, mains, matières et lettres à la source retenue."
       },
       {
-        "title": "Vérification du prix",
-        "body": "Seedream 5.0 Pro est exposé comme une sortie professionnelle à image unique. MaxVideoAI affiche le devis exact avant génération."
+        "title": "Préparer la première image",
+        "body": "Gardez le sujet loin des bords et laissez de la place pour le mouvement prévu. Exportez l’image 2K, puis choisissez un modèle vidéo pour l’animer."
       }
     ],
     "pricingCopy": {
       "title": "Seedream 5.0 Pro tarifs en bref",
-      "subtitle": "Seedream 5.0 Pro est exposé comme une sortie professionnelle à image unique. MaxVideoAI affiche le devis exact avant génération.",
-      "footnote": "Seedream 5.0 Pro est exposé comme une sortie professionnelle à image unique. MaxVideoAI affiche le devis exact avant génération.",
+      "subtitle": "Une image 2K par requête. Consultez le devis actuel dans l’espace image avant de générer.",
+      "footnote": "Le devis affiché pour vos réglages est le prix à vérifier avant confirmation.",
       "ctaLabel": "Voir tous les tarifs",
       "ctaHref": "/fr/tarifs#seedream-5-0-pro-pricing"
     },
@@ -183,49 +208,33 @@
   "prompting": {
     "modelSlug": "seedream-5-0-pro",
     "section": {
-      "title": "How to prompt Seedream Pro",
-      "intro": "Write it like an art-director brief: visual goal, composition, hierarchy, copy/text constraints, materials, and lighting.",
-      "tip": null,
+      "title": "Comment rédiger un prompt pour Seedream Pro",
+      "intro": "Rédigez un brief avec un sujet et une intention clairs. Pour des personnes, commencez par l’expression et l’action ; pour une mise en page, par l’ordre de lecture. Ajoutez ensuite caméra, lumière, matières et texte exact.",
+      "tip": "Pour les retouches, séparez les consignes « préserver » et « changer ». Contrôlez visages, mains et texte avant de valider l’image suivante.",
       "guide": null,
       "referencesTitle": "Comment Seedream 5.0 Pro utilise les références"
     },
     "tabs": [],
     "tabNotes": [],
-    "globalPrinciples": [],
+    "globalPrinciples": [
+      "Donnez à chaque personne une expression, un regard et une place dans le cadre.",
+      "Décrivez la lumière physique et les matières plutôt qu’une longue liste d’adjectifs de qualité.",
+      "Pour le texte, précisez mots exacts, hiérarchie et placement, puis relisez les lettres générées.",
+      "Laissez de l’espace autour du sujet si l’image doit devenir la première image d’une vidéo."
+    ],
     "engineWhy": [],
     "demo": null,
     "imageExamples": {
       "title": "Prompts image Seedream 5.0 Pro",
-      "intro": "Exemples adaptés aux stills campagne, typographie, retouches et finales 2K.",
+      "intro": "Prompt original en anglais pour une scène de cinéma à deux, avec du texte peint dans le décor. Adaptez les personnages et le lieu à votre projet.",
       "workspaceLabel": "Ouvrir l’espace image",
       "items": [
         {
-          "id": "quality-1",
-          "title": "Visuel campagne",
-          "badge": "2K still",
-          "kind": "quality",
-          "prompt": "Still campagne 2K pour une bouteille de parfum ambrée sur acrylique blanc, lumière studio douce, ombre propre, headline exact \"AURA NOIRE\" en haut à gauche, logo discret en bas."
-        },
-        {
-          "id": "typography-2",
-          "title": "Poster typographique",
-          "badge": "Typographie",
-          "kind": "typography",
-          "prompt": "Poster vertical 2K, grille éditoriale premium, fond graphite, grand titre exact \"MIDNIGHT LAUNCH\", sous-titre \"LIMITED DROP\", hiérarchie nette, marges généreuses, texte lisible."
-        },
-        {
-          "id": "edit-3",
-          "title": "Retouche référence",
-          "badge": "Image-to-image",
-          "kind": "edit",
-          "prompt": "À partir de cette référence produit, garder la forme, le logo et les proportions. Changer le décor en studio bleu nuit, améliorer les reflets, retirer poussières et traces."
-        },
-        {
-          "id": "layout-4",
-          "title": "Final 2K",
-          "badge": "Final 2K",
-          "kind": "layout",
-          "prompt": "Affiner la composition validée en 2K pour la livraison finale, détails plus nets, typographie identique, mêmes couleurs de marque, conserver cadrage et placement du produit."
+          "id": "pro-stay-curious",
+          "title": "Une histoire de quartier — STAY CURIOUS",
+          "badge": "Texte → Image",
+          "kind": "image",
+          "prompt": "A beautifully photographed live-action feature-film still, 16:9 widescreen. A fictional woman around twenty-eight with short dark curls and a textured deep-blue blazer steps out of a tiny neighborhood bakery, holding the door naturally for a fictional man around thirty-two in a charcoal jacket. They are caught in an unposed shared laugh as they begin to walk down the street, both faces clearly readable and full of character. Her hair and jacket move in a light breeze. Warm light from the bakery's open doorway and ovens spills onto their faces, contrasted with the cool blue-hour city outside. Three small adult pedestrians add life farther down the sidewalk. Behind the two main characters, an elegant physically painted street advertising panel reads exactly \"STAY CURIOUS\" in two large cream lines on a rich burgundy background. The letters are part of the real location and remain crisp and readable. Fine skin texture, individual hair strands, tactile wool and linen, delicate bakery steam and believable natural hands. Composition at waist-level with a 35mm cinema lens, foreground depth, subtly glowing practical lights, restrained grain and rich cinematic color separation. The people are the clear focus; the frame feels like the beginning of a human story and has breathing room for a future tracking shot. A premium film scene, not a posed fashion shoot or a product still life. One coherent photographic image, no collage, border or graphic title overlay."
         }
       ]
     }
@@ -233,10 +242,12 @@
   "examples": {
     "modelSlug": "seedream-5-0-pro",
     "section": {
-      "title": "Exemples Seedream 5.0 Pro",
-      "intro": "Explorez des rendus de la communauté et voyez comment Seedream 5.0 Pro se comporte dans des workflows MaxVideoAI.",
+      "title": "Un moment humain, prêt à devenir une première image",
+      "intro": "Cette image originale 2K a été générée avec Seedream 5.0 Pro dans MaxVideoAI. Examinez les expressions, les cheveux, les tissus et la lumière, puis ouvrez l’image pour voir l’original et copier son prompt anglais exact. Cet exemple utilise la génération texte vers image.",
       "defaultCtaLabel": null,
-      "recreateLabel": "Recréer ce rendu →"
+      "recreateLabel": "Créer avec Seedream 5.0 Pro",
+      "afterGallery": "Vérifiez les visages, les mains et le texte en pleine taille. Enregistrez l’original comme première image d’une génération image-vers-vidéo distincte ; décrivez le jeu des personnages et le mouvement de caméra dans votre prompt vidéo.",
+      "videoWorkflowLabel": "Découvrir l’image-vers-vidéo avec Seedance 2.5"
     },
     "filters": [
       {
@@ -258,10 +269,6 @@
       {
         "id": "vertical",
         "label": "Vertical"
-      },
-      {
-        "id": "audio",
-        "label": "Audio activé"
       }
     ],
     "proofItems": [
@@ -279,14 +286,14 @@
       },
       {
         "id": "proof-3",
-        "title": "Audio natif",
-        "body": "Dialogue, ambiance et SFX générés en synchro.",
-        "icon": "audio"
+        "title": "Images JPEG et PNG",
+        "body": "Créez une image fixe en 2K et choisissez le format JPEG ou PNG.",
+        "icon": "image"
       },
       {
         "id": "proof-4",
-        "title": "Continuité multi-plans",
-        "body": "Gardez personnages, style et scène cohérents.",
+        "title": "Composition guidée par les références",
+        "body": "Utilisez 10 références maximum pour guider une image fixe, puis vérifiez les détails à préserver.",
         "icon": "users"
       },
       {
@@ -297,6 +304,102 @@
       }
     ],
     "fallbackItems": null,
-    "showWhenEmpty": false
+    "showWhenEmpty": false,
+    "editorialImages": [
+      {
+        "id": "pro-stay-curious",
+        "title": "STAY CURIOUS — expressions et lumière de cinéma"
+      }
+    ]
+  },
+  "custom": {
+    "heroEyebrow": "Modèle image Seedream 5.0 Pro",
+    "heroSupportLine": "Pour les images détaillées, les compositions denses et la production visuelle en 2K.",
+    "heroSpecChips": [
+      {
+        "label": "Texte → Image",
+        "icon": "textToVideo"
+      },
+      {
+        "label": "Image → Image",
+        "icon": "imageToVideo"
+      },
+      {
+        "label": "2K",
+        "icon": "resolution"
+      },
+      {
+        "label": "Une image par requête"
+      }
+    ],
+    "whyTitle": "Une image détaillée avec une intention claire",
+    "heroDesc1": "Construisez un portrait autour de l’expression, de la lumière et des matières, ou une campagne avec un ordre de lecture précis. Pro produit une seule image en 2K.",
+    "heroDesc2": "Utilisez les références pour définir le sujet et la scène. Vérifiez le résultat avant la livraison ou son utilisation comme première image dans un modèle vidéo.",
+    "heroHighlights": [
+      "Des portraits expressifs||Décrivez le regard, l’expression et les matières qui rendent le personnage lisible.",
+      "Campagnes et infographies||Définissez le texte exact et sa hiérarchie, puis relisez les lettres générées.",
+      "Des images sources en 2K||Enregistrez un JPEG ou un PNG pour la livraison ou une génération vidéo distincte."
+    ],
+    "specSections": [
+      {
+        "title": "Réglages de Seedream Pro",
+        "items": [
+          "Créez ou retouchez une image détaillée avec Seedream 5.0 Pro.",
+          "Résolution : 2K.",
+          "Modes : texte vers image et image vers image.",
+          "Jusqu’à 10 images de référence.",
+          "La génération en série n’est pas disponible avec Pro."
+        ]
+      }
+    ],
+    "strengths": [
+      "Construisez des portraits détaillés grâce à l’expression, à la lumière physique et aux matières.",
+      "Définissez un ordre de lecture clair pour les campagnes et les infographies.",
+      "Attribuez un rôle à chaque référence et distinguez les éléments à préserver de ceux à modifier."
+    ],
+    "boundaries": [
+      "Images fixes uniquement.",
+      "Une image générée par requête.",
+      "Utilisez Seedream Lite pour créer des séries d’images.",
+      "Seedance évalue chaque image avant la génération vidéo."
+    ],
+    "relatedTitle": "La famille Seedream",
+    "relatedSubtitle": "Choisissez Lite pour les séries, Flash pour explorer ou 5.5 pour les éléments PNG transparents.",
+    "relatedItems": [
+      {
+        "brand": "ByteDance",
+        "title": "Seedream 5.0 Lite",
+        "modelSlug": "seedream",
+        "description": "Explorez en série des images de personnage, produit ou storyboard avant de retenir les plans à développer.",
+        "ctaLabel": "Découvrir Seedream 5.0 Lite"
+      },
+      {
+        "brand": "ByteDance",
+        "title": "Seedance 2.0",
+        "modelSlug": "seedance-2-0",
+        "description": "Animez l’image Seedream retenue une fois son cadrage et ses détails validés.",
+        "ctaLabel": "Ouvrir Seedance 2.0"
+      },
+      {
+        "brand": "ByteDance",
+        "title": "Seedream 5.5",
+        "modelSlug": "seedream-5-5",
+        "description": "Refine a scene with reference-guided edits, or create a transparent PNG asset. One image per request.",
+        "ctaLabel": "Discover Seedream 5.5"
+      },
+      {
+        "brand": "ByteDance",
+        "title": "Seedream 5.0 Flash",
+        "modelSlug": "seedream-5-0-flash",
+        "description": "Explorez cadrages, expressions et idées de campagne, une image à la fois, en 1K, 1.5K ou 2K.",
+        "ctaLabel": "Découvrir Seedream 5.0 Flash"
+      }
+    ],
+    "safetyTitle": "Créer des images de façon responsable",
+    "safetyRules": [
+      "Utilisez des images que vous avez le droit de retoucher.",
+      "Respectez le consentement et les droits des personnes représentées.",
+      "Les règles de sécurité du fournisseur s’appliquent aux prompts et aux références."
+    ]
   }
 }

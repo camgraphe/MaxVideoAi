@@ -42,7 +42,7 @@ test('Studio video discovery retains every executable public transport-neutral t
   const canonical=(await videoCatalog()).filter(e=>e.surface==='video');
   const studio=await createStudioVideoGenerationService(actor,{enabled:true,prepareDependencies:{listPublicEngines:async()=>canonical}}).catalog();
   assert.deepEqual(studio.map(e=>[e.engine.id,e.publicModes]),canonical.map(e=>[e.engine.id,e.publicModes]));
-  assert.equal(studio.reduce((count,entry)=>count+entry.publicModes.length,0),149,'Conversation qualification preserves every published tuple after portable Pika retirement.');
+  assert.equal(studio.reduce((count,entry)=>count+entry.publicModes.length,0),154,'Conversation qualification preserves every published tuple after Pika retirement and Flash addition.');
   assert.equal(studio.some(entry=>entry.engine.id==='pika-text-to-video'),false,'Archived Pika cannot regain conversation execution.');
   assert.deepEqual(studio.find(e=>e.engine.id==='kling-v4-flash')!.publicModes,['t2v','i2v','ref2v']);
   assert.deepEqual(studio.find(e=>e.engine.id==='kling-v4')!.publicModes,['t2v','i2v','ref2v','v2v']);

@@ -1,3 +1,4 @@
+import { seedreamListModelForEngine } from '@/lib/image/seedream-pricing';
 import {
   BYTEPLUS_MODELARK_LIST_PRICE_SOURCE,
   getBytePlusVideoListRate,
@@ -134,14 +135,14 @@ export function providerComparisonInputFromScenario(input: {
         settings_snapshot: { core: { resolution: scenario.resolution, aspectRatio: seedance15AspectRatio } },
       })
       : null;
-  const seedream = scenario.engineId === 'seedream' || scenario.engineId === 'seedream-5-0-pro';
+  const seedream = seedreamListModelForEngine(scenario.engineId) !== null;
   const quantity = Number(scenario.input.quantity ?? input.context?.durationSec ?? 1);
   const inputImages = input.context
     ? seedream ? seedreamPricingInputCount(input.context)
       : (input.context.inputImageCount ?? (mode === 'i2i' ? 1 : 0)) + (input.context.referenceImageCount ?? 0)
     : typeof scenario.input.referenceImageCount === 'number' ? scenario.input.referenceImageCount
       : mode === 't2i' ? 0 : undefined;
-  const size = seedream ? resolveSeedreamProviderSize(scenario.resolution ?? '', aspectRatio) : '';
+  const size = seedream ? resolveSeedreamProviderSize(scenario.resolution ?? '', aspectRatio === 'auto' ? '1:1' : aspectRatio, scenario.engineId) : '';
   const dimensions = /^(\d+)x(\d+)$/.exec(size);
   const outputPixels = dimensions && Number.isSafeInteger(quantity) && quantity > 0 && quantity <= 15
     ? Array.from({ length: quantity }, () => Number(dimensions[1]) * Number(dimensions[2])) : undefined;
@@ -237,6 +238,7 @@ const VIDEO_PROFILES = {
   'seedance-2-0-fast': 'fast',
   'seedance-2-0-mini': 'mini',
   'seedance-2-5': 'seedance25',
+  'seedance-2-5-flash': 'seedance25Flash',
 } as const;
 
 function amountUsd(tokens: number, rateUsdPer1kTokens: number): number {
@@ -282,7 +284,7 @@ function listCost(input: ProviderCostComparisonInput, at: string): Pick<Provider
   }
 
   if (input.step === 'normal' && input.engineId !== 'seedance-1-5-pro') {
-    const image = input.engineId === 'seedream' || input.engineId === 'seedream-5-0-pro';
+    const image = seedreamListModelForEngine(input.engineId) !== null;
     const estimate = image || input.tokenEvidence ? bytePlusNormalListCost(input) : null;
     if (estimate) {
       const rate = VIDEO_PROFILES[input.engineId as keyof typeof VIDEO_PROFILES];
@@ -296,13 +298,13 @@ function listCost(input: ProviderCostComparisonInput, at: string): Pick<Provider
     }
   }
 
-  if (input.engineId === 'seedream' || input.engineId === 'seedream-5-0-pro') {
+  if (seedreamListModelForEngine(input.engineId) !== null) {
     if (input.step !== 'normal' || !input.outputPixels?.length || input.inputImages == null) {
       return unavailable('image_usage_unavailable');
     }
     try {
       const estimate = quoteSeedreamListCost({
-        model: input.engineId === 'seedream' ? 'lite' : 'pro',
+        model: seedreamListModelForEngine(input.engineId)!,
         outputPixels: input.outputPixels,
         inputImages: input.inputImages,
       });
@@ -393,7 +395,7 @@ export function buildProviderCostComparisonRows(
         supplierList.rateBreakdown = [{ label: 'Billable video tokens', unit: '1000_tokens',
           quantity: supplierList.amountUsd / rate, unitPriceUsd: rate, amountUsd: supplierList.amountUsd }];
       } else if (supplierList.amountUsd != null && input.outputPixels?.length && input.inputImages != null) {
-        const estimate = quoteSeedreamListCost({ model: input.engineId === 'seedream' ? 'lite' : 'pro',
+        const estimate = quoteSeedreamListCost({ model: seedreamListModelForEngine(input.engineId)!,
           outputPixels: input.outputPixels, inputImages: input.inputImages });
         supplierList.rateBreakdown = [{ label: 'Generated images and reference charges', unit: 'task',
           quantity: 1, unitPriceUsd: estimate.totalUsd, amountUsd: estimate.totalUsd }];

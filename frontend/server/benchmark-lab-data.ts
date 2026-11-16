@@ -26,7 +26,7 @@ export type BenchmarkSpec = {
   engineId?: string;
   sources?: string[];
   provenance?: {
-    basis?: 'maxvideoai-production-route-contract';
+    basis?: 'maxvideoai-production-route-contract' | 'maxvideoai-release-candidate-contract';
     mechanicsSources?: string[];
     note?: string;
   };

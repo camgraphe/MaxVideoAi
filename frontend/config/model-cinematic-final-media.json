@@ -1,0 +1,53 @@
+{
+  "modelSlug": "seedance-2-5-flash",
+  "clips": {
+    "modifySource": {
+      "src": "/assets/model-examples/seedance-2-5-flash/e75d0af05cd80a39d86d73ea07881b6978a689b91b01ef03e2f0c999e3a35dce.mp4",
+      "sha256": "e75d0af05cd80a39d86d73ea07881b6978a689b91b01ef03e2f0c999e3a35dce",
+      "width": 834,
+      "height": 1112,
+      "durationSeconds": 6.041667,
+      "fps": 24,
+      "audio": true,
+      "poster": "/assets/model-examples/seedance-2-5-flash/648ed70f21d14d2bca9ab588af4ede07915881624a3f802bac4bca5b17104658.webp",
+      "posterFrameSeconds": 1.5,
+      "posterSha256": "648ed70f21d14d2bca9ab588af4ede07915881624a3f802bac4bca5b17104658"
+    },
+    "modifyResult": {
+      "src": "/assets/model-examples/seedance-2-5-flash/5dd41aed3dd9fd83e1dc2a7199dd48b387df51429d3519bb3d2648e66d901751.mp4",
+      "sha256": "5dd41aed3dd9fd83e1dc2a7199dd48b387df51429d3519bb3d2648e66d901751",
+      "width": 834,
+      "height": 1112,
+      "durationSeconds": 5.708333,
+      "fps": 24,
+      "audio": true,
+      "poster": "/assets/model-examples/seedance-2-5-flash/bac882044def6bd6d1a2d29d01345f248286bf0d4cb41ff2a3dd0ca2c5fb3884.webp",
+      "posterFrameSeconds": 1.5,
+      "posterSha256": "bac882044def6bd6d1a2d29d01345f248286bf0d4cb41ff2a3dd0ca2c5fb3884"
+    },
+    "the-blue-hour": {
+      "src": "/assets/model-examples/seedance-2-5-flash/d0412c456fed38be70635d798dbb9ef374038b225c164e9e40f680956450e542.mp4",
+      "sha256": "d0412c456fed38be70635d798dbb9ef374038b225c164e9e40f680956450e542",
+      "width": 1280,
+      "height": 720,
+      "durationSeconds": 18.041667,
+      "fps": 24,
+      "audio": true,
+      "poster": "/assets/model-examples/seedance-2-5-flash/4c391e60d7bef8ed17d48ff838b5482a0c09c6782bc1f822ea008d1551bee1a9.webp",
+      "posterFrameSeconds": 1.4,
+      "posterSha256": "4c391e60d7bef8ed17d48ff838b5482a0c09c6782bc1f822ea008d1551bee1a9"
+    },
+    "where-gravity-ends": {
+      "src": "/assets/model-examples/seedance-2-5-flash/f95a486c71dcf07a8960fdb18852580ca1e20f383e27e912959e17600a93b928.mp4",
+      "sha256": "f95a486c71dcf07a8960fdb18852580ca1e20f383e27e912959e17600a93b928",
+      "width": 1280,
+      "height": 720,
+      "durationSeconds": 8.041667,
+      "fps": 24,
+      "audio": true,
+      "poster": "/assets/model-examples/seedance-2-5-flash/e03a2575cd91f10e48ea7837711eec79f950bebfad5c2f9fd41434a13a27ceb0.webp",
+      "posterFrameSeconds": 5.5,
+      "posterSha256": "e03a2575cd91f10e48ea7837711eec79f950bebfad5c2f9fd41434a13a27ceb0"
+    }
+  }
+}

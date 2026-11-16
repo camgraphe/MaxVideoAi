@@ -7,6 +7,7 @@ Reviewed 2026-10-30. Settings restoration and current pricing are separate conce
 | Entry | Source of settings | Owner |
 | --- | --- | --- |
 | Marketing model/workflow link | Explicit engine, mode, operation and optional media identity | `workspace-hydration.ts`, `useWorkspaceEngineModeState.ts` |
+| Editorial video prompt (`videoPrompt`) | Allowlisted concept direction, without source media or a historical price | `video/editorial-presets.ts`, `useVideoEditorialPreset.ts` |
 | Personal Gallery Rail card | Complete recorded job snapshot when present, then authenticated job detail | `workspace-render-groups.ts`, `useWorkspaceGalleryActions.ts`, `useWorkspaceVideoSettings.ts` |
 | Curated Gallery Rail card | Lightweight mode/operation metadata, then the selected public recipe from `/api/videos/:id` | Curated feed projections and the same gallery/settings hooks |
 | Public example/watch link (`from`) | Public recreation snapshot, authored keyframe recipe, or measured metadata fallback | `workspace-shared-video-snapshot.ts`, `useWorkspaceVideoSettings.ts` |
@@ -92,6 +93,25 @@ Marketing publications retain `operation` when copied. For earlier copies that
 omitted it, the public reader can recover only a validated enum from matching
 private engine/mode provenance. It exposes no private references and writes no
 database rows. See [marketing media](marketing-media.md).
+
+## Editorial concept prompts (2026-11-16)
+
+The cinematic Flash page passes a bounded `videoPrompt` example ID, engine and
+workflow mode, rather than arbitrary prompt text in the URL. Its lazily loaded
+resolver reads the authored English direction and builds a video settings snapshot
+with empty references. Draft/account hydration and requested workflow selection
+finish before applying that snapshot through the existing video-settings owner;
+pricing and generation wait until this handoff settles. Existing job, public
+recipe, tool and login-draft handoffs take precedence. Successful application
+consumes `videoPrompt`; guest continuation also strips it so it cannot overwrite
+the edited draft after sign-in.
+
+These still-image concepts are not rendered video recipes. The user supplies the
+first frame, references or source clip and reviews the new quote in Create.
+`assistant=milo&refine=example` opens the existing prompt assistant with the same
+direction; it does not send a chat message or start generation automatically.
+`tests/video-editorial-presets.test.ts` covers the allowlist, actual settings
+resolution, hydration, mode matching, precedence and single application.
 
 ## Price ownership
 

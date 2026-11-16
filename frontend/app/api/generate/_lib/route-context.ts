@@ -1,3 +1,4 @@
+import { isSeedance25EngineId } from '@/lib/seedance-model-variants';
 import { resolveVideoOperationEngine } from '@/lib/video-operation';
 import { isArchivedGenerationModel } from '@/lib/model-generation-policy';
 import { isKlingV4ReleaseBlocked } from '@/server/video-generation/kling-v4-release-policy';
@@ -367,7 +368,7 @@ export async function resolveGenerateRouteContext(params: {
     }
   }
 
-  if (engine.id === 'seedance-2-5' && mode === 'v2v'
+  if (isSeedance25EngineId(engine.id) && mode === 'v2v'
     && body.payment && typeof body.payment === 'object'
     && 'mode' in body.payment && body.payment.mode !== undefined && body.payment.mode !== 'wallet') {
     return { ok: false, status: 400, body: { ok: false, error: 'BYTEPLUS_LAS_WALLET_REQUIRED',

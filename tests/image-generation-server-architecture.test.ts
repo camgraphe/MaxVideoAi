@@ -171,6 +171,9 @@ test('image generation executor does not regain extracted server ownership', () 
   assert.doesNotMatch(executorSource, /ValidationError/, 'provider validation error parsing belongs in image-generation-failure.ts');
   assert.doesNotMatch(executorSource, /status = 'failed'/, 'failed job update belongs in image-generation-failure.ts');
   assert.doesNotMatch(executorSource, /referenceImageHosts/, 'failed provider log metadata belongs in image-generation-failure.ts');
+  assert.match(executorSource, /resolveImageGenerationOutputSettings\(\{/);
+  assert.doesNotMatch(executorSource, /const (?:outputFormatSetting|qualitySetting|backgroundSetting|styleSetting) =/,
+    'image output enum and transparency validation belongs in image-generation-normalization.ts');
 
   const lineCount = executorSource.split('\n').length;
   // One additional argument forwards private pricing evidence to the existing persistence owner.
@@ -291,6 +294,7 @@ test('existing image job response module exposes the expected contract', () => {
 });
 
 test('Luma image style stays wired from workspace request to direct payload', () => {
+  const normalizationSource = readFileSync(join(root, 'frontend/src/server/images/image-generation-normalization.ts'), 'utf8');
   assert.match(imageGenerationTypesSource, /style\?: string/);
   const valuesSource = readFileSync(join(root, 'frontend/app/(core)/(workspace)/app/image/_hooks/useImageComposerValues.ts'), 'utf8');
   assert.match(valuesSource, /const \[style, setStyle\] = useState<string \| null>\(null\)/);
@@ -300,8 +304,9 @@ test('Luma image style stays wired from workspace request to direct payload', ()
   assert.match(imageWorkspaceSource, /hasStyleField: Boolean\(styleField\)/);
   assert.match(imageGenerationRunnerSource, /hasStyleField: boolean/);
   assert.match(imageGenerationRunnerSource, /style: hasStyleField \? style \?\? undefined : undefined/);
-  assert.match(executorSource, /getImageFieldValues\(engine, 'style', mode\)/);
-  assert.match(executorSource, /body\.style/);
+  assert.match(executorSource, /const \{ outputFormat, quality, background, style \} = resolveImageGenerationOutputSettings\(\{/);
+  assert.match(normalizationSource, /const style = readEnum\('style', body\.style/);
+  assert.match(normalizationSource, /resolveImageEnumSetting\(getImageFieldValues\(engine, fieldId, mode\), input\)/);
   assert.match(executorSource, /\.\.\.\(style \? \{ style \} : \{\}\)/);
   assert.match(executorSource, /style, engine, engineEntry/);
   assert.match(settingsSnapshotSource, /style: args\.style/);

@@ -1,7 +1,7 @@
 import { query, type QueryExecutor } from '@/lib/db';
 import type { MarketingMediaFile, MarketingMediaItem } from '@/lib/marketing-media';
 import { imageThumbFallbackSelect, PUBLIC_VIDEO_SOURCE_ELIGIBILITY } from '@/server/videos-query';
-import { MARKETING_PUBLICATION_IMPORT_SCHEMA, record, type MarketingSource } from './snapshot';
+import { BYTEPLUS_MARKETING_SCHEMA, MARKETING_PUBLICATION_IMPORT_SCHEMA, record, type MarketingSource } from './snapshot';
 
 export type MarketingRow = {
   video_id: string;
@@ -56,7 +56,8 @@ export function marketingItem(row: MarketingRow): MarketingMediaItem {
   const source = record(row.source_record?.job);
   return {
     videoId: row.video_id,
-    sourceKind: record(row.source_record).schemaVersion === MARKETING_PUBLICATION_IMPORT_SCHEMA ? 'import' : 'job',
+    sourceKind: record(row.source_record).schemaVersion === BYTEPLUS_MARKETING_SCHEMA ? 'byteplus'
+      : record(row.source_record).schemaVersion === MARKETING_PUBLICATION_IMPORT_SCHEMA ? 'import' : 'job',
     state: row.state,
     visibility: publication.visibility === 'public' ? 'public' : 'private',
     prompt: String(publication.prompt ?? source.prompt ?? ''),

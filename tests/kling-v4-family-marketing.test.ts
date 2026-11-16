@@ -44,7 +44,7 @@ test('PAYG selects Kling V4 copy only when the pricing owner supplies a row and 
     assert.equal(data.modelTesting.items.find((item) => item.id === 'kling-v4')?.body, content.modelTesting.models['kling-v4'].body);
     assert.equal(data.priceLookups.items.find((item) => item.id === 'kling-v4')?.price, '$9.87');
     assert.equal(data.exampleCosts.items.find((item) => item.id === 'kling-v4')?.price, '$9.87');
-    assert.ok(data.exampleCosts.items.length <= 6);
+    assert.ok(data.exampleCosts.items.length <= 7);
   }
 });
 
@@ -106,9 +106,9 @@ test('all family onward links preserve authored order, including reversed pairs,
   const historicalCandidates = {
     ltx: ['ltx-2-5-fast-vs-ltx-2-5-pro', 'ltx-2-5-pro-vs-seedance-2-5', 'ltx-2-5-pro-vs-veo-3-1', 'ltx-2-3-fast-vs-ltx-2-3-pro'],
     kling: ['kling-v4-vs-seedance-2-5', 'kling-v4-vs-wan-3-prime', 'kling-3-pro-vs-kling-3-standard', 'kling-3-pro-vs-seedance-2-5', 'kling-3-pro-vs-minimax-h3', 'kling-3-pro-vs-veo-3-1'],
-    seedance: ['kling-v4-vs-seedance-2-5', 'seedance-2-5-vs-minimax-h3', 'seedance-2-5-vs-kling-3-pro', 'seedance-2-0-vs-seedance-2-0-fast', 'seedance-2-5-vs-veo-3-1'],
-    veo: ['gemini-omni-flash-vs-veo-3-1', 'veo-3-1-vs-seedance-2-5', 'veo-3-1-vs-minimax-h3', 'veo-3-1-vs-veo-3-1-fast'],
-    hailuo: ['minimax-h3-vs-minimax-h3-max', 'minimax-h3-vs-veo-3-1', 'minimax-h3-max-vs-seedance-2-5', 'minimax-hailuo-02-text-vs-veo-3-1-fast'],
+    seedance: ['seedance-2-5-vs-seedance-2-5-flash', 'kling-v4-vs-seedance-2-5', 'seedance-2-5-vs-minimax-h3', 'seedance-2-5-vs-kling-3-pro', 'seedance-2-0-vs-seedance-2-0-fast', 'seedance-2-5-vs-veo-3-1'],
+    veo: ['seedance-2-5-flash-vs-veo-3-1-fast', 'gemini-omni-flash-vs-veo-3-1', 'veo-3-1-vs-seedance-2-5', 'veo-3-1-vs-minimax-h3', 'veo-3-1-vs-veo-3-1-fast'],
+    hailuo: ['minimax-h3-vs-seedance-2-5-flash', 'minimax-h3-vs-minimax-h3-max', 'minimax-h3-vs-veo-3-1', 'minimax-h3-max-vs-seedance-2-5', 'minimax-hailuo-02-text-vs-veo-3-1-fast'],
     wan: ['kling-v4-vs-wan-3-prime', 'wan-3-vs-wan-3-prime', 'wan-3-prime-vs-seedance-2-5', 'wan-3-vs-kling-3-pro'],
   };
   const published = new Set(getPublishedComparisonSlugs());
@@ -116,14 +116,14 @@ test('all family onward links preserve authored order, including reversed pairs,
     const expected = candidates.filter((slug) => {
       const [left, right] = slug.split('-vs-');
       return published.has(buildCanonicalCompareSlug(left, right));
-    }).slice(0, 4);
+    }).slice(0, ['seedance', 'veo', 'hailuo'].includes(family) ? 5 : 4);
     const links = buildExamplesNextStepLinks({
       appLocale: locale, locale, pricingPath: '/pricing', familySlug: family,
       isKlingLanding: family === 'kling', isLtxLanding: family === 'ltx',
       isSeedanceLanding: family === 'seedance', isVeoLanding: family === 'veo',
     });
     assert.deepEqual(links.map((link) => link.href.split('/').pop()), expected, `${locale}/${family}`);
-    assert.ok(links.length <= 4);
+    assert.ok(links.length <= (['seedance', 'veo', 'hailuo'].includes(family) ? 5 : 4));
     assert.equal(new Set(links.map((link) => link.href)).size, links.length);
     for (const link of links) assert.deepEqual(link.comparison, link.href.split('/').pop()!.split('-vs-'));
   }

@@ -100,10 +100,10 @@ test('legacy Luma loop selectors are covered without inventing loop for edit mod
   }
 });
 
-test('coverage follows all 53 app-published models in 14 families, including the November launch and pricing-hidden legacy variants', () => {
+test('coverage follows all 56 app-published models in 14 families, including the November launch and pricing-hidden legacy variants', () => {
   const coverage = collectSellableManualTariffCoverage();
   const published = listRuntimeModels().filter((model) => model.publication.app.published);
-  assert.equal(published.length, 53);
+  assert.equal(published.length, 56);
   for (const id of ['kling-v4-flash', 'gpt-image-2-6-flare', 'gpt-image-2-6-sunburst'])
     assert.ok(published.some(model => model.id === id));
   assert.ok(published.some(model => model.id === 'kling-v4'));

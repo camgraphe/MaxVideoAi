@@ -6,6 +6,11 @@ type ModelGuidance = { tag: LocalizedText; reason: LocalizedText; limit: Localiz
 // Editorial interpretation of live model contracts, checked 2026-10-19.
 // These are workflow differences, not measured quality or speed rankings.
 export const MODEL_GUIDANCE: Record<string, ModelGuidance> = {
+  'seedance-2-5-flash': {
+    tag: text('Explore a longer variation', 'Explorer une variante plus longue', 'Explorar una variante más larga'),
+    reason: text('Create 4–30 second scenes at 480p or 720p, with optional generated audio and image, video or audio references. Edit and extension use separate source workflows.', 'Créez des scènes de 4 à 30 secondes en 480p ou 720p, avec son généré facultatif et références image, vidéo ou audio. Modification et extension utilisent des parcours sur source distincts.', 'Crea escenas de 4 a 30 segundos a 480p o 720p, con audio generado opcional y referencias de imagen, vídeo o audio. La edición y extensión utilizan flujos de origen separados.'),
+    limit: text('No 1080p, 4K or native Draft-to-final. Audio references require visual input. Flash has no measured speed or quality ranking here; compare the complete clip and a current quote.', 'Ni 1080p, ni 4K, ni Draft natif vers rendu final. Les références audio demandent une entrée visuelle. Flash n’a pas ici de classement mesuré de vitesse ou de qualité ; comparez le clip entier et un devis actuel.', 'Sin 1080p, 4K ni Draft nativo a resultado final. Las referencias de audio requieren una entrada visual. Flash no tiene aquí una clasificación medida de velocidad o calidad; compara el clip completo y un presupuesto actual.'),
+  },
   // fal V4 contract reviewed 2026-10-22; entry does not select or publish the model.
   'kling-v4': {
     tag: text('Give each shot its own direction', 'Diriger chaque plan', 'Dirigir cada plano'),

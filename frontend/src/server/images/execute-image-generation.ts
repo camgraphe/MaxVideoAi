@@ -37,7 +37,7 @@ import { prepareImageGenerationReferences } from './image-generation-references'
 import { copyGeneratedImagesToStorage } from './image-output-storage';
 import { executeDirectImageProviderIfAvailable } from './image-direct-provider-execution';
 import { assertGoogleVertexImageAvailable } from './google-vertex-image-execution';
-import { normalizeImageGenerationMetadata, normalizeOptionalBoolean, resolveImageEnumSetting } from './image-generation-normalization';
+import { normalizeImageGenerationMetadata, normalizeOptionalBoolean, resolveImageEnumSetting, resolveImageGenerationOutputSettings } from './image-generation-normalization';
 import {
   executeImageProviderWithLumaAgentsDirectFallback,
   lumaAgentsImageDirectEnabled,
@@ -156,54 +156,9 @@ export async function executeImageGeneration({
     getImageInputField(engine, 'seed', mode) && typeof body.seed === 'number' && Number.isFinite(body.seed)
       ? Math.round(body.seed)
       : null;
-  const outputFormatSetting = resolveImageEnumSetting(getImageFieldValues(engine, 'output_format', mode), body.outputFormat);
-  const outputFormat = outputFormatSetting.value;
-  if (outputFormatSetting.invalid) {
-    fail(
-      mode,
-      'output_format_invalid',
-      'Selected output format is not available for this engine.',
-      400,
-      { allowed: outputFormatSetting.allowed },
-      engineResponseExtras
-    );
-  }
-  const qualitySetting = resolveImageEnumSetting(getImageFieldValues(engine, 'quality', mode), body.quality);
-  const quality = qualitySetting.value;
-  if (qualitySetting.invalid) {
-    fail(
-      mode,
-      'quality_invalid',
-      'Selected quality is not available for this engine.',
-      400,
-      { allowed: qualitySetting.allowed },
-      engineResponseExtras
-    );
-  }
-  const backgroundSetting = resolveImageEnumSetting(getImageFieldValues(engine, 'background', mode), body.background);
-  const background = backgroundSetting.value;
-  if (backgroundSetting.invalid) {
-    fail(
-      mode,
-      'background_invalid',
-      'Selected background mode is not available for this engine.',
-      400,
-      { allowed: backgroundSetting.allowed },
-      engineResponseExtras
-    );
-  }
-  const styleSetting = resolveImageEnumSetting(getImageFieldValues(engine, 'style', mode), body.style);
-  const style = styleSetting.value;
-  if (styleSetting.invalid) {
-    fail(
-      mode,
-      'style_invalid',
-      'Selected style is not available for this engine.',
-      400,
-      { allowed: styleSetting.allowed },
-      engineResponseExtras
-    );
-  }
+  const { outputFormat, quality, background, style } = resolveImageGenerationOutputSettings({
+    engine, mode, body, extras: engineResponseExtras,
+  });
 
   const maskUrlField = getImageInputField(engine, 'mask_url', mode);
   const maskUrl =
@@ -466,6 +421,7 @@ export async function executeImageGeneration({
         normalizedSeed,
         numImages,
         outputFormat,
+        background: gpt26?.background ?? background,
         pendingReceipt,
         priceOnlyReceipts,
         pricing,

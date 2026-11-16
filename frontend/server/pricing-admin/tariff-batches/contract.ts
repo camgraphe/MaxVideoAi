@@ -5,14 +5,18 @@ export const TARIFF_BATCH_PROTOCOL = 'literal-tariff-batch-v1';
 export const TARIFF_BATCH_MAX_CLASSES = 226;
 export type KlingTariffBatchModelId = 'kling-v4' | 'kling-v4-flash';
 export type GptImageTariffBatchModelId = 'gpt-image-2-6-flare' | 'gpt-image-2-6-sunburst';
-export type TariffBatchModelId = KlingTariffBatchModelId | GptImageTariffBatchModelId;
+export type SeedanceTariffBatchModelId = 'seedance-2-5' | 'seedance-2-5-flash';
+export type TariffBatchModelId = KlingTariffBatchModelId | GptImageTariffBatchModelId | SeedanceTariffBatchModelId;
 /** Keep HTTP admission independent of image schemas, provider adapters and their dependencies. */
 export function isGptImageTariffBatchModelId(value: unknown): value is GptImageTariffBatchModelId {
   return value === 'gpt-image-2-6-flare' || value === 'gpt-image-2-6-sunburst';
 }
+export function isSeedanceTariffBatchModelId(value: unknown): value is SeedanceTariffBatchModelId {
+  return value === 'seedance-2-5' || value === 'seedance-2-5-flash';
+}
 export const TARIFF_BATCH_MAX_BYTES = 2 * 1024 * 1024;
 export const TARIFF_BATCH_TTL_MS = 10 * 60 * 1000;
-export type TariffBatchPrice = Extract<ManualTariffCell['price'], { kind: 'fixed' | 'unit_terms' }>;
+export type TariffBatchPrice = Extract<ManualTariffCell['price'], { kind: 'fixed' | 'unit_terms' | 'unit_components' }>;
 export type TariffBatchProposal = {
   schemaVersion: 1;
   modelId: TariffBatchModelId;

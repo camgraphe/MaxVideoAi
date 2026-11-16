@@ -72,6 +72,24 @@
     "reviewedAt": "2026-08-28"
   },
   {
+    "id": "byteplus-seedream-5-5-prompting",
+    "provider": "BytePlus",
+    "title": "Seedream 5.5 image generation and editing guide",
+    "url": "https://docs.byteplus.com/en/docs/modelark/seedream-5-5",
+    "modelIds": ["seedream-5-5"],
+    "modes": ["t2i", "i2i"],
+    "reviewedAt": "2026-11-13"
+  },
+  {
+    "id": "byteplus-seedream-5-0-flash-prompting",
+    "provider": "BytePlus",
+    "title": "Seedream 5.0 Flash generation and editing guide",
+    "url": "https://docs.byteplus.com/en/docs/ModelArk/seedream-5-0-pro",
+    "modelIds": ["seedream-5-0-flash"],
+    "modes": ["t2i", "i2i"],
+    "reviewedAt": "2026-11-13"
+  },
+  {
     "id": "minimax-video-generation",
     "provider": "MiniMax",
     "title": "MiniMax video generation guide",

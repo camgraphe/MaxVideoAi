@@ -1,3 +1,5 @@
+import { isNewSeedreamEngineId } from '@/lib/image/seedream-pricing';
+import { collectSeedreamPublicProjectionRows } from './pricing-public-baseline-seedream';
 import { isArchivedGenerationModel } from '../lib/model-generation-policy';
 import type { PricingSnapshot } from '@maxvideoai/pricing';
 import {
@@ -182,9 +184,12 @@ export async function collectPublicPricingProjectionRows(): Promise<PublicProjec
   for (const key of DETERMINISTIC_ENV_KEYS) delete process.env[key];
 
   const allEntries = listFalEngines();
-  const entries = allEntries.filter(entry => entry.id !== NANO21_ENGINE_ID);
+  const entries = allEntries.filter(entry => entry.id !== NANO21_ENGINE_ID && !isNewSeedreamEngineId(entry.id));
   const nano = allEntries.find(entry => entry.id === NANO21_ENGINE_ID);
   const rows: PublicProjectionRow[] = nano ? await collectNano21PublicProjectionRows(nano) : [];
+  for (const entry of allEntries.filter(entry => isNewSeedreamEngineId(entry.id))) {
+    rows.push(...await collectSeedreamPublicProjectionRows(entry));
+  }
   const hub = buildPricingHubData('en');
 
   for (const row of hub.video.rows) {

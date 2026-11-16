@@ -524,6 +524,7 @@ test('global surcharge changes expand into engine-specific authoritative coverag
   const upscale = requests.filter((request) => request.kind === 'upscale');
 
   assert.ok(!requests.some((request) => request.selector.engineId === 'kling-v4'), 'global legacy surcharges cannot target an approved-tariff-only model');
+  assert.ok(!requests.some((request) => request.selector.engineId === 'seedance-2-5-flash'), 'Flash stays outside global percentage surcharges');
   assert.ok(audio.length > 1);
   assert.ok(upscale.length > 1);
   assert.ok(requests.every((request) => Boolean(request.selector.engineId)));

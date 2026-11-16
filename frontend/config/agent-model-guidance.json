@@ -332,5 +332,29 @@
       "https://maxvideoai.com/models/kling-v4-flash"
     ],
     "reviewedAt": "2026-11-05"
+  },
+  {
+    "engineId": "seedance-2-5-flash",
+    "strengths": [
+      "4–30 second video scenes at 480p or 720p.",
+      "Text, opening-image and multimodal reference direction, with separate source editing and extension workflows."
+    ],
+    "bestFor": [
+      "social_video",
+      "reference_guided",
+      "multi_shot"
+    ],
+    "considerations": [
+      "Use live model details to select the supported mode and its controls.",
+      "Benchmark scores are provisional editorial estimates from documentation and early external reports, not controlled MaxVideoAI results. No 1080p, 4K or native Draft-to-final workflow.",
+      "Up to 10 image, 5 video and 5 audio references; audio-only references and MP4/MOV output are supported.",
+      "Use the current canonical quote; video inputs affect the billable duration."
+    ],
+    "evidenceUrls": [
+      "https://maxvideoai.com/models/seedance-2-5-flash",
+      "https://maxvideoai.com/benchmarks#review-seedance-2-5-flash",
+      "https://maxvideoai.com/ai-video-engines/seedance-2-5-vs-seedance-2-5-flash"
+    ],
+    "reviewedAt": "2026-11-15"
   }
 ]

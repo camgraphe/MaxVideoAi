@@ -1,4 +1,9 @@
-import type { EngineCaps, EngineInputField } from '@/types/engines';
+import type { EngineCaps, EngineInputField, Mode } from '@/types/engines';
+
+/** A reference slot may have stricter timing in an edit workflow than in Create. */
+export function resolveMediaFieldMinDuration(field: EngineInputField, mode?: Mode): number | undefined {
+  return (mode ? field.minDurationSecByMode?.[mode] : undefined) ?? field.minDurationSec;
+}
 
 export type MediaFieldConstraint = {
   maxSizeMB?: number;

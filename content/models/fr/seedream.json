@@ -71,10 +71,10 @@
   "tips": {
     "title": "Notes de workflow référence",
     "items": [
-      "Utilisez Seedream pour créer des images sources plus propres et contrôlées avant animation.",
-      "Gardez un sujet lisible et évitez les arrière-plans surchargés quand l'image doit passer en image-to-video.",
-      "Pour un produit animé, stabilisez d'abord packaging, reflets et angle héros dans Seedream.",
-      "Seedream peut améliorer la cohérence et réduire les frictions par rapport à des images externes aléatoires, mais Seedance évalue toujours chaque prompt et image source."
+      "Pour une série de personnage, répétez visage, tenue, palette et lumière dans le brief ; vérifiez les écarts dans chaque résultat.",
+      "Construisez un storyboard court autour d’instants distincts, sans demander à chaque image de raconter toute l’histoire.",
+      "Pour une image à animer, gardez mains et accessoires lisibles et de l’espace autour de la silhouette.",
+      "Retenez la meilleure image avant d’ouvrir un modèle vidéo ; préparez mouvement et son dans cette génération distincte."
     ]
   },
   "prompts": [
@@ -221,6 +221,20 @@
         "description": "Utilisez Fast pour des brouillons de mouvement plus rapides après la création d'une image de référence propre dans Seedream.",
         "modelSlug": "seedance-2-0-fast",
         "ctaLabel": "Tester avec Seedance 2.0 Fast ->"
+      },
+      {
+        "brand": "ByteDance",
+        "title": "Seedream 5.5",
+        "modelSlug": "seedream-5-5",
+        "description": "Affinez une scène par des retouches guidées ou créez un élément PNG transparent. Une image par requête.",
+        "ctaLabel": "Découvrir Seedream 5.5"
+      },
+      {
+        "brand": "ByteDance",
+        "title": "Seedream 5.0 Flash",
+        "modelSlug": "seedream-5-0-flash",
+        "description": "Explorez cadrages, expressions et idées de campagne, une image à la fois, en 1K, 1.5K ou 2K.",
+        "ctaLabel": "Découvrir Seedream 5.0 Flash"
       }
     ]
   },
@@ -298,7 +312,7 @@
       },
       {
         "title": "Prix par image",
-        "body": "Les scénarios image utilisent le helper tarifaire partagé, pas une durée vidéo.",
+        "body": "Vérifiez le devis actuel par image avant de générer, avec le total de la série si vous demandez plusieurs images.",
         "tone": "price"
       }
     ],
@@ -326,28 +340,44 @@
           "label": "Parcourir les modèles vidéo",
           "href": "/fr/modeles"
         }
+      },
+      {
+        "title": "Découvrir Seedream 5.5",
+        "body": "Affinez une scène par des retouches guidées ou créez un élément PNG transparent. Une image par requête.",
+        "cta": {
+          "label": "Découvrir Seedream 5.5",
+          "href": "/fr/modeles/seedream-5-5"
+        }
+      },
+      {
+        "title": "Découvrir Seedream 5.0 Flash",
+        "body": "Explorez cadrages, expressions et idées de campagne, une image à la fois, en 1K, 1.5K ou 2K.",
+        "cta": {
+          "label": "Découvrir Seedream 5.0 Flash",
+          "href": "/fr/modeles/seedream-5-0-flash"
+        }
       }
     ],
     "referenceWorkflows": [
       {
-        "title": "Image par prompt",
-        "body": "Décrivez produit, personnage, scène, surface, optique et lumière pour obtenir une source propre."
+        "title": "Définir le personnage",
+        "body": "Décrivez la personne, sa tenue et une action visible. Répétez les règles visuelles essentielles dans le brief des images liées."
       },
       {
-        "title": "Retouche avec référence",
-        "body": "Importez des images quand il faut préserver identité, géométrie produit ou détails de marque."
+        "title": "Retoucher l’image retenue",
+        "body": "Utilisez les références de personne, produit ou lieu. Indiquez ce qui reste et retirez les distractions avant d’ajouter des détails."
       },
       {
-        "title": "Jeu de références",
-        "body": "Créez plusieurs vues : face, profil, détail et contexte avant l’étape vidéo."
+        "title": "Comparer la série",
+        "body": "Contrôlez visages, mains, accessoires et cadrages dans chaque image. Retenez les vues et instants qui servent l’histoire."
       },
       {
-        "title": "Choix de taille",
-        "body": "Utilisez 2K pour préparer vite, 3K pour revoir, ou 4K quand l’image demande plus de détail."
+        "title": "Choisir la taille",
+        "body": "Sélectionnez 2K, 3K ou 4K selon l’usage de l’image. Vérifiez les réglages de sortie et le devis actuel avant génération."
       },
       {
-        "title": "Passage vers vidéo",
-        "body": "N’envoyez que les meilleures images fixes vers le modèle de mouvement choisi."
+        "title": "Préparer l’ouverture vidéo",
+        "body": "Choisissez une pose de départ claire et de la place pour le mouvement de caméra. Enregistrez l’image, puis préparez l’animation dans un modèle vidéo distinct."
       }
     ],
     "pricingCopy": {

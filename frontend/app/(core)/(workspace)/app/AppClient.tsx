@@ -181,7 +181,7 @@ export default function AppClientPage({
     setInputAssets: assets.setInputAssets,
     setForm: routeForm.setForm,
   });
-  const settingsReady = activeDraft.ready && !videoSettings.sharedVideoImportPending && !videoSettings.recallBlocked;
+  const settingsReady = activeDraft.ready && !videoSettings.editorialPromptPending && !videoSettings.sharedVideoImportPending && !videoSettings.recallBlocked;
   const pricing = useWorkspacePricingGate({
     accountId: confirmedAccount,
     accessToken: app.session?.access_token ?? null,

@@ -1,3 +1,4 @@
+import { isSeedance25EngineId } from '@/lib/seedance-model-variants';
 import type { EngineCaps, Mode, PreflightResponse } from '@/types/engines';
 import { getLocalizedModeLabel } from '@/lib/ltx-localization';
 
@@ -6,7 +7,7 @@ export function isEngineModeRuntimeAvailable(engine: EngineCaps, mode: Mode): bo
 }
 
 export function isEngineModeQuoteReady(engine: EngineCaps, mode: Mode, preflight: Pick<PreflightResponse, 'ok'> | null | undefined): boolean {
-  return engine.id !== 'seedance-2-5' || mode !== 'v2v' || preflight?.ok === true;
+  return !isSeedance25EngineId(engine.id) || mode !== 'v2v' || preflight?.ok === true;
 }
 
 export function getEngineModeUnavailableMessage(engine: EngineCaps | null, mode: Mode, locale = 'en'): string | null {

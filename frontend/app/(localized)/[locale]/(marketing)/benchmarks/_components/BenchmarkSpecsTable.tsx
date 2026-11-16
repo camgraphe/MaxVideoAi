@@ -1,6 +1,7 @@
 import { ExternalLink } from 'lucide-react';
 import { UIIcon } from '@/components/ui/UIIcon';
 import type { AppLocale } from '@/i18n/locales';
+import { localizeCapabilityDetail } from '@/lib/marketing/spec-capability-copy';
 import { Link } from '@/i18n/navigation';
 import type { BenchmarkCopy } from '../_lib/benchmark-copy';
 import type { BenchmarkSpecRow } from '../_lib/benchmark-page-data';
@@ -65,8 +66,8 @@ export function BenchmarkSpecsTable({ copy, locale, rows }: BenchmarkSpecsTableP
                     )) : <span className="text-text-muted">—</span>}
                   </div>
                 </td>
-                <td className="max-w-[170px] px-5 py-4 text-sm leading-6 text-text-secondary">{row.audio}</td>
-                <td className="max-w-[190px] px-5 py-4 text-sm leading-6 text-text-secondary">{row.references}</td>
+                <td className="max-w-[170px] px-5 py-4 text-sm leading-6 text-text-secondary">{localizeCapabilityDetail(row.audio, locale) ?? row.audio}</td>
+                <td className="max-w-[190px] px-5 py-4 text-sm leading-6 text-text-secondary">{localizeCapabilityDetail(row.references, locale) ?? row.references}</td>
                 <td className="px-5 py-4">
                   {row.sourceKind === 'route-contract' ? (
                     <div className="flex max-w-[220px] flex-col items-start gap-1.5 text-sm">

@@ -77,7 +77,8 @@ export function imageRequestFromDraft(
       const size = gptImage26PixelSize(value);
       return size && gptImage26SizeMatchesRatio(size, ratio);
     }) : undefined)
-    ?? choices[ratio]?.find((value) => allowed.includes(value)) ?? details.resolutions[0];
+    ?? choices[ratio]?.find((value) => allowed.includes(value))
+    ?? getDefaultResolution(candidate.engine,mode) ?? details.resolutions[0];
   if (!resolution)
     throw new AgentApiError(
       "PARAMETER_INVALID",

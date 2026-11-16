@@ -9,7 +9,8 @@ import { filterProviderComparisonRows } from '../frontend/app/(core)/admin/prici
 test('admin comparison includes published models and the closed launch tariff candidates once', () => {
   const expected = listRuntimeModels().filter((model) => model.publication.app.published);
   const rows = buildAllModelComparisonScenarios();
-  assert.equal(expected.length, 53);
+  assert.equal(expected.length, 56);
+  assert.equal(rows.filter(({ entry }) => entry.id === 'seedance-2-5-flash').length, 1);
   assert.equal(rows.some(({entry})=>entry.id==='pika-text-to-video'),false,'Archived Pika is excluded from the active admin comparison.');
   const closedLaunchIds = ['kling-v4-flash', 'gpt-image-2-6-flare', 'gpt-image-2-6-sunburst']
     .filter(id => !expected.some(model => model.id === id));
@@ -17,6 +18,17 @@ test('admin comparison includes published models and the closed launch tariff ca
   assert.deepEqual(new Set(rows.map(({ entry }) => entry.id)), new Set([...expected.map((model) => model.id), ...closedLaunchIds]));
   assert.equal(rows.filter(({entry})=>entry.id==='kling-v4').length,1);
   assert.equal(rows.filter(({entry})=>entry.id==='nano-banana-2-1').length,1);
+  for (const modelId of ['seedream-5-5', 'seedream-5-0-flash']) {
+    assert.equal(rows.filter(({ entry }) => entry.id === modelId).length, 1);
+    const outcomes = quoteCanonicalAdminScenarios({ databaseRules: [],
+      scenarios: [rows.find(({ entry }) => entry.id === modelId)!.scenario] });
+    assert.equal(outcomes[0].status, 'unsupported', 'new versioned Seedream tariffs cannot acquire a legacy percentage price');
+    if (outcomes[0].status === 'unsupported') {
+      assert.equal(outcomes[0].reason, 'product_policy_not_authoritative');
+      assert.match(outcomes[0].warning, /versioned per-image customer tariffs/);
+    }
+  }
+
   assert.ok(rows.some(({ entry }) => entry.id === 'lumaRay2'));
   assert.ok(rows.some(({ entry }) => entry.id === 'lumaRay2_flash'));
   assert.equal(new Set(expected.map((model) => model.family)).size, 14);
@@ -30,6 +42,9 @@ test('admin comparison includes published models and the closed launch tariff ca
     assert.match(v4.warning,/approved customer tariffs/);
   }
   assert.ok(rows.some(({ entry }) => entry.id === 'flux-3-max'));
+  const [flash] = quoteCanonicalAdminScenarios({ databaseRules: [], scenarios: [rows.find(({ entry }) => entry.id === 'seedance-2-5-flash')!.scenario] });
+  assert.equal(flash.status, 'unsupported', 'Flash must use its native admin tariff, not the legacy margin editor');
+  if (flash.status === 'unsupported') assert.equal(flash.reason, 'product_policy_not_authoritative');
 });
 
 test('a percentage-policy preview cannot replace the fixed Nano21 customer image tariff', () => {

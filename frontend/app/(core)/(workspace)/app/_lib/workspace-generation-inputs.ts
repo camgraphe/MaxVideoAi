@@ -1,3 +1,4 @@
+import { isSeedance25EngineId } from '@/lib/seedance-model-variants';
 import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
 import { getWorkspaceKlingV4ActiveAssets, getWorkspaceKlingV4MediaError } from './workspace-kling-v4-media';
 import { getWorkspaceMultiPromptState } from './workspace-multi-prompt-state';
@@ -243,7 +244,7 @@ export function prepareGenerationInputs(options: PrepareGenerationInputsOptions)
   }
   const schemaFields = [...(options.inputSchema?.required ?? []), ...(options.inputSchema?.optional ?? [])];
   if (((!isUnifiedSeedanceEngineId(options.selectedEngineId) && hasMultimodalReferenceFields(schemaFields))
-      || (options.selectedEngineId === 'seedance-2-5' && options.submissionMode === 'v2v'))
+      || (isSeedance25EngineId(options.selectedEngineId) && options.submissionMode === 'v2v'))
     && !workspaceAssetsSupportMode(schemaFields, options.inputAssets, options.submissionMode)) {
     return { ok: false, message: 'Remove incompatible media before running this mode.' };
   }

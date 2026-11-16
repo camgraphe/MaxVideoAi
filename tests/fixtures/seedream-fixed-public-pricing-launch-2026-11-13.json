@@ -1,0 +1,204 @@
+{
+  "version": 1,
+  "generatedFrom": "seedream-native-image-tariff-launch",
+  "checkedAt": "2026-11-13",
+  "supplierSource": "https://ai.byteplus.com/ark/region:ap-southeast-1/docs/model-pricing",
+  "customerPolicy": "existing repository standard 30% policy and canonical standard rounding, frozen as new versioned cells",
+  "offlineEvidenceOnly": true,
+  "rows": [
+    {
+      "id": "estimator:seedream-5-5:member:default",
+      "surface": "estimator",
+      "engineId": "seedream-5-5",
+      "status": "exact",
+      "currency": "USD",
+      "customerTotalCents": 3,
+      "unit": "image",
+      "quantity": 1,
+      "compatibilityProfile": "standard"
+    },
+    {
+      "id": "estimator:seedream-5-5:plus:default",
+      "surface": "estimator",
+      "engineId": "seedream-5-5",
+      "status": "exact",
+      "currency": "USD",
+      "customerTotalCents": 3,
+      "unit": "image",
+      "quantity": 1,
+      "compatibilityProfile": "standard"
+    },
+    {
+      "id": "estimator:seedream-5-5:pro:default",
+      "surface": "estimator",
+      "engineId": "seedream-5-5",
+      "status": "exact",
+      "currency": "USD",
+      "customerTotalCents": 3,
+      "unit": "image",
+      "quantity": 1,
+      "compatibilityProfile": "standard"
+    },
+    {
+      "id": "image-estimate:seedream-5-5:default",
+      "surface": "image-estimate",
+      "engineId": "seedream-5-5",
+      "status": "exact",
+      "currency": "USD",
+      "customerTotalCents": 6,
+      "unit": "image",
+      "quantity": 1,
+      "compatibilityProfile": "standard"
+    },
+    {
+      "id": "json-ld:seedream-5-5:offer",
+      "surface": "json-ld",
+      "engineId": "seedream-5-5",
+      "status": "exact",
+      "currency": "USD",
+      "customerTotalCents": 3,
+      "unit": "offer",
+      "quantity": 1,
+      "structuredDataAmount": "0.03",
+      "compatibilityProfile": "schema-current"
+    },
+    {
+      "id": "model-page:seedream-5-5:default",
+      "surface": "model-page",
+      "engineId": "seedream-5-5",
+      "status": "exact",
+      "currency": "USD",
+      "customerTotalCents": 6,
+      "unit": "image",
+      "quantity": 1,
+      "compatibilityProfile": "standard"
+    },
+    {
+      "id": "pricing-hub-image:seedream-5-5:standard",
+      "surface": "pricing-hub-image",
+      "engineId": "seedream-5-5",
+      "status": "exact",
+      "currency": "USD",
+      "customerTotalCents": 3,
+      "unit": "image",
+      "quantity": 1,
+      "displayedAmount": "$0.03",
+      "compatibilityProfile": "standard"
+    },
+    {
+      "id": "pricing-hub-image:seedream-5-5:high",
+      "surface": "pricing-hub-image",
+      "engineId": "seedream-5-5",
+      "status": "exact",
+      "currency": "USD",
+      "customerTotalCents": 6,
+      "unit": "image",
+      "quantity": 1,
+      "displayedAmount": "$0.06",
+      "compatibilityProfile": "standard"
+    },
+    {
+      "id": "pricing-hub-image:seedream-5-5:quantity-4",
+      "surface": "pricing-hub-image",
+      "engineId": "seedream-5-5",
+      "status": "unavailable"
+    },
+    {
+      "id": "estimator:seedream-5-0-flash:member:default",
+      "surface": "estimator",
+      "engineId": "seedream-5-0-flash",
+      "status": "exact",
+      "currency": "USD",
+      "customerTotalCents": 3,
+      "unit": "image",
+      "quantity": 1,
+      "compatibilityProfile": "standard"
+    },
+    {
+      "id": "estimator:seedream-5-0-flash:plus:default",
+      "surface": "estimator",
+      "engineId": "seedream-5-0-flash",
+      "status": "exact",
+      "currency": "USD",
+      "customerTotalCents": 3,
+      "unit": "image",
+      "quantity": 1,
+      "compatibilityProfile": "standard"
+    },
+    {
+      "id": "estimator:seedream-5-0-flash:pro:default",
+      "surface": "estimator",
+      "engineId": "seedream-5-0-flash",
+      "status": "exact",
+      "currency": "USD",
+      "customerTotalCents": 3,
+      "unit": "image",
+      "quantity": 1,
+      "compatibilityProfile": "standard"
+    },
+    {
+      "id": "image-estimate:seedream-5-0-flash:default",
+      "surface": "image-estimate",
+      "engineId": "seedream-5-0-flash",
+      "status": "exact",
+      "currency": "USD",
+      "customerTotalCents": 3,
+      "unit": "image",
+      "quantity": 1,
+      "compatibilityProfile": "standard"
+    },
+    {
+      "id": "json-ld:seedream-5-0-flash:offer",
+      "surface": "json-ld",
+      "engineId": "seedream-5-0-flash",
+      "status": "exact",
+      "currency": "USD",
+      "customerTotalCents": 3,
+      "unit": "offer",
+      "quantity": 1,
+      "structuredDataAmount": "0.03",
+      "compatibilityProfile": "schema-current"
+    },
+    {
+      "id": "model-page:seedream-5-0-flash:default",
+      "surface": "model-page",
+      "engineId": "seedream-5-0-flash",
+      "status": "exact",
+      "currency": "USD",
+      "customerTotalCents": 3,
+      "unit": "image",
+      "quantity": 1,
+      "compatibilityProfile": "standard"
+    },
+    {
+      "id": "pricing-hub-image:seedream-5-0-flash:standard",
+      "surface": "pricing-hub-image",
+      "engineId": "seedream-5-0-flash",
+      "status": "exact",
+      "currency": "USD",
+      "customerTotalCents": 3,
+      "unit": "image",
+      "quantity": 1,
+      "displayedAmount": "$0.03",
+      "compatibilityProfile": "standard"
+    },
+    {
+      "id": "pricing-hub-image:seedream-5-0-flash:high",
+      "surface": "pricing-hub-image",
+      "engineId": "seedream-5-0-flash",
+      "status": "exact",
+      "currency": "USD",
+      "customerTotalCents": 3,
+      "unit": "image",
+      "quantity": 1,
+      "displayedAmount": "$0.03",
+      "compatibilityProfile": "standard"
+    },
+    {
+      "id": "pricing-hub-image:seedream-5-0-flash:quantity-4",
+      "surface": "pricing-hub-image",
+      "engineId": "seedream-5-0-flash",
+      "status": "unavailable"
+    }
+  ]
+}

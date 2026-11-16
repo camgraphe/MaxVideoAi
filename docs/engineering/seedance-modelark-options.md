@@ -2,12 +2,27 @@
 
 Reviewed 2026-10-14 against the [ModelArk task API](https://docs.byteplus.com/en/docs/modelark/create-video-generation-task-api).
 
-`frontend/lib/seedance-modelark-options.ts` extends the four authored current
+`frontend/lib/seedance-modelark-options.ts` extends the authored current
 Seedance configurations. It owns creative field definitions and media type
 budgets, including primary source slots. Workspace input discovery and MCP
 setting projection consume these fields; provider validation remains in
 `byteplus-modelark-payload.ts`. Current 2.x seed and camera-fixed settings are
 unsupported. Seedance 1.5 publication stays unchanged.
+
+The 15 November Flash qualification confirms all five workflows, first/last
+frames, audio generation, audio-only references, MP4/MOV and Auto. The provider
+now documents Flash as part of the 2.5 series for these options; its independent
+10/5/5 reference limits and 480p/720p output limits still apply. See the
+[dated evidence](../model-launch/seedance-2-5-flash-qualification-20261115.json).
+No Flash Draft/final, seed or fixed-camera control is exposed.
+
+`EngineInputField.minDurationSecByMode` supports a stricter minimum for the same
+reference slot in Modify. Use `resolveMediaFieldMinDuration` for selection,
+excerpt preparation, web execution and canonical MCP/Studio validation and
+discovery. Flash videos require at least 2s, or 4s in Modify; audio requires 2s.
+The qualified-options tests cover rejecting a three-second supplementary Modify
+video while allowing it as a Create reference. This avoids a provider rejection
+after a reference was presented as eligible.
 
 Auto duration is an explicitly disclosed fixed-price product: 15s for 2.0,
 30s for 2.5, even if the provider creates a shorter video. The UI preserves

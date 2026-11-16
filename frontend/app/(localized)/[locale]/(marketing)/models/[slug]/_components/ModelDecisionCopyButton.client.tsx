@@ -10,9 +10,10 @@ type ModelDecisionCopyButtonProps = {
   copyText: string;
   label: string;
   copiedLabel: string;
+  analyticsLocation?: string;
 };
 
-export function ModelDecisionCopyButton({ copyText, label, copiedLabel }: ModelDecisionCopyButtonProps) {
+export function ModelDecisionCopyButton({ copyText, label, copiedLabel, analyticsLocation }: ModelDecisionCopyButtonProps) {
   const [copied, setCopied] = useState(false);
   const resetTimeoutRef = useRef<number | null>(null);
   const hasCopyText = copyText.trim().length > 0;
@@ -58,6 +59,9 @@ export function ModelDecisionCopyButton({ copyText, label, copiedLabel }: ModelD
     <button
       type="button"
       onClick={handleCopy}
+      data-analytics-event={analyticsLocation ? "cta_click" : undefined}
+      data-analytics-cta-name={analyticsLocation ? "copy_prompt" : undefined}
+      data-analytics-cta-location={analyticsLocation}
       disabled={!hasCopyText}
       className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-hairline bg-surface px-4 text-sm font-semibold text-text-primary shadow-sm transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg disabled:cursor-not-allowed disabled:opacity-50"
     >
