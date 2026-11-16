@@ -29,7 +29,7 @@ export const getCurationSnapshot = readCurationSnapshot;
 export { CURATION_ELIGIBILITY } from './curation-eligibility';
 
 export { listCurationCandidates } from './curation-candidates';
-import { listCurationCandidates } from './curation-candidates';
+import { listCurationCandidates, listRetainedFamilyCurationCandidates } from './curation-candidates';
 
 async function buildPreview(
   playlistId: string,
@@ -49,7 +49,10 @@ async function buildPreview(
   if (!snapshot.available) throw new CurationError('Site placements setup is not available yet', 503);
   if (!snapshot.supported) throw new CurationError('Curation is not supported for this destination', 400);
   if (snapshot.revision !== revision) throw new CurationError('This destination changed. Reload it before saving.');
-  const candidates = await listCurationCandidates(snapshot.slug, db, getCurationCandidateAliases(snapshot.slug));
+  const candidates = [
+    ...await listCurationCandidates(snapshot.slug, db, getCurationCandidateAliases(snapshot.slug)),
+    ...await listRetainedFamilyCurationCandidates(snapshot.slug, db),
+  ];
   const eligible = new Set(candidates.map((item) => item.id));
   if (draft.orderedIds.some((id) => !eligible.has(id)))
     throw new CurationError('Some selected media are no longer eligible. Reload the destination.');

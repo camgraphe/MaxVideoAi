@@ -494,6 +494,13 @@ readiness, visibility, indexability or membership. Retired, deep-legacy and
 unpublished identities do not become model destinations; inactive reserved
 hub/starter collections retain their historical diagnostics.
 
+Existing family selections can retain historical clips still admitted by the public
+family reader. The selected-ID/window readers and preview/save share this bounded
+exception: the clip must already belong to the saved order or opening and still pass
+public media eligibility. Candidate search remains limited to discoverable models;
+new historical clips, private media and non-indexable media are not admitted. Preview
+fingerprints include retained media facts and saves recheck them under the same locks.
+
 The picker opens the connected hub, otherwise the first connected family. Its
 menu separates Examples & starters, Families, and Models; model submenus are
 grouped by family. Search reveals matching destinations across all sections,

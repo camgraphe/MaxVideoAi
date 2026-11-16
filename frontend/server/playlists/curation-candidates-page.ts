@@ -7,6 +7,7 @@ import { videoOutputDimensionSelect } from '../videos-query';
 import { CURATION_ELIGIBILITY, expandCatalogAliases } from './curation-eligibility';
 import { getCurationCandidateAliases, usesCatalogCurationAliases } from './curation-candidate-aliases';
 import { CurationError, curationFingerprint } from './curation-store';
+import { listRetainedFamilyCurationCandidates, listRetainedFamilyCurationIds } from './curation-candidates';
 
 type CandidateRow = {
   job_id: string; engine_id: string; engine_label: string | null; prompt: string | null;
@@ -31,7 +32,7 @@ function aliasesFor(slug: string): string[] {
 /** Eligibility-only batches let GET retain a complete order without loading all media. */
 export async function filterEligibleCurationIds(slug: string, ids: string[], db: QueryExecutor = { query }): Promise<string[]> {
   const aliases = aliasesFor(slug);
-  const eligible = new Set<string>();
+  const eligible = new Set(await listRetainedFamilyCurationIds(slug, db));
   for (let offset = 0; offset < ids.length; offset += 500) {
     const rows = await marketingVideoReader(db).query<{ job_id: string }>(`SELECT job_id FROM app_jobs
       WHERE ${CURATION_ELIGIBILITY} AND LOWER(engine_id)=ANY($1::text[]) AND job_id=ANY($2::text[])`,
@@ -48,7 +49,8 @@ export async function loadSelectedCurationItems(slug: string, ids: string[], db:
   const rows = await marketingVideoReader(db).query<CandidateRow>(`SELECT ${projection} FROM app_jobs
     WHERE ${CURATION_ELIGIBILITY} AND LOWER(engine_id)=ANY($1::text[]) AND job_id=ANY($2::text[])
     ORDER BY array_position($2::text[],job_id) LIMIT 48`, [aliases, ids]);
-  return rows.map(mapItem);
+  const items = new Map([...rows.map(mapItem), ...await listRetainedFamilyCurationCandidates(slug, db, ids)].map(item => [item.id, item]));
+  return ids.flatMap(id => { const item = items.get(id); return item ? [item] : []; });
 }
 
 export type CandidatePageOptions = {
