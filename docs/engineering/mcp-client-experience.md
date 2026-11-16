@@ -1,3 +1,18 @@
+## Seedance runtime Edit controls — 16 November 2026
+
+The configured BytePlus runtime projection owns Edit timing and framing for both
+Seedance 2.5 variants. ModelArk Edit inherits the verified source; read-only MCP
+model details and Studio therefore omit independent duration and aspect-ratio
+controls. Standard Seedance's LAS transport retains requested controls, and
+Extend retains its separate requested-duration policy. Audio, resolution, MOV
+output and reference capabilities remain available.
+
+`tests/seedance-runtime-discovery-controls.test.ts` reproduces the old incorrect
+`requested` result through the actual read-only catalog and checks both consumer
+projections for both transports. This changes returned runtime facts only: tool
+descriptors, schemas, package, OAuth and the frozen dedicated OpenAI Review
+deployment are unchanged. Discovery checks do not certify a paid generation.
+
 ## OpenAI generation setup wording and listing — 14 November 2026
 
 Directory package 0.3.29 leads with creative outcomes, references, models and
