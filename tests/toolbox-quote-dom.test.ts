@@ -38,6 +38,11 @@ test('tool quotes invalidate before render, discard late responses and require a
     await act(async () => current.refresh()); assert.equal(current.ready, false);
     await debounce(); await reply(4, 20, 'invalid'); assert.equal(current.ready, false); assert.ok(current.error);
     await act(async () => current.refresh()); await debounce(); await reply(5, 20); assert.equal(current.ready, true);
+    await act(async () => current.refresh()); await debounce();
+    await act(async () => requests[6].resolve(Response.json({ ok: false, error: 'UPSCALE_TARGET_NOT_LARGER' }, { status: 422 })));
+    assert.equal(current.ready, false);
+    assert.equal(current.quote, null);
+    assert.equal(current.errorCode, 'UPSCALE_TARGET_NOT_LARGER');
     await render(null, 'one'); assert.equal(current.ready, false); assert.equal(current.quote, null);
     await render('a', ''); assert.equal(current.loading, false); assert.equal(current.ready, false);
   } finally {

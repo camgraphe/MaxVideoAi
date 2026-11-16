@@ -2,8 +2,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { authFetch } from '@/lib/authFetch';
 import type { AcceptedToolQuote } from '@/lib/toolbox/quote';
+import { isToolFailureCode } from '@/lib/toolbox/errors';
 
-type QuoteState = { key: string | null; quote?: AcceptedToolQuote & { released?: boolean; generative?: boolean }; error?: string };
+type QuoteState = { key: string | null; quote?: AcceptedToolQuote & { released?: boolean; generative?: boolean }; error?: string; errorCode?: string };
 /** Invalidate during render, including account/source round trips; never submit an old quote. */
 export function useToolQuote(request: Record<string, unknown> | null, userId: string | null | undefined) {
   const [attempt, setAttempt] = useState(0);
@@ -23,6 +24,10 @@ export function useToolQuote(request: Record<string, unknown> | null, userId: st
         const [, payload] = JSON.parse(key);
         const response = await authFetch('/api/tools/quote', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), signal: controller.signal });
         const data = await response.json();
+        if ((!response.ok || !data?.ok) && isToolFailureCode(data?.error)) {
+          if (!controller.signal.aborted) setState(current => current.key === key ? { key, error: 'Price unavailable', errorCode: data.error } : current);
+          return;
+        }
         if (!response.ok || !data?.ok || !Number.isSafeInteger(data.quote?.totalCents) || data.quote.totalCents < 0 || !/^[A-Z]{3}$/.test(data.quote?.currency ?? '')) throw new Error('Price unavailable');
         if (!controller.signal.aborted) setState(current => current.key === key ? { key, quote: data.quote } : current);
       } catch {
@@ -32,5 +37,5 @@ export function useToolQuote(request: Record<string, unknown> | null, userId: st
     return () => { clearTimeout(timer); clearTimeout(deadline); controller.abort(); };
   }, [key]);
   const current = state.key === key ? state : null;
-  return { quote: current?.quote ?? null, error: current?.error ?? null, loading: Boolean(key && !current?.quote && !current?.error), ready: Boolean(key && current?.quote), refresh };
+  return { quote: current?.quote ?? null, error: current?.error ?? null, errorCode: current?.errorCode ?? null, loading: Boolean(key && !current?.quote && !current?.error), ready: Boolean(key && current?.quote), refresh };
 }

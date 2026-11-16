@@ -45,6 +45,18 @@ test('finishing completion and refund serialize both orders, replay and rollback
       (SELECT count(*)::int FROM app_receipts r WHERE r.job_id=j.job_id AND type='refund') AS refunds
       FROM app_jobs j WHERE job_id=$1`, [jobId])).rows[0];
   }
+  await t.test('stored failure causes remain readable after an exact wallet refund', async () => {
+    await seed('public-cause');
+    await jobs.failFinishingJob('owner', 'public-cause', 'TOOL_CONTENT_BLOCKED', 'provider-id');
+    const result = await jobs.readFinishingJob('owner', 'public-cause');
+    assert.equal(result.errorCode, 'TOOL_CONTENT_BLOCKED');
+    assert.equal(result.refunded, true);
+    assert.match(result.error!, /safety checks/);
+    assert.match(result.error!, /refunded to your wallet/);
+    const stored = await database.pool.query("SELECT message,settings_snapshot FROM app_jobs WHERE job_id='public-cause'");
+    assert.match(stored.rows[0].message, /Choose a different source video/);
+    assert.equal(stored.rows[0].settings_snapshot.toolFailureCode, 'TOOL_CONTENT_BLOCKED');
+  });
   for (const firstAction of ['refund', 'complete'] as const) {
     await t.test(`${firstAction} holds the job lock until its terminal transaction commits`, async () => {
       const jobId = `first-${firstAction}`;

@@ -16,6 +16,7 @@ import { ToolWorkbench, ToolSourceInput, ToolProcessing, ToolAuthNotice } from '
 import { ToolboxVideoPreview } from './ToolboxVideoPreview';
 import { toolboxCopy } from './toolbox-copy';
 import { finishingCopy } from './finishing-copy';
+import { toolFailureMessage } from '@/lib/toolbox/errors';
 import { useUpscaleLibraryAssets } from './upscale/_hooks/useUpscaleLibraryAssets';
 import { UpscaleLibraryModal } from './upscale/_components/UpscaleLibraryModal';
 import { DEFAULT_UPSCALE_COPY } from './upscale/_lib/upscale-workspace-copy';
@@ -68,14 +69,14 @@ export function FinishingSession({ auth, toolId, releasedQualities = [] }: { aut
         const response = await authFetch(`/api/tools/run?jobId=${encodeURIComponent(pendingJobId!)}`, { signal: controller.signal });
         const data = await response.json();
         if (cancelled) return;
-        if (response.status === 404 || data.status === 'failed') { finish(); setError(labels.failure); return; }
+        if (response.status === 404 || data.status === 'failed') { finish(); setError(toolFailureMessage(response.status === 404 ? 'JOB_UNAVAILABLE' : data.errorCode, locale, data.refunded === true)); return; }
         if (data.ok && data.status === 'completed' && data.result?.outputs?.length) { setResult(data.result); setViewMode('result'); finish(); return; }
       } catch { /* A network interruption keeps the same stored job. */ }
       if (!cancelled) timer = setTimeout(() => void poll(), 5000);
     }
     void poll();
     return () => { cancelled = true; controller.abort(); if (timer) clearTimeout(timer); };
-  }, [pendingJobId, userId, pendingKey, labels.failure]);
+  }, [pendingJobId, userId, pendingKey, locale]);
 
 
   function changeSettings(patch: Record<string, unknown>) {
@@ -120,9 +121,9 @@ export function FinishingSession({ auth, toolId, releasedQualities = [] }: { aut
       const response = await authFetch('/api/tools/run', { method: 'POST', headers: { 'Content-Type': 'application/json', [PRICING_POLICY_HEADER]: LIVE_PRICING_POLICY_REVISION },
         body: JSON.stringify({ block, requestId: requestId.current, acceptedQuote: { totalCents: pricing.quote.totalCents, currency: pricing.quote.currency } }) });
       const data = await response.json();
-      if (!response.ok || !data.ok) { requestId.current = null; throw new Error(data.error === 'INSUFFICIENT_FUNDS' ? labels.insufficientFunds : labels.failure); }
+      if (!response.ok || !data.ok) { requestId.current = null; throw new Error(toolFailureMessage(data.error, locale, data.refunded === true)); }
       if (!active.current) return;
-      if (data.status === 'failed') { requestId.current = null; throw new Error(labels.failure); }
+      if (data.status === 'failed') { requestId.current = null; throw new Error(toolFailureMessage(data.errorCode, locale, data.refunded === true)); }
       if (data.result?.outputs?.length) { setResult(data.result); setViewMode('result'); requestId.current = null; }
       else if (data.jobId) setPendingJobId(data.jobId);
       else throw new Error(labels.failure);
