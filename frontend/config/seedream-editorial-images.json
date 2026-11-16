@@ -195,46 +195,6 @@
     }
   },
   {
-    "id": "first-light",
-    "status": "accepted",
-    "engineId": "seedream-5-5",
-    "providerModelId": "dola-seedream-5-5-261028",
-    "role": "hero",
-    "promptLanguage": "en",
-    "prompt": "A memorable widescreen frame from a beautifully photographed contemporary adventure film. A fictional adult woman in a vivid vermilion windbreaker steps off an early-morning passenger ferry onto a Mediterranean harbour, turning back toward a friend with an irrepressible smile. Strong wind catches her jacket and loose hair; her gesture and stride feel caught in the middle of life. Cobalt sea, pale coastal buildings, a few small adult passengers, brilliant low golden sunlight and a fleeting flare. Lived-in skin and fabric, rich but believable colour, delicate film grain, bold cinematic depth. Give the woman a strong presence toward the right half of the frame, with a readable, calmer harbour and sea toward the left. Invent the expressive framing and incidental details freely. One cohesive live-action photograph, no typography or graphic overlay.",
-    "settings": {
-      "mode": "t2i",
-      "resolution": "2K",
-      "aspectRatio": "16:9",
-      "outputFormat": "jpeg",
-      "background": "opaque",
-      "numImages": 1
-    },
-    "original": {
-      "url": "/assets/model-examples/seedream-5-5/5a7f043a66d9c382e3a290b0d0f157e5c102d533b1b928d2200c3fde2a9564cf.jpg",
-      "sha256": "5a7f043a66d9c382e3a290b0d0f157e5c102d533b1b928d2200c3fde2a9564cf",
-      "bytes": 400392,
-      "width": 2816,
-      "height": 1584,
-      "mimeType": "image/jpeg"
-    },
-    "display": {
-      "url": "/assets/model-examples/seedream-5-5/9eb26248dd07b7476527fddb6631c0b2f21c278ad474643865e1cd2cdfe6dc14.webp",
-      "sha256": "9eb26248dd07b7476527fddb6631c0b2f21c278ad474643865e1cd2cdfe6dc14",
-      "bytes": 107060,
-      "width": 1800,
-      "height": 1013,
-      "mimeType": "image/webp",
-      "sourceSha256": "5a7f043a66d9c382e3a290b0d0f157e5c102d533b1b928d2200c3fde2a9564cf"
-    },
-    "provenance": {
-      "kind": "reviewed_byteplus_output",
-      "generatedAt": "2026-11-13T22:42:58.440Z",
-      "manifestSha256": "1cfe4ed04fbb35cc0302460906fc88a9612f99b1fb17443d1c3134a9d0b9eeb3",
-      "promptSha256": "a4b472806745069353e871d6a52e6c0122749d4c032ac5b5c6326f66ab2006ee"
-    }
-  },
-  {
     "id": "backstage-original",
     "status": "accepted",
     "engineId": "seedream-5-5",
@@ -478,5 +438,45 @@
       "promptSha256": "bcb00c482d435c0657568b5cc5bd40bb92469ca914edbf9e819726ba2b656992"
     },
     "alphaVerified": true
+  },
+  {
+    "id": "55-above-the-clouds",
+    "status": "accepted",
+    "engineId": "seedream-5-5",
+    "providerModelId": "dola-seedream-5-5-261028",
+    "role": "hero",
+    "promptLanguage": "en",
+    "prompt": "A cinematic live-action adventure film still, 16:9. A fictional adult woman in her early thirties pauses halfway through a mountain hike, turning toward someone just outside the frame with a quietly amazed expression. Medium close shot from chest up, her face slightly right of center, wearing a charcoal weatherproof jacket and an ivory chunky wool scarf. Her raised hand lightly grips the scarf near her collarbone, with natural anatomy. Fine flyaway dark hair caught in the mountain wind, natural freckles and skin pores, individual woven wool fibres and the weathered jacket texture clearly resolved. Cool alpine peaks and low cloud in the distance, late afternoon sunlight breaking through a cloud and catching her face and the scarf from the side. Human and spontaneous, not a fashion pose. Restrained blue-grey and cream palette, warm natural skin, luminous soft highlights, realistic optical depth, high detail on face, hand and scarf, gentle background falloff. Frame the full head with breathing room and a useful amount of surrounding landscape, no tight crop. One cohesive photographic scene from a film, no text, no title, no border, no collage, no inset, no skin smoothing or over-sharpening.",
+    "settings": {
+      "mode": "t2i",
+      "resolution": "2K",
+      "aspectRatio": "16:9",
+      "outputFormat": "jpeg",
+      "background": "opaque",
+      "numImages": 1
+    },
+    "provenance": {
+      "kind": "external_byteplus_modelark",
+      "generatedAt": "2026-11-14T21:11:41.044Z",
+      "responseSha256": "86520cc566a007e03b734a44edbc7615a012950511df95734f8342c8b19c9e33",
+      "promptSha256": "d24d0944e37df51f0de96140ad5cdd0c818697cfb28743fbb8f6592b2963cdf9"
+    },
+    "original": {
+      "sha256": "41c6a5808f6cc946ae8f3034ecbc3504f79aa8a8d57302eeb790563d6e4f2d8a",
+      "width": 2816,
+      "height": 1584,
+      "bytes": 376947,
+      "mimeType": "image/jpeg",
+      "url": "/assets/model-examples/seedream-5-5/41c6a5808f6cc946ae8f3034ecbc3504f79aa8a8d57302eeb790563d6e4f2d8a.jpg"
+    },
+    "display": {
+      "sha256": "3906b78afd574164bd1766c2c37e3af97800947845d638e88e4da0c847dfdad7",
+      "sourceSha256": "41c6a5808f6cc946ae8f3034ecbc3504f79aa8a8d57302eeb790563d6e4f2d8a",
+      "width": 1800,
+      "height": 1013,
+      "bytes": 119280,
+      "mimeType": "image/webp",
+      "url": "/assets/model-examples/seedream-5-5/3906b78afd574164bd1766c2c37e3af97800947845d638e88e4da0c847dfdad7.webp"
+    }
   }
 ]

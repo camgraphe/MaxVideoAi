@@ -229,6 +229,7 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
   });
 
   const { applyImageSettingsSnapshot, librarySource } = useImageWorkspaceQueryHydration({
+    storageHydrated,
     engines,
     genericError: resolvedCopy.errors.generic,
     searchParams,

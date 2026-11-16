@@ -2,6 +2,10 @@
 
 This guide defines the target architecture for large Next.js pages in MaxVideoAI.
 
+For the opt-in image/video model compositions and new-model onboarding, see
+[Cinematic model pages](./cinematic-model-pages.md). Legacy models retain their
+existing layout until explicitly opted in.
+
 ## Target Responsibility Split
 
 A page should answer four questions:

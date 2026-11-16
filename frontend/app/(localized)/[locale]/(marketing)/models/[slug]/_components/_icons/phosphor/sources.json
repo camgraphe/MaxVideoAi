@@ -1,0 +1,32 @@
+{
+  "repository": "https://github.com/phosphor-icons/core",
+  "revision": "2b75f3ad12b420c9504ef05df8d2564a28f8500e",
+  "license": "MIT",
+  "icons": [
+    {
+      "file": "selection-foreground-duotone.svg",
+      "source": "https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/duotone/selection-foreground-duotone.svg",
+      "sha256": "23956d051322734f93199e68381c658f1f81110cdb97cf467ca3eae5d3186444"
+    },
+    {
+      "file": "text-aa-duotone.svg",
+      "source": "https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/duotone/text-aa-duotone.svg",
+      "sha256": "edf4791e1426a24710e6c1ddb207be6012428b2f6cf9147fc9af13bbd20a5e3f"
+    },
+    {
+      "file": "user-focus-duotone.svg",
+      "source": "https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/duotone/user-focus-duotone.svg",
+      "sha256": "7e0815457e65da664500eb64b4a38b5f6bfcfd3ddc7b02728bf83a423911bfd8"
+    },
+    {
+      "file": "checkerboard-duotone.svg",
+      "source": "https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/duotone/checkerboard-duotone.svg",
+      "sha256": "5788b4ed8360288dd01355ccbfca9b58569f117ad1383f511567e94e6a1d432b"
+    },
+    {
+      "file": "arrow-right.svg",
+      "source": "https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/arrow-right.svg",
+      "sha256": "e45bc4a12592b8723110db42c6deffdf177e4fe7704cf50324963fa0a59b2d74"
+    }
+  ]
+}

@@ -250,3 +250,17 @@ test('Seedream attribution rejects unknown identities, false prefixes and privat
     }
   }
 });
+
+// Editorial CTA labels must survive projection without sending prompts or image URLs.
+test('model-page CTA measurement retains bounded actions and removes private content', () => {
+  for (const [cta_name, cta_location] of [
+    ['open_workspace', 'model_hero'], ['open_workspace', 'model_nav'],
+    ['reuse_example', 'model_prompt'], ['copy_prompt', 'model_prompt'],
+    ['milo_try', 'model_prompt_guide'], ['view_pricing', 'model_pricing'],
+    ['choose_model', 'model_related'], ['copy_specs', 'model_specs'], ['download_specs', 'model_specs'],
+  ]) {
+    assert.deepEqual(projectAllowedAnalyticsPayload('cta_click', {
+      cta_name, cta_location, prompt: 'private user brief', image_url: 'https://private.example/image.png',
+    }), { cta_name, cta_location });
+  }
+});

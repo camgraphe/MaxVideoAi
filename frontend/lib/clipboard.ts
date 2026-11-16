@@ -13,6 +13,10 @@ export async function copyTextToClipboard(text: string): Promise<boolean> {
     // Fall back to a temporary textarea for browser contexts where Clipboard API is blocked.
   }
 
+  const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  // Content outside a modal dialog is inert: selecting a textarea there can copy
+  // the previous selection instead, even when execCommand reports success.
+  const modal = previousFocus?.closest('dialog[open]') ?? document.querySelector('dialog[open]');
   const textarea = document.createElement('textarea');
   textarea.value = value;
   textarea.setAttribute('readonly', '');
@@ -20,8 +24,8 @@ export async function copyTextToClipboard(text: string): Promise<boolean> {
   textarea.style.left = '-9999px';
   textarea.style.top = '0';
   textarea.style.opacity = '0';
-  document.body.appendChild(textarea);
-  textarea.focus();
+  (modal ?? document.body).appendChild(textarea);
+  textarea.focus({ preventScroll: true });
   textarea.select();
 
   try {
@@ -29,6 +33,7 @@ export async function copyTextToClipboard(text: string): Promise<boolean> {
   } catch {
     return false;
   } finally {
-    document.body.removeChild(textarea);
+    textarea.remove();
+    if (previousFocus?.isConnected) previousFocus.focus({ preventScroll: true });
   }
 }

@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { ModelCinematicPrompt } from './ModelCinematicAsset';
 import type { CinematicAsset, CinematicPresentation } from '../_lib/model-page-cinematic-data';
 
-export function ModelCinematicCompare({ assets, ui }: { assets: CinematicAsset[]; ui: CinematicPresentation['ui'] }) {
+export function ModelCinematicCompare({ assets, ui, note }: { assets: CinematicAsset[]; ui: CinematicPresentation['ui']; note?: string }) {
   const [step, setStep] = useState(1);
   const [reveal, setReveal] = useState(50);
   const sliderId = useId();
@@ -13,7 +13,7 @@ export function ModelCinematicCompare({ assets, ui }: { assets: CinematicAsset[]
   const after = assets[step];
   return <div className="cinema-comparison">
     <div className="cinema-segmented" role="group" aria-label={ui.compare}>
-      {assets.map((asset, index) => <button key={asset.id} type="button" aria-pressed={step === index} onClick={() => setStep(index)}><Image src={asset.display.url} width={160} height={90} alt="" sizes="160px" loading="lazy" /><span>{String(index + 1).padStart(2, '0')} / {asset.title}</span></button>)}
+      {assets.map((asset, index) => <button key={asset.id} type="button" aria-pressed={step === index} onClick={() => { setStep(index); setReveal(50); }}><Image src={asset.display.url} width={160} height={90} alt="" sizes="160px" loading="lazy" /><span>{String(index + 1).padStart(2, '0')} / {asset.title}</span></button>)}
     </div>
     <div className="cinema-compare-images">
       <Image src={before.display.url} width={before.display.width} height={before.display.height} alt={before.title} sizes="(min-width: 1600px) 1432px, 91vw" loading="lazy" />
@@ -41,7 +41,7 @@ export function ModelCinematicCompare({ assets, ui }: { assets: CinematicAsset[]
           onPointerUp={event => { if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId); }} />
       </> : null}
     </div>
-    <ModelCinematicPrompt key={after.id} asset={after} ui={ui} />
+    <ModelCinematicPrompt key={after.id} asset={after} ui={ui}>{note ? <p>{note}</p> : null}</ModelCinematicPrompt>
   </div>;
 }
 

@@ -136,3 +136,67 @@ The first rejected iteration's desktop regression is documented in `evidence/202
 The GSC and Bing evidence, query/page distinctions and source windows remain in `model-pages-search-evidence-20261114.md`. The redesign preserves stable destinations, readable model facts, prompt examples, exact references, source links, technical details and comparison links. It creates a clearer visual demonstration; it does not establish a ranking, traffic, citation or conversion increase before a controlled live test.
 
 Review remains local. The environment has no application database, so prices truthfully fall back to the current-quote state and no fabricated Offer is emitted. The database-dependent full sitemap and historical Seedance playlist fail identically on the clean baseline; the model sitemap and the six pilot routes work. Actual Flash videos, effective model access, price activation, current-main integration and required Quality CI remain release work with the model owners. No countdown or automatic paid generation was added.
+
+
+## Enriched hero and shared header/footer
+
+The opening now combines the model title, promise, introduction, visual and useful benefits in one hero, followed by the proof chapter. Seedream uses the new reviewed mountain scene and a fabric crop; the harbour opening is retired. Flash keeps its attributed start frame, with the introduction and four facts over it. The native MaxVideoAI header is opaque and the footer keeps its shared identity. See [implementation and validation](evidence/20261114-model-pages/overview-real-image-notes.md). This remains a local design candidate for review.
+
+### Hero controls and transition refinement
+
+- Replaced hand-drawn benefit marks with four unchanged official Phosphor Duotone SVGs. Regular Phosphor arrow shared by the cinematic CTAs; pinned upstream revision and MIT license are vendored beside the component. No new icon package or runtime media request.
+- CTA remains graphite with a silver action disc, but uses the site's rectangular shape with an 8px corner radius. Removed repeated arrows from benefit cards.
+- Moved the hero prompt/settings disclosure next to its image caption. Original image, full prompt, copy action and constructor source remain accessible; no provenance strip interrupts the transition after navigation.
+- Removed the repeated examples overline from the editorial-only flow and chapter numbers. Proof titles are H2s; the examples region keeps its accessible name. Runtime video galleries retain their section title.
+- At 390px, navigation-to-first-title spacing changed from 237px to 57px; navigation-to-comparator spacing from 457px to 271px. Both pilots were checked at 320px without horizontal overflow.
+- Validation: 16 focused render/style tests passed; frontend lint has 0 errors and 7 existing unrelated warnings; exposure check and diff check passed. HTTP checks passed for all six EN/FR/ES pilot pages, canonical/hreflang/schema, redirects and model sitemap. Local dev preview only; no deployment.
+
+### Prompt panel and quiet hero follow-up
+
+- Removed prompt and original-image actions from both heroes. Seedream's detail is now a non-interactive crop of the hair, with a localized label; the caption is authored on two lines. Hero imagery, preload and immutable source URLs are unchanged.
+- Replaced all cinematic prompt accordions with a native modal side panel (full viewport on mobile): title, setting chips, original prompt text, copy action and source links. Prompt content remains in the initial HTML; opening does not alter the underlying proof or page height. Native modal behavior supplies focus containment, Escape and return to the trigger; document scrolling is restored on close/unmount.
+- Hero provenance remains accessible from About these examples. The edit-method note moved into the corresponding prompt panel. Edit chapter bottom spacing is 44px desktop / 28px mobile.
+- Comparison defaults to the wardrobe edit at 50%; changing the selected edit resets the slider to 50%. Verified with a real pointer drag from 50% to 26%, then switching to the lighting edit.
+- Browser checks: exact copy of the 780-character lettering prompt; Escape returns focus to its trigger and restores scrolling; the lettering section and document heights stay unchanged on open. Mobile dialog is 390px wide with no horizontal overflow and its footer remains at the viewport bottom.
+- Focused tests: 16 passed. Six localized HTTP/SEO checks passed, including SSR prompt content and no hero disclosure; canonical, hreflang, structured data, redirects and sitemap remain valid. This is a local preview iteration, not a deployment.
+
+- Final keyboard check: the shared modal tab policy keeps Shift+Tab from Close on the last original link, then Tab returns to Close; Escape closes and restores scrolling. Flash uses the same panel successfully. Additional 320 × 700 mobile check: dialog and footer fit exactly, without horizontal overflow. TypeScript check passed.
+
+## Compact prompt handoff — 14 November
+
+Prompt panels have **Use this prompt** and **Copy prompt** side by side, followed by the discreet **Refine with Milo** link requested in the final review. A discreet price chip sits beside the model, resolution and file format. The public quote is requested only when the panel opens; unavailable prices are labelled **Price in Create**, never replaced with a historical provider cost. The current Seedream 5.5 public quote returned unavailable during this review. Flash panels quote/reuse their Sunburst start-frame images, not a hypothetical video.
+
+The new trusted editorial-preset resolver restores the selected image model, exact prompt and authored settings. Edits carry the precise previous original image, including the second step's wardrobe-edited reference; transparent images retain PNG and transparent background. The image workspace waits for account-scoped draft hydration, loads the preset lazily, clears consumed intent and preserves edited drafts through sign-in. It never submits a generation.
+
+Verified real clicks from the lettering and wardrobe panels into Create: Seedream 5.5, exact prompt, 16:9, 2K, JPEG, and the wardrobe's original reference loaded. Desktop and 390px mobile panels preserve the page geometry, and Copy works. Focused preset, hydration, pricing and existing cinematic contracts pass. TypeScript, lint (seven existing unrelated warnings), exposure and six localized HTTP/SEO routes pass. No generation or deployment performed.
+
+Milo refinement opens the same editorial preset with `assistant=milo&refine=example`. Its localized welcome asks “What would you like to change?” in the existing assistant input; the prompt stays in the manual editor and in the assistant draft context. No assistant message or generation is sent on entry. The existing manual-tab choice still wins if the visitor switches modes. The local process enables the existing assistant UI flag in its ignored `.env.local` for this review; local account/credit services are unavailable, so only navigation, welcome and draft restoration were verified, not a live assistant response.
+
+## Shared site surfaces and uninterrupted examples — 14 November
+
+Removed the full-width **About these examples** disclosure on both pilots. The hero prompt, dated provenance and official source now remain accessible through the existing prompt panel in Details. Per-image metadata, original links and reference lineage stay with their demonstrations. No extra band separates the visual proofs from the next section.
+
+The image page's light canvas, quiet sections, borders and text now inherit the shared marketing tokens (`surface`, `bg`, `hairline`, `text-primary`, `text-secondary`). The native header uses the site's base background, and the existing native footer retains its own shared surface. Prompt panels use the same shared tokens. Hero imagery, graphite actions and dark cinematic sections remain unchanged. Open cinematic disclosures explicitly keep a transparent background: this prevents the shared light `details[open]` rule from making light text unreadable on dark sections.
+
+Browser verification at 1013 × 998: header and prompt-guide background are RGB 244/242/238; the image canvas and prompt dialog use RGB 255/254/250, with RGB 35/35/35 text. Flash's expanded technical details retain a transparent background and light text. Twelve cinematic contracts, TypeScript, lint (seven unrelated existing warnings), exposure checks and all six localized HTTP/SEO checks pass. Sources and complete original prompts remain in server HTML. No production change.
+
+## Prompt guide and specification-sheet design refinement
+
+The specification proof image now stays in normal document flow; its sticky positioning caused the distracting scroll effect reported during review. The browser reports static positioning. Twelve cinematic contracts and diff validation pass after this small CSS change.
+
+The next composition is specified in `seedream-prompt-specs-brief-20261114.md`: a compact, visual prompt recipe; a Milo invitation inspired by the user's prompt-bar reference but in the site's cream/graphite palette; and an accessible reusable specification table with copy/export actions and an explicit source citation. Existing image-model pages supply the alternative destinations, because the current comparison hub does not publish image-model pairs. Three references were privately imported after explicit user authorization. The user then approved the USD 0.82 Sunburst Max mockup; generation completed. Its direction was used for the implementation below, keeping the reviewed original model images and factual content.
+
+
+### Implemented prompt guide and reusable specifications — 15 November
+
+The image guide now pairs its unique example with four concise cues (subject/action, framing, lighting/textures, exact text), a clearly labelled shortened explanation, and actions using the full original prompt. Reference roles, previous-result editing and PNG transparency instructions remain accessible under Prompt writing tips. The structured localized content owns this recipe; the rendering component contains no model-specific copy.
+
+Milo is a compact invitation in the site's cream/graphite palette, explicitly located inside Create's prompt editor. Its explanation asks users to review/apply the prompt and see the generation price before generating. The existing Sparkles symbol is retained following the user's clarification. No assistant request or generation is submitted by these entry links.
+
+The semantic specification table and its Markdown, rich HTML and CSV exports share their rows. Existing canonical specs are supplemented from the actual composer input schema (reference count, output count, background choices). Exact ratios are retained; current prices are not frozen into the export. Copy/export includes the localized canonical source link. Image alternatives explain concrete differences in available resolution and image-set workflows, linking to existing model pages rather than invented comparison pages.
+
+Content review checked the ByteDance presentation, BytePlus model guide, Higgsfield model article and Google's AI-features guidance. Multi-turn editing, native transparency, examples, limits, full prompts, source evidence and internal links remain. Competitor-specific counts/prices and unexposed provider features were not copied into MaxVideoAI claims. Removing repeated bullets does not remove their facts: these are in the table. AI visibility/ranking gains remain unmeasured until a controlled production test.
+
+In response to the live review, technical details remain on a light surface, pricing/alternatives occupy a compact graphite band, and the FAQ returns to the site's cream background. The video page uses a contrasting cream pricing/alternatives band against its dark technical section. The redundant final promotional strip is removed from both pages. Prompt-control plus signs are now centered Lucide SVGs; image arrows use the same official Phosphor vector as the other actions. The plus-circle centers match exactly in the browser (0px horizontal/vertical difference).
+
+Validation: 56 focused tests pass, TypeScript passes, frontend lint has zero errors and seven existing unrelated warnings; final touched-component lint and diff checks pass. HTTP checks cover all six localized routes, server-rendered text/tables/prompts, canonical/hreflang/JSON-LD, redirects and model sitemap. The checker assembles React's delayed HTML segments without running scripts. Browser verification confirms eight primary video rows plus eight secondary rows and hero evidence inside Details. Seedream has no horizontal overflow at 1113, 390 and 320px; Seedance has no overflow at 1081 and 390px. Copy table produces Markdown including the source link. CSV serialization is tested; its download event requests the correct filename and 533-byte file, but the embedded browser cancels the transfer, so completed file download remains to be checked in a standard browser. No new media generation or production deployment.

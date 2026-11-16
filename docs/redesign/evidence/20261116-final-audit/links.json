@@ -1,0 +1,128 @@
+[
+  {
+    "href": "https://maxvideoai.com/models/seedream-5-5#specs",
+    "status": 200,
+    "finalUrl": "http://localhost:3116/models/seedream-5-5#specs",
+    "anchor": true,
+    "title": "Seedream 5.5 AI Image Generator & Editor | MaxVideoAI"
+  },
+  {
+    "href": "/pricing#seedream-5-5-pricing",
+    "status": 200,
+    "finalUrl": "http://localhost:3116/pricing#seedream-5-5-pricing",
+    "anchor": true,
+    "title": "AI Video Pricing: Compare Models | MaxVideoAI"
+  },
+  {
+    "href": "/models/seedream-5-0-flash",
+    "status": 200,
+    "finalUrl": "http://localhost:3116/models/seedream-5-0-flash",
+    "anchor": true,
+    "title": "Seedream 5.0 Flash | Fast image generation and reference edits | MaxVideoAI"
+  },
+  {
+    "href": "/models/seedream",
+    "status": 200,
+    "finalUrl": "http://localhost:3116/models/seedream",
+    "anchor": true,
+    "title": "Seedream: Image Pricing & Reference Prep | MaxVideoAI"
+  },
+  {
+    "href": "/models/seedream-5-0-pro",
+    "status": 200,
+    "finalUrl": "http://localhost:3116/models/seedream-5-0-pro",
+    "anchor": true,
+    "title": "Seedream 5.0 Pro - Professional ByteDance Image Generation | MaxVideoAI"
+  },
+  {
+    "href": "/ai-video-engines/best-for/image-to-video",
+    "status": 200,
+    "finalUrl": "http://localhost:3116/ai-video-engines/best-for/image-to-video",
+    "anchor": true,
+    "title": "Best AI Video Engines for Image-to-Video Prompts"
+  },
+  {
+    "href": "/examples/seedance",
+    "status": 200,
+    "finalUrl": "http://localhost:3116/examples/seedance",
+    "anchor": true,
+    "title": "Seedance AI Video Examples and Prompts | MaxVideoAI"
+  },
+  {
+    "href": "/video/review-flash-the-salt-run?from=%2Fmodels%2Fseedance-2-5-flash",
+    "status": 200,
+    "finalUrl": "http://localhost:3116/video/review-flash-the-salt-run?from=%2Fmodels%2Fseedance-2-5-flash",
+    "anchor": true,
+    "title": "Seedance 2.5 Flash camera movement example: Create an eight-second cinematic… — MaxVideoAI"
+  },
+  {
+    "href": "/video/review-flash-the-rising-sea?from=%2Fmodels%2Fseedance-2-5-flash",
+    "status": 200,
+    "finalUrl": "http://localhost:3116/video/review-flash-the-rising-sea?from=%2Fmodels%2Fseedance-2-5-flash",
+    "anchor": true,
+    "title": "Seedance 2.5 Flash audio-enabled video example: Create an eight-second sequence from… — MaxVideoAI"
+  },
+  {
+    "href": "/video/review-flash-above-the-city?from=%2Fmodels%2Fseedance-2-5-flash",
+    "status": 200,
+    "finalUrl": "http://localhost:3116/video/review-flash-above-the-city?from=%2Fmodels%2Fseedance-2-5-flash",
+    "anchor": true,
+    "title": "Seedance 2.5 Flash audio-enabled video example: city — MaxVideoAI"
+  },
+  {
+    "href": "/video/review-flash-the-glass-garden?from=%2Fmodels%2Fseedance-2-5-flash",
+    "status": 200,
+    "finalUrl": "http://localhost:3116/video/review-flash-the-glass-garden?from=%2Fmodels%2Fseedance-2-5-flash",
+    "anchor": true,
+    "title": "Seedance 2.5 Flash audio-enabled video example: portrait — MaxVideoAI"
+  },
+  {
+    "href": "https://maxvideoai.com/models/seedance-2-5-flash#specs",
+    "status": 200,
+    "finalUrl": "http://localhost:3116/models/seedance-2-5-flash#specs",
+    "anchor": true,
+    "title": "Seedance 2.5 Flash AI Video Generator & Editing | MaxVideoAI"
+  },
+  {
+    "href": "/pricing",
+    "status": 200,
+    "finalUrl": "http://localhost:3116/pricing",
+    "anchor": true,
+    "title": "AI Video Pricing: Compare Models | MaxVideoAI"
+  },
+  {
+    "href": "/ai-video-engines/seedance-2-5-vs-seedance-2-5-flash",
+    "status": 200,
+    "finalUrl": "http://localhost:3116/ai-video-engines/seedance-2-5-vs-seedance-2-5-flash",
+    "anchor": true,
+    "title": "Seedance 2.5 Flash vs Seedance 2.5 | MaxVideoAI"
+  },
+  {
+    "href": "/models/seedance-2-5",
+    "status": 200,
+    "finalUrl": "http://localhost:3116/models/seedance-2-5",
+    "anchor": true,
+    "title": "Seedance 2.5 AI Video Generator: 30s, 1080p & Audio"
+  },
+  {
+    "href": "/models/seedance-2-0",
+    "status": 200,
+    "finalUrl": "http://localhost:3116/models/seedance-2-0",
+    "anchor": true,
+    "title": "Seedance 2.0 AI Video: Max Length, Pricing & Best Uses"
+  },
+  {
+    "href": "/models/seedance-2-0-fast",
+    "status": 200,
+    "finalUrl": "http://localhost:3116/models/seedance-2-0-fast",
+    "anchor": true,
+    "title": "Seedance 2.0 Fast: Pricing & Quick Iteration | MaxVideoAI"
+  },
+  {
+    "href": "/ai-video-engines",
+    "status": 200,
+    "finalUrl": "http://localhost:3116/ai-video-engines",
+    "anchor": true,
+    "title": "Compare AI Video Engines: 11-Criteria Scorecards"
+  }
+]

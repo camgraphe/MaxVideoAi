@@ -38,6 +38,8 @@ export type ModelExamplesGalleryItem = {
   aspectRatio: string | null;
   category: string;
   title: string;
+  prompt?: string;
+  videoUrl?: string | null;
   recreateHref: string | null;
   recreateLabel: string | null;
   tags: DecisionExampleFilterId[];
@@ -189,6 +191,7 @@ function buildGalleryItems(input: BuildModelExamplesViewModelInput): ModelExampl
       aspectRatio,
       category,
       title,
+      ...(input.content.cinematic ? { prompt: video.promptFull ?? video.prompt, videoUrl: isImage ? null : video.videoUrl } : {}),
       recreateHref: video.recreateHref ?? null,
       recreateLabel: input.content.section.recreateLabel,
       tags: isImage

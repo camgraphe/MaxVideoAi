@@ -1,3 +1,4 @@
+import { cinematicVideoPromptLinks } from '../_lib/model-page-workflow-proofs';
 import { Link } from '@/i18n/navigation';
 import type { AppLocale } from '@/i18n/locales';
 import { FAQSchema } from '@/components/seo/FAQSchema';
@@ -5,12 +6,18 @@ import type { ModelCommercialData, ModelPagePricing } from '../_lib/model-page-c
 import type { ModelDecisionData } from '../_lib/model-page-decision-data';
 import { buildModelSchemaPayloads } from '../_lib/model-page-schema-payloads';
 import { formatModelPublicOffer } from '../_lib/model-page-offer-display';
-import { localizeSpecStatus, type KeySpecRow, type SpecSection, type SoraCopy } from '../_lib/model-page-specs';
+import type { SpecSection, SoraCopy } from '../_lib/model-page-specs';
 import { serializeJsonLd } from '../../model-jsonld';
 import type { CinematicPresentation } from '../_lib/model-page-cinematic-data';
 import { ModelCinematicAsset } from './ModelCinematicAsset';
-import { ModelCinematicShotPlan } from './ModelCinematicShotPlan.client';
+import { ModelCinematicVideoPrompt } from './ModelCinematicVideoPrompt.client';
 import { ModelCinematicPricing } from './ModelCinematicPricing';
+import { ModelCinematicOverview } from './ModelCinematicOverview';
+import { buildCinematicSpecRows, cinematicSpecCopy } from '../_lib/model-page-cinematic-specs';
+import { ModelCinematicSpecTable } from './ModelCinematicSpecTable';
+import { ModelCinematicSpecActions } from './ModelCinematicSpecActions.client';
+import { CinematicArrow, CinematicPlus } from './ModelCinematicMarks';
+import { buildCinematicFamilyLinks, cinematicDiscoveryCopy } from '../_lib/model-page-cinematic-discovery';
 
 export type CinematicDetailsProps = {
   pricing: Promise<ModelPagePricing>; commercial: ModelCommercialData;
@@ -25,12 +32,8 @@ const labels = {
   fr: { specs: 'Caractéristiques', pricing: 'Préparez votre prochaine création', faq: 'Quelques réponses utiles.', safety: 'Personnes, ressemblance et utilisation responsable', limits: 'Limites et conseils pratiques', related: 'Trouvez votre prochaine direction.' },
   es: { specs: 'Características', pricing: 'Prepara tu próxima creación', faq: 'Algunas respuestas útiles.', safety: 'Personas, parecido y uso responsable', limits: 'Límites y consejos prácticos', related: 'Encuentra tu próxima dirección.' },
 };
-const videoEssentials = new Set(['maxResolution', 'maxDuration', 'aspectRatios', 'referenceImageStyle', 'referenceVideo', 'firstLastFrame', 'audioOutput', 'videoToVideo']);
+const videoEssentials = new Set(['textToVideo', 'imageToVideo', 'maxResolution', 'maxDuration', 'aspectRatios', 'referenceImageStyle', 'referenceVideo', 'firstLastFrame', 'audioOutput', 'videoToVideo']);
 const moreSpecs = { en: 'All technical details', fr: 'Tous les détails techniques', es: 'Todos los detalles técnicos' };
-
-function SpecRows({ rows, locale }: { rows: KeySpecRow[]; locale: AppLocale }) {
-  return <dl className="cinema-spec-grid">{rows.map(row => <div key={row.id}><dt>{row.label}</dt><dd>{(row.valueLines?.length ? row.valueLines : [row.value]).map(value => <span key={value}>{localizeSpecStatus(value, locale)}</span>)}</dd></div>)}</dl>;
-}
 
 /** Shares exact commercial/schema data with other pages; owns its own editorial composition. */
 export async function ModelCinematicDetails({ pricing, commercial, schema, decision, locale, specTitle, specNote, specSections,
@@ -41,24 +44,46 @@ export async function ModelCinematicDetails({ pricing, commercial, schema, decis
   const panel = presentation.examples.panels.find(item => item.placement === 'details')!;
   const asset = presentation.assets.find(item => item.id === panel.assetIds[0])!;
   const plan = presentation.examples.shotPlans?.find(item => item.assetId === asset.id);
-  const rows = current.keySpecRows.filter(row => !row.id.startsWith('pricePer'));
+  const workflows = presentation.content.workflows;
+  const videoDetails = plan && workflows ? <ModelCinematicVideoPrompt title={asset.title}
+    prompt={plan.prompt ?? `${presentation.ui.animateFrame} ${plan.motion}\n${presentation.ui.sound}: ${plan.sound}`}
+    note={plan.proofNote ?? workflows.promptNote} imageDetailsLabel={workflows.imageDetailsLabel} ui={presentation.ui} asset={asset.video ? undefined : asset} creation={cinematicVideoPromptLinks(presentation.assistantHref, asset.id)} /> : undefined;
+  const rows = buildCinematicSpecRows(current.keySpecRows, pricingEngine, locale, presentation.content.variant === 'image');
   const primaryRows = rows.filter(row => presentation.content.variant === 'image' || videoEssentials.has(row.id));
   const secondaryRows = rows.filter(row => !primaryRows.includes(row));
+  const detailedSections = presentation.content.variant === 'video' ? specSections : [];
+  const specCopy = cinematicSpecCopy[locale];
+  const tableTitle = `${schema.heroTitle} — ${specTitle && specTitle !== 'Specs' ? specTitle : l.specs}`;
+  const source = `${schema.localizedCanonical}#specs`;
+  const related = decision.decisionCards.filter(card => !card.cta.href.endsWith('#prompting'));
+  const familyLinks = workflows ? buildCinematicFamilyLinks(presentation.content.modelSlug, locale) : [];
+  const discovery = cinematicDiscoveryCopy[locale];
   return <>
     {buildModelSchemaPayloads({ ...schema, pricingEngine, publicOffer }).map((payload, index) => <script key={index} id={`model-jsonld-${index}`} type="application/ld+json" suppressHydrationWarning dangerouslySetInnerHTML={{ __html: serializeJsonLd(payload) }} />)}
     <section id="specs" className="cinema-specs cinema-section"><div className="cinema-wrap">
-      <header className="cinema-section-heading"><div><p className="cinema-eyebrow">{schema.heroTitle}</p><h2>{specTitle && specTitle !== 'Specs' ? specTitle : l.specs}</h2></div><p>{specNote}</p></header>
-      <div className="cinema-specs-layout"><div className="cinema-settings-proof"><ModelCinematicAsset asset={asset} ui={presentation.ui} compact />
-        {plan ? <details className="cinema-disclosure"><summary>{presentation.ui.shotPlan}<span aria-hidden="true">+</span></summary><div><ModelCinematicShotPlan plan={plan} ui={presentation.ui} /></div></details> : null}
+      <header className="cinema-section-heading cinema-spec-heading"><div><h2>{tableTitle}</h2><p>{specNote}</p></div>
+        <ModelCinematicSpecActions title={tableTitle} rows={rows} source={source} locale={locale} slug={presentation.content.modelSlug} />
+      </header>
+      <div className="cinema-specs-layout"><div className="cinema-settings-proof"><ModelCinematicAsset asset={asset} ui={presentation.ui} compact details={videoDetails} />
       </div><div className="cinema-settings-data">
-      <SpecRows rows={primaryRows} locale={locale} />
-      {secondaryRows.length ? <details className="cinema-disclosure"><summary>{moreSpecs[locale]}<span aria-hidden="true">+</span></summary><div><SpecRows rows={secondaryRows} locale={locale} /></div></details> : null}
-      {specSections.map(section => <details className="cinema-disclosure" key={section.title}><summary>{section.title}<span aria-hidden="true">+</span></summary><div><p>{section.intro}</p><ul>{section.items.map(item => <li key={item}>{item}</li>)}</ul></div></details>)}
-      <ModelCinematicPricing pricing={decision.pricing} scenarios={scenarios ?? decision.pricing.scenarios} create={decision.hero.primaryCta} locale={locale} offer={offer} />
+      <ModelCinematicSpecTable rows={primaryRows} title={tableTitle} locale={locale} />
+      {secondaryRows.length || detailedSections.length ? <details className="cinema-disclosure"><summary>{moreSpecs[locale]}<CinematicPlus /></summary><div>
+        {secondaryRows.length ? <ModelCinematicSpecTable rows={secondaryRows} title={tableTitle} locale={locale} /> : null}
+        {detailedSections.map(section => <div key={section.title}><h3>{section.title}</h3><p>{section.intro}</p><ul>{section.items.map(item => <li key={item}>{item}</li>)}</ul></div>)}
+      </div></details> : null}
+      <p className="cinema-spec-source">{specCopy.context} <a href={source}>{specCopy.source}: MaxVideoAI</a></p>
+      <ModelCinematicOverview presentation={presentation} />
     </div></div></div></section>
-    <section id="faq" className="cinema-faq cinema-section"><div className="cinema-wrap cinema-faq-grid"><header><p className="cinema-eyebrow">{faqTitle ?? 'FAQ'}</p><h2>{l.faq}</h2><nav id="compare" className="cinema-related-links" aria-label={l.related}><h3>{l.related}</h3>{decision.decisionCards.filter(card => !card.cta.href.endsWith('#prompting')).map(card => <Link key={card.title} href={card.cta.href} prefetch={false}><span>{card.title}</span><span aria-hidden="true">↗</span><small>{card.body}</small></Link>)}</nav></header><div>{faqList.map(entry => <details key={entry.question} className="cinema-disclosure"><summary>{entry.question}<span aria-hidden="true">+</span></summary><div><p>{entry.answer}</p></div></details>)}
-      <details id="tips" className="cinema-disclosure"><summary>{l.limits}<span aria-hidden="true">+</span></summary><div><ul>{[...boundaries, ...troubleshootingItems].map(item => <li key={item}>{item}</li>)}</ul></div></details>
-      <details id="safety" className="cinema-disclosure"><summary>{copy.safetyTitle ?? l.safety}<span aria-hidden="true">+</span></summary><div><ul>{[...safetyRules, ...safetyInterpretation].map(item => <li key={item}>{item}</li>)}</ul>{copy.safetyNote ? <p>{copy.safetyNote}</p> : null}</div></details>
-    </div></div><FAQSchema questions={faqList.slice(0, 6)} /></section>
+    <div className="cinema-next-band"><div className="cinema-wrap cinema-spec-next">
+      <ModelCinematicPricing pricing={decision.pricing} scenarios={scenarios ?? decision.pricing.scenarios} create={decision.hero.primaryCta} locale={locale} offer={offer} />
+      {related.length || familyLinks.length ? <nav id="compare" className="cinema-related-links" aria-label={specCopy.related}><h3>{familyLinks.length ? discovery.title : specCopy.related}</h3>{related.map(card => <Link key={card.title} href={card.cta.href} prefetch={false} data-analytics-event="cta_click" data-analytics-cta-name="choose_model" data-analytics-cta-location="model_related"><span>{card.title}</span><CinematicArrow /><small>{card.body}</small></Link>)}
+        {familyLinks.length ? <div className="cinema-family-links"><p>{discovery.versions}</p><ul>{familyLinks.map(link => <li key={link.href}><Link href={link.href} prefetch={false} data-analytics-event="cta_click" data-analytics-cta-name="choose_model" data-analytics-cta-location="model_related" data-analytics-target-family="models">{link.label}<CinematicArrow /></Link></li>)}</ul></div> : null}
+        {workflows ? <Link href="/ai-video-engines" prefetch={false} className="cinema-source-link" data-analytics-event="cta_click" data-analytics-cta-name="all_comparisons" data-analytics-cta-location="model_related" data-analytics-target-family="compare">{discovery.allComparisons}<CinematicArrow /></Link> : null}
+      </nav> : null}
+    </div></div>
+    <section id="faq" className="cinema-faq cinema-section"><div className="cinema-wrap cinema-faq-grid"><header><p className="cinema-eyebrow">{faqTitle ?? 'FAQ'}</p><h2>{l.faq}</h2></header><div>{faqList.map(entry => <details key={entry.question} className="cinema-disclosure"><summary>{entry.question}<CinematicPlus /></summary><div><p>{entry.answer}</p></div></details>)}
+      <details id="tips" className="cinema-disclosure"><summary>{l.limits}<CinematicPlus /></summary><div><ul>{[...boundaries, ...troubleshootingItems].map(item => <li key={item}>{item}</li>)}</ul></div></details>
+      <details id="safety" className="cinema-disclosure"><summary>{copy.safetyTitle ?? l.safety}<CinematicPlus /></summary><div><ul>{[...safetyRules, ...safetyInterpretation].map(item => <li key={item}>{item}</li>)}</ul>{copy.safetyNote ? <p>{copy.safetyNote}</p> : null}</div></details>
+    </div></div><FAQSchema questions={faqList} /></section>
   </>;
 }

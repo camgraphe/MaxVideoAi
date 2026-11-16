@@ -13,6 +13,7 @@ import {
 export type ModelPromptingViewModel = {
   id: string;
   section: ModelPromptingContent['section'];
+  recipe?: ModelPromptingContent['recipe'];
   tabs: {
     items: Array<ModelPromptingContent['tabs'][number] & {
       exampleLinks?: { exampleHref: string | null; usePromptHref: string | null };
@@ -178,6 +179,7 @@ export function buildModelPromptingViewModel(
   return {
     id: input.imageAnchorId,
     section: input.content.section,
+    recipe: input.content.recipe,
     tabs: {
       items: input.content.tabs.map(tab => {
         if (!tab.matchPublicExample) return tab;

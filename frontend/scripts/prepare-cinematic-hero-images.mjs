@@ -14,16 +14,18 @@ const originals = [
   ...(await readJson(path.join(root, 'config/model-cinematic-start-frames.json'))),
 ];
 // This reviewed editorial profile is independent of the shared Next image optimizer.
-const profile = { version: 1, format: 'avif', quality: 40, effort: 6, desktopWidths: [960, 1600, 2560], mobile: { 'first-light': { widths: [480, 720], aspect: .5, position: .65 }, 'midnight-run': { widths: [640, 1280], aspect: 16 / 9, position: 1 } } };
+const profile = { version: 2, format: 'avif', quality: 40, effort: 6, desktopWidths: [960, 1600, 2560], mobile: { '55-above-the-clouds': { widths: [480, 720], aspect: .5, position: .45 }, 'midnight-run': { widths: [640, 1280], aspect: 16 / 9, position: 1 } } };
 const requestedSources = Object.fromEntries(process.argv.filter(arg => arg.startsWith('--source=')).map(arg => {
   const value = arg.slice(9); const index = value.indexOf('=');
   assert.ok(index > 0, 'Use --source=asset-id=/absolute/original');
   return [value.slice(0, index), value.slice(index + 1)];
 }));
 if (process.argv.includes('--write')) {
-  assert.deepEqual(Object.keys(requestedSources).sort(), ['first-light', 'midnight-run']);
-  const assets = [];
-  for (const id of ['first-light', 'midnight-run']) {
+  const ids = Object.keys(requestedSources);
+  assert.ok(ids.length > 0 && ids.every(id => id in profile.mobile), 'Select explicit reviewed hero sources');
+  const previous = await readJson(manifestPath);
+  const assets = previous.assets.filter(asset => asset.id in profile.mobile && !ids.includes(asset.id));
+  for (const id of ids) {
     const original = originals.find(asset => asset.id === id)?.original;
     assert.ok(original, id);
     const bytes = await readFile(requestedSources[id]);
@@ -46,11 +48,11 @@ if (process.argv.includes('--write')) {
     for (const width of mobileProfile.widths) mobile.push(await render(width, true));
     assets.push({ id, originalSha256: original.sha256, crop, desktop, mobile });
   }
-  await writeFile(manifestPath, JSON.stringify({ profile, assets }, null, 2) + '\n');
+  await writeFile(manifestPath, JSON.stringify({ profile, assets: assets.sort((a, b) => a.id.localeCompare(b.id)) }, null, 2) + '\n');
 }
 const manifest = await readJson(manifestPath);
 assert.deepEqual(manifest.profile, profile);
-assert.deepEqual(manifest.assets.map(asset => asset.id).sort(), ['first-light', 'midnight-run']);
+assert.deepEqual(manifest.assets.map(asset => asset.id).sort(), ['55-above-the-clouds', 'midnight-run']);
 for (const asset of manifest.assets) {
   assert.equal(asset.originalSha256, originals.find(original => original.id === asset.id)?.original.sha256);
   for (const file of [...asset.desktop, ...asset.mobile]) {

@@ -1,0 +1,5 @@
+const {chromium}=require('@playwright/test');const fs=require('node:fs');
+(async()=>{const b=await chromium.launch({headless:true});const p=await b.newPage();const rows=JSON.parse(fs.readFileSync('docs/redesign/evidence/20261116-final-audit/pages.json'));const hrefs=[...new Set(rows.slice(0,2).flatMap(r=>r.links.map(l=>l.href)))];const report=[];
+for(const href of hrefs){const u=new URL(href,'http://localhost:3116');if(u.host==='maxvideoai.com')u.host='localhost:3116',u.protocol='http:';if(u.host!=='localhost:3116'||href.startsWith('#')||u.pathname.startsWith('/app')||u.pathname.startsWith('/assets/'))continue;
+try{const response=await p.goto(u.href,{waitUntil:'domcontentloaded',timeout:90000});const title=await p.title();const anchor=u.hash?await p.locator('[id='+JSON.stringify(decodeURIComponent(u.hash.slice(1)))+']').count()>0:true;report.push({href,status:response.status(),finalUrl:p.url(),anchor,title})}catch(e){report.push({href,error:e.message})}}
+fs.writeFileSync('docs/redesign/evidence/20261116-final-audit/links.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report));await b.close()})().catch(e=>{console.error(e);process.exit(1)});

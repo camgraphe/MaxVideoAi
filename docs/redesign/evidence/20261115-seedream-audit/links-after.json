@@ -1,0 +1,702 @@
+[
+  {
+    "href": "#examples",
+    "uses": [
+      {
+        "href": "#examples",
+        "text": "Explore the images",
+        "scope": "model",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "#examples",
+        "text": "Explore the images",
+        "scope": "model",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/models/seedream-5-5",
+    "anchor": true,
+    "hash": "examples"
+  },
+  {
+    "href": "#proof-refine",
+    "uses": [
+      {
+        "href": "#proof-refine",
+        "text": "Keep shaping the scene.Guide successive edits to clothing, light and the details that matter.",
+        "scope": "model",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/models/seedream-5-5",
+    "anchor": true,
+    "hash": "proof-refine"
+  },
+  {
+    "href": "#proof-lettering",
+    "uses": [
+      {
+        "href": "#proof-lettering",
+        "text": "Give your words a place.Put text into signs, posters and the scene itself.",
+        "scope": "model",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/models/seedream-5-5",
+    "anchor": true,
+    "hash": "proof-lettering"
+  },
+  {
+    "href": "#proof-moments",
+    "uses": [
+      {
+        "href": "#proof-moments",
+        "text": "Get closer to real.Explore natural skin, tactile fabrics and lifelike lighting.",
+        "scope": "model",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/models/seedream-5-5",
+    "anchor": true,
+    "hash": "proof-moments"
+  },
+  {
+    "href": "#proof-transparency",
+    "uses": [
+      {
+        "href": "#proof-transparency",
+        "text": "Create without a background.Generate native transparent PNGs, ready to compose.",
+        "scope": "model",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/models/seedream-5-5",
+    "anchor": true,
+    "hash": "proof-transparency"
+  },
+  {
+    "href": "#top",
+    "uses": [
+      {
+        "href": "#top",
+        "text": "Seedream 5.5",
+        "scope": "model",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/models/seedream-5-5",
+    "anchor": true,
+    "hash": "top"
+  },
+  {
+    "href": "#overview",
+    "uses": [
+      {
+        "href": "#overview",
+        "text": "Overview",
+        "scope": "model",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/models/seedream-5-5",
+    "anchor": true,
+    "hash": "overview"
+  },
+  {
+    "href": "#prompting",
+    "uses": [
+      {
+        "href": "#prompting",
+        "text": "Prompt guide",
+        "scope": "model",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/models/seedream-5-5",
+    "anchor": true,
+    "hash": "prompting"
+  },
+  {
+    "href": "#specs",
+    "uses": [
+      {
+        "href": "#specs",
+        "text": "Details",
+        "scope": "model",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/models/seedream-5-5",
+    "anchor": true,
+    "hash": "specs"
+  },
+  {
+    "href": "#decision-pricing",
+    "uses": [
+      {
+        "href": "#decision-pricing",
+        "text": "Pricing",
+        "scope": "model",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/models/seedream-5-5",
+    "anchor": true,
+    "hash": "decision-pricing"
+  },
+  {
+    "href": "#faq",
+    "uses": [
+      {
+        "href": "#faq",
+        "text": "FAQ",
+        "scope": "model",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/models/seedream-5-5",
+    "anchor": true,
+    "hash": "faq"
+  },
+  {
+    "href": "/assets/model-examples/seedream-5-5/7d0328b2bdd1635ea6d115787f7d3a25e91dc907a42a768969663f9c2cc3d9d3.jpg",
+    "uses": [
+      {
+        "href": "/assets/model-examples/seedream-5-5/7d0328b2bdd1635ea6d115787f7d3a25e91dc907a42a768969663f9c2cc3d9d3.jpg",
+        "text": "Open original",
+        "scope": "model",
+        "panel": true,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/assets/model-examples/seedream-5-5/7d0328b2bdd1635ea6d115787f7d3a25e91dc907a42a768969663f9c2cc3d9d3.jpg"
+  },
+  {
+    "href": "/assets/model-examples/seedream-5-5/0f01d7c64f2eaca38bfabd67de2da1fc3412af795836064c7577a33a6ec29538.jpg",
+    "uses": [
+      {
+        "href": "/assets/model-examples/seedream-5-5/0f01d7c64f2eaca38bfabd67de2da1fc3412af795836064c7577a33a6ec29538.jpg",
+        "text": "Exact edit source",
+        "scope": "model",
+        "panel": true,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/assets/model-examples/seedream-5-5/0f01d7c64f2eaca38bfabd67de2da1fc3412af795836064c7577a33a6ec29538.jpg"
+  },
+  {
+    "href": "/assets/model-examples/seedream-5-5/16b4e38576933c2c96969c00c281af474ec13f3302d79ac9b5217deaaf3bd328.jpg",
+    "uses": [
+      {
+        "href": "/assets/model-examples/seedream-5-5/16b4e38576933c2c96969c00c281af474ec13f3302d79ac9b5217deaaf3bd328.jpg",
+        "text": "",
+        "scope": "model",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/assets/model-examples/seedream-5-5/16b4e38576933c2c96969c00c281af474ec13f3302d79ac9b5217deaaf3bd328.jpg",
+        "text": "Open original",
+        "scope": "model",
+        "panel": true,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/assets/model-examples/seedream-5-5/16b4e38576933c2c96969c00c281af474ec13f3302d79ac9b5217deaaf3bd328.jpg"
+  },
+  {
+    "href": "/app/image?engine=seedream-5-5",
+    "uses": [
+      {
+        "href": "/app/image?engine=seedream-5-5",
+        "text": "Create an image",
+        "scope": "model",
+        "panel": false,
+        "analytics": "cta_click"
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5",
+        "text": "Create an image",
+        "scope": "model",
+        "panel": false,
+        "analytics": "cta_click"
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5",
+        "text": "Create with Seedream 5.5",
+        "scope": "model",
+        "panel": false,
+        "analytics": "cta_click"
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/app/image?engine=seedream-5-5"
+  },
+  {
+    "href": "/app/image?engine=seedream-5-5&example=one-night-only&lang=en",
+    "uses": [
+      {
+        "href": "/app/image?engine=seedream-5-5&example=one-night-only&lang=en",
+        "text": "Use this prompt",
+        "scope": "model",
+        "panel": true,
+        "analytics": "cta_click"
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/app/image?engine=seedream-5-5&example=one-night-only"
+  },
+  {
+    "href": "/app/image?engine=seedream-5-5&example=backstage-wardrobe&lang=en",
+    "uses": [
+      {
+        "href": "/app/image?engine=seedream-5-5&example=backstage-wardrobe&lang=en",
+        "text": "Use this prompt",
+        "scope": "model",
+        "panel": true,
+        "analytics": "cta_click"
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/app/image?engine=seedream-5-5&example=backstage-wardrobe"
+  },
+  {
+    "href": "/app/image?engine=seedream-5-5&example=backstage-wardrobe&lang=en&assistant=milo&refine=example",
+    "uses": [
+      {
+        "href": "/app/image?engine=seedream-5-5&example=backstage-wardrobe&lang=en&assistant=milo&refine=example",
+        "text": "Refine with Milo",
+        "scope": "model",
+        "panel": true,
+        "analytics": "cta_click"
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/app/image?engine=seedream-5-5&example=backstage-wardrobe&assistant=milo&refine=example"
+  },
+  {
+    "href": "/assets/model-examples/seedream-5-5/7f42f3ee1c931bd1a0c993e7da0c186864b5ddc81cb803240b64912e77bd4a96.jpg",
+    "uses": [
+      {
+        "href": "/assets/model-examples/seedream-5-5/7f42f3ee1c931bd1a0c993e7da0c186864b5ddc81cb803240b64912e77bd4a96.jpg",
+        "text": "Open original ↗",
+        "scope": "model",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/assets/model-examples/seedream-5-5/7f42f3ee1c931bd1a0c993e7da0c186864b5ddc81cb803240b64912e77bd4a96.jpg",
+        "text": "Open original",
+        "scope": "model",
+        "panel": true,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/assets/model-examples/seedream-5-5/7f42f3ee1c931bd1a0c993e7da0c186864b5ddc81cb803240b64912e77bd4a96.jpg"
+  },
+  {
+    "href": "/assets/model-examples/seedream-5-5/d9a6189fa888558a3a6415efcc407c529227bebac45d64ef5a5db3e384948cf3.png",
+    "uses": [
+      {
+        "href": "/assets/model-examples/seedream-5-5/d9a6189fa888558a3a6415efcc407c529227bebac45d64ef5a5db3e384948cf3.png",
+        "text": "Open original",
+        "scope": "model",
+        "panel": true,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/assets/model-examples/seedream-5-5/d9a6189fa888558a3a6415efcc407c529227bebac45d64ef5a5db3e384948cf3.png"
+  },
+  {
+    "href": "/app/image?engine=seedream-5-5&example=one-night-only&lang=en&assistant=milo&refine=example",
+    "uses": [
+      {
+        "href": "/app/image?engine=seedream-5-5&example=one-night-only&lang=en&assistant=milo&refine=example",
+        "text": "Refine with Milo",
+        "scope": "model",
+        "panel": true,
+        "analytics": "cta_click"
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/app/image?engine=seedream-5-5&example=one-night-only&assistant=milo&refine=example"
+  },
+  {
+    "href": "/app/image?engine=seedream-5-5&example=after-the-race&lang=en&assistant=milo&refine=example",
+    "uses": [
+      {
+        "href": "/app/image?engine=seedream-5-5&example=after-the-race&lang=en&assistant=milo&refine=example",
+        "text": "Refine with Milo",
+        "scope": "model",
+        "panel": true,
+        "analytics": "cta_click"
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/app/image?engine=seedream-5-5&example=after-the-race&assistant=milo&refine=example"
+  },
+  {
+    "href": "/app/image?engine=seedream-5-5&example=after-the-race&lang=en",
+    "uses": [
+      {
+        "href": "/app/image?engine=seedream-5-5&example=after-the-race&lang=en",
+        "text": "Use this prompt",
+        "scope": "model",
+        "panel": true,
+        "analytics": "cta_click"
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/app/image?engine=seedream-5-5&example=after-the-race"
+  },
+  {
+    "href": "/app/image?engine=seedream-5-5&example=free-to-move&lang=en",
+    "uses": [
+      {
+        "href": "/app/image?engine=seedream-5-5&example=free-to-move&lang=en",
+        "text": "Use this prompt",
+        "scope": "model",
+        "panel": true,
+        "analytics": "cta_click"
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/app/image?engine=seedream-5-5&example=free-to-move"
+  },
+  {
+    "href": "/assets/model-examples/seedream-5-5/2535f7148cd673f38f2aabd776127690bdcca5fee1631e701eb6b550bf5dca70.jpg",
+    "uses": [
+      {
+        "href": "/assets/model-examples/seedream-5-5/2535f7148cd673f38f2aabd776127690bdcca5fee1631e701eb6b550bf5dca70.jpg",
+        "text": "",
+        "scope": "model",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/assets/model-examples/seedream-5-5/2535f7148cd673f38f2aabd776127690bdcca5fee1631e701eb6b550bf5dca70.jpg",
+        "text": "Open original",
+        "scope": "model",
+        "panel": true,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/assets/model-examples/seedream-5-5/2535f7148cd673f38f2aabd776127690bdcca5fee1631e701eb6b550bf5dca70.jpg"
+  },
+  {
+    "href": "/app/image?engine=seedream-5-5&example=free-to-move&lang=en&assistant=milo&refine=example",
+    "uses": [
+      {
+        "href": "/app/image?engine=seedream-5-5&example=free-to-move&lang=en&assistant=milo&refine=example",
+        "text": "Refine with Milo",
+        "scope": "model",
+        "panel": true,
+        "analytics": "cta_click"
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/app/image?engine=seedream-5-5&example=free-to-move&assistant=milo&refine=example"
+  },
+  {
+    "href": "https://docs.byteplus.com/en/docs/modelark/seedream-5-5",
+    "uses": [
+      {
+        "href": "https://docs.byteplus.com/en/docs/modelark/seedream-5-5",
+        "text": "Official model guide ↗",
+        "scope": "model",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "external": true
+  },
+  {
+    "href": "/assets/model-examples/seedream-5-5/9c2ccca85c7306afc4bba3bbe4e1a80a58812188277592719b5e2327ef47e0ef.jpg",
+    "uses": [
+      {
+        "href": "/assets/model-examples/seedream-5-5/9c2ccca85c7306afc4bba3bbe4e1a80a58812188277592719b5e2327ef47e0ef.jpg",
+        "text": "",
+        "scope": "model",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/assets/model-examples/seedream-5-5/9c2ccca85c7306afc4bba3bbe4e1a80a58812188277592719b5e2327ef47e0ef.jpg",
+        "text": "Open original",
+        "scope": "model",
+        "panel": true,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/assets/model-examples/seedream-5-5/9c2ccca85c7306afc4bba3bbe4e1a80a58812188277592719b5e2327ef47e0ef.jpg"
+  },
+  {
+    "href": "/app/image?engine=seedream-5-5&example=55-make-your-move&lang=en",
+    "uses": [
+      {
+        "href": "/app/image?engine=seedream-5-5&example=55-make-your-move&lang=en",
+        "text": "Use this prompt",
+        "scope": "model",
+        "panel": true,
+        "analytics": "cta_click"
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5&example=55-make-your-move&lang=en",
+        "text": "Use this prompt",
+        "scope": "model",
+        "panel": false,
+        "analytics": "cta_click"
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/app/image?engine=seedream-5-5&example=55-make-your-move"
+  },
+  {
+    "href": "/app/image?assistant=milo&lang=en&engine=seedream-5-5",
+    "uses": [
+      {
+        "href": "/app/image?assistant=milo&lang=en&engine=seedream-5-5",
+        "text": "MiloHelp me turn my idea into a cinematic scene.",
+        "scope": "model",
+        "panel": false,
+        "analytics": "cta_click"
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/app/image?assistant=milo&engine=seedream-5-5"
+  },
+  {
+    "href": "https://maxvideoai.com/models/seedream-5-5#specs",
+    "uses": [
+      {
+        "href": "https://maxvideoai.com/models/seedream-5-5#specs",
+        "text": "Source: MaxVideoAI",
+        "scope": "model",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "external": true
+  },
+  {
+    "href": "https://seed.bytedance.com/en/seedream5_5",
+    "uses": [
+      {
+        "href": "https://seed.bytedance.com/en/seedream5_5",
+        "text": "Model by ByteDance",
+        "scope": "model",
+        "panel": true,
+        "analytics": null
+      }
+    ],
+    "external": true
+  },
+  {
+    "href": "/app/image?engine=seedream-5-5&example=55-make-your-move&lang=en&assistant=milo&refine=example",
+    "uses": [
+      {
+        "href": "/app/image?engine=seedream-5-5&example=55-make-your-move&lang=en&assistant=milo&refine=example",
+        "text": "Refine with Milo",
+        "scope": "model",
+        "panel": true,
+        "analytics": "cta_click"
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5&example=55-make-your-move&lang=en&assistant=milo&refine=example",
+        "text": "Refine with Milo",
+        "scope": "model",
+        "panel": false,
+        "analytics": "cta_click"
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/app/image?engine=seedream-5-5&example=55-make-your-move&assistant=milo&refine=example"
+  },
+  {
+    "href": "/assets/model-examples/seedream-5-5/41c6a5808f6cc946ae8f3034ecbc3504f79aa8a8d57302eeb790563d6e4f2d8a.jpg",
+    "uses": [
+      {
+        "href": "/assets/model-examples/seedream-5-5/41c6a5808f6cc946ae8f3034ecbc3504f79aa8a8d57302eeb790563d6e4f2d8a.jpg",
+        "text": "Open original",
+        "scope": "model",
+        "panel": true,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/assets/model-examples/seedream-5-5/41c6a5808f6cc946ae8f3034ecbc3504f79aa8a8d57302eeb790563d6e4f2d8a.jpg"
+  },
+  {
+    "href": "/app/image?engine=seedream-5-5&example=55-last-train&lang=en",
+    "uses": [
+      {
+        "href": "/app/image?engine=seedream-5-5&example=55-last-train&lang=en",
+        "text": "Use this prompt",
+        "scope": "model",
+        "panel": true,
+        "analytics": "cta_click"
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/app/image?engine=seedream-5-5&example=55-last-train"
+  },
+  {
+    "href": "/app/image?engine=seedream-5-5&example=55-last-train&lang=en&assistant=milo&refine=example",
+    "uses": [
+      {
+        "href": "/app/image?engine=seedream-5-5&example=55-last-train&lang=en&assistant=milo&refine=example",
+        "text": "Refine with Milo",
+        "scope": "model",
+        "panel": true,
+        "analytics": "cta_click"
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/app/image?engine=seedream-5-5&example=55-last-train&assistant=milo&refine=example"
+  },
+  {
+    "href": "/app/image?engine=seedream-5-5&example=55-above-the-clouds&lang=en",
+    "uses": [
+      {
+        "href": "/app/image?engine=seedream-5-5&example=55-above-the-clouds&lang=en",
+        "text": "Use this prompt",
+        "scope": "model",
+        "panel": true,
+        "analytics": "cta_click"
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/app/image?engine=seedream-5-5&example=55-above-the-clouds"
+  },
+  {
+    "href": "/app/image?engine=seedream-5-5&example=55-above-the-clouds&lang=en&assistant=milo&refine=example",
+    "uses": [
+      {
+        "href": "/app/image?engine=seedream-5-5&example=55-above-the-clouds&lang=en&assistant=milo&refine=example",
+        "text": "Refine with Milo",
+        "scope": "model",
+        "panel": true,
+        "analytics": "cta_click"
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/app/image?engine=seedream-5-5&example=55-above-the-clouds&assistant=milo&refine=example"
+  },
+  {
+    "href": "/models/seedream-5-0-pro",
+    "uses": [
+      {
+        "href": "/models/seedream-5-0-pro",
+        "text": "Seedream 5.0 ProWork with the previous Pro model for one 2K image, with up to 10 reference images.",
+        "scope": "model",
+        "panel": false,
+        "analytics": "cta_click"
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/models/seedream-5-0-pro"
+  },
+  {
+    "href": "/models/seedream-5-0-flash",
+    "uses": [
+      {
+        "href": "/models/seedream-5-0-flash",
+        "text": "Seedream 5.0 FlashExplore another 1K–2K single-image workflow. Check its quote with the settings you need.",
+        "scope": "model",
+        "panel": false,
+        "analytics": "cta_click"
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/models/seedream-5-0-flash"
+  },
+  {
+    "href": "/models/seedream",
+    "uses": [
+      {
+        "href": "/models/seedream",
+        "text": "Seedream 5.0 LiteNeed 3K, 4K or a batch of related images? Explore Lite’s resolution and image-set options.",
+        "scope": "model",
+        "panel": false,
+        "analytics": "cta_click"
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/models/seedream"
+  },
+  {
+    "href": "/ai-video-engines/best-for/image-to-video",
+    "uses": [
+      {
+        "href": "/ai-video-engines/best-for/image-to-video",
+        "text": "Animate your imageChoose a video model for your finished still. Compare image-to-video workflows before planning the motion.",
+        "scope": "model",
+        "panel": false,
+        "analytics": "cta_click"
+      },
+      {
+        "href": "/ai-video-engines/best-for/image-to-video",
+        "text": "Image-to-video",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      },
+      {
+        "href": "/ai-video-engines/best-for/image-to-video",
+        "text": "Image-to-video",
+        "scope": "shell",
+        "panel": false,
+        "analytics": null
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/ai-video-engines/best-for/image-to-video"
+  },
+  {
+    "href": "/pricing#seedream-5-5-pricing",
+    "uses": [
+      {
+        "href": "/pricing#seedream-5-5-pricing",
+        "text": "View full pricing ↗",
+        "scope": "model",
+        "panel": false,
+        "analytics": "cta_click"
+      }
+    ],
+    "status": 200,
+    "final": "http://localhost:3116/pricing",
+    "anchor": true,
+    "hash": "seedream-5-5-pricing"
+  }
+]

@@ -2,7 +2,7 @@
   "marketingName": "Seedream 5.5",
   "versionLabel": "5.5",
   "seo": {
-    "title": "Seedream 5.5 | Ediciones precisas y PNG transparentes | MaxVideoAI",
+    "title": "Seedream 5.5: generador y editor de imágenes IA | MaxVideoAI",
     "description": "Crea y edita imágenes con Seedream 5.5 de ByteDance en MaxVideoAI. Hasta 10 referencias, salida de 1K a 2K y PNG transparentes nativos."
   },
   "overview": "Seedream 5.5 convierte un brief visual en una imagen fija y permite desarrollarla mediante ediciones guiadas. Construye un retrato expresivo, una escena entre dos personas o una campaña con texto dentro del entorno; después, afina los detalles que importan.",
@@ -69,8 +69,12 @@
   ],
   "faqs": [
     {
-      "q": "¿Qué puedo crear con Seedream 5.5?",
-      "a": "Crea imágenes fijas desde texto o edita con hasta 10 imágenes de referencia. Retratos, escenas entre personas, campañas y elementos PNG transparentes son puntos de partida útiles. Cada solicitud devuelve una imagen."
+      "q": "¿Qué es Seedream 5.5 y qué puedo crear?",
+      "a": "Seedream 5.5 es un modelo de generación y edición de imágenes con IA desarrollado por ByteDance. En MaxVideoAI, usa texto o hasta 10 imágenes de referencia para crear retratos, escenas cinematográficas, imágenes de campaña y PNG transparentes. Cada solicitud devuelve una imagen fija."
+    },
+    {
+      "q": "¿En qué se diferencia Seedream 5.5 de Seedream 5.0 Pro?",
+      "a": "ByteDance presenta la versión 5.5 como un avance en ediciones sucesivas, realismo y texto, con salida PNG transparente nativa. En MaxVideoAI, también ofrece 1K, 1.5K y 2K, frente al 2K de Pro. Ambos aceptan hasta 10 referencias y devuelven una imagen por solicitud. Los ejemplos anteriores son resultados seleccionados, no una comparación controlada entre ambos modelos."
     },
     {
       "q": "¿Cómo puedo desarrollar la misma escena?",
@@ -89,8 +93,8 @@
       "a": "Guarda la imagen y elige un modelo de video para una generación independiente. Una silueta legible, manos claras y espacio alrededor del sujeto facilitan la preparación del primer plano."
     },
     {
-      "q": "¿Cuánto costará mi imagen?",
-      "a": "Selecciona resolución, formato y referencias en el espacio de imagen. Revisa la cotización actual antes de confirmar la solicitud."
+      "q": "¿Cuánto cuesta Seedream 5.5 en MaxVideoAI?",
+      "a": "MaxVideoAI utiliza créditos de pago por uso, sin suscripción obligatoria. Elige la resolución y las referencias en Create y revisa el precio antes de generar. Cada nueva generación o edición tiene su propia cotización."
     }
   ],
   "custom": {
@@ -244,7 +248,7 @@
     "decisionCards": [
       {
         "title": "Seedream 5.0 Flash",
-        "body": "Explora encuadres, expresiones e ideas de campaña, una imagen cada vez, en 1K, 1.5K o 2K.",
+        "body": "Explora otro flujo de una imagen en 1K–2K. Consulta su precio con los ajustes que necesitas.",
         "cta": {
           "label": "Descubrir Seedream 5.0 Flash",
           "href": "/es/modelos/seedream-5-0-flash"
@@ -252,7 +256,7 @@
       },
       {
         "title": "Seedream 5.0 Lite",
-        "body": "Explora en serie imágenes de personajes, producto o storyboard antes de elegir los planos que desarrollarás.",
+        "body": "¿Necesitas 3K, 4K o un lote de imágenes relacionadas? Explora las resoluciones y las series de Lite.",
         "cta": {
           "label": "Descubrir Seedream 5.0 Lite",
           "href": "/es/modelos/seedream"
@@ -260,10 +264,18 @@
       },
       {
         "title": "Seedream 5.0 Pro",
-        "body": "Crea un retrato detallado, una imagen de campaña o una infografía en 2K, con salida JPEG o PNG.",
+        "body": "Usa el modelo Pro anterior para una imagen 2K, con hasta 10 imágenes de referencia.",
         "cta": {
           "label": "Descubrir Seedream 5.0 Pro",
           "href": "/es/modelos/seedream-5-0-pro"
+        }
+      },
+      {
+        "title": "Anima tu imagen",
+        "body": "Elige un modelo de vídeo para tu imagen final. Compara los flujos de imagen a vídeo antes de planificar el movimiento.",
+        "cta": {
+          "label": "Comparar modelos de imagen a vídeo",
+          "href": "/es/comparativa/best-for/image-to-video"
         }
       },
       {
@@ -277,31 +289,27 @@
     ],
     "referenceWorkflows": [
       {
-        "title": "Elegir el instante",
-        "body": "Describe la acción y la emoción en una frase y añade ángulo, luz y lugar. Para dos personajes, aclara la relación y sus posiciones."
+        "title": "Asigna un papel a cada referencia",
+        "body": "Indica qué imagen define a la persona, la ropa o el lugar. Usa hasta 10 imágenes de referencia para orientar un resultado."
       },
       {
-        "title": "Dar una función a cada referencia",
-        "body": "Indica qué imagen define a la persona, cuál define la ropa y cuál el lugar. Hasta 10 referencias guían una sola imagen de salida."
+        "title": "Continúa desde la última edición",
+        "body": "Usa el resultado anterior como nueva referencia. Indica qué debe mantenerse y pide un cambio. Para una escena opaca, conserva el fondo en Opaco."
       },
       {
-        "title": "Afinar un elemento cada vez",
-        "body": "Pide un cambio concreto, como una luz de ventana más suave u otro abrigo. Compara rostros, manos, texto y encuadre con la imagen anterior."
-      },
-      {
-        "title": "Preparar la primera imagen",
-        "body": "Elige una pose legible y deja espacio para el movimiento de cámara previsto. Guarda la imagen elegida; el movimiento y el sonido llegan en una generación de video independiente."
+        "title": "Crea un fondo transparente",
+        "body": "Selecciona PNG y Transparente en Create. Describe el sujeto aislado y deja espacio alrededor de sus bordes. JPEG no conserva la transparencia."
       }
     ],
     "pricingCopy": {
-      "title": "Tus ajustes. Tu precio.",
-      "subtitle": "Elige la resolución y las referencias en Create. Verás el precio exacto antes de generar.",
-      "footnote": "El presupuesto corresponde a los ajustes y las referencias elegidos.",
+      "title": "Consulta el precio antes de generar.",
+      "subtitle": "Pago por uso. Sin suscripción obligatoria.",
+      "footnote": "Cada generación o edición tiene su propia cotización.",
       "ctaLabel": "Ver todos los precios",
       "ctaHref": "/es/precios#seedream-5-5-pricing"
     },
     "meta": {
-      "title": "Seedream 5.5 | Ediciones precisas y PNG transparentes | MaxVideoAI",
+      "title": "Seedream 5.5: generador y editor de imágenes IA | MaxVideoAI",
       "description": "Crea y edita imágenes con Seedream 5.5 de ByteDance en MaxVideoAI. Hasta 10 referencias, salida de 1K a 2K y PNG transparentes nativos."
     }
   },
@@ -309,8 +317,8 @@
     "modelSlug": "seedream-5-5",
     "section": {
       "title": "Cómo escribir prompts para Seedream 5.5",
-      "intro": "Parte de un instante que una cámara podría captar. Describe a las personas y su interacción; después, el encuadre, la luz física, las texturas y cualquier texto exacto.",
-      "tip": "Para un futuro video, describe una pose inicial legible y deja espacio para el movimiento. Seedream crea la imagen fija.",
+      "intro": "Describe la acción, el encuadre y la luz. Pon el texto exacto entre comillas. Usa este ejemplo o desarrolla tu idea con Milo.",
+      "tip": null,
       "guide": {
         "label": "Guía oficial del modelo",
         "href": "https://docs.byteplus.com/en/docs/modelark/seedream-5-5"
@@ -320,10 +328,8 @@
     "tabs": [],
     "tabNotes": [],
     "globalPrinciples": [
-      "Dale a cada persona una acción, una mirada y una posición en la escena.",
-      "Pon el texto exacto entre comillas y describe su soporte real.",
-      "Para editar, indica qué se mantiene antes de lo que cambia; revisa cada resultado.",
-      "Guarda la imagen elegida con su prompt antes de planear el movimiento en un modelo de video."
+      "Revisa todas las letras, caras y manos antes de usar el resultado.",
+      "Para el primer fotograma de un vídeo, utiliza una pose clara y deja espacio para el movimiento. Seedream crea la imagen fija; anímala en una generación de vídeo aparte."
     ],
     "engineWhy": [],
     "demo": null,
@@ -345,6 +351,33 @@
           "badge": "Texto → Imagen",
           "kind": "image",
           "prompt": "A cinematic live-action film still, 16:9 widescreen, from a beautifully photographed contemporary drama. On an almost empty covered railway platform at night, a fictional woman around thirty wearing a forest-green jacket reaches back to take the hand of a fictional man around thirty-five in a dark wool coat. They are both walking toward a waiting train; she turns toward him with a small spontaneous smile, while he looks at her with concern and affection. Their faces and connected hands are readable and anatomically natural. Warm light spills from the open train door behind them into the cool blue rain beyond the platform roof. A station worker and two adult travellers remain small in the background, adding scale and a believable lived-in setting. The image catches a real transition, coat hems moving and one foot just leaving the ground. Strong foreground, middle ground and background separation, glistening pavement, delicate steam in the distance, fine natural skin texture and wool detail. 50mm cinema lens, softly rolled highlights, subtle film grain, realistic color separation, intimate and emotionally charged without melodrama. Carefully composed with both people fully legible and room around them for a later camera move. One cohesive physical location, a film frame rather than a fashion pose, no title or graphic overlay."
+        }
+      ]
+    },
+    "recipe": {
+      "label": "La idea detrás de esta imagen",
+      "excerpt": "Una mujer con abrigo burdeos sale del metro de París a la hora azul. Se vuelve hacia alguien fuera de cuadro. La lluvia refleja luces cian y ámbar. Un cartel iluminado muestra “MAKE YOUR MOVE”.",
+      "note": "Versión abreviada para explicar la escena. Los botones bajo la imagen usan el prompt original completo.",
+      "factors": [
+        {
+          "icon": "subject",
+          "title": "Sujeto y acción",
+          "body": "Dale al sujeto una acción clara y una dirección de mirada."
+        },
+        {
+          "icon": "framing",
+          "title": "Encuadra el momento",
+          "body": "Elige el formato, la distancia de cámara y la posición de los sujetos."
+        },
+        {
+          "icon": "light",
+          "title": "Luz y textura",
+          "body": "Indica la fuente de luz, su dirección y las texturas que buscas."
+        },
+        {
+          "icon": "text",
+          "title": "Dale una superficie al texto",
+          "body": "Cita las palabras exactas, su soporte, su posición y los saltos de línea."
         }
       ]
     }
@@ -421,10 +454,6 @@
         "title": "El último tren — dos personajes bajo la lluvia"
       },
       {
-        "id": "first-light",
-        "title": "Primera luz — un instante en el puerto"
-      },
-      {
         "id": "backstage-original",
         "title": "Antes del telón — escena original"
       },
@@ -447,10 +476,14 @@
       {
         "id": "free-to-move",
         "title": "Libertad de movimiento — PNG transparente nativo"
+      },
+      {
+        "id": "55-above-the-clouds",
+        "title": "Sobre las nubes — luz, lana y viento"
       }
     ],
     "cinematic": {
-      "provenance": "Imágenes generadas y revisadas el 13 de noviembre de 2026 con Seedream 5.5 mediante BytePlus. Personas y escenas creadas con IA. Cada edición utiliza la imagen anterior como única referencia.",
+      "provenance": "Imágenes generadas y revisadas el 13 y 14 de noviembre de 2026 con Seedream 5.5 mediante BytePlus. Personas y escenas creadas con IA. Cada edición utiliza la imagen anterior como única referencia.",
       "panels": [
         {
           "id": "refine",
@@ -527,13 +560,13 @@
   },
   "cinematic": {
     "intro": "Crea escenas realistas, afina los detalles y prepara elementos para componer con Seedream 5.5 en MaxVideoAI.",
-    "caption": "« Primera luz » · Seedream 5.5 · Texto a imagen · 2K",
+    "caption": "« Sobre las nubes »\nSeedream 5.5 · Texto a imagen · 2K",
     "proofLabel": "Seedream 5.5 en MaxVideoAI",
     "examplesLabel": "Explorar las imágenes",
     "pricingLabel": "Precios",
     "modelSlug": "seedream-5-5",
     "variant": "image",
-    "heroAssetId": "first-light",
+    "heroAssetId": "55-above-the-clouds",
     "facts": [
       {
         "label": "Creación y edición",
@@ -562,9 +595,9 @@
     "detailsLabel": "Detalles",
     "promptingLabel": "Guía de prompts",
     "promptAssistant": {
-      "title": "¿Necesitas ayuda con el prompt?",
-      "body": "Describe tu idea a Milo, el asistente de IA de la herramienta Create. Trabajad la redacción y después revisa y aplica el prompt cuando esté listo.",
-      "action": "Pedir ayuda a Milo"
+      "title": "Milo — asistente de IA para prompts",
+      "action": "Ayúdame a convertir mi idea en una escena cinematográfica.",
+      "body": "Habla con Milo dentro del editor de prompts de Create. Revisa y aplica tu prompt, y consulta el precio antes de generar."
     },
     "overview": {
       "titleLines": [

@@ -615,6 +615,7 @@ const ENGINE_IDS = new Set([
   'bria-video-background-removal-v3',
 ]);
 const CTA_NAMES = new Set([
+  'choose_model', 'copy_prompt', 'copy_specs', 'download_specs',
   'milo_try', 'home_milo', 'studio_open', 'mcp_setup_guide', 'mcp_choose_integration',
   'reuse_example', 'view_example_details',
   'pricing_scenario',
@@ -628,6 +629,7 @@ const CTA_NAMES = new Set([
   ...ENGINE_IDS,
 ]);
 const CTA_LOCATIONS = new Set([
+  'model_workflow', 'model_specs', 'model_hero', 'model_nav', 'model_prompt', 'model_prompt_guide', 'model_pricing', 'model_related',
   'creator_tool_hero', 'creator_tool_final', 'creator_tools_hub',
   'milo_hero', 'milo_closing', 'home_conversation', 'studio_hero', 'studio_closing', 'integration_hero', 'mcp_hero',
   'examples_hero', 'examples_gallery', 'watch_hero', 'watch_sidebar',

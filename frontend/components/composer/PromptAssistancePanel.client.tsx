@@ -22,6 +22,7 @@ export type PromptAssistancePanelProps = {
   helpControl?: ReactNode;
   reasoningControl?: ReactNode;
   identityStatus?: string|null;
+  entryWelcome?: { question: string; placeholder: string };
   feedback?: ReactNode;
   inputNotice?: ReactNode;
   conversationContent?: ReactNode; conversationContentVisible?: boolean;
@@ -34,7 +35,7 @@ function assistantReplyText(text: string) {
     index % 2 ? <strong key={index}>{part.slice(2, -2)}</strong> : part);
 }
 
-export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, message, pending, blocked, inputReadOnly, sendBlocked, showConversationControl, maxLength, settingsReview,onReview,onApplyReviewed,onMessageChange, onSend, onProposalTextChange, onApply, onCopy, references, messageRef, modelControl, conversationControl, helpControl, reasoningControl, identityStatus, feedback, inputNotice, conversationContent, conversationContentVisible }: PromptAssistancePanelProps) {
+export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, message, pending, blocked, inputReadOnly, sendBlocked, showConversationControl, maxLength, settingsReview,onReview,onApplyReviewed,onMessageChange, onSend, onProposalTextChange, onApply, onCopy, references, messageRef, modelControl, conversationControl, helpControl, reasoningControl, identityStatus, entryWelcome, feedback, inputNotice, conversationContent, conversationContentVisible }: PromptAssistancePanelProps) {
   const copy = promptAssistanceCopy(locale);
   const [expanded, setExpanded] = useState(false);
   const [reviewMode,setReviewMode]=useState(false);
@@ -107,9 +108,9 @@ export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, 
     </div>
     <div className={styles.inputSurface} data-assistance-input>
       <div className={styles.messageField} data-assistance-input-notice={inputNotice ? true : undefined}>
-      <label htmlFor={messageId}>{copy.message}</label>
+      <label htmlFor={messageId}>{entryWelcome?.question ?? copy.message}</label>
       {inputNotice}
-      <textarea ref={input} id={messageId} data-assistance-message aria-invalid={messageTooLong||undefined} aria-describedby={messageTooLong?`${messageId}-limit`:undefined} readOnly={inputReadOnly} rows={2} value={message} placeholder={inputNotice ? undefined : copy.placeholder} onChange={event => onMessageChange(event.target.value)} onKeyDown={event => {
+      <textarea ref={input} id={messageId} data-assistance-message aria-invalid={messageTooLong||undefined} aria-describedby={messageTooLong?`${messageId}-limit`:undefined} readOnly={inputReadOnly} rows={2} value={message} placeholder={inputNotice ? undefined : entryWelcome?.placeholder ?? copy.placeholder} onChange={event => onMessageChange(event.target.value)} onKeyDown={event => {
         if (event.key !== 'Enter') return;
         event.stopPropagation();
         if (event.shiftKey || event.nativeEvent.isComposing || event.keyCode === 229) return;

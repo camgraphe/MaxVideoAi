@@ -1,0 +1,34 @@
+{
+  "centers": [
+    {
+      "dx": 0,
+      "dy": 0
+    },
+    {
+      "dx": 0,
+      "dy": 0
+    },
+    {
+      "dx": 0,
+      "dy": 0
+    },
+    {
+      "dx": 0,
+      "dy": 0
+    }
+  ],
+  "initialVideoRequests": 0,
+  "played": {
+    "time": 0.159896,
+    "source": "http://localhost:3116/assets/model-examples/seedance-2-5-flash/aa65aa918ece2859a36331f889ad08c4c8d0a187b9c3051df9610720151bf05d.mp4",
+    "preload": "none"
+  },
+  "videoRequests": 3,
+  "mobileOverflow": false,
+  "fail": [
+    {
+      "url": "http://localhost:3116/api/legal/cookies/version",
+      "status": 500
+    }
+  ]
+}

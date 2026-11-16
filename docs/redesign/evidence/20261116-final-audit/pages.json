@@ -1,0 +1,2257 @@
+[
+  {
+    "title": "Seedream 5.5 AI Image Generator & Editor | MaxVideoAI",
+    "description": "Create and edit images with Seedream 5.5 by ByteDance in MaxVideoAI. Use up to 10 references, 1K–2K output and native transparent PNGs.",
+    "canonical": "https://maxvideoai.com/models/seedream-5-5",
+    "robots": "index, follow",
+    "headings": [
+      {
+        "tag": "H1",
+        "text": "Seedream 5.5"
+      },
+      {
+        "tag": "H3",
+        "text": "Keep shaping the scene."
+      },
+      {
+        "tag": "H3",
+        "text": "Give your words a place."
+      },
+      {
+        "tag": "H3",
+        "text": "Get closer to real."
+      },
+      {
+        "tag": "H3",
+        "text": "Create without a background."
+      },
+      {
+        "tag": "H2",
+        "text": "Same scene. A new direction."
+      },
+      {
+        "tag": "H2",
+        "text": "Change the wardrobe"
+      },
+      {
+        "tag": "H2",
+        "text": "Put your words in the world."
+      },
+      {
+        "tag": "H2",
+        "text": "One night only — text in the scene"
+      },
+      {
+        "tag": "H2",
+        "text": "Look closer. Stay human."
+      },
+      {
+        "tag": "H2",
+        "text": "After the race — skin and fabric detail"
+      },
+      {
+        "tag": "H2",
+        "text": "Free to move. Ready to compose."
+      },
+      {
+        "tag": "H2",
+        "text": "Free to move — native transparent PNG"
+      },
+      {
+        "tag": "H2",
+        "text": "How to prompt Seedream 5.5"
+      },
+      {
+        "tag": "H2",
+        "text": "MAKE YOUR MOVE — a cinematic street campaign"
+      },
+      {
+        "tag": "H3",
+        "text": "Guide each reference"
+      },
+      {
+        "tag": "H3",
+        "text": "Continue from the last edit"
+      },
+      {
+        "tag": "H3",
+        "text": "Choose a transparent output"
+      },
+      {
+        "tag": "H2",
+        "text": "Seedream 5.5 — Specifications"
+      },
+      {
+        "tag": "H2",
+        "text": "The last train — two characters under the rain"
+      },
+      {
+        "tag": "H2",
+        "text": "Above the clouds — light, wool and wind"
+      },
+      {
+        "tag": "H3",
+        "text": "See the price before you generate."
+      },
+      {
+        "tag": "H3",
+        "text": "Explore other models"
+      },
+      {
+        "tag": "H2",
+        "text": "A few things to know."
+      }
+    ],
+    "links": [
+      {
+        "text": "Create an image",
+        "href": "/app/image?engine=seedream-5-5",
+        "hidden": false,
+        "cta": "open_workspace"
+      },
+      {
+        "text": "Explore the images",
+        "href": "#examples",
+        "hidden": false
+      },
+      {
+        "text": "Keep shaping the scene.Guide successive edits to clothing, light and the details that matter.",
+        "href": "#proof-refine",
+        "hidden": false
+      },
+      {
+        "text": "Give your words a place.Put text into signs, posters and the scene itself.",
+        "href": "#proof-lettering",
+        "hidden": false
+      },
+      {
+        "text": "Get closer to real.Explore natural skin, tactile fabrics and lifelike lighting.",
+        "href": "#proof-moments",
+        "hidden": false
+      },
+      {
+        "text": "Create without a background.Generate native transparent PNGs, ready to compose.",
+        "href": "#proof-transparency",
+        "hidden": false
+      },
+      {
+        "text": "Seedream 5.5",
+        "href": "#top",
+        "hidden": false
+      },
+      {
+        "text": "Overview",
+        "href": "#overview",
+        "hidden": false
+      },
+      {
+        "text": "Explore the images",
+        "href": "#examples",
+        "hidden": false
+      },
+      {
+        "text": "Prompt guide",
+        "href": "#prompting",
+        "hidden": false
+      },
+      {
+        "text": "Details",
+        "href": "#specs",
+        "hidden": false
+      },
+      {
+        "text": "Pricing",
+        "href": "#decision-pricing",
+        "hidden": false
+      },
+      {
+        "text": "FAQ",
+        "href": "#faq",
+        "hidden": false
+      },
+      {
+        "text": "Create an image",
+        "href": "/app/image?engine=seedream-5-5",
+        "hidden": false,
+        "cta": "open_workspace"
+      },
+      {
+        "text": "Open original",
+        "href": "/assets/model-examples/seedream-5-5/7d0328b2bdd1635ea6d115787f7d3a25e91dc907a42a768969663f9c2cc3d9d3.jpg",
+        "hidden": true
+      },
+      {
+        "text": "Exact edit source",
+        "href": "/assets/model-examples/seedream-5-5/0f01d7c64f2eaca38bfabd67de2da1fc3412af795836064c7577a33a6ec29538.jpg",
+        "hidden": true
+      },
+      {
+        "text": "Use this prompt",
+        "href": "/app/image?engine=seedream-5-5&example=backstage-wardrobe&lang=en",
+        "hidden": true,
+        "cta": "reuse_example"
+      },
+      {
+        "text": "Refine with Milo",
+        "href": "/app/image?engine=seedream-5-5&example=backstage-wardrobe&lang=en&assistant=milo&refine=example",
+        "hidden": true,
+        "cta": "milo_try"
+      },
+      {
+        "text": "",
+        "href": "/assets/model-examples/seedream-5-5/16b4e38576933c2c96969c00c281af474ec13f3302d79ac9b5217deaaf3bd328.jpg",
+        "hidden": false
+      },
+      {
+        "text": "Open original",
+        "href": "/assets/model-examples/seedream-5-5/16b4e38576933c2c96969c00c281af474ec13f3302d79ac9b5217deaaf3bd328.jpg",
+        "hidden": true
+      },
+      {
+        "text": "Use this prompt",
+        "href": "/app/image?engine=seedream-5-5&example=one-night-only&lang=en",
+        "hidden": true,
+        "cta": "reuse_example"
+      },
+      {
+        "text": "Refine with Milo",
+        "href": "/app/image?engine=seedream-5-5&example=one-night-only&lang=en&assistant=milo&refine=example",
+        "hidden": true,
+        "cta": "milo_try"
+      },
+      {
+        "text": "Open original ↗",
+        "href": "/assets/model-examples/seedream-5-5/7f42f3ee1c931bd1a0c993e7da0c186864b5ddc81cb803240b64912e77bd4a96.jpg",
+        "hidden": false
+      },
+      {
+        "text": "Open original",
+        "href": "/assets/model-examples/seedream-5-5/7f42f3ee1c931bd1a0c993e7da0c186864b5ddc81cb803240b64912e77bd4a96.jpg",
+        "hidden": true
+      },
+      {
+        "text": "Use this prompt",
+        "href": "/app/image?engine=seedream-5-5&example=after-the-race&lang=en",
+        "hidden": true,
+        "cta": "reuse_example"
+      },
+      {
+        "text": "Refine with Milo",
+        "href": "/app/image?engine=seedream-5-5&example=after-the-race&lang=en&assistant=milo&refine=example",
+        "hidden": true,
+        "cta": "milo_try"
+      },
+      {
+        "text": "Open original",
+        "href": "/assets/model-examples/seedream-5-5/d9a6189fa888558a3a6415efcc407c529227bebac45d64ef5a5db3e384948cf3.png",
+        "hidden": true
+      },
+      {
+        "text": "Use this prompt",
+        "href": "/app/image?engine=seedream-5-5&example=free-to-move&lang=en",
+        "hidden": true,
+        "cta": "reuse_example"
+      },
+      {
+        "text": "Refine with Milo",
+        "href": "/app/image?engine=seedream-5-5&example=free-to-move&lang=en&assistant=milo&refine=example",
+        "hidden": true,
+        "cta": "milo_try"
+      },
+      {
+        "text": "",
+        "href": "/assets/model-examples/seedream-5-5/2535f7148cd673f38f2aabd776127690bdcca5fee1631e701eb6b550bf5dca70.jpg",
+        "hidden": false
+      },
+      {
+        "text": "Open original",
+        "href": "/assets/model-examples/seedream-5-5/2535f7148cd673f38f2aabd776127690bdcca5fee1631e701eb6b550bf5dca70.jpg",
+        "hidden": true
+      },
+      {
+        "text": "Use this prompt",
+        "href": "/app/image?engine=seedream-5-5&example=55-make-your-move&lang=en",
+        "hidden": true,
+        "cta": "reuse_example"
+      },
+      {
+        "text": "Refine with Milo",
+        "href": "/app/image?engine=seedream-5-5&example=55-make-your-move&lang=en&assistant=milo&refine=example",
+        "hidden": true,
+        "cta": "milo_try"
+      },
+      {
+        "text": "Use this prompt",
+        "href": "/app/image?engine=seedream-5-5&example=55-make-your-move&lang=en",
+        "hidden": false,
+        "cta": "reuse_example"
+      },
+      {
+        "text": "Refine with Milo",
+        "href": "/app/image?engine=seedream-5-5&example=55-make-your-move&lang=en&assistant=milo&refine=example",
+        "hidden": false,
+        "cta": "milo_try"
+      },
+      {
+        "text": "MiloHelp me turn my idea into a cinematic scene.",
+        "href": "/app/image?assistant=milo&lang=en&engine=seedream-5-5",
+        "hidden": false,
+        "cta": "milo_try"
+      },
+      {
+        "text": "Official model guide ↗",
+        "href": "https://docs.byteplus.com/en/docs/modelark/seedream-5-5",
+        "hidden": false
+      },
+      {
+        "text": "",
+        "href": "/assets/model-examples/seedream-5-5/9c2ccca85c7306afc4bba3bbe4e1a80a58812188277592719b5e2327ef47e0ef.jpg",
+        "hidden": false
+      },
+      {
+        "text": "Open original",
+        "href": "/assets/model-examples/seedream-5-5/9c2ccca85c7306afc4bba3bbe4e1a80a58812188277592719b5e2327ef47e0ef.jpg",
+        "hidden": true
+      },
+      {
+        "text": "Use this prompt",
+        "href": "/app/image?engine=seedream-5-5&example=55-last-train&lang=en",
+        "hidden": true,
+        "cta": "reuse_example"
+      },
+      {
+        "text": "Refine with Milo",
+        "href": "/app/image?engine=seedream-5-5&example=55-last-train&lang=en&assistant=milo&refine=example",
+        "hidden": true,
+        "cta": "milo_try"
+      },
+      {
+        "text": "Source: MaxVideoAI",
+        "href": "https://maxvideoai.com/models/seedream-5-5#specs",
+        "hidden": false
+      },
+      {
+        "text": "Model by ByteDance",
+        "href": "https://seed.bytedance.com/en/seedream5_5",
+        "hidden": true
+      },
+      {
+        "text": "Open original",
+        "href": "/assets/model-examples/seedream-5-5/41c6a5808f6cc946ae8f3034ecbc3504f79aa8a8d57302eeb790563d6e4f2d8a.jpg",
+        "hidden": true
+      },
+      {
+        "text": "Use this prompt",
+        "href": "/app/image?engine=seedream-5-5&example=55-above-the-clouds&lang=en",
+        "hidden": true,
+        "cta": "reuse_example"
+      },
+      {
+        "text": "Refine with Milo",
+        "href": "/app/image?engine=seedream-5-5&example=55-above-the-clouds&lang=en&assistant=milo&refine=example",
+        "hidden": true,
+        "cta": "milo_try"
+      },
+      {
+        "text": "Create with Seedream 5.5",
+        "href": "/app/image?engine=seedream-5-5",
+        "hidden": false,
+        "cta": "open_workspace"
+      },
+      {
+        "text": "View full pricing ↗",
+        "href": "/pricing#seedream-5-5-pricing",
+        "hidden": false,
+        "cta": "view_pricing"
+      },
+      {
+        "text": "Seedream 5.0 FlashExplore another 1K–2K single-image workflow. Check its quote with the settings you need.",
+        "href": "/models/seedream-5-0-flash",
+        "hidden": false,
+        "cta": "choose_model"
+      },
+      {
+        "text": "Seedream 5.0 LiteNeed 3K, 4K or a batch of related images? Explore Lite’s resolution and image-set options.",
+        "href": "/models/seedream",
+        "hidden": false,
+        "cta": "choose_model"
+      },
+      {
+        "text": "Seedream 5.0 ProWork with the previous Pro model for one 2K image, with up to 10 reference images.",
+        "href": "/models/seedream-5-0-pro",
+        "hidden": false,
+        "cta": "choose_model"
+      },
+      {
+        "text": "Animate your imageChoose a video model for your finished still. Compare image-to-video workflows before planning the motion.",
+        "href": "/ai-video-engines/best-for/image-to-video",
+        "hidden": false,
+        "cta": "choose_model"
+      }
+    ],
+    "anchors": [
+      "top",
+      "overview",
+      "cinema-model-title",
+      "examples",
+      "text-to-image",
+      "proof-refine",
+      "cinema-refine",
+      "_R_26729bn5ritulb_",
+      "_R_u6729bn5ritulb_",
+      "_R_u6729bn5ritulb_-title",
+      "proof-lettering",
+      "cinema-lettering",
+      "_R_2ua729bn5ritulb_",
+      "_R_2ua729bn5ritulb_-title",
+      "proof-moments",
+      "cinema-moments",
+      "_R_2ue729bn5ritulb_",
+      "_R_2ue729bn5ritulb_-title",
+      "proof-transparency",
+      "cinema-transparency",
+      "_R_ai729bn5ritulb_",
+      "_R_ai729bn5ritulb_-title",
+      "prompting",
+      "_R_mlb29bn5ritulb_",
+      "_R_mlb29bn5ritulb_-title",
+      "model-jsonld-0",
+      "model-jsonld-1",
+      "specs",
+      "_R_mpd29bn5ritulb_",
+      "_R_mpd29bn5ritulb_-title",
+      "_R_99d29bn5ritulb_",
+      "_R_99d29bn5ritulb_-title",
+      "decision-pricing",
+      "cinema-pricing-title",
+      "compare",
+      "faq",
+      "tips",
+      "safety"
+    ],
+    "images": [
+      {
+        "alt": "Above the clouds — light, wool and wind",
+        "src": "/_next/image?url=%2Fassets%2Fmodel-examples%2Fseedream-5-5%2F3906b78afd574164bd1766c2c37e3af97800947845d638e88e4da0c847dfdad7.webp&w=3840&q=75",
+        "loading": "eager",
+        "width": 1280,
+        "height": 624,
+        "loaded": true
+      },
+      {
+        "alt": "",
+        "src": "/_next/image?url=%2Fassets%2Fmodel-examples%2Fseedream-5-5%2Fecc64ba637002dd512fded83b298cc6dfe240d9de7bad136ac16df10cff69796.webp&w=3840&q=75",
+        "loading": "lazy",
+        "width": 84,
+        "height": 52,
+        "loaded": true
+      },
+      {
+        "alt": "",
+        "src": "/_next/image?url=%2Fassets%2Fmodel-examples%2Fseedream-5-5%2F02b8f6d36d91deb035722216c0d726b1a39d6dd7ce5ac7130d4ec2072f45f9a9.webp&w=3840&q=75",
+        "loading": "lazy",
+        "width": 84,
+        "height": 52,
+        "loaded": true
+      },
+      {
+        "alt": "",
+        "src": "/_next/image?url=%2Fassets%2Fmodel-examples%2Fseedream-5-5%2F5854879cc69b8852e8e026d71bea8cfaa61d4b75aea044c025ce840be6017cb3.webp&w=3840&q=75",
+        "loading": "lazy",
+        "width": 84,
+        "height": 52,
+        "loaded": true
+      },
+      {
+        "alt": "Before the curtain — original scene",
+        "src": "/_next/image?url=%2Fassets%2Fmodel-examples%2Fseedream-5-5%2Fecc64ba637002dd512fded83b298cc6dfe240d9de7bad136ac16df10cff69796.webp&w=3840&q=75",
+        "loading": "lazy",
+        "width": 1165,
+        "height": 655,
+        "loaded": true
+      },
+      {
+        "alt": "Change the wardrobe",
+        "src": "/_next/image?url=%2Fassets%2Fmodel-examples%2Fseedream-5-5%2F02b8f6d36d91deb035722216c0d726b1a39d6dd7ce5ac7130d4ec2072f45f9a9.webp&w=3840&q=75",
+        "loading": "lazy",
+        "width": 1165,
+        "height": 655,
+        "loaded": true
+      },
+      {
+        "alt": "One night only — text in the scene",
+        "src": "/_next/image?url=%2Fassets%2Fmodel-examples%2Fseedream-5-5%2Feb388dd91ab9532c2d21584ceae0ffacb4fb3dc1fd31e566b99f5fe59b053adb.webp&w=3840&q=75",
+        "loading": "lazy",
+        "width": 657,
+        "height": 370,
+        "loaded": true
+      },
+      {
+        "alt": "After the race — skin and fabric detail",
+        "src": "/_next/image?url=%2Fassets%2Fmodel-examples%2Fseedream-5-5%2F11e959edb38df935000b141ade1edf81bafc03094b65d08cdaf166ba976be4b1.webp&w=3840&q=75",
+        "loading": "lazy",
+        "width": 550,
+        "height": 734,
+        "loaded": true
+      },
+      {
+        "alt": "Face & hair — After the race — skin and fabric detail",
+        "src": "/_next/image?url=%2Fassets%2Fmodel-examples%2Fseedream-5-5%2F11e959edb38df935000b141ade1edf81bafc03094b65d08cdaf166ba976be4b1.webp&w=3840&q=75",
+        "loading": "lazy",
+        "width": 550,
+        "height": 240,
+        "loaded": true
+      },
+      {
+        "alt": "Free to move — native transparent PNG",
+        "src": "/_next/image?url=%2Fassets%2Fmodel-examples%2Fseedream-5-5%2F486ce17aee857d727d8c3680c856e7fb11bd913b861d73b7118e9908c45bc9c2.webp&w=3840&q=75",
+        "loading": "lazy",
+        "width": 529,
+        "height": 529,
+        "loaded": true
+      },
+      {
+        "alt": "MAKE YOUR MOVE — a cinematic street campaign",
+        "src": "/_next/image?url=%2Fassets%2Fmodel-examples%2Fseedream-5-5%2Fa3014339f0f79ea9fafd4d72721a0b64fa9fee05a47cbea2893fe0cbcd45c186.webp&w=3840&q=75",
+        "loading": "lazy",
+        "width": 633,
+        "height": 356,
+        "loaded": false
+      },
+      {
+        "alt": "The last train — two characters under the rain",
+        "src": "/_next/image?url=%2Fassets%2Fmodel-examples%2Fseedream-5-5%2F17e3dfc0480a8ee5b4341b62d739a8f91c305c762e6d87c2f73159214600369d.webp&w=3840&q=75",
+        "loading": "lazy",
+        "width": 506,
+        "height": 285,
+        "loaded": false
+      }
+    ],
+    "schemas": [
+      {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "name": "Seedream 5.5 AI Image Generator & Editor | MaxVideoAI",
+        "description": "Create and edit images with Seedream 5.5 by ByteDance in MaxVideoAI. Use up to 10 references, 1K–2K output and native transparent PNGs.",
+        "url": "https://maxvideoai.com/models/seedream-5-5",
+        "inLanguage": "en-US"
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://maxvideoai.com/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Models",
+            "item": "https://maxvideoai.com/models"
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "name": "Seedream 5.5",
+            "item": "https://maxvideoai.com/models/seedream-5-5"
+          }
+        ]
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What is Seedream 5.5, and what can I create?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Seedream 5.5 is an AI image generation and editing model developed by ByteDance. On MaxVideoAI, use text or up to 10 reference images to create portraits, cinematic scenes, campaign images and transparent PNG assets. Each request returns one still image."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How is Seedream 5.5 different from Seedream 5.0 Pro?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "ByteDance presents 5.5 as an advance in successive edits, realism and text rendering, with native transparent PNG output. In MaxVideoAI, 5.5 also offers 1K, 1.5K and 2K instead of Pro’s 2K-only output. Both accept up to 10 references and return one image per request. The examples above show selected results, not a controlled head-to-head benchmark."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How do I refine the same scene?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Use the selected image as a reference. State what to preserve and ask for a focused change, then inspect the new result before using it for the next edit."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I create a transparent background?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. Choose PNG output and the transparent-background setting. JPEG is suitable for an opaque scene."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Which resolutions and formats are available?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "MaxVideoAI offers 1K, 1.5K and 2K, with JPEG or PNG output. Image editing accepts up to 10 references and returns one image; use Lite when you need image sets."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I animate the image afterwards?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Save the still and choose a video model for a separate generation. A readable silhouette, clear hands and space around the subject make the opening frame easier to plan."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How much does Seedream 5.5 cost on MaxVideoAI?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "MaxVideoAI uses pay-as-you-go credits, with no required subscription. Choose your resolution and references in Create, then review the current price before generating. Each new generation or edit has its own quote."
+            }
+          }
+        ]
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "@id": "https://maxvideoai.com/#organization",
+        "name": "MaxVideoAI",
+        "alternateName": "MaxVideo AI",
+        "url": "https://maxvideoai.com/",
+        "logo": "https://maxvideoai.com/favicon-512.png",
+        "description": "MaxVideoAI is a pay-as-you-go platform for AI video, image and audio generation, with a web workspace and MCP integrations for compatible AI assistants. Compare models and review the price before generating, without a subscription.",
+        "sameAs": [
+          "https://x.com/MaxVideoAI",
+          "https://www.linkedin.com/company/maxvideoai/",
+          "https://github.com/camgraphe/maxvideoai",
+          "https://github.com/camgraphe/maxvideoai-plugin",
+          "https://www.producthunt.com/products/maxvideoai",
+          "https://www.youtube.com/channel/UCi5XkvmzIaG8gvJPLEs94Mw"
+        ]
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "url": "https://maxvideoai.com/",
+        "name": "MaxVideoAI",
+        "inLanguage": "en-US"
+      }
+    ],
+    "text": "ON MAXVIDEOAI\n\nSeedream 5.5\n\nCreate. Refine. Make it yours.\n\nCreate lifelike scenes, refine the details and build ready-to-compose assets with Seedream 5.5 on MaxVideoAI.\n\nCreate an image\nExplore the images\nKeep shaping the scene.\n\nGuide successive edits to clothing, light and the details that matter.\n\nGive your words a place.\n\nPut text into signs, posters and the scene itself.\n\nGet closer to real.\n\nExplore natural skin, tactile fabrics and lifelike lighting.\n\nCreate without a background.\n\nGenerate native transparent PNGs, ready to compose.\n\nSeedream 5.5\nOverview\nExplore the images\nPrompt guide\nDetails\nPricing\nFAQ\nCreate an image\n\nIMAGE-TO-IMAGE EDITING\n\nSame scene. A new direction.\n\nAn emerald jacket becomes ivory. Then the warm theatre light becomes cool blue. Compare each edit with its actual source, using the slider or your keyboard.\n\n01 / Before the curtain — original scene\n02 / Change the wardrobe\n03 / Change the light\nSource\nEdit\n↔\nReveal the edit ↔\nPrompt & settings\n\nTEXT IN AN IMAGE\n\nPut your words in the world.\n\nA theatre entrance, a passing character and a short message inside the scene. Give the text a surface, a position and a reason to be there.\n\nOne night only — text in the scene\n\nSeedream 5.5 · Generation · 2K · 16:9 · JPEG\n\nPrompt & settings\n\nThe prompt requests “ONE NIGHT ONLY”. This selected image shows the result; check every letter before publishing.\n\nCINEMATIC IMAGE GENERATION\n\nLook closer. Stay human.\n\nA runner catches her breath. Examine the skin, flyaway hair and textured fabric in this close portrait, then open the original at full size.\n\n+ 2× · Inspect detail\nOpen original ↗\nAfter the race — skin and fabric detail\n\nSeedream 5.5 · Generation · 2K · 3:4 · JPEG\n\nPrompt & settings\n2×\nDetail from the same image\nNo retouching\nFace & hair\nFabric & texture\n\nThis selected result illustrates one portrait brief. Inspect facial details and anatomy before using any generated image.\n\nNATIVE TRANSPARENT PNG\n\nFree to move. Ready to compose.\n\nGenerate an isolated subject with a real alpha channel. Change the preview background to inspect the edges, then open the unchanged original PNG.\n\nDark\nLight\nColour\nPrompt & settings\n\nThe dancer is the same image on every background. Transparency was verified in this original and its WebP display copy; no background-removal effect is applied here.\n\nPROMPT GUIDE\n\nHow to prompt Seedream 5.5\n\nDescribe the action, framing and light. Put exact text in quotes. Use the example below, or shape your idea with Milo.\n\nMAKE YOUR MOVE — a cinematic street campaign\n\nSeedream 5.5 · Generation · 2K · 16:9 · JPEG\n\nPrompt & settings\nUse this prompt\nCopy prompt\nRefine with Milo\nSubject & action\nGive the subject one clear action and a readable gaze.\nFrame the moment\nChoose the aspect ratio, camera distance and where each subject sits.\nLight & texture\nName the light source, its direction and the textures you want to see.\nGive text a surface\nQuote exact words and specify their surface, position and line breaks.\n\nTHE IDEA BEHIND THIS IMAGE\n\nA woman in a burgundy coat emerges from a Paris metro at blue hour. She turns towards someone outside the frame. Rain catches cyan and amber light. An illuminated street poster reads “MAKE YOUR MOVE”.\n\nShortened for clarity. Use or copy the complete original prompt below the image.\nMilo\nHelp me turn my idea into a cinematic scene.\n\nChat with Milo inside the Create prompt editor. Review and apply your prompt, then see the generation price before you generate.\n\nPrompt writing tips\nOfficial model guide ↗\nSeedream 5.5 — Specifications\n\nFormats, settings and limits to check before creating.\n\nCopy table\nDownload CSV\nThe last train — two characters under the rain\n\nSeedream 5.5 · Generation · 2K · 16:9 · JPEG\n\nPrompt & settings\nSeedream 5.5 — Specifications — In MaxVideoAI\nSetting\tIn MaxVideoAI\nText-to-Image\tSupported\nImage-to-Image\tSupported\nResolution options\t1K / 1.5K / 2K\nAspect ratios\tauto / 1:1 / 4:3 / 3:4 / 16:9 / 9:16 / 3:2 / 2:3 / 21:9\nOutput format\tJPEG / PNG\nReference images\tUp to 10\nImages per request\t1\nBackground\tAuto · Opaque · Transparent (PNG)\n\nSettings available in Create. The table describes MaxVideoAI’s implementation of this model. Source: MaxVideoAI\n\nHero prompt & settings\nSee the price before you generate.\n\nPay as you go. No subscription required.\n\nCreate with Seedream 5.5\nView full pricing ↗\n\nEvery new generation or edit has its own quote.\n\nExplore other models\nSeedream 5.0 Flash\nExplore another 1K–2K single-image workflow. Check its quote with the settings you need.\nSeedream 5.0 Lite\nNeed 3K, 4K or a batch of related images? Explore Lite’s resolution and image-set options.\nSeedream 5.0 Pro\nWork with the previous Pro model for one 2K image, with up to 10 reference images.\nAnimate your image\nChoose a video model for your finished still. Compare image-to-video workflows before planning the motion.\n\nFAQ\n\nA few things to know.\nWhat is Seedream 5.5, and what can I create?\nHow is Seedream 5.5 different from Seedream 5.0 Pro?\nHow do I refine the same scene?\nCan I create a transparent background?\nWhich resolutions and formats are available?\nCan I animate the image afterwards?\nHow much does Seedream 5.5 cost on MaxVideoAI?\nLimits & practical advice\nResponsible image creation",
+    "slug": "seedream-5-5",
+    "status": 200,
+    "initialMp4": 0,
+    "missingAnchors": [],
+    "mobileOverflow": false
+  },
+  {
+    "title": "Seedance 2.5 Flash AI Video Generator & Editing | MaxVideoAI",
+    "description": "Create 4–30 second videos with Seedance 2.5 Flash. Explore 480p/720p, audio, references, video editing and extension. Get prompt help from Milo and review your…",
+    "canonical": "https://maxvideoai.com/models/seedance-2-5-flash",
+    "robots": "index, follow",
+    "headings": [
+      {
+        "tag": "H1",
+        "text": "Seedance 2.5 Flash"
+      },
+      {
+        "tag": "H3",
+        "text": "Create"
+      },
+      {
+        "tag": "H3",
+        "text": "Modify"
+      },
+      {
+        "tag": "H3",
+        "text": "Extend"
+      },
+      {
+        "tag": "H2",
+        "text": "Start with a spark. Give it motion."
+      },
+      {
+        "tag": "H2",
+        "text": "Start with a spark. Give it motion."
+      },
+      {
+        "tag": "H3",
+        "text": "Borrow the move. Make it yours."
+      },
+      {
+        "tag": "H2",
+        "text": "Borrow the move. Make it yours."
+      },
+      {
+        "tag": "H2",
+        "text": "Same shot. A different intention."
+      },
+      {
+        "tag": "H2",
+        "text": "Same shot. A different intention."
+      },
+      {
+        "tag": "H2",
+        "text": "The moment doesn’t have to end."
+      },
+      {
+        "tag": "H3",
+        "text": "What to look for"
+      },
+      {
+        "tag": "H2",
+        "text": "The moment doesn’t have to end."
+      },
+      {
+        "tag": "H2",
+        "text": "Seedance 2.5 Flash examples"
+      },
+      {
+        "tag": "H2",
+        "text": "The salt run"
+      },
+      {
+        "tag": "H2",
+        "text": "The rising sea"
+      },
+      {
+        "tag": "H2",
+        "text": "Above the city"
+      },
+      {
+        "tag": "H2",
+        "text": "The glass garden"
+      },
+      {
+        "tag": "H2",
+        "text": "How to prompt Seedance 2.5 Flash"
+      },
+      {
+        "tag": "H2",
+        "text": "The last train — a conversation in six shots"
+      },
+      {
+        "tag": "H3",
+        "text": "Give the moment a purpose"
+      },
+      {
+        "tag": "H3",
+        "text": "Direct one clear movement"
+      },
+      {
+        "tag": "H3",
+        "text": "Give sound a role"
+      },
+      {
+        "tag": "H2",
+        "text": "Seedance 2.5 Flash — Specifications"
+      },
+      {
+        "tag": "H2",
+        "text": "First light — an orbital encounter"
+      },
+      {
+        "tag": "H3",
+        "text": "Specifications"
+      },
+      {
+        "tag": "H2",
+        "text": "Midnight run — a low tracking shot"
+      },
+      {
+        "tag": "H3",
+        "text": "Your settings. Your price."
+      },
+      {
+        "tag": "H3",
+        "text": "Compare your options."
+      },
+      {
+        "tag": "H2",
+        "text": "A few things to know."
+      }
+    ],
+    "links": [
+      {
+        "text": "Create with Flash",
+        "href": "/app?engine=seedance-2-5-flash",
+        "hidden": false,
+        "cta": "open_workspace"
+      },
+      {
+        "text": "Explore the shots",
+        "href": "#examples",
+        "hidden": false
+      },
+      {
+        "text": "CreateTurn text, a first frame or references into a new shot.",
+        "href": "#proof-create",
+        "hidden": false
+      },
+      {
+        "text": "ModifyGive an existing clip a new direction.",
+        "href": "#proof-modify",
+        "hidden": false
+      },
+      {
+        "text": "ExtendContinue the action before or after a source clip.",
+        "href": "#proof-extend",
+        "hidden": false
+      },
+      {
+        "text": "Seedance 2.5 Flash",
+        "href": "#top",
+        "hidden": false
+      },
+      {
+        "text": "Overview",
+        "href": "#overview",
+        "hidden": false
+      },
+      {
+        "text": "Explore the shots",
+        "href": "#examples",
+        "hidden": false
+      },
+      {
+        "text": "Gallery",
+        "href": "#rendered-examples",
+        "hidden": false
+      },
+      {
+        "text": "Prompt guide",
+        "href": "#prompting",
+        "hidden": false
+      },
+      {
+        "text": "Details",
+        "href": "#specs",
+        "hidden": false
+      },
+      {
+        "text": "Price & compare",
+        "href": "#decision-pricing",
+        "hidden": false
+      },
+      {
+        "text": "FAQ",
+        "href": "#faq",
+        "hidden": false
+      },
+      {
+        "text": "Create with Flash",
+        "href": "/app?engine=seedance-2-5-flash",
+        "hidden": false,
+        "cta": "open_workspace"
+      },
+      {
+        "text": "Create a video",
+        "href": "/app?engine=seedance-2-5-flash&mode=t2v",
+        "hidden": false,
+        "cta": "open_workspace"
+      },
+      {
+        "text": "Open original",
+        "href": "https://media.maxvideoai.com/renders/images/301cc489-d689-477f-94c4-0b051deda0bc/9a1ee7a1-7965-4fbf-9af7-0979cdf39084.png",
+        "hidden": true
+      },
+      {
+        "text": "Use this prompt",
+        "href": "/app?lang=en&engine=seedance-2-5-flash&mode=t2v&videoPrompt=create",
+        "hidden": true,
+        "cta": "reuse_example"
+      },
+      {
+        "text": "Refine with Milo",
+        "href": "/app?lang=en&engine=seedance-2-5-flash&mode=t2v&videoPrompt=create&assistant=milo&refine=example",
+        "hidden": true,
+        "cta": "milo_try"
+      },
+      {
+        "text": "Use this prompt",
+        "href": "/app?lang=en&engine=seedance-2-5-flash&mode=t2v&videoPrompt=motion-control",
+        "hidden": true,
+        "cta": "reuse_example"
+      },
+      {
+        "text": "Refine with Milo",
+        "href": "/app?lang=en&engine=seedance-2-5-flash&mode=t2v&videoPrompt=motion-control&assistant=milo&refine=example",
+        "hidden": true,
+        "cta": "milo_try"
+      },
+      {
+        "text": "Use this prompt",
+        "href": "/app?lang=en&engine=seedance-2-5-flash&mode=v2v&videoPrompt=modify",
+        "hidden": true,
+        "cta": "reuse_example"
+      },
+      {
+        "text": "Refine with Milo",
+        "href": "/app?lang=en&engine=seedance-2-5-flash&mode=v2v&videoPrompt=modify&assistant=milo&refine=example",
+        "hidden": true,
+        "cta": "milo_try"
+      },
+      {
+        "text": "Open Modify",
+        "href": "/app?engine=seedance-2-5-flash&mode=v2v",
+        "hidden": false,
+        "cta": "open_workspace"
+      },
+      {
+        "text": "Open Extend",
+        "href": "/app?engine=seedance-2-5-flash&mode=extend",
+        "hidden": false,
+        "cta": "open_workspace"
+      },
+      {
+        "text": "Use this prompt",
+        "href": "/app?lang=en&engine=seedance-2-5-flash&mode=extend&videoPrompt=extend",
+        "hidden": true,
+        "cta": "reuse_example"
+      },
+      {
+        "text": "Refine with Milo",
+        "href": "/app?lang=en&engine=seedance-2-5-flash&mode=extend&videoPrompt=extend&assistant=milo&refine=example",
+        "hidden": true,
+        "cta": "milo_try"
+      },
+      {
+        "text": "View all examples",
+        "href": "/examples/seedance",
+        "hidden": false,
+        "cta": "see_examples"
+      },
+      {
+        "text": "Use this prompt",
+        "href": "/app?engine=seedance-2-5-flash&lang=en&mode=t2v&videoPrompt=the-salt-run",
+        "hidden": true,
+        "cta": "reuse_example"
+      },
+      {
+        "text": "Refine with Milo",
+        "href": "/app?engine=seedance-2-5-flash&lang=en&mode=t2v&videoPrompt=the-salt-run&assistant=milo&refine=example",
+        "hidden": true,
+        "cta": "milo_try"
+      },
+      {
+        "text": "The salt run",
+        "href": "/video/review-flash-the-salt-run?from=%2Fmodels%2Fseedance-2-5-flash",
+        "hidden": false
+      },
+      {
+        "text": "Use this prompt",
+        "href": "/app?engine=seedance-2-5-flash&lang=en&mode=t2v&videoPrompt=the-rising-sea",
+        "hidden": true,
+        "cta": "reuse_example"
+      },
+      {
+        "text": "Refine with Milo",
+        "href": "/app?engine=seedance-2-5-flash&lang=en&mode=t2v&videoPrompt=the-rising-sea&assistant=milo&refine=example",
+        "hidden": true,
+        "cta": "milo_try"
+      },
+      {
+        "text": "The rising sea",
+        "href": "/video/review-flash-the-rising-sea?from=%2Fmodels%2Fseedance-2-5-flash",
+        "hidden": false
+      },
+      {
+        "text": "Use this prompt",
+        "href": "/app?engine=seedance-2-5-flash&lang=en&mode=t2v&videoPrompt=above-the-city",
+        "hidden": true,
+        "cta": "reuse_example"
+      },
+      {
+        "text": "Refine with Milo",
+        "href": "/app?engine=seedance-2-5-flash&lang=en&mode=t2v&videoPrompt=above-the-city&assistant=milo&refine=example",
+        "hidden": true,
+        "cta": "milo_try"
+      },
+      {
+        "text": "Above the city",
+        "href": "/video/review-flash-above-the-city?from=%2Fmodels%2Fseedance-2-5-flash",
+        "hidden": false
+      },
+      {
+        "text": "Use this prompt",
+        "href": "/app?engine=seedance-2-5-flash&lang=en&mode=t2v&videoPrompt=the-glass-garden",
+        "hidden": true,
+        "cta": "reuse_example"
+      },
+      {
+        "text": "Refine with Milo",
+        "href": "/app?engine=seedance-2-5-flash&lang=en&mode=t2v&videoPrompt=the-glass-garden&assistant=milo&refine=example",
+        "hidden": true,
+        "cta": "milo_try"
+      },
+      {
+        "text": "The glass garden",
+        "href": "/video/review-flash-the-glass-garden?from=%2Fmodels%2Fseedance-2-5-flash",
+        "hidden": false
+      },
+      {
+        "text": "Use this prompt",
+        "href": "/app?lang=en&engine=seedance-2-5-flash&mode=t2v&videoPrompt=the-blue-hour",
+        "hidden": true,
+        "cta": "reuse_example"
+      },
+      {
+        "text": "Refine with Milo",
+        "href": "/app?lang=en&engine=seedance-2-5-flash&mode=t2v&videoPrompt=the-blue-hour&assistant=milo&refine=example",
+        "hidden": true,
+        "cta": "milo_try"
+      },
+      {
+        "text": "MiloHelp me turn my idea into a cinematic scene.",
+        "href": "/app?assistant=milo&lang=en&engine=seedance-2-5-flash&mode=t2v",
+        "hidden": false,
+        "cta": "milo_try"
+      },
+      {
+        "text": "Model documentation ↗",
+        "href": "https://ai.byteplus.com/ark/region:ap-southeast-1/docs/seedance-2-5-prompt-guide",
+        "hidden": false
+      },
+      {
+        "text": "Use this prompt",
+        "href": "/app?lang=en&engine=seedance-2-5-flash&mode=t2v&videoPrompt=where-gravity-ends",
+        "hidden": true,
+        "cta": "reuse_example"
+      },
+      {
+        "text": "Refine with Milo",
+        "href": "/app?lang=en&engine=seedance-2-5-flash&mode=t2v&videoPrompt=where-gravity-ends&assistant=milo&refine=example",
+        "hidden": true,
+        "cta": "milo_try"
+      },
+      {
+        "text": "Source: MaxVideoAI",
+        "href": "https://maxvideoai.com/models/seedance-2-5-flash#specs",
+        "hidden": false
+      },
+      {
+        "text": "Open original",
+        "href": "https://media.maxvideoai.com/renders/images/301cc489-d689-477f-94c4-0b051deda0bc/30b2c48f-3a42-4104-b1ce-265daf53be19.png",
+        "hidden": true
+      },
+      {
+        "text": "Use this prompt",
+        "href": "/app/image?engine=gpt-image-2-6-sunburst&example=midnight-run&lang=en",
+        "hidden": true,
+        "cta": "reuse_example"
+      },
+      {
+        "text": "Refine with Milo",
+        "href": "/app/image?engine=gpt-image-2-6-sunburst&example=midnight-run&lang=en&assistant=milo&refine=example",
+        "hidden": true,
+        "cta": "milo_try"
+      },
+      {
+        "text": "Create with Flash",
+        "href": "/app?engine=seedance-2-5-flash",
+        "hidden": false,
+        "cta": "open_workspace"
+      },
+      {
+        "text": "View full pricing ↗",
+        "href": "/pricing",
+        "hidden": false,
+        "cta": "view_pricing"
+      },
+      {
+        "text": "Compare standard and FlashUse standard Seedance 2.5 for 1080p or native Draft-to-final. Flash keeps its own 480p/720p workflow and reference limits.",
+        "href": "/ai-video-engines/seedance-2-5-vs-seedance-2-5-flash",
+        "hidden": false,
+        "cta": "choose_model"
+      },
+      {
+        "text": "Seedance 2.5",
+        "href": "/models/seedance-2-5",
+        "hidden": false,
+        "cta": "choose_model"
+      },
+      {
+        "text": "Seedance 2.0",
+        "href": "/models/seedance-2-0",
+        "hidden": false,
+        "cta": "choose_model"
+      },
+      {
+        "text": "Seedance 2.0 Fast",
+        "href": "/models/seedance-2-0-fast",
+        "hidden": false,
+        "cta": "choose_model"
+      },
+      {
+        "text": "All video model comparisons",
+        "href": "/ai-video-engines",
+        "hidden": false,
+        "cta": "all_comparisons"
+      }
+    ],
+    "anchors": [
+      "top",
+      "overview",
+      "cinema-model-title",
+      "examples",
+      "proof-create",
+      "cinema-create",
+      "_R_kan29bn5ritulb_",
+      "_R_kan29bn5ritulb_-title",
+      "focus-motion-control",
+      "focus-motion-control-title",
+      "_R_2qin29bn5ritulb_",
+      "_R_2qin29bn5ritulb_-title",
+      "proof-modify",
+      "_R_lkn29bn5ritulb_",
+      "cinema-modify",
+      "_R_f6kn29bn5ritulb_",
+      "_R_f6kn29bn5ritulb_-title",
+      "proof-extend",
+      "cinema-extend",
+      "_R_imn29bn5ritulb_",
+      "_R_imn29bn5ritulb_-title",
+      "rendered-examples",
+      "_R_14pp29bn5ritulb_",
+      "_R_14pp29bn5ritulb_-title",
+      "_R_159p29bn5ritulb_",
+      "_R_159p29bn5ritulb_-title",
+      "_R_15pp29bn5ritulb_",
+      "_R_15pp29bn5ritulb_-title",
+      "_R_169p29bn5ritulb_",
+      "_R_169p29bn5ritulb_-title",
+      "prompting",
+      "_R_6lb29bn5ritulb_",
+      "_R_6lb29bn5ritulb_-title",
+      "model-jsonld-0",
+      "model-jsonld-1",
+      "specs",
+      "_R_6pd29bn5ritulb_",
+      "_R_6pd29bn5ritulb_-title",
+      "_R_99d29bn5ritulb_",
+      "_R_99d29bn5ritulb_-title",
+      "decision-pricing",
+      "cinema-pricing-title",
+      "compare",
+      "faq",
+      "tips",
+      "safety"
+    ],
+    "images": [
+      {
+        "alt": "Midnight run — a low tracking shot",
+        "src": "/_next/image?url=%2Fassets%2Fmodel-examples%2Fseedance-2-5-flash%2Fb898e1485ace9c0d89a0a67a3e406bdda2cae89ea82bba1478bf33f586bcff96.webp&w=3840&q=75",
+        "loading": "eager",
+        "width": 1280,
+        "height": 569,
+        "loaded": true
+      },
+      {
+        "alt": "After the beat — a live performance",
+        "src": "/_next/image?url=%2Fassets%2Fmodel-examples%2Fseedance-2-5-flash%2F520ef6ee3c2cc39405f407ca607d62ac101155ab3a69be3f01d8743bff7d8843.webp&w=3840&q=75",
+        "loading": "lazy",
+        "width": 603,
+        "height": 463,
+        "loaded": true
+      },
+      {
+        "alt": "Image 1 · Character made with Seedream 5.5",
+        "src": "/_next/image?url=%2Fassets%2Fmodel-examples%2Fseedance-2-5-flash%2F58fce79a8ee276bd4090adb494a2c570d0564b8bb05e54175918b7a606ac63b8.webp&w=3840&q=75",
+        "loading": "lazy",
+        "width": 495,
+        "height": 420,
+        "loaded": true
+      },
+      {
+        "alt": "Video 1 · Ballet in the studio",
+        "src": "/_next/image?url=%2Fassets%2Fmodel-examples%2Fseedance-2-5-flash%2F24976eb40def4bf2b76c279d4ae887e6e42695b264f0eece02cf0eabb8e74333.webp&w=3840&q=75",
+        "loading": "lazy",
+        "width": 180,
+        "height": 240,
+        "loaded": true
+      },
+      {
+        "alt": "Result · Ballet in the street",
+        "src": "/_next/image?url=%2Fassets%2Fmodel-examples%2Fseedance-2-5-flash%2F5a510890dea768aea18f8e32551247288155ebf970d124129020ad575bfe22c6.webp&w=3840&q=75",
+        "loading": "lazy",
+        "width": 180,
+        "height": 240,
+        "loaded": true
+      },
+      {
+        "alt": "Ivory coat · source",
+        "src": "/_next/image?url=%2Fassets%2Fmodel-examples%2Fseedance-2-5-flash%2F648ed70f21d14d2bca9ab588af4ede07915881624a3f802bac4bca5b17104658.webp&w=3840&q=75",
+        "loading": "lazy",
+        "width": 582,
+        "height": 775,
+        "loaded": true
+      },
+      {
+        "alt": "Blue coat · edit",
+        "src": "/_next/image?url=%2Fassets%2Fmodel-examples%2Fseedance-2-5-flash%2Fbac882044def6bd6d1a2d29d01345f248286bf0d4cb41ff2a3dd0ca2c5fb3884.webp&w=3840&q=75",
+        "loading": "lazy",
+        "width": 582,
+        "height": 775,
+        "loaded": true
+      },
+      {
+        "alt": "End of the source clip → The next beat",
+        "src": "/_next/image?url=%2Fassets%2Fmodel-examples%2Fseedance-2-5-flash%2F7722ab6d1c50f7c7f7504de3ea2ae9ae6e1a230e2a67f13060a0f4b9eab8f7a9.webp&w=3840&q=75",
+        "loading": "lazy",
+        "width": 652,
+        "height": 367,
+        "loaded": true
+      },
+      {
+        "alt": "The salt run",
+        "src": "/_next/image?url=%2Fassets%2Fmodel-examples%2Fseedance-2-5-flash%2F324daa30d13ed13e25f7108d84b0e3d0ff023d0edbea31a76ee4e0768d1114cd.webp&w=3840&q=75",
+        "loading": "lazy",
+        "width": 356,
+        "height": 200,
+        "loaded": false
+      },
+      {
+        "alt": "The rising sea",
+        "src": "/_next/image?url=%2Fassets%2Fmodel-examples%2Fseedance-2-5-flash%2F1f6d30a0912801f682e2db645582623cb5f19167a557a7e0cd4091a047e65587.webp&w=3840&q=75",
+        "loading": "lazy",
+        "width": 356,
+        "height": 200,
+        "loaded": false
+      },
+      {
+        "alt": "Above the city",
+        "src": "/_next/image?url=%2Fassets%2Fmodel-examples%2Fseedance-2-5-flash%2F87cf1a95501a8430d291652c08b5b76132ca6f5082c3755a651f898921de3d22.webp&w=3840&q=75",
+        "loading": "lazy",
+        "width": 113,
+        "height": 200,
+        "loaded": false
+      },
+      {
+        "alt": "The glass garden",
+        "src": "/_next/image?url=%2Fassets%2Fmodel-examples%2Fseedance-2-5-flash%2F8368cfcd9c83e8e1f9d2083f08c0caf9be1f1b7bd8b83b65b706e438b0f06b6e.webp&w=3840&q=75",
+        "loading": "lazy",
+        "width": 113,
+        "height": 200,
+        "loaded": false
+      },
+      {
+        "alt": "The last train — a conversation in six shots",
+        "src": "/_next/image?url=%2Fassets%2Fmodel-examples%2Fseedance-2-5-flash%2F4c391e60d7bef8ed17d48ff838b5482a0c09c6782bc1f822ea008d1551bee1a9.webp&w=3840&q=75",
+        "loading": "lazy",
+        "width": 632,
+        "height": 356,
+        "loaded": false
+      },
+      {
+        "alt": "First light — an orbital encounter",
+        "src": "/_next/image?url=%2Fassets%2Fmodel-examples%2Fseedance-2-5-flash%2Fe03a2575cd91f10e48ea7837711eec79f950bebfad5c2f9fd41434a13a27ceb0.webp&w=3840&q=75",
+        "loading": "lazy",
+        "width": 506,
+        "height": 285,
+        "loaded": false
+      }
+    ],
+    "schemas": [
+      {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "name": "Seedance 2.5 Flash AI Video Generator & Editing | MaxVideoAI",
+        "description": "Create 4–30 second videos with Seedance 2.5 Flash. Explore 480p/720p, audio, references, video editing and extension. Get prompt help from Milo and review your price.",
+        "url": "https://maxvideoai.com/models/seedance-2-5-flash",
+        "inLanguage": "en-US"
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://maxvideoai.com/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Models",
+            "item": "https://maxvideoai.com/models"
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "name": "Seedance 2.5 Flash",
+            "item": "https://maxvideoai.com/models/seedance-2-5-flash"
+          }
+        ]
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What is Seedance 2.5 Flash?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Seedance 2.5 Flash is ByteDance’s AI video generation model for creating clips from text, images and multimodal references. This MaxVideoAI workflow offers 480p or 720p output, 4–30 second generation and optional audio, with separate Create, Modify and Extend actions."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How do I create a Seedance 2.5 Flash video?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Open Create with Flash and describe the scene, action, camera and sound. Add a first frame, an optional end frame or supported references for the workflow you choose. Select the output settings, review the price and generate. Use Modify or Extend when you want to work from an existing video."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What image, video and audio references can I use?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Flash accepts up to 10 images, 5 videos and 5 audio clips, subject to the selected mode. Images can guide the subject or setting; videos can guide movement and framing; audio can guide the sound. Reference videos share a 30-second total limit, and audio references require a visual input."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can Seedance 2.5 Flash generate sound?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. Enable generated audio and describe dialogue, ambience or sound effects alongside the action. Audio references guide the request; they are different from enabling audio output. Review timing and intelligibility in the generated result."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What is the difference between Modify and Extend?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Modify asks for a change inside a source video and follows its aspect ratio and approximate duration. Extend asks for a continuation before or after a source clip. Choose the source excerpt and describe the change or continuation explicitly; check movement, identity and sound in the result."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How is Flash different from standard Seedance 2.5?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "In MaxVideoAI, Flash offers 480p or 720p. Standard Seedance 2.5 also offers 1080p and a native Draft-to-final workflow with different reference limits. A normal Flash generation is not a finalizable Draft. Compare the settings and current quotes for the version you need."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How much does Seedance 2.5 Flash cost?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The price depends on the selected duration, resolution, audio and source inputs. Reference videos can affect billable duration. Review the exact quote in Create before each generation or edit; the pricing page gives the broader comparison."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can Milo help me write the video prompt?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. Milo is the AI assistant inside the Create prompt editor. Explain the scene in your own words, discuss the action, camera or sound, then review and apply the suggested prompt. You choose the generation settings and confirm the displayed price."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Which examples are real Seedance 2.5 Flash videos?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The drummer, ballet source/result, wardrobe source/edit, diner dialogue and orbital scene were generated with Seedance 2.5 Flash. The red-coat character reference was made with Seedream 5.5. Extend remains an illustrated timeline; the hero and gallery preview are still images. Each real demonstration includes its submitted prompt. Reference acceptance and output quality can vary."
+            }
+          }
+        ]
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "@id": "https://maxvideoai.com/#organization",
+        "name": "MaxVideoAI",
+        "alternateName": "MaxVideo AI",
+        "url": "https://maxvideoai.com/",
+        "logo": "https://maxvideoai.com/favicon-512.png",
+        "description": "MaxVideoAI is a pay-as-you-go platform for AI video, image and audio generation, with a web workspace and MCP integrations for compatible AI assistants. Compare models and review the price before generating, without a subscription.",
+        "sameAs": [
+          "https://x.com/MaxVideoAI",
+          "https://www.linkedin.com/company/maxvideoai/",
+          "https://github.com/camgraphe/maxvideoai",
+          "https://github.com/camgraphe/maxvideoai-plugin",
+          "https://www.producthunt.com/products/maxvideoai",
+          "https://www.youtube.com/channel/UCi5XkvmzIaG8gvJPLEs94Mw"
+        ]
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "url": "https://maxvideoai.com/",
+        "name": "MaxVideoAI",
+        "inLanguage": "en-US"
+      }
+    ],
+    "text": "AI VIDEO GENERATOR · ON MAXVIDEOAI\n\nSeedance 2.5 Flash\n\nCreate. Modify. Keep the story moving.\n\nCreate 4–30 second videos from text, a first frame or references, in 480p or 720p with optional generated audio. Shape the action in Create, change an existing clip with Modify, or continue it with Extend.\n\nCreate with Flash\nExplore the shots\nCreate\n\nTurn text, a first frame or references into a new shot.\n\nModify\n\nGive an existing clip a new direction.\n\nExtend\n\nContinue the action before or after a source clip.\n\nSeedance 2.5 Flash\nOverview\nExplore the shots\nGallery\nPrompt guide\nDetails\nPrice & compare\nFAQ\nCreate with Flash\n\nCREATE · TEXT, IMAGES & REFERENCES\n\nStart with a spark. Give it motion.\nMade with Seedance 2.5 Flash · 6s · 720p · Sound\n\nA short drum fill, a cymbal strike and a held look. Watch the gesture and listen to the generated sound.\n\nTurn a prompt into a new shot, animate a first frame or guide the scene with references. Use images for the subject and setting, video for movement, and audio for the sound you want to follow.\n\n4–30 seconds · 480p / 720p · Optional audio\n\nCreate a video\nPrompt & settings\nImage 1 · Character made with Seedream 5.5\n\nCREATE FOCUS · MOTION CONTROL\n\nBorrow the move. Make it yours.\n\nGive the movement a new character and a new setting. Here, a ballet filmed in a studio guides a woman in a red coat through the same sequence in a sunlit street. Her reference image was created with Seedream 5.5.\n\nVideo 1 · Ballet in the studio\nResult · Ballet in the street\n\nSeedance 2.5 Flash · 8s · 720p · Synchronized playback\n\nCopy prompt\nPrompt & settings\nIvory coat · source\nBlue coat · edit\nReveal the edit\nSeedance 2.5 Flash · 720p · Original + video edit\n\nDrag to compare the wardrobe edit in motion. Both originals play together, with sound muted.\n\nMODIFY · VIDEO EDITING\n\nSame shot. A different intention.\n\nRecast a character, change an action, add or remove objects, or rework the wardrobe, setting, light and sound. Describe the change and what you want to preserve.\n\nTHE EDIT\n\nChange the ivory coat to deep petrol blue. Keep the same scene and movement.\n\nPrompt & settings\nSource clip\n4–30 seconds\nOutput length\nApproximately the source length\nFrame\nKeeps the source aspect ratio\nOpen Modify\n\nEXTEND · VIDEO CONTINUATION\n\nThe moment doesn’t have to end.\n\nContinue an existing video by describing what happens next. Let an action finish, hold a reaction, or add a lead-in before the original shot.\n\n00:00\n00:06\n00:10\nSource clip\n6s\nExtend\n+4s\nIllustrated workflow · source + new segment. Assemble the clips in your edit.\nWhat to look for\n\nWatch the transition: direction of movement, body position, camera, light and sound should connect across the join.\n\nSource clips\nUp to 5 · 30 seconds total\nNew segment\n4–30 seconds\nFrame\nKeeps the selected source ratio\nOpen Extend\nPrompt & settings\nSeedance 2.5 Flash examples\nView all examples\nPrompt & settings\nThe salt run\n8s · 720p · 16:9\nPrompt & settings\nThe rising sea\n8s · 720p · 16:9\nPrompt & settings\nAbove the city\n8s · 720p · 9:16\nPrompt & settings\nThe glass garden\n8s · 720p · 9:16\n\nPROMPT GUIDE\n\nHow to prompt Seedance 2.5 Flash\n\nWrite the scene before the shot list. Let each cut serve an action, a line or a reaction; give the important moments time to land.\n\nThe last train — a conversation in six shots\n\nSeedance 2.5 Flash · 18s · 720p · 16:9 · Sound\n\nPrompt & settings\n\nShe asks about a missed train. A hand stills on a coffee cup. His answer changes the mood. Unequal shot lengths follow the question, admission and invitation to stay.\n\nThe scene\nEstablish the people, setting and what changes between them.\nThe action\nWrite the turning point, gestures and reactions in story order.\nThe camera\nChoose framing and cuts for each beat. Timing follows the story, not equal divisions.\nThe sound\nAssign each line to its speaker, leave pauses and carry ambience across the cuts.\nMilo\nHelp me turn my idea into a cinematic scene.\n\nDescribe your idea in the chat inside the Create prompt editor. Milo helps turn it into a prompt you can review and apply. See the generation price before you generate.\n\nPrompt writing tips\nModel documentation ↗\nSeedance 2.5 Flash — Specifications\n\nFormats, settings and limits to check before creating.\n\nCopy table\nDownload CSV\nFirst light — an orbital encounter\n\nSeedance 2.5 Flash · 8s · 720p · 16:9 · Sound\n\nPrompt & settings\nSeedance 2.5 Flash — Specifications — In MaxVideoAI\nSetting\tIn MaxVideoAI\nText-to-Video\tSupported\nImage-to-Video\tSupported\nVideo-to-Video\tSupported (video editing)\nFirst/Last frame\tSupported (start image + optional end image)\nStart / reference image\tUp to 10 image references\nReference video\tUp to 5 video references\nMax resolution\t480p / 720p\nMax duration\t4–30s\nAspect ratios\t21:9 / 16:9 / 4:3 / 1:1 / 3:4 / 9:16\nAudio output\tOptional generated audio\nAll technical details\n\nSettings available in Create. The table describes MaxVideoAI’s implementation of this model. Source: MaxVideoAI\n\nHero prompt & settings\nYour settings. Your price.\n\nChoose the duration, resolution, sound and references in Create. See the exact price before you generate.\n\nCreate with Flash\nView full pricing ↗\n\nSource videos can affect the billable duration. Check the quote for your exact inputs.\n\nCompare your options.\nCompare standard and Flash\nUse standard Seedance 2.5 for 1080p or native Draft-to-final. Flash keeps its own 480p/720p workflow and reference limits.\n\nExplore other versions\n\nSeedance 2.5\nSeedance 2.0\nSeedance 2.0 Fast\nAll video model comparisons\n\nFAQ\n\nA few things to know.\nWhat is Seedance 2.5 Flash?\nHow do I create a Seedance 2.5 Flash video?\nWhat image, video and audio references can I use?\nCan Seedance 2.5 Flash generate sound?\nWhat is the difference between Modify and Extend?\nHow is Flash different from standard Seedance 2.5?\nHow much does Seedance 2.5 Flash cost?\nCan Milo help me write the video prompt?\nWhich examples are real Seedance 2.5 Flash videos?\nLimits & practical advice\nPeople, likeness & responsible use",
+    "slug": "seedance-2-5-flash",
+    "status": 200,
+    "initialMp4": 0,
+    "missingAnchors": [],
+    "mobileOverflow": false
+  },
+  {
+    "title": "Seedream 5.0 Pro - Professional ByteDance Image Generation | MaxVideoAI",
+    "description": "Create professional still images, dense infographics, visual edits, and 2K campaign assets with Seedream 5.0 Pro in MaxVideoAI.",
+    "canonical": "https://maxvideoai.com/models/seedream-5-0-pro",
+    "robots": "index, follow",
+    "headings": [
+      {
+        "tag": "H1",
+        "text": "Seedream 5.0 Pro - professional image production"
+      },
+      {
+        "tag": "H2",
+        "text": "Seedream 5.0 Pro pricing at a glance"
+      },
+      {
+        "tag": "H3",
+        "text": "2K image"
+      },
+      {
+        "tag": "H2",
+        "text": "A human moment, ready to become a first frame"
+      },
+      {
+        "tag": "H2",
+        "text": "Open Seedream Lite"
+      },
+      {
+        "tag": "H2",
+        "text": "Animate with Seedance 2.0"
+      },
+      {
+        "tag": "H2",
+        "text": "Need prompt examples?"
+      },
+      {
+        "tag": "H2",
+        "text": "Discover Seedream 5.5"
+      },
+      {
+        "tag": "H2",
+        "text": "Discover Seedream 5.0 Flash"
+      },
+      {
+        "tag": "H2",
+        "text": "How to prompt Seedream Pro"
+      },
+      {
+        "tag": "H3",
+        "text": "How Seedream 5.0 Pro uses references"
+      },
+      {
+        "tag": "H3",
+        "text": "Prompt writing tips"
+      },
+      {
+        "tag": "H2",
+        "text": "Seedream 5.0 Pro image prompt examples"
+      },
+      {
+        "tag": "H3",
+        "text": "A neighbourhood story — STAY CURIOUS"
+      },
+      {
+        "tag": "H2",
+        "text": "Tips and boundaries"
+      },
+      {
+        "tag": "H3",
+        "text": "What works best"
+      },
+      {
+        "tag": "H3",
+        "text": "Hard limits to keep in mind"
+      },
+      {
+        "tag": "H2",
+        "text": "Specifications"
+      },
+      {
+        "tag": "H3",
+        "text": "Price / image"
+      },
+      {
+        "tag": "H3",
+        "text": "Text-to-Image"
+      },
+      {
+        "tag": "H3",
+        "text": "Image-to-Image"
+      },
+      {
+        "tag": "H3",
+        "text": "Resolution options"
+      },
+      {
+        "tag": "H3",
+        "text": "Aspect ratios"
+      },
+      {
+        "tag": "H3",
+        "text": "Output format"
+      },
+      {
+        "tag": "H3",
+        "text": "Seedream Pro options"
+      },
+      {
+        "tag": "H2",
+        "text": "Responsible image creation"
+      },
+      {
+        "tag": "H2",
+        "text": "FAQ"
+      }
+    ],
+    "links": [
+      {
+        "text": "Home",
+        "href": "/",
+        "hidden": false
+      },
+      {
+        "text": "Models",
+        "href": "/models",
+        "hidden": false
+      },
+      {
+        "text": "Launch Seedream Pro",
+        "href": "/app/image?engine=seedream-5-0-pro",
+        "hidden": false
+      },
+      {
+        "text": "Open Seedream Lite",
+        "href": "/models/seedream",
+        "hidden": false
+      },
+      {
+        "text": "Open image workspace",
+        "href": "/app/image?engine=seedream-5-0-pro",
+        "hidden": false
+      },
+      {
+        "text": "View pricing",
+        "href": "/pricing#seedream-5-0-pro-pricing",
+        "hidden": false
+      },
+      {
+        "text": "Prompt examples",
+        "href": "#prompting",
+        "hidden": false
+      },
+      {
+        "text": "Animate with Seedance 2.0",
+        "href": "/models/seedance-2-0",
+        "hidden": false
+      },
+      {
+        "text": "View full pricing",
+        "href": "/pricing#seedream-5-0-pro-pricing",
+        "hidden": false
+      },
+      {
+        "text": "Pricing",
+        "href": "#decision-pricing",
+        "hidden": false
+      },
+      {
+        "text": "Examples",
+        "href": "#text-to-image",
+        "hidden": false
+      },
+      {
+        "text": "Prompting",
+        "href": "#prompting",
+        "hidden": false
+      },
+      {
+        "text": "Tips",
+        "href": "#tips",
+        "hidden": false
+      },
+      {
+        "text": "Specs",
+        "href": "#specs",
+        "hidden": false
+      },
+      {
+        "text": "Safety",
+        "href": "#safety",
+        "hidden": false
+      },
+      {
+        "text": "FAQ",
+        "href": "#faq",
+        "hidden": false
+      },
+      {
+        "text": "Create with Seedream 5.0 Pro",
+        "href": "/app/image?engine=seedream-5-0-pro",
+        "hidden": false
+      },
+      {
+        "text": "Explore image-to-video with Seedance 2.5",
+        "href": "/models/seedance-2-5",
+        "hidden": false
+      },
+      {
+        "text": "Open Seedream Lite",
+        "href": "/models/seedream",
+        "hidden": false
+      },
+      {
+        "text": "Animate with Seedance 2.0",
+        "href": "/models/seedance-2-0",
+        "hidden": false
+      },
+      {
+        "text": "Prompt examples",
+        "href": "#prompting",
+        "hidden": false
+      },
+      {
+        "text": "Discover Seedream 5.5",
+        "href": "/models/seedream-5-5",
+        "hidden": false
+      },
+      {
+        "text": "Discover Seedream 5.0 Flash",
+        "href": "/models/seedream-5-0-flash",
+        "hidden": false
+      },
+      {
+        "text": "Open image workspace",
+        "href": "/app/image?engine=seedream-5-0-pro",
+        "hidden": false
+      },
+      {
+        "text": "Create with an AI assistant: see compatible models→",
+        "href": "/mcp",
+        "hidden": false
+      }
+    ],
+    "anchors": [
+      "top",
+      "model-jsonld-0",
+      "model-jsonld-1",
+      "decision-pricing",
+      "decision-pricing-title",
+      "text-to-image",
+      "examples",
+      "prompting",
+      "tips",
+      "specs",
+      "safety",
+      "faq"
+    ],
+    "images": [
+      {
+        "alt": "STAY CURIOUS — expressions and cinematic light",
+        "src": "/_next/image?url=%2Fassets%2Fmodel-examples%2Fseedream-5-0-pro%2Ff8e06de6b3e4dfefb608964bc530ce4b39b15e280b893a9f2d52d8c2f2da54cc.webp&w=3840&q=80",
+        "loading": "eager",
+        "width": 1216,
+        "height": 684,
+        "loaded": true
+      },
+      {
+        "alt": "STAY CURIOUS — expressions and cinematic light",
+        "src": "/_next/image?url=%2Fassets%2Fmodel-examples%2Fseedream-5-0-pro%2Ff8e06de6b3e4dfefb608964bc530ce4b39b15e280b893a9f2d52d8c2f2da54cc.webp&w=3840&q=75",
+        "loading": "lazy",
+        "width": 596,
+        "height": 335,
+        "loaded": true
+      }
+    ],
+    "schemas": [
+      {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "name": "Seedream 5.0 Pro - Professional ByteDance Image Generation | MaxVideoAI",
+        "description": "Create professional still images, dense infographics, visual edits, and 2K campaign assets with Seedream 5.0 Pro in MaxVideoAI.",
+        "url": "https://maxvideoai.com/models/seedream-5-0-pro",
+        "inLanguage": "en-US"
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://maxvideoai.com/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Models",
+            "item": "https://maxvideoai.com/models"
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "name": "Seedream 5.0 Pro",
+            "item": "https://maxvideoai.com/models/seedream-5-0-pro"
+          }
+        ]
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "How is Seedream 5.0 Pro different from Lite, Flash and 5.5?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Pro is a single-image 2K route for detailed portraits, campaign layouts and infographics. Lite supports image sets; Flash is the fast 5.0 variant; 5.5 adds a native transparent PNG option alongside its image generation and editing workflow."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I use several reference images?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. Use up to 10 references to guide one generated image. Assign each image a role, such as the person, wardrobe, location or visual style."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can Pro create text and infographics?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "You can request exact wording, multilingual labels and a clear layout. Review every letter and verify the information in the finished image before publishing."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does Pro support batch output?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "MaxVideoAI returns one 2K image per request with JPEG or PNG output. Choose Seedream 5.0 Lite for related image sets."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How do I prepare a still for animation?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Choose a readable pose, clear face and hands, and space around the subject. Save the selected still and plan the motion in a separate video model. The video generation has its own settings and quote."
+            }
+          }
+        ]
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "@id": "https://maxvideoai.com/#organization",
+        "name": "MaxVideoAI",
+        "alternateName": "MaxVideo AI",
+        "url": "https://maxvideoai.com/",
+        "logo": "https://maxvideoai.com/favicon-512.png",
+        "description": "MaxVideoAI is a pay-as-you-go platform for AI video, image and audio generation, with a web workspace and MCP integrations for compatible AI assistants. Compare models and review the price before generating, without a subscription.",
+        "sameAs": [
+          "https://x.com/MaxVideoAI",
+          "https://www.linkedin.com/company/maxvideoai/",
+          "https://github.com/camgraphe/maxvideoai",
+          "https://github.com/camgraphe/maxvideoai-plugin",
+          "https://www.producthunt.com/products/maxvideoai",
+          "https://www.youtube.com/channel/UCi5XkvmzIaG8gvJPLEs94Mw"
+        ]
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "url": "https://maxvideoai.com/",
+        "name": "MaxVideoAI",
+        "inLanguage": "en-US"
+      }
+    ],
+    "text": "Home\n/\nModels\n/\nSeedream 5.0 Pro\n\nAI IMAGES · BYTEDANCE\n\nSeedream 5.0 Pro - professional image production\n\nBuild a detailed image. Make it your own.\n\nBuild a portrait around a small expression, a campaign around a person, or an infographic around a clear visual hierarchy. Seedream 5.0 Pro generates and edits one 2K still, with up to 10 references to guide the people, materials and composition.\n\nLaunch Seedream Pro\nOpen Seedream Lite\nTEXT → IMAGE\n2K\n16:9\n\nSTAY CURIOUS — generated with Seedream 5.0 Pro\n\nTwo characters sharing a laugh at blue hour: natural expressions, textured clothing and warm light spilling into the street. Open the original 2K image and its prompt below.\n\nOpen image workspace\nView pricing\nPrompt examples\nAnimate with Seedance 2.0\n\nHuman detail\n\nBuild a portrait with natural skin texture, distinct hair and tactile clothing. A small expression and clear eye line give the person a reason to be in the frame.\n\nText with a reading order\n\nSet the headline, supporting labels and their placement explicitly. Use Pro for multilingual campaign layouts and detailed infographics, then inspect the text in the generated image.\n\nReference-guided edits\n\nAssign up to 10 references to the subject, outfit, background or style. Say which details should stay before describing the change.\n\nOne detailed 2K output\n\nCreate a single still in JPEG or PNG. Save the selected image for delivery or as source material for a separate video generation.\n\nSeedream 5.0 Pro pricing at a glance\n\nOne 2K image per request. Check the current quote in the image workspace before generation.\n\nView full pricing\n2K image\n\nLive quote\n\n2K\n\nThe quote shown for your selected settings is the price to review before confirmation.\n\nOn this page\nPricing\nExamples\nPrompting\nTips\nSpecs\nSafety\nFAQ\nA human moment, ready to become a first frame\n\nThis original 2K image was generated with Seedream 5.0 Pro in MaxVideoAI. Explore the expressions, hair, fabric and lighting, then open the image to inspect the original and copy the exact English prompt. This example uses text-to-image generation.\n\nSTAY CURIOUS — expressions and cinematic light\nSeedream 5.0 Pro · Generation · 2K · 16:9 · JPEG\n\nCheck the faces, hands and lettering at full size. Save the original as a first frame for a separate image-to-video generation; describe the performance and camera movement in your video prompt.\n\nCreate with Seedream 5.0 Pro\n\nExplore image-to-video with Seedance 2.5",
+    "slug": "seedream-5-0-pro",
+    "status": 200,
+    "initialMp4": 0,
+    "missingAnchors": []
+  },
+  {
+    "title": "Seedance 2.5 AI Video Generator: 30s, 1080p & Audio",
+    "description": "Generate 4–30-second Seedance 2.5 videos at up to 1080p with text, frames, multimodal references, video editing, extension and optional audio.",
+    "canonical": "https://maxvideoai.com/models/seedance-2-5",
+    "robots": "index, follow",
+    "headings": [
+      {
+        "tag": "H1",
+        "text": "Seedance 2.5"
+      },
+      {
+        "tag": "H2",
+        "text": "Seedance 2.5 pricing for your render"
+      },
+      {
+        "tag": "H3",
+        "text": "Entry draft"
+      },
+      {
+        "tag": "H3",
+        "text": "Common production check"
+      },
+      {
+        "tag": "H3",
+        "text": "Storyboard pass"
+      },
+      {
+        "tag": "H3",
+        "text": "Max duration"
+      },
+      {
+        "tag": "H2",
+        "text": "Create from text"
+      },
+      {
+        "tag": "H2",
+        "text": "Control the first and final frames"
+      },
+      {
+        "tag": "H2",
+        "text": "Edit or extend video"
+      },
+      {
+        "tag": "H2",
+        "text": "Prompt Lab — Seedance 2.5"
+      },
+      {
+        "tag": "H3",
+        "text": "A text-first workflow for longer scenes"
+      },
+      {
+        "tag": "H3",
+        "text": "Define the scene arc"
+      },
+      {
+        "tag": "H3",
+        "text": "Prompt writing tips"
+      },
+      {
+        "tag": "H3",
+        "text": "What to keep in mind"
+      },
+      {
+        "tag": "H2",
+        "text": "Tips and boundaries"
+      },
+      {
+        "tag": "H3",
+        "text": "What works best"
+      },
+      {
+        "tag": "H3",
+        "text": "Common problems → fast fixes"
+      },
+      {
+        "tag": "H3",
+        "text": "Hard limits to keep in mind"
+      },
+      {
+        "tag": "H2",
+        "text": "Compare Seedance 2.5 vs other AI video models"
+      },
+      {
+        "tag": "H3",
+        "text": "Seedance 2.5 vs Wan 3"
+      },
+      {
+        "tag": "H3",
+        "text": "Seedance 2.5 vs MiniMax H3 Max"
+      },
+      {
+        "tag": "H3",
+        "text": "Seedance 2.5 vs Seedance 2.0"
+      },
+      {
+        "tag": "H2",
+        "text": "Seedance 2.5 overview"
+      },
+      {
+        "tag": "H3",
+        "text": "Price / second"
+      },
+      {
+        "tag": "H3",
+        "text": "Text-to-Video"
+      },
+      {
+        "tag": "H3",
+        "text": "Image-to-Video"
+      },
+      {
+        "tag": "H3",
+        "text": "Video-to-Video"
+      },
+      {
+        "tag": "H3",
+        "text": "First/Last frame"
+      },
+      {
+        "tag": "H3",
+        "text": "Start / reference image"
+      },
+      {
+        "tag": "H3",
+        "text": "Reference video"
+      },
+      {
+        "tag": "H3",
+        "text": "Max resolution"
+      },
+      {
+        "tag": "H3",
+        "text": "Max duration"
+      },
+      {
+        "tag": "H3",
+        "text": "Aspect ratios"
+      },
+      {
+        "tag": "H3",
+        "text": "FPS options"
+      },
+      {
+        "tag": "H3",
+        "text": "Output format"
+      },
+      {
+        "tag": "H3",
+        "text": "Audio output"
+      },
+      {
+        "tag": "H3",
+        "text": "Native audio generation"
+      },
+      {
+        "tag": "H3",
+        "text": "Lip sync"
+      },
+      {
+        "tag": "H3",
+        "text": "Watermark"
+      },
+      {
+        "tag": "H3",
+        "text": "Seedance 2.5 overview"
+      },
+      {
+        "tag": "H2",
+        "text": "Safety & people / likeness"
+      },
+      {
+        "tag": "H2",
+        "text": "FAQ"
+      }
+    ],
+    "links": [
+      {
+        "text": "Home",
+        "href": "/",
+        "hidden": false
+      },
+      {
+        "text": "Models",
+        "href": "/models",
+        "hidden": false
+      },
+      {
+        "text": "Generate with Seedance 2.5",
+        "href": "/app?engine=seedance-2-5",
+        "hidden": false
+      },
+      {
+        "text": "View Seedance examples",
+        "href": "/examples/seedance",
+        "hidden": false
+      },
+      {
+        "text": "Compare with Seedance 2.0",
+        "href": "/ai-video-engines/seedance-2-0-vs-seedance-2-5?order=seedance-2-5",
+        "hidden": false
+      },
+      {
+        "text": "View pricing",
+        "href": "/pricing#seedance-2-5-pricing",
+        "hidden": false
+      },
+      {
+        "text": "Prompt examples",
+        "href": "#prompting",
+        "hidden": false
+      },
+      {
+        "text": "Generate with Seedance 2.5",
+        "href": "/app?engine=seedance-2-5",
+        "hidden": false
+      },
+      {
+        "text": "Pricing",
+        "href": "#decision-pricing",
+        "hidden": false
+      },
+      {
+        "text": "Prompting",
+        "href": "#prompting",
+        "hidden": false
+      },
+      {
+        "text": "Tips",
+        "href": "#tips",
+        "hidden": false
+      },
+      {
+        "text": "Compare",
+        "href": "#compare",
+        "hidden": false
+      },
+      {
+        "text": "Specs",
+        "href": "#specs",
+        "hidden": false
+      },
+      {
+        "text": "Safety",
+        "href": "#safety",
+        "hidden": false
+      },
+      {
+        "text": "FAQ",
+        "href": "#faq",
+        "hidden": false
+      },
+      {
+        "text": "Generate from text",
+        "href": "/app?engine=seedance-2-5",
+        "hidden": false
+      },
+      {
+        "text": "Generate with frames",
+        "href": "/app?engine=seedance-2-5",
+        "hidden": false
+      },
+      {
+        "text": "Open Prompt Lab",
+        "href": "#prompting",
+        "hidden": false
+      },
+      {
+        "text": "Use this prompt",
+        "href": "/app?engine=seedance-2-5",
+        "hidden": false
+      },
+      {
+        "text": "Create with an AI assistant: see compatible models→",
+        "href": "/mcp",
+        "hidden": false
+      },
+      {
+        "text": "Compare Seedance 2.5 vs Wan 3",
+        "href": "/ai-video-engines/seedance-2-5-vs-wan-3",
+        "hidden": false
+      },
+      {
+        "text": "Compare Seedance 2.5 vs MiniMax H3 Max",
+        "href": "/ai-video-engines/minimax-h3-max-vs-seedance-2-5?order=seedance-2-5",
+        "hidden": false
+      },
+      {
+        "text": "Compare Seedance 2.5 vs Seedance 2.0",
+        "href": "/ai-video-engines/seedance-2-0-vs-seedance-2-5?order=seedance-2-5",
+        "hidden": false
+      },
+      {
+        "text": "How we benchmark",
+        "href": "/benchmarks",
+        "hidden": false
+      }
+    ],
+    "anchors": [
+      "top",
+      "model-jsonld-0",
+      "model-jsonld-1",
+      "decision-pricing",
+      "decision-pricing-title",
+      "prompting",
+      "tips",
+      "compare",
+      "specs",
+      "safety",
+      "faq"
+    ],
+    "images": [
+      {
+        "alt": "",
+        "src": "/_next/image?url=%2Fbrand%2Fpartners%2Fwan%2Fwan-mark-light.png&w=3840&q=75",
+        "loading": "lazy",
+        "width": 30,
+        "height": 30,
+        "loaded": false
+      },
+      {
+        "alt": "",
+        "src": "/_next/image?url=%2Fbrand%2Fpartners%2Fwan%2Fwan-mark-dark.png&w=3840&q=75",
+        "loading": "lazy",
+        "width": 30,
+        "height": 30,
+        "loaded": false
+      },
+      {
+        "alt": "",
+        "src": "/brand/partners/minimax/minimax-mark-light.svg",
+        "loading": "lazy",
+        "width": 30,
+        "height": 30,
+        "loaded": false
+      },
+      {
+        "alt": "",
+        "src": "/brand/partners/minimax/minimax-mark-dark.svg",
+        "loading": "lazy",
+        "width": 30,
+        "height": 30,
+        "loaded": false
+      },
+      {
+        "alt": "",
+        "src": "/brand/partners/bytedance/bytedance-mark-light.svg",
+        "loading": "lazy",
+        "width": 30,
+        "height": 30,
+        "loaded": false
+      },
+      {
+        "alt": "",
+        "src": "/brand/partners/bytedance/bytedance-mark-dark.svg",
+        "loading": "lazy",
+        "width": 30,
+        "height": 30,
+        "loaded": false
+      }
+    ],
+    "schemas": [
+      {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "name": "Seedance 2.5 AI Video Generator: 30s, 1080p & Audio",
+        "description": "Generate 4–30-second Seedance 2.5 videos at up to 1080p with text, frames, multimodal references, video editing, extension and optional audio.",
+        "url": "https://maxvideoai.com/models/seedance-2-5",
+        "inLanguage": "en-US"
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://maxvideoai.com/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Models",
+            "item": "https://maxvideoai.com/models"
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "name": "Seedance 2.5",
+            "item": "https://maxvideoai.com/models/seedance-2-5"
+          }
+        ]
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What does this Seedance 2.5 page show?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "It shows how Seedance 2.5 turns text, frames, multimodal references and source video into longer cinematic outputs with optional generated audio."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How long are the scenes shown here?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The featured material includes a 24-second hero render and demonstrates scene planning for videos up to 30 seconds."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How should I prompt a longer scene?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Define the concept first, assign actions and camera direction to timed beats, then state the continuity and safety constraints that must remain stable."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I generate with Seedance 2.5 from this page?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Seedance 2.5 generation is available to MaxVideoAI users, with the price calculated and shown before each render."
+            }
+          }
+        ]
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "@id": "https://maxvideoai.com/#organization",
+        "name": "MaxVideoAI",
+        "alternateName": "MaxVideo AI",
+        "url": "https://maxvideoai.com/",
+        "logo": "https://maxvideoai.com/favicon-512.png",
+        "description": "MaxVideoAI is a pay-as-you-go platform for AI video, image and audio generation, with a web workspace and MCP integrations for compatible AI assistants. Compare models and review the price before generating, without a subscription.",
+        "sameAs": [
+          "https://x.com/MaxVideoAI",
+          "https://www.linkedin.com/company/maxvideoai/",
+          "https://github.com/camgraphe/maxvideoai",
+          "https://github.com/camgraphe/maxvideoai-plugin",
+          "https://www.producthunt.com/products/maxvideoai",
+          "https://www.youtube.com/channel/UCi5XkvmzIaG8gvJPLEs94Mw"
+        ]
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "url": "https://maxvideoai.com/",
+        "name": "MaxVideoAI",
+        "inLanguage": "en-US"
+      }
+    ],
+    "text": "Home\n/\nModels\n/\nSeedance 2.5\n\nFROM TEXT, IMAGES OR VIDEO\n\nSeedance 2.5\n\nDirect the scene. From first frame to last.\n\nCreate videos from 4 to 30 seconds, up to 1080p. Start with text or images, guide the motion with references, and choose whether to generate sound.\n\nGenerate with Seedance 2.5\nView Seedance examples\nNo preview available yet.\nCompare with Seedance 2.0\nView pricing\nPrompt examples\n\n4–30-second video\n\nChoose the duration your story needs and render in 480p, 720p or 1080p at 24 FPS.\n\nStart and end frame control\n\nAnimate a start image and add an optional end image to guide the transition.\n\nMultimodal references\n\nGuide subject identity, motion, pacing or sound with image, video and audio references.\n\nEdit, extend and add audio\n\nTransform source video, extend clips and include generated audio when it suits the deliverable.\n\nSeedance 2.5 pricing for your render\n\nChoose duration, resolution, inputs and audio, then review the calculated price before you render.\n\nGenerate with Seedance 2.5\nEntry draft\n\nLive quote\n\n4 s · 480p · Text → Video · 16:9 · Audio off · No references\n\nCommon production check\n\nLive quote\n\nMost popular\n\n15 s · 720p · Text → Video · 16:9 · Audio on · No references\n\nStoryboard pass\n\nLive quote\n\n24 s · 1080p · Text → Video · 16:9 · Audio off · No references\n\nMax duration\n\n30s\n\nUp to 1080p\n\nThe price is shown before rendering and updates with the settings you select.\n\nOn this page\nPricing\nPrompting\nTips\nCompare\nSpecs\nSafety\nFAQ\nCreate from text\n\nDescribe the scene, action, camera and sound to turn a written concept into a complete video.\n\nGenerate from text\nControl the first and final frames\n\nUse start and end images when a transition needs to land on a planned composition.\n\nGenerate with frames\nEdit or extend video\n\nRestyle a source clip or continue one to three clips while keeping the direction in one workflow.\n\nOpen Prompt Lab",
+    "slug": "seedance-2-5",
+    "status": 200,
+    "initialMp4": 0,
+    "missingAnchors": []
+  }
+]

@@ -10,7 +10,7 @@ export type PublicExampleCard = {
   durationSec: number; hasAudio: boolean; priceLabel?: string | null;
 };
 export type PublicExamplesSnapshot = {
-  version: 1; source: 'https://maxvideoai.com/api/examples'; capturedAt: string;
+  version: 1; source: 'https://maxvideoai.com/api/examples' | 'local-generated-review'; capturedAt: string;
   cards: Record<string, PublicExampleCard>;
   feeds: Record<string, { playlist: string[]; 'date-desc': string[] }>;
 };

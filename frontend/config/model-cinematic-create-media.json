@@ -1,0 +1,54 @@
+{
+  "create": {
+    "modelId": "seedance-2-5-flash",
+    "providerModel": "dreamina-seedance-2-5-flash-261115",
+    "src": "/assets/model-examples/seedance-2-5-flash/e4da90c41fecb2571abbb68ff144a3b6f5356b702411c2bb69639661baec4dff.mp4",
+    "sha256": "e4da90c41fecb2571abbb68ff144a3b6f5356b702411c2bb69639661baec4dff",
+    "width": 1280,
+    "height": 720,
+    "durationSeconds": 6.041667,
+    "fps": 24,
+    "audio": true,
+    "poster": "/assets/model-examples/seedance-2-5-flash/520ef6ee3c2cc39405f407ca607d62ac101155ab3a69be3f01d8743bff7d8843.webp",
+    "posterFrameSeconds": 0,
+    "posterSha256": "520ef6ee3c2cc39405f407ca607d62ac101155ab3a69be3f01d8743bff7d8843"
+  },
+  "motionSource": {
+    "modelId": "seedance-2-5-flash",
+    "providerModel": "dreamina-seedance-2-5-flash-261115",
+    "src": "/assets/model-examples/seedance-2-5-flash/6f5402f9817f325236b73baedad539e67dd1e7c4c7198e2b4c5c7aa3d2972bc0.mp4",
+    "sha256": "6f5402f9817f325236b73baedad539e67dd1e7c4c7198e2b4c5c7aa3d2972bc0",
+    "width": 834,
+    "height": 1112,
+    "durationSeconds": 8.041667,
+    "fps": 24,
+    "audio": true,
+    "poster": "/assets/model-examples/seedance-2-5-flash/24976eb40def4bf2b76c279d4ae887e6e42695b264f0eece02cf0eabb8e74333.webp",
+    "posterFrameSeconds": 2.5,
+    "posterSha256": "24976eb40def4bf2b76c279d4ae887e6e42695b264f0eece02cf0eabb8e74333"
+  },
+  "motionResult": {
+    "modelId": "seedance-2-5-flash",
+    "providerModel": "dreamina-seedance-2-5-flash-261115",
+    "src": "/assets/model-examples/seedance-2-5-flash/831fa208f0925d32f6607d28abf5a212cabc15d911e49ed5ab3a53781d8585d2.mp4",
+    "sha256": "831fa208f0925d32f6607d28abf5a212cabc15d911e49ed5ab3a53781d8585d2",
+    "width": 834,
+    "height": 1112,
+    "durationSeconds": 8.041667,
+    "fps": 24,
+    "audio": true,
+    "poster": "/assets/model-examples/seedance-2-5-flash/5a510890dea768aea18f8e32551247288155ebf970d124129020ad575bfe22c6.webp",
+    "posterFrameSeconds": 2.5,
+    "posterSha256": "5a510890dea768aea18f8e32551247288155ebf970d124129020ad575bfe22c6"
+  },
+  "character": {
+    "modelId": "seedream-5-5",
+    "providerModel": "dola-seedream-5-5-261028",
+    "original": "/assets/model-examples/seedance-2-5-flash/cd99b3d1dc90af7fa4867e042475edf4d04e607a83cb4d4801b23df67dd00207.png",
+    "sha256": "cd99b3d1dc90af7fa4867e042475edf4d04e607a83cb4d4801b23df67dd00207",
+    "display": "/assets/model-examples/seedance-2-5-flash/58fce79a8ee276bd4090adb494a2c570d0564b8bb05e54175918b7a606ac63b8.webp",
+    "displaySha256": "58fce79a8ee276bd4090adb494a2c570d0564b8bb05e54175918b7a606ac63b8",
+    "width": 1776,
+    "height": 2368
+  }
+}

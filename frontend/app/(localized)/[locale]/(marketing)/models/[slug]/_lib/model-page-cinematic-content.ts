@@ -27,9 +27,20 @@ const heroSchema = z.object({
   promptAssistant: z.object({ title: text, body: text, action: text }).strict(),
   workflows: z.object({
     eyebrow: text, title: text, intro: text, note: text, action: text,
+    conceptLabel: text, briefLabel: text, limitsLabel: text, inspectLabel: text, promptNote: text, imageDetailsLabel: text,
+    source: z.object({ label: text, href: z.string().url() }).strict(),
     items: z.array(z.object({ id: z.enum(['create', 'extend', 'modify']), title: text, body: text,
       input: text, output: text, steps: z.array(text).length(3),
-    }).strict()).length(3),
+      action: text, prompt: text, inspect: text,
+      compactFacts: text.optional(), promptLabel: text.optional(), promptSummary: text.optional(), proofLabel: text.optional(), proofNote: text.optional(),
+      timeline: z.object({ label: text, source: text, continuation: text, note: text }).strict().optional(),
+      focus: z.object({
+        id, eyebrow: text, title: text, body: text, assetId: id,
+        referenceLabel: text, referenceSteps: z.array(text).length(3),
+        imageLabel: text, caption: text, prompt: text, resultLabel: text, promptLabel: text, promptNote: text.optional(),
+      }).strict().optional(),
+      limits: z.array(z.object({ label: text, value: text }).strict()).length(3),
+    }).strict()).min(1).max(3).refine(items => new Set(items.map(item => item.id)).size === items.length, 'Each workflow appears once'),
   }).strict().optional(),
   facts: z.array(z.object({ label: text, value: text }).strict()).min(3).max(4),
 }).strict();
@@ -38,6 +49,10 @@ const heroSchema = z.object({
 export const cinematicExamplesSchema = z.object({
   title: text.optional(),
   intro: text.optional(),
+  gallery: z.object({
+    navLabel: text, title: text, intro: text, linkLabel: text,
+    previewAssetId: id, previewLabel: text,
+  }).strict().optional(),
   assetTitles: z.array(z.object({ id, title: text }).strict()).optional(),
   provenance: text,
   panels: z.array(z.object({
@@ -50,7 +65,7 @@ export const cinematicExamplesSchema = z.object({
     note: text,
     assetIds: z.array(id).min(1).max(6),
   }).strict()).min(1).max(6),
-  shotPlans: z.array(z.object({ assetId: id, motion: text, sound: text }).strict()).optional(),
+  shotPlans: z.array(z.object({ assetId: id, motion: text, sound: text, prompt: text.optional(), proofNote: text.optional() }).strict()).optional(),
 }).strict();
 
 export type ModelCinematicContent = z.infer<typeof heroSchema>;
