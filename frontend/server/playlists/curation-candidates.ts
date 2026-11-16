@@ -4,8 +4,9 @@ import type { CurationItem } from '@/lib/admin/playlist-curation';
 import { videoOutputDimensionSelect } from '../videos-query';
 import { CURATION_ELIGIBILITY } from './curation-eligibility';
 import { getCurationAliases, CurationError } from './curation-store';
+import { getCurationCandidateAliases } from './curation-candidate-aliases';
 
-export async function listCurationCandidates(slug: string, db: QueryExecutor = { query }, aliases = getCurationAliases(slug)): Promise<CurationItem[]> {
+export async function listCurationCandidates(slug: string, db: QueryExecutor = { query }, aliases = getCurationAliases(slug), retainedOnly = false): Promise<CurationItem[]> {
   if (!aliases) throw new CurationError('Automatic curation is not supported for this destination', 400);
   const rows = await marketingVideoReader(db).query<{
     job_id: string;
@@ -22,8 +23,14 @@ export async function listCurationCandidates(slug: string, db: QueryExecutor = {
        (${videoOutputDimensionSelect('app_jobs', 'height')}) AS output_height
      FROM app_jobs WHERE ${CURATION_ELIGIBILITY}
        AND LOWER(engine_id)=ANY($1::text[])
+       ${retainedOnly ? `AND job_id IN (
+         SELECT selected.id FROM playlists p JOIN playlist_curations c ON c.playlist_id=p.id
+         CROSS JOIN LATERAL jsonb_array_elements_text(to_jsonb(c.ordered_ids) ||
+           CASE WHEN jsonb_typeof(to_jsonb(c)->'opening_ids')='array' THEN to_jsonb(c)->'opening_ids' ELSE '[]'::jsonb END) selected(id)
+         WHERE p.slug=$2
+       )` : ''}
      ORDER BY created_at DESC, job_id ASC`,
-    [aliases.map((alias) => alias.toLowerCase())],
+    [aliases.map((alias) => alias.toLowerCase()), ...(retainedOnly ? [slug] : [])],
   );
   return rows.map((row) => ({
     id: row.job_id,
@@ -35,4 +42,12 @@ export async function listCurationCandidates(slug: string, db: QueryExecutor = {
     createdAt: new Date(row.created_at).toISOString(),
     outputWidth: row.output_width, outputHeight: row.output_height, aspectRatio: row.aspect_ratio,
   }));
+}
+
+/** Preserve saved family clips that the public reader still admits, without widening new-media discovery. */
+export async function listRetainedFamilyCurationCandidates(slug: string, db: QueryExecutor = { query }): Promise<CurationItem[]> {
+  if (!slug.startsWith('family-')) return [];
+  const discoveryAliases = new Set(getCurationCandidateAliases(slug) ?? []);
+  const retainedAliases = (getCurationAliases(slug) ?? []).filter(alias => !discoveryAliases.has(alias.toLowerCase()));
+  return retainedAliases.length ? listCurationCandidates(slug, db, retainedAliases, true) : [];
 }
