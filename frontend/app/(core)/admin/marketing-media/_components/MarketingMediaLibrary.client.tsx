@@ -83,7 +83,8 @@ export function MarketingMediaLibrary({initialVideoId=''}:{initialVideoId?:strin
     <div className="flex flex-wrap items-center gap-2">
      {item.state==='ready'?<><a className="rounded-input border border-border px-3 py-2 text-sm font-semibold" href={`/app?from=${encodeURIComponent(item.videoId)}`}>Reuse settings</a>
       <Button size="sm" variant="outline" disabled={Boolean(busy)} onClick={()=>void change(item,'visibility')}>{item.visibility==='public'?'Make private':'Publish on site'}</Button></>:null}
-     {item.state==='failed'||(item.state==='copying'&&!item.copyActive)?item.sourceKind==='import'?
+     {item.state==='failed'||(item.state==='copying'&&!item.copyActive)?item.sourceKind==='byteplus'?
+      <span className="text-sm text-text-secondary">Retry with the original BytePlus import manifest.</span>:item.sourceKind==='import'?
       <Button size="sm" variant="outline" disabled={Boolean(busy)} onClick={()=>{
        const disclosure=importDisclosure.current;
        if(disclosure){disclosure.open=true;disclosure.querySelector<HTMLInputElement>('input[type="file"]')?.focus();}

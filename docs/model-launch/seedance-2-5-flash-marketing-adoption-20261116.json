@@ -1,0 +1,92 @@
+{
+  "date": "2026-11-16",
+  "engineId": "seedance-2-5-flash",
+  "provider": "byteplus_modelark",
+  "status": "source-dry-runs-verified-not-applied",
+  "verification": "Exact task GET, PostgreSQL BEGIN READ ONLY, owned media hashes, native poster normalization and local video probes",
+  "productionMutation": false,
+  "generationSubmitted": false,
+  "published": false,
+  "films": [
+    {
+      "id": "the-salt-run",
+      "marketingVideoId": "mbp_7e060bdfd40bf06483e586b69a6597f9e005e1616a03926c482b6da1b244bd6e",
+      "mode": "t2v",
+      "width": 1280,
+      "height": 720,
+      "displayDurationSec": 8,
+      "fileCount": 3,
+      "planSha256": "0770290b6ac7066b459929277c35a8a8a0ecbb27ac62c3071e48cfd5afa32e22",
+      "originalSha256": "aa65aa918ece2859a36331f889ad08c4c8d0a187b9c3051df9610720151bf05d",
+      "posterSourceSha256": "324daa30d13ed13e25f7108d84b0e3d0ff023d0edbea31a76ee4e0768d1114cd",
+      "posterStoredSha256": "ece8bfc78560066251a716759077c321dcc8e4281e3cfa61bd95351a9277b869",
+      "nativePosterNormalizationExact": true,
+      "previewSha256": "64b73c5dc0648325b8a1555b4250c1ed4a65e7e13da56cb6413045ea7c3e0f7d",
+      "previewBytes": 50801
+    },
+    {
+      "id": "the-rising-sea",
+      "marketingVideoId": "mbp_048c8faeab1b8a6461690302697c78c3c22e0dc898ead2970d718c968ca6e959",
+      "mode": "t2v",
+      "width": 1280,
+      "height": 720,
+      "displayDurationSec": 8,
+      "fileCount": 3,
+      "planSha256": "138916ed7458e76c2e111813fcd23f56698dcff69de3bcc999e298741e10b4ac",
+      "originalSha256": "fc0b47c3eb49bd1c04a0bacd6784c83bcc30205ebed604d00abe86ebe6ec4bf1",
+      "posterSourceSha256": "1f6d30a0912801f682e2db645582623cb5f19167a557a7e0cd4091a047e65587",
+      "posterStoredSha256": "90b40e2f43256b80cdd9672b955eada325b4dd936d587ca4adc81ff3024e7159",
+      "nativePosterNormalizationExact": true,
+      "previewSha256": "21d1dc2e90e3f33426d7dd220811d714f3ed4b16212f9259b0e0961a4c4ffa92",
+      "previewBytes": 57312
+    },
+    {
+      "id": "above-the-city",
+      "marketingVideoId": "mbp_b15b07ae6777b32c730caf2100b1b7ab65f29c1371fa92360bef0241ab62ca85",
+      "mode": "t2v",
+      "width": 720,
+      "height": 1280,
+      "displayDurationSec": 8,
+      "fileCount": 3,
+      "planSha256": "19996c8bfd9bd7042a39161efb095536db8a6da154686f10b63c743a9e35ac58",
+      "originalSha256": "71d5f64de68d8eef9493c67563cbaaf5c2dee4d31d8b532503b6ca824f616924",
+      "posterSourceSha256": "87cf1a95501a8430d291652c08b5b76132ca6f5082c3755a651f898921de3d22",
+      "posterStoredSha256": "564614f936be7b70cd29b26baa5cb712b4fb31ee7198da8292bea89efe8e6d50",
+      "nativePosterNormalizationExact": true,
+      "previewSha256": "33e908a3eaa2f1579754c8fe35a9b7df41c7a0968393a5fd205622f10d4bb3f3",
+      "previewBytes": 38422
+    },
+    {
+      "id": "the-glass-garden",
+      "marketingVideoId": "mbp_a5b6a74a751aba7723b08a5df22b9fa881d047855780290dc6988cfe0fad3d05",
+      "mode": "t2v",
+      "width": 720,
+      "height": 1280,
+      "displayDurationSec": 8,
+      "fileCount": 3,
+      "planSha256": "b4054af5068dad6c5705f055179754a911723d2a6457174cd6f96cb896b6b06a",
+      "originalSha256": "b0608288536970f858de6e0f59696efff19ad86fa2156b85bbc408ee62ecda8d",
+      "posterSourceSha256": "8368cfcd9c83e8e1f9d2083f08c0caf9be1f1b7bd8b83b65b706e438b0f06b6e",
+      "posterStoredSha256": "0c94760335fd787ef6c70097909ff52031d2a763f8603e9e83f39ce2ddda0e8c",
+      "nativePosterNormalizationExact": true,
+      "previewSha256": "fb99215d1648c391191443d97147bf400ae051f56f160db9d58ee19148614361",
+      "previewBytes": 47822
+    }
+  ],
+  "validation": {
+    "focusedTestsPassed": 30,
+    "marketingIntegrationTestsPassed": 20,
+    "additionalOwnershipTestsPassed": 5,
+    "publicCatalogTestPassed": true,
+    "typescript": "passed",
+    "lint": "passed (7 existing unrelated warnings)",
+    "fastSuite": {
+      "passed": 11411,
+      "skipped": 1,
+      "failed": 1,
+      "failure": "github-assets.test.ts: existing review dates older than 30 days on this branch"
+    },
+    "release": "Combine current main and both model branches, then require successful Quality CI before release"
+  },
+  "openaiReview": "Submitted package and dedicated Review environment unchanged; owner requested freeze through 2026-12-05"
+}

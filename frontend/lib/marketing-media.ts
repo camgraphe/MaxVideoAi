@@ -25,7 +25,7 @@ export type MarketingPlacement = {
 };
 export type MarketingMediaItem = {
   videoId: string;
-  sourceKind: 'job' | 'import';
+  sourceKind: 'job' | 'import' | 'byteplus';
   state: 'copying' | 'ready' | 'failed' | 'deleting' | 'deleted';
   visibility: 'public' | 'private';
   prompt: string;
