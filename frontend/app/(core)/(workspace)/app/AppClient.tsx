@@ -20,7 +20,6 @@ import { useWorkspaceRenderState } from './_hooks/useWorkspaceRenderState';
 import { useWorkspaceRouteNavigation } from './_hooks/useWorkspaceRouteNavigation';
 import { useWorkspaceRouteFormState } from './_hooks/useWorkspaceRouteFormState';
 import { useWorkspaceVideoSettings } from './_hooks/useWorkspaceVideoSettings';
-import { useVideoEditorialPreset } from './_hooks/useVideoEditorialPreset';
 
 export default function AppClientPage({
   app,
@@ -151,16 +150,6 @@ export default function AppClientPage({
     workflowCopy: app.workflowCopy,
     showNotice: noticeState.showNotice,
   });
-  const editorialPromptPending = useVideoEditorialPreset({
-    searchString: draft.searchString,
-    ready: activeDraft.ready && draft.authChecked && draft.hydratedForScope === draft.storageScope,
-    accountScope: draftOwner,
-    engineId: routeForm.form?.engineId,
-    mode: routeForm.form?.mode,
-    applySnapshot: videoSettings.applyVideoSettingsSnapshot,
-    onError: noticeState.setNotice,
-    locale: app.uiLocale,
-  });
   const assets = useWorkspaceAssets({
     ...assetState,
     locale: app.uiLocale,
@@ -192,7 +181,7 @@ export default function AppClientPage({
     setInputAssets: assets.setInputAssets,
     setForm: routeForm.setForm,
   });
-  const settingsReady = activeDraft.ready && !editorialPromptPending && !videoSettings.sharedVideoImportPending && !videoSettings.recallBlocked;
+  const settingsReady = activeDraft.ready && !videoSettings.editorialPromptPending && !videoSettings.sharedVideoImportPending && !videoSettings.recallBlocked;
   const pricing = useWorkspacePricingGate({
     accountId: confirmedAccount,
     accessToken: app.session?.access_token ?? null,

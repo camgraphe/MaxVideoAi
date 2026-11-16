@@ -13,7 +13,7 @@ export function ModelCinematicCompare({ assets, ui, note }: { assets: CinematicA
   const after = assets[step];
   return <div className="cinema-comparison">
     <div className="cinema-segmented" role="group" aria-label={ui.compare}>
-      {assets.map((asset, index) => <button key={asset.id} type="button" aria-pressed={step === index} onClick={() => { setStep(index); setReveal(50); }}><Image src={asset.display.url} width={160} height={90} alt="" sizes="160px" loading="lazy" /><span>{String(index + 1).padStart(2, '0')} / {asset.title}</span></button>)}
+      {assets.map((asset, index) => <button key={asset.id} type="button" aria-pressed={step === index} onClick={() => { setStep(index); setReveal(50); }}><Image src={asset.display.url} width={160} height={90} alt="" aria-hidden="true" sizes="160px" loading="lazy" /><span>{String(index + 1).padStart(2, '0')} / {asset.title}</span></button>)}
     </div>
     <div className="cinema-compare-images">
       <Image src={before.display.url} width={before.display.width} height={before.display.height} alt={before.title} sizes="(min-width: 1600px) 1432px, 91vw" loading="lazy" />

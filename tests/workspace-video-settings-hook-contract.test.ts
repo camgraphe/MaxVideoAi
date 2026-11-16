@@ -31,7 +31,10 @@ test('workspace video settings hydration is owned by a route-local hook', () => 
   assert.match(appSource, /useWorkspaceVideoSettings\(\{/);
   assert.match(appSource, /useWorkspaceVideoSettings\(\{[\s\S]*?accountScope: draftOwner,/);
   assert.match(appSource, /useWorkspaceVideoSettings\(\{[\s\S]*?initialPreviewGroup,/);
-  assert.match(appSource, /const settingsReady = activeDraft.ready && !videoSettings.sharedVideoImportPending && !videoSettings.recallBlocked;/);
+  assert.match(appSource, /const settingsReady = activeDraft.ready && !videoSettings.editorialPromptPending && !videoSettings.sharedVideoImportPending && !videoSettings.recallBlocked;/);
+  assert.doesNotMatch(appSource, /useVideoEditorialPreset/);
+  assert.match(hookSource, /useVideoEditorialPreset\(\{/);
+  assert.match(hookSource, /applySnapshot: applyVideoSettingsSnapshot/);
   assert.match(appSource, /useWorkspacePricingGate\(\{[\s\S]*?form: settingsReady \? routeForm.form : null,/);
   assert.match(appSource, /useWorkspaceGenerationRunner\(\{[\s\S]*?form: settingsReady \? routeForm.form : null,/);
   assert.match(appSource, /hasForm: activeDraft.ready && Boolean\(routeForm.form\) && !videoSettings.sharedVideoImportPending,/);

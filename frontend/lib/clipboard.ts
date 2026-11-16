@@ -13,7 +13,9 @@ export async function copyTextToClipboard(text: string): Promise<boolean> {
     // Fall back to a temporary textarea for browser contexts where Clipboard API is blocked.
   }
 
-  const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  const activeElement = document.activeElement;
+  const previousFocus = activeElement && typeof (activeElement as HTMLElement).focus === 'function'
+    ? activeElement as HTMLElement : null;
   // Content outside a modal dialog is inert: selecting a textarea there can copy
   // the previous selection instead, even when execCommand reports success.
   const modal = previousFocus?.closest('dialog[open]') ?? document.querySelector('dialog[open]');

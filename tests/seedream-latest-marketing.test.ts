@@ -50,7 +50,10 @@ test('latest Seedream pages own localized strict content and factual image-only 
       assert.match(text, /1\.5K/);
       assert.match(text, /2K/);
       assert.match(text, /10/);
-      assert.doesNotMatch(text, /\b[34]K\b|native audio|audio natif|audio nativo|99 layers|16 layers|guaranteed|garanti|garantizad/i);
+      // Comparison cards describe the linked Lite/Pro alternatives, not this model.
+      const { decisionCards: _comparisons, ...ownDecision } = content.decision;
+      const ownClaims = JSON.stringify({ ...content, decision: ownDecision });
+      assert.doesNotMatch(ownClaims, /\b[34]K\b|native audio|audio natif|audio nativo|99 layers|16 layers|\bguaranteed\b|\bgaranti(?:e|s|es)?\b|\bgarantizad[oa]s?\b/i);
       const sibling = slug === 'seedream-5-5' ? 'seedream-5-0-flash' : 'seedream-5-5';
       assert.ok(decision.decisionCards.some((card) => card.cta.href === `${MODEL_PREFIX[locale]}${sibling}`));
     }

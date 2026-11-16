@@ -80,13 +80,17 @@ test('each Flash locale uses current quotes and does not fabricate media or auth
     assert.equal(view.demo.videoSrc, null);
     assert.equal(view.demo.posterSrc, null);
     assert.equal(view.demo.fullHref, null);
-    assert.doesNotMatch(view.demo.durationLabel, /\d/);
-    assert.doesNotMatch(view.demo.aspectLabel, /\d/);
+    // The reviewed Last Train film now supplies factual timing and framing.
+    // A reader without its media still must not invent a playable source above.
+    assert.equal(view.demo.durationLabel, '18s');
+    assert.equal(view.demo.aspectLabel, '16:9');
     assert.equal(prompting.imageExamples, null);
     assert.equal(examples.fallbackItems, null);
     assert.equal(examples.showWhenEmpty, false);
-    assert.ok(prompting.tabs.length > 0);
-    promptCopies.add(prompting.tabs.map((tab) => tab.copy).join('\n'));
+    assert.equal(prompting.tabs.length, 0, 'the reviewed recipe replaces the unrendered scene-plan tabs');
+    assert.ok(prompting.recipe?.excerpt);
+    assert.ok(prompting.recipe.factors.length > 0);
+    promptCopies.add(prompting.recipe.note);
   }
-  assert.equal(promptCopies.size, 3, 'scene plans belong to their requested locale');
+  assert.equal(promptCopies.size, 3, 'recipe guidance belongs to its requested locale');
 });
