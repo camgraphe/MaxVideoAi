@@ -376,6 +376,21 @@
             "sourceIds": [
               "source-3"
             ]
+          },
+          {
+            "spans": [
+              {
+                "text": "For guided practice in Studio, try Stepthrough’s "
+              },
+              {
+                "text": "free interactive lesson on turning a product photo into a short clip",
+                "href": "https://learn.ynteractive.com/modules/maxvideoai-product-photo-clip"
+              },
+              {
+                "text": "."
+              }
+            ],
+            "sourceIds": []
           }
         ]
       },
