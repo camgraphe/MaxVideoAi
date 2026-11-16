@@ -6,7 +6,14 @@ import { CURATION_ELIGIBILITY } from './curation-eligibility';
 import { getCurationAliases, CurationError } from './curation-store';
 import { getCurationCandidateAliases } from './curation-candidate-aliases';
 
-export async function listCurationCandidates(slug: string, db: QueryExecutor = { query }, aliases = getCurationAliases(slug), retainedOnly = false): Promise<CurationItem[]> {
+const retainedSelectionSql = `job_id IN (
+  SELECT selected.id FROM playlists p JOIN playlist_curations c ON c.playlist_id=p.id
+  CROSS JOIN LATERAL jsonb_array_elements_text(to_jsonb(c.ordered_ids) ||
+    CASE WHEN jsonb_typeof(to_jsonb(c)->'opening_ids')='array' THEN to_jsonb(c)->'opening_ids' ELSE '[]'::jsonb END) selected(id)
+  WHERE p.slug=$2
+)`;
+
+export async function listCurationCandidates(slug: string, db: QueryExecutor = { query }, aliases = getCurationAliases(slug), retainedOnly = false, selectedIds?: string[]): Promise<CurationItem[]> {
   if (!aliases) throw new CurationError('Automatic curation is not supported for this destination', 400);
   const rows = await marketingVideoReader(db).query<{
     job_id: string;
@@ -23,14 +30,10 @@ export async function listCurationCandidates(slug: string, db: QueryExecutor = {
        (${videoOutputDimensionSelect('app_jobs', 'height')}) AS output_height
      FROM app_jobs WHERE ${CURATION_ELIGIBILITY}
        AND LOWER(engine_id)=ANY($1::text[])
-       ${retainedOnly ? `AND job_id IN (
-         SELECT selected.id FROM playlists p JOIN playlist_curations c ON c.playlist_id=p.id
-         CROSS JOIN LATERAL jsonb_array_elements_text(to_jsonb(c.ordered_ids) ||
-           CASE WHEN jsonb_typeof(to_jsonb(c)->'opening_ids')='array' THEN to_jsonb(c)->'opening_ids' ELSE '[]'::jsonb END) selected(id)
-         WHERE p.slug=$2
-       )` : ''}
+       ${retainedOnly ? `AND ${retainedSelectionSql}` : ''}
+       ${retainedOnly && selectedIds ? 'AND job_id=ANY($3::text[])' : ''}
      ORDER BY created_at DESC, job_id ASC`,
-    [aliases.map((alias) => alias.toLowerCase()), ...(retainedOnly ? [slug] : [])],
+    [aliases.map((alias) => alias.toLowerCase()), ...(retainedOnly ? [slug, ...(selectedIds ? [selectedIds] : [])] : [])],
   );
   return rows.map((row) => ({
     id: row.job_id,
@@ -44,10 +47,23 @@ export async function listCurationCandidates(slug: string, db: QueryExecutor = {
   }));
 }
 
-/** Preserve saved family clips that the public reader still admits, without widening new-media discovery. */
-export async function listRetainedFamilyCurationCandidates(slug: string, db: QueryExecutor = { query }): Promise<CurationItem[]> {
+function retainedFamilyAliases(slug: string): string[] {
   if (!slug.startsWith('family-')) return [];
   const discoveryAliases = new Set(getCurationCandidateAliases(slug) ?? []);
-  const retainedAliases = (getCurationAliases(slug) ?? []).filter(alias => !discoveryAliases.has(alias.toLowerCase()));
-  return retainedAliases.length ? listCurationCandidates(slug, db, retainedAliases, true) : [];
+  return (getCurationAliases(slug) ?? []).map(alias => alias.toLowerCase()).filter(alias => !discoveryAliases.has(alias));
+}
+
+/** Preserve saved family clips that the public reader still admits, without widening new-media discovery. */
+export async function listRetainedFamilyCurationCandidates(slug: string, db: QueryExecutor = { query }, selectedIds?: string[]): Promise<CurationItem[]> {
+  const aliases = retainedFamilyAliases(slug);
+  return aliases.length ? listCurationCandidates(slug, db, aliases, true, selectedIds) : [];
+}
+
+/** Initial order validation stays ID-only; selected windows hydrate at most their requested 48 IDs. */
+export async function listRetainedFamilyCurationIds(slug: string, db: QueryExecutor = { query }): Promise<string[]> {
+  const aliases = retainedFamilyAliases(slug);
+  if (!aliases.length) return [];
+  const rows = await marketingVideoReader(db).query<{ job_id: string }>(`SELECT job_id FROM app_jobs
+    WHERE ${CURATION_ELIGIBILITY} AND LOWER(engine_id)=ANY($1::text[]) AND ${retainedSelectionSql}`, [aliases, slug]);
+  return rows.map(row => row.job_id);
 }
