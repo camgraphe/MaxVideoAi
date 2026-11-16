@@ -127,6 +127,90 @@ accounting. It reproduces the published Flash 5-second examples ($0.34/$0.76
 without video at 480p/720p). No signed Flash discount was established; do not
 inherit another Seedance model's contract.
 
+### Seedream 5.5 portrait reference — 16 November 2026
+
+One separately authorized Flash `ref2v` request completed with a newly generated,
+text-only Seedream 5.5 character image and the original Flash ballet source video.
+The image used `dola-seedream-5-5-261028`, with no input image. The transfer used
+its exact provider-returned URL as `reference_image`, alongside the unchanged
+`reference_video`, and requested `omni_reference_task_type: reference`. Both
+inputs passed GET/SHA-256 verification before the single fenced submission.
+
+Task `cgt-20261116203504-xv0wi` returned `succeeded`. The independently checked
+original is **834×1112, 24 FPS, 193 frames / 8.041667 seconds**, with **8.064 seconds
+of AAC audio**. Returned usage was **348,683 completion tokens**, corresponding
+to **$1.4993369 LIST**, calculated rather than invoice-verified. The sanitized
+[portrait qualification evidence](seedance-2-5-flash-portrait-qualification-20261116.json)
+records input/output digests, settings, response provenance and review limits.
+
+The matched-frame review found the reference's port de bras, arabesque, lowering
+and turn in the result, with the red coat and street setting retained. Left
+fingertips leave the frame near the peak arabesque, as in the source; the wider
+framing instruction was not fully achieved. Full audio synchronization was not
+audited. The clip is privately imported; creative approval and marketing
+publication remain pending. This is a technical qualification, not a new
+quality-scored benchmark sample or a change to the editorial scoreboard.
+
+This success establishes only this exact Seedream 5.5 → Flash reference path.
+The [official portrait guide](https://ai.byteplus.com/ark/region:ap-southeast-1/docs/seedance-portrait-asset-guide),
+checked on 16 November, explicitly lists Seedream 5.0 lite/pro/flash text-to-image
+outputs in its trusted-image scope; it does not explicitly include 5.5. The
+successful request does not reveal whether the trusted-output mechanism was
+used, and cannot establish general acceptance of synthetic or real-person
+portraits. An earlier, separate Sunburst-image attempt was rejected with
+`InputImageSensitiveContentDetected.PrivacyInformation`; that consumed attempt
+was not retried or transformed. No customer charge, tariff, runtime setting,
+public gallery placement or deployment was changed by this qualification.
+
+### Modify with a native Flash source, 720p and audio — 16 November 2026
+
+The separately authorized editorial pair completed through direct ModelArk:
+T2V source `cgt-20261116214105-id3f5`, followed by Modify
+`cgt-20261116214415-i0kzy`. The edit supplied the source's exact provider URL as
+`reference_video`, with `omni_reference_task_type: edit`, `ratio: adaptive`,
+`duration: -1`, 720p, audio enabled and MP4 output. Both receipts report
+`succeeded`; the recorded run contains one submission per clip and no retry.
+
+Independent hash and decode checks found **834×1112 at 24 FPS** for both originals.
+The source contains **145 frames / 6.041667s**; Modify contains **137 frames /
+5.708333s**, eight frames shorter (approximately **0.333334s**). Their AAC streams
+are 6.080s and 5.728s respectively. This repeats the observed shortening with a
+native Flash source; it does not promise identical clip lengths for comparison
+readers or Studio. The source remains unchanged.
+
+Source usage was **131,322 tokens / $0.919254 LIST**; Modify usage was **254,493
+tokens / $1.0943199 LIST**, totaling **$2.0135739** for this pair. These are
+supplier-rate calculations, not reconciled invoices or customer charges.
+The [sanitized Modify evidence](seedance-2-5-flash-modify-qualification-20261116.json)
+records both tasks and their exact original hashes.
+
+The model-page task's sample-based review found the walking scene and colonnade
+retained while the coat changed from ivory to blue. The independent poster
+review also shows that color change, with button and clothing details differing.
+Exact color matching, frame-by-frame preservation and audio synchronization
+were not established. Both originals were imported privately for the model-page
+preview; native public gallery publication remains outstanding. No editorial
+scores, gallery design, customer tariffs or production settings were changed.
+
+### Native marketing adoption — 16 November 2026
+
+The four approved cinematic gallery films now have successful live **read-only**
+adoption checks: exact BytePlus completion, owned original, owned editorial poster
+and silent short preview. Source and stored poster hashes remain distinct; native
+upload normalization reproduces each stored WebP exactly. The
+[sanitized adoption report](seedance-2-5-flash-marketing-adoption-20261116.json)
+records stable marketing IDs and plan fingerprints, without private account/task
+bindings or media access grants.
+
+The [BytePlus marketing importer](../engineering/byteplus-marketing-import.md)
+prepares independent private publications through the existing marketing copy
+owner. No native job, payment, gallery redesign, production import or publication
+has been performed. Existing model, VS, Seedance-family and main-gallery placement
+owners remain in use. Combine the branches with current main and obtain passing
+Quality CI before release; the local fast suite still identifies the old GitHub
+asset-review dates on this branch. The owner requested that the OpenAI plugin and
+dedicated Review candidate remain unchanged through 5 December.
+
 ## Commercial decisions
 
 Adrien explicitly selected on 2026-11-13:

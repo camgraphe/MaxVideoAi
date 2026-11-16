@@ -1,0 +1,144 @@
+{
+  "verifiedOn": "2026-11-16",
+  "scope": "Separately authorized T2V source followed by direct Modify using the exact native Flash original; 720p, 3:4, MP4 and audio. Evidence applies to these two requests.",
+  "provider": "byteplus_modelark",
+  "model": "dreamina-seedance-2-5-flash-261115",
+  "apiSource": "https://ai.byteplus.com/ark/region:ap-southeast-1/docs/create-video-generation-task-api",
+  "pricingSource": "https://ai.byteplus.com/ark/region:ap-southeast-1/docs/model-pricing",
+  "costBasis": "Public LIST multiplied by actual completion tokens; not a provider invoice or customer charge",
+  "calculatedPairListCostUsd": 2.0135739,
+  "cases": [
+    {
+      "name": "modify-ivory-source",
+      "mode": "t2v",
+      "providerJobId": "cgt-20261116214105-id3f5",
+      "providerStatus": "succeeded",
+      "submittedAt": "2026-11-16T13:41:04.575Z",
+      "completedBy": "2026-11-16T13:42:40.536Z",
+      "request": {
+        "resolution": "720p",
+        "ratio": "3:4",
+        "duration": 6,
+        "generate_audio": true,
+        "output_format": "mp4",
+        "omni_reference_task_type": null,
+        "sourceVideoRole": null,
+        "sourceUsesExactProviderUrl": null,
+        "referenceVideoCount": 0,
+        "sha256": "5bb98deb9a29478fbecef41694c9d9a53578a95ea9536b56baa5fd51a25f0684",
+        "planSha256": "69a3aa2624d005d3cbc8227679d2e5771fc0c9ad1cccea79425228efefbf0a76",
+        "recordedSubmissionCount": 1,
+        "automaticRetries": false
+      },
+      "usage": {
+        "totalTokens": 131322,
+        "completionTokens": 131322
+      },
+      "cost": {
+        "listUsdPerMillionTokens": 7,
+        "calculatedListUsd": 0.919254,
+        "actualSupplierInvoiceVerified": false
+      },
+      "output": {
+        "mimeType": "video/mp4",
+        "bytes": 8010868,
+        "sha256": "e75d0af05cd80a39d86d73ea07881b6978a689b91b01ef03e2f0c999e3a35dce",
+        "videoCodec": "h264",
+        "width": 834,
+        "height": 1112,
+        "frameRate": "24/1",
+        "decodedVideoFrames": 145,
+        "videoDurationSec": 6.041667,
+        "audioCodec": "aac",
+        "audioDurationSec": 6.08,
+        "containerDurationSec": 6.08,
+        "independentHashAndDecodeCheck": true
+      },
+      "evidence": {
+        "receiptSha256": "8a9b6dc5232a6706ca03ccc35ebe00aa284caa2f291251ed34e027e4abc47730",
+        "journalSha256": "607f35fe230f40dcc32a47b487bbeb44085d5fe3fff5b43b36b92981afad580a",
+        "importResultSha256": "8d8c38c10233b45728ba80a9a56a07080d629aff24c91d6eacd56a6dd7c31ba0"
+      },
+      "delivery": {
+        "privateImportVerified": true,
+        "nativeApplicationJobCreated": false,
+        "nativePublicGalleryPublished": false
+      }
+    },
+    {
+      "name": "modify-petrol-result",
+      "mode": "v2v",
+      "providerJobId": "cgt-20261116214415-i0kzy",
+      "providerStatus": "succeeded",
+      "submittedAt": "2026-11-16T13:44:14.276Z",
+      "completedBy": "2026-11-16T13:46:02.990Z",
+      "request": {
+        "resolution": "720p",
+        "ratio": "adaptive",
+        "duration": -1,
+        "generate_audio": true,
+        "output_format": "mp4",
+        "omni_reference_task_type": "edit",
+        "sourceVideoRole": "reference_video",
+        "sourceUsesExactProviderUrl": true,
+        "referenceVideoCount": 1,
+        "sha256": "63c5c9b4515604f8e642724dbbc72a0e201dd138ecbc734a61a554e91da26487",
+        "planSha256": "3150cc8bd07d117ac5058ff7ebad7f701ff0b6d63d5eda8ee40f58de8642d29a",
+        "recordedSubmissionCount": 1,
+        "automaticRetries": false
+      },
+      "usage": {
+        "totalTokens": 254493,
+        "completionTokens": 254493
+      },
+      "cost": {
+        "listUsdPerMillionTokens": 4.3,
+        "calculatedListUsd": 1.0943199,
+        "actualSupplierInvoiceVerified": false
+      },
+      "output": {
+        "mimeType": "video/mp4",
+        "bytes": 7496337,
+        "sha256": "5dd41aed3dd9fd83e1dc2a7199dd48b387df51429d3519bb3d2648e66d901751",
+        "videoCodec": "h264",
+        "width": 834,
+        "height": 1112,
+        "frameRate": "24/1",
+        "decodedVideoFrames": 137,
+        "videoDurationSec": 5.708333,
+        "audioCodec": "aac",
+        "audioDurationSec": 5.728,
+        "containerDurationSec": 5.728,
+        "independentHashAndDecodeCheck": true
+      },
+      "evidence": {
+        "receiptSha256": "64a04dc22d1d2ce5e53e192420a33fd8fe2a1dcce6c0c8be8ff26c4cbab18f48",
+        "journalSha256": "f98fb196dc0b6d1bf8b20eb2d0696e22b6380bee5e02b944eb571b25548975ac",
+        "importResultSha256": "ca87aa4d54ed29375420a40085974744ffcb21b36f01ebba4be3fec4be1954be"
+      },
+      "delivery": {
+        "privateImportVerified": true,
+        "nativeApplicationJobCreated": false,
+        "nativePublicGalleryPublished": false
+      }
+    }
+  ],
+  "comparison": {
+    "sameDimensions": true,
+    "sourceOriginalUnchanged": true,
+    "editShorterByFrames": 8,
+    "editShorterBySec": 0.333334,
+    "visualReview": {
+      "modelPageTaskSampleReview": "Walking scene and colonnade retained; coat changed from ivory to blue; some buttons and garment details differ",
+      "independentReview": "Posters confirm ivory-to-blue change and differing clothing/button details",
+      "exactRequestedColorMatchEstablished": false,
+      "frameByFramePreservationEstablished": false,
+      "fullAudioSynchronizationAudited": false,
+      "qualityScoredBenchmarkSample": false
+    },
+    "publication": "Private imports and local previews only; no native public gallery publication recorded"
+  },
+  "tariffsChanged": false,
+  "customerBillingMutated": false,
+  "deployed": false
+}
