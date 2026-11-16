@@ -5,6 +5,7 @@ import { Link } from '@/i18n/navigation';
 import type { CinematicPresentation } from '../_lib/model-page-cinematic-data';
 import type { ModelDecisionData } from '../_lib/model-page-decision-data';
 import { ModelCinematicBenefits } from './ModelCinematicBenefits';
+import { ModelCinematicHighlights } from './ModelCinematicHighlights';
 import { ModelCinematicWorkflowNav } from './ModelCinematicWorkflowNav';
 
 /** Full-bleed opening owned by the opt-in cinematic template. */
@@ -37,7 +38,7 @@ export function ModelCinematicHero({ presentation, decision }: {
           <a href="#examples" className="cinema-text-link">{content.examplesLabel}<CinematicArrow direction="down" /></a>
         </div>
       </div>
-      {content.workflows ? <ModelCinematicWorkflowNav workflows={content.workflows} /> : overview ? <ModelCinematicBenefits overview={overview} /> : <dl className="cinema-hero-facts">{content.facts.map(fact => <div key={fact.label}><dt>{fact.label}</dt><dd>{fact.value}</dd></div>)}</dl>}
+      {content.highlights ? <ModelCinematicHighlights items={content.highlights} /> : content.workflows ? <ModelCinematicWorkflowNav workflows={content.workflows} /> : overview ? <ModelCinematicBenefits overview={overview} /> : <dl className="cinema-hero-facts">{content.facts.map(fact => <div key={fact.label}><dt>{fact.label}</dt><dd>{fact.value}</dd></div>)}</dl>}
     </div>
   </section>;
 }

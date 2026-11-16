@@ -62,3 +62,41 @@ Relevant contracts: `model-page-cinematic.test.ts`,
 `local-public-examples.test.ts`. Run release CI on the reconciled combined commit,
 not only these focused checks. This template is reusable, not automatic model
 onboarding: each model still needs truthful content, media and recipe registration.
+
+## Existing-model migrations
+
+Seedance 2.5 and FLUX 3 Max opt into the same renderer. Their optional `highlights`
+and `specialty` fields explain actual model differences (native Draft/final versus
+timed keyframes); they do not enable composer capabilities. The original SEO metadata,
+localized URLs, technical details, useful prompt recipes and comparison links remain
+owned by the existing route/content helpers.
+
+- `model-cinematic-public-proofs.json` records selected **already-public** jobs,
+  exact prompts, original video URLs, measured dimensions/audio and immutable posters.
+  A new bundle is explicit in `model-page-cinematic-media.ts`; there is no fallback
+  to Flash or another family member. Public-job reuse uses `from=<jobId>` and the
+  existing shared-video/settings reader, not a newly authored preset or a submitted
+  prompt in the URL. This is an alternative to preset registration for existing jobs.
+- `ModelCinematicSpecialty.tsx` accepts the existing validated keyframe-demo view
+  model. It preserves reference order, indices, public ownership checks and reuse
+  destinations. Without a validated result it renders only an explanatory setup.
+- `model-cinematic-workspace-previews.json` records locale-specific desktop/mobile
+  captures of the **real Create components**, with illustrative settings. Recreate
+  them with `pnpm exec tsx --tsconfig frontend/tsconfig.json
+  scripts/capture-model-workspace-previews.ts`. This local fixture never submits a
+  generation or requests a price. Static responsive images avoid mounting the
+  authenticated composer on a marketing route; the facts remain readable HTML.
+- Optional `specsReviewedAt` is an explicit editorial verification date, displayed
+  with the canonical source and carried through HTML/Markdown/CSV exports. Update
+  it when verifying model settings; it is not a live price timestamp.
+- Public jobs already used as dedicated proofs (including the selected keyframe
+  result) are omitted from the compact gallery rail, without altering playlist
+  membership or the full examples page.
+- Database-free local review can capture a public video's strict `keyframeRecipe`
+  alongside the anonymous examples snapshot. It must match the card's job, model,
+  prompt and duration. Production continues to use the original database reader
+  and public-visibility validator; the snapshot remains development-only.
+
+Additional contracts: `model-cinematic-migration.test.ts`,
+`model-keyframe-demo.test.ts`, `flux-3-max-prompting.test.ts` and
+`model-decision-content-contract.test.ts`.

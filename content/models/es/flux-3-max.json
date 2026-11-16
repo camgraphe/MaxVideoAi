@@ -42,6 +42,10 @@
         {
           "label": "Probar un prompt",
           "href": "#prompting"
+        },
+        {
+          "label": "Puntuaciones editoriales y metodología",
+          "href": "/es/benchmarks#review-flux-3-max"
         }
       ]
     },
@@ -137,8 +141,8 @@
   "prompting": {
     "modelSlug": "flux-3-max",
     "section": {
-      "title": "Laboratorio de prompts — FLUX 3 Max",
-      "intro": "Copia los prompts exactos en inglés de cuatro películas originales. Adapta el montaje, la interpretación y el sonido al ritmo de cada género.",
+      "title": "Cómo promptear FLUX 3 Max",
+      "intro": "Escribe el cambio de la escena antes de la lista de planos. Deja que acción, reacciones y sonido marquen el ritmo. Con imágenes, describe el movimiento entre anclas visuales en lugar de rediseñarlas.",
       "tip": "Describe la progresión y los cambios de ángulo deseados. Pide un plano continuo cuando la escena lo necesite; el momento exacto de los cortes no está garantizado.",
       "guide": {
         "label": "Leer la guía de prompts FLUX 3 Max de fal",
@@ -234,7 +238,34 @@
         "altContext": "After the Bell — escena romántica de FLUX 3 Max"
       }
     },
-    "imageExamples": null
+    "imageExamples": null,
+    "recipe": {
+      "label": "La idea de esta escena",
+      "excerpt": "Dos antiguos boxeadores se encuentran en un ring vacío. Una mano tendida da paso a un baile; una frase y una radio discreta aportan intimidad.",
+      "note": "Prompt original de este ejemplo público. Reutilizar abre Create para revisarlo, sin iniciar una generación.",
+      "factors": [
+        {
+          "icon": "subject",
+          "title": "La escena",
+          "body": "Define quién aparece, dónde y qué cambia."
+        },
+        {
+          "icon": "motion",
+          "title": "La acción",
+          "body": "Da una acción visible a cada momento. El ritmo sigue el relato."
+        },
+        {
+          "icon": "framing",
+          "title": "La cámara",
+          "body": "Elige un recorrido legible y conserva la dirección en pantalla."
+        },
+        {
+          "icon": "sound",
+          "title": "El sonido",
+          "body": "Identifica hablantes, frases exactas, ambiente y silencios."
+        }
+      ]
+    }
   },
   "examples": {
     "modelSlug": "flux-3-max",
@@ -303,6 +334,89 @@
       "secondsLabel": "s",
       "recreateLabel": "Usar esta receta",
       "limitation": "Las imágenes clave guían estados visuales en momentos elegidos. No definen cortes, y no se garantizan el montaje ni las transiciones exactas."
+    },
+    "cinematic": {
+      "title": "Ejemplos de FLUX 3 Max",
+      "intro": "Descubre escenas creadas con FLUX 3 Max y sus ajustes de generación.",
+      "gallery": {
+        "navLabel": "Galería",
+        "title": "Ejemplos de FLUX 3 Max",
+        "intro": "Descubre escenas creadas con FLUX 3 Max y sus ajustes de generación.",
+        "linkLabel": "Ver todos los ejemplos de FLUX",
+        "previewLabel": "Explorar ejemplos públicos"
+      },
+      "assetTitles": [
+        {
+          "id": "fluxmax-hero",
+          "title": "Sin corona"
+        },
+        {
+          "id": "fluxmax-create",
+          "title": "Sigo aquí"
+        },
+        {
+          "id": "fluxmax-prompt",
+          "title": "Después de la campana"
+        },
+        {
+          "id": "fluxmax-detail",
+          "title": "Alguien responde"
+        }
+      ],
+      "provenance": "Selección de resultados públicos de FLUX 3 Max creados con MaxVideoAI. Los ejemplos conservan prompts originales y dimensiones reales. Son ejemplos creativos, no un benchmark controlado.",
+      "panels": [
+        {
+          "id": "create",
+          "layout": "shots",
+          "eyebrow": "CREATE · DIRIGE LA ESCENA",
+          "title": "Dale intención a cada momento.",
+          "body": "Una carrera, un refugio y una frase por radio. Describe cómo la acción cambia al personaje y deja que cámara y sonido la sigan. Empieza solo con texto o desde una imagen que quieras animar.",
+          "note": "Observa cómo la carrera da paso a una pausa. Escucha pasos, impactos, respiración y la frase final.",
+          "assetIds": [
+            "fluxmax-create"
+          ]
+        },
+        {
+          "id": "prompt-guide",
+          "placement": "prompting",
+          "layout": "shots",
+          "eyebrow": "Guía de prompts",
+          "title": "FLUX 3 Max",
+          "body": "Escribe el cambio de la escena antes de la lista de planos. Deja que acción, reacciones y sonido marquen el ritmo. Con imágenes, describe el movimiento entre anclas visuales en lugar de rediseñarlas.",
+          "note": "Prompt original de este ejemplo público. Reutilizar abre Create para revisarlo, sin iniciar una generación.",
+          "assetIds": [
+            "fluxmax-prompt"
+          ]
+        },
+        {
+          "id": "output-details",
+          "placement": "details",
+          "layout": "shots",
+          "eyebrow": "Detalles",
+          "title": "FLUX 3 Max",
+          "body": "Crea vídeos FLUX de 5 a 20 segundos desde texto, una imagen, fotogramas inicial y final o keyframes temporizados. Dirige la actuación y el sonido y elige 720p o reescalado a 1080p.",
+          "note": "Prompt original de este ejemplo público. Reutilizar abre Create para revisarlo, sin iniciar una generación.",
+          "assetIds": [
+            "fluxmax-detail"
+          ]
+        }
+      ],
+      "shotPlans": [
+        {
+          "assetId": "fluxmax-prompt",
+          "motion": "Observa cómo la carrera da paso a una pausa. Escucha pasos, impactos, respiración y la frase final.",
+          "sound": "Consulta el prompt exacto y el resultado.",
+          "prompt": "An intimate romantic film scene at dawn in an old boxing gym. Alone inside the ring are two adult former fighters: a woman in her forties with tightly braided black hair, a small scar above her lip and a worn crimson boxing robe; and a broad man in his fifties with a graying beard, a broken nose and a plain white vest. Their hands are bare, their faces tired, their affection unspoken. Golden light enters through high dusty windows. A small radio outside the ring plays an original, barely audible slow waltz. Begin wide with them standing apart on the worn canvas, then cut to their eyes as they approach with the caution of opponents. She almost raises her hands into a guard, changes her mind, and offers him an open hand instead. She says softly in English, \"You lead.\" He takes her hand. After one awkward step, they begin a simple slow dance in the center of the ring. Keep their full bodies readable during the first steps, then move closer as their guarded expressions give way to private smiles. End in a quiet wide view beyond the ropes, the ring containing their tenderness. Sound: the little radio, shoes brushing canvas, breathing and her voice. No boxing gloves, punches, audience or additional dialogue.",
+          "proofNote": "Prompt original de este ejemplo público. Reutilizar abre Create para revisarlo, sin iniciar una generación."
+        },
+        {
+          "assetId": "fluxmax-detail",
+          "motion": "Observa cómo la carrera da paso a una pausa. Escucha pasos, impactos, respiración y la frase final.",
+          "sound": "Consulta el prompt exacto y el resultado.",
+          "prompt": "Inside a silent space station, an adult astronaut with a visible face and an ivory spacesuit places a hand against a large observation window overlooking a dark nebula. Outside, an immense translucent shape slowly approaches; one of its long luminous extremities comes to rest directly opposite the astronaut's palm, on the other side of the glass. The astronaut holds their breath. End the encounter on these two answering gestures. Contemplative science fiction: begin with the astronaut's solitude, gradually reveal the scale of the presence, then return to the intimacy of the contact. Sound: interior ventilation, breathing, original low, delicate music; no exterior impact sound in the vacuum. No dialogue.",
+          "proofNote": "Prompt original de este ejemplo público. Reutilizar abre Create para revisarlo, sin iniciar una generación."
+        }
+      ]
     }
   },
   "faqs": [
@@ -352,7 +466,160 @@
     },
     {
       "q": "¿Cómo se usan las imágenes clave en FLUX 3 Max?",
-      "a": "Proporciona de 1 a 10 imágenes y coloca cada una en una posición elegida del clip. Describe la acción y el movimiento de cámara entre ellas. Son referencias visuales temporales para una secuencia, en lugar de referencias libres de un personaje."
+      "a": "Proporciona de 1 a 10 imágenes y coloca cada una en una posición elegida del clip. Describe la acción y el movimiento de cámara entre ellas. Son referencias visuales temporales para una secuencia, en lugar de referencias libres de un personaje. Las posiciones usan índices: a 24 fps, 8 segundos son el fotograma 192. Añade un índice único por imagen, de 0 a duración × 24 inclusive. Los keyframes guían estados visuales; no garantizan cortes ni montaje exactos."
     }
-  ]
+  ],
+  "cinematic": {
+    "intro": "Crea vídeos FLUX de 5 a 20 segundos desde texto, una imagen, fotogramas inicial y final o keyframes temporizados. Dirige la actuación y el sonido y elige 720p o reescalado a 1080p.",
+    "caption": "Ejemplos de FLUX 3 Max",
+    "proofLabel": "Del primer fotograma al cine",
+    "examplesLabel": "Explorar las escenas",
+    "pricingLabel": "Precio y comparativa",
+    "modelSlug": "flux-3-max",
+    "variant": "video",
+    "heroAssetId": "fluxmax-hero",
+    "facts": [
+      {
+        "label": "Duración",
+        "value": "5–20 s"
+      },
+      {
+        "label": "Salida",
+        "value": "720p / 1080p upscale"
+      },
+      {
+        "label": "Audio",
+        "value": "Audio generado opcional"
+      }
+    ],
+    "titleLines": [
+      "FLUX 3 Max"
+    ],
+    "subtitle": "Dirige lo que ocurre entre tus fotogramas.",
+    "primaryLabel": "Generar con FLUX 3 Max",
+    "byline": "Generador de vídeo IA · En MaxVideoAI",
+    "overviewLabel": "Presentación",
+    "detailsLabel": "Detalles",
+    "promptingLabel": "Guía de prompts",
+    "workflows": {
+      "eyebrow": "CREAR · EXTENDER · MODIFICAR",
+      "title": "FLUX 3 Max",
+      "intro": "Crea vídeos FLUX de 5 a 20 segundos desde texto, una imagen, fotogramas inicial y final o keyframes temporizados. Dirige la actuación y el sonido y elige 720p o reescalado a 1080p.",
+      "note": "Las posiciones usan índices: a 24 fps, 8 segundos son el fotograma 192. Añade un índice único por imagen, de 0 a duración × 24 inclusive. Los keyframes guían estados visuales; no garantizan cortes ni montaje exactos.",
+      "action": "Abrir el espacio de vídeo",
+      "items": [
+        {
+          "id": "create",
+          "title": "Dale intención a cada momento.",
+          "body": "Una carrera, un refugio y una frase por radio. Describe cómo la acción cambia al personaje y deja que cámara y sonido la sigan. Empieza solo con texto o desde una imagen que quieras animar.",
+          "input": "Text / images",
+          "output": "Video",
+          "steps": [
+            "Elige las imágenes",
+            "Sitúa cada keyframe",
+            "Describe la transición"
+          ],
+          "action": "Generar con FLUX 3 Max",
+          "prompt": "A grounded action-thriller scene in an empty concrete parking garage at night. An adult woman with short dark hair, wearing a charcoal jacket and dark trousers, sprints from left to right toward a thick square concrete pillar. A burst of gunfire from offscreen behind her chips the wall she has just passed. She reaches the pillar, turns around its near corner, and presses her back against the sheltered side. The firing stops. Dust settles. Hold close on her face as she catches her breath and listens. She lifts the radio clipped to her jacket and says quietly in English, \"I'm still here.\" Cut to black. Start with a clear wide view of the route and cover; use urgent cuts following her run, then let the final pause last. Preserve the same woman, clothes, pillar and screen direction throughout. Hard fluorescent light, a red emergency light in the distance. Sound: running footsteps, offscreen gunfire, concrete impacts, breathing, radio static and her voice. No music or visible injuries.",
+          "inspect": "Observa cómo la carrera da paso a una pausa. Escucha pasos, impactos, respiración y la frase final.",
+          "limits": [
+            {
+              "label": "Duración",
+              "value": "5–20 s"
+            },
+            {
+              "label": "Salida",
+              "value": "720p / 1080p upscale"
+            },
+            {
+              "label": "Audio",
+              "value": "Audio generado opcional"
+            }
+          ],
+          "compactFacts": "5–20 s · 720p / 1080p upscale",
+          "promptLabel": "Prompt y ajustes",
+          "proofLabel": "Creado con FLUX 3 Max",
+          "proofNote": "Prompt original de este ejemplo público. Reutilizar abre Create para revisarlo, sin iniciar una generación."
+        }
+      ],
+      "conceptLabel": "Imágenes conceptuales · demostraciones de vídeo próximamente",
+      "briefLabel": "La edición",
+      "limitsLabel": "Antes de crear",
+      "inspectLabel": "Qué observar",
+      "source": {
+        "label": "Referencia del modelo",
+        "href": "https://fal.ai/learn/tools/flux-3-max-prompting-guide"
+      },
+      "promptNote": "Prompt original de este ejemplo público. Reutilizar abre Create para revisarlo, sin iniciar una generación.",
+      "imageDetailsLabel": "Sobre la imagen inicial"
+    },
+    "promptAssistant": {
+      "title": "Milo — asistente de IA para prompts",
+      "action": "Ayúdame a convertir mi idea en una escena cinematográfica.",
+      "body": "Describe tu idea en el chat del editor de prompts de Create. Milo te ayuda a redactar un prompt que puedes revisar y aplicar. Consulta el precio antes de generar."
+    },
+    "highlights": [
+      {
+        "target": "proof-create",
+        "title": "Crea una escena",
+        "body": "Texto, imagen inicial o fotogramas de inicio y final."
+      },
+      {
+        "target": "model-workflow",
+        "title": "Sitúa los keyframes",
+        "body": "De 1 a 10 imágenes repartidas en el clip."
+      },
+      {
+        "target": "specs",
+        "title": "Prepara la entrega",
+        "body": "De 5 a 20 segundos, audio opcional y controles de razonamiento."
+      }
+    ],
+    "specialty": {
+      "kind": "keyframes",
+      "eyebrow": "TIMED KEYFRAMES · 24 FPS",
+      "title": "Sitúa los momentos importantes.",
+      "intro": "Los keyframes temporizados permiten colocar de 1 a 10 imágenes en posiciones elegidas de un clip FLUX 3 Max. Además del inicio y el final, guía estados visuales intermedios y describe el movimiento que los une.",
+      "steps": [
+        {
+          "label": "Elige las imágenes",
+          "body": "Mantén sujetos, espacio y luz compatibles."
+        },
+        {
+          "label": "Sitúa cada keyframe",
+          "body": "Un índice único por imagen, a 24 fps."
+        },
+        {
+          "label": "Describe la transición",
+          "body": "Explica qué se mueve y qué debe permanecer estable."
+        }
+      ],
+      "note": "Las posiciones usan índices: a 24 fps, 8 segundos son el fotograma 192. Añade un índice único por imagen, de 0 a duración × 24 inclusive. Los keyframes guían estados visuales; no garantizan cortes ni montaje exactos.",
+      "action": "Crear con keyframes",
+      "mode": "ref2v",
+      "details": [
+        {
+          "title": "Cuatro formas de empezar",
+          "body": "Genera desde texto, anima una imagen inicial, conecta inicio y final o coloca varios keyframes. Una pareja inicio/final no se configura como una secuencia de imágenes temporizadas."
+        },
+        {
+          "title": "Razonamiento y entrega",
+          "body": "El razonamiento high es el predeterminado; low también está disponible. La salida predeterminada es 720p; 1080p usa reescalado. Elige duración y formato antes de consultar el presupuesto."
+        },
+        {
+          "title": "¿Max o FLUX 3?",
+          "body": "Max añade generación desde texto y keyframes temporizados. La integración FLUX 3 ofrece Extend; FLUX 3 Max no. Elige según el flujo que necesites."
+        }
+      ],
+      "source": {
+        "label": "Fuente: fal · keyframes temporizados",
+        "href": "https://fal.ai/models/blackforestlabs/flux-3-max/keyframes-to-video/api"
+      },
+      "workspacePreview": {
+        "alt": "Editor de keyframes FLUX 3 Max en Create, con tres imágenes en los fotogramas 0, 192 y 384.",
+        "caption": "En Create · Tres imágenes de referencia situadas a los 0, 8 y 16 segundos."
+      }
+    },
+    "specsReviewedAt": "2026-11-16"
+  }
 }

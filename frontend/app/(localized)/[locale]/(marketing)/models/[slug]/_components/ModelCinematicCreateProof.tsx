@@ -33,7 +33,7 @@ export function ModelCinematicCreateProof({ item, panel, asset, focusAsset, work
         </div>
         <div className="cinema-create-actions">
           <Link href={cinematicWorkflowHref(workspaceHref, 'create')} prefetch={false} className="cinema-button" data-analytics-event="cta_click" data-analytics-cta-name="open_workspace" data-analytics-cta-location="model_workflow" data-analytics-target-family="workspace">{item.action}<CinematicArrow disc /></Link>
-          <ModelCinematicVideoPrompt title={panel.title} prompt={item.prompt} note={item.proofNote ?? workflows.promptNote} imageDetailsLabel={workflows.imageDetailsLabel} ui={{ ...ui, videoPrompt: ui.prompt }} asset={asset} triggerLabel={item.promptLabel} creation={cinematicVideoPromptLinks(promptBaseHref, item.id)}
+          <ModelCinematicVideoPrompt title={panel.title} prompt={item.prompt} note={item.proofNote ?? workflows.promptNote} imageDetailsLabel={workflows.imageDetailsLabel} ui={{ ...ui, videoPrompt: ui.prompt }} asset={asset.videoCreation ? undefined : asset} triggerLabel={item.promptLabel} creation={asset.videoCreation ?? cinematicVideoPromptLinks(promptBaseHref, item.id)}
             details={<div key="settings" className="cinema-create-settings"><dl className="cinema-workflow-limits" aria-label={workflows.limitsLabel}>{item.limits.map(limit => <div key={limit.label}><dt>{limit.label}</dt><dd>{limit.value}</dd></div>)}</dl><p>{panel.note}</p></div>} />
         </div>
       </div>

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import workspacePreviews from '@/config/model-cinematic-workspace-previews.json';
 import type { AppLocale } from '@/i18n/locales';
 import type { ModelEditorialImage } from './model-page-editorial-images';
 import type { ModelExamplesContent } from './model-page-examples-content';
@@ -33,6 +34,7 @@ const creationUi = {
 export type CinematicAsset = Pick<ModelEditorialImage, 'id' | 'title' | 'prompt' | 'original' | 'display' | 'metadataLabel' | 'source' | 'alphaVerified'> & {
   engineId?: string;
   video?: NonNullable<ReturnType<typeof cinematicProofVideo>>;
+  videoCreation?: { href: string; refineHref: string };
   creation?: { href: string; refineHref: string; quoteInput: PublicModelQuoteInput; locale: AppLocale; isStartFrame: boolean };
 };
 export type CinematicPresentation = {
@@ -42,6 +44,7 @@ export type CinematicPresentation = {
   assets: CinematicAsset[];
   hero: CinematicAsset;
   media?: CinematicVideoMedia;
+  workspacePreview?: { url: string; width: number; height: number; mobile: { url: string; width: number; height: number } };
   assistantHref: string;
   ui: typeof ui.en & typeof creationUi.en;
 };
@@ -62,6 +65,15 @@ export function buildCinematicPresentation(content: ModelCinematicContent | null
       const frameLabel = { en: 'Start frame', fr: 'Image de départ', es: 'Fotograma inicial' }[locale];
       return { ...frame, engineId: frame.sourceEngineId, title, metadataLabel: `${frameLabel} · ${media.frameSourceLabel} · ${frame.original.width} × ${frame.original.height}` };
     });
+    for (const proof of media.publicProofs ?? []) {
+      if (proof.modelSlug !== content.modelSlug || !proof.display.url.startsWith(`/assets/model-examples/${content.modelSlug}/`)) throw new Error('Public proof belongs to another model');
+      const title = examples.cinematic.assetTitles?.find(item => item.id === proof.id)?.title;
+      if (!title) throw new Error('Missing localized public proof title');
+      const params = new URLSearchParams({ engine: content.modelSlug, from: proof.jobId, lang: locale });
+      const href = `/app?${params}`;
+      assets.push({ ...proof, title, engineId: content.modelSlug, metadataLabel: '',
+        videoCreation: { href, refineHref: `${href}&assistant=milo&refine=example` } });
+    }
   }
   assets = assets.map(asset => {
     const video = media?.examples[asset.id];
@@ -90,6 +102,8 @@ export function buildCinematicPresentation(content: ModelCinematicContent | null
       throw new Error('Cinematic overview benefits must link to distinct visible proof panels');
     }
   }
+  const highlightTargets = new Set(['proof-create', 'specs', 'prompting', ...(content.specialty ? ['model-workflow'] : [])]);
+  if (content.highlights?.some(item => !highlightTargets.has(item.target))) throw new Error('Highlight needs a visible section');
   const focuses = content.workflows?.items.flatMap(item => item.focus ? [item.focus] : []) ?? [];
   if (focuses.some(focus => !media?.focuses[focus.id])) throw new Error('Missing reviewed media for cinematic focus');
   if (new Set(focuses.map(focus => focus.id)).size !== focuses.length || focuses.some(focus => !assets.some(asset => asset.id === focus.assetId))) {
@@ -121,5 +135,7 @@ export function buildCinematicPresentation(content: ModelCinematicContent | null
   assistantEntry.pathname = content.variant === 'image' ? '/app/image' : '/app';
   assistantEntry.searchParams.set('engine', content.modelSlug);
   if (content.variant === 'video') assistantEntry.searchParams.set('mode', 't2v');
-  return { locale, content, examples: examples.cinematic, assets, hero, media, ui: { ...ui[locale], ...creationUi[locale] }, assistantHref: assistantEntry.pathname + assistantEntry.search };
+  const workspacePreview = content.specialty ? workspacePreviews.entries.find(entry => entry.modelSlug === content.modelSlug && entry.locale === locale) : undefined;
+  if (content.specialty && !workspacePreview) throw new Error('Missing exact-locale workspace preview');
+  return { locale, content, workspacePreview, examples: examples.cinematic, assets, hero, media, ui: { ...ui[locale], ...creationUi[locale] }, assistantHref: assistantEntry.pathname + assistantEntry.search };
 }

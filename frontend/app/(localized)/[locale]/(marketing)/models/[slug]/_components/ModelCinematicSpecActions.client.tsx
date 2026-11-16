@@ -6,12 +6,12 @@ import type { AppLocale } from '@/i18n/locales';
 import { copyTextToClipboard } from '@/lib/clipboard';
 import { buildCinematicSpecExports, cinematicSpecCopy, type CinematicSpecRow } from '../_lib/model-page-cinematic-specs';
 
-export function ModelCinematicSpecActions({ title, rows, source, locale, slug }: { title: string; rows: CinematicSpecRow[]; source: string; locale: AppLocale; slug: string }) {
+export function ModelCinematicSpecActions({ title, rows, source, locale, slug, reviewedAt }: { reviewedAt?: string; title: string; rows: CinematicSpecRow[]; source: string; locale: AppLocale; slug: string }) {
   const [status, setStatus] = useState<'idle' | 'copied' | 'failed'>('idle');
   const timeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => () => { if (timeout.current) clearTimeout(timeout.current); }, []);
   const copy = cinematicSpecCopy[locale];
-  const exportData = () => buildCinematicSpecExports({ title, rows, source, locale });
+  const exportData = () => buildCinematicSpecExports({ title, rows, source, locale, reviewedAt });
   async function copyTable() {
     const data = exportData();
     // Embedded browsers can accept rich clipboard writes without forwarding them

@@ -47,7 +47,7 @@ export async function ModelCinematicDetails({ pricing, commercial, schema, decis
   const workflows = presentation.content.workflows;
   const videoDetails = plan && workflows ? <ModelCinematicVideoPrompt title={asset.title}
     prompt={plan.prompt ?? `${presentation.ui.animateFrame} ${plan.motion}\n${presentation.ui.sound}: ${plan.sound}`}
-    note={plan.proofNote ?? workflows.promptNote} imageDetailsLabel={workflows.imageDetailsLabel} ui={presentation.ui} asset={asset.video ? undefined : asset} creation={cinematicVideoPromptLinks(presentation.assistantHref, asset.id)} /> : undefined;
+    note={plan.proofNote ?? workflows.promptNote} imageDetailsLabel={workflows.imageDetailsLabel} ui={presentation.ui} asset={asset.video ? undefined : asset} creation={asset.videoCreation ?? cinematicVideoPromptLinks(presentation.assistantHref, asset.id)} /> : undefined;
   const rows = buildCinematicSpecRows(current.keySpecRows, pricingEngine, locale, presentation.content.variant === 'image');
   const primaryRows = rows.filter(row => presentation.content.variant === 'image' || videoEssentials.has(row.id));
   const secondaryRows = rows.filter(row => !primaryRows.includes(row));
@@ -58,11 +58,12 @@ export async function ModelCinematicDetails({ pricing, commercial, schema, decis
   const related = decision.decisionCards.filter(card => !card.cta.href.endsWith('#prompting'));
   const familyLinks = workflows ? buildCinematicFamilyLinks(presentation.content.modelSlug, locale) : [];
   const discovery = cinematicDiscoveryCopy[locale];
+  const preservedLinks = presentation.content.specialty ? decision.hero.quickLinks.filter(link => !link.href.startsWith('#') && !link.href.includes('/pricing') && !link.href.includes('/tarifs') && !link.href.includes('/precios')) : [];
   return <>
     {buildModelSchemaPayloads({ ...schema, pricingEngine, publicOffer }).map((payload, index) => <script key={index} id={`model-jsonld-${index}`} type="application/ld+json" suppressHydrationWarning dangerouslySetInnerHTML={{ __html: serializeJsonLd(payload) }} />)}
     <section id="specs" className="cinema-specs cinema-section"><div className="cinema-wrap">
       <header className="cinema-section-heading cinema-spec-heading"><div><h2>{tableTitle}</h2><p>{specNote}</p></div>
-        <ModelCinematicSpecActions title={tableTitle} rows={rows} source={source} locale={locale} slug={presentation.content.modelSlug} />
+        <ModelCinematicSpecActions title={tableTitle} rows={rows} source={source} locale={locale} slug={presentation.content.modelSlug} reviewedAt={presentation.content.specsReviewedAt} />
       </header>
       <div className="cinema-specs-layout"><div className="cinema-settings-proof"><ModelCinematicAsset asset={asset} ui={presentation.ui} compact details={videoDetails} />
       </div><div className="cinema-settings-data">
@@ -71,13 +72,14 @@ export async function ModelCinematicDetails({ pricing, commercial, schema, decis
         {secondaryRows.length ? <ModelCinematicSpecTable rows={secondaryRows} title={tableTitle} locale={locale} /> : null}
         {detailedSections.map(section => <div key={section.title}><h3>{section.title}</h3><p>{section.intro}</p><ul>{section.items.map(item => <li key={item}>{item}</li>)}</ul></div>)}
       </div></details> : null}
-      <p className="cinema-spec-source">{specCopy.context} <a href={source}>{specCopy.source}: MaxVideoAI</a></p>
+      <p className="cinema-spec-source">{specCopy.context} {presentation.content.specsReviewedAt ? <>{specCopy.reviewed}: <time dateTime={presentation.content.specsReviewedAt}>{presentation.content.specsReviewedAt}</time>. </> : null}<a href={source}>{specCopy.source}: MaxVideoAI</a></p>
       <ModelCinematicOverview presentation={presentation} />
     </div></div></div></section>
     <div className="cinema-next-band"><div className="cinema-wrap cinema-spec-next">
       <ModelCinematicPricing pricing={decision.pricing} scenarios={scenarios ?? decision.pricing.scenarios} create={decision.hero.primaryCta} locale={locale} offer={offer} />
-      {related.length || familyLinks.length ? <nav id="compare" className="cinema-related-links" aria-label={specCopy.related}><h3>{familyLinks.length ? discovery.title : specCopy.related}</h3>{related.map(card => <Link key={card.title} href={card.cta.href} prefetch={false} data-analytics-event="cta_click" data-analytics-cta-name="choose_model" data-analytics-cta-location="model_related"><span>{card.title}</span><CinematicArrow /><small>{card.body}</small></Link>)}
+      {related.length || familyLinks.length || preservedLinks.length ? <nav id="compare" className="cinema-related-links" aria-label={specCopy.related}><h3>{familyLinks.length ? discovery.title : specCopy.related}</h3>{related.map(card => <Link key={card.title} href={card.cta.href} prefetch={false} data-analytics-event="cta_click" data-analytics-cta-name="choose_model" data-analytics-cta-location="model_related"><span>{card.title}</span><CinematicArrow /><small>{card.body}</small></Link>)}
         {familyLinks.length ? <div className="cinema-family-links"><p>{discovery.versions}</p><ul>{familyLinks.map(link => <li key={link.href}><Link href={link.href} prefetch={false} data-analytics-event="cta_click" data-analytics-cta-name="choose_model" data-analytics-cta-location="model_related" data-analytics-target-family="models">{link.label}<CinematicArrow /></Link></li>)}</ul></div> : null}
+        {preservedLinks.map(link => <Link key={link.href} href={link.href} prefetch={false} className="cinema-source-link">{link.label}<CinematicArrow /></Link>)}
         {workflows ? <Link href="/ai-video-engines" prefetch={false} className="cinema-source-link" data-analytics-event="cta_click" data-analytics-cta-name="all_comparisons" data-analytics-cta-location="model_related" data-analytics-target-family="compare">{discovery.allComparisons}<CinematicArrow /></Link> : null}
       </nav> : null}
     </div></div>

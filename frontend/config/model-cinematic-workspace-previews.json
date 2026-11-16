@@ -1,0 +1,96 @@
+{
+  "capturedAt": "2026-11-16",
+  "purpose": "Actual Create components with example settings; no generation or price quote",
+  "entries": [
+    {
+      "modelSlug": "seedance-2-5",
+      "locale": "en",
+      "url": "/assets/model-examples/workspace-controls/e120d528314ec4984b030bb62e5725aea5145850fce473cd92f3fa9d30427534.webp",
+      "sha256": "e120d528314ec4984b030bb62e5725aea5145850fce473cd92f3fa9d30427534",
+      "width": 1520,
+      "height": 308,
+      "mobile": {
+        "url": "/assets/model-examples/workspace-controls/79a19bedd0c9bd4e421f9906a87619df1e589e9b66b2c368a67e4de14786fe11.webp",
+        "sha256": "79a19bedd0c9bd4e421f9906a87619df1e589e9b66b2c368a67e4de14786fe11",
+        "width": 780,
+        "height": 364
+      },
+      "component": "SeedanceDraftSettingsNotice"
+    },
+    {
+      "modelSlug": "seedance-2-5",
+      "locale": "fr",
+      "url": "/assets/model-examples/workspace-controls/9d9d1c1c5eee091eceaa54d8a8a77ff62706ff9b1fb5c380042fcd26fd4411d1.webp",
+      "sha256": "9d9d1c1c5eee091eceaa54d8a8a77ff62706ff9b1fb5c380042fcd26fd4411d1",
+      "width": 1520,
+      "height": 308,
+      "mobile": {
+        "url": "/assets/model-examples/workspace-controls/fcad442a1889ce917fa1adf124a6a5ff25a2e40ebae2b110dbdfa9230566513c.webp",
+        "sha256": "fcad442a1889ce917fa1adf124a6a5ff25a2e40ebae2b110dbdfa9230566513c",
+        "width": 780,
+        "height": 402
+      },
+      "component": "SeedanceDraftSettingsNotice"
+    },
+    {
+      "modelSlug": "seedance-2-5",
+      "locale": "es",
+      "url": "/assets/model-examples/workspace-controls/31d3134cb5240f9d91ecc3de6ffad83383b4d33401d7d74289e1f6dcfcca9962.webp",
+      "sha256": "31d3134cb5240f9d91ecc3de6ffad83383b4d33401d7d74289e1f6dcfcca9962",
+      "width": 1520,
+      "height": 308,
+      "mobile": {
+        "url": "/assets/model-examples/workspace-controls/337943de965e59bfc4f0ccf61fd58156675b1d9aec35f5a9cebb4a80aaca2a05.webp",
+        "sha256": "337943de965e59bfc4f0ccf61fd58156675b1d9aec35f5a9cebb4a80aaca2a05",
+        "width": 780,
+        "height": 364
+      },
+      "component": "SeedanceDraftSettingsNotice"
+    },
+    {
+      "modelSlug": "flux-3-max",
+      "locale": "en",
+      "url": "/assets/model-examples/workspace-controls/546328d4c1eb5e9b691976d93b1bba8049a166b5521558e900d51d544997c2e2.webp",
+      "sha256": "546328d4c1eb5e9b691976d93b1bba8049a166b5521558e900d51d544997c2e2",
+      "width": 1520,
+      "height": 1040,
+      "mobile": {
+        "url": "/assets/model-examples/workspace-controls/cc30a0ab9c0400c8696a0462ca463b69c6026c21b0f5ce2da5a7faea5f859172.webp",
+        "sha256": "cc30a0ab9c0400c8696a0462ca463b69c6026c21b0f5ce2da5a7faea5f859172",
+        "width": 780,
+        "height": 1166
+      },
+      "component": "LumaRay32KeyframeEditor"
+    },
+    {
+      "modelSlug": "flux-3-max",
+      "locale": "fr",
+      "url": "/assets/model-examples/workspace-controls/d8aa30ae8284dde503bc8194694863ebcd8c993b73eacf7ea5362940588ea092.webp",
+      "sha256": "d8aa30ae8284dde503bc8194694863ebcd8c993b73eacf7ea5362940588ea092",
+      "width": 1520,
+      "height": 1040,
+      "mobile": {
+        "url": "/assets/model-examples/workspace-controls/c6a39b8049be833d6f3cf8483f1788a6e4bb93966ab9ee430c6b149a25f83407.webp",
+        "sha256": "c6a39b8049be833d6f3cf8483f1788a6e4bb93966ab9ee430c6b149a25f83407",
+        "width": 780,
+        "height": 1166
+      },
+      "component": "LumaRay32KeyframeEditor"
+    },
+    {
+      "modelSlug": "flux-3-max",
+      "locale": "es",
+      "url": "/assets/model-examples/workspace-controls/9ef091538f6c931773c40c977606ba7eab84049890ebb1abd8dd45f599b5cd5e.webp",
+      "sha256": "9ef091538f6c931773c40c977606ba7eab84049890ebb1abd8dd45f599b5cd5e",
+      "width": 1520,
+      "height": 1040,
+      "mobile": {
+        "url": "/assets/model-examples/workspace-controls/63740b38c23a745331bfcc13e17e1353c6c52aa5c81d621434112612afc18175.webp",
+        "sha256": "63740b38c23a745331bfcc13e17e1353c6c52aa5c81d621434112612afc18175",
+        "width": 780,
+        "height": 1166
+      },
+      "component": "LumaRay32KeyframeEditor"
+    }
+  ]
+}

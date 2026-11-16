@@ -9,6 +9,7 @@ import seedreamRecords from '../frontend/config/seedream-editorial-images.json';
 import createMedia from '../frontend/config/model-cinematic-create-media.json';
 import finalMedia from '../frontend/config/model-cinematic-final-media.json';
 import startFrames from '../frontend/config/model-cinematic-start-frames.json';
+import publicProofs from '../frontend/config/model-cinematic-public-proofs.json';
 import heroDisplays from '../frontend/config/model-cinematic-hero-displays.json';
 import { parseSeedreamEditorialImages } from '../frontend/lib/seedream-editorial-images';
 import { mergeEngineLocalizedContent } from '../frontend/lib/models/i18n-normalization';
@@ -332,7 +333,7 @@ test('originals and displays retain measured geometry, immutable hashes and real
 });
 
 test('responsive cinematic hero displays retain their exact sources and immutable geometry', async () => {
-  const originals = [...parseSeedreamEditorialImages(seedreamRecords), ...startFrames];
+  const originals = [...parseSeedreamEditorialImages(seedreamRecords), ...startFrames, ...publicProofs];
   for (const asset of heroDisplays.assets) {
     assert.equal(asset.originalSha256, originals.find(original => original.id === asset.id)?.original.sha256);
     assert.equal(asset.desktop.length, 3);
@@ -345,7 +346,7 @@ test('responsive cinematic hero displays retain their exact sources and immutabl
       assert.equal(meta.width, file.width);
       assert.equal(meta.height, file.height);
     }
-    assert.ok(asset.mobile.every(file => asset.id === '55-above-the-clouds' ? file.height === file.width * 2 : file.width * 9 === file.height * 16));
+    assert.ok(asset.mobile.every(file => Math.abs(file.width / file.height - asset.crop.width / asset.crop.height) < 0.002));
   }
 });
 

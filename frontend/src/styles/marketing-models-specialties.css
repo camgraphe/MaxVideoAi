@@ -1,0 +1,50 @@
+/* Optional model-specific evidence, sharing the cinematic template's colour tokens. */
+.marketing-site .model-cinematic-page .cinema-highlights{--cinema-workflow-count:3}
+.marketing-site .model-cinematic-page .cinema-specialty{background:#172530;color:#eef1f3}
+.marketing-site .model-cinematic-page .cinema-specialty .cinema-section-heading p{color:#c4d1d9}
+.marketing-site .model-cinematic-page .cinema-specialty h2{color:#eef1f3}
+.marketing-site .model-cinematic-page .cinema-workflow-sequence{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:40px;list-style:none;padding:16px 0 34px;margin:0}
+.marketing-site .model-cinematic-page .cinema-workflow-sequence li{position:relative;min-height:170px;padding:24px;border:1px solid #ffffff25;background:linear-gradient(135deg,#ffffff0c,transparent);border-radius:8px}
+.marketing-site .model-cinematic-page .cinema-sequence-index{display:block;color:#9db8c8;font-size:12px;letter-spacing:.12em;margin-bottom:20px}
+.marketing-site .model-cinematic-page .cinema-workflow-sequence strong{display:block;font-size:clamp(23px,2.8vw,38px);font-weight:550;letter-spacing:-.04em;line-height:1.15}
+.marketing-site .model-cinematic-page .cinema-workflow-sequence p{font-size:14px;line-height:1.6;color:#c4d1d9;max-width:280px;margin:16px 0 0}
+.marketing-site .model-cinematic-page .cinema-workflow-sequence li>.cinema-arrow{position:absolute;right:-33px;top:50%;color:#a9c3d3}
+.marketing-site .model-cinematic-page .cinema-specialty-footer{display:flex;align-items:center;justify-content:space-between;gap:40px;margin-top:24px}
+.marketing-site .model-cinematic-page .cinema-specialty-footer>div{max-width:760px;color:#b8c8d3;font-size:13px;line-height:1.7}
+.marketing-site .model-cinematic-page .cinema-specialty-footer .cinema-button{flex-shrink:0;background:#c6d9e4;color:#142430;border-color:#c6d9e4}
+.marketing-site .model-cinematic-page .cinema-capability-notes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:40px;margin-top:48px;padding-top:28px;border-top:1px solid #ffffff25}
+.marketing-site .model-cinematic-page .cinema-capability-notes h3{font-size:18px;color:#eef1f3;letter-spacing:-.02em;margin-bottom:12px}
+.marketing-site .model-cinematic-page .cinema-capability-notes p{font-size:14px;line-height:1.65;color:#b8c8d3}
+.marketing-site .model-cinematic-page .cinema-keyframe-proof{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
+.marketing-site .model-cinematic-page .cinema-specialty-note{font-size:13px;line-height:1.7;color:#b8c8d3}
+.marketing-site .model-cinematic-page .cinema-keyframe-proof>figure>figcaption{font-size:13px;margin-top:12px;color:#b8c8d3}
+.marketing-site .model-cinematic-page .cinema-specialty .cinema-prompt-trigger{color:#eef1f3;border-color:#ffffff30}
+.marketing-site .model-cinematic-page .cinema-specialty .cinema-prompt-plus{border-color:#ffffff50}
+@media(max-width:899px){
+ .marketing-site .model-cinematic-page .cinema-keyframe-proof{grid-template-columns:1fr;gap:24px}
+ .marketing-site .model-cinematic-page .cinema-specialty-footer{align-items:flex-start;flex-direction:column;gap:24px}
+}
+@media(max-width:767px){
+ .marketing-site .model-cinematic-page .cinema-highlights p{padding-left:0}
+ .marketing-site .model-cinematic-page .cinema-workflow-sequence{grid-template-columns:1fr;gap:24px;padding-bottom:8px}
+ .marketing-site .model-cinematic-page .cinema-workflow-sequence li{min-height:0;padding:20px}
+ .marketing-site .model-cinematic-page .cinema-sequence-index{float:right;margin:4px 0 0 12px}
+ .marketing-site .model-cinematic-page .cinema-workflow-sequence li>.cinema-arrow{right:50%;top:auto;bottom:-22px;transform:rotate(90deg);width:18px;height:18px}
+ .marketing-site .model-cinematic-page .cinema-capability-notes{grid-template-columns:1fr;gap:24px;margin-top:32px}
+}
+
+.marketing-site .model-cinematic-page .cinema-specialty-footer .cinema-source-link{margin-top:12px;color:#c6d9e4;font-size:12px}
+.marketing-site .model-cinematic-page .cinema-recipe-link{display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center;padding:22px 0;border-bottom:1px solid var(--cinema-line)}
+.marketing-site .model-cinematic-page .cinema-recipe-link h3{font-size:19px}
+.marketing-site .model-cinematic-page .cinema-recipe-link p{font-size:14px;color:var(--cinema-muted);margin-top:8px}
+.marketing-site .model-cinematic-page .cinema-recipe-link .cinema-source-link{font-size:12px;margin-top:10px}
+@media(max-width:767px){.marketing-site .model-cinematic-page .cinema-recipe-link{grid-template-columns:1fr;gap:8px}}
+
+.marketing-site .model-cinematic-page .cinema-workspace-preview{margin:0 0 28px}
+.marketing-site .model-cinematic-page .cinema-workspace-preview img{display:block;width:100%;height:auto;border-radius:8px}
+.marketing-site .model-cinematic-page .cinema-workspace-preview figcaption{margin-top:12px;font-size:12px;line-height:1.6;color:#b8c8d3}
+.marketing-site .model-cinematic-page .cinema-keyframe-positions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;list-style:none;padding:0;margin:24px 0}
+.marketing-site .model-cinematic-page .cinema-keyframe-positions strong{display:block;font-size:17px;color:#c6d9e4;margin-bottom:8px}
+.marketing-site .model-cinematic-page .cinema-keyframe-positions span{display:block;font-size:12px;line-height:1.6;color:#b8c8d3}
+
+.marketing-site .model-cinematic-page .cinema-workspace-preview--draft{max-width:960px;margin-left:auto;margin-right:auto}

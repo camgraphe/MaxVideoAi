@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { canUseLocalPublicExamples, publicCardToVideo, selectLocalModelExamples, selectLocalPublicExamples, type PublicExamplesSnapshot } from './local-public-examples-data';
+import { canUseLocalPublicExamples, publicCardToVideo, publicCardWithKeyframeRecipeToVideo, selectLocalModelExamples, selectLocalPublicExamples, type PublicExamplesSnapshot } from './local-public-examples-data';
 import type { ExampleSort } from './videos-examples';
 
 export function isLocalPublicExamplesEnabled() { return canUseLocalPublicExamples(process.env); }
@@ -22,6 +22,12 @@ export function listLocalPublicExamples(family: string, sort: ExampleSort, limit
 export function getLocalPublicExample(id: string) {
   const card = readSnapshot().cards[id];
   return card ? publicCardToVideo(card) : null;
+}
+
+/** Retain exact public recipe settings in isolated, database-free visual reviews. */
+export function getLocalPublicKeyframeExample(id: string) {
+  const snapshot = readSnapshot();
+  return publicCardWithKeyframeRecipeToVideo(snapshot.cards[id], snapshot.keyframeRecipes?.[id]);
 }
 
 // The public API snapshot has model identities, but no per-model playlist membership.

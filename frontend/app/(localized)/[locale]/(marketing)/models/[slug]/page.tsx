@@ -1,6 +1,7 @@
 import { modelExamplePlaylistKeys, projectModelPageGallery } from '@/server/model-gallery-projection';
 import '@/styles/marketing-models.css';
 import '@/styles/marketing-models-cinematic.css';
+import '@/styles/marketing-models-specialties.css';
 import { ModelArchivePage } from './_components/ModelArchivePage';
 import { buildModelArchiveMetadata } from './_lib/model-page-archive-metadata';
 import { notFound, permanentRedirect } from 'next/navigation';

@@ -1,0 +1,243 @@
+[
+  {
+    "id": "sd25-hero",
+    "modelSlug": "seedance-2-5",
+    "jobId": "c474084a-6b30-4d6c-a48d-4615e0e8b36d",
+    "kind": "video-poster",
+    "prompt": "Ultra-realistic cinematic FPV drone flight over the surreal mega-city in the references. Reference Mapping: @Image1 = the exact visual reference for the city, landmarks, geography, architecture, golden-hour light and atmosphere. The red path and arrow inside @Image1 are used ONLY as the camera route. Create a 28-second, 16:9, first-person FPV video in one single continuous take from first frame to last. Absolutely no cuts, shot changes, scene changes, teleportation, time jumps or camera resets. The drone physically travels through the same connected city throughout. The map is the primary director. Follow its red path, direction, curves and landmark positions as closely as possible. Let the map control the timing: accelerate, bank, dip and climb dynamically inside one uninterrupted forward flight. The red line, arrow and all markings are guidance only. Completely remove them from the final footage; never render a route overlay, marker, UI or annotation. Continuous checkpoints in this exact order—not separate shots: 1. Begin beyond the lower-left edge, already moving forward at low rooftop height, then fly through the large open arch beneath the Eiffel Tower. 2. Continue through the central opening of the Arc de Triomphe. 3. Bank smoothly beside the Sagrada Familia, using its spires for parallax, without circling it. 4. Cross the dense city toward the Sydney Opera House and make one natural broad waterfront flyby past the white sails, never an orbit. 5. Follow the mapped curve beneath the Golden Gate Bridge through a large open span, with the deck and cables rushing overhead. 6. During and just after the bridge, keep the Statue of Liberty clearly recognizable in the distance on its island. A distant reveal is enough; remain on the mapped route. 7. Make one wide progressive climbing turn back left and pass behind the Burj Khalifa for strong foreground occlusion. 8. Continue through the open gap between the Petronas Twin Towers, keeping one stable tower on each side of frame. 9. Glide just above Big Ben and the Westminster rooftops. 10. Rise toward Christ the Redeemer for the final reveal. Once readable, continue into a shadowed rock or dark stone edge beneath the hill until the frame is naturally occluded for an editorial loop point. The Colosseum, Taj Mahal, pyramids and Mount Fuji remain background scenery. Show them naturally when the mapped angle permits, without diverting from the route. Camera style: ultra-wide cinematic FPV, fast but readable, smooth stabilized banking, realistic inertia and altitude changes, continuous forward momentum, stable horizon recovery, strong depth and parallax, controlled motion blur and physically plausible clearances. Keep all architecture rigid and recognizable. Visual style: preserve @Image1 as a photorealistic golden-hour travel film with detailed architecture, realistic water, boats, traffic, warm shadows, atmospheric haze and HDR. Do not invent landmarks. Audio: synchronized wind rush and powerful whooshes, stronger resonance through the Eiffel Tower, Arc and Golden Gate span, subtle city and harbor ambience, a restrained rising orchestral pulse during the return, then a muffled cutoff at the final occlusion. No dialogue.",
+    "original": {
+      "url": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/42c1d1fe-c9dc-46f7-8d96-4f34232b11cc.jpg",
+      "sha256": "13bc06da60f91d47328bf93efdd415389137948d705db5fac37f5b25f210c8ce",
+      "width": 1280,
+      "height": 720
+    },
+    "display": {
+      "url": "/assets/model-examples/seedance-2-5/ca3df1e9a0bc552a6300c6097f2c6d97803b489f90b3a6050f3431725a81c3c3.webp",
+      "sha256": "ca3df1e9a0bc552a6300c6097f2c6d97803b489f90b3a6050f3431725a81c3c3",
+      "width": 1280,
+      "height": 720
+    },
+    "clip": {
+      "src": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/5a02f950-44fa-4cbe-bec0-3f73a91440c7.mp4",
+      "poster": "/assets/model-examples/seedance-2-5/ca3df1e9a0bc552a6300c6097f2c6d97803b489f90b3a6050f3431725a81c3c3.webp",
+      "width": 854,
+      "height": 480,
+      "durationSeconds": 28.041667,
+      "audio": true,
+      "displayFormat": "854 × 480"
+    },
+    "sourcePoster": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/42c1d1fe-c9dc-46f7-8d96-4f34232b11cc.jpg",
+    "reviewedPublicAt": "2026-11-16"
+  },
+  {
+    "id": "sd25-create",
+    "modelSlug": "seedance-2-5",
+    "jobId": "job_seedance25_marketing_train_20260807_v1",
+    "kind": "video-poster",
+    "prompt": "Cinematic 24-second landscape video, 16:9. A long matte-black freight train crosses a vast salt desert at high speed during a violent nighttime storm. Maintain the locomotive, wagon count, proportions, direction of travel, and desert horizon consistently throughout the video.\n\n0-4 seconds: the camera tracks extremely low beside the moving wheels. Rain, salt dust, and reflections react naturally to the train's speed. A powerful lightning bolt strikes the ground directly ahead and instantly solidifies into one monumental arch of transparent luminous glass. Strong visual hook in the first second.\n\n4-18 seconds: the train passes through a sequence of glass arches created one by one by lightning strikes. Use one continuous lateral tracking movement. The arches refract blue-white lightning across the black metal train and wet salt surface. Keep the train stable and realistic; no wagon duplication, bending, melting, or direction change.\n\n18-24 seconds: the same camera movement gradually cranes upward into an epic wide aerial reveal. Dozens of luminous glass arches extend toward the horizon while the train continues through the storm. Monumental scale, realistic rain, volumetric clouds, controlled highlights, premium cinematic photography. End on a stable wide composition with no text, no logo, and no watermark.",
+    "original": {
+      "url": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/00c8b0bd-d00f-4502-811c-c09dce95e136.jpg",
+      "sha256": "11e46aebca79420ecc7f25cfeee39231a563141e762b662736865a04208e4140",
+      "width": 1280,
+      "height": 720
+    },
+    "display": {
+      "url": "/assets/model-examples/seedance-2-5/7bdbd32da35ff49a5af94322f4dbbe475504afc2f390a02d947a7e2d51636fd3.webp",
+      "sha256": "7bdbd32da35ff49a5af94322f4dbbe475504afc2f390a02d947a7e2d51636fd3",
+      "width": 1280,
+      "height": 720
+    },
+    "clip": {
+      "src": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/d75f0763-2692-4698-b080-6248da2580e4.mp4",
+      "poster": "/assets/model-examples/seedance-2-5/7bdbd32da35ff49a5af94322f4dbbe475504afc2f390a02d947a7e2d51636fd3.webp",
+      "width": 1280,
+      "height": 720,
+      "durationSeconds": 24.041667,
+      "audio": false,
+      "displayFormat": "1280 × 720"
+    },
+    "sourcePoster": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/00c8b0bd-d00f-4502-811c-c09dce95e136.jpg",
+    "reviewedPublicAt": "2026-11-16"
+  },
+  {
+    "id": "sd25-prompt",
+    "modelSlug": "seedance-2-5",
+    "jobId": "job_seedance25_marketing_city_20260807_v1",
+    "kind": "video-poster",
+    "prompt": "Cinematic 24-second landscape video, 16:9. A woman in her early thirties waits alone on a quiet European railway platform at sunrise. She wears a timeless camel coat and places a weathered brown suitcase on the ground. Maintain her appearance, clothing, the suitcase design, and the platform architecture consistently throughout the video.\n\n0-4 seconds: medium-low camera angle. She opens the suitcase. A warm golden light immediately illuminates her face from inside. The camera begins one slow, continuous forward dolly toward the open suitcase.\n\n4-17 seconds: inside the suitcase, a realistic miniature coastal city unfolds and comes alive in one continuous action: compact buildings rise, a small train moves along the coast, tiny cars begin moving, harbor water ripples, and waves reach the shore. The camera continues the same smooth forward movement and descends into the city. Preserve believable scale, geometry, gravity, and natural motion. No sudden transformation, no cut, no change of visual style.\n\n17-24 seconds: the camera gently rises into a wide view showing the complete living coastal city still contained inside the open suitcase. The woman remains visible beyond it at giant scale, watching in quiet amazement. Golden sunrise, subtle sea mist, realistic materials, cinematic contrast, premium feature-film photography. End on a stable, readable composition with no text, no logo, and no watermark.",
+    "original": {
+      "url": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/6682018a-aac1-44e0-b5a2-64aa34096691.jpg",
+      "sha256": "75ba55d7bfbcaf3d9229f6f48ab0d1839f7528f791e6033bfd53abf02e0cd1e5",
+      "width": 1280,
+      "height": 720
+    },
+    "display": {
+      "url": "/assets/model-examples/seedance-2-5/1644ce58d7626815a539c8bc00cc4ac8d6b098950e166cbbe4abcbaa9c20c5d1.webp",
+      "sha256": "1644ce58d7626815a539c8bc00cc4ac8d6b098950e166cbbe4abcbaa9c20c5d1",
+      "width": 1280,
+      "height": 720
+    },
+    "clip": {
+      "src": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/24df6d47-b146-40fa-8aa2-d66af46b9a9e.mp4",
+      "poster": "/assets/model-examples/seedance-2-5/1644ce58d7626815a539c8bc00cc4ac8d6b098950e166cbbe4abcbaa9c20c5d1.webp",
+      "width": 1280,
+      "height": 720,
+      "durationSeconds": 24.041667,
+      "audio": false,
+      "displayFormat": "1280 × 720"
+    },
+    "sourcePoster": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/6682018a-aac1-44e0-b5a2-64aa34096691.jpg",
+    "reviewedPublicAt": "2026-11-16"
+  },
+  {
+    "id": "sd25-detail",
+    "modelSlug": "seedance-2-5",
+    "jobId": "9b226917-75ce-41df-a5b6-e66d7913a8a2",
+    "kind": "video-poster",
+    "prompt": "SEEDANCE | TEXT TO VIDEO | SINGLE CONTINUOUS TAKE | 15s | HORIZONTAL 16:9 SCENE AND LOCATION A hidden volcanic spring canyon deep in a Pacific Northwest pine forest on a bright summer day. A narrow deep gorge with high walls of dark gray basalt columns, tan and rust streaks, bright green moss and ferns. At the bottom is a crystal-clear natural spring pool: turquoise shallow edges, deep sapphire center, honeycomb volcanic rock, mossy boulders and two pale submerged logs. Two white waterfalls, one at the far back and one spilling from the right cliff. Tall pine trees line the rim under a clear blue sky. The same canyon layout throughout. THE JUMPER First-person view only. Tanned bare feet, lightly hairy shins and loose navy-blue swim shorts with a mustard-yellow hibiscus pattern. Bare hands and forearms naturally enter frame. No face, shoes or gloves. CAMERA AND REALISM Forehead-mounted action-camera POV with a natural ultra-wide lens. Breathing micro-jitter, head bob, fast exposure shifts between sky and shade, water droplets after immersion, wind buffeting during the fall. Authentic action-camera footage. The drop is about 35 meters. Continuous real-time motion, gravity and water behaviour; keep the same limbs and shorts. 0-2s | THE EDGE AND TAKEOFF Look steeply down at the turquoise pool from the basalt ledge: feet at the bottom of frame and a pink-and-white inflatable tube already floating far below. One sharp breath and a quick \"Let's go!\" Two quick steps and a decisive push off the edge. The pool and the two waterfalls remain in view as the cliff edge falls away. 2-5s | THE FALL Fast uninterrupted descent. Arms briefly spread at frame edges, then tuck in; legs straighten for a feet-first pencil dive. Basalt and moss rush upward past the lens, right-side waterfall spray catches the sun, wind builds and the camera shakes naturally. The pool and pink tube grow quickly without changing position. One breathless \"Wooo!\" No pause or slow motion. 5-6s | IMPACT The water fills frame. Feet-first entry: one hard splash, then white bubbles swallow the lens. Audio immediately becomes muffled underwater. 6-10s | UNDERWATER AND ASCENT The bubbles clear into transparent blue water, sun shafts, the same pale logs and basalt bottom. One strong arm pull enters frame, then upward kicks towards the bright surface; bubbles stream past. Keep the ascent fast and purposeful. 10-12s | SURFACE BREAK Burst through the surface. Droplets slide down the lens, wind and waterfall sound return clearly, one hand grabs the pink-and-white tube beside the camera. 12-15s | REWARD Bob on the turquoise water holding the tube. Tilt up to show the towering basalt cliff, the tiny takeoff ledge, pines and right-side waterfall. A real breath, then natural spoken English: \"That was insane!\" Finish on the cliff view with the water gently bobbing. AUDIO AND CONTINUITY Wind, breathing, waterfall roar, one clear impact splash, bubbles underwater, water movement on resurfacing and the three brief English reactions. One continuous upbeat chill electronic instrumental beneath the real sounds: build through the fall, muffled underwater, then restore clarity with a small beat drop on surfacing. No narration or sung lyrics. One continuous first-person shot, no third-person cut, hovering, extra slow motion, morphing cliffs, changing water colour, extra limbs, titles, subtitles, borders or watermarks.",
+    "original": {
+      "url": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/fef24135-7fcc-4ce5-b66b-47405cc8c49d.jpg",
+      "sha256": "178ced02bd4bebede4ece3fcb5d72abb280f4aa83d339c08cecd3446e4e73407",
+      "width": 1280,
+      "height": 720
+    },
+    "display": {
+      "url": "/assets/model-examples/seedance-2-5/0990ca2d66946d6942fbeb371af28b31172350b0182997c5882f58c61d3fb77d.webp",
+      "sha256": "0990ca2d66946d6942fbeb371af28b31172350b0182997c5882f58c61d3fb77d",
+      "width": 1280,
+      "height": 720
+    },
+    "clip": {
+      "src": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/2a60e39e-249e-43b6-bf05-b5a948752bbe.mp4",
+      "poster": "/assets/model-examples/seedance-2-5/0990ca2d66946d6942fbeb371af28b31172350b0182997c5882f58c61d3fb77d.webp",
+      "width": 854,
+      "height": 480,
+      "durationSeconds": 15.072,
+      "audio": true,
+      "displayFormat": "854 × 480"
+    },
+    "sourcePoster": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/fef24135-7fcc-4ce5-b66b-47405cc8c49d.jpg",
+    "reviewedPublicAt": "2026-11-16"
+  },
+  {
+    "id": "fluxmax-hero",
+    "modelSlug": "flux-3-max",
+    "jobId": "job_external_fal_23c389d529d3ba2482e59286ca9d19970c235559",
+    "kind": "video-poster",
+    "prompt": "A dark-fantasy film scene in a monumental, deserted throne hall. An imposing woman in her sixties, with dark skin, close-cropped white hair and a scar crossing her right eyebrow, wears battered black armor under a long cloak embroidered with tarnished gold. She carries a narrow black crown in her right hand. Pale morning light cuts through high windows, illuminating dust and rows of empty stone seats. Begin with a frontal tracking view as she advances toward the throne, then use a close view of her worn face and a wide composition that makes the throne feel oppressive. She stops before it, considers it, and says in English, \"Keep it.\" She releases the crown onto the stone floor. At the instant it touches the floor, it breaks apart into a flock of small black birds that rush upward through the light. She does not watch them. She turns away from the throne and walks toward the open doors and bright morning beyond. Let the cutting become expansive at the birds' release, then settle into a held rear view of her leaving. Preserve the hall's geography, her armor and the direction of the exit. Sound: armored footsteps, a quiet voice, one sharp metallic impact, wings filling the room, then morning wind. Restrained original low strings, no additional dialogue.",
+    "original": {
+      "url": "/assets/model-examples/flux-3-max/f0589c0c141b9ddfabe127a816212d49171fc1eea36a46e3b68f595800f2ba5c.png",
+      "sha256": "f0589c0c141b9ddfabe127a816212d49171fc1eea36a46e3b68f595800f2ba5c",
+      "width": 1280,
+      "height": 704
+    },
+    "display": {
+      "url": "/assets/model-examples/flux-3-max/114b3eed020adb07abfae8f9a68f03eaef8af5ff5f99b5d5241caa19654b6f4d.webp",
+      "sha256": "114b3eed020adb07abfae8f9a68f03eaef8af5ff5f99b5d5241caa19654b6f4d",
+      "width": 1280,
+      "height": 704
+    },
+    "clip": {
+      "src": "https://media.maxvideoai.com/user-assets/by-content/c780259ed79d025b4ac74ccc513f18bf/4f6d6a092189ae292be5d06216af34edbbc9bd6ee553182a8f7c96f2b3a495eb.mp4",
+      "poster": "/assets/model-examples/flux-3-max/114b3eed020adb07abfae8f9a68f03eaef8af5ff5f99b5d5241caa19654b6f4d.webp",
+      "width": 1280,
+      "height": 704,
+      "durationSeconds": 18.041667,
+      "audio": true,
+      "displayFormat": "1280 × 704"
+    },
+    "sourcePoster": "https://media.maxvideoai.com/user-asset-thumbs/301cc489-d689-477f-94c4-0b051deda0bc/63d7eb5d-10f7-4aeb-90e6-7bd4ba4b9f5f.jpg",
+    "reviewedPublicAt": "2026-11-16",
+    "posterFrameSeconds": 0
+  },
+  {
+    "id": "fluxmax-create",
+    "modelSlug": "flux-3-max",
+    "jobId": "job_external_fal_240344c4ec2d7d6b8fac3263f6ed92e0a3086b8a",
+    "kind": "video-poster",
+    "prompt": "A grounded action-thriller scene in an empty concrete parking garage at night. An adult woman with short dark hair, wearing a charcoal jacket and dark trousers, sprints from left to right toward a thick square concrete pillar. A burst of gunfire from offscreen behind her chips the wall she has just passed. She reaches the pillar, turns around its near corner, and presses her back against the sheltered side. The firing stops. Dust settles. Hold close on her face as she catches her breath and listens. She lifts the radio clipped to her jacket and says quietly in English, \"I'm still here.\" Cut to black. Start with a clear wide view of the route and cover; use urgent cuts following her run, then let the final pause last. Preserve the same woman, clothes, pillar and screen direction throughout. Hard fluorescent light, a red emergency light in the distance. Sound: running footsteps, offscreen gunfire, concrete impacts, breathing, radio static and her voice. No music or visible injuries.",
+    "original": {
+      "url": "https://media.maxvideoai.com/user-asset-thumbs/301cc489-d689-477f-94c4-0b051deda0bc/28328bd2-6d08-4254-9457-8b0ea8d3ab18.jpg",
+      "sha256": "3cba506b9c8d5593448f896fb85e88d26d34d8bb0ff97ed2b2afaef4e82c5cc5",
+      "width": 640,
+      "height": 352
+    },
+    "display": {
+      "url": "/assets/model-examples/flux-3-max/c2f5c13bc1980891e30be747c499aa6191065e9530dd90e544eba8854024f000.webp",
+      "sha256": "c2f5c13bc1980891e30be747c499aa6191065e9530dd90e544eba8854024f000",
+      "width": 640,
+      "height": 352
+    },
+    "clip": {
+      "src": "https://media.maxvideoai.com/user-assets/by-content/c780259ed79d025b4ac74ccc513f18bf/b0eb66b5e99b1212d66de76425867a75ae653e6379cd263c69173528289b9405.mp4",
+      "poster": "/assets/model-examples/flux-3-max/c2f5c13bc1980891e30be747c499aa6191065e9530dd90e544eba8854024f000.webp",
+      "width": 1280,
+      "height": 704,
+      "durationSeconds": 14.041667,
+      "audio": true,
+      "displayFormat": "1280 × 704"
+    },
+    "sourcePoster": "https://media.maxvideoai.com/user-asset-thumbs/301cc489-d689-477f-94c4-0b051deda0bc/28328bd2-6d08-4254-9457-8b0ea8d3ab18.jpg",
+    "reviewedPublicAt": "2026-11-16"
+  },
+  {
+    "id": "fluxmax-prompt",
+    "modelSlug": "flux-3-max",
+    "jobId": "job_external_fal_348334c2377e9d31bda23c030095861ad2e9d55c",
+    "kind": "video-poster",
+    "prompt": "An intimate romantic film scene at dawn in an old boxing gym. Alone inside the ring are two adult former fighters: a woman in her forties with tightly braided black hair, a small scar above her lip and a worn crimson boxing robe; and a broad man in his fifties with a graying beard, a broken nose and a plain white vest. Their hands are bare, their faces tired, their affection unspoken. Golden light enters through high dusty windows. A small radio outside the ring plays an original, barely audible slow waltz. Begin wide with them standing apart on the worn canvas, then cut to their eyes as they approach with the caution of opponents. She almost raises her hands into a guard, changes her mind, and offers him an open hand instead. She says softly in English, \"You lead.\" He takes her hand. After one awkward step, they begin a simple slow dance in the center of the ring. Keep their full bodies readable during the first steps, then move closer as their guarded expressions give way to private smiles. End in a quiet wide view beyond the ropes, the ring containing their tenderness. Sound: the little radio, shoes brushing canvas, breathing and her voice. No boxing gloves, punches, audience or additional dialogue.",
+    "original": {
+      "url": "https://media.maxvideoai.com/user-asset-thumbs/301cc489-d689-477f-94c4-0b051deda0bc/d1c12d8f-a91a-4957-88e9-6aad85fced92.jpg",
+      "sha256": "fe3b129f73613b3236a0cacc035589c4d2ddbb8917200b8931d8c48e3827d9cf",
+      "width": 640,
+      "height": 352
+    },
+    "display": {
+      "url": "/assets/model-examples/flux-3-max/194bf7640f18d7598717f27f57c21bdd6027d3d2dd190080924916d4a2798ff9.webp",
+      "sha256": "194bf7640f18d7598717f27f57c21bdd6027d3d2dd190080924916d4a2798ff9",
+      "width": 640,
+      "height": 352
+    },
+    "clip": {
+      "src": "https://media.maxvideoai.com/user-assets/by-content/c780259ed79d025b4ac74ccc513f18bf/89a0cad4a8f434fe42e65eba0a3889e3039c785c2b68a8633497b247c097db49.mp4",
+      "poster": "/assets/model-examples/flux-3-max/194bf7640f18d7598717f27f57c21bdd6027d3d2dd190080924916d4a2798ff9.webp",
+      "width": 1280,
+      "height": 704,
+      "durationSeconds": 18.041667,
+      "audio": true,
+      "displayFormat": "1280 × 704"
+    },
+    "sourcePoster": "https://media.maxvideoai.com/user-asset-thumbs/301cc489-d689-477f-94c4-0b051deda0bc/d1c12d8f-a91a-4957-88e9-6aad85fced92.jpg",
+    "reviewedPublicAt": "2026-11-16"
+  },
+  {
+    "id": "fluxmax-detail",
+    "modelSlug": "flux-3-max",
+    "jobId": "job_external_fal_70534037da6795d2e16dd135bf2a0ec3bfa550cc",
+    "kind": "video-poster",
+    "prompt": "Inside a silent space station, an adult astronaut with a visible face and an ivory spacesuit places a hand against a large observation window overlooking a dark nebula. Outside, an immense translucent shape slowly approaches; one of its long luminous extremities comes to rest directly opposite the astronaut's palm, on the other side of the glass. The astronaut holds their breath. End the encounter on these two answering gestures. Contemplative science fiction: begin with the astronaut's solitude, gradually reveal the scale of the presence, then return to the intimacy of the contact. Sound: interior ventilation, breathing, original low, delicate music; no exterior impact sound in the vacuum. No dialogue.",
+    "original": {
+      "url": "https://media.maxvideoai.com/user-asset-thumbs/301cc489-d689-477f-94c4-0b051deda0bc/e4f84cab-510f-4a23-8458-871470e71ff7.jpg",
+      "sha256": "2eea96a37864813b4c7ac0609434f3efd5d10ec3aaf14c3528748d6128f4666e",
+      "width": 640,
+      "height": 352
+    },
+    "display": {
+      "url": "/assets/model-examples/flux-3-max/8e7e845f3b51d0e8484332b8b24e6844527beebc8b70962e57285361738d2001.webp",
+      "sha256": "8e7e845f3b51d0e8484332b8b24e6844527beebc8b70962e57285361738d2001",
+      "width": 640,
+      "height": 352
+    },
+    "clip": {
+      "src": "https://media.maxvideoai.com/user-assets/by-content/c780259ed79d025b4ac74ccc513f18bf/556d12f7c45a0726eebc946615f4a0cbf4fba1993565c5f6cc6b469b90d726c3.mp4",
+      "poster": "/assets/model-examples/flux-3-max/8e7e845f3b51d0e8484332b8b24e6844527beebc8b70962e57285361738d2001.webp",
+      "width": 1280,
+      "height": 704,
+      "durationSeconds": 16.041667,
+      "audio": true,
+      "displayFormat": "1280 × 704"
+    },
+    "sourcePoster": "https://media.maxvideoai.com/user-asset-thumbs/301cc489-d689-477f-94c4-0b051deda0bc/e4f84cab-510f-4a23-8458-871470e71ff7.jpg",
+    "reviewedPublicAt": "2026-11-16"
+  }
+]

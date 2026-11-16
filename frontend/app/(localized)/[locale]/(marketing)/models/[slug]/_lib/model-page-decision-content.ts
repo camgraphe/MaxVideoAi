@@ -48,9 +48,9 @@ export type ModelDecisionContent = z.infer<typeof decisionSchema>;
 
 const SHARED_HREFS = [/^#(?:prompting|specs)$/, /^\/app(?:\/image)?\?engine=[A-Za-z0-9_-]+$/];
 const LOCALIZED_HREFS: Record<AppLocale, readonly RegExp[]> = {
-  en: [/^\/mcp#(?:creative-examples|main-character|the-hat-stays|daylight-afterparty)$/, /^\/(?:(?:models|examples)(?:\/[^\s?#]+)?|ai-video-engines\/[^\s?#]+(?:\?order=[a-z0-9-]+)?|pricing(?:#[^\s]+)?)$/],
-  fr: [/^\/fr\/mcp#(?:creative-examples|main-character|the-hat-stays|daylight-afterparty)$/, /^\/fr\/(?:(?:modeles|galerie)(?:\/[^\s?#]+)?|comparatif\/[^\s?#]+(?:\?order=[a-z0-9-]+)?|tarifs(?:#[^\s]+)?)$/],
-  es: [/^\/es\/mcp#(?:creative-examples|main-character|the-hat-stays|daylight-afterparty)$/, /^\/es\/(?:(?:modelos|galeria)(?:\/[^\s?#]+)?|comparativa\/[^\s?#]+(?:\?order=[a-z0-9-]+)?|precios(?:#[^\s]+)?)$/],
+  en: [/^\/benchmarks(?:#review-[a-z0-9-]+)?$/, /^\/mcp#(?:creative-examples|main-character|the-hat-stays|daylight-afterparty)$/, /^\/(?:(?:models|examples)(?:\/[^\s?#]+)?|ai-video-engines\/[^\s?#]+(?:\?order=[a-z0-9-]+)?|pricing(?:#[^\s]+)?)$/],
+  fr: [/^\/fr\/benchmarks(?:#review-[a-z0-9-]+)?$/, /^\/fr\/mcp#(?:creative-examples|main-character|the-hat-stays|daylight-afterparty)$/, /^\/fr\/(?:(?:modeles|galerie)(?:\/[^\s?#]+)?|comparatif\/[^\s?#]+(?:\?order=[a-z0-9-]+)?|tarifs(?:#[^\s]+)?)$/],
+  es: [/^\/es\/benchmarks(?:#review-[a-z0-9-]+)?$/, /^\/es\/mcp#(?:creative-examples|main-character|the-hat-stays|daylight-afterparty)$/, /^\/es\/(?:(?:modelos|galeria)(?:\/[^\s?#]+)?|comparativa\/[^\s?#]+(?:\?order=[a-z0-9-]+)?|precios(?:#[^\s]+)?)$/],
 };
 
 function links(content: ModelDecisionContent) {
