@@ -468,16 +468,20 @@ export function applyBytePlusSeedanceRuntimeOptions(
             baseModeCaps.ref2v ??
             baseModeCaps.i2v ??
             baseModeCaps.t2v;
+          const transport = resolveBytePlusTransport(engine.id, mode);
+          const seedance25Edit = isSeedance25EngineId(engine.id) && mode === 'v2v';
+          const inheritsSourceVideo = seedance25Edit && transport === 'modelark';
           return [
             mode,
             caps
               ? {
                   ...caps,
                   modes: [mode],
-                  resolution: [...getBytePlusSeedanceModeResolutions(engine.id, mode, resolutions, resolveBytePlusTransport(engine.id, mode))],
+                  ...(seedance25Edit ? { durationPolicy: inheritsSourceVideo ? 'source_video' : 'requested' } : {}),
+                  resolution: [...getBytePlusSeedanceModeResolutions(engine.id, mode, resolutions, transport)],
                   resolutionLocked: false,
                   aspectRatio:
-                    isSeedance25EngineId(engine.id) && mode === 'i2v'
+                    inheritsSourceVideo || (isSeedance25EngineId(engine.id) && mode === 'i2v')
                       ? undefined
                       : aspectRatios,
                   duration: {
