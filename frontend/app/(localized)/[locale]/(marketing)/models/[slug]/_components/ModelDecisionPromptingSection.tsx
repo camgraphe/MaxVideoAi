@@ -36,6 +36,7 @@ export function ModelDecisionPromptingSection({
   const { ui } = viewModel;
   const demo = viewModel.demo && (isPlayableVideoUrl(viewModel.demo.videoSrc) || viewModel.demo.posterSrc)
     ? viewModel.demo : null;
+  const hasGuidance = Boolean(viewModel.globalPrinciples.length || viewModel.engineWhy.length);
 
   return (
     <section id={viewModel.id} className={`model-prompt-studio ${SECTION_SCROLL_MARGIN} space-y-4`}>
@@ -87,7 +88,7 @@ export function ModelDecisionPromptingSection({
           </details>
         ) : null}
 
-        <div className="mt-6 grid gap-5 lg:grid-cols-[minmax(0,1.18fr)_minmax(340px,0.82fr)]">
+        <div className={`mt-6 grid gap-5 ${hasGuidance ? 'lg:grid-cols-[minmax(0,1.18fr)_minmax(340px,0.82fr)]' : ''}`}>
           <ModelDecisionPromptTabs
             tabs={viewModel.tabs.items}
             labels={ui}
@@ -96,8 +97,8 @@ export function ModelDecisionPromptingSection({
             notesById={viewModel.tabs.notesById}
           />
 
-          <div className="space-y-4 lg:pt-14">
-            <article className="rounded-[20px] border border-hairline bg-surface p-4 shadow-[0_18px_54px_-38px_rgba(15,23,42,0.42)] dark:!bg-white/[0.045]">
+          {hasGuidance ? <div className="space-y-4 lg:pt-14">
+            {viewModel.globalPrinciples.length ? <article className="rounded-[20px] border border-hairline bg-surface p-4 shadow-[0_18px_54px_-38px_rgba(15,23,42,0.42)] dark:!bg-white/[0.045]">
               <div className="mb-3 flex items-center gap-3">
                 <span className={`inline-flex h-10 w-10 items-center justify-center rounded-full ${MODEL_PAGE_ICON_WRAP}`}>
                   <UIIcon icon={BadgeCheck} size={19} className={MODEL_PAGE_ICON} />
@@ -112,9 +113,9 @@ export function ModelDecisionPromptingSection({
                   </li>
                 ))}
               </ul>
-            </article>
+            </article> : null}
 
-            <article className="rounded-[20px] border border-hairline bg-surface p-4 shadow-[0_18px_54px_-38px_rgba(15,23,42,0.42)] dark:!bg-white/[0.045]">
+            {viewModel.engineWhy.length ? <article className="rounded-[20px] border border-hairline bg-surface p-4 shadow-[0_18px_54px_-38px_rgba(15,23,42,0.42)] dark:!bg-white/[0.045]">
               <div className="mb-3 flex items-center gap-3">
                 <span className={`inline-flex h-10 w-10 items-center justify-center rounded-full ${MODEL_PAGE_ICON_WRAP}`}>
                   <UIIcon icon={Sparkles} size={19} className={MODEL_PAGE_ICON} />
@@ -129,8 +130,8 @@ export function ModelDecisionPromptingSection({
                   </li>
                 ))}
               </ul>
-            </article>
-          </div>
+            </article> : null}
+          </div> : null}
         </div>
       </div>
 

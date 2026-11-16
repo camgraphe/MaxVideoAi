@@ -1,0 +1,106 @@
+[
+  {
+    "pathname": "/models/seedream-5-5",
+    "status": 200,
+    "h1": "Seedream 5.5",
+    "hreflang": [
+      "en",
+      "es",
+      "fr",
+      "x-default"
+    ],
+    "schemas": 5,
+    "dedicatedPromptAndSettingsMedia": true,
+    "quotePlaceholders": 0,
+    "assistant": "/app/image?assistant=milo&lang=en&engine=seedream-5-5"
+  },
+  {
+    "pathname": "/fr/modeles/seedream-5-5",
+    "status": 200,
+    "h1": "Seedream 5.5",
+    "hreflang": [
+      "en",
+      "es",
+      "fr",
+      "x-default"
+    ],
+    "schemas": 5,
+    "dedicatedPromptAndSettingsMedia": true,
+    "quotePlaceholders": 0,
+    "assistant": "/app/image?assistant=milo&lang=fr&engine=seedream-5-5"
+  },
+  {
+    "pathname": "/es/modelos/seedream-5-5",
+    "status": 200,
+    "h1": "Seedream 5.5",
+    "hreflang": [
+      "en",
+      "es",
+      "fr",
+      "x-default"
+    ],
+    "schemas": 5,
+    "dedicatedPromptAndSettingsMedia": true,
+    "quotePlaceholders": 0,
+    "assistant": "/app/image?assistant=milo&lang=es&engine=seedream-5-5"
+  },
+  {
+    "pathname": "/models/seedance-2-5-flash",
+    "status": 200,
+    "h1": "Seedance 2.5 Flash",
+    "hreflang": [
+      "en",
+      "es",
+      "fr",
+      "x-default"
+    ],
+    "schemas": 5,
+    "dedicatedPromptAndSettingsMedia": true,
+    "quotePlaceholders": 0,
+    "assistant": "/app?assistant=milo&lang=en&engine=seedance-2-5-flash&mode=t2v"
+  },
+  {
+    "pathname": "/fr/modeles/seedance-2-5-flash",
+    "status": 200,
+    "h1": "Seedance 2.5 Flash",
+    "hreflang": [
+      "en",
+      "es",
+      "fr",
+      "x-default"
+    ],
+    "schemas": 5,
+    "dedicatedPromptAndSettingsMedia": true,
+    "quotePlaceholders": 0,
+    "assistant": "/app?assistant=milo&lang=fr&engine=seedance-2-5-flash&mode=t2v"
+  },
+  {
+    "pathname": "/es/modelos/seedance-2-5-flash",
+    "status": 200,
+    "h1": "Seedance 2.5 Flash",
+    "hreflang": [
+      "en",
+      "es",
+      "fr",
+      "x-default"
+    ],
+    "schemas": 5,
+    "dedicatedPromptAndSettingsMedia": true,
+    "quotePlaceholders": 0,
+    "assistant": "/app?assistant=milo&lang=es&engine=seedance-2-5-flash&mode=t2v"
+  },
+  {
+    "pathname": "/en/models/seedream-5-5",
+    "status": 308,
+    "location": "/models/seedream-5-5"
+  },
+  {
+    "pathname": "/fr/models/seedance-2-5-flash",
+    "status": 301,
+    "location": "/fr/modeles/seedance-2-5-flash"
+  },
+  {
+    "modelsSitemap": "All six localized pilot URLs present",
+    "status": 200
+  }
+]

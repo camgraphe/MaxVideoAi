@@ -1,3 +1,5 @@
+import { quoteNewSeedreamListCost, type SeedreamListModel } from '@/lib/image/seedream-pricing';
+
 /** Public ModelArk list prices. Account discounts and invoices have separate provenance. */
 export const BYTEPLUS_MODELARK_LIST_PRICE_SOURCE = {
   url: 'https://docs.byteplus.com/en/docs/ModelArk/1544106',
@@ -119,10 +121,11 @@ export function getSeedance25StepListRate(input: {
 
 /** Estimates a successful Seedream generation from actual output pixel counts. */
 export function quoteSeedreamListCost(input: {
-  model: 'lite' | 'pro';
+  model: SeedreamListModel;
   outputPixels: number[];
   inputImages: number;
 }) {
+  if (input.model === 'flash' || input.model === '5.5') return quoteNewSeedreamListCost(input as typeof input & { model: 'flash' | '5.5' });
   if (!Number.isSafeInteger(input.inputImages) || input.inputImages < 0 ||
       input.outputPixels.some((pixels) => !Number.isSafeInteger(pixels) || pixels < 1)) {
     throw new Error('Invalid Seedream usage.');

@@ -1,3 +1,4 @@
+import { isNewSeedreamEngineId } from '@/lib/image/seedream-pricing';
 import { isGptImage26EngineId } from '@/lib/image/gptImage26';
 import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
 import {
@@ -213,11 +214,10 @@ function quoteCanonicalScenarios(
           reason: 'product_policy_not_authoritative', warning: 'Recast requires an exact scoped supplier-cost pricing rule; its current price is unavailable.',
           policyProvenance: { source: policy.source, matchedBy: policy.matchedBy, sourceRuleId: policy.sourceRuleId, compatibilityProfile: profileId } };
       }
-      if (scenario.engineId === 'seedance-2-5-flash' || scenario.engineId === NANO21_ENGINE_ID || isKlingV4FalQueueEngineId(scenario.engineId) || isGptImage26EngineId(scenario.engineId)) {
+      if (scenario.engineId === 'seedance-2-5-flash' || isNewSeedreamEngineId(scenario.engineId) || scenario.engineId === NANO21_ENGINE_ID || isKlingV4FalQueueEngineId(scenario.engineId) || isGptImage26EngineId(scenario.engineId)) {
         return { status: 'unsupported', scenarioId: scenario.id, engineId: scenario.engineId, surface: scenario.surface,
           reason: 'product_policy_not_authoritative',
-          warning: scenario.engineId === 'seedance-2-5-flash' ? 'Seedance 2.5 Flash requires approved customer tariffs; legacy percentage-policy previews cannot reprice it.'
-            : isGptImage26EngineId(scenario.engineId) ? 'GPT Image 2.6 requires reviewed customer tariffs; supplier input costs remain unqualified.' : isKlingV4FalQueueEngineId(scenario.engineId)
+          warning: scenario.engineId === 'seedance-2-5-flash' ? 'Seedance 2.5 Flash requires approved customer tariffs; legacy percentage-policy previews cannot reprice it.' : isNewSeedreamEngineId(scenario.engineId) ? 'Seedream 5.5 and Flash use versioned per-image customer tariffs; percentage-policy previews cannot reprice them.' : isGptImage26EngineId(scenario.engineId) ? 'GPT Image 2.6 requires reviewed customer tariffs; supplier input costs remain unqualified.' : isKlingV4FalQueueEngineId(scenario.engineId)
             ? 'Kling 4 uses approved customer tariffs; legacy percentage-policy previews cannot reprice it.'
             : 'Nano Banana 2.1 uses its fixed per-image customer tariff; percentage-policy previews cannot reprice it.',
           policyProvenance: { source: policy.source, matchedBy: policy.matchedBy, sourceRuleId: policy.sourceRuleId, compatibilityProfile: profileId } };

@@ -73,7 +73,7 @@ test('every P1 model has a complete sourced key-spec row', () => {
     specs: Array<{ modelSlug: string; sources: string[]; keySpecs: Record<string, unknown> }>;
   };
 
-  assert.ok(document.last_updated >= '2026-11-05'); // Later model additions preserve the historical P1 rows.
+  assert.equal(document.last_updated, '2026-11-14'); // Adds sourced Seedream and Seedance Flash specs; historical scores are unchanged.
   for (const modelId of MODEL_IDS) {
     const rows = document.specs.filter(({ modelSlug }) => modelSlug === modelId);
     assert.equal(rows.length, 1, `${modelId} should have one key-spec row`);

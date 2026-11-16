@@ -51,6 +51,16 @@ const promptingSchema = z.object({
     referencesTitle: nullableString,
   }).strict(),
   tabs: z.array(tabSchema),
+  recipe: z.object({
+    label: nonEmptyString,
+    excerpt: nonEmptyString,
+    note: nonEmptyString,
+    factors: z.array(z.object({
+      icon: z.enum(['subject', 'framing', 'light', 'text', 'motion', 'sound']),
+      title: nonEmptyString,
+      body: nonEmptyString,
+    }).strict()).min(3).max(4),
+  }).strict().optional(),
   tabNotes: z.array(z.object({ tabId: nonEmptyString, body: nonEmptyString }).strict()),
   globalPrinciples: z.array(nonEmptyString),
   engineWhy: z.array(nonEmptyString),

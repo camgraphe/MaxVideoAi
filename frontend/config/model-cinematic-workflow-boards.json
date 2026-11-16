@@ -1,0 +1,62 @@
+[
+  {
+    "id": "modify",
+    "kind": "concept-board",
+    "sourceEngineId": "gpt-image-2-6-sunburst",
+    "jobId": "4e483f7d-eaec-4675-8433-85d43d185dd7",
+    "priceCents": 62,
+    "original": {
+      "url": "https://media.maxvideoai.com/renders/images/301cc489-d689-477f-94c4-0b051deda0bc/8cd7eb01-6b96-44db-9918-3760e705af93.jpg",
+      "width": 3840,
+      "height": 2160,
+      "sha256": "3398e32bb90ae3162538dd3f30856ebc10710c4d148e06c41baa8d912f6f6c4b"
+    },
+    "display": {
+      "url": "/assets/model-examples/seedance-2-5-flash/99111506adb2f4cffab8cdb5a9d3a111ad1753117cd6e05cc23a7df28c902874.webp",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "99111506adb2f4cffab8cdb5a9d3a111ad1753117cd6e05cc23a7df28c902874"
+    },
+    "videoUrl": null
+  },
+  {
+    "id": "extend",
+    "kind": "concept-board",
+    "sourceEngineId": "gpt-image-2-6-sunburst",
+    "jobId": "3982fdb1-a4e6-42a1-9295-7d29085cca92",
+    "priceCents": 62,
+    "original": {
+      "url": "https://media.maxvideoai.com/renders/images/301cc489-d689-477f-94c4-0b051deda0bc/3f91451b-3f15-43b2-a285-2d2450b837d6.jpg",
+      "width": 3840,
+      "height": 2160,
+      "sha256": "6aca98d075aa67effc5adbc8244462a7a008b7d4e1bc55f2c921aa3bb17929cd"
+    },
+    "display": {
+      "url": "/assets/model-examples/seedance-2-5-flash/7722ab6d1c50f7c7f7504de3ea2ae9ae6e1a230e2a67f13060a0f4b9eab8f7a9.webp",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "7722ab6d1c50f7c7f7504de3ea2ae9ae6e1a230e2a67f13060a0f4b9eab8f7a9"
+    },
+    "videoUrl": null
+  },
+  {
+    "id": "motion-control",
+    "kind": "concept-board",
+    "sourceEngineId": "gpt-image-2-6-sunburst",
+    "jobId": "5a6a8098-8397-4c57-b75c-3ec9d5190744",
+    "priceCents": 62,
+    "original": {
+      "url": "/assets/model-examples/seedance-2-5-flash/4f91f60edfdbe6f8cee18d2e98418d328a13a4df894232e89476522f778b3b63.jpg",
+      "width": 3072,
+      "height": 2048,
+      "sha256": "4f91f60edfdbe6f8cee18d2e98418d328a13a4df894232e89476522f778b3b63"
+    },
+    "display": {
+      "url": "/assets/model-examples/seedance-2-5-flash/1540f4c282fa5f94afec8f494a909b31179405a0c82e95c2aef1005cfac2d889.webp",
+      "width": 1536,
+      "height": 1024,
+      "sha256": "1540f4c282fa5f94afec8f494a909b31179405a0c82e95c2aef1005cfac2d889"
+    },
+    "videoUrl": null
+  }
+]

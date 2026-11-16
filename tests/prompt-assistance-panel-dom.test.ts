@@ -30,6 +30,12 @@ test('proposal action stays outside its disclosure; chat keyboard does not submi
   const render = (extra = {}) => act(async () => root.render(React.createElement('form', { onSubmit: (event: Event) => {event.preventDefault(); generated++;} }, React.createElement(Panel, {...props,...extra}))));
   const click = (selector: string) => act(async () => (document.querySelector(selector) as HTMLButtonElement).click());
   try {
+    await render({proposal:null,message:'',entryWelcome:{question:'What would you like to change?',placeholder:'The mood, lighting, composition…'}});
+    const welcomeInput=document.querySelector('[data-assistance-message]') as HTMLTextAreaElement;
+    assert.equal(document.querySelector(`label[for="${welcomeInput.id}"]`)!.textContent,'What would you like to change?');
+    assert.equal(welcomeInput.value,'');
+    assert.equal(welcomeInput.placeholder,'The mood, lighting, composition…');
+    assert.equal(sent,0);assert.equal(generated,0);assert.equal(applied,0);
     await render();
     const apply = document.querySelector('[data-assistance-apply]') as HTMLButtonElement;
     assert.ok(apply); assert.equal(apply.disabled, false);

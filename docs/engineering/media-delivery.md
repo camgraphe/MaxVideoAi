@@ -731,6 +731,25 @@ External examples have editorial IDs, not fabricated application jobs. Registry
 publication gates the page/gallery selection. Nano21 retains its existing
 records and destinations through the same adapter.
 
+Seedream's accepted examples live in `frontend/config/seedream-editorial-images.json`,
+validated by `frontend/lib/seedream-editorial-images.ts` and selected through the
+same adapter. Each entry preserves its exact prompt, requested settings, original
+JPEG and hash-addressed WebP display derivative. Direct BytePlus examples record
+the returned provider model and response hash. Examples recovered through a
+completed MaxVideoAI MCP generation record a receipt hash and request hash instead;
+do not invent a raw provider model response that MCP did not expose. Account/job
+identifiers, signed URLs and private receipts stay outside public content.
+The selected manifest hero supplies the catalog display image, while the viewer
+opens the original. Independent text-to-image scenes must never be presented as
+reference-consistency or editing demonstrations.
+
+Gallery cards show their localized editorial title beside the factual model and
+settings label. Preserve lazy display loading, original deferral, fixed geometry
+and the existing image optimizer policy. Image-example anchor spacing must clear
+both the site header and the sticky section navigation. Seedream's media and
+content tests cover accepted provenance, hashes, original/display lineage,
+localized ownership and unchanged historical SEO fields.
+
 `tests/model-editorial-gallery-browser.test.ts` checks original deferral, source
 identity, narrow layouts and modal focus with the real components. Its standalone
 route context and image optimizer redirect are fixtures, not evidence of complete
@@ -832,6 +851,14 @@ Remove obsolete code/configuration in the lot that replaces it. Keep compatibili
 - Documentation describes shipped code without treating incomplete browser, device or field-performance validation as finished.
 
 ### Model editorial hero framing (redesign D81)
+
+The cinematic model-page pilots opt in through exact-locale `cinematic` content and return through `ModelCinematicPage` before the legacy section assembly. This renderer owns its hero, section navigation, examples, prompting, specifications, pricing and FAQ composition; it shares commercial promises, capability projections, localized content and schema builders, not the old visual sections. Header adaptation is scoped through `:has(.model-cinematic-page)` and must disappear when navigating to an older model. They use a single priority image hero with fixed geometry; its original remains a separate link. Their scoped stylesheet is imported synchronously by the model route. Below-fold proofs use lazy responsive images and native prompt disclosures. Only the edit comparator, alpha-background inspector and existing copy button require client state.
+
+`model-cinematic-hero-displays.json` records a reviewed AVIF display profile for the two pilot heroes. Its ten hash-named files are generated from the exact original hashes with `node frontend/scripts/prepare-cinematic-hero-images.mjs --write --source=first-light=/absolute/original.jpg --source=midnight-run=/absolute/original.png`. The default command is read-only and validates geometry, hashes and bytes. The image-page mobile hero uses an authored portrait crop; the video-page mobile hero keeps its landscape scene beneath the title so the driver and car remain visible. These are display derivatives, never generation/editing references. The source originals and existing WebP fallback stay unchanged. The server emits mutually exclusive desktop/mobile AVIF preloads matching `<picture>` sources; do not add Next `priority` to the fallback and download a second hero. This profile does not change the global image optimizer. Check actual network selection, visible quality and before/after loading on both viewport sizes after preparing new derivatives.
+
+Seedream cinematic proofs extend `seedream-editorial-images.json` to exact i2i reference IDs/hashes, portrait geometry and native transparent PNG. Both original and display alpha are verified. The second edit refers to the wardrobe result, never silently to the first source. `reviewed_byteplus_output` provenance identifies the reviewed generation manifest; it does not invent a raw provider receipt.
+
+`model-cinematic-start-frames.json` is a separate illustration manifest. Its Sunburst images do not enter the public video registry or become Flash videos/VideoObjects. Original image URLs and display WebPs remain separate. Each visual has one page placement; comparison reuse is confined to the source-dependent edit control. Text-only Prompt Lab recipes may share the exact prompt with a proof; render that photograph only once and expose its original/prompt in that placement. `tests/model-page-cinematic.test.ts` validates the source lineage, alpha, geometry, locale isolation and placement rule. Before replacing a start frame with a real video, use the existing public-video ownership and playback contracts and retain the actual generating model's provenance.
 
 `ModelDecisionMediaCard` declares `data-media-kind` from the resolved playable source. Model heroes use a 16:9 frame at desktop and mobile widths; video and poster use `object-fit: cover`, while image-only heroes use `contain` to preserve typography and composition. For galleries without admin curation, prefer a reviewed landscape video; preserve the order of admin-curated galleries. Video hero badges describe the selected render's audio, duration and aspect ratio; capability claims belong in the specs section. The full-render link preserves access to the original. Keep `ModelHeroMedia` priority and public playback policy unchanged. Compare equivalent production builds before claiming initial-loading gains.
 

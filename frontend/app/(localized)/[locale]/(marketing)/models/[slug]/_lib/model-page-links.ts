@@ -3,26 +3,15 @@ import { locales, type AppLocale } from '@/i18n/locales';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { SITE_ORIGIN } from '@/lib/siteOrigin';
 import { getExamplesHref } from '@/lib/examples-links';
+import { listRuntimeModels } from '@/config/model-runtime';
 
 export const SITE = SITE_ORIGIN.replace(/\/$/, '');
 
 export const MODELS_BASE_PATH_MAP = buildSlugMap('models');
 export const COMPARE_BASE_PATH_MAP = buildSlugMap('compare');
-export const COMPARE_EXCLUDED_SLUGS = new Set([
-  'nano-banana',
-  'nano-banana-lite',
-  'nano-banana-pro',
-  'nano-banana-2',
-  'nano-banana-2-1',
-  'gpt-image-2',
-  'gpt-image-2-5-flare',
-  'gpt-image-2-5-sunburst',
-  'gpt-image-2-6-flare', 'gpt-image-2-6-sunburst',
-  'seedream',
-  'seedream-5-0-pro',
-  'luma-uni-1',
-  'luma-uni-1-max',
-]);
+export const COMPARE_EXCLUDED_SLUGS = new Set(
+  listRuntimeModels().filter((model) => model.category === 'image').map((model) => model.slug),
+);
 
 export const CANONICAL_ONLY_COMPARE_SLUGS = new Set([
   'pika-text-to-video-vs-sora-2-pro',

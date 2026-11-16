@@ -26891,6 +26891,574 @@
     }
   },
   {
+    "engineId": "seedream-5-5",
+    "modelSlug": "seedream-5-5",
+    "marketingName": "Seedream 5.5",
+    "provider": "ByteDance",
+    "brandId": "bytedance",
+    "family": "seedream",
+    "familyExamplesPage": null,
+    "versionLabel": "5.5",
+    "availability": "available",
+    "logoPolicy": "logoAllowed",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      },
+      "examples": {
+        "includeInFamilyResolver": false,
+        "includeInFamilyCopy": false
+      },
+      "compare": {
+        "suggestOpponents": [],
+        "publishedPairs": [],
+        "includeInHub": false
+      },
+      "app": {
+        "enabled": true,
+        "discoveryRank": 6,
+        "variantGroup": "seedream",
+        "variantLabel": "5.5",
+        "launchBadge": "new"
+      },
+      "pricing": {
+        "includeInEstimator": true,
+        "featuredScenario": "precise image editing and transparent assets"
+      }
+    },
+    "surfacesSource": "registry",
+    "engine": {
+      "id": "seedream-5-5",
+      "label": "Seedream 5.5",
+      "provider": "ByteDance",
+      "version": "5.5",
+      "status": "live",
+      "latencyTier": "standard",
+      "queueDepth": 0,
+      "region": "global",
+      "modes": [
+        "t2i",
+        "i2i"
+      ],
+      "maxDurationSec": 1,
+      "resolutions": [
+        "1K",
+        "1.5K",
+        "2K"
+      ],
+      "aspectRatios": [
+        "auto",
+        "1:1",
+        "4:3",
+        "3:4",
+        "16:9",
+        "9:16",
+        "3:2",
+        "2:3",
+        "21:9"
+      ],
+      "fps": [
+        1
+      ],
+      "audio": false,
+      "upscale4k": false,
+      "extend": false,
+      "motionControls": false,
+      "keyframes": false,
+      "params": {},
+      "inputLimits": {
+        "imageMaxMB": 10
+      },
+      "inputSchema": {
+        "required": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt",
+            "description": "Describe the image to create or the precise changes to make to your references."
+          }
+        ],
+        "optional": [
+          {
+            "id": "num_images",
+            "type": "number",
+            "label": "Images",
+            "min": 1,
+            "max": 1,
+            "step": 1,
+            "default": 1,
+            "description": "Seedream 5.5 returns one image per request."
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Ratio",
+            "values": [
+              "auto",
+              "1:1",
+              "4:3",
+              "3:4",
+              "16:9",
+              "9:16",
+              "3:2",
+              "2:3",
+              "21:9"
+            ],
+            "default": "auto",
+            "description": "Use automatic framing or select a supported ratio at the chosen resolution."
+          },
+          {
+            "id": "image_urls",
+            "type": "image",
+            "label": "Reference images",
+            "modes": [
+              "i2i"
+            ],
+            "requiredInModes": [
+              "i2i"
+            ],
+            "minCount": 1,
+            "maxCount": 10,
+            "source": "either",
+            "description": "Edit or combine up to ten source images."
+          },
+          {
+            "id": "resolution",
+            "engineParam": "size",
+            "type": "enum",
+            "label": "Image size",
+            "values": [
+              "1K",
+              "1.5K",
+              "2K"
+            ],
+            "default": "2K",
+            "description": "Choose 1K, 1.5K or 2K output. This direct model does not offer 3K or 4K."
+          },
+          {
+            "id": "output_format",
+            "engineParam": "output_format",
+            "type": "enum",
+            "label": "Output format",
+            "values": [
+              "jpeg",
+              "png"
+            ],
+            "default": "png",
+            "description": "PNG preserves a transparent background; JPEG is available for opaque images."
+          },
+          {
+            "id": "background",
+            "type": "enum",
+            "label": "Background",
+            "values": [
+              "auto",
+              "opaque",
+              "transparent"
+            ],
+            "default": "auto",
+            "description": "Create native transparent assets with PNG, or keep an opaque background."
+          }
+        ],
+        "constraints": {
+          "supportedFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp",
+            "bmp",
+            "tiff",
+            "gif"
+          ],
+          "maxImageSizeMB": 10
+        }
+      },
+      "pricingDetails": {
+        "currency": "USD",
+        "flatCents": {
+          "default": 6
+        },
+        "perSecondCents": {
+          "default": 6
+        }
+      },
+      "pricing": {
+        "unit": "image",
+        "base": 0.035,
+        "currency": "USD",
+        "notes": "Supplier output and every source image are billed separately. A current MaxVideoAI quote determines the customer total."
+      },
+      "updatedAt": "2026-11-13T00:00:00Z",
+      "ttlSec": 600,
+      "providerMeta": {
+        "provider": "byteplus_modelark",
+        "modelSlug": "dola-seedream-5-5-261028"
+      },
+      "availability": "available",
+      "brandId": "bytedance"
+    },
+    "modes": [
+      {
+        "mode": "t2i",
+        "falModelId": "dola-seedream-5-5-261028",
+        "ui": {
+          "modes": [
+            "t2i"
+          ],
+          "resolution": [
+            "1K",
+            "1.5K",
+            "2K"
+          ],
+          "aspectRatio": [
+            "auto",
+            "1:1",
+            "4:3",
+            "3:4",
+            "16:9",
+            "9:16",
+            "3:2",
+            "2:3",
+            "21:9"
+          ],
+          "notes": "Create and edit images with ByteDance Seedream 5.5 in MaxVideoAI: up to ten references, 1K to 2K output and native transparent PNG assets."
+        }
+      },
+      {
+        "mode": "i2i",
+        "falModelId": "dola-seedream-5-5-261028",
+        "ui": {
+          "modes": [
+            "i2i"
+          ],
+          "resolution": [
+            "1K",
+            "1.5K",
+            "2K"
+          ],
+          "aspectRatio": [
+            "auto",
+            "1:1",
+            "4:3",
+            "3:4",
+            "16:9",
+            "9:16",
+            "3:2",
+            "2:3",
+            "21:9"
+          ],
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp",
+            "bmp",
+            "tiff",
+            "gif"
+          ],
+          "maxUploadMB": 10,
+          "notes": "Create and edit images with ByteDance Seedream 5.5 in MaxVideoAI: up to ten references, 1K to 2K output and native transparent PNG assets."
+        }
+      }
+    ],
+    "features": {
+      "audio": {
+        "value": false
+      },
+      "motionControls": {
+        "value": false
+      },
+      "keyframes": {
+        "value": false
+      },
+      "extend": {
+        "value": false
+      }
+    }
+  },
+  {
+    "engineId": "seedream-5-0-flash",
+    "modelSlug": "seedream-5-0-flash",
+    "marketingName": "Seedream 5.0 Flash",
+    "provider": "ByteDance",
+    "brandId": "bytedance",
+    "family": "seedream",
+    "familyExamplesPage": null,
+    "versionLabel": "5.0 Flash",
+    "availability": "available",
+    "logoPolicy": "logoAllowed",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      },
+      "examples": {
+        "includeInFamilyResolver": false,
+        "includeInFamilyCopy": false
+      },
+      "compare": {
+        "suggestOpponents": [],
+        "publishedPairs": [],
+        "includeInHub": false
+      },
+      "app": {
+        "enabled": true,
+        "discoveryRank": 7,
+        "variantGroup": "seedream",
+        "variantLabel": "5.0 Flash",
+        "launchBadge": "new"
+      },
+      "pricing": {
+        "includeInEstimator": true,
+        "featuredScenario": "fast image generation and editing"
+      }
+    },
+    "surfacesSource": "registry",
+    "engine": {
+      "id": "seedream-5-0-flash",
+      "label": "Seedream 5.0 Flash",
+      "provider": "ByteDance",
+      "version": "5.0 Flash",
+      "status": "live",
+      "latencyTier": "fast",
+      "queueDepth": 0,
+      "region": "global",
+      "modes": [
+        "t2i",
+        "i2i"
+      ],
+      "maxDurationSec": 1,
+      "resolutions": [
+        "1K",
+        "1.5K",
+        "2K"
+      ],
+      "aspectRatios": [
+        "auto",
+        "1:1",
+        "4:3",
+        "3:4",
+        "16:9",
+        "9:16",
+        "3:2",
+        "2:3",
+        "21:9"
+      ],
+      "fps": [
+        1
+      ],
+      "audio": false,
+      "upscale4k": false,
+      "extend": false,
+      "motionControls": false,
+      "keyframes": false,
+      "params": {},
+      "inputLimits": {
+        "imageMaxMB": 10
+      },
+      "inputSchema": {
+        "required": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt",
+            "description": "Describe the image to create or the precise changes to make to your references."
+          }
+        ],
+        "optional": [
+          {
+            "id": "num_images",
+            "type": "number",
+            "label": "Images",
+            "min": 1,
+            "max": 1,
+            "step": 1,
+            "default": 1,
+            "description": "Seedream 5.0 Flash returns one image per request."
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Ratio",
+            "values": [
+              "auto",
+              "1:1",
+              "4:3",
+              "3:4",
+              "16:9",
+              "9:16",
+              "3:2",
+              "2:3",
+              "21:9"
+            ],
+            "default": "auto",
+            "description": "Use automatic framing or select a supported ratio at the chosen resolution."
+          },
+          {
+            "id": "image_urls",
+            "type": "image",
+            "label": "Reference images",
+            "modes": [
+              "i2i"
+            ],
+            "requiredInModes": [
+              "i2i"
+            ],
+            "minCount": 1,
+            "maxCount": 10,
+            "source": "either",
+            "description": "Edit or combine up to ten source images."
+          },
+          {
+            "id": "resolution",
+            "engineParam": "size",
+            "type": "enum",
+            "label": "Image size",
+            "values": [
+              "1K",
+              "1.5K",
+              "2K"
+            ],
+            "default": "2K",
+            "description": "Choose 1K, 1.5K or 2K output. This direct model does not offer 3K or 4K."
+          },
+          {
+            "id": "output_format",
+            "engineParam": "output_format",
+            "type": "enum",
+            "label": "Output format",
+            "values": [
+              "jpeg",
+              "png"
+            ],
+            "default": "jpeg",
+            "description": "Choose JPEG or PNG output."
+          }
+        ],
+        "constraints": {
+          "supportedFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp",
+            "bmp",
+            "tiff",
+            "gif"
+          ],
+          "maxImageSizeMB": 10
+        }
+      },
+      "pricingDetails": {
+        "currency": "USD",
+        "flatCents": {
+          "default": 3
+        },
+        "perSecondCents": {
+          "default": 3
+        }
+      },
+      "pricing": {
+        "unit": "image",
+        "base": 0.018,
+        "currency": "USD",
+        "notes": "Supplier inputs are free; customer pricing is determined by the current MaxVideoAI quote."
+      },
+      "updatedAt": "2026-11-13T00:00:00Z",
+      "ttlSec": 600,
+      "providerMeta": {
+        "provider": "byteplus_modelark",
+        "modelSlug": "dola-seedream-5-0-flash-260915"
+      },
+      "availability": "available",
+      "brandId": "bytedance"
+    },
+    "modes": [
+      {
+        "mode": "t2i",
+        "falModelId": "dola-seedream-5-0-flash-260915",
+        "ui": {
+          "modes": [
+            "t2i"
+          ],
+          "resolution": [
+            "1K",
+            "1.5K",
+            "2K"
+          ],
+          "aspectRatio": [
+            "auto",
+            "1:1",
+            "4:3",
+            "3:4",
+            "16:9",
+            "9:16",
+            "3:2",
+            "2:3",
+            "21:9"
+          ],
+          "notes": "Generate and edit images with ByteDance Seedream 5.0 Flash in MaxVideoAI: one output, up to ten references and 1K, 1.5K or 2K resolution."
+        }
+      },
+      {
+        "mode": "i2i",
+        "falModelId": "dola-seedream-5-0-flash-260915",
+        "ui": {
+          "modes": [
+            "i2i"
+          ],
+          "resolution": [
+            "1K",
+            "1.5K",
+            "2K"
+          ],
+          "aspectRatio": [
+            "auto",
+            "1:1",
+            "4:3",
+            "3:4",
+            "16:9",
+            "9:16",
+            "3:2",
+            "2:3",
+            "21:9"
+          ],
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp",
+            "bmp",
+            "tiff",
+            "gif"
+          ],
+          "maxUploadMB": 10,
+          "notes": "Generate and edit images with ByteDance Seedream 5.0 Flash in MaxVideoAI: one output, up to ten references and 1K, 1.5K or 2K resolution."
+        }
+      }
+    ],
+    "features": {
+      "audio": {
+        "value": false
+      },
+      "motionControls": {
+        "value": false
+      },
+      "keyframes": {
+        "value": false
+      },
+      "extend": {
+        "value": false
+      }
+    }
+  },
+  {
     "engineId": "seedream",
     "modelSlug": "seedream",
     "marketingName": "Seedream",

@@ -2353,10 +2353,10 @@
       "successorId": null
     },
     {
-      "id": "seedance-2-5-flash",
-      "slug": "seedance-2-5-flash",
-      "family": "seedance",
-      "category": "video",
+      "id": "seedream-5-5",
+      "slug": "seedream-5-5",
+      "family": "seedream",
+      "category": "image",
       "aliases": {
         "internal": [],
         "publicSlugs": []
@@ -2367,27 +2367,70 @@
           "indexable": true
         },
         "examples": {
-          "published": true,
-          "includeInFamilyCopy": true,
-          "current": true,
-          "familyRank": 1
+          "published": false,
+          "includeInFamilyCopy": false,
+          "current": false
         },
         "compare": {
-          "published": true,
-          "indexed": true,
-          "suggestedOpponentIds": ["seedance-2-5", "seedance-2-0-fast", "kling-v4-flash", "veo-3-1-fast", "ltx-2-5-fast", "minimax-h3"],
-          "publishedPairIds": ["seedance-2-5", "seedance-2-0-fast", "kling-v4-flash", "veo-3-1-fast", "ltx-2-5-fast", "minimax-h3"]
+          "published": false,
+          "indexed": false,
+          "suggestedOpponentIds": [],
+          "publishedPairIds": []
         },
         "app": {
           "published": true,
-          "variantGroup": "seedance-2-0",
-          "variantLabel": "2.5 Flash",
-          "discoveryRank": -2.5,
+          "discoveryRank": 6,
+          "variantGroup": "seedream",
+          "variantLabel": "5.5",
           "launchBadge": "new"
         },
         "pricing": {
           "published": true,
-          "featuredScenario": "seedance-2-family"
+          "featuredScenario": "precise image editing and transparent assets"
+        },
+        "sitemap": {
+          "published": true
+        }
+      },
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
+    },
+    {
+      "id": "seedream-5-0-flash",
+      "slug": "seedream-5-0-flash",
+      "family": "seedream",
+      "category": "image",
+      "aliases": {
+        "internal": [],
+        "publicSlugs": []
+      },
+      "publication": {
+        "model": {
+          "published": true,
+          "indexable": true
+        },
+        "examples": {
+          "published": false,
+          "includeInFamilyCopy": false,
+          "current": false
+        },
+        "compare": {
+          "published": false,
+          "indexed": false,
+          "suggestedOpponentIds": [],
+          "publishedPairIds": []
+        },
+        "app": {
+          "published": true,
+          "discoveryRank": 7,
+          "variantGroup": "seedream",
+          "variantLabel": "5.0 Flash",
+          "launchBadge": "new"
+        },
+        "pricing": {
+          "published": true,
+          "featuredScenario": "fast image generation and editing"
         },
         "sitemap": {
           "published": true
@@ -3531,6 +3574,65 @@
         },
         "pricing": {
           "published": true
+        },
+        "sitemap": {
+          "published": true
+        }
+      },
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
+    },
+    {
+      "id": "seedance-2-5-flash",
+      "slug": "seedance-2-5-flash",
+      "family": "seedance",
+      "category": "video",
+      "aliases": {
+        "internal": [],
+        "publicSlugs": []
+      },
+      "publication": {
+        "model": {
+          "published": true,
+          "indexable": true
+        },
+        "examples": {
+          "published": true,
+          "includeInFamilyCopy": true,
+          "current": true,
+          "familyRank": 1
+        },
+        "compare": {
+          "published": true,
+          "indexed": true,
+          "suggestedOpponentIds": [
+            "seedance-2-5",
+            "seedance-2-0-fast",
+            "kling-v4-flash",
+            "veo-3-1-fast",
+            "ltx-2-5-fast",
+            "minimax-h3"
+          ],
+          "publishedPairIds": [
+            "seedance-2-5",
+            "seedance-2-0-fast",
+            "kling-v4-flash",
+            "veo-3-1-fast",
+            "ltx-2-5-fast",
+            "minimax-h3"
+          ]
+        },
+        "app": {
+          "published": true,
+          "variantGroup": "seedance-2-0",
+          "variantLabel": "2.5 Flash",
+          "discoveryRank": -2.5,
+          "launchBadge": "new"
+        },
+        "pricing": {
+          "published": true,
+          "featuredScenario": "seedance-2-family"
         },
         "sitemap": {
           "published": true

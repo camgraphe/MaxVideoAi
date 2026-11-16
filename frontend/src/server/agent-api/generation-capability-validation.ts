@@ -24,7 +24,7 @@ import type { EngineInputField, EngineModeUiCaps, Mode } from '@/types/engines';
 import type { ImageGenerationMode } from '@/types/image-generation';
 import { isLumaRay2EngineId } from '@/lib/luma-ray2';
 import { isGptImageFamilyEngineId, validateGptImage2CustomImageSize } from '@/lib/image/gptImage2';
-import { SEEDREAM_MAX_IMAGE_SET_IMAGES } from '@/lib/image/seedream';
+import { isSeedreamEngineId, SEEDREAM_MAX_IMAGE_SET_IMAGES, seedreamOutputSettingsError } from '@/lib/image/seedream';
 import { seedanceAutomaticDurationBounds } from '@/lib/seedance-option-pricing';
 import {
   isVideoDurationSupported,
@@ -584,6 +584,10 @@ function validateImageSettings(
       validateFieldValue(field, value);
     }
   }
+  if (seedreamOutputSettingsError(request.engineId, {
+    background: typeof request.settings.background === 'string' ? request.settings.background : null,
+    outputFormat: typeof request.settings.outputFormat === 'string' ? request.settings.outputFormat : null,
+  })) fail('outputFormat');
   const hasCustomWidth = request.settings.imageWidth !== undefined;
   const hasCustomHeight = request.settings.imageHeight !== undefined;
   if (resolution === 'custom') {
@@ -919,7 +923,7 @@ function validateReferences(
       fail('references', generationReferences.length < constraints.min ? 'reference_required' : 'reference_invalid');
     }
     if (
-      (request.engineId === 'seedream' || request.engineId === 'seedream-5-0-pro')
+      isSeedreamEngineId(request.engineId)
       && generationReferences.length + request.outputCount > SEEDREAM_MAX_IMAGE_SET_IMAGES
     ) fail('references', 'reference_invalid');
   }

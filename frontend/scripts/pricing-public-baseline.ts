@@ -35,6 +35,16 @@ async function main(): Promise<void> {
   const nano21Launch = JSON.parse(await readFile(
     new URL('../../tests/fixtures/nano21-fixed-public-pricing-launch-2026-10-27.json', import.meta.url), 'utf8',
   )) as { rows: typeof rows };
+  const seedreamLaunch = JSON.parse(await readFile(
+    new URL('../../tests/fixtures/seedream-fixed-public-pricing-launch-2026-11-13.json', import.meta.url), 'utf8',
+  )) as { rows: typeof rows };
+  if (seedreamLaunch.rows.length !== 18 || new Set(seedreamLaunch.rows.map(row => row.id)).size !== 18
+    || seedreamLaunch.rows.some(row => !['seedream-5-5', 'seedream-5-0-flash'].includes(row.engineId)
+      || (row.id.endsWith(':quantity-4') ? row.status !== 'unavailable'
+        : row.status !== 'exact' || row.customerTotalCents !== (row.engineId === 'seedream-5-5'
+          && (row.id.startsWith('image-estimate:') || row.id.startsWith('model-page:') || row.id.endsWith(':high')) ? 6 : 3)))) {
+    throw new Error('Invalid Seedream fixed customer-price launch matrix.');
+  }
   const novemberImageAdmission = JSON.parse(await readFile(
     new URL('../../tests/fixtures/nov05-functional-image-public-projections-2026-11-06.json', import.meta.url), 'utf8',
   )) as { rows: typeof rows };
@@ -208,7 +218,7 @@ async function main(): Promise<void> {
   }
   // Approved archive sunsets: remove purchasable surfaces and invalidate Product offers.
   // Keep the pre-archive fixtures intact as historical pricing evidence.
-  const expectedWithLaunch = [...expected, ...launchAdditions.rows, ...fluxMaxLaunch.rows, ...nano21Launch.rows, ...novemberImageAdmission.rows, ...novemberMarketing.rows, ...seedanceFlash.rows, ...klingPublicDiscovery.rows, ...klingPricingDiscovery.rows].map((row) => {
+  const expectedWithLaunch = [...expected, ...launchAdditions.rows, ...fluxMaxLaunch.rows, ...nano21Launch.rows, ...seedreamLaunch.rows, ...seedanceFlash.rows, ...novemberImageAdmission.rows, ...novemberMarketing.rows, ...klingPublicDiscovery.rows, ...klingPricingDiscovery.rows].map((row) => {
     const repair = customerOfferRepairs.get(row.id);
     if (!repair) return row;
     if (row.surface !== 'json-ld' || row.status !== 'exact' || row.customerTotalCents !== repair.previousCents) {

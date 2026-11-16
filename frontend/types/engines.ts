@@ -27,6 +27,8 @@ export type Resolution =
   | '1440p'
   | '4k'
   | '1k'
+  | '1K'
+  | '1.5K'
   | '2k'
   | '2K'
   | '3K'

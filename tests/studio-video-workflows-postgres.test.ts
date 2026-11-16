@@ -42,12 +42,15 @@ import {klingV4TariffScenarios} from '../frontend/lib/pricing-audit/kling-v4-tar
 import {prepareContinuousInputTariffChange} from '../frontend/server/pricing-admin/continuous-input-tariff';
 import {resolveGenerationReferencesForActor} from '../frontend/src/server/agent-api/resolve-generation-references';
 import {resolveOwnedReferenceAssetForActor} from '../frontend/src/server/agent-api/reference-assets';
+import {prepareSeedance25CommercialTariffs} from '../frontend/server/pricing/seedance25-commercial-tariffs';
 
 test('all certified video tuples share MCP exact price, owned payload and one-attempt confirmed dispatch',async t=>{
   assert.equal(process.env.DATABASE_URL,undefined,'Disposable DB only');
   const readiness={BYTEPLUS_ARK_ENABLED:'true',BYTEPLUS_ARK_API_KEY:'fixture-ark',
     SEEDANCE_2_5_BYTEPLUS_ENABLED:'true',SEEDANCE_2_5_PROVIDER:'byteplus_modelark',
     SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY:'false',SEEDANCE_2_5_BYTEPLUS_MODES:'t2v,i2v,ref2v,v2v,extend',
+    SEEDANCE_2_5_FLASH_BYTEPLUS_ENABLED:'true',SEEDANCE_2_5_FLASH_PROVIDER:'byteplus_modelark',
+    SEEDANCE_2_5_FLASH_BYTEPLUS_ADMIN_ONLY:'false',SEEDANCE_2_5_FLASH_BYTEPLUS_MODES:'t2v,i2v,ref2v,v2v,extend',
     SEEDANCE_2_5_LAS_ENABLED:'true',BYTEPLUS_LAS_API_KEY:'fixture-las'};
   const previousReadiness=Object.fromEntries(Object.keys(readiness).map(key=>[key,ENV[key as keyof typeof ENV]]));
   Object.assign(ENV,readiness);
@@ -88,6 +91,15 @@ test('all certified video tuples share MCP exact price, owned payload and one-at
   assert.deepEqual(flashFixtures.map(s=>s.context.mode).sort(),['i2v','ref2v','t2v']);
   for(const scenario of flashFixtures)await pg.pool.query(`INSERT INTO app_customer_tariff_cells(id,selector_key,selector_json,price_json,currency,effective_from,revision,updated_by)
     VALUES($1,$2,$3,$4,'USD','2026-11-05',1,$5)`,[`fixture-${scenario.id}`,JSON.stringify(Object.entries(scenario.selector).sort(([a],[b])=>a.localeCompare(b))),scenario.selector,{kind:'fixed',customerCents:37},operationIdentity.actorId]);
+  // Flash requires native prices; the legacy percentage fixture cannot price it.
+  // Include the 4-second default and the measured 6-second Modify source.
+  const seedanceFlashCells=prepareSeedance25CommercialTariffs({modelId:'seedance-2-5-flash',
+    at:'2026-11-15T00:00:00Z',standardEditTransport:'modelark'}).cells.filter(cell=>
+      cell.selector.resolution==='480p'&&cell.selector.aspectRatio==='16:9'
+      &&['4','6'].includes(cell.selector.durationSec!));
+  assert.equal(seedanceFlashCells.length,12);
+  for(const cell of seedanceFlashCells)await pg.pool.query(`INSERT INTO app_customer_tariff_cells(id,selector_key,selector_json,price_json,currency,effective_from,revision,updated_by)
+    VALUES($1,$2,$3,$4,'USD','2026-11-15',1,$5)`,[cell.id,JSON.stringify(Object.entries(cell.selector).sort(([a],[b])=>a.localeCompare(b))),cell.selector,cell.price,operationIdentity.actorId]);
   await pg.pool.query('UPDATE app_customer_tariff_state SET active=TRUE,revision=1');
   await pg.pool.query(readFileSync('neon/migrations/53_studio_media_generation_scope.sql','utf8'));
   await addTopup(pg.pool,workflowActor.userId,10000000);
@@ -137,7 +149,7 @@ test('all certified video tuples share MCP exact price, owned payload and one-at
       const [raw]=await deps.executor.query<{active:boolean}>('SELECT active FROM app_customer_tariff_state WHERE singleton=TRUE');
       return computeCanonicalBillingSnapshot(context,{...options,loadCustomerTariffState:async()=>({...state,active:raw.active})});
     }});
-  const hasReviewedTariff=(request:CanonicalGenerationRequest)=>['kling-v4','kling-v4-flash'].includes(request.engineId)||Boolean(videoOperationTariffIdentity(request.engineId,request.mode,request.operation))||(request.engineId==='veo-3-1'&&request.mode==='i2v'&&[4,6].includes(Number(request.settings.durationSec)))||(request.engineId==='seedance-2-5'&&request.mode==='v2v');
+  const hasReviewedTariff=(request:CanonicalGenerationRequest)=>['kling-v4','kling-v4-flash','seedance-2-5-flash'].includes(request.engineId)||Boolean(videoOperationTariffIdentity(request.engineId,request.mode,request.operation))||(request.engineId==='veo-3-1'&&request.mode==='i2v'&&[4,6].includes(Number(request.settings.durationSec)))||(request.engineId==='seedance-2-5'&&request.mode==='v2v');
   const preparePrice:PrepareGenerationDependencies['priceGeneration']=async(request,tier,refs)=>hasReviewedTariff(request)
     ?withDbTransaction(executor=>lasPricing(request,tier,{executor,candidate:catalog.find(c=>c.engine.id===request.engineId)!,resolvedReferences:refs.resolvedReferences,fluxDraftSource:refs.fluxDraftSource}))
     :priceCanonicalGeneration(request,tier,undefined,refs);

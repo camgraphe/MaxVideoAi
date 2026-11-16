@@ -1,3 +1,4 @@
+import { isNewSeedreamEngineId, seedreamNewModelPricingUsage } from '@/lib/image/seedream-pricing';
 import { klingV4FlashPricingUsage, KLING_V4_FLASH_PRICING_SOURCE } from './kling-v4-flash-pricing';
 import { isGptImage26EngineId } from '@/lib/image/gptImage26';
 import { calculateGptImage26ListOutputComponents } from '@/lib/image/gptImage26Pricing';
@@ -110,6 +111,12 @@ function buildBillingPricingFactsInternal(
   currency: string
 ): BillingPricingFacts {
   const { engine, durationSec, resolution } = context;
+  if (isNewSeedreamEngineId(engine.id)) {
+    const usage = seedreamNewModelPricingUsage(context, currency);
+    return resultFromFacts({ engineId: engine.id, currency, vendorSubtotalExactCents: usage.totalUsd * 100,
+      base: { seconds: 1, rate: usage.totalUsd, unit: 'image', amountCents: usage.totalUsd * 100 },
+      factsMetadata: { manualTariffAspectRatio: null }, meta: usage.meta });
+  }
   if (engine.id === 'kling-v4-flash') {
     if (currency !== 'USD') throw new Error('Kling Flash supplier rates require USD.');
     const usage = klingV4FlashPricingUsage(context);

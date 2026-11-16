@@ -1,0 +1,84 @@
+[
+  {
+    "href": "/models/minimax-h3",
+    "local": 500,
+    "missingDatabase": true
+  },
+  {
+    "href": "/models/seedance-2-5",
+    "local": 500,
+    "missingDatabase": true
+  },
+  {
+    "href": "/models/flux-3-max",
+    "local": 500,
+    "missingDatabase": true
+  },
+  {
+    "href": "/models/wan-3-prime",
+    "local": 500,
+    "missingDatabase": true
+  },
+  {
+    "href": "/models/kling-3-pro",
+    "local": 500,
+    "missingDatabase": true
+  },
+  {
+    "href": "/models/veo-3-1",
+    "local": 500,
+    "missingDatabase": true
+  },
+  {
+    "href": "/models/minimax-h3-max",
+    "local": 500,
+    "missingDatabase": true
+  },
+  {
+    "href": "/models/wan-3",
+    "local": 500,
+    "missingDatabase": true
+  },
+  {
+    "href": "/models/ltx-2-5-pro",
+    "local": 500,
+    "missingDatabase": true
+  },
+  {
+    "href": "/models/kling-3-turbo-pro",
+    "local": 500,
+    "missingDatabase": true
+  },
+  {
+    "href": "/models/ltx-2-5-fast",
+    "local": 500,
+    "missingDatabase": true
+  },
+  {
+    "href": "/models/kling-v4-flash",
+    "local": 500,
+    "missingDatabase": true
+  },
+  {
+    "href": "/models/gemini-omni-flash",
+    "local": 500,
+    "missingDatabase": true
+  },
+  {
+    "href": "/models/flux-3",
+    "local": 500,
+    "missingDatabase": true
+  },
+  {
+    "url": "https://maxvideoai.com/models/seedream-5-5",
+    "status": 404
+  },
+  {
+    "url": "https://maxvideoai.com/models/seedance-2-5",
+    "status": 200
+  },
+  {
+    "url": "https://maxvideoai.com/models/flux-3-max",
+    "status": 200
+  }
+]

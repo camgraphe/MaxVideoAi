@@ -228,6 +228,25 @@
     }
   },
   {
+    "engineId": "seedream-5-0-flash",
+    "marketingName": "Seedream 5.0 Flash",
+    "brandId": "bytedance",
+    "modelSlug": "seedream-5-0-flash",
+    "family": "seedream",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
+    "versionLabel": "5.0 Flash",
+    "availability": "available",
+    "logoPolicy": "logoAllowed",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
+  },
+  {
     "engineId": "seedream-5-0-pro",
     "marketingName": "Seedream 5.0 Pro",
     "brandId": "bytedance",
@@ -237,6 +256,25 @@
     "successorId": null,
     "successorSlug": null,
     "versionLabel": "5.0 Pro",
+    "availability": "available",
+    "logoPolicy": "logoAllowed",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
+  },
+  {
+    "engineId": "seedream-5-5",
+    "marketingName": "Seedream 5.5",
+    "brandId": "bytedance",
+    "modelSlug": "seedream-5-5",
+    "family": "seedream",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
+    "versionLabel": "5.5",
     "availability": "available",
     "logoPolicy": "logoAllowed",
     "surfaces": {

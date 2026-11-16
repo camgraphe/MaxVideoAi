@@ -1,0 +1,134 @@
+[
+  {
+    "id": "make-an-entrance",
+    "sourceEngineId": "gpt-image-2-6-sunburst",
+    "kind": "start-frame",
+    "videoUrl": null,
+    "prompt": "A vertical first frame for an original luxury fashion film with a person actively entering the scene. A fictional adult East Asian woman with a sculptural short haircut strides through a monumental pale stone colonnade in a flowing vermilion trench coat over simple cream clothing. Full body with room around feet and head, one foot grounded and the other beginning a step, fabric caught in a real crosswind. Hard late-afternoon light, long architectural shadows, intense vermilion against warm ivory and a narrow cobalt sky. Sophisticated editorial cinema, tactile fabric and stone, a confident human gaze, completely original styling. You choose the strongest composition and lighting while retaining clear anatomy and a plausible start position for walking. Portrait 9:16. No typography, brand, text, frame, montage, watermark or interface; this is a usable animation start image, not a fashion magazine cover.",
+    "original": {
+      "url": "https://media.maxvideoai.com/renders/images/301cc489-d689-477f-94c4-0b051deda0bc/b9bce00c-4a2e-4b21-97e0-ab7d049fe502.png",
+      "sha256": "fd69519f4d6a9050ea48f1c67bef5190d60d0202ff2e9fed6e2358e044da7e13",
+      "width": 1440,
+      "height": 2560
+    },
+    "display": {
+      "url": "/assets/model-examples/seedance-2-5-flash/f9c447c5184d6b74191bde698931d275ee1d71fa7ac35b30db654aee06e5234e.webp",
+      "sha256": "f9c447c5184d6b74191bde698931d275ee1d71fa7ac35b30db654aee06e5234e",
+      "bytes": 510796,
+      "width": 1440,
+      "height": 2560,
+      "mimeType": "image/webp"
+    },
+    "manifestSha256": "6d62dc5469b247c934f9cca397487cefd1e47d874589bb855a18a9a6fd9301ba"
+  },
+  {
+    "id": "where-gravity-ends",
+    "sourceEngineId": "gpt-image-2-6-sunburst",
+    "kind": "start-frame",
+    "videoUrl": null,
+    "prompt": "One extraordinary but believable cinematic science-fiction frame: a fictional adult astronaut botanist with an open clear visor stands near the center of a magnificent abandoned opera house. The empty auditorium is dry; impossibly, a huge translucent manta ray floats through the air above the velvet seats. The astronaut notices it and is about to turn, carrying one simple field lantern. Broad shafts of pale morning light, suspended dust, oxidized gilt, deep jade shadows and muted terracotta velvet. Human scale against astonishing scale; dignified wonder, not horror. Take artistic freedom with the architecture, light and framing to make an original film world. Wide 16:9 landscape composition with the astronaut and manta fully readable and room for a later upward camera tilt. Photoreal cinematic VFX, restrained film grain, no poster lettering, no typography, no UI, no collage, no logos or watermarks.",
+    "original": {
+      "url": "https://media.maxvideoai.com/renders/images/301cc489-d689-477f-94c4-0b051deda0bc/17e65d68-6eec-4c69-a169-fddf7e5f88dc.png",
+      "sha256": "8a53625e57895d6d9cb0f26d28e60420fd1992bea31837cacaa9a7604cb2d5b2",
+      "width": 2560,
+      "height": 1440
+    },
+    "display": {
+      "url": "/assets/model-examples/seedance-2-5-flash/b0cced3424fbb20273c4ac2f746e9264f4b1b0876c580ecf4ad8a64567cfc4ac.webp",
+      "sha256": "b0cced3424fbb20273c4ac2f746e9264f4b1b0876c580ecf4ad8a64567cfc4ac",
+      "bytes": 476258,
+      "width": 1920,
+      "height": 1080,
+      "mimeType": "image/webp"
+    },
+    "manifestSha256": "6d62dc5469b247c934f9cca397487cefd1e47d874589bb855a18a9a6fd9301ba"
+  },
+  {
+    "id": "before-the-drop",
+    "sourceEngineId": "gpt-image-2-6-sunburst",
+    "kind": "start-frame",
+    "videoUrl": null,
+    "prompt": "One cinematic vertical image of a fictional adult female skateboarder in her twenties at the lip of a sculptural concrete skate bowl, a moment before she drops in. She wears a matte cobalt helmet, a faded orange short-sleeve shirt, loose charcoal trousers and simple protective pads. One foot on a real skateboard, posture balanced and physically plausible, focused expression; show her full body and the bowl falling away below. Late California sunlight produces graphic warm shadows, sparse palm silhouettes and a clean pale blue sky. Honest athletic energy, filmic sports-campaign photography with beautiful texture and a bold composition of your own. Do not depict a jump or impossible frozen stunt. Make a crisp start frame with useful room for the coming downward movement. Portrait 9:16. No text, logos, typography, montage, illustration, watermarks or UI.",
+    "original": {
+      "url": "https://media.maxvideoai.com/renders/images/301cc489-d689-477f-94c4-0b051deda0bc/03d60198-f15c-4b96-aa8c-668f30c2f71c.png",
+      "sha256": "eced0aaf6dfb7f321bb078c4c90e2a55e81a0dfd98f8ae7894e241181842f818",
+      "width": 1440,
+      "height": 2560
+    },
+    "display": {
+      "url": "/assets/model-examples/seedance-2-5-flash/bee6caa6673070bf699a5a9873034eaa3912a40b4affe1c572b67e2c609fcc1a.webp",
+      "sha256": "bee6caa6673070bf699a5a9873034eaa3912a40b4affe1c572b67e2c609fcc1a",
+      "bytes": 332750,
+      "width": 1440,
+      "height": 2560,
+      "mimeType": "image/webp"
+    },
+    "manifestSha256": "6d62dc5469b247c934f9cca397487cefd1e47d874589bb855a18a9a6fd9301ba"
+  },
+  {
+    "id": "the-blue-hour",
+    "sourceEngineId": "gpt-image-2-6-sunburst",
+    "kind": "start-frame",
+    "videoUrl": null,
+    "prompt": "Create a quietly magnetic live-action drama opening frame, one image not a contact sheet. Two fictional adults in their thirties sit opposite each other in a nearly empty late-night diner. The woman in the foreground turns slightly toward the man across the table; he has just looked up, a restrained half-smile. Their faces must both be readable in a balanced intimate two-shot. Rain makes abstract blue reflections on the window, a small amber practical light warms their eyes, worn burgundy upholstery and imperfect lived-in detail. No glamour retouching, no exaggerated emotion. Give this scene the confidence of an independent film: nuanced skin, dimensional light, believable depth, emotional tension, and your own considered visual choices. Landscape 16:9. Enough space around the actors for a subtle future camera push. No readable signage, text, brands, UI, borders, credits or watermarks.",
+    "original": {
+      "url": "https://media.maxvideoai.com/renders/images/301cc489-d689-477f-94c4-0b051deda0bc/d66d33c8-d8da-4655-844d-de04d4d25b3d.png",
+      "sha256": "ff948db3b16c77645766c107755329058e70b68730f2ceac821bbd6de3a0de24",
+      "width": 2560,
+      "height": 1440
+    },
+    "display": {
+      "url": "/assets/model-examples/seedance-2-5-flash/d2ecc6d97f5a2c0ff641be833bb6b362298698f8daffdfedc6f5a30a4ce7ba9e.webp",
+      "sha256": "d2ecc6d97f5a2c0ff641be833bb6b362298698f8daffdfedc6f5a30a4ce7ba9e",
+      "bytes": 247450,
+      "width": 1920,
+      "height": 1080,
+      "mimeType": "image/webp"
+    },
+    "manifestSha256": "6d62dc5469b247c934f9cca397487cefd1e47d874589bb855a18a9a6fd9301ba"
+  },
+  {
+    "id": "after-the-beat",
+    "sourceEngineId": "gpt-image-2-6-sunburst",
+    "kind": "start-frame",
+    "videoUrl": null,
+    "prompt": "An arresting opening frame for a cinematic live music film: a fictional Black woman drummer in her late twenties on a small rooftop stage, a real acoustic drum kit in front of her, one drumstick lifted before the first strike. Storm-blue dusk, one warm spotlight, a subtle low cloud of atmosphere, a distant city that feels real rather than a neon fantasy. Powerful human expression, hands and drumsticks anatomically clear, visible cymbal and snare ready for movement. Medium-wide frame with dramatic depth and a slightly off-axis camera, tactile documentary music photography elevated into cinema. Invent a striking lighting treatment and styling; the mood is fierce and alive. Single landscape 16:9 film frame, no text, logos, typography, montage or interface. A sharp useful first frame for animation, not long-exposure motion blur and not a static still life.",
+    "original": {
+      "url": "https://media.maxvideoai.com/renders/images/301cc489-d689-477f-94c4-0b051deda0bc/9a1ee7a1-7965-4fbf-9af7-0979cdf39084.png",
+      "sha256": "2f5e379f5c79105212a8c08c36bd8153b43679cb48731079bffde3a4f5aba5ac",
+      "width": 2560,
+      "height": 1440
+    },
+    "display": {
+      "url": "/assets/model-examples/seedance-2-5-flash/2717e044481a51b39a806b54148167981e251280294b6508ab84618f5dbe088f.webp",
+      "sha256": "2717e044481a51b39a806b54148167981e251280294b6508ab84618f5dbe088f",
+      "bytes": 323994,
+      "width": 1920,
+      "height": 1080,
+      "mimeType": "image/webp"
+    },
+    "manifestSha256": "6d62dc5469b247c934f9cca397487cefd1e47d874589bb855a18a9a6fd9301ba"
+  },
+  {
+    "id": "midnight-run",
+    "sourceEngineId": "gpt-image-2-6-sunburst",
+    "kind": "start-frame",
+    "videoUrl": null,
+    "prompt": "Create a single cinematic opening frame for an original live-action car sequence, not a poster or a collage. At midnight, a fictional adult female stunt driver in a graphite jacket is visible through the side window of a low, unbranded silver rally coupe entering a vast concrete underpass. A warm amber pool of light catches her focused face and the car; the distance recedes into deep petrol blue. Camera almost at road level, front three-quarter view, car on the right half, a strong diagonal road and room to move forward. Tension just before acceleration, believable tire contact and reflections, tactile 35mm cinema texture, natural skin, restrained highlights. Make it feel like an expensive film, with your own memorable art direction and composition. Landscape 16:9; leave the upper left relatively calm for later web typography, but put no text, logos, lettering, watermarks or UI inside the image. One coherent scene. This exact still will become a start frame to animate, so keep the car and human anatomy sharp, plausible and readable.",
+    "original": {
+      "url": "https://media.maxvideoai.com/renders/images/301cc489-d689-477f-94c4-0b051deda0bc/30b2c48f-3a42-4104-b1ce-265daf53be19.png",
+      "sha256": "5abe1db872a12c6f04680bf265fda706d32b9e24aefaaa6e2fe42099963d1bf1",
+      "width": 2560,
+      "height": 1440
+    },
+    "display": {
+      "url": "/assets/model-examples/seedance-2-5-flash/b898e1485ace9c0d89a0a67a3e406bdda2cae89ea82bba1478bf33f586bcff96.webp",
+      "sha256": "b898e1485ace9c0d89a0a67a3e406bdda2cae89ea82bba1478bf33f586bcff96",
+      "bytes": 194910,
+      "width": 1920,
+      "height": 1080,
+      "mimeType": "image/webp"
+    },
+    "manifestSha256": "6d62dc5469b247c934f9cca397487cefd1e47d874589bb855a18a9a6fd9301ba"
+  }
+]

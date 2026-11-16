@@ -58,6 +58,9 @@ test('public pricing baseline exhaustively covers eligible catalog and public su
   const nano21Launch = JSON.parse(
     readFileSync('tests/fixtures/nano21-fixed-public-pricing-launch-2026-10-27.json', 'utf8')
   ) as PublicProjectionFixture;
+  const seedreamLaunch = JSON.parse(
+    readFileSync('tests/fixtures/seedream-fixed-public-pricing-launch-2026-11-13.json', 'utf8')
+  ) as PublicProjectionFixture;
   const klingPublicDiscovery = JSON.parse(
     readFileSync('tests/fixtures/kling-v4-public-discovery-projections-2026-10-27.json', 'utf8')
   ) as PublicProjectionFixture;
@@ -85,9 +88,21 @@ test('public pricing baseline exhaustively covers eligible catalog and public su
   ]);
   assert.equal(klingPricingDiscovery.rows.length, 10);
   assert.ok(klingPricingDiscovery.rows.every((row) => row.engineId === 'kling-v4' && row.status === 'unavailable'));
+  assert.equal(seedreamLaunch.rows.length, 18);
+  assert.deepEqual([...new Set(seedreamLaunch.rows.map(row => row.engineId))].sort(), ['seedream-5-0-flash', 'seedream-5-5']);
+  for (const row of seedreamLaunch.rows) {
+    if (row.id.endsWith(':quantity-4')) {
+      assert.equal(row.status, 'unavailable', 'direct single-image models have no four-output fallback quote');
+    } else {
+      assert.equal(row.status, 'exact');
+      assert.equal(row.customerTotalCents, row.engineId === 'seedream-5-5'
+        && (row.surface === 'image-estimate' || row.surface === 'model-page' || row.id.endsWith(':high')) ? 6 : 3);
+      assert.equal(row.quantity, 1);
+    }
+  }
   assert.equal(novemberMarketing.rows.length, 28);
   assert.ok(novemberMarketing.rows.every(row => row.status === 'unavailable' && row.customerTotalCents === undefined));
-  const rows = [...fixture.rows, ...launch.rows, ...fluxMaxLaunch.rows, ...nano21Launch.rows, ...klingPublicDiscovery.rows, ...klingPricingDiscovery.rows, ...novemberImages.rows, ...novemberMarketing.rows, ...seedanceFlash.rows];
+  const rows = [...fixture.rows, ...launch.rows, ...fluxMaxLaunch.rows, ...nano21Launch.rows, ...seedreamLaunch.rows, ...seedanceFlash.rows, ...klingPublicDiscovery.rows, ...klingPricingDiscovery.rows, ...novemberImages.rows, ...novemberMarketing.rows];
   const ids = rows.map((row) => row.id);
   assert.equal(new Set(ids).size, ids.length, 'public projection scenario ids must be unique');
 
@@ -197,7 +212,7 @@ test('public pricing baseline ignores machine-specific pricing environment overr
     },
   });
   assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
-  assert.match(result.stdout, /current \(641 rows\)/);
+  assert.match(result.stdout, /current \(659 rows\)/);
 });
 
 test('Character Studio static rows retire only four fixed prices and require a current native quote', async () => {

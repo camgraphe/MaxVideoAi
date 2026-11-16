@@ -1,0 +1,644 @@
+[
+  {
+    "locale": "en",
+    "slug": "seedream-5-5",
+    "links": 52,
+    "ctas": 20,
+    "warnings": [],
+    "ctaLinks": [
+      {
+        "href": "/app/image?engine=seedream-5-5",
+        "text": "Create an image"
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5",
+        "text": "Create an image"
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5&example=backstage-wardrobe&lang=en",
+        "text": "Use this prompt"
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5&example=backstage-wardrobe&lang=en&assistant=milo&refine=example",
+        "text": "Refine with Milo"
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5&example=one-night-only&lang=en",
+        "text": "Use this prompt"
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5&example=one-night-only&lang=en&assistant=milo&refine=example",
+        "text": "Refine with Milo"
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5&example=after-the-race&lang=en",
+        "text": "Use this prompt"
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5&example=after-the-race&lang=en&assistant=milo&refine=example",
+        "text": "Refine with Milo"
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5&example=free-to-move&lang=en",
+        "text": "Use this prompt"
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5&example=free-to-move&lang=en&assistant=milo&refine=example",
+        "text": "Refine with Milo"
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5&example=55-make-your-move&lang=en",
+        "text": "Use this prompt"
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5&example=55-make-your-move&lang=en&assistant=milo&refine=example",
+        "text": "Refine with Milo"
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5&example=55-make-your-move&lang=en",
+        "text": "Use this prompt"
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5&example=55-make-your-move&lang=en&assistant=milo&refine=example",
+        "text": "Refine with Milo"
+      },
+      {
+        "href": "/app/image?assistant=milo&lang=en&engine=seedream-5-5",
+        "text": "MiloHelp me turn my idea into a cinematic scene."
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5&example=55-last-train&lang=en",
+        "text": "Use this prompt"
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5&example=55-last-train&lang=en&assistant=milo&refine=example",
+        "text": "Refine with Milo"
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5&example=55-above-the-clouds&lang=en",
+        "text": "Use this prompt"
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5&example=55-above-the-clouds&lang=en&assistant=milo&refine=example",
+        "text": "Refine with Milo"
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5",
+        "text": "Create with Seedream 5.5"
+      }
+    ]
+  },
+  {
+    "locale": "en",
+    "slug": "seedance-2-5-flash",
+    "links": 56,
+    "ctas": 29,
+    "warnings": [],
+    "ctaLinks": [
+      {
+        "href": "/app?engine=seedance-2-5-flash",
+        "text": "Create with Flash"
+      },
+      {
+        "href": "/app?engine=seedance-2-5-flash",
+        "text": "Create with Flash"
+      },
+      {
+        "href": "/app?engine=seedance-2-5-flash&mode=t2v",
+        "text": "Create a video"
+      },
+      {
+        "href": "/app?lang=en&engine=seedance-2-5-flash&mode=t2v&videoPrompt=create",
+        "text": "Use this prompt"
+      },
+      {
+        "href": "/app?lang=en&engine=seedance-2-5-flash&mode=t2v&videoPrompt=create&assistant=milo&refine=example",
+        "text": "Refine with Milo"
+      },
+      {
+        "href": "/app?lang=en&engine=seedance-2-5-flash&mode=t2v&videoPrompt=motion-control",
+        "text": "Use this prompt"
+      },
+      {
+        "href": "/app?lang=en&engine=seedance-2-5-flash&mode=t2v&videoPrompt=motion-control&assistant=milo&refine=example",
+        "text": "Refine with Milo"
+      },
+      {
+        "href": "/app?lang=en&engine=seedance-2-5-flash&mode=v2v&videoPrompt=modify",
+        "text": "Use this prompt"
+      },
+      {
+        "href": "/app?lang=en&engine=seedance-2-5-flash&mode=v2v&videoPrompt=modify&assistant=milo&refine=example",
+        "text": "Refine with Milo"
+      },
+      {
+        "href": "/app?engine=seedance-2-5-flash&mode=v2v",
+        "text": "Open Modify"
+      },
+      {
+        "href": "/app?engine=seedance-2-5-flash&mode=extend",
+        "text": "Open Extend"
+      },
+      {
+        "href": "/app?lang=en&engine=seedance-2-5-flash&mode=extend&videoPrompt=extend",
+        "text": "Use this prompt"
+      },
+      {
+        "href": "/app?lang=en&engine=seedance-2-5-flash&mode=extend&videoPrompt=extend&assistant=milo&refine=example",
+        "text": "Refine with Milo"
+      },
+      {
+        "href": "/app?engine=seedance-2-5-flash&lang=en&mode=t2v&videoPrompt=the-salt-run",
+        "text": "Use this prompt"
+      },
+      {
+        "href": "/app?engine=seedance-2-5-flash&lang=en&mode=t2v&videoPrompt=the-salt-run&assistant=milo&refine=example",
+        "text": "Refine with Milo"
+      },
+      {
+        "href": "/app?engine=seedance-2-5-flash&lang=en&mode=t2v&videoPrompt=the-rising-sea",
+        "text": "Use this prompt"
+      },
+      {
+        "href": "/app?engine=seedance-2-5-flash&lang=en&mode=t2v&videoPrompt=the-rising-sea&assistant=milo&refine=example",
+        "text": "Refine with Milo"
+      },
+      {
+        "href": "/app?engine=seedance-2-5-flash&lang=en&mode=t2v&videoPrompt=above-the-city",
+        "text": "Use this prompt"
+      },
+      {
+        "href": "/app?engine=seedance-2-5-flash&lang=en&mode=t2v&videoPrompt=above-the-city&assistant=milo&refine=example",
+        "text": "Refine with Milo"
+      },
+      {
+        "href": "/app?engine=seedance-2-5-flash&lang=en&mode=t2v&videoPrompt=the-glass-garden",
+        "text": "Use this prompt"
+      },
+      {
+        "href": "/app?engine=seedance-2-5-flash&lang=en&mode=t2v&videoPrompt=the-glass-garden&assistant=milo&refine=example",
+        "text": "Refine with Milo"
+      },
+      {
+        "href": "/app?lang=en&engine=seedance-2-5-flash&mode=t2v&videoPrompt=the-blue-hour",
+        "text": "Use this prompt"
+      },
+      {
+        "href": "/app?lang=en&engine=seedance-2-5-flash&mode=t2v&videoPrompt=the-blue-hour&assistant=milo&refine=example",
+        "text": "Refine with Milo"
+      },
+      {
+        "href": "/app?assistant=milo&lang=en&engine=seedance-2-5-flash&mode=t2v",
+        "text": "MiloHelp me turn my idea into a cinematic scene."
+      },
+      {
+        "href": "/app?lang=en&engine=seedance-2-5-flash&mode=t2v&videoPrompt=where-gravity-ends",
+        "text": "Use this prompt"
+      },
+      {
+        "href": "/app?lang=en&engine=seedance-2-5-flash&mode=t2v&videoPrompt=where-gravity-ends&assistant=milo&refine=example",
+        "text": "Refine with Milo"
+      },
+      {
+        "href": "/app/image?engine=gpt-image-2-6-sunburst&example=midnight-run&lang=en",
+        "text": "Use this prompt"
+      },
+      {
+        "href": "/app/image?engine=gpt-image-2-6-sunburst&example=midnight-run&lang=en&assistant=milo&refine=example",
+        "text": "Refine with Milo"
+      },
+      {
+        "href": "/app?engine=seedance-2-5-flash",
+        "text": "Create with Flash"
+      }
+    ]
+  },
+  {
+    "locale": "fr",
+    "slug": "seedream-5-5",
+    "links": 52,
+    "ctas": 20,
+    "warnings": [],
+    "ctaLinks": [
+      {
+        "href": "/app/image?engine=seedream-5-5",
+        "text": "Créer une image"
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5",
+        "text": "Créer une image"
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5&example=backstage-wardrobe&lang=fr",
+        "text": "Utiliser ce prompt"
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5&example=backstage-wardrobe&lang=fr&assistant=milo&refine=example",
+        "text": "Affiner avec Milo"
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5&example=one-night-only&lang=fr",
+        "text": "Utiliser ce prompt"
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5&example=one-night-only&lang=fr&assistant=milo&refine=example",
+        "text": "Affiner avec Milo"
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5&example=after-the-race&lang=fr",
+        "text": "Utiliser ce prompt"
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5&example=after-the-race&lang=fr&assistant=milo&refine=example",
+        "text": "Affiner avec Milo"
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5&example=free-to-move&lang=fr",
+        "text": "Utiliser ce prompt"
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5&example=free-to-move&lang=fr&assistant=milo&refine=example",
+        "text": "Affiner avec Milo"
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5&example=55-make-your-move&lang=fr",
+        "text": "Utiliser ce prompt"
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5&example=55-make-your-move&lang=fr&assistant=milo&refine=example",
+        "text": "Affiner avec Milo"
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5&example=55-make-your-move&lang=fr",
+        "text": "Utiliser ce prompt"
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5&example=55-make-your-move&lang=fr&assistant=milo&refine=example",
+        "text": "Affiner avec Milo"
+      },
+      {
+        "href": "/app/image?assistant=milo&lang=fr&engine=seedream-5-5",
+        "text": "MiloAide-moi à transformer mon idée en scène cinématographique."
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5&example=55-last-train&lang=fr",
+        "text": "Utiliser ce prompt"
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5&example=55-last-train&lang=fr&assistant=milo&refine=example",
+        "text": "Affiner avec Milo"
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5&example=55-above-the-clouds&lang=fr",
+        "text": "Utiliser ce prompt"
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5&example=55-above-the-clouds&lang=fr&assistant=milo&refine=example",
+        "text": "Affiner avec Milo"
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5",
+        "text": "Créer avec Seedream 5.5"
+      }
+    ]
+  },
+  {
+    "locale": "fr",
+    "slug": "seedance-2-5-flash",
+    "links": 56,
+    "ctas": 29,
+    "warnings": [],
+    "ctaLinks": [
+      {
+        "href": "/app?engine=seedance-2-5-flash",
+        "text": "Créer avec Flash"
+      },
+      {
+        "href": "/app?engine=seedance-2-5-flash",
+        "text": "Créer avec Flash"
+      },
+      {
+        "href": "/app?engine=seedance-2-5-flash&mode=t2v",
+        "text": "Créer une vidéo"
+      },
+      {
+        "href": "/app?lang=fr&engine=seedance-2-5-flash&mode=t2v&videoPrompt=create",
+        "text": "Utiliser ce prompt"
+      },
+      {
+        "href": "/app?lang=fr&engine=seedance-2-5-flash&mode=t2v&videoPrompt=create&assistant=milo&refine=example",
+        "text": "Affiner avec Milo"
+      },
+      {
+        "href": "/app?lang=fr&engine=seedance-2-5-flash&mode=t2v&videoPrompt=motion-control",
+        "text": "Utiliser ce prompt"
+      },
+      {
+        "href": "/app?lang=fr&engine=seedance-2-5-flash&mode=t2v&videoPrompt=motion-control&assistant=milo&refine=example",
+        "text": "Affiner avec Milo"
+      },
+      {
+        "href": "/app?lang=fr&engine=seedance-2-5-flash&mode=v2v&videoPrompt=modify",
+        "text": "Utiliser ce prompt"
+      },
+      {
+        "href": "/app?lang=fr&engine=seedance-2-5-flash&mode=v2v&videoPrompt=modify&assistant=milo&refine=example",
+        "text": "Affiner avec Milo"
+      },
+      {
+        "href": "/app?engine=seedance-2-5-flash&mode=v2v",
+        "text": "Ouvrir Modify"
+      },
+      {
+        "href": "/app?engine=seedance-2-5-flash&mode=extend",
+        "text": "Ouvrir Extend"
+      },
+      {
+        "href": "/app?lang=fr&engine=seedance-2-5-flash&mode=extend&videoPrompt=extend",
+        "text": "Utiliser ce prompt"
+      },
+      {
+        "href": "/app?lang=fr&engine=seedance-2-5-flash&mode=extend&videoPrompt=extend&assistant=milo&refine=example",
+        "text": "Affiner avec Milo"
+      },
+      {
+        "href": "/app?engine=seedance-2-5-flash&lang=fr&mode=t2v&videoPrompt=the-salt-run",
+        "text": "Utiliser ce prompt"
+      },
+      {
+        "href": "/app?engine=seedance-2-5-flash&lang=fr&mode=t2v&videoPrompt=the-salt-run&assistant=milo&refine=example",
+        "text": "Affiner avec Milo"
+      },
+      {
+        "href": "/app?engine=seedance-2-5-flash&lang=fr&mode=t2v&videoPrompt=the-rising-sea",
+        "text": "Utiliser ce prompt"
+      },
+      {
+        "href": "/app?engine=seedance-2-5-flash&lang=fr&mode=t2v&videoPrompt=the-rising-sea&assistant=milo&refine=example",
+        "text": "Affiner avec Milo"
+      },
+      {
+        "href": "/app?engine=seedance-2-5-flash&lang=fr&mode=t2v&videoPrompt=above-the-city",
+        "text": "Utiliser ce prompt"
+      },
+      {
+        "href": "/app?engine=seedance-2-5-flash&lang=fr&mode=t2v&videoPrompt=above-the-city&assistant=milo&refine=example",
+        "text": "Affiner avec Milo"
+      },
+      {
+        "href": "/app?engine=seedance-2-5-flash&lang=fr&mode=t2v&videoPrompt=the-glass-garden",
+        "text": "Utiliser ce prompt"
+      },
+      {
+        "href": "/app?engine=seedance-2-5-flash&lang=fr&mode=t2v&videoPrompt=the-glass-garden&assistant=milo&refine=example",
+        "text": "Affiner avec Milo"
+      },
+      {
+        "href": "/app?lang=fr&engine=seedance-2-5-flash&mode=t2v&videoPrompt=the-blue-hour",
+        "text": "Utiliser ce prompt"
+      },
+      {
+        "href": "/app?lang=fr&engine=seedance-2-5-flash&mode=t2v&videoPrompt=the-blue-hour&assistant=milo&refine=example",
+        "text": "Affiner avec Milo"
+      },
+      {
+        "href": "/app?assistant=milo&lang=fr&engine=seedance-2-5-flash&mode=t2v",
+        "text": "MiloAide-moi à transformer mon idée en scène cinématographique."
+      },
+      {
+        "href": "/app?lang=fr&engine=seedance-2-5-flash&mode=t2v&videoPrompt=where-gravity-ends",
+        "text": "Utiliser ce prompt"
+      },
+      {
+        "href": "/app?lang=fr&engine=seedance-2-5-flash&mode=t2v&videoPrompt=where-gravity-ends&assistant=milo&refine=example",
+        "text": "Affiner avec Milo"
+      },
+      {
+        "href": "/app/image?engine=gpt-image-2-6-sunburst&example=midnight-run&lang=fr",
+        "text": "Utiliser ce prompt"
+      },
+      {
+        "href": "/app/image?engine=gpt-image-2-6-sunburst&example=midnight-run&lang=fr&assistant=milo&refine=example",
+        "text": "Affiner avec Milo"
+      },
+      {
+        "href": "/app?engine=seedance-2-5-flash",
+        "text": "Créer avec Flash"
+      }
+    ]
+  },
+  {
+    "locale": "es",
+    "slug": "seedream-5-5",
+    "links": 52,
+    "ctas": 20,
+    "warnings": [],
+    "ctaLinks": [
+      {
+        "href": "/app/image?engine=seedream-5-5",
+        "text": "Crear una imagen"
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5",
+        "text": "Crear una imagen"
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5&example=backstage-wardrobe&lang=es",
+        "text": "Usar este prompt"
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5&example=backstage-wardrobe&lang=es&assistant=milo&refine=example",
+        "text": "Refinar con Milo"
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5&example=one-night-only&lang=es",
+        "text": "Usar este prompt"
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5&example=one-night-only&lang=es&assistant=milo&refine=example",
+        "text": "Refinar con Milo"
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5&example=after-the-race&lang=es",
+        "text": "Usar este prompt"
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5&example=after-the-race&lang=es&assistant=milo&refine=example",
+        "text": "Refinar con Milo"
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5&example=free-to-move&lang=es",
+        "text": "Usar este prompt"
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5&example=free-to-move&lang=es&assistant=milo&refine=example",
+        "text": "Refinar con Milo"
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5&example=55-make-your-move&lang=es",
+        "text": "Usar este prompt"
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5&example=55-make-your-move&lang=es&assistant=milo&refine=example",
+        "text": "Refinar con Milo"
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5&example=55-make-your-move&lang=es",
+        "text": "Usar este prompt"
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5&example=55-make-your-move&lang=es&assistant=milo&refine=example",
+        "text": "Refinar con Milo"
+      },
+      {
+        "href": "/app/image?assistant=milo&lang=es&engine=seedream-5-5",
+        "text": "MiloAyúdame a convertir mi idea en una escena cinematográfica."
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5&example=55-last-train&lang=es",
+        "text": "Usar este prompt"
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5&example=55-last-train&lang=es&assistant=milo&refine=example",
+        "text": "Refinar con Milo"
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5&example=55-above-the-clouds&lang=es",
+        "text": "Usar este prompt"
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5&example=55-above-the-clouds&lang=es&assistant=milo&refine=example",
+        "text": "Refinar con Milo"
+      },
+      {
+        "href": "/app/image?engine=seedream-5-5",
+        "text": "Crear con Seedream 5.5"
+      }
+    ]
+  },
+  {
+    "locale": "es",
+    "slug": "seedance-2-5-flash",
+    "links": 56,
+    "ctas": 29,
+    "warnings": [],
+    "ctaLinks": [
+      {
+        "href": "/app?engine=seedance-2-5-flash",
+        "text": "Crear con Flash"
+      },
+      {
+        "href": "/app?engine=seedance-2-5-flash",
+        "text": "Crear con Flash"
+      },
+      {
+        "href": "/app?engine=seedance-2-5-flash&mode=t2v",
+        "text": "Crear un vídeo"
+      },
+      {
+        "href": "/app?lang=es&engine=seedance-2-5-flash&mode=t2v&videoPrompt=create",
+        "text": "Usar este prompt"
+      },
+      {
+        "href": "/app?lang=es&engine=seedance-2-5-flash&mode=t2v&videoPrompt=create&assistant=milo&refine=example",
+        "text": "Refinar con Milo"
+      },
+      {
+        "href": "/app?lang=es&engine=seedance-2-5-flash&mode=t2v&videoPrompt=motion-control",
+        "text": "Usar este prompt"
+      },
+      {
+        "href": "/app?lang=es&engine=seedance-2-5-flash&mode=t2v&videoPrompt=motion-control&assistant=milo&refine=example",
+        "text": "Refinar con Milo"
+      },
+      {
+        "href": "/app?lang=es&engine=seedance-2-5-flash&mode=v2v&videoPrompt=modify",
+        "text": "Usar este prompt"
+      },
+      {
+        "href": "/app?lang=es&engine=seedance-2-5-flash&mode=v2v&videoPrompt=modify&assistant=milo&refine=example",
+        "text": "Refinar con Milo"
+      },
+      {
+        "href": "/app?engine=seedance-2-5-flash&mode=v2v",
+        "text": "Abrir Modify"
+      },
+      {
+        "href": "/app?engine=seedance-2-5-flash&mode=extend",
+        "text": "Abrir Extend"
+      },
+      {
+        "href": "/app?lang=es&engine=seedance-2-5-flash&mode=extend&videoPrompt=extend",
+        "text": "Usar este prompt"
+      },
+      {
+        "href": "/app?lang=es&engine=seedance-2-5-flash&mode=extend&videoPrompt=extend&assistant=milo&refine=example",
+        "text": "Refinar con Milo"
+      },
+      {
+        "href": "/app?engine=seedance-2-5-flash&lang=es&mode=t2v&videoPrompt=the-salt-run",
+        "text": "Usar este prompt"
+      },
+      {
+        "href": "/app?engine=seedance-2-5-flash&lang=es&mode=t2v&videoPrompt=the-salt-run&assistant=milo&refine=example",
+        "text": "Refinar con Milo"
+      },
+      {
+        "href": "/app?engine=seedance-2-5-flash&lang=es&mode=t2v&videoPrompt=the-rising-sea",
+        "text": "Usar este prompt"
+      },
+      {
+        "href": "/app?engine=seedance-2-5-flash&lang=es&mode=t2v&videoPrompt=the-rising-sea&assistant=milo&refine=example",
+        "text": "Refinar con Milo"
+      },
+      {
+        "href": "/app?engine=seedance-2-5-flash&lang=es&mode=t2v&videoPrompt=above-the-city",
+        "text": "Usar este prompt"
+      },
+      {
+        "href": "/app?engine=seedance-2-5-flash&lang=es&mode=t2v&videoPrompt=above-the-city&assistant=milo&refine=example",
+        "text": "Refinar con Milo"
+      },
+      {
+        "href": "/app?engine=seedance-2-5-flash&lang=es&mode=t2v&videoPrompt=the-glass-garden",
+        "text": "Usar este prompt"
+      },
+      {
+        "href": "/app?engine=seedance-2-5-flash&lang=es&mode=t2v&videoPrompt=the-glass-garden&assistant=milo&refine=example",
+        "text": "Refinar con Milo"
+      },
+      {
+        "href": "/app?lang=es&engine=seedance-2-5-flash&mode=t2v&videoPrompt=the-blue-hour",
+        "text": "Usar este prompt"
+      },
+      {
+        "href": "/app?lang=es&engine=seedance-2-5-flash&mode=t2v&videoPrompt=the-blue-hour&assistant=milo&refine=example",
+        "text": "Refinar con Milo"
+      },
+      {
+        "href": "/app?assistant=milo&lang=es&engine=seedance-2-5-flash&mode=t2v",
+        "text": "MiloAyúdame a convertir mi idea en una escena cinematográfica."
+      },
+      {
+        "href": "/app?lang=es&engine=seedance-2-5-flash&mode=t2v&videoPrompt=where-gravity-ends",
+        "text": "Usar este prompt"
+      },
+      {
+        "href": "/app?lang=es&engine=seedance-2-5-flash&mode=t2v&videoPrompt=where-gravity-ends&assistant=milo&refine=example",
+        "text": "Refinar con Milo"
+      },
+      {
+        "href": "/app/image?engine=gpt-image-2-6-sunburst&example=midnight-run&lang=es",
+        "text": "Usar este prompt"
+      },
+      {
+        "href": "/app/image?engine=gpt-image-2-6-sunburst&example=midnight-run&lang=es&assistant=milo&refine=example",
+        "text": "Refinar con Milo"
+      },
+      {
+        "href": "/app?engine=seedance-2-5-flash",
+        "text": "Crear con Flash"
+      }
+    ]
+  }
+]

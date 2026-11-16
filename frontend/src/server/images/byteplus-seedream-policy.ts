@@ -1,6 +1,7 @@
 import { ENV } from '@/lib/env';
 import { isBytePlusModelArkEnabled } from '@/server/video-providers/byteplus-modelark';
 import type { EngineCaps } from '@/types/engines';
+import { isSeedreamEngineId } from '@/lib/image/seedream';
 
 import { BytePlusSeedreamError } from './byteplus-seedream-error';
 
@@ -15,7 +16,7 @@ type BytePlusSeedreamEnvironment = Readonly<{
 }>;
 
 export function isBytePlusSeedreamEngine(engine: EngineCaps): boolean {
-  return ['seedream', 'seedream-5-0-pro'].includes(engine.id);
+  return isSeedreamEngineId(engine.id);
 }
 
 export function resolveBytePlusSeedreamReadiness(

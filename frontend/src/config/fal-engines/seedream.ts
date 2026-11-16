@@ -5,6 +5,10 @@ import {
   SEEDREAM_SIZE_VALUES,
 } from '../../../lib/image/seedream';
 import type { RawFalEngineEntry } from './types';
+import { SEEDREAM_LATEST_FAL_ENGINE_REGISTRY } from './seedream-latest';
+import { listSeedreamEditorialImages } from '../../../lib/seedream-editorial-images';
+
+const seedreamProHero = listSeedreamEditorialImages('seedream-5-0-pro').find(image => image.role === 'hero');
 
 const SEEDREAM_ENGINE: EngineCaps = {
   id: 'seedream',
@@ -241,6 +245,7 @@ const SEEDREAM_PRO_ENGINE: EngineCaps = {
 };
 
 export const SEEDREAM_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
+  ...SEEDREAM_LATEST_FAL_ENGINE_REGISTRY,
   {
     id: 'seedream',
     marketingName: 'Seedream',
@@ -372,7 +377,11 @@ export const SEEDREAM_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     type: 'image',
     seoText:
       'Seedream 5.0 Pro is the professional ByteDance image model for dense infographics, advanced visual editing, multilingual layouts, cinematic stills, and polished reference images before animation.',
-    media: {
+    media: seedreamProHero ? {
+      videoUrl: seedreamProHero.original.url,
+      imagePath: seedreamProHero.display.url,
+      altText: 'Seedream 5.0 Pro generated film still: two people laughing outside a bakery.',
+    } : {
       videoUrl: '/assets/model-examples/seedream-5-0-pro/hero.webp',
       imagePath: '/assets/model-examples/seedream-5-0-pro/hero.webp',
       altText: 'Seedream 5.0 Pro professional image generation example',
@@ -411,6 +420,6 @@ export const SEEDREAM_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
       label: 'Per 2K image',
     },
     promptExample:
-      '4K cinematic poster of a futuristic transport terminal, multilingual wayfinding, accurate small labels, glass reflections, editorial realism.',
+      '2K cinematic poster of a futuristic transport terminal, multilingual wayfinding, accurate small labels, glass reflections, editorial realism.',
   },
 ];

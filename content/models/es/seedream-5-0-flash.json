@@ -1,0 +1,425 @@
+{
+  "marketingName": "Seedream 5.0 Flash",
+  "versionLabel": "5.0 Flash",
+  "seo": {
+    "title": "Seedream 5.0 Flash | Generación rápida y edición con referencias | MaxVideoAI",
+    "description": "Genera y edita imágenes con Seedream 5.0 Flash de ByteDance en MaxVideoAI. Una imagen JPEG o PNG en 1K, 1.5K o 2K y hasta 10 referencias."
+  },
+  "overview": "Seedream 5.0 Flash es la variante rápida de la familia de imagen Seedream 5.0. Explora una expresión, un ángulo o una idea de campaña, una imagen cada vez, y conserva el encuadre que dé dirección a la historia.",
+  "pricingNotes": "El precio exacto actual aparece antes de confirmar. Revisa la cotización actual antes de cada solicitud.",
+  "hero": {
+    "title": "Seedream 5.0 Flash — Generación rápida y edición con referencias",
+    "intro": "Encuentra el gesto y el encuadre que hacen funcionar la idea. Crea una campaña con energía o una escena de cine desde texto y guía las ediciones con hasta 10 referencias.",
+    "badge": "Texto → Imagen · Imagen → Imagen · 1K / 1.5K / 2K",
+    "ctaPrimary": {
+      "label": "Crear con Seedream 5.0 Flash",
+      "href": "/app/image?engine=seedream-5-0-flash"
+    },
+    "secondaryLinks": [
+      {
+        "label": "Descubrir Seedream 5.5",
+        "href": "/es/modelos/seedream-5-5"
+      },
+      {
+        "label": "Descubrir Seedream 5.0 Lite",
+        "href": "/es/modelos/seedream"
+      },
+      {
+        "label": "Descubrir Seedream 5.0 Pro",
+        "href": "/es/modelos/seedream-5-0-pro"
+      }
+    ]
+  },
+  "bestUseCases": {
+    "title": "Usos recomendados",
+    "items": [
+      {
+        "title": "Acción humana y campañas expresivas",
+        "icon": "product"
+      },
+      {
+        "title": "Variaciones de encuadre, luz y ropa",
+        "icon": "imageToVideo"
+      },
+      {
+        "title": "Una imagen inicial clara antes de probar un video",
+        "icon": "layout"
+      }
+    ]
+  },
+  "tips": {
+    "title": "Consejos para generar y editar",
+    "items": [
+      "Elige una acción legible. Concreta el pie de apoyo, las manos y el ángulo de cámara cuando la pose importe.",
+      "Prueba un cambio por solicitud, como una cámara más baja, una luz cálida u otra expresión, para comparar con criterio.",
+      "Para una campaña, describe el letrero o la pared con el texto exacto y mantén el mensaje corto.",
+      "Para editar, asigna una función a cada referencia y separa lo que se mantiene de lo que cambia.",
+      "Mantén la silueta completa dentro del encuadre y deja espacio para mover la cámara después. Revisa rostros, manos, pies y texto antes de guardar."
+    ]
+  },
+  "prompts": [
+    {
+      "title": "Skate en la ciudad — KEEP GOING",
+      "prompt": "A vibrant cinematic live-action sports-campaign still, 16:9 widescreen. A fictional female skateboarder around twenty-six, wearing a burnt-orange windbreaker, loose navy trousers and simple cream sneakers, is captured at the clean apex of a small controlled ollie over a low curb on a sunny Lisbon street. Her whole body and the complete skateboard are visible, both feet positioned convincingly above the deck, natural hands balancing the movement, focused face clearly visible. Use a low three-quarter camera angle and a believable body pose rather than an extreme stunt. Two adult friends react naturally on the sidewalk behind her, with a cafe terrace and a real city street receding into the distance. A large painted wall advertisement on the left reads exactly \"KEEP GOING\" in two crisp, oversized dark-blue lines on a pale warm-yellow background; the lettering is physically painted on the wall and follows its perspective. Late afternoon sunlight creates long diagonal shadows, tactile stucco and real skin texture. Crisp subject with a small amount of natural motion blur in the moving background, 28mm cinema lens, rich but controlled colors, energetic editorial composition with real depth. Keep the skateboarder away from the frame edges. A candid decisive moment from a premium commercial film, one cohesive image with no added title, collage or border."
+    },
+    {
+      "title": "Baile en la estación — NEXT STOP ANYWHERE",
+      "prompt": "An arresting live-action cinematic still, 16:9 widescreen. In a grand early-twentieth-century European railway concourse, a fictional adult dancer in their late twenties, dressed in a flowing cobalt-blue overshirt, ivory T-shirt, charcoal trousers and worn white sneakers, is caught mid-turn during an impromptu dance. The full body is visible with a convincing grounded pivot, one foot on the stone floor, natural arms extended at different heights, relaxed readable hands and a face lit by a shaft of late-afternoon sun. Several adult commuters continue walking in the deeper background, some glancing toward the dancer. Tall windows, iron arches and a large station clock create a rich architectural backdrop. A physically installed departure-board-style sign in the middle background reads exactly \"NEXT STOP\" on its first line and \"ANYWHERE\" on its second line, in clean cream block lettering on a deep-blue panel. Clothing has a light natural motion blur at its edges while the face and torso remain sharp. Warm sun against cool interior shadow, long floor reflections, atmospheric depth, 35mm cinema lens, restrained grain, beautiful believable skin and fabric. Frame the scene like the opening of a moving human story with space for a slow dolly-in, not a studio dance portrait. One coherent realistic location, no floating lettering or graphic overlay."
+    }
+  ],
+  "faqs": [
+    {
+      "q": "¿Cuándo debería elegir Seedream 5.0 Flash?",
+      "a": "Flash es la variante rápida de la familia Seedream 5.0. Úsalo para explorar una pose, un encuadre o una dirección de campaña mediante solicitudes individuales."
+    },
+    {
+      "q": "¿Flash puede devolver varias variaciones a la vez?",
+      "a": "Flash genera una imagen por solicitud. Lanza otra solicitud para una variación o elige Seedream 5.0 Lite para series de imágenes."
+    },
+    {
+      "q": "¿Puedo editar una imagen de personaje existente?",
+      "a": "Sí. Usa hasta 10 imágenes de referencia, define el rostro, la ropa y el encuadre que deben mantenerse y describe el cambio. Revisa la identidad y los detalles del resultado."
+    },
+    {
+      "q": "¿Qué salidas están disponibles?",
+      "a": "Elige 1K, 1.5K o 2K y descarga JPEG o PNG. Para un elemento generado con fondo transparente, elige Seedream 5.5."
+    },
+    {
+      "q": "¿Una imagen Flash puede abrir un video?",
+      "a": "Sí. Guarda la imagen elegida y úsala como referencia en un modelo de video compatible. Planea el movimiento por separado; Flash produce una imagen fija."
+    },
+    {
+      "q": "¿Cómo compruebo el precio actual?",
+      "a": "Elige resolución y referencias en el espacio de imagen. MaxVideoAI muestra la cotización antes de confirmar cada solicitud."
+    }
+  ],
+  "custom": {
+    "heroEyebrow": "Imágenes IA · ByteDance",
+    "heroSupportLine": "Generación rápida y edición con referencias",
+    "heroSpecChips": [
+      {
+        "label": "Texto → Imagen",
+        "icon": "textToVideo"
+      },
+      {
+        "label": "Imagen → Imagen",
+        "icon": "imageToVideo"
+      },
+      {
+        "label": "1K / 1.5K / 2K",
+        "icon": "resolution"
+      },
+      {
+        "label": "Una imagen generada por solicitud"
+      }
+    ],
+    "whyTitle": "Explora el plano antes de pasar al movimiento",
+    "heroDesc1": "Un ángulo de cámara o una expresión pueden cambiar toda la escena. Busca el gesto y la composición que quieres desarrollar mediante solicitudes individuales.",
+    "heroDesc2": "Guarda la mejor imagen con su prompt. Compara un cambio cada vez y lleva la imagen elegida a un flujo de video cuando el encuadre esté decidido.",
+    "heroHighlights": [
+      "Acción legible||Describe cuerpo, manos y accesorios en un instante concreto.",
+      "Una variación cada vez||Compara otro ángulo, expresión o luz con la imagen seleccionada.",
+      "Un punto de partida para el movimiento||Deja espacio alrededor del sujeto y guarda la imagen antes de una generación de video independiente."
+    ],
+    "specSections": [
+      {
+        "title": "Ajustes de imagen",
+        "items": [
+          "Crea desde un prompt o edita imágenes de referencia.",
+          "Elige 1K, 1.5K o 2K.",
+          "Hasta 10 imágenes de referencia",
+          "Una imagen generada por solicitud",
+          "Descarga JPEG o PNG."
+        ]
+      }
+    ],
+    "strengths": [
+      "Acción humana y campañas expresivas",
+      "Variaciones de encuadre, luz y ropa",
+      "Una imagen inicial clara antes de probar un video"
+    ],
+    "boundaries": [
+      "Una imagen generada por solicitud",
+      "Utiliza una solicitud por variación: Flash no devuelve una serie secuencial de imágenes.",
+      "Revisa el texto y los detalles antes de publicar."
+    ],
+    "relatedTitle": "Modelos de imagen Seedream",
+    "relatedSubtitle": "Elige el flujo de imagen adecuado para el siguiente paso.",
+    "relatedItems": [
+      {
+        "brand": "ByteDance",
+        "title": "Seedream 5.5",
+        "modelSlug": "seedream-5-5",
+        "description": "Afina una escena mediante ediciones guiadas o crea un elemento PNG transparente. Una imagen por solicitud.",
+        "ctaLabel": "Descubrir Seedream 5.5"
+      },
+      {
+        "brand": "ByteDance",
+        "title": "Seedream 5.0 Lite",
+        "modelSlug": "seedream",
+        "description": "Explora en serie imágenes de personajes, producto o storyboard antes de elegir los planos que desarrollarás.",
+        "ctaLabel": "Descubrir Seedream 5.0 Lite"
+      },
+      {
+        "brand": "ByteDance",
+        "title": "Seedream 5.0 Pro",
+        "modelSlug": "seedream-5-0-pro",
+        "description": "Crea un retrato detallado, una imagen de campaña o una infografía en 2K, con salida JPEG o PNG.",
+        "ctaLabel": "Descubrir Seedream 5.0 Pro"
+      }
+    ],
+    "safetyTitle": "Creación responsable de imágenes",
+    "safetyRules": [
+      "Utiliza imágenes que tengas permiso para editar.",
+      "Respeta el consentimiento y los derechos de las personas representadas.",
+      "Las normas de seguridad del proveedor se aplican a los prompts y las referencias."
+    ]
+  },
+  "decision": {
+    "modelSlug": "seedream-5-0-flash",
+    "hero": {
+      "eyebrow": "Imágenes IA · ByteDance",
+      "title": "Seedream 5.0 Flash — Generación rápida y edición con referencias",
+      "subtitle": "Encuentra el instante. Prueba otro ángulo.",
+      "subtitleHighlights": [
+        "Encuentra el instante. Prueba otro ángulo"
+      ],
+      "paragraph": "Un salto en skate en una calle soleada, un baile en una estación, amigos que reaccionan al fondo: dale a tu idea una acción visible. Flash crea un JPEG o PNG en 1K, 1.5K o 2K desde un prompt o imágenes de referencia.",
+      "primaryCta": {
+        "label": "Crear con Seedream 5.0 Flash",
+        "href": "/app/image?engine=seedream-5-0-flash"
+      },
+      "secondaryCta": {
+        "label": "Descubrir Seedream 5.5",
+        "href": "/es/modelos/seedream-5-5"
+      },
+      "quickLinks": [
+        {
+          "label": "Abrir el generador de imágenes",
+          "href": "/app/image?engine=seedream-5-0-flash"
+        },
+        {
+          "label": "Ver precios",
+          "href": "/es/precios#seedream-5-0-flash-pricing"
+        },
+        {
+          "label": "Ejemplos de prompts",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "KEEP GOING — generado con Seedream 5.0 Flash",
+      "description": "Una imagen 2K con personas en movimiento y texto pintado en el entorno. Los ejemplos permiten abrir el original y el prompt; la generación de video es un paso independiente.",
+      "renderLabel": "Ver ejemplos originales",
+      "badges": [
+        "Texto → Imagen",
+        "2K",
+        "16:9"
+      ],
+      "altContext": "KEEP GOING — una campaña de skate en la ciudad"
+    },
+    "features": [
+      {
+        "title": "Explora una escena en acción",
+        "body": "Describe un gesto que se entienda en una imagen. Añade una pose con apoyos creíbles, un rostro visible y un lugar con profundidad.",
+        "tone": "quality"
+      },
+      {
+        "title": "Prueba otra dirección",
+        "body": "Cambia encuadre, luz o expresión en una nueva solicitud. Flash devuelve una imagen cada vez para que elijas la composición que desarrollarás.",
+        "tone": "quality"
+      },
+      {
+        "title": "Construye una campaña con personas",
+        "body": "Sitúa un texto corto y exacto sobre un soporte real del entorno. Personaje, lugar y letras dan juntos una intención a la imagen.",
+        "tone": "quality"
+      },
+      {
+        "title": "Guía la siguiente edición",
+        "body": "Añade hasta 10 referencias para la persona, la ropa o el lugar. Elige 1K, 1.5K o 2K y descarga el resultado en JPEG o PNG.",
+        "tone": "reference"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Seedream 5.5",
+        "body": "Afina una escena mediante ediciones guiadas o crea un elemento PNG transparente. Una imagen por solicitud.",
+        "cta": {
+          "label": "Descubrir Seedream 5.5",
+          "href": "/es/modelos/seedream-5-5"
+        }
+      },
+      {
+        "title": "Seedream 5.0 Lite",
+        "body": "Explora en serie imágenes de personajes, producto o storyboard antes de elegir los planos que desarrollarás.",
+        "cta": {
+          "label": "Descubrir Seedream 5.0 Lite",
+          "href": "/es/modelos/seedream"
+        }
+      },
+      {
+        "title": "Seedream 5.0 Pro",
+        "body": "Crea un retrato detallado, una imagen de campaña o una infografía en 2K, con salida JPEG o PNG.",
+        "cta": {
+          "label": "Descubrir Seedream 5.0 Pro",
+          "href": "/es/modelos/seedream-5-0-pro"
+        }
+      },
+      {
+        "title": "Ejemplos de prompts",
+        "body": "Prueba un brief original en inglés para una escena humana. Adapta personajes, acción y lugar y revisa manos y letras en el resultado.",
+        "cta": {
+          "label": "Ejemplos de prompts",
+          "href": "#prompting"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Escribir una acción visible",
+        "body": "Elige gesto, posición del cuerpo y expresión antes de cámara e iluminación. Mantén manos, pies y accesorios fáciles de distinguir."
+      },
+      {
+        "title": "Comparar un cambio",
+        "body": "Lanza una nueva solicitud para otro ángulo o ambiente. Conserva el brief elegido para valorar si el cambio ayuda a la escena."
+      },
+      {
+        "title": "Centrar las referencias",
+        "body": "Indica qué fuente define a la persona, la ropa o el lugar. La edición acepta hasta 10 referencias y devuelve una imagen."
+      },
+      {
+        "title": "Elegir la primera imagen",
+        "body": "Guarda una imagen con silueta legible y espacio para el movimiento. Úsala en un modelo de video independiente cuando quieras planear la animación."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Seedream 5.0 Flash — precios actuales por imagen",
+      "subtitle": "El precio exacto actual aparece antes de confirmar. Revisa la cotización actual antes de cada solicitud.",
+      "footnote": "Comprueba la cotización para tus ajustes exactos antes de generar.",
+      "ctaLabel": "Ver todos los precios",
+      "ctaHref": "/es/precios#seedream-5-0-flash-pricing"
+    },
+    "meta": {
+      "title": "Seedream 5.0 Flash | Generación rápida y edición con referencias | MaxVideoAI",
+      "description": "Genera y edita imágenes con Seedream 5.0 Flash de ByteDance en MaxVideoAI. Una imagen JPEG o PNG en 1K, 1.5K o 2K y hasta 10 referencias."
+    }
+  },
+  "prompting": {
+    "modelSlug": "seedream-5-0-flash",
+    "section": {
+      "title": "Cómo escribir prompts para Seedream 5.0 Flash",
+      "intro": "Parte de una acción visible en un instante. Añade posición del cuerpo, expresión, ángulo y luz; después, el entorno y cualquier texto.",
+      "tip": "Una pose plausible es más útil que una acrobacia extrema. Revisa manos, pies y accesorios antes de usar la imagen como referencia de video.",
+      "guide": {
+        "label": "Guía oficial del modelo",
+        "href": "https://ai.byteplus.com/en/product/Seedream"
+      },
+      "referencesTitle": "Trabajar con imágenes de referencia"
+    },
+    "tabs": [],
+    "tabNotes": [],
+    "globalPrinciples": [
+      "Dale a la escena una acción y una persona principal clara.",
+      "Para el movimiento, describe pie de apoyo, equilibrio y posición legible de las manos.",
+      "Pon las palabras exactas entre comillas y sobre un soporte físico.",
+      "Cambia una parte del brief por solicitud para comparar la dirección."
+    ],
+    "engineWhy": [],
+    "demo": null,
+    "imageExamples": {
+      "title": "Seedream 5.0 Flash — ejemplos de prompts",
+      "intro": "Prompts originales en inglés para escenas humanas e imágenes de campaña. Copia un brief y adapta el lugar, los personajes y el texto exacto a tu proyecto.",
+      "workspaceLabel": "Abrir el generador de imágenes",
+      "items": [
+        {
+          "id": "flash-keep-going",
+          "title": "Skate en la ciudad — KEEP GOING",
+          "badge": "Texto → Imagen",
+          "kind": "image",
+          "prompt": "A vibrant cinematic live-action sports-campaign still, 16:9 widescreen. A fictional female skateboarder around twenty-six, wearing a burnt-orange windbreaker, loose navy trousers and simple cream sneakers, is captured at the clean apex of a small controlled ollie over a low curb on a sunny Lisbon street. Her whole body and the complete skateboard are visible, both feet positioned convincingly above the deck, natural hands balancing the movement, focused face clearly visible. Use a low three-quarter camera angle and a believable body pose rather than an extreme stunt. Two adult friends react naturally on the sidewalk behind her, with a cafe terrace and a real city street receding into the distance. A large painted wall advertisement on the left reads exactly \"KEEP GOING\" in two crisp, oversized dark-blue lines on a pale warm-yellow background; the lettering is physically painted on the wall and follows its perspective. Late afternoon sunlight creates long diagonal shadows, tactile stucco and real skin texture. Crisp subject with a small amount of natural motion blur in the moving background, 28mm cinema lens, rich but controlled colors, energetic editorial composition with real depth. Keep the skateboarder away from the frame edges. A candid decisive moment from a premium commercial film, one cohesive image with no added title, collage or border."
+        },
+        {
+          "id": "flash-next-stop",
+          "title": "Baile en la estación — NEXT STOP ANYWHERE",
+          "badge": "Texto → Imagen",
+          "kind": "image",
+          "prompt": "An arresting live-action cinematic still, 16:9 widescreen. In a grand early-twentieth-century European railway concourse, a fictional adult dancer in their late twenties, dressed in a flowing cobalt-blue overshirt, ivory T-shirt, charcoal trousers and worn white sneakers, is caught mid-turn during an impromptu dance. The full body is visible with a convincing grounded pivot, one foot on the stone floor, natural arms extended at different heights, relaxed readable hands and a face lit by a shaft of late-afternoon sun. Several adult commuters continue walking in the deeper background, some glancing toward the dancer. Tall windows, iron arches and a large station clock create a rich architectural backdrop. A physically installed departure-board-style sign in the middle background reads exactly \"NEXT STOP\" on its first line and \"ANYWHERE\" on its second line, in clean cream block lettering on a deep-blue panel. Clothing has a light natural motion blur at its edges while the face and torso remain sharp. Warm sun against cool interior shadow, long floor reflections, atmospheric depth, 35mm cinema lens, restrained grain, beautiful believable skin and fabric. Frame the scene like the opening of a moving human story with space for a slow dolly-in, not a studio dance portrait. One coherent realistic location, no floating lettering or graphic overlay."
+        }
+      ]
+    }
+  },
+  "examples": {
+    "modelSlug": "seedream-5-0-flash",
+    "section": {
+      "title": "Personas, movimiento y texto dentro de la escena",
+      "intro": "Dos imágenes originales 2K generadas con Seedream 5.0 Flash. Abre una imagen para examinar el original y copiar su prompt exacto en inglés. Son ejemplos independientes de texto a imagen.",
+      "defaultCtaLabel": null,
+      "recreateLabel": "Crear con Seedream 5.0 Flash",
+      "afterGallery": "Revisa los rostros, las manos, el texto y el encuadre antes de guardar la imagen original. Después úsala como referencia para una generación independiente de imagen a video.",
+      "videoWorkflowLabel": "Explorar imagen a video con Seedance 2.5"
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "Todo"
+      },
+      {
+        "id": "product",
+        "label": "Imágenes de producto"
+      },
+      {
+        "id": "edit",
+        "label": "Edición de imágenes"
+      },
+      {
+        "id": "typography",
+        "label": "Texto y composición"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "image-proof-1",
+        "title": "Texto a imagen",
+        "body": "Describe una imagen fija.",
+        "icon": "image"
+      },
+      {
+        "id": "image-proof-2",
+        "title": "Edición con referencias",
+        "body": "Guía una edición con hasta 10 imágenes.",
+        "icon": "pen"
+      },
+      {
+        "id": "image-proof-3",
+        "title": "Opciones de resolución",
+        "body": "Selecciona 1K, 1.5K o 2K.",
+        "icon": "maximize"
+      },
+      {
+        "id": "image-proof-4",
+        "title": "Cotización exacta",
+        "body": "Revisa el precio actual antes de confirmar.",
+        "icon": "shield"
+      },
+      {
+        "id": "image-proof-5",
+        "title": "Imágenes reutilizables",
+        "body": "Guarda el resultado antes de generar un vídeo por separado.",
+        "icon": "sparkles"
+      }
+    ],
+    "fallbackItems": null,
+    "showWhenEmpty": false,
+    "editorialImages": [
+      {
+        "id": "flash-keep-going",
+        "title": "KEEP GOING — una campaña de skate en la ciudad"
+      },
+      {
+        "id": "flash-next-stop",
+        "title": "NEXT STOP ANYWHERE — baile en una estación"
+      }
+    ]
+  }
+}

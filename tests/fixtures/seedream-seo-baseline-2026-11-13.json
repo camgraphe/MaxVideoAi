@@ -1,0 +1,104 @@
+[
+  {
+    "locale": "en",
+    "slug": "seedream",
+    "seo": {
+      "title": "Seedream 5.0 Lite | Image Generation & Editing | MaxVideoAI",
+      "description": "Create and edit still images with Seedream 5.0 Lite in MaxVideoAI. Prepare clean concepts, product frames, and reference images before Seedance animation."
+    },
+    "decisionMeta": {
+      "title": "Seedream: Image Pricing & Reference Prep | MaxVideoAI",
+      "description": "Prepare Seedream reference images, product frames, character stills and controlled visual sets in MaxVideoAI before choosing a video model."
+    },
+    "heroTitle": "Seedream 5.0 Lite",
+    "primaryCta": {
+      "label": "Prepare references with Seedream",
+      "href": "/app/image?engine=seedream"
+    }
+  },
+  {
+    "locale": "en",
+    "slug": "seedream-5-0-pro",
+    "seo": {
+      "title": "Seedream 5.0 Pro - Professional ByteDance Image Generation | MaxVideoAI",
+      "description": "Create professional still images, dense infographics, visual edits, and 2K campaign assets with Seedream 5.0 Pro in MaxVideoAI."
+    },
+    "decisionMeta": {
+      "title": "Seedream 5.0 Pro - Professional ByteDance Image Generation | MaxVideoAI",
+      "description": "Create professional still images, dense infographics, visual edits, and 2K campaign assets with Seedream 5.0 Pro in MaxVideoAI."
+    },
+    "heroTitle": "Seedream 5.0 Pro - professional image production",
+    "primaryCta": {
+      "label": "Launch Seedream Pro",
+      "href": "/app/image?engine=seedream-5-0-pro"
+    }
+  },
+  {
+    "locale": "fr",
+    "slug": "seedream",
+    "seo": {
+      "title": "Seedream 5.0 Lite | Génération et édition d'image | MaxVideoAI",
+      "description": "Créez et éditez des images fixes avec Seedream 5.0 Lite dans MaxVideoAI. Préparez des concepts, packshots et images de référence avant Seedance."
+    },
+    "decisionMeta": {
+      "title": "Seedream : tarifs image et préparation de références | MaxVideoAI",
+      "description": "Préparez avec Seedream des images de référence, frames produit, personnages fixes et séries visuelles contrôlées avant de choisir un modèle vidéo."
+    },
+    "heroTitle": "Seedream 5.0 Lite",
+    "primaryCta": {
+      "label": "Préparer des références avec Seedream",
+      "href": "/app/image?engine=seedream"
+    }
+  },
+  {
+    "locale": "fr",
+    "slug": "seedream-5-0-pro",
+    "seo": {
+      "title": "Seedream 5.0 Pro - génération image professionnelle ByteDance | MaxVideoAI",
+      "description": "Créez des images professionnelles, infographies denses, edits visuels et assets 2K avec Seedream 5.0 Pro dans MaxVideoAI."
+    },
+    "decisionMeta": {
+      "title": "Seedream 5.0 Pro - génération image professionnelle ByteDance | MaxVideoAI",
+      "description": "Créez des images professionnelles, infographies denses, edits visuels et assets 2K avec Seedream 5.0 Pro dans MaxVideoAI."
+    },
+    "heroTitle": "Seedream 5.0 Pro - production image professionnelle",
+    "primaryCta": {
+      "label": "Lancer Seedream Pro",
+      "href": "/app/image?engine=seedream-5-0-pro"
+    }
+  },
+  {
+    "locale": "es",
+    "slug": "seedream",
+    "seo": {
+      "title": "Seedream 5.0 Lite | Generación y edición de imagen | MaxVideoAI",
+      "description": "Crea y edita imágenes fijas con Seedream 5.0 Lite en MaxVideoAI. Prepara conceptos, producto e imágenes de referencia antes de Seedance."
+    },
+    "decisionMeta": {
+      "title": "Seedream: precios de imagen y preparación de referencias | MaxVideoAI",
+      "description": "Prepara con Seedream imágenes de referencia, cuadros de producto, personajes fijos y sets visuales controlados antes de elegir un modelo de video."
+    },
+    "heroTitle": "Seedream 5.0 Lite",
+    "primaryCta": {
+      "label": "Preparar referencias con Seedream",
+      "href": "/app/image?engine=seedream"
+    }
+  },
+  {
+    "locale": "es",
+    "slug": "seedream-5-0-pro",
+    "seo": {
+      "title": "Seedream 5.0 Pro - generación profesional de imágenes | MaxVideoAI",
+      "description": "Crea imágenes profesionales, infografías densas, ediciones visuales y assets 2K con Seedream 5.0 Pro en MaxVideoAI."
+    },
+    "decisionMeta": {
+      "title": "Seedream 5.0 Pro - generación profesional de imágenes | MaxVideoAI",
+      "description": "Crea imágenes profesionales, infografías densas, ediciones visuales y assets 2K con Seedream 5.0 Pro en MaxVideoAI."
+    },
+    "heroTitle": "Seedream 5.0 Pro - producción profesional de imágenes",
+    "primaryCta": {
+      "label": "Abrir Seedream Pro",
+      "href": "/app/image?engine=seedream-5-0-pro"
+    }
+  }
+]

@@ -1,3 +1,4 @@
+import { isNewSeedreamEngineId } from '@/lib/image/seedream-pricing';
 import { isGptImage26EngineId } from '@/lib/image/gptImage26';
 import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
 import { NANO21_ENGINE_ID } from '@/lib/nano-banana-2-1';
@@ -114,7 +115,8 @@ export async function computeCanonicalBillingSnapshot(
   const requiresSeedanceFlashTariff = context.engine.id === 'seedance-2-5-flash';
   const requiresNano21Tariff = context.engine.id === NANO21_ENGINE_ID;
   const requiresGpt26Tariff = isGptImage26EngineId(context.engine.id);
-  if (requiresSeedanceFlashTariff || requiresGpt26Tariff || requiresKlingV4Tariff || requiresNano21Tariff || requiresOperationTariff || requiresEditTariff || context.workflowStep || dependencies.loadCustomerTariffState || dependencies.loadCustomerTariffQuoteState || customerTariffsEnabledByCode()) {
+  const requiresNewSeedreamTariff = isNewSeedreamEngineId(context.engine.id);
+  if (requiresSeedanceFlashTariff || requiresNewSeedreamTariff || requiresGpt26Tariff || requiresKlingV4Tariff || requiresNano21Tariff || requiresOperationTariff || requiresEditTariff || context.workflowStep || dependencies.loadCustomerTariffState || dependencies.loadCustomerTariffQuoteState || customerTariffsEnabledByCode()) {
     const selector = buildManualTariffScenario(context, billingFacts.facts).selector;
     const tariffState = await (dependencies.loadCustomerTariffState
       ? dependencies.loadCustomerTariffState()
@@ -152,6 +154,7 @@ export async function computeCanonicalBillingSnapshot(
       });
     }
   }
+  if (requiresNewSeedreamTariff) throw new CustomerTariffUnavailableError('An active reviewed Seedream customer tariff is required.');
   if (requiresSeedanceFlashTariff) throw new CustomerTariffUnavailableError('An active reviewed Seedance 2.5 Flash tariff is required.');
   if (requiresKlingV4Tariff) throw new CustomerTariffUnavailableError('A separate active reviewed Kling V4 customer tariff is required.');
   if (requiresGpt26Tariff) throw new CustomerTariffUnavailableError('An active reviewed GPT Image 2.6 customer tariff is required.');

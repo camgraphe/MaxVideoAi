@@ -71,10 +71,10 @@
   "tips": {
     "title": "Reference workflow notes",
     "items": [
-      "Use Seedream to create cleaner, more controlled source images before animation.",
-      "Keep the subject readable and avoid overloaded backgrounds when the frame will feed image-to-video.",
-      "For product motion, use Seedream to settle packaging, reflections, and hero angle first.",
-      "Seedream may improve consistency and reduce friction compared with random external images, but Seedance still evaluates each prompt and source image."
+      "For a character set, repeat the face, outfit, palette and lighting rules in the brief; review each result for differences.",
+      "Plan a short storyboard around distinct moments rather than asking every image to contain the whole story.",
+      "For an image you will animate, make hands and props readable and leave room around the silhouette.",
+      "Select the strongest still before opening a video model; plan movement and sound in that separate generation."
     ]
   },
   "prompts": [
@@ -211,7 +211,7 @@
       {
         "brand": "bytedance",
         "title": "Seedream 5.0 Pro",
-        "description": "Move selected stills to the Pro image route when the job needs one polished 2K or 4K final, dense layout, or complex visual edit.",
+        "description": "Create one detailed 2K portrait, campaign still or infographic, with JPEG or PNG output.",
         "modelSlug": "seedream-5-0-pro",
         "ctaLabel": "Open Seedream 5.0 Pro ->"
       },
@@ -228,6 +228,20 @@
         "description": "Use Fast for quicker motion drafts after Seedream has produced a clean reference image.",
         "modelSlug": "seedance-2-0-fast",
         "ctaLabel": "Draft with Seedance 2.0 Fast ->"
+      },
+      {
+        "brand": "ByteDance",
+        "title": "Seedream 5.5",
+        "modelSlug": "seedream-5-5",
+        "description": "Refine a scene with reference-guided edits, or create a transparent PNG asset. One image per request.",
+        "ctaLabel": "Discover Seedream 5.5"
+      },
+      {
+        "brand": "ByteDance",
+        "title": "Seedream 5.0 Flash",
+        "modelSlug": "seedream-5-0-flash",
+        "description": "Explore framing, expressions and campaign ideas one image at a time in 1K, 1.5K or 2K.",
+        "ctaLabel": "Discover Seedream 5.0 Flash"
       }
     ]
   },
@@ -305,7 +319,7 @@
       },
       {
         "title": "Per-image pricing",
-        "body": "Image presets use the shared pricing helper, not video seconds.",
+        "body": "Review the current per-image quote before generation, including the total for any requested image set.",
         "tone": "price"
       }
     ],
@@ -333,28 +347,44 @@
           "label": "Browse video models",
           "href": "/models"
         }
+      },
+      {
+        "title": "Discover Seedream 5.5",
+        "body": "Refine a scene with reference-guided edits, or create a transparent PNG asset. One image per request.",
+        "cta": {
+          "label": "Discover Seedream 5.5",
+          "href": "/models/seedream-5-5"
+        }
+      },
+      {
+        "title": "Discover Seedream 5.0 Flash",
+        "body": "Explore framing, expressions and campaign ideas one image at a time in 1K, 1.5K or 2K.",
+        "cta": {
+          "label": "Discover Seedream 5.0 Flash",
+          "href": "/models/seedream-5-0-flash"
+        }
       }
     ],
     "referenceWorkflows": [
       {
-        "title": "Prompted still",
-        "body": "Describe the exact product, character, scene, surface, lens and lighting for a clean source frame."
+        "title": "Define the character",
+        "body": "Describe the person, outfit and one visible action. Keep the key visual rules in the brief when requesting related images."
       },
       {
-        "title": "Reference edit",
-        "body": "Upload source images when the output must preserve identity, product geometry or brand details."
+        "title": "Edit the selected still",
+        "body": "Use references for the person, product or location. State what to preserve and remove distractions before adding more detail."
       },
       {
-        "title": "Reference set",
-        "body": "Create multiple stills for front, side, detail and lifestyle views before the video step."
+        "title": "Compare the set",
+        "body": "Review each image for faces, hands, props and framing. Keep the views or moments that help tell the story."
       },
       {
-        "title": "Size choice",
-        "body": "Use 2K for fast prep, 3K for review, or 4K when the still needs extra detail."
+        "title": "Choose the size",
+        "body": "Select 2K, 3K or 4K according to how the still will be used. Check the output settings and current quote before generating."
       },
       {
-        "title": "Video handoff",
-        "body": "Send only the strongest stills into the chosen motion model once the visual direction is clear."
+        "title": "Prepare the video opening",
+        "body": "Choose a clear starting pose with space for the intended camera move. Save the still, then plan motion in a separate video model."
       }
     ],
     "pricingCopy": {

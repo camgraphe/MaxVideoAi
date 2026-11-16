@@ -1,0 +1,40 @@
+{
+  "id": "first-light",
+  "status": "accepted",
+  "engineId": "seedream-5-5",
+  "providerModelId": "dola-seedream-5-5-261028",
+  "role": "hero",
+  "promptLanguage": "en",
+  "prompt": "A memorable widescreen frame from a beautifully photographed contemporary adventure film. A fictional adult woman in a vivid vermilion windbreaker steps off an early-morning passenger ferry onto a Mediterranean harbour, turning back toward a friend with an irrepressible smile. Strong wind catches her jacket and loose hair; her gesture and stride feel caught in the middle of life. Cobalt sea, pale coastal buildings, a few small adult passengers, brilliant low golden sunlight and a fleeting flare. Lived-in skin and fabric, rich but believable colour, delicate film grain, bold cinematic depth. Give the woman a strong presence toward the right half of the frame, with a readable, calmer harbour and sea toward the left. Invent the expressive framing and incidental details freely. One cohesive live-action photograph, no typography or graphic overlay.",
+  "settings": {
+    "mode": "t2i",
+    "resolution": "2K",
+    "aspectRatio": "16:9",
+    "outputFormat": "jpeg",
+    "background": "opaque",
+    "numImages": 1
+  },
+  "original": {
+    "url": "/assets/model-examples/seedream-5-5/5a7f043a66d9c382e3a290b0d0f157e5c102d533b1b928d2200c3fde2a9564cf.jpg",
+    "sha256": "5a7f043a66d9c382e3a290b0d0f157e5c102d533b1b928d2200c3fde2a9564cf",
+    "bytes": 400392,
+    "width": 2816,
+    "height": 1584,
+    "mimeType": "image/jpeg"
+  },
+  "display": {
+    "url": "/assets/model-examples/seedream-5-5/9eb26248dd07b7476527fddb6631c0b2f21c278ad474643865e1cd2cdfe6dc14.webp",
+    "sha256": "9eb26248dd07b7476527fddb6631c0b2f21c278ad474643865e1cd2cdfe6dc14",
+    "bytes": 107060,
+    "width": 1800,
+    "height": 1013,
+    "mimeType": "image/webp",
+    "sourceSha256": "5a7f043a66d9c382e3a290b0d0f157e5c102d533b1b928d2200c3fde2a9564cf"
+  },
+  "provenance": {
+    "kind": "reviewed_byteplus_output",
+    "generatedAt": "2026-11-13T22:42:58.440Z",
+    "manifestSha256": "1cfe4ed04fbb35cc0302460906fc88a9612f99b1fb17443d1c3134a9d0b9eeb3",
+    "promptSha256": "a4b472806745069353e871d6a52e6c0122749d4c032ac5b5c6326f66ab2006ee"
+  }
+}

@@ -1,9 +1,23 @@
 export const SEEDREAM_BASE_RESOLUTION_VALUES = ['2K', '3K', '4K'] as const;
 export const SEEDREAM_MAX_REFERENCE_IMAGES = 10;
 export const SEEDREAM_MAX_IMAGE_SET_IMAGES = 15;
+export const SEEDREAM_SINGLE_IMAGE_RESOLUTION_VALUES = ['1K', '1.5K', '2K'] as const;
+
+export function isSeedreamSingleImageEngineId(id: string): boolean {
+  return id === 'seedream-5-0-pro' || id === 'seedream-5-0-flash' || id === 'seedream-5-5';
+}
 
 export function isSeedreamEngineId(id: string): boolean {
-  return id === 'seedream' || id === 'seedream-5-0-pro';
+  return id === 'seedream' || isSeedreamSingleImageEngineId(id);
+}
+
+export function seedreamOutputSettingsError(
+  engineId: string,
+  settings: { background?: string | null; outputFormat?: string | null },
+): 'transparent_requires_png' | null {
+  return engineId === 'seedream-5-5' && settings.background?.trim().toLowerCase() === 'transparent'
+    && settings.outputFormat != null && settings.outputFormat.trim().toLowerCase() !== 'png'
+    ? 'transparent_requires_png' : null;
 }
 
 /** Input images is the submitted total; references are additional images beyond the main edit source. */
@@ -94,6 +108,22 @@ const SEEDREAM_RECOMMENDED_SIZE_BY_RESOLUTION = {
 type SeedreamBaseResolution = keyof typeof SEEDREAM_RECOMMENDED_SIZE_BY_RESOLUTION;
 type SeedreamAspectRatio = Exclude<(typeof SEEDREAM_ASPECT_RATIO_VALUES)[number], 'auto'>;
 
+// The latest direct BytePlus models use a different bounded raster table from Lite.
+const SEEDREAM_LATEST_SIZE_BY_RESOLUTION = {
+  '1K': {
+    '1:1': '1024x1024', '4:3': '1152x864', '3:4': '864x1152', '16:9': '1424x800',
+    '9:16': '800x1424', '3:2': '1248x832', '2:3': '832x1248', '21:9': '1568x672',
+  },
+  '1.5K': {
+    '1:1': '1536x1536', '4:3': '1792x1344', '3:4': '1344x1792', '16:9': '2048x1152',
+    '9:16': '1152x2048', '3:2': '1872x1248', '2:3': '1248x1872', '21:9': '2352x1008',
+  },
+  '2K': {
+    '1:1': '2048x2048', '4:3': '2368x1776', '3:4': '1776x2368', '16:9': '2816x1584',
+    '9:16': '1584x2816', '3:2': '2496x1664', '2:3': '1664x2496', '21:9': '3136x1344',
+  },
+} as const;
+
 function normalizeSeedreamBaseResolution(value: string): SeedreamBaseResolution | null {
   const normalized = value.trim().toUpperCase();
   return normalized === '2K' || normalized === '3K' || normalized === '4K' ? normalized : null;
@@ -107,10 +137,19 @@ function normalizeSeedreamAspectRatio(value: string | null | undefined): Seedrea
     : null;
 }
 
-export function resolveSeedreamProviderSize(resolution: string, aspectRatio?: string | null): string {
+export function resolveSeedreamProviderSize(
+  resolution: string,
+  aspectRatio?: string | null,
+  engineId?: string,
+): string {
   const normalizedResolution = resolution.trim();
-  const baseResolution = normalizeSeedreamBaseResolution(normalizedResolution);
   const normalizedAspectRatio = normalizeSeedreamAspectRatio(aspectRatio);
+  if (engineId === 'seedream-5-5' || engineId === 'seedream-5-0-flash') {
+    const tier = normalizedResolution.toUpperCase() as keyof typeof SEEDREAM_LATEST_SIZE_BY_RESOLUTION;
+    const sizes = SEEDREAM_LATEST_SIZE_BY_RESOLUTION[tier];
+    return sizes && normalizedAspectRatio ? sizes[normalizedAspectRatio] : normalizedResolution;
+  }
+  const baseResolution = normalizeSeedreamBaseResolution(normalizedResolution);
   if (!baseResolution || !normalizedAspectRatio) {
     return normalizedResolution;
   }

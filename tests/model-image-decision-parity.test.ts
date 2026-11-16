@@ -12,7 +12,7 @@ const REGISTRY = JSON.parse(
 ) as { models: Array<{ slug: string; category: string }> };
 const LOCALES = ['en', 'fr', 'es'] as const;
 const CONTENT_ROOT = path.join(process.cwd(), 'content', 'models');
-const NEW_DECISION_SLUGS = ['nano-banana-lite', 'seedream-5-0-pro'] as const;
+const NEW_DECISION_SLUGS = ['nano-banana-lite', 'seedream-5-0-pro', 'seedream-5-0-flash', 'seedream-5-5'] as const;
 const IMAGE_SLUGS = REGISTRY.models
   .filter((model) => model.category === 'image')
   .map((model) => model.slug)
@@ -25,8 +25,8 @@ function readDocument(locale: (typeof LOCALES)[number], slug: string) {
   };
 }
 
-test('all fourteen image models own localized decision content', () => {
-  assert.equal(IMAGE_SLUGS.length, 14);
+test('all sixteen image models own localized decision content', () => {
+  assert.equal(IMAGE_SLUGS.length, 16);
 
   for (const slug of IMAGE_SLUGS) {
     const engine = listFalEngines().find((candidate) => candidate.modelSlug === slug);
