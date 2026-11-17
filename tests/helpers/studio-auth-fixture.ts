@@ -187,7 +187,7 @@ export async function startStudioAuthFixture(options: { appOrigin?: string; port
         const current = typeof refreshToken === 'string' ? sessions.get(refreshToken) : undefined;
         if (!current) { reply(400, { code: 'refresh_token_not_found', message: 'Invalid fixture refresh token.' }); return; }
         sessions.delete(refreshToken);
-        reply(200, createSession(current.subject, { clientId: current.clientId, registerGrant: false }));
+        reply(200, createSession(current.subject, { clientId: current.clientId, registerGrant: false, scopes: current.scopes }));
       } catch { reply(400, { code: 'invalid_request', message: 'Invalid fixture request.' }); }
       return;
     }

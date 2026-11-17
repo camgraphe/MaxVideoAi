@@ -41,9 +41,10 @@ connector's own credentials remain a separate diagnostic surface.
   administrative owner. Anonymous and authenticated users cannot invoke it.
   Its narrowly bounded SECURITY DEFINER query avoids granting service_role
   direct reads of private Auth tables. No application tables belong here.
-- The resource server uses its existing `SUPABASE_SERVICE_ROLE_KEY` only for
-  this RPC. It never forwards it to a client or logs it. The delegated token is
-  sent only to the configured provider's UserInfo endpoint. Both lookups prohibit
+- The resource server uses its existing `SUPABASE_SERVICE_ROLE_KEY` for this RPC
+  and the bounded identity-verification fallback. It never forwards it to a client
+  or logs it. The delegated token is sent only to the configured provider's UserInfo
+  endpoint. All lookups prohibit
   redirects, bypass caches, have bounded waits and fail closed on errors.
 
 ## Release dependency and verification

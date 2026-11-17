@@ -9,6 +9,12 @@ test('real loopback MCP authenticates signed bearer, discovers gated tools and w
   const runtime = await startStudioIntegrationRuntime({
     mcp: {},
     initializeDatabase: async (database) => {
+      await database.pool.query(`
+        CREATE TABLE engine_settings (engine_id text PRIMARY KEY, options jsonb, pricing jsonb,
+          updated_at timestamptz DEFAULT now(), updated_by text);
+        CREATE TABLE engine_overrides (engine_id text PRIMARY KEY, active boolean DEFAULT true,
+          availability text, status text, latency_tier text);
+      `);
       for (const migration of ['26_studio_projects.sql', '29_mcp_audit_events.sql', '41_mcp_client_family.sql']) {
         await database.pool.query(await readFile(`neon/migrations/${migration}`, 'utf8'));
       }
