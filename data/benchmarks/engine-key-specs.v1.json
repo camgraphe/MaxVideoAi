@@ -933,7 +933,7 @@
         "https://docs.byteplus.com/en/docs/ModelArk/create-video-generation-task-api"
       ],
       "provenance": {
-        "basis": "coordinated-seedance-25-4k-release-candidate",
+        "basis": "maxvideoai-release-candidate-contract",
         "reviewedAt": "2026-11-17",
         "releaseDependency": "Seedance 2.5 4K runtime and tariff activation; do not deploy this editorial candidate first.",
         "note": "ModelArk supports direct 4K and native Draft 480p to 1080p/4K across t2v, i2v, ref2v, v2v and extend. Normal LAS Edit remains 480p/720p. Both 1080p and 4K use 10-bit HEVC; no HDR or 4:4:4 claim. Existing examples retain their measured output dimensions. Generated audio has no separate lip-sync control."

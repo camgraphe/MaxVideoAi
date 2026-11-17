@@ -1,7 +1,9 @@
 import { getFalEngineBySlug } from '@/config/falEngines';
 import { getRuntimeModelByCanonicalSlug, listPublicCurrentRuntimeModels } from '@/config/model-runtime';
 import type { AppLocale } from '@/i18n/locales';
-import { MODELS_BASE_PATH_MAP } from './model-page-links';
+import { isPublishedComparisonSlug } from '@/lib/compare-hub/data';
+import flashMedia from '@/config/model-cinematic-create-media.json';
+import { buildCanonicalComparePath, CANONICAL_ONLY_COMPARE_SLUGS, COMPARE_BASE_PATH_MAP, MODELS_BASE_PATH_MAP } from './model-page-links';
 
 /** Discoverable siblings come from publication policy, never guessed comparison URLs. */
 export function buildCinematicFamilyLinks(slug: string, locale: AppLocale) {
@@ -21,3 +23,31 @@ export const cinematicDiscoveryCopy = {
   fr: { title: 'Comparez vos options.', versions: 'Explorer les autres versions', allComparisons: 'Tous les comparatifs de modèles vidéo' },
   es: { title: 'Compara tus opciones.', versions: 'Explorar otras versiones', allComparisons: 'Todas las comparativas de modelos de vídeo' },
 };
+
+const alternativesPosters: Readonly<Record<string, string>> = {
+  'seedance-2-5-flash': flashMedia.create.poster,
+  'seedance-2-5': '/hero/showcase-seedance-2-5-cat-15s.webp',
+  // Public FLUX 3 example 7a4db1b2-bfee-4279-a936-651a6c091995, an illustrated Andalusian courtyard.
+  'flux-3': '/assets/model-examples/flux-3/be8b45a6256f9ded1ade7dfe52ab920ff1642b87bb2bf73e61420f42d8a0350f.webp',
+  'wan-3': '/hero/showcase-wan-3-city-22s.webp',
+  'minimax-h3-max': '/hero/showcase-minimax-h3-max-12s.webp',
+};
+
+export function buildCinematicAlternatives(slug: string, locale: AppLocale, choices: { slug: string; reason: string }[]) {
+  const published = new Set(listPublicCurrentRuntimeModels().filter(model => model.category === 'video').map(model => model.slug));
+  const current = getFalEngineBySlug(slug);
+  const prefix = locale === 'en' ? '' : `/${locale}`;
+  return choices.flatMap(choice => {
+    if (choice.slug === slug || !published.has(choice.slug)) return [];
+    const target = getFalEngineBySlug(choice.slug);
+    if (!target) return [];
+    const pair = [slug, choice.slug].sort().join('-vs-');
+    const compareHref = isPublishedComparisonSlug(pair) ? prefix + buildCanonicalComparePath({
+      compareBase: COMPARE_BASE_PATH_MAP[locale], pairSlug: pair,
+      orderSlug: CANONICAL_ONLY_COMPARE_SLUGS.has(pair) ? undefined : slug,
+    }) : null;
+    return [{ ...choice, label: target.marketingName, poster: alternativesPosters[choice.slug],
+      href: `/${MODELS_BASE_PATH_MAP[locale]}/${choice.slug}`, compareHref,
+      comparisonLabel: `${current?.marketingName ?? slug} vs ${target.marketingName}` }];
+  });
+}

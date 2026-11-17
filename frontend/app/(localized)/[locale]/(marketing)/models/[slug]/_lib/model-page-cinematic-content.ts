@@ -22,6 +22,11 @@ const heroSchema = z.object({
   pricingLabel: text,
   highlights: z.array(z.object({ target: id, title: text, body: text }).strict()).length(3).optional(),
   capabilities: cinematicCapabilitiesSchema.optional(),
+  benchmarkSource: z.object({ label: text, href: z.string().url() }).strict().optional(),
+  alternatives: z.object({
+    title: text,
+    models: z.array(z.object({ slug: id, reason: text }).strict()).min(1).max(3),
+  }).strict().optional(),
   specsReviewedAt: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   specialty: z.object({
     kind: z.enum(['draft', 'keyframes']), eyebrow: text, title: text, intro: text,
@@ -29,6 +34,13 @@ const heroSchema = z.object({
     note: text, action: text, mode: z.enum(['t2v', 'ref2v']),
     source: z.object({ label: text, href: z.string().url() }).strict(),
     workspacePreview: z.object({ alt: text, caption: text }).strict(),
+    draftPreview: z.object({
+      draftLabel: text, draftLocation: text, draftHint: text,
+      finalLabel: text, finalLocation: text, finalHint: text,
+      resolutionLabel: text, continuity: text, illustration: text, imageAlt: text,
+      detailsLabel: text, quoteNote: text, selectionLabel: text, selectedLabel: text,
+      angles: z.array(z.object({ id: text, label: text, description: text }).strict()).length(3),
+    }).strict().optional(),
     details: z.array(z.object({ title: text, body: text }).strict()).length(3).optional(),
   }).strict().optional(),
   overview: z.object({

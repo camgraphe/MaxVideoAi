@@ -153,32 +153,32 @@
   {
     "id": "fluxmax-create",
     "modelSlug": "flux-3-max",
-    "jobId": "job_external_fal_240344c4ec2d7d6b8fac3263f6ed92e0a3086b8a",
+    "jobId": "job_external_fal_38061bc977ff126b5248f9f835436a9370a2f7bb",
     "kind": "video-poster",
-    "prompt": "A grounded action-thriller scene in an empty concrete parking garage at night. An adult woman with short dark hair, wearing a charcoal jacket and dark trousers, sprints from left to right toward a thick square concrete pillar. A burst of gunfire from offscreen behind her chips the wall she has just passed. She reaches the pillar, turns around its near corner, and presses her back against the sheltered side. The firing stops. Dust settles. Hold close on her face as she catches her breath and listens. She lifts the radio clipped to her jacket and says quietly in English, \"I'm still here.\" Cut to black. Start with a clear wide view of the route and cover; use urgent cuts following her run, then let the final pause last. Preserve the same woman, clothes, pillar and screen direction throughout. Hard fluorescent light, a red emergency light in the distance. Sound: running footsteps, offscreen gunfire, concrete impacts, breathing, radio static and her voice. No music or visible injuries.",
+    "prompt": "A black comedy played with absolute seriousness in a small, exquisitely theatrical funeral chapel. An elderly widow with a severe white fringe, a black veil and bright red lipstick stands beside a closed polished coffin. A tall adult funeral director with a shaved head and white gloves prepares to speak. A small black mobile phone already lies on top of the coffin. Establish the precise arrangement in a symmetrical wide frame: pale flowers, dark wood, a low chandelier and these two people. Just as the director draws breath, the phone sounds a cheap electronic ringtone. Both freeze. He looks at the widow. She closes her eyes for a moment, irritated rather than shocked, then picks up the phone. She listens for one beat and says quietly in English, \"He's unavailable.\" She ends the call and places the phone back on the same spot. The director straightens his posture and prepares to begin again. The phone immediately rings a second time. Cut to the widow's exhausted stare and hold long enough for the joke to land. Deliberate reaction cuts and uncomfortable silence, never comic mugging. Keep the coffin closed throughout. Sound: the ringtone, breath, her voice and the chapel's slight room echo. No music, laugh track, visible deceased person, readable phone screen or captions.",
     "original": {
-      "url": "https://media.maxvideoai.com/user-asset-thumbs/301cc489-d689-477f-94c4-0b051deda0bc/28328bd2-6d08-4254-9457-8b0ea8d3ab18.jpg",
-      "sha256": "3cba506b9c8d5593448f896fb85e88d26d34d8bb0ff97ed2b2afaef4e82c5cc5",
+      "url": "https://media.maxvideoai.com/user-asset-thumbs/301cc489-d689-477f-94c4-0b051deda0bc/7c8072c1-d7ac-4ec0-b27a-73aa5957a757.jpg",
+      "sha256": "419585e8a57b7cf695867b6b192cb2bca6a5bd749c16cbbff8b2186e2263a954",
       "width": 640,
       "height": 352
     },
     "display": {
-      "url": "/assets/model-examples/flux-3-max/c2f5c13bc1980891e30be747c499aa6191065e9530dd90e544eba8854024f000.webp",
-      "sha256": "c2f5c13bc1980891e30be747c499aa6191065e9530dd90e544eba8854024f000",
+      "url": "/assets/model-examples/flux-3-max/be2b180fcd50065cb939105622d136c25156c7a9bfe1e5a4baf2689a342e2be2.webp",
+      "sha256": "be2b180fcd50065cb939105622d136c25156c7a9bfe1e5a4baf2689a342e2be2",
       "width": 640,
       "height": 352
     },
     "clip": {
-      "src": "https://media.maxvideoai.com/user-assets/by-content/c780259ed79d025b4ac74ccc513f18bf/b0eb66b5e99b1212d66de76425867a75ae653e6379cd263c69173528289b9405.mp4",
-      "poster": "/assets/model-examples/flux-3-max/c2f5c13bc1980891e30be747c499aa6191065e9530dd90e544eba8854024f000.webp",
+      "src": "https://media.maxvideoai.com/user-assets/by-content/c780259ed79d025b4ac74ccc513f18bf/0ed92d4517b23b3218ff97c2464fbec9d42b33d283f9aec2d43e103b65c6b2f1.mp4",
+      "poster": "/assets/model-examples/flux-3-max/be2b180fcd50065cb939105622d136c25156c7a9bfe1e5a4baf2689a342e2be2.webp",
       "width": 1280,
       "height": 704,
-      "durationSeconds": 14.041667,
+      "durationSeconds": 16.041667,
       "audio": true,
       "displayFormat": "1280 × 704"
     },
-    "sourcePoster": "https://media.maxvideoai.com/user-asset-thumbs/301cc489-d689-477f-94c4-0b051deda0bc/28328bd2-6d08-4254-9457-8b0ea8d3ab18.jpg",
-    "reviewedPublicAt": "2026-11-16"
+    "sourcePoster": "https://media.maxvideoai.com/user-asset-thumbs/301cc489-d689-477f-94c4-0b051deda0bc/7c8072c1-d7ac-4ec0-b27a-73aa5957a757.jpg",
+    "reviewedPublicAt": "2026-11-17"
   },
   {
     "id": "fluxmax-prompt",

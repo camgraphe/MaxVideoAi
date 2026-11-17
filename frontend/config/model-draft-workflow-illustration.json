@@ -1,0 +1,30 @@
+{
+  "modelSlug": "seedance-2-5",
+  "kind": "workflow-illustration",
+  "generator": "ImageGen",
+  "selectedAngleId": "close",
+  "angles": [
+    {
+      "id": "wide",
+      "url": "/assets/model-examples/workflow-illustrations/draft-terrace/69d345817b358553d0b21d6eb2b7811ac88843dd53b2ea8b0ea6c97e5a068bd9.webp",
+      "sha256": "69d345817b358553d0b21d6eb2b7811ac88843dd53b2ea8b0ea6c97e5a068bd9",
+      "width": 1439,
+      "height": 810
+    },
+    {
+      "id": "close",
+      "url": "/assets/model-examples/workflow-illustrations/draft-terrace/a8109ab5c18b2204ec26caf2daed8545b03924742489390c915e8f9cd9d069f8.webp",
+      "sha256": "a8109ab5c18b2204ec26caf2daed8545b03924742489390c915e8f9cd9d069f8",
+      "width": 1439,
+      "height": 810
+    },
+    {
+      "id": "overhead",
+      "url": "/assets/model-examples/workflow-illustrations/draft-terrace/811e0db7e4469e379a8fdb8220a5bbfb51b9a04e22bb460d5628231ff4c910ef.webp",
+      "sha256": "811e0db7e4469e379a8fdb8220a5bbfb51b9a04e22bb460d5628231ff4c910ef",
+      "width": 1439,
+      "height": 810
+    }
+  ],
+  "note": "Three AI-generated stills illustrate camera-angle exploration. The selected angle is reused unchanged in the final preview. These are not native Seedance Draft/final outputs and do not demonstrate resolution improvement."
+}

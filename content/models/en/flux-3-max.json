@@ -3,7 +3,7 @@
   "versionLabel": "3 Max",
   "seo": {
     "title": "FLUX 3 Max | AI Video, Audio & Frame Control | MaxVideoAI",
-    "description": "Create 5–20 second videos with FLUX 3 Max from text, an image or first and last frames. Explore optional audio, 720p and 1080p upscaling, prompts and pricing."
+    "description": "Create 5–20s FLUX 3 Max videos from text, an image, first and last frames or up to 10 timed keyframes. Explore optional audio, 720p, 1080p upscaling and pricing."
   },
   "overview": "FLUX 3 Max is a video model post-trained by fal in collaboration with Black Forest Labs. Create a scene from text, animate an opening image, guide the first and last frames, or build a sequence with timed keyframes. Choose 5–20 seconds, optional generated audio, and 720p or 1080p output with upscaling.",
   "decision": {
@@ -128,14 +128,14 @@
     ],
     "pricingCopy": {
       "title": "FLUX 3 Max pricing",
-      "subtitle": "Compare five seconds at 720p and 1080p, then a ten-second 720p scene.",
-      "footnote": "The per-second figure is the effective rate for the five-second example. Each clip total is rounded to the cent. Review the current quote before generating.",
-      "ctaLabel": "Generate with FLUX 3 Max",
-      "ctaHref": "/app?engine=flux-3-max"
+      "subtitle": "Choose the length of your shot and review the price for 720p or upscaled 1080p in Create.",
+      "footnote": "The quote covers the full clip. Changing its length or settings updates the total before you generate.",
+      "ctaLabel": "View FLUX 3 Max pricing",
+      "ctaHref": "/pricing#flux-3-max-pricing"
     },
     "meta": {
       "title": "FLUX 3 Max | AI Video, Audio & Frame Control | MaxVideoAI",
-      "description": "Create 5–20 second videos with FLUX 3 Max from text, an image or first and last frames. Explore optional audio, 720p and 1080p upscaling, prompts and pricing."
+      "description": "Create 5–20s FLUX 3 Max videos from text, an image, first and last frames or up to 10 timed keyframes. Explore optional audio, 720p, 1080p upscaling and pricing."
     }
   },
   "prompting": {
@@ -352,7 +352,7 @@
         },
         {
           "id": "fluxmax-create",
-          "title": "Still Here"
+          "title": "Unavailable"
         },
         {
           "id": "fluxmax-prompt",
@@ -369,9 +369,9 @@
           "id": "create",
           "layout": "shots",
           "eyebrow": "CREATE · DIRECT THE SCENE",
-          "title": "Give every beat an intention.",
-          "body": "A sprint, a moment of cover, then one line over the radio. Describe how the action changes the character, and let the camera and sound follow. Use text alone or start from the image you want to bring to life.",
-          "note": "Watch the run become a pause. Listen for footsteps, impacts, breathing and the final line.",
+          "title": "Let the silence set up the joke.",
+          "body": "A phone rings on a coffin just as the funeral director is about to speak. In Unavailable, a text prompt gives the widow one line and lets the reactions carry the comedy.",
+          "note": "Watch the wide shot give way to the widow’s close-up. Listen for the pause before the phone rings again.",
           "assetIds": [
             "fluxmax-create"
           ]
@@ -510,8 +510,8 @@
       "items": [
         {
           "id": "create",
-          "title": "Give every beat an intention.",
-          "body": "A sprint, a moment of cover, then one line over the radio. Describe how the action changes the character, and let the camera and sound follow. Use text alone or start from the image you want to bring to life.",
+          "title": "Let the silence set up the joke.",
+          "body": "A phone rings on a coffin just as the funeral director is about to speak. In Unavailable, a text prompt gives the widow one line and lets the reactions carry the comedy.",
           "input": "Text / images",
           "output": "Video",
           "steps": [
@@ -520,8 +520,8 @@
             "Describe the transition"
           ],
           "action": "Generate with FLUX 3 Max",
-          "prompt": "A grounded action-thriller scene in an empty concrete parking garage at night. An adult woman with short dark hair, wearing a charcoal jacket and dark trousers, sprints from left to right toward a thick square concrete pillar. A burst of gunfire from offscreen behind her chips the wall she has just passed. She reaches the pillar, turns around its near corner, and presses her back against the sheltered side. The firing stops. Dust settles. Hold close on her face as she catches her breath and listens. She lifts the radio clipped to her jacket and says quietly in English, \"I'm still here.\" Cut to black. Start with a clear wide view of the route and cover; use urgent cuts following her run, then let the final pause last. Preserve the same woman, clothes, pillar and screen direction throughout. Hard fluorescent light, a red emergency light in the distance. Sound: running footsteps, offscreen gunfire, concrete impacts, breathing, radio static and her voice. No music or visible injuries.",
-          "inspect": "Watch the run become a pause. Listen for footsteps, impacts, breathing and the final line.",
+          "prompt": "A black comedy played with absolute seriousness in a small, exquisitely theatrical funeral chapel. An elderly widow with a severe white fringe, a black veil and bright red lipstick stands beside a closed polished coffin. A tall adult funeral director with a shaved head and white gloves prepares to speak. A small black mobile phone already lies on top of the coffin. Establish the precise arrangement in a symmetrical wide frame: pale flowers, dark wood, a low chandelier and these two people. Just as the director draws breath, the phone sounds a cheap electronic ringtone. Both freeze. He looks at the widow. She closes her eyes for a moment, irritated rather than shocked, then picks up the phone. She listens for one beat and says quietly in English, \"He's unavailable.\" She ends the call and places the phone back on the same spot. The director straightens his posture and prepares to begin again. The phone immediately rings a second time. Cut to the widow's exhausted stare and hold long enough for the joke to land. Deliberate reaction cuts and uncomfortable silence, never comic mugging. Keep the coffin closed throughout. Sound: the ringtone, breath, her voice and the chapel's slight room echo. No music, laugh track, visible deceased person, readable phone screen or captions.",
+          "inspect": "Watch the wide shot give way to the widow’s close-up. Listen for the pause before the phone rings again.",
           "limits": [
             {
               "label": "Duration",
@@ -606,6 +606,10 @@
         "caption": "Inside Create · Three reference images placed at 0, 8 and 16 seconds."
       }
     },
+    "benchmarkSource": {
+      "label": "Generation speed measured by fal",
+      "href": "https://fal.ai/blog/introducing-flux-3-max-by-fal"
+    },
     "specsReviewedAt": "2026-11-17",
     "capabilities": {
       "title": "Four starting points. Your direction.",
@@ -633,7 +637,13 @@
               "label": "Create from text",
               "mode": "t2v"
             }
-          ]
+          ],
+          "visual": {
+            "labels": [
+              "The sleeping stone stag"
+            ],
+            "caption": "The Sleeping Guardian · Made from a text prompt with FLUX 3 Max."
+          }
         },
         {
           "id": "image",
@@ -656,7 +666,15 @@
               "label": "Animate an image",
               "mode": "i2v"
             }
-          ]
+          ],
+          "visual": {
+            "labels": [
+              "Opening image"
+            ],
+            "caption": "Her fingers open and the tide takes the paper boat.",
+            "resultLabel": "The paper boat · FLUX 3 Max",
+            "promptNote": "FLUX 3 Max · 8 s · 720p · 16:9 (1280 × 704 delivered). Input images are added in Create. The prompt and settings open ready to review."
+          }
         },
         {
           "id": "endpoints",
@@ -679,7 +697,16 @@
               "label": "Connect two frames",
               "mode": "fl2v"
             }
-          ]
+          ],
+          "visual": {
+            "labels": [
+              "First frame",
+              "Last frame"
+            ],
+            "caption": "The guide looks out through a frosted window. The final frame reveals her red cabin high above the clouds.",
+            "resultLabel": "First light on the cable · FLUX 3 Max",
+            "promptNote": "FLUX 3 Max · 10 s · 720p · 16:9 (1280 × 704 delivered). Input images are added in Create. The prompt and settings open ready to review."
+          }
         },
         {
           "id": "keyframes",
@@ -702,7 +729,23 @@
               "label": "Open keyframes",
               "mode": "ref2v"
             }
-          ]
+          ],
+          "visual": {
+            "labels": [
+              "The closed dome",
+              "The brass lever",
+              "First light",
+              "The dome opens",
+              "At the eyepiece"
+            ],
+            "caption": "Five reference images set the timing for a 16-second shot.",
+            "storyboard": {
+              "title": "The First Light · Storyboard",
+              "frameLabel": "Frame",
+              "workflowLink": "Explore the keyframe workflow",
+              "promptNote": "Storyboard prompt · 16 s · 720p · 16:9 · Ambient sound. Reuse the timing in Create and add your own five images in order."
+            }
+          }
         }
       ],
       "controls": {
@@ -725,6 +768,23 @@
           }
         ]
       }
+    },
+    "alternatives": {
+      "title": "Which model fits your shot?",
+      "models": [
+        {
+          "slug": "flux-3",
+          "reason": "Continue a clip you already have. Extend picks up the action from your source video."
+        },
+        {
+          "slug": "seedance-2-5",
+          "reason": "Keep a performance, change the shot. Modify lets you direct an edit from an existing video."
+        },
+        {
+          "slug": "minimax-h3-max",
+          "reason": "Start with a soundtrack. Supply music or dialogue to guide a 5–15-second scene."
+        }
+      ]
     }
   }
 }

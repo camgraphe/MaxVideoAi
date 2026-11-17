@@ -6,11 +6,18 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { NextIntlClientProvider } from 'next-intl';
 import { JSDOM } from 'jsdom';
+import { mergeEngineLocalizedContent } from '../frontend/lib/models/i18n-normalization';
+import { projectModelPageRelease } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-flux-release';
+import fluxVisuals from '../frontend/config/model-flux-workflow-visuals.json';
 import previews from '../frontend/config/model-cinematic-workspace-previews.json';
 import { getFalEngineBySlug } from '../frontend/src/config/falEngines';
+import { buildCinematicAlternatives } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-cinematic-discovery';
 import { buildCinematicCapabilities } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-capabilities';
 import { ModelCinematicCapabilities } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelCinematicCapabilities.client';
 import proofs from '../frontend/config/model-cinematic-public-proofs.json';
+import illustrations from '../frontend/config/model-capability-illustrations.json';
+import draftIllustration from '../frontend/config/model-draft-workflow-illustration.json';
+import { getVideoEditorialPreset } from '../frontend/lib/video/editorial-presets';
 import { parseModelCinematicContent } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-cinematic-content';
 import { parseModelExamplesContent } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-examples-content';
 import { buildCinematicPresentation } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-cinematic-data';
@@ -25,6 +32,44 @@ import { buildModelPageSpecProjection } from '../frontend/app/(localized)/[local
 const locales = ['en', 'fr', 'es'] as const;
 const slugs = ['seedance-2-5', 'flux-3-max'];
 const read = (slug: string, locale: string) => JSON.parse(readFileSync(`content/models/${locale}/${slug}.json`, 'utf8'));
+
+test('capability illustrations retain the full localized copy and reuse only the intended model and mode', () => {
+  for (const locale of locales) {
+    const content = read('seedance-2-5', locale);
+    const presentation = buildCinematicPresentation(parseModelCinematicContent(content.cinematic, 'seedance-2-5'), parseModelExamplesContent(content.examples, 'seedance-2-5', locale), [], locale)!;
+    const copy = buildCinematicCapabilities(presentation.content.capabilities, 'seedance-2-5', locale)!;
+    const doc = new JSDOM(renderToStaticMarkup(React.createElement(ModelCinematicCapabilities, {copy, ui: presentation.ui}))).window.document;
+    assert.equal(doc.querySelectorAll('[data-media-kind="illustration"]').length, 3);
+    assert.equal(doc.querySelectorAll('video, script[type="application/ld+json"]').length, 0, 'A working illustration is never a native model video proof');
+    for (const item of copy.items) {
+      const panel = doc.getElementById(`capability-${item.id}`)!;
+      const proof = item.proof!;
+      assert.ok(panel.textContent?.includes(item.body));
+      for (const use of item.uses) assert.ok(panel.textContent?.includes(use));
+      assert.ok(panel.textContent?.includes(item.note));
+      assert.ok(panel.textContent?.includes(proof.note), 'Provenance remains available in the prompt drawer');
+      for (const href of [proof.creation.href, proof.creation.refineHref]) {
+        const url = new URL(href, 'https://maxvideoai.com');
+        assert.equal(url.searchParams.get('lang'), locale);
+        const preset = getVideoEditorialPreset(url.searchParams.get('engine')!, url.searchParams.get('videoPrompt')!)!;
+        assert.equal(preset.mode, url.searchParams.get('mode'));
+        assert.equal(preset.prompt, proof.prompt);
+        assert.deepEqual(preset.snapshot.refs, {}, 'Reuse requires the visitor’s own references');
+        assert.ok(!url.searchParams.has('generate'));
+      }
+      assert.equal(new URL(proof.creation.refineHref, 'https://maxvideoai.com').searchParams.get('assistant'), 'milo');
+      assert.equal(getVideoEditorialPreset('seedance-2-5-flash', `capability-${item.id}`), null);
+    }
+    const range = doc.querySelector('#capability-modify input[type=range]')!;
+    assert.equal(range.getAttribute('value'), '50');
+    assert.equal(range.getAttribute('min'), '0'); assert.equal(range.getAttribute('max'), '100');
+    const wrongModel = structuredClone(presentation.content.capabilities!);
+    assert.throws(() => buildCinematicCapabilities(wrongModel, 'flux-3-max', locale), /Missing model-owned capability illustration/);
+  }
+  for (const image of Object.values(illustrations.images)) {
+    assert.equal(createHash('sha256').update(readFileSync('frontend/public' + image.url)).digest('hex'), image.sha256);
+  }
+});
 
 test('compact workflow coverage explains every creation mode without inventing Max editing support', () => {
   for (const slug of slugs) for (const locale of locales) {
@@ -86,22 +131,55 @@ test('migrated models retain exact identity, localized destinations and model-ow
     assert.ok(decision.hero.quickLinks.some(link => link.href.includes(slug === 'flux-3-max' ? '/benchmarks#review-flux-3-max' : 'seedance-2-5-vs-seedance-2-5-flash')));
     const doc = new JSDOM(renderToStaticMarkup(React.createElement(NextIntlClientProvider, {locale,messages:{},timeZone:'UTC'},
       React.createElement(ModelCinematicWorkflowProofs, {presentation, workspaceHref:`/app?engine=${slug}`})))).window.document;
-    assert.equal(doc.querySelectorAll('video').length, 1);
-    assert.equal(doc.querySelector('video')?.getAttribute('preload'), 'none');
+    assert.equal(doc.querySelectorAll('.cinema-create-visual video').length, 1);
+    assert.equal(doc.querySelector('.cinema-create-visual video')?.getAttribute('src'), presentation.media!.create.src);
+    assert.ok([...doc.querySelectorAll('video')].every(video => video.getAttribute('preload') === 'none'));
+    if (slug === 'flux-3-max') {
+      assert.equal(doc.querySelectorAll('.cinema-mode-visual').length, 4);
+      for (const mode of ['image', 'endpoints'] as const) {
+        const panel = doc.querySelector(`#capability-${mode}`)!;
+        assert.equal(panel.querySelectorAll('.cinema-mode-inputs img').length, mode === 'image' ? 1 : 2);
+        assert.equal(panel.querySelector('.cinema-mode-output video')?.getAttribute('src'), fluxVisuals[mode].video);
+        assert.equal(panel.querySelector('[data-analytics-cta-name="reuse_example"]')?.getAttribute('href')?.includes('videoPrompt=' + fluxVisuals[mode].recipe.id), true);
+      }
+      assert.equal(doc.querySelectorAll('#capability-text video').length, 1);
+      assert.equal(doc.querySelectorAll('#capability-keyframes a[href="#model-workflow"]').length, 1);
+      const board = doc.querySelector('#capability-keyframes')!;
+      assert.deepEqual([...board.querySelectorAll('.cinema-board-strip button')].map(button => button.textContent), ['0 s', '3 s', '6 s', '11 s', '16 s']);
+      assert.equal(board.querySelectorAll('button[aria-pressed="true"]').length, 1);
+      assert.equal(board.querySelectorAll('video').length, 0);
+      const tariffPath = { en: '/pricing', fr: '/fr/tarifs', es: '/es/precios' }[locale];
+      assert.equal(decision.pricingCopy.ctaHref, tariffPath + '#flux-3-max-pricing');
+    }
     assert.equal(doc.querySelector('dialog .cinema-prompt-text')?.textContent, content.workflows!.items[0].prompt);
     assert.ok(doc.querySelector('dialog a[data-analytics-cta-name="reuse_example"]')?.getAttribute('href')?.includes('from='));
   }
 });
 
-test('specialties show actual localized Create controls, preserve factual HTML and open the matching mode', () => {
+test('specialties distinguish the Draft illustration from actual localized controls and preserve factual handoffs', () => {
   for (const slug of slugs) for (const locale of locales) {
     const copy = read(slug, locale);
     const presentation = buildCinematicPresentation(parseModelCinematicContent(copy.cinematic, slug), parseModelExamplesContent(copy.examples, slug, locale), [], locale)!;
     const doc = new JSDOM(renderToStaticMarkup(React.createElement(ModelCinematicSpecialty, {presentation}))).window.document;
     const img = doc.querySelector('img')!;
     assert.equal(img.getAttribute('loading'), 'lazy');
-    assert.equal(img.getAttribute('alt'), copy.cinematic.specialty.workspacePreview.alt);
-    assert.ok(doc.querySelector('picture source[media="(max-width: 599px)"]'));
+    if (slug === 'seedance-2-5') {
+      assert.equal(img.getAttribute('alt'), '', 'The angle button supplies its accessible label');
+      assert.equal(doc.querySelectorAll('[data-media-kind="workflow-illustration"]').length, 1);
+      assert.equal(doc.querySelectorAll('img').length, 4);
+      assert.equal(new Set(Array.from(doc.querySelectorAll('img')).map(image => image.getAttribute('src'))).size, 3, 'Only the selected angle is repeated in the final');
+      assert.ok(doc.body.textContent?.includes(copy.cinematic.specialty.draftPreview.illustration));
+      assert.equal(doc.querySelectorAll('[aria-pressed="true"]').length, 2);
+      assert.equal(doc.querySelector('.cinema-draft-resolutions [aria-pressed="true"]')?.textContent, '1080p');
+      assert.equal(doc.querySelector('.cinema-draft-final [data-selected-angle]')?.getAttribute('data-selected-angle'), draftIllustration.selectedAngleId);
+      assert.ok(doc.querySelector('details')?.textContent?.includes(copy.cinematic.specialty.note));
+      assert.equal(doc.querySelectorAll('.cinema-workspace-preview').length, 0);
+      assert.equal(presentation.draftVisual?.generator, 'ImageGen');
+    } else {
+      assert.equal(img.getAttribute('alt'), copy.cinematic.specialty.workspacePreview.alt);
+      assert.ok(doc.querySelector('picture source[media="(max-width: 599px)"]'));
+      assert.equal(presentation.draftVisual, undefined);
+    }
     assert.ok(doc.body.textContent?.includes(copy.cinematic.specialty.note));
     const href = new URL(doc.querySelector('a.cinema-button')!.getAttribute('href')!, 'https://maxvideoai.com');
     assert.equal(href.searchParams.get('engine'), slug);
@@ -110,6 +188,7 @@ test('specialties show actual localized Create controls, preserve factual HTML a
     assert.ok(!href.searchParams.has('assistant'));
     assert.equal(doc.querySelectorAll('video').length, 0, 'No fabricated keyframe result without a validated public recipe');
   }
+  for (const image of draftIllustration.angles) assert.equal(createHash('sha256').update(readFileSync('frontend/public' + image.url)).digest('hex'), image.sha256);
   for (const entry of previews.entries) for (const image of [entry, entry.mobile]) {
     assert.equal(createHash('sha256').update(readFileSync('frontend/public' + image.url)).digest('hex'), image.sha256);
     assert.ok(image.width > 0 && image.height > 0);
@@ -168,5 +247,44 @@ test('the 4K editorial candidate carries its codec into exports without relabell
     assert.doesNotMatch(proof.metadataLabel, /4K/);
     assert.equal(copy.prompting.demo.prompt, proof.prompt);
     assert.ok(proof.videoCreation!.href.includes('from=job_ff94f180-0a2f-4f2b-acb2-bda8352fa9d9'));
+  }
+});
+
+test('video closing sections link to model-specific alternatives, published comparisons and the localized tariff row', () => {
+  for (const slug of slugs) for (const locale of locales) {
+    const page = read(slug, locale);
+    const choices = parseModelCinematicContent(page.cinematic, slug)!.alternatives!.models;
+    const links = buildCinematicAlternatives(slug, locale, [...choices, { slug, reason: 'self' }, { slug: 'missing-model', reason: 'missing' }]);
+    const compareBase = { en: '/ai-video-engines/', fr: '/fr/comparatif/', es: '/es/comparativa/' }[locale];
+    if (slug === 'flux-3-max') {
+      assert.deepEqual(links.map(link => link.slug), ['flux-3', 'seedance-2-5', 'minimax-h3-max']);
+      assert.equal(links[0].compareHref, compareBase + 'flux-3-vs-flux-3-max?order=flux-3-max');
+    } else {
+      assert.deepEqual(links.map(link => link.slug), ['seedance-2-5-flash', 'wan-3', 'minimax-h3-max']);
+      assert.deepEqual(links.map(link => link.compareHref), [
+        compareBase + 'seedance-2-5-vs-seedance-2-5-flash',
+        compareBase + 'seedance-2-5-vs-wan-3',
+        compareBase + 'minimax-h3-max-vs-seedance-2-5?order=seedance-2-5',
+      ]);
+    }
+    const tariff = { en: '/pricing', fr: '/fr/tarifs', es: '/es/precios' }[locale];
+    assert.equal(page.decision.pricingCopy.ctaHref, tariff + '#' + slug + '-pricing');
+    assert.equal(new Set(links.map(link => link.poster)).size, links.length);
+    for (const link of links) assert.ok(readFileSync('frontend/public' + link.poster).length > 0);
+  }
+});
+
+test('the model-page release keeps opening and closing frame workflows while the timed storyboard is held', () => {
+  for (const locale of locales) {
+    const source = read('flux-3-max', locale);
+    const raw = mergeEngineLocalizedContent(source, source);
+    const projected = projectModelPageRelease(raw, 'flux-3-max', locale);
+    const cinematic = parseModelCinematicContent(projected.cinematic, 'flux-3-max')!;
+    assert.deepEqual(cinematic.capabilities?.items.map(item => item.id), ['text', 'image', 'endpoints']);
+    assert.equal(cinematic.specialty, undefined);
+    assert.equal(parseModelExamplesContent(projected.examples, 'flux-3-max', locale).keyframeDemo, undefined);
+    for (const value of [projected.seo.description, projected.overview, ...projected.faqs.map(faq => faq.question + faq.answer)])
+      assert.doesNotMatch(value ?? '', /keyframes?|images? clés?|imágenes clave|fotogramas? clave/i);
+    assert.equal(projectModelPageRelease(raw, 'seedance-2-5', locale), raw);
   }
 });

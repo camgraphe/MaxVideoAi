@@ -141,7 +141,7 @@ test('Seedance 2.5 model cards link to the shared Seedance examples family', () 
   });
 });
 
-test('Seedance 2.5 model cards expose the current 1080p ceiling', async () => {
+test('Seedance 2.5 model cards project the current 4K capability over older editorial ceilings', async () => {
   const keySpecs = await loadEngineKeySpecs();
   const catalogEntry = getCatalogBySlug().get('seedance-2-5');
   const authoredResolution = keySpecs.get('seedance-2-5')?.maxResolution;
@@ -150,8 +150,7 @@ test('Seedance 2.5 model cards expose the current 1080p ceiling', async () => {
     catalogEntry?.engine.resolutions,
   );
 
-  assert.match(String(authoredResolution), /1080p/);
-  assert.deepEqual(maxResolution, { label: '1080p', value: 1080 });
+  assert.deepEqual(maxResolution, { label: '4K', value: 2160 });
 });
 
 test('models catalog JSON-LD helper owns schema payload construction', () => {

@@ -75,15 +75,19 @@ test('Seedream 5.0 Pro exposes only supported 2K output in capabilities, offers 
   }
 });
 
-test('Fast and Mini stay distinct from the unpublished Seedance 2.5 Draft workflow', () => {
+test('Fast and Mini stay distinct from the Seedance 2.5 native Draft and final resolutions', () => {
   for (const locale of locales) {
     const fast = compactText(readModel(locale, 'seedance-2-0-fast'));
     const mini = compactText(readModel(locale, 'dreamina-seedance-2-0-mini'));
-    const seedance25 = compactText(readModel(locale, 'seedance-2-5'));
+    const seedance25 = readModel(locale, 'seedance-2-5');
+    const draft = seedance25.cinematic.specialty;
     assert.match(fast, /draft/i, `${locale} Fast copy must clarify the named Draft mode`);
     assert.match(fast, /seedance 2\.5/i, `${locale} Fast copy should identify the distinct 2.5 workflow`);
     assert.match(mini, /compar.*(?:quote|devis|presupuesto)/i, `${locale} Mini must scope price comparisons to matching live quotes`);
-    assert.doesNotMatch(seedance25, /draft.*(?:available|disponible|accessible).*maxvideoai/i);
+    assert.equal(draft.kind, 'draft');
+    assert.match(draft.intro, /480p/i);
+    assert.match(draft.steps.at(-1).label, /1080p.*4K/i);
+    assert.match(fast, /480p.*1080p.*4k/i);
   }
 });
 

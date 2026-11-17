@@ -2,7 +2,7 @@
   "marketingName": "Seedance 2.5",
   "versionLabel": "2.5",
   "seo": {
-    "title": "Seedance 2.5 AI Video Generator: 4K, 30s & Audio",
+    "title": "Seedance 2.5 AI Video Generator: 30s, 1080p, 4K & Audio",
     "description": "Create Seedance 2.5 videos up to 4K with text, images or references. Explore a 480p Draft, finish in 1080p or 4K, and use Modify, Extend and generated audio.",
     "image": "/models/seedance-2-5-launch.jpg"
   },
@@ -81,8 +81,8 @@
   },
   "faqs": [
     {
-      "q": "What does this Seedance 2.5 page show?",
-      "a": "It shows how Seedance 2.5 turns text, frames, multimodal references and source video into longer cinematic outputs with optional generated audio."
+      "q": "What can I create with Seedance 2.5?",
+      "a": "Seedance 2.5 creates 4–30-second videos from text, images or mixed references, with optional generated audio. Bring a source clip to Modify a shot or use Extend to continue the action."
     },
     {
       "q": "How long are the scenes shown here?",
@@ -93,8 +93,8 @@
       "a": "Define the concept first, assign actions and camera direction to timed beats, then state the continuity and safety constraints that must remain stable."
     },
     {
-      "q": "Can I generate with Seedance 2.5 from this page?",
-      "a": "Seedance 2.5 generation is available to MaxVideoAI users, with the price calculated and shown before each render."
+      "q": "Where can I use Seedance 2.5 and check the price?",
+      "a": "Seedance 2.5 is available to MaxVideoAI users in Create. Choose the duration, resolution and inputs to get the price shown before each render. A native 480p Draft and its final are priced separately."
     },
     {
       "q": "How does native Draft work in Seedance 2.5?",
@@ -224,14 +224,14 @@
       }
     ],
     "pricingCopy": {
-      "title": "Seedance 2.5 pricing for your render",
-      "subtitle": "Choose duration, resolution, inputs and audio, then review the calculated price before you render.",
-      "footnote": "The price is shown before rendering and updates with the settings you select.",
-      "ctaLabel": "Generate with Seedance 2.5",
-      "ctaHref": "/app?engine=seedance-2-5"
+      "title": "Seedance 2.5 pricing",
+      "subtitle": "Set the length, resolution and references for your shot. Create shows the total before you generate.",
+      "footnote": "Testing several takes? Pay for a 480p Draft first, then finalize only the take you choose. The final has its own quote.",
+      "ctaLabel": "See Seedance 2.5 rates",
+      "ctaHref": "/pricing#seedance-2-5-pricing"
     },
     "meta": {
-      "title": "Seedance 2.5 AI Video Generator: 4K, 30s & Audio",
+      "title": "Seedance 2.5 AI Video Generator: 30s, 1080p, 4K & Audio",
       "description": "Create Seedance 2.5 videos up to 4K with text, images or references. Explore a 480p Draft, finish in 1080p or 4K, and use Modify, Extend and generated audio."
     }
   },
@@ -595,23 +595,23 @@
     "specialty": {
       "kind": "draft",
       "eyebrow": "NATIVE DRAFT → FINAL",
-      "title": "Find the take. Finish in 4K.",
-      "intro": "Generate a native 480p Draft to review movement and composition. Keep the take, then choose a 1080p or 4K final from that completed Draft.",
+      "title": "Save your budget for the right take.",
+      "intro": "Try your ideas in native 480p Draft before paying for a 1080p or 4K final. Refine the direction first, then finalize only the takes you keep.",
       "steps": [
         {
-          "label": "480p Draft",
-          "body": "Explore the direction with one preview."
+          "label": "Create your Draft",
+          "body": "In Create, select Seedance 2.5 and turn on native Draft."
         },
         {
-          "label": "Review the take",
-          "body": "Check action, framing and timing."
+          "label": "Keep the take you like",
+          "body": "Review the clip, then open its finalization controls in your library."
         },
         {
-          "label": "1080p or 4K final",
-          "body": "Choose your delivery resolution. Both final options use 10-bit HEVC."
+          "label": "Choose 1080p or 4K",
+          "body": "Review the separate quote and confirm your final. The Draft stays in your library."
         }
       ],
-      "note": "Draft and final are separately quoted generations. The final keeps the Draft’s prompt, duration, framing, sound and references. This workflow covers text, images, references, Modify and Extend; a normal 480p render is not a native Draft.",
+      "note": "Draft and final are separately quoted generations. The final keeps the Draft’s prompt, duration, framing, sound and references. This workflow covers text, images, references, Modify and Extend; a normal 480p render is not a native Draft. Use Draft to avoid finalizing every trial. Total spend depends on how many Drafts and finals you generate and their current quotes.",
       "action": "Open Create · choose Draft",
       "mode": "t2v",
       "source": {
@@ -621,6 +621,39 @@
       "workspacePreview": {
         "alt": "Seedance 2.5 Draft finalization in the MaxVideoAI library, with 4K selected and 1080p also available.",
         "caption": "Inside the library · choose the final resolution, then review its separate quote. Your Draft stays available."
+      },
+      "draftPreview": {
+        "draftLabel": "480p Draft",
+        "draftLocation": "Create · Native Draft",
+        "draftHint": "Try different framings. Select the take worth finishing.",
+        "finalLabel": "Final",
+        "finalLocation": "Library · Your selected take",
+        "finalHint": "High resolution for the takes you choose.",
+        "resolutionLabel": "Explore final resolution options",
+        "continuity": "Explore in Draft. Finalize your favourites.",
+        "illustration": "Workflow illustration · images made with ImageGen, not Seedance Draft/final outputs.",
+        "imageAlt": "An envelope changes hands on a sunlit Mediterranean hotel terrace.",
+        "detailsLabel": "What carries over to the final?",
+        "quoteNote": "Draft and final are priced separately. Review each quote before generating.",
+        "selectionLabel": "Choose a camera angle to explore the workflow",
+        "selectedLabel": "Selected take",
+        "angles": [
+          {
+            "id": "wide",
+            "label": "Wide shot",
+            "description": "Establish the setting and all three characters."
+          },
+          {
+            "id": "close",
+            "label": "Close two-shot",
+            "description": "Keep the exchange and the reaction in the same frame."
+          },
+          {
+            "id": "overhead",
+            "label": "High angle",
+            "description": "Explore the blocking and the approaching character."
+          }
+        ]
       }
     },
     "specsReviewedAt": "2026-11-17",
@@ -658,7 +691,20 @@
               "label": "Use references",
               "mode": "ref2v"
             }
-          ]
+          ],
+          "proof": {
+            "kind": "create",
+            "caption": "Illustrated example: a character + a setting, brought into one scene.",
+            "note": "Workflow illustration made with Sunburst; a Seedance 2.5 video demonstration is still to be rendered. Use this direction with your own references. No reference assets are imported automatically.",
+            "prompt": "Use Image 1 for the fictional adult character and Image 2 for the location. Create a cinematic medium shot of the character walking through the sunlit stone arcade, carrying a paper parcel. Preserve the character’s face, short dark hair and beige coat from Image 1; use the architecture and daylight of Image 2. Track gently beside the character as they look toward the open square, then slow as they stop. Keep the walk readable, with natural fabric movement and consistent screen direction. Sound: footsteps on stone, light city ambience and a soft breeze. No dialogue, music, captions or logos.",
+            "labels": [
+              "Character reference",
+              "Setting reference"
+            ],
+            "detailsLabel": "More ways to create",
+            "previewLabel": "Preview extension",
+            "resetLabel": "Reset timeline"
+          }
         },
         {
           "id": "modify",
@@ -681,7 +727,20 @@
               "label": "Open Modify",
               "mode": "v2v"
             }
-          ]
+          ],
+          "proof": {
+            "kind": "modify",
+            "caption": "Illustrated wardrobe edit · drag to compare the full frame.",
+            "note": "Workflow illustration made with Sunburst; a Seedance 2.5 video demonstration is still to be rendered. Use this direction with your own references. No reference assets are imported automatically.",
+            "prompt": "Edit the supplied source video. Change only the ivory coat to deep petrol blue, retaining its cut, fabric texture and movement. Preserve the fictional adult character’s face, hair, black outfit, walking action, camera framing and timing, stone columns, daylight and background. Let the new coat follow the original movement and shadows. Keep the source sound and do not add dialogue, titles or new scene elements. Review face, hands and coat edges throughout the result.",
+            "labels": [
+              "Source",
+              "Modified"
+            ],
+            "detailsLabel": "What else can you modify?",
+            "previewLabel": "Preview extension",
+            "resetLabel": "Reset timeline"
+          }
         },
         {
           "id": "extend",
@@ -704,13 +763,43 @@
               "label": "Open Extend",
               "mode": "extend"
             }
-          ]
+          ],
+          "proof": {
+            "kind": "extend",
+            "caption": "Illustrated continuation · assemble the new segment with your source.",
+            "note": "Workflow illustration made with Sunburst; a Seedance 2.5 video demonstration is still to be rendered. Use this direction with your own references. No reference assets are imported automatically.",
+            "prompt": "Continue after the supplied clip of a skateboarder at a sunlit coastal skatepark. Carry the existing movement into a smooth roll down the transition and toward the open flat. Keep the same character, loose grey shirt, beige trousers, board, daylight, coastal setting and camera direction. Let the camera follow the rider, opening slightly as the action settles. Sound: continuous wheel rumble, a soft concrete scrape and distant sea ambience. No dialogue or music. The first moment of the new segment should connect to the end of the source; do not restart the action.",
+            "labels": [
+              "Original clip",
+              "New continuation"
+            ],
+            "detailsLabel": "Before, after or between shots",
+            "previewLabel": "Preview extension",
+            "resetLabel": "Reset timeline"
+          }
         }
       ],
       "controls": {
         "title": "Finish the direction",
         "body": "Add dialogue, ambience and sound effects, or turn generated audio off. Use image and audio references to anchor the details. Choose duration, aspect ratio and resolution in Create; review its current quote before each generation."
       }
+    },
+    "alternatives": {
+      "title": "Which model fits your shot?",
+      "models": [
+        {
+          "slug": "seedance-2-5-flash",
+          "reason": "Work in 480p or 720p when you want to try another take before committing to a final."
+        },
+        {
+          "slug": "wan-3",
+          "reason": "Plan a 2–30-second shot with mixed references, then edit or extend the clip."
+        },
+        {
+          "slug": "minimax-h3-max",
+          "reason": "Build a 5–15-second sequence around your own soundtrack or generated audio."
+        }
+      ]
     }
   }
 }

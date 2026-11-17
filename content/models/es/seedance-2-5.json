@@ -2,7 +2,7 @@
   "marketingName": "Seedance 2.5",
   "versionLabel": "2.5",
   "seo": {
-    "title": "Generador de vídeo IA Seedance 2.5: 4K, 30 s y audio",
+    "title": "Generador de vídeo IA Seedance 2.5: 30 s, 1080p, 4K y audio",
     "description": "Crea vídeos Seedance 2.5 hasta 4K con texto, imágenes o referencias. Prueba un Draft 480p, finaliza en 1080p o 4K y utiliza Modify, Extend y audio generado.",
     "image": "/models/seedance-2-5-launch.jpg"
   },
@@ -81,8 +81,8 @@
   },
   "faqs": [
     {
-      "q": "¿Qué muestra esta página de Seedance 2.5?",
-      "a": "Muestra cómo Seedance 2.5 convierte texto, imágenes, referencias multimodales y vídeo fuente en resultados cinematográficos más largos con audio generado opcional."
+      "q": "¿Qué puedo crear con Seedance 2.5?",
+      "a": "Seedance 2.5 crea vídeos de 4 a 30 segundos a partir de texto, imágenes o referencias mixtas, con audio generado opcional. Usa un clip de origen en Modify para editar un plano o en Extend para continuar la acción."
     },
     {
       "q": "¿Cuánto duran las escenas que se muestran?",
@@ -93,8 +93,8 @@
       "a": "Primero define el concepto, asigna acciones y cámara a momentos concretos y después indica las restricciones de continuidad y seguridad que deben mantenerse."
     },
     {
-      "q": "¿Puedo generar con Seedance 2.5 desde esta página?",
-      "a": "La generación con Seedance 2.5 está disponible para los usuarios de MaxVideoAI; el precio se calcula y se muestra antes de cada render."
+      "q": "¿Dónde puedo usar Seedance 2.5 y consultar su precio?",
+      "a": "Seedance 2.5 está disponible para los usuarios de MaxVideoAI en Create. Elige la duración, la resolución y las referencias para consultar el precio que se muestra antes de cada render. El Draft nativo en 480p y su acabado se presupuestan por separado."
     },
     {
       "q": "¿Cómo funciona Draft nativo en Seedance 2.5?",
@@ -224,14 +224,14 @@
       }
     ],
     "pricingCopy": {
-      "title": "Precio de Seedance 2.5 para cada render",
-      "subtitle": "Elige la duración, la resolución, las entradas y el audio; después revisa el precio calculado antes de generar.",
-      "footnote": "El precio se muestra antes del render y se actualiza según los ajustes seleccionados.",
-      "ctaLabel": "Generar con Seedance 2.5",
-      "ctaHref": "/app?engine=seedance-2-5"
+      "title": "Precios de Seedance 2.5",
+      "subtitle": "Elige la duración, la resolución y las referencias de tu plano. Create muestra el total antes de generar.",
+      "footnote": "¿Estás probando varias tomas? Empieza con un Draft en 480p y finaliza solo la toma elegida. El acabado tiene su propio precio.",
+      "ctaLabel": "Ver tarifas de Seedance 2.5",
+      "ctaHref": "/es/precios#seedance-2-5-pricing"
     },
     "meta": {
-      "title": "Generador de vídeo IA Seedance 2.5: 4K, 30 s y audio",
+      "title": "Generador de vídeo IA Seedance 2.5: 30 s, 1080p, 4K y audio",
       "description": "Crea vídeos Seedance 2.5 hasta 4K con texto, imágenes o referencias. Prueba un Draft 480p, finaliza en 1080p o 4K y utiliza Modify, Extend y audio generado."
     }
   },
@@ -595,23 +595,23 @@
     "specialty": {
       "kind": "draft",
       "eyebrow": "NATIVE DRAFT → FINAL",
-      "title": "Encuentra la toma. Finaliza en 4K.",
-      "intro": "Genera un Draft nativo a 480p para revisar movimiento y composición. Conserva la toma y elige un final en 1080p o 4K desde ese Draft completado.",
+      "title": "Reserva tu presupuesto para la toma adecuada.",
+      "intro": "Prueba tus ideas en Draft nativo a 480p antes de pagar un final a 1080p o 4K. Afina la dirección y finaliza solo las tomas que quieras conservar.",
       "steps": [
         {
-          "label": "Draft 480p",
-          "body": "Explora la dirección con una vista previa."
+          "label": "Crea tu Draft",
+          "body": "En Create, selecciona Seedance 2.5 y activa el Draft nativo."
         },
         {
-          "label": "Revisa la toma",
-          "body": "Comprueba acción, encuadre y ritmo."
+          "label": "Conserva la toma elegida",
+          "body": "Revisa el clip y abre sus controles de finalización en tu biblioteca."
         },
         {
-          "label": "Final 1080p o 4K",
-          "body": "Elige la resolución de entrega. Las dos opciones usan HEVC de 10 bits."
+          "label": "Elige 1080p o 4K",
+          "body": "Revisa el presupuesto independiente y confirma el final. El Draft sigue en tu biblioteca."
         }
       ],
-      "note": "Draft y final son generaciones con presupuestos separados. El final conserva el prompt, la duración, el encuadre, el audio y las referencias del Draft. El flujo cubre texto, imágenes, referencias, Modify y Extend; un render normal a 480p no es un Draft nativo.",
+      "note": "Draft y final son generaciones con presupuestos separados. El final conserva el prompt, la duración, el encuadre, el audio y las referencias del Draft. El flujo cubre texto, imágenes, referencias, Modify y Extend; un render normal a 480p no es un Draft nativo. Usa Draft para evitar finalizar cada prueba. El coste total depende del número de Drafts y finales generados y de sus presupuestos actuales.",
       "action": "Abrir Create · elegir Draft",
       "mode": "t2v",
       "source": {
@@ -621,6 +621,39 @@
       "workspacePreview": {
         "alt": "Finalización de un Draft Seedance 2.5 en la biblioteca de MaxVideoAI, con 4K seleccionado y 1080p también disponible.",
         "caption": "En la biblioteca · elige la resolución final y revisa su presupuesto separado. Tu Draft sigue disponible."
+      },
+      "draftPreview": {
+        "draftLabel": "Draft 480p",
+        "draftLocation": "Create · Draft nativo",
+        "draftHint": "Explora los encuadres. Elige la toma que merece el acabado final.",
+        "finalLabel": "Final",
+        "finalLocation": "Biblioteca · Tu toma elegida",
+        "finalHint": "Alta resolución para las tomas elegidas.",
+        "resolutionLabel": "Explorar las resoluciones finales",
+        "continuity": "Explora en Draft. Finaliza tus favoritas.",
+        "illustration": "Ilustración del flujo · imágenes creadas con ImageGen, no resultados Draft/final de Seedance.",
+        "imageAlt": "Un sobre cambia de manos en la terraza soleada de un hotel mediterráneo.",
+        "detailsLabel": "¿Qué conserva el final?",
+        "quoteNote": "Draft y final tienen precios independientes. Revisa cada presupuesto antes de generar.",
+        "selectionLabel": "Elegir un ángulo de cámara para explorar el flujo",
+        "selectedLabel": "Toma elegida",
+        "angles": [
+          {
+            "id": "wide",
+            "label": "Plano general",
+            "description": "Presenta el lugar y los tres personajes."
+          },
+          {
+            "id": "close",
+            "label": "Plano cercano",
+            "description": "Mantén el intercambio y la reacción en el mismo encuadre."
+          },
+          {
+            "id": "overhead",
+            "label": "Picado",
+            "description": "Explora las posiciones y la llegada del tercer personaje."
+          }
+        ]
       }
     },
     "specsReviewedAt": "2026-11-17",
@@ -658,7 +691,20 @@
               "label": "Usar referencias",
               "mode": "ref2v"
             }
-          ]
+          ],
+          "proof": {
+            "kind": "create",
+            "caption": "Ejemplo ilustrado: un personaje y un escenario en una misma escena.",
+            "note": "Ilustración del flujo creada con Sunburst; la demostración de vídeo de Seedance 2.5 está pendiente de generar. Usa esta dirección con tus propias referencias. No se importan medios automáticamente.",
+            "prompt": "Use Image 1 for the fictional adult character and Image 2 for the location. Create a cinematic medium shot of the character walking through the sunlit stone arcade, carrying a paper parcel. Preserve the character’s face, short dark hair and beige coat from Image 1; use the architecture and daylight of Image 2. Track gently beside the character as they look toward the open square, then slow as they stop. Keep the walk readable, with natural fabric movement and consistent screen direction. Sound: footsteps on stone, light city ambience and a soft breeze. No dialogue, music, captions or logos.",
+            "labels": [
+              "Referencia de personaje",
+              "Referencia de escenario"
+            ],
+            "detailsLabel": "Más formas de crear",
+            "previewLabel": "Ver la extensión",
+            "resetLabel": "Restablecer la línea de tiempo"
+          }
         },
         {
           "id": "modify",
@@ -681,7 +727,20 @@
               "label": "Abrir Modify",
               "mode": "v2v"
             }
-          ]
+          ],
+          "proof": {
+            "kind": "modify",
+            "caption": "Cambio de vestuario ilustrado · desliza para comparar el encuadre completo.",
+            "note": "Ilustración del flujo creada con Sunburst; la demostración de vídeo de Seedance 2.5 está pendiente de generar. Usa esta dirección con tus propias referencias. No se importan medios automáticamente.",
+            "prompt": "Edit the supplied source video. Change only the ivory coat to deep petrol blue, retaining its cut, fabric texture and movement. Preserve the fictional adult character’s face, hair, black outfit, walking action, camera framing and timing, stone columns, daylight and background. Let the new coat follow the original movement and shadows. Keep the source sound and do not add dialogue, titles or new scene elements. Review face, hands and coat edges throughout the result.",
+            "labels": [
+              "Original",
+              "Modificado"
+            ],
+            "detailsLabel": "¿Qué más puedes modificar?",
+            "previewLabel": "Ver la extensión",
+            "resetLabel": "Restablecer la línea de tiempo"
+          }
         },
         {
           "id": "extend",
@@ -704,13 +763,43 @@
               "label": "Abrir Extend",
               "mode": "extend"
             }
-          ]
+          ],
+          "proof": {
+            "kind": "extend",
+            "caption": "Continuación ilustrada · monta el nuevo segmento junto a tu original.",
+            "note": "Ilustración del flujo creada con Sunburst; la demostración de vídeo de Seedance 2.5 está pendiente de generar. Usa esta dirección con tus propias referencias. No se importan medios automáticamente.",
+            "prompt": "Continue after the supplied clip of a skateboarder at a sunlit coastal skatepark. Carry the existing movement into a smooth roll down the transition and toward the open flat. Keep the same character, loose grey shirt, beige trousers, board, daylight, coastal setting and camera direction. Let the camera follow the rider, opening slightly as the action settles. Sound: continuous wheel rumble, a soft concrete scrape and distant sea ambience. No dialogue or music. The first moment of the new segment should connect to the end of the source; do not restart the action.",
+            "labels": [
+              "Clip original",
+              "Nueva continuación"
+            ],
+            "detailsLabel": "Antes, después o entre planos",
+            "previewLabel": "Ver la extensión",
+            "resetLabel": "Restablecer la línea de tiempo"
+          }
         }
       ],
       "controls": {
         "title": "Completa la dirección",
         "body": "Añade diálogo, ambiente y efectos, o desactiva el audio generado. Usa referencias de imagen y audio para fijar los detalles. Elige duración, formato y resolución en Create; revisa el presupuesto antes de cada generación."
       }
+    },
+    "alternatives": {
+      "title": "¿Qué modelo encaja con tu plano?",
+      "models": [
+        {
+          "slug": "seedance-2-5-flash",
+          "reason": "Trabaja en 480p o 720p para probar otra toma antes de elegir la versión final."
+        },
+        {
+          "slug": "wan-3",
+          "reason": "Prepara un plano de 2 a 30 segundos con referencias mixtas y después edita o prolonga el vídeo."
+        },
+        {
+          "slug": "minimax-h3-max",
+          "reason": "Crea una secuencia de 5 a 15 segundos con tu propia banda sonora o con audio generado."
+        }
+      ]
     }
   }
 }

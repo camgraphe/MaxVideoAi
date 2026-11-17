@@ -145,50 +145,50 @@
     },
     {
       "id": "midnight-run",
-      "originalSha256": "5abe1db872a12c6f04680bf265fda706d32b9e24aefaaa6e2fe42099963d1bf1",
+      "originalSha256": "ff1eb44b9ea96e7d2cf16ad104203be4c7b0ab9bfed897905bc6607dec437590",
       "crop": {
         "left": 0,
         "top": 0,
-        "width": 2560,
-        "height": 1440
+        "width": 1280,
+        "height": 720
       },
       "desktop": [
         {
-          "url": "/assets/model-examples/cinematic-heroes/095339ca9e86d1f04c921424a62af9f1ce3923f6f5565a1f7dcfe17e87766d3a.avif",
-          "sha256": "095339ca9e86d1f04c921424a62af9f1ce3923f6f5565a1f7dcfe17e87766d3a",
+          "url": "/assets/model-examples/cinematic-heroes/39249b928c6f65a03160780756dec691557662b46eb2dc87686902d5e10c2b46.avif",
+          "sha256": "39249b928c6f65a03160780756dec691557662b46eb2dc87686902d5e10c2b46",
           "width": 960,
           "height": 540,
-          "bytes": 16763
+          "bytes": 7526
         },
         {
-          "url": "/assets/model-examples/cinematic-heroes/865c2e67c9e8ce1b1c5dcc14737ccd97a6bb6254d1bb4ea5ed1f003e63922ead.avif",
-          "sha256": "865c2e67c9e8ce1b1c5dcc14737ccd97a6bb6254d1bb4ea5ed1f003e63922ead",
-          "width": 1600,
-          "height": 900,
-          "bytes": 37956
+          "url": "/assets/model-examples/cinematic-heroes/983a7db77b0a78a97679c2d82fa6a20502efdb21b9a6a883d566c3e4a600b500.avif",
+          "sha256": "983a7db77b0a78a97679c2d82fa6a20502efdb21b9a6a883d566c3e4a600b500",
+          "width": 1280,
+          "height": 720,
+          "bytes": 11244
         },
         {
-          "url": "/assets/model-examples/cinematic-heroes/d09c13690ce9c9cef56c0309f3c289775ddce35d613d06007058e3a6efbd14e0.avif",
-          "sha256": "d09c13690ce9c9cef56c0309f3c289775ddce35d613d06007058e3a6efbd14e0",
-          "width": 2560,
-          "height": 1440,
-          "bytes": 80202
+          "url": "/assets/model-examples/cinematic-heroes/983a7db77b0a78a97679c2d82fa6a20502efdb21b9a6a883d566c3e4a600b500.avif",
+          "sha256": "983a7db77b0a78a97679c2d82fa6a20502efdb21b9a6a883d566c3e4a600b500",
+          "width": 1280,
+          "height": 720,
+          "bytes": 11244
         }
       ],
       "mobile": [
         {
-          "url": "/assets/model-examples/cinematic-heroes/a0857edc4d2bf72ecd665d7d175f3f4eb67a29baf463a965250e6a91e239dc2c.avif",
-          "sha256": "a0857edc4d2bf72ecd665d7d175f3f4eb67a29baf463a965250e6a91e239dc2c",
+          "url": "/assets/model-examples/cinematic-heroes/06c59fddf6983df47a2ee8793b8d21bad95e4dcffeadefdad0460cefd27e5244.avif",
+          "sha256": "06c59fddf6983df47a2ee8793b8d21bad95e4dcffeadefdad0460cefd27e5244",
           "width": 640,
           "height": 360,
-          "bytes": 8851
+          "bytes": 5055
         },
         {
-          "url": "/assets/model-examples/cinematic-heroes/2f907268aa358609df61384ae96081ed9de10b3730076db936358f1ff167ae4f.avif",
-          "sha256": "2f907268aa358609df61384ae96081ed9de10b3730076db936358f1ff167ae4f",
+          "url": "/assets/model-examples/cinematic-heroes/983a7db77b0a78a97679c2d82fa6a20502efdb21b9a6a883d566c3e4a600b500.avif",
+          "sha256": "983a7db77b0a78a97679c2d82fa6a20502efdb21b9a6a883d566c3e4a600b500",
           "width": 1280,
           "height": 720,
-          "bytes": 26325
+          "bytes": 11244
         }
       ]
     },

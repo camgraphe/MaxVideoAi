@@ -23,7 +23,7 @@ export const seedance25TemplateConfig: ModelPageTemplateConfig = {
     enabled: true,
     anchorHref: '#pricing',
     presets: [
-      { id: '4s-480p', seconds: 4, resolution: '480p', labelKey: 'entryDraft' },
+      { id: '4s-480p', seconds: 4, resolution: '480p', labelKey: 'textToVideoSample' },
       {
         id: '15s-720p-audio',
         seconds: 15,

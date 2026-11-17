@@ -27,7 +27,7 @@ export function ModelCinematicCreateProof({ item, panel, asset, focusAsset, work
         </header>
         <figure className="cinema-create-visual">
           <ModelCinematicFilm video={media.create.src} poster={media.create.poster} title={asset.title} ui={ui} />
-          <figcaption><span>{item.proofLabel}</span><p>{item.inspect}</p></figcaption>
+          <figcaption><span>{asset.watchHref ? <Link href={asset.watchHref} prefetch={false} className="cinema-watch-title">{item.proofLabel}<CinematicArrow /></Link> : item.proofLabel}</span><p>{item.inspect}</p></figcaption>
         </figure>
         <div className="cinema-create-description">
           <p className="cinema-workflow-intro">{panel.body}</p>
@@ -40,7 +40,7 @@ export function ModelCinematicCreateProof({ item, panel, asset, focusAsset, work
         </div>
       </div>
       {item.focus && focusAsset ? <ModelCinematicWorkflowFocus focus={item.focus} ui={ui} workspaceHref={promptBaseHref} media={media.focuses[item.focus.id]} /> : null}
-      {capabilities ? <ModelCinematicCapabilities copy={capabilities} /> : null}
+      {capabilities ? <ModelCinematicCapabilities copy={capabilities} ui={ui} /> : null}
     </div>
   </article>;
 }

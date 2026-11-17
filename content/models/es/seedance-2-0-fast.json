@@ -175,7 +175,7 @@
     },
     {
       "q": "¿Es Seedance 2.0 Fast el modo Draft de Seedance 2.5?",
-      "a": "No. Fast es un modelo Seedance 2.0 independiente. Sus vistas previas de iteración en 480p o 720p son generaciones normales con presupuesto. BytePlus describe Draft de Seedance 2.5 como una vista previa de 480p facturada por separado, seguida opcionalmente de un nuevo render de 1080p a partir del ID de esa tarea. Ese flujo Draft-a-final no se ofrece hoy en MaxVideoAI."
+      "a": "Seedance 2.0 Fast genera un clip nuevo en cada prueba. Con Seedance 2.5 puedes crear un Draft nativo en 480p, revisar la toma y pedir una versión final en 1080p o 4K a partir de ese Draft. El precio del render final se muestra por separado."
     }
   ],
   "custom": {

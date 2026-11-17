@@ -1,3 +1,4 @@
+import flashHero from '@/config/model-cinematic-flash-hero.json';
 import startFrames from '@/config/model-cinematic-start-frames.json';
 import createMedia from '@/config/model-cinematic-create-media.json';
 import finalMedia from '@/config/model-cinematic-final-media.json';
@@ -11,6 +12,7 @@ export type CinematicMotionProof = {
 };
 export type CinematicVideoMedia = {
   modelSlug: string; modelLabel: string; frameSourceLabel: string;
+  openingRecipe?: Pick<typeof flashHero, 'id' | 'mode' | 'prompt' | 'original'>;
   frames: readonly unknown[];
   publicProofs?: readonly (typeof publicProofs)[number][];
   create: CinematicClip;
@@ -34,10 +36,10 @@ const videoMedia: Record<string, CinematicVideoMedia> = {
   })),
   [finalMedia.modelSlug]: {
     modelSlug: finalMedia.modelSlug, modelLabel: 'Seedance 2.5 Flash', frameSourceLabel: 'GPT Image 2.6 Sunburst',
-    frames: startFrames, create: createMedia.create,
+    openingRecipe: flashHero, frames: startFrames, create: createMedia.create,
     modify: { source: finalMedia.clips.modifySource, result: finalMedia.clips.modifyResult },
     focuses: { 'focus-motion-control': { character: createMedia.character, source: createMedia.motionSource, result: createMedia.motionResult } },
-    boards, examples: { 'the-blue-hour': finalMedia.clips['the-blue-hour'], 'where-gravity-ends': finalMedia.clips['where-gravity-ends'] },
+    boards, examples: { [flashHero.id]: flashHero.clip, 'the-blue-hour': finalMedia.clips['the-blue-hour'], 'where-gravity-ends': finalMedia.clips['where-gravity-ends'] },
   },
 };
 

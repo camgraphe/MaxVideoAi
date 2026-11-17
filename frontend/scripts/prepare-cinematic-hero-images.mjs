@@ -10,6 +10,7 @@ const manifestPath = path.join(root, 'config/model-cinematic-hero-displays.json'
 const readJson = async file => JSON.parse(await readFile(file, 'utf8'));
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 const originals = [
+  await readJson(path.join(root, 'config/model-cinematic-flash-hero.json')),
   ...(await readJson(path.join(root, 'config/seedream-editorial-images.json'))),
   ...(await readJson(path.join(root, 'config/model-cinematic-start-frames.json'))),
   ...(await readJson(path.join(root, 'config/model-cinematic-public-proofs.json'))),

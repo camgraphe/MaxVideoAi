@@ -10,6 +10,38 @@ import { getBaseEnginesByCategory } from '../frontend/src/lib/engines';
 import { resolveVideoSettingsSnapshot } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-video-settings';
 
 const engine = 'seedance-2-5-flash';
+test('the observatory storyboard restores its five positions and settings in the FLUX keyframe composer', () => {
+  const preset = getVideoEditorialPreset('flux-3-max', 'the-first-light')!;
+  const engines = getBaseEnginesByCategory('video');
+  const restored = resolveVideoSettingsSnapshot(preset.snapshot, { engines, engineMap: new Map(engines.map(e => [e.id, e])),
+    createLocalId: () => 'fixture', createFallbackScene: () => ({ id: 'scene', prompt: '', duration: 5 }),
+    createFallbackKlingElement: () => ({ id: 'element', frontal: null, references: [], video: null }) });
+  assert.equal(restored.mode, 'ref2v');
+  assert.equal(restored.prompt, preset.prompt);
+  assert.equal(restored.formValues.durationSec, 16);
+  assert.equal(restored.formValues.extraInputValues.keyframe_indexes, '0,72,144,264,384');
+  assert.equal(restored.formValues.resolution, '720p');
+  assert.equal(restored.formValues.audio, true);
+  assert.deepEqual(restored.inputAssets, {});
+  assert.equal(getVideoEditorialPreset('flux-3', 'the-first-light'), null);
+});
+test('Seedance capability examples hydrate their exact Create, Modify and Extend workflow without references or prices', () => {
+  const engines = getBaseEnginesByCategory('video');
+  const options = { engines, engineMap: new Map(engines.map(e => [e.id, e])), createLocalId: () => 'fixture',
+    createFallbackScene: () => ({ id: 'scene', prompt: '', duration: 5 }),
+    createFallbackKlingElement: () => ({ id: 'element', frontal: null, references: [], video: null }) };
+  for (const [id, mode] of [['create', 'ref2v'], ['modify', 'v2v'], ['extend', 'extend']]) {
+    const preset = getVideoEditorialPreset('seedance-2-5', `capability-${id}`)!;
+    const resolved = resolveVideoSettingsSnapshot(preset.snapshot, options);
+    assert.equal(resolved.mode, mode);
+    assert.equal(resolved.prompt, preset.prompt);
+    assert.deepEqual(resolved.inputAssets, {});
+    assert.equal('price' in preset.snapshot, false);
+    assert.equal('core' in preset.snapshot, false, 'Planned directions do not claim recorded render settings');
+    assert.equal(getVideoEditorialPreset('flux-3-max', `capability-${id}`), null);
+  }
+});
+
 test('video directions resolve to the right workflow without pretending to restore a rendered recipe', () => {
   const engines = getBaseEnginesByCategory('video');
   const options = { engines, engineMap: new Map(engines.map(e => [e.id, e])), createLocalId: () => 'fixture',

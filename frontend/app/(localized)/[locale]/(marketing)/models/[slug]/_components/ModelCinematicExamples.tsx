@@ -16,7 +16,7 @@ export function ModelCinematicExamples({ presentation, viewModel, hasRenderedVid
   const preview = galleryOnly && !hasRenderedVideos && examples.gallery ? assets.find(asset => asset.id === examples.gallery!.previewAssetId) : null;
   const proofPanels = galleryOnly ? [] : examples.panels.filter(panel => !panel.placement || panel.placement === 'examples');
   return <section id={galleryOnly ? 'rendered-examples' : 'examples'} className="cinema-examples" aria-label={examples.title ?? viewModel.section.title}>
-    {!galleryOnly && viewModel.anchorId !== 'examples' ? <span id={viewModel.anchorId} /> : null}
+    {viewModel.anchorId !== 'examples' && viewModel.anchorId !== 'rendered-examples' ? <span id={viewModel.anchorId} /> : null}
     {preview && examples.gallery ? <div className="cinema-gallery-bridge"><div className="cinema-wrap cinema-gallery-bridge-inner">
       <figure><Image src={preview.display.url} width={preview.display.width} height={preview.display.height} alt={preview.title} sizes="(min-width: 768px) 200px, 35vw" loading="lazy" /><figcaption>{examples.gallery.previewLabel}</figcaption></figure>
       <div><p className="cinema-eyebrow">{examples.gallery.navLabel}</p><h2>{examples.gallery.title}</h2><p>{examples.gallery.intro}</p>

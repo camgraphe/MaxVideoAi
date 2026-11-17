@@ -4,6 +4,7 @@ import type { ModelKeyframeDemoViewModel } from '../_lib/model-page-keyframe-dem
 import { ModelCinematicFilm } from './ModelCinematicFilm.client';
 import { ModelCinematicVideoPrompt } from './ModelCinematicVideoPrompt.client';
 import { CinematicArrow } from './ModelCinematicMarks';
+import { ModelCinematicDraftWorkflow } from './ModelCinematicDraftWorkflow.client';
 
 /** Evidence comes from the existing public recipe validator, never an invented keyframe result. */
 export function ModelCinematicSpecialty({ presentation, demo }: {
@@ -16,6 +17,7 @@ export function ModelCinematicSpecialty({ presentation, demo }: {
   entry.searchParams.delete('assistant'); entry.searchParams.delete('refine');
   entry.searchParams.set('mode', copy.mode);
   const href = entry.pathname + entry.search;
+  if (copy.kind === 'draft' && copy.draftPreview && presentation.draftVisual) return <ModelCinematicDraftWorkflow copy={copy} href={href} visual={presentation.draftVisual} />;
   const preview = presentation.workspacePreview;
   const mobileImage = preview ? getImageProps({ width: preview.mobile.width, height: preview.mobile.height, alt: copy.workspacePreview.alt, src: preview.mobile.url, sizes: '92vw' }).props : undefined;
   const workspace = preview ? <figure className={`cinema-workspace-preview cinema-workspace-preview--${copy.kind}`}>
@@ -27,10 +29,7 @@ export function ModelCinematicSpecialty({ presentation, demo }: {
   return <section id="model-workflow" className="cinema-specialty cinema-section" aria-labelledby="cinema-specialty-title"><div className="cinema-wrap">
     <header className="cinema-section-heading"><div><p className="cinema-eyebrow">{copy.eyebrow}</p><h2 id="cinema-specialty-title">{copy.title}</h2></div><p>{copy.intro}</p></header>
     {copy.kind === 'keyframes' && demo ? <div id="keyframe-example" className="cinema-keyframe-proof">
-      <div>{workspace}<ol className="cinema-keyframe-positions">{demo.images.map(image => <li key={image.frameIndex} id={`keyframe-example-frame-${image.frameIndex}`}>
-        <strong>{image.timeLabel}</strong><span>{image.caption}</span>
-      </li>)}</ol><p className="cinema-specialty-note">{demo.copy.limitation}</p></div>
-      <figure><ModelCinematicFilm video={demo.videoUrl} poster={demo.posterUrl} title={demo.copy.resultLabel} ui={ui} mask="frame" />
+      <figure><ModelCinematicFilm video={demo.videoUrl} poster={demo.posterUrl} title={demo.copy.resultLabel} ui={ui} mask="frame" keyframes={demo} />
         <figcaption>{demo.copy.resultLabel} · {demo.recipe.durationSec}s · {demo.recipe.resolution}</figcaption>
         <ModelCinematicVideoPrompt title={demo.copy.title} prompt={demo.recipe.prompt} note={demo.copy.limitation} imageDetailsLabel={ui.sourcePrompt} ui={ui}
           creation={demo.recreateHref ? { href: `${demo.recreateHref}&lang=${presentation.locale}`, refineHref: `${demo.recreateHref}&lang=${presentation.locale}&assistant=milo&refine=example` } : undefined} />

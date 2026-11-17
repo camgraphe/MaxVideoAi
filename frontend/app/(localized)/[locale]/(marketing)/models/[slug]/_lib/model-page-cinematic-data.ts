@@ -1,6 +1,8 @@
 import { z } from 'zod';
+import { buildVideoWatchPath } from '@/lib/video-seo-canonical';
 import { buildCinematicCapabilities, type CinematicCapabilities } from './model-page-capabilities';
 import workspacePreviews from '@/config/model-cinematic-workspace-previews.json';
+import draftIllustration from '@/config/model-draft-workflow-illustration.json';
 import type { AppLocale } from '@/i18n/locales';
 import type { ModelEditorialImage } from './model-page-editorial-images';
 import type { ModelExamplesContent } from './model-page-examples-content';
@@ -22,9 +24,9 @@ const frameSchema = z.object({
 
 const ui = {
   // Keep actions tied to the actual image model, including video-page start frames.
-  en: { previousExamples: 'Previous examples', nextExamples: 'Next examples', play: "Play video", loading: "Loading…", retry: "Try again", playTogether: "Play both", pause: "Pause", timeline: "Comparison timeline", mute: "Mute result", unmute: "Unmute result", restart: "Restart both", close: 'Close', heroPrompt: 'Hero prompt & settings', copyVideo: 'Copy video prompt', detailSource: 'Detail from the same image', unretouched: 'No retouching', frame: 'Frame', shotPlan: 'Direct the shot', frameDirection: 'Use the original first frame to anchor the subject, lighting and composition.', animateFrame: 'Animate the supplied first frame.', videoPrompt: 'Video prompt', zoom: 'Inspect detail', zoomOut: 'Full frame', face: 'Face & hair', texture: 'Fabric & texture', gradient: 'Colour', before: 'Source', after: 'Edit', aboutExamples: 'About these examples', copy: 'Copy prompt', copied: 'Copied', original: 'Open original', prompt: 'Prompt & settings', source: 'Exact edit source', compare: 'Reveal the edit', background: 'Preview background', light: 'Light', dark: 'Dark', motion: 'Planned motion', sound: 'Planned sound', still: 'Start frame · GPT Image 2.6 Sunburst', sourcePrompt: 'Image prompt (English)' },
-  fr: { previousExamples: 'Exemples précédents', nextExamples: 'Exemples suivants', play: "Lire la vidéo", loading: "Chargement…", retry: "Réessayer", playTogether: "Lire ensemble", pause: "Pause", timeline: "Position de la comparaison", mute: "Couper le son du résultat", unmute: "Activer le son du résultat", restart: "Recommencer ensemble", close: 'Fermer', heroPrompt: 'Prompt et réglages du visuel d’ouverture', copyVideo: 'Copier le prompt vidéo', detailSource: 'Détail de la même image', unretouched: 'Sans retouche', frame: 'Image', shotPlan: 'Diriger le plan', frameDirection: 'Utilisez la première image originale pour guider le sujet, la lumière et la composition.', animateFrame: 'Anime la première image fournie.', videoPrompt: 'Prompt vidéo', zoom: 'Inspecter les détails', zoomOut: 'Vue complète', face: 'Visage et cheveux', texture: 'Tissu et texture', gradient: 'Couleur', before: 'Source', after: 'Retouche', aboutExamples: 'À propos de ces exemples', copy: 'Copier le prompt', copied: 'Copié', original: 'Ouvrir l’original', prompt: 'Prompt et réglages', source: 'Source exacte de la retouche', compare: 'Révéler la retouche', background: 'Fond de prévisualisation', light: 'Clair', dark: 'Sombre', motion: 'Mouvement prévu', sound: 'Son prévu', still: 'Image de départ · GPT Image 2.6 Sunburst', sourcePrompt: 'Prompt de l’image (anglais)' },
-  es: { previousExamples: 'Ejemplos anteriores', nextExamples: 'Ejemplos siguientes', play: "Reproducir vídeo", loading: "Cargando…", retry: "Reintentar", playTogether: "Reproducir ambos", pause: "Pausa", timeline: "Posición de la comparación", mute: "Silenciar resultado", unmute: "Activar sonido del resultado", restart: "Reiniciar ambos", close: 'Cerrar', heroPrompt: 'Prompt y ajustes de la imagen de apertura', copyVideo: 'Copiar prompt de vídeo', detailSource: 'Detalle de la misma imagen', unretouched: 'Sin retoques', frame: 'Fotograma', shotPlan: 'Dirigir el plano', frameDirection: 'Usa el primer fotograma original para orientar el sujeto, la luz y la composición.', animateFrame: 'Anima el primer fotograma proporcionado.', videoPrompt: 'Prompt de vídeo', zoom: 'Inspeccionar detalles', zoomOut: 'Encuadre completo', face: 'Rostro y cabello', texture: 'Tejido y textura', gradient: 'Color', before: 'Origen', after: 'Edición', aboutExamples: 'Sobre estos ejemplos', copy: 'Copiar prompt', copied: 'Copiado', original: 'Abrir original', prompt: 'Prompt y ajustes', source: 'Origen exacto de la edición', compare: 'Mostrar la edición', background: 'Fondo de vista previa', light: 'Claro', dark: 'Oscuro', motion: 'Movimiento previsto', sound: 'Sonido previsto', still: 'Fotograma inicial · GPT Image 2.6 Sunburst', sourcePrompt: 'Prompt de imagen (inglés)' },
+  en: { previousExamples: 'Previous examples', nextExamples: 'Next examples', play: "Play video", loading: "Loading…", retry: "Try again", playTogether: "Play both", pause: "Pause", timeline: "Comparison timeline", mute: "Mute result", unmute: "Unmute result", restart: "Restart both", close: 'Close', heroPrompt: 'Prompt for this visual', promptLibrary: 'Prompts to adapt', promptTemplate: 'Prompt starting point', copyVideo: 'Copy video prompt', detailSource: 'Detail from the same image', unretouched: 'No retouching', frame: 'Frame', shotPlan: 'Direct the shot', frameDirection: 'Use the original first frame to anchor the subject, lighting and composition.', animateFrame: 'Animate the supplied first frame.', videoPrompt: 'Video prompt', zoom: 'Inspect detail', zoomOut: 'Full frame', face: 'Face & hair', texture: 'Fabric & texture', gradient: 'Colour', before: 'Source', after: 'Edit', aboutExamples: 'About these examples', copy: 'Copy prompt', copied: 'Copied', original: 'Open original', prompt: 'Prompt & settings', source: 'Exact edit source', compare: 'Reveal the edit', background: 'Preview background', light: 'Light', dark: 'Dark', motion: 'Planned motion', sound: 'Planned sound', still: 'Start frame · GPT Image 2.6 Sunburst', sourcePrompt: 'Image prompt (English)' },
+  fr: { previousExamples: 'Exemples précédents', nextExamples: 'Exemples suivants', play: "Lire la vidéo", loading: "Chargement…", retry: "Réessayer", playTogether: "Lire ensemble", pause: "Pause", timeline: "Position de la comparaison", mute: "Couper le son du résultat", unmute: "Activer le son du résultat", restart: "Recommencer ensemble", close: 'Fermer', heroPrompt: 'Prompt de ce visuel', promptLibrary: 'Prompts à adapter', promptTemplate: 'Base de prompt', copyVideo: 'Copier le prompt vidéo', detailSource: 'Détail de la même image', unretouched: 'Sans retouche', frame: 'Image', shotPlan: 'Diriger le plan', frameDirection: 'Utilisez la première image originale pour guider le sujet, la lumière et la composition.', animateFrame: 'Anime la première image fournie.', videoPrompt: 'Prompt vidéo', zoom: 'Inspecter les détails', zoomOut: 'Vue complète', face: 'Visage et cheveux', texture: 'Tissu et texture', gradient: 'Couleur', before: 'Source', after: 'Retouche', aboutExamples: 'À propos de ces exemples', copy: 'Copier le prompt', copied: 'Copié', original: 'Ouvrir l’original', prompt: 'Prompt et réglages', source: 'Source exacte de la retouche', compare: 'Révéler la retouche', background: 'Fond de prévisualisation', light: 'Clair', dark: 'Sombre', motion: 'Mouvement prévu', sound: 'Son prévu', still: 'Image de départ · GPT Image 2.6 Sunburst', sourcePrompt: 'Prompt de l’image (anglais)' },
+  es: { previousExamples: 'Ejemplos anteriores', nextExamples: 'Ejemplos siguientes', play: "Reproducir vídeo", loading: "Cargando…", retry: "Reintentar", playTogether: "Reproducir ambos", pause: "Pausa", timeline: "Posición de la comparación", mute: "Silenciar resultado", unmute: "Activar sonido del resultado", restart: "Reiniciar ambos", close: 'Cerrar', heroPrompt: 'Prompt de este visual', promptLibrary: 'Prompts para adaptar', promptTemplate: 'Punto de partida del prompt', copyVideo: 'Copiar prompt de vídeo', detailSource: 'Detalle de la misma imagen', unretouched: 'Sin retoques', frame: 'Fotograma', shotPlan: 'Dirigir el plano', frameDirection: 'Usa el primer fotograma original para orientar el sujeto, la luz y la composición.', animateFrame: 'Anima el primer fotograma proporcionado.', videoPrompt: 'Prompt de vídeo', zoom: 'Inspeccionar detalles', zoomOut: 'Encuadre completo', face: 'Rostro y cabello', texture: 'Tejido y textura', gradient: 'Color', before: 'Origen', after: 'Edición', aboutExamples: 'Sobre estos ejemplos', copy: 'Copiar prompt', copied: 'Copiado', original: 'Abrir original', prompt: 'Prompt y ajustes', source: 'Origen exacto de la edición', compare: 'Mostrar la edición', background: 'Fondo de vista previa', light: 'Claro', dark: 'Oscuro', motion: 'Movimiento previsto', sound: 'Sonido previsto', still: 'Fotograma inicial · GPT Image 2.6 Sunburst', sourcePrompt: 'Prompt de imagen (inglés)' },
 };
 
 const creationUi = {
@@ -34,6 +36,7 @@ const creationUi = {
 };
 export type CinematicAsset = Pick<ModelEditorialImage, 'id' | 'title' | 'prompt' | 'original' | 'display' | 'metadataLabel' | 'source' | 'alphaVerified'> & {
   engineId?: string;
+  watchHref?: string;
   video?: NonNullable<ReturnType<typeof cinematicProofVideo>>;
   videoCreation?: { href: string; refineHref: string };
   creation?: { href: string; refineHref: string; quoteInput: PublicModelQuoteInput; locale: AppLocale; isStartFrame: boolean };
@@ -47,6 +50,7 @@ export type CinematicPresentation = {
   media?: CinematicVideoMedia;
   capabilities?: CinematicCapabilities;
   workspacePreview?: { url: string; width: number; height: number; mobile: { url: string; width: number; height: number } };
+  draftVisual?: typeof draftIllustration;
   assistantHref: string;
   ui: typeof ui.en & typeof creationUi.en;
 };
@@ -73,12 +77,19 @@ export function buildCinematicPresentation(content: ModelCinematicContent | null
       if (!title) throw new Error('Missing localized public proof title');
       const params = new URLSearchParams({ engine: content.modelSlug, from: proof.jobId, lang: locale });
       const href = `/app?${params}`;
-      assets.push({ ...proof, title, engineId: content.modelSlug, metadataLabel: '',
+      assets.push({ ...proof, title, engineId: content.modelSlug, metadataLabel: '', watchHref: buildVideoWatchPath(proof.jobId),
         videoCreation: { href, refineHref: `${href}&assistant=milo&refine=example` } });
     }
   }
   assets = assets.map(asset => {
     const video = media?.examples[asset.id];
+    if (video && media?.openingRecipe?.id === asset.id) {
+      const recipe = media.openingRecipe;
+      const params = new URLSearchParams({ engine: content.modelSlug, mode: recipe.mode, videoPrompt: recipe.id, lang: locale });
+      const href = `/app?${params}`;
+      return { ...asset, engineId: content.modelSlug, original: recipe.original, display: recipe.original, prompt: recipe.prompt, video, metadataLabel: cinematicVideoMetadata(media, video, locale === 'fr' ? 'Son' : locale === 'es' ? 'Sonido' : 'Sound'),
+        videoCreation: { href, refineHref: `${href}&assistant=milo&refine=example` } };
+    }
     if (video && media) return { ...asset, video, metadataLabel: cinematicVideoMetadata(media, video, locale === 'fr' ? 'Son' : locale === 'es' ? 'Sonido' : 'Sound') };
     const engineId = asset.engineId ?? content.modelSlug;
     const preset = getImageEditorialPreset(engineId, asset.id);
@@ -138,6 +149,12 @@ export function buildCinematicPresentation(content: ModelCinematicContent | null
   assistantEntry.searchParams.set('engine', content.modelSlug);
   if (content.variant === 'video') assistantEntry.searchParams.set('mode', 't2v');
   const workspacePreview = content.specialty ? workspacePreviews.entries.find(entry => entry.modelSlug === content.modelSlug && entry.locale === locale) : undefined;
-  if (content.specialty && !workspacePreview) throw new Error('Missing exact-locale workspace preview');
-  return { locale, content, capabilities: buildCinematicCapabilities(content.capabilities, content.modelSlug, locale), workspacePreview, examples: examples.cinematic, assets, hero, media, ui: { ...ui[locale], ...creationUi[locale] }, assistantHref: assistantEntry.pathname + assistantEntry.search };
+  const draftVisual = content.specialty?.kind === 'draft' && content.specialty.draftPreview && content.modelSlug === draftIllustration.modelSlug ? draftIllustration : undefined;
+  if (content.specialty?.draftPreview && !draftVisual) throw new Error('Draft illustration needs an exact-model source');
+  if (draftVisual && content.specialty?.draftPreview) {
+    const angleIds = content.specialty.draftPreview.angles.map(angle => angle.id);
+    if (new Set(angleIds).size !== 3 || !draftVisual.angles.every(angle => angleIds.includes(angle.id)) || !angleIds.includes(draftVisual.selectedAngleId)) throw new Error('Draft illustration needs matching localized camera angles');
+  }
+  if (content.specialty && !draftVisual && !workspacePreview) throw new Error('Missing exact-locale workspace preview');
+  return { locale, content, capabilities: buildCinematicCapabilities(content.capabilities, content.modelSlug, locale), workspacePreview, draftVisual, examples: examples.cinematic, assets, hero, media, ui: { ...ui[locale], ...creationUi[locale] }, assistantHref: assistantEntry.pathname + assistantEntry.search };
 }

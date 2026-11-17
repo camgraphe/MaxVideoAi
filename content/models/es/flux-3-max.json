@@ -3,7 +3,7 @@
   "versionLabel": "3 Max",
   "seo": {
     "title": "FLUX 3 Max | Video IA, audio y control de imágenes | MaxVideoAI",
-    "description": "Crea videos de 5 a 20 segundos con FLUX 3 Max desde texto, una imagen o dos imágenes. Audio opcional, 720p, 1080p reescalado, prompts y precios."
+    "description": "Crea vídeos de 5 a 20 s con FLUX 3 Max a partir de texto, imágenes o hasta 10 fotogramas clave con marcas de tiempo. Audio opcional, 720p, reescalado a 1080p y precios."
   },
   "overview": "FLUX 3 Max es un modelo de video postentrenado por fal en colaboración con Black Forest Labs. Crea una escena desde texto, anima una imagen inicial, guía el inicio y el final o construye una secuencia con imágenes clave situadas en el tiempo. Elige de 5 a 20 segundos, audio generado opcional y salida de 720p o 1080p con reescalado.",
   "decision": {
@@ -128,14 +128,14 @@
     ],
     "pricingCopy": {
       "title": "Precios de FLUX 3 Max",
-      "subtitle": "Compara cinco segundos en 720p y 1080p, y una escena de diez segundos en 720p.",
-      "footnote": "La cifra por segundo es la tarifa efectiva del ejemplo de cinco segundos. El total de cada clip se redondea al céntimo. Revisa la cotización actual antes de generar.",
-      "ctaLabel": "Generar con FLUX 3 Max",
-      "ctaHref": "/app?engine=flux-3-max"
+      "subtitle": "Elige la duración de la toma y consulta su precio en Create, en 720p o en 1080p con reescalado.",
+      "footnote": "El presupuesto cubre el clip completo. Al cambiar la duración o los ajustes, verás el nuevo total antes de generar.",
+      "ctaLabel": "Ver precios de FLUX 3 Max",
+      "ctaHref": "/es/precios#flux-3-max-pricing"
     },
     "meta": {
       "title": "FLUX 3 Max | Video IA, audio y control de imágenes | MaxVideoAI",
-      "description": "Crea videos de 5 a 20 segundos con FLUX 3 Max desde texto, una imagen o dos imágenes. Audio opcional, 720p, 1080p reescalado, prompts y precios."
+      "description": "Crea vídeos de 5 a 20 s con FLUX 3 Max a partir de texto, imágenes o hasta 10 fotogramas clave con marcas de tiempo. Audio opcional, 720p, reescalado a 1080p y precios."
     }
   },
   "prompting": {
@@ -352,7 +352,7 @@
         },
         {
           "id": "fluxmax-create",
-          "title": "Sigo aquí"
+          "title": "Unavailable"
         },
         {
           "id": "fluxmax-prompt",
@@ -369,9 +369,9 @@
           "id": "create",
           "layout": "shots",
           "eyebrow": "CREATE · DIRIGE LA ESCENA",
-          "title": "Dale intención a cada momento.",
-          "body": "Una carrera, un refugio y una frase por radio. Describe cómo la acción cambia al personaje y deja que cámara y sonido la sigan. Empieza solo con texto o desde una imagen que quieras animar.",
-          "note": "Observa cómo la carrera da paso a una pausa. Escucha pasos, impactos, respiración y la frase final.",
+          "title": "Deja que el silencio prepare el remate.",
+          "body": "Suena un teléfono sobre un ataúd justo cuando el encargado del funeral va a hablar. En Unavailable, el prompt le da una sola frase a la viuda. Sus reacciones sostienen la comedia.",
+          "note": "Observa el paso del plano general al primer plano de la viuda y escucha la pausa antes de que vuelva a sonar el teléfono.",
           "assetIds": [
             "fluxmax-create"
           ]
@@ -510,8 +510,8 @@
       "items": [
         {
           "id": "create",
-          "title": "Dale intención a cada momento.",
-          "body": "Una carrera, un refugio y una frase por radio. Describe cómo la acción cambia al personaje y deja que cámara y sonido la sigan. Empieza solo con texto o desde una imagen que quieras animar.",
+          "title": "Deja que el silencio prepare el remate.",
+          "body": "Suena un teléfono sobre un ataúd justo cuando el encargado del funeral va a hablar. En Unavailable, el prompt le da una sola frase a la viuda. Sus reacciones sostienen la comedia.",
           "input": "Text / images",
           "output": "Video",
           "steps": [
@@ -520,8 +520,8 @@
             "Describe la transición"
           ],
           "action": "Generar con FLUX 3 Max",
-          "prompt": "A grounded action-thriller scene in an empty concrete parking garage at night. An adult woman with short dark hair, wearing a charcoal jacket and dark trousers, sprints from left to right toward a thick square concrete pillar. A burst of gunfire from offscreen behind her chips the wall she has just passed. She reaches the pillar, turns around its near corner, and presses her back against the sheltered side. The firing stops. Dust settles. Hold close on her face as she catches her breath and listens. She lifts the radio clipped to her jacket and says quietly in English, \"I'm still here.\" Cut to black. Start with a clear wide view of the route and cover; use urgent cuts following her run, then let the final pause last. Preserve the same woman, clothes, pillar and screen direction throughout. Hard fluorescent light, a red emergency light in the distance. Sound: running footsteps, offscreen gunfire, concrete impacts, breathing, radio static and her voice. No music or visible injuries.",
-          "inspect": "Observa cómo la carrera da paso a una pausa. Escucha pasos, impactos, respiración y la frase final.",
+          "prompt": "A black comedy played with absolute seriousness in a small, exquisitely theatrical funeral chapel. An elderly widow with a severe white fringe, a black veil and bright red lipstick stands beside a closed polished coffin. A tall adult funeral director with a shaved head and white gloves prepares to speak. A small black mobile phone already lies on top of the coffin. Establish the precise arrangement in a symmetrical wide frame: pale flowers, dark wood, a low chandelier and these two people. Just as the director draws breath, the phone sounds a cheap electronic ringtone. Both freeze. He looks at the widow. She closes her eyes for a moment, irritated rather than shocked, then picks up the phone. She listens for one beat and says quietly in English, \"He's unavailable.\" She ends the call and places the phone back on the same spot. The director straightens his posture and prepares to begin again. The phone immediately rings a second time. Cut to the widow's exhausted stare and hold long enough for the joke to land. Deliberate reaction cuts and uncomfortable silence, never comic mugging. Keep the coffin closed throughout. Sound: the ringtone, breath, her voice and the chapel's slight room echo. No music, laugh track, visible deceased person, readable phone screen or captions.",
+          "inspect": "Observa el paso del plano general al primer plano de la viuda y escucha la pausa antes de que vuelva a sonar el teléfono.",
           "limits": [
             {
               "label": "Duración",
@@ -606,6 +606,10 @@
         "caption": "En Create · Tres imágenes de referencia situadas a los 0, 8 y 16 segundos."
       }
     },
+    "benchmarkSource": {
+      "label": "Velocidad de generación medida por fal",
+      "href": "https://fal.ai/blog/introducing-flux-3-max-by-fal"
+    },
     "specsReviewedAt": "2026-11-17",
     "capabilities": {
       "title": "Cuatro puntos de partida. Tu dirección.",
@@ -633,7 +637,13 @@
               "label": "Crear desde texto",
               "mode": "t2v"
             }
-          ]
+          ],
+          "visual": {
+            "labels": [
+              "El ciervo de piedra dormido"
+            ],
+            "caption": "The Sleeping Guardian · Película creada con FLUX 3 Max a partir de texto."
+          }
         },
         {
           "id": "image",
@@ -656,7 +666,15 @@
               "label": "Animar una imagen",
               "mode": "i2v"
             }
-          ]
+          ],
+          "visual": {
+            "labels": [
+              "Imagen inicial"
+            ],
+            "caption": "Abre los dedos y la marea se lleva el barco de papel.",
+            "resultLabel": "El barco de papel · FLUX 3 Max",
+            "promptNote": "FLUX 3 Max · 8 s · 720p · 16:9 (1280 × 704 de salida). Añade tus imágenes en Create. El prompt y los ajustes se abren listos para revisar."
+          }
         },
         {
           "id": "endpoints",
@@ -679,7 +697,16 @@
               "label": "Conectar dos imágenes",
               "mode": "fl2v"
             }
-          ]
+          ],
+          "visual": {
+            "labels": [
+              "Primer fotograma",
+              "Último fotograma"
+            ],
+            "caption": "La guía mira por la ventanilla helada. El último fotograma revela su cabina roja suspendida sobre las nubes.",
+            "resultLabel": "Primera luz en el teleférico · FLUX 3 Max",
+            "promptNote": "FLUX 3 Max · 10 s · 720p · 16:9 (1280 × 704 de salida). Añade tus imágenes en Create. El prompt y los ajustes se abren listos para revisar."
+          }
         },
         {
           "id": "keyframes",
@@ -702,7 +729,23 @@
               "label": "Abrir keyframes",
               "mode": "ref2v"
             }
-          ]
+          ],
+          "visual": {
+            "labels": [
+              "La cúpula cerrada",
+              "La palanca de latón",
+              "La primera luz",
+              "Se abre la cúpula",
+              "En el ocular"
+            ],
+            "caption": "Cinco imágenes de referencia marcan el ritmo de un plano de 16 segundos.",
+            "storyboard": {
+              "title": "The First Light · Guion gráfico",
+              "frameLabel": "Fotograma",
+              "workflowLink": "Explorar el flujo con fotogramas clave",
+              "promptNote": "Prompt del guion gráfico · 16 s · 720p · 16:9 · Sonido ambiente. Reutiliza los tiempos en Create y añade tus cinco imágenes en orden."
+            }
+          }
         }
       ],
       "controls": {
@@ -725,6 +768,23 @@
           }
         ]
       }
+    },
+    "alternatives": {
+      "title": "¿Qué modelo encaja con tu plano?",
+      "models": [
+        {
+          "slug": "flux-3",
+          "reason": "Continúa un plano que ya tienes. El modo Extend retoma la acción de tu vídeo original."
+        },
+        {
+          "slug": "seedance-2-5",
+          "reason": "Conserva la actuación y cambia la toma. Con Modify puedes dirigir una edición a partir de tu vídeo."
+        },
+        {
+          "slug": "minimax-h3-max",
+          "reason": "Parte de una banda sonora. Tu música o diálogo puede guiar una escena de 5 a 15 segundos."
+        }
+      ]
     }
   }
 }

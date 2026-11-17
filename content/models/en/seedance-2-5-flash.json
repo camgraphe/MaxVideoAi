@@ -93,7 +93,7 @@
     },
     {
       "q": "How is Flash different from standard Seedance 2.5?",
-      "a": "In MaxVideoAI, Flash offers 480p or 720p. Standard Seedance 2.5 also offers 1080p and a native Draft-to-final workflow with different reference limits. A normal Flash generation is not a finalizable Draft. Compare the settings and current quotes for the version you need."
+      "a": "In MaxVideoAI, Flash offers 480p or 720p. Standard Seedance 2.5 also offers 1080p and 4K and a native Draft-to-final workflow with different reference limits. A normal Flash generation is not a finalizable Draft. Compare the settings and current quotes for the version you need."
     },
     {
       "q": "How much does Seedance 2.5 Flash cost?",
@@ -349,7 +349,7 @@
       "assetTitles": [
         {
           "id": "midnight-run",
-          "title": "Midnight run — a low tracking shot"
+          "title": "Blue hour on the coast"
         },
         {
           "id": "after-the-beat",
@@ -372,7 +372,7 @@
           "title": "Before the drop — vertical action"
         }
       ],
-      "provenance": "Create, motion control, the wardrobe edit, the diner conversation and the orbital scene show real Seedance 2.5 Flash videos. The red-coat reference image was made with Seedream 5.5. Extend is an illustrated workflow; the hero and gallery preview remain still images.",
+      "provenance": "The coastal tracking shot, rooftop performance, motion transfer, wardrobe edit, diner conversation and orbital scene were rendered with Seedance 2.5 Flash. Seedream 5.5 supplied the red-coat character. The Extend timeline illustrates how a continuation works.",
       "panels": [
         {
           "id": "create",
@@ -475,7 +475,7 @@
   },
   "cinematic": {
     "intro": "Create 4–30 second videos from text, a first frame or references, in 480p or 720p with optional generated audio. Shape the action in Create, change an existing clip with Modify, or continue it with Extend.",
-    "caption": "Concept frame · GPT Image 2.6 Sunburst",
+    "caption": "Seedance 2.5 Flash · Text to video · 720p",
     "proofLabel": "From first frame to film",
     "examplesLabel": "Explore the shots",
     "pricingLabel": "Price & compare",

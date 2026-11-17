@@ -1,0 +1,54 @@
+{
+  "modelSlug": "seedance-2-5",
+  "kind": "workflow-illustrations",
+  "sourceEngineId": "gpt-image-2-6-sunburst",
+  "generationJobIds": {
+    "create": "a2c1ab13-dd72-4647-a5c0-6caa2691ca8c",
+    "modify": "4e483f7d-eaec-4675-8433-85d43d185dd7",
+    "extend": "3982fdb1-a4e6-42a1-9295-7d29085cca92"
+  },
+  "images": {
+    "character": {
+      "url": "/assets/model-examples/workflow-illustrations/21f81df0a0b4f43bb1b8878eefdd6c305ab48391f08b1d46fec1bda4b62f9e36.webp",
+      "width": 330,
+      "height": 260,
+      "sha256": "21f81df0a0b4f43bb1b8878eefdd6c305ab48391f08b1d46fec1bda4b62f9e36"
+    },
+    "setting": {
+      "url": "/assets/model-examples/workflow-illustrations/cd0132cac5221874da56c8ddb16ce31e242e68ae9b71257617929b9caa84914d.webp",
+      "width": 375,
+      "height": 165,
+      "sha256": "cd0132cac5221874da56c8ddb16ce31e242e68ae9b71257617929b9caa84914d"
+    },
+    "create": {
+      "url": "/assets/model-examples/workflow-illustrations/f5a3506d54088f2d4d6214edf65b3e6dd2eac9c45887bb1195328f9460caaf95.webp",
+      "width": 860,
+      "height": 530,
+      "sha256": "f5a3506d54088f2d4d6214edf65b3e6dd2eac9c45887bb1195328f9460caaf95"
+    },
+    "modifySource": {
+      "url": "/assets/model-examples/workflow-illustrations/dd3ea45453ca5faa39f6032e1c9bfbcfa58ddacc54507d2e6724b6e3133d5f0a.webp",
+      "width": 960,
+      "height": 1080,
+      "sha256": "dd3ea45453ca5faa39f6032e1c9bfbcfa58ddacc54507d2e6724b6e3133d5f0a"
+    },
+    "modifyResult": {
+      "url": "/assets/model-examples/workflow-illustrations/8dd0d1ff3154d206a8242f5d40a9165f64d8090f0df1496279f5b5c42269354e.webp",
+      "width": 960,
+      "height": 1080,
+      "sha256": "8dd0d1ff3154d206a8242f5d40a9165f64d8090f0df1496279f5b5c42269354e"
+    },
+    "extendSource": {
+      "url": "/assets/model-examples/workflow-illustrations/ce056caaed730dfbe8a228e69bbdba30f8ff0361e2028d8c925f3a12e0e09346.webp",
+      "width": 960,
+      "height": 1080,
+      "sha256": "ce056caaed730dfbe8a228e69bbdba30f8ff0361e2028d8c925f3a12e0e09346"
+    },
+    "extendResult": {
+      "url": "/assets/model-examples/workflow-illustrations/edeab465b8230920e2533a62683d8a31842f1b3b387000ee26b4f8e5a86e362c.webp",
+      "width": 960,
+      "height": 1080,
+      "sha256": "edeab465b8230920e2533a62683d8a31842f1b3b387000ee26b4f8e5a86e362c"
+    }
+  }
+}

@@ -93,7 +93,7 @@
     },
     {
       "q": "¿En qué se diferencia Flash de Seedance 2.5 estándar?",
-      "a": "En MaxVideoAI, Flash ofrece 480p o 720p. Seedance 2.5 estándar también ofrece 1080p y un flujo nativo de Draft a final, con otros límites de referencias. Una generación Flash normal no es un Draft finalizable. Compara los ajustes y presupuestos actuales para tu proyecto."
+      "a": "En MaxVideoAI, Flash ofrece 480p o 720p. Seedance 2.5 estándar también ofrece 1080p y 4K y un flujo nativo de Draft a final, con otros límites de referencias. Una generación Flash normal no es un Draft finalizable. Compara los ajustes y presupuestos actuales para tu proyecto."
     },
     {
       "q": "¿Cuánto cuesta Seedance 2.5 Flash?",
@@ -349,7 +349,7 @@
       "assetTitles": [
         {
           "id": "midnight-run",
-          "title": "Carrera de medianoche — travelling a ras del suelo"
+          "title": "La hora azul en la costa"
         },
         {
           "id": "after-the-beat",
@@ -372,7 +372,7 @@
           "title": "Antes del descenso — acción en vertical"
         }
       ],
-      "provenance": "Create, el control de movimiento, el cambio de vestuario, el diálogo y la escena orbital muestran vídeos reales de Seedance 2.5 Flash. La referencia del abrigo rojo se creó con Seedream 5.5. Extend es un flujo ilustrado; la cabecera y la vista previa de la galería siguen siendo imágenes.",
+      "provenance": "El travelling costero, la batería, la transferencia de movimiento, el cambio de vestuario, el diálogo en el diner y la escena orbital se generaron con Seedance 2.5 Flash. El personaje de abrigo rojo procede de Seedream 5.5. La línea de tiempo de Extend ilustra la continuación de un clip.",
       "panels": [
         {
           "id": "create",
@@ -475,7 +475,7 @@
   },
   "cinematic": {
     "intro": "Crea vídeos de 4 a 30 segundos a partir de texto, un primer fotograma o referencias, en 480p o 720p con audio generado opcional. Compón con Create, edita con Modify o continúa un plano con Extend.",
-    "caption": "Concept frame · GPT Image 2.6 Sunburst",
+    "caption": "Seedance 2.5 Flash · Texto a vídeo · 720p",
     "proofLabel": "Del primer fotograma al cine",
     "examplesLabel": "Explorar las escenas",
     "pricingLabel": "Precio y comparativa",

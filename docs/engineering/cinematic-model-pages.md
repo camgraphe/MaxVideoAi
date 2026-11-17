@@ -71,6 +71,12 @@ timed keyframes); they do not enable composer capabilities. The original SEO met
 localized URLs, technical details, useful prompt recipes and comparison links remain
 owned by the existing route/content helpers.
 
+The opening visual owns its prompt drawer: `ModelCinematicHero` renders the compact
+`ModelCinematicOverview` trigger on the image, never in the specification table.
+The original prompt, provenance and reuse actions remain server-rendered in the
+closed dialog. Additional prompt recipes live inside the prompt-writing disclosure,
+clearly labelled as prompts to adapt; exact public-example links stay with their recipe.
+
 - `model-cinematic-public-proofs.json` records selected **already-public** jobs,
   exact prompts, original video URLs, measured dimensions/audio and immutable posters.
   A new bundle is explicit in `model-page-cinematic-media.ts`; there is no fallback
@@ -80,6 +86,17 @@ owned by the existing route/content helpers.
 - `ModelCinematicSpecialty.tsx` accepts the existing validated keyframe-demo view
   model. It preserves reference order, indices, public ownership checks and reuse
   destinations. Without a validated result it renders only an explanatory setup.
+- Native Draft uses `ModelCinematicDraftWorkflow.client.tsx`: a compact image path,
+  illustrative 1080p/4K selector and localized Create → Library → finalization steps.
+  `model-draft-workflow-illustration.json` records the exact model, three immutable
+  ImageGen camera-angle illustrations and the initial selection. Localized angle IDs
+  must match the manifest. Selecting an angle updates the final preview with that exact
+  frame; only the selected frame repeats. The caption identifies ImageGen illustrations,
+  never actual Seedance outputs or a measured quality comparison.
+  No blur/sharpening, paid requests, video downloads or VideoObject evidence are
+  attached to the selector. Keep the explanatory source and inherited-setting facts
+  in server-rendered HTML. Illustrations are not gallery jobs. A real quality comparison requires
+  a verified native Draft/final lineage and measured original outputs first.
 - `model-cinematic-workspace-previews.json` records locale-specific desktop/mobile
   captures of the **real Create components**, with illustrative settings. Recreate
   them with `pnpm exec tsx --tsconfig frontend/tsconfig.json
@@ -109,7 +126,24 @@ Modify/Extend film to `workflows.items` just to document a supported workflow.
 `ModelCinematicCapabilities.client.tsx` renders every explanation in server HTML
 and selects one panel at a time, with tab/arrow/Home/End keyboard navigation.
 The block sits inside the Create proof section and replaces redundant specialty
-note cards. It adds no media downloads.
+note cards. Without an authored illustration it keeps the text-only workflow guide.
+
+The optional `capabilities.items[].proof` adds a visual explanation: two references
+and one scene, a full-frame reveal comparator, or an extendable filmstrip. Its copy
+and prepared prompt live in each locale; media identities and immutable display
+hashes live separately in `model-capability-illustrations.json`. The builder admits
+only the manifest's model and matching workflow. Illustrations have explicit captions
+and prompt-drawer provenance; they never become native model outputs or VideoObjects.
+The complete uses and limits stay in SSR HTML inside a compact disclosure. Reference
+labels sit beneath the images, and the comparator starts at 50%, with pointer and
+native range-keyboard input. The filmstrip respects reduced motion.
+
+`capability-create`, `capability-modify` and `capability-extend` are explicit Seedance
+2.5 recipes in the shared video preset lookup. Reuse and Milo keep the exact model,
+locale and workflow, require the visitor's own references, and never import a mockup
+asset, invent recorded settings, submit a prompt or start a paid render. Replacing
+these illustrations with real films must use the existing reviewed public proof and
+manual comparison-player owners; do not relabel the stills or borrow Flash results.
 
 `_lib/model-page-capabilities.ts` validates each action against the actual engine's
 modes and constructs locale-preserving Create links. A cross-model action must name
@@ -122,3 +156,33 @@ limits, not additional rendered proof or new provider capabilities.
 The pricing harness executes both the legacy commercial boundary and the cinematic
 page/details composition. It checks the visible formatted offer, scenario repricing
 and JSON-LD together; a renderer migration must not remove that parity coverage.
+
+### Optional opening motion
+
+A cinematic video model gets background playback when its named hero asset has a reviewed clip. Image models and video heroes awaiting their own film retain the poster. `ModelCinematicHeroMotion.client.tsx` consumes the exact
+hero clip and the shared `usePublicVideoPlayback` rendition/fallback owner. The
+existing responsive, priority poster stays in SSR; no video element or source is
+mounted before playback intent. Desktop autoplay waits for confirmed visibility,
+page load and a short defer, and remains muted/looping. Mobile, reduced motion,
+Save-Data and crawlers retain the still until explicit Play. Hidden/offscreen playback
+pauses, and explicit user pause survives visibility changes. The two small controls
+leave the hero text and its existing mask intact. Future opt-ins require source review
+and real loading checks; this local design trial does not establish production CWV.
+
+## Closing a cinematic video page
+
+Use the Seedance 2.5 and FLUX 3 Max closing layout for new video model pages.
+Set `cinematic.alternatives` in each locale with a section title and up to three
+published video model slugs. Give each choice a reason tied to a different
+visitor need. Register a still from that exact model in `model-page-cinematic-discovery.ts`.
+The shared section displays the current model’s pricing and Create action,
+then illustrated choices, published comparisons and directory links. The
+existing FAQ follows. Keep model prices in the pricing projection and supply the
+model-specific pricing anchor through the localized decision copy. The model’s
+benchmark review belongs next to its specifications.
+
+For FLUX 3 Max, the opening-image and first/last-frame panels use the actual
+submitted image files alongside a manual player. Each result has its own
+poster, measured dimensions and submitted prompt. The model page applies its
+temporary timed-keyframe publication hold in `model-page-flux-release.ts`.
+App modes and the prepared observatory storyboard keep their source data.
