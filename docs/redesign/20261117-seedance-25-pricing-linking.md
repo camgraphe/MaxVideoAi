@@ -25,6 +25,7 @@ Revue du 17 novembre 2026. Le comparatif porte sur la page standard en productio
 - La page candidate et la production répondent en anglais, français et espagnol avec les mêmes canoniques et alternates. Les trois routes Seedance et les trois routes FLUX figurent dans le sitemap public. Les 217 destinations et variantes de liens Seedance contrôlées en HTTP aboutissent, y compris les entrées Create et Milo.
 - Le devis public sans génération pour 4 secondes depuis du texte avec son retourne 0,83 USD en 480p et 4,55 USD en 1080p. Le devis 4K reste indisponible en production. Les montants sont des observations datées. La page continue de lire les devis à la volée.
 - Les fiches 2.0 Fast et 2.5 Flash ainsi que le comparatif MiniMax H3 Max expliquent maintenant le Draft ou la résolution du modèle standard sans attribuer la 4K aux autres variantes. Un export 1080p ou 4K du Draft est distinct du Modify ordinaire en 480p/720p.
+- Dans les trois langues du guide de sélection 4K, la FAQ explique la création directe et le Draft vers 4K et renvoie à la fiche standard. La sélection historique de Seedance 2.0 garde son lien. Les conseils des autres guides ne présentent plus le 1080p comme le plafond de Seedance 2.5.
 - Livrer le moteur et son tarif ([PR #659](https://github.com/camgraphe/MaxVideoAi/pull/659)) avant la [PR des pages](https://github.com/camgraphe/MaxVideoAi/pull/657). Vérifier le devis 4K avec le moteur activé et le parcours Draft → final, puis contrôler les deux domaines après déploiement.
 
 ## Mesure

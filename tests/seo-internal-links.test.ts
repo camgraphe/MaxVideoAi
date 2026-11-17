@@ -143,7 +143,11 @@ test('Seedance 2.0 routes stay published, self-owned, and 4K-specific after the 
     const fourKPath = `content/${locale}/best-for/4k-video.mdx`;
     const fourKSource = readRepositoryFile(fourKPath);
     assert.match(fourKSource, new RegExp(source.replaceAll('/', '\\/')));
-    assert.doesNotMatch(fourKSource, new RegExp(target.replaceAll('/', '\\/')));
+    const direct4kAnswer = fourKSource.split('### ').find(section => section.split('\n')[0]?.includes('Seedance 2.5'));
+    assert.ok(direct4kAnswer?.includes(target), `The 2.5 FAQ should link to its own localized model page in ${locale}`);
+    assert.match(direct4kAnswer, /480p/);
+    assert.match(direct4kAnswer, /1080p/);
+    assert.match(direct4kAnswer, /4K/);
   }
 });
 
