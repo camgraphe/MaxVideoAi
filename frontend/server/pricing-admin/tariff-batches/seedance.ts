@@ -13,10 +13,14 @@ import { batchSelectorKey } from './input';
 export function prepareSeedanceAdminBatches(modelId: SeedanceTariffBatchModelId): TariffBatchProposal[] {
   const plan = prepareSeedance25CommercialTariffs({ modelId, at: '2026-11-13T00:00:00Z', standardEditTransport: 'modelark' });
   const batches: TariffBatchProposal[] = [];
-  for (let offset = 0; offset < plan.cells.length; offset += TARIFF_BATCH_MAX_CLASSES) {
-    batches.push({ schemaVersion: 1, modelId, intent: modelId === 'seedance-2-5' ? 'replace_selected' : 'create_missing',
-      reason: `${modelId}: public BytePlus LIST ×${plan.multiplier}; approved 2026-11-13; part ${batches.length + 1}`,
-      pricing: { kind: 'explicit' }, selections: plan.cells.slice(offset, offset + TARIFF_BATCH_MAX_CLASSES)
+  const groups = modelId === 'seedance-2-5' ? [
+    { intent: 'replace_selected' as const, cells: plan.cells.filter(cell => cell.selector.resolution !== '4k'), approved: '2026-11-13' },
+    { intent: 'create_missing' as const, cells: plan.cells.filter(cell => cell.selector.resolution === '4k'), approved: '2026-11-17' },
+  ] : [{ intent: 'create_missing' as const, cells: plan.cells, approved: '2026-11-13' }];
+  for (const group of groups) for (let offset = 0; offset < group.cells.length; offset += TARIFF_BATCH_MAX_CLASSES) {
+    batches.push({ schemaVersion: 1, modelId, intent: group.intent,
+      reason: `${modelId}: public BytePlus LIST ×${plan.multiplier}; approved ${group.approved}; part ${batches.length + 1}`,
+      pricing: { kind: 'explicit' }, selections: group.cells.slice(offset, offset + TARIFF_BATCH_MAX_CLASSES)
         .map(({ selector, price }) => ({ selector, price: price as import('./contract').TariffBatchPrice })) });
   }
   return batches;

@@ -14,13 +14,13 @@ import { tariffSelectorKey } from './helpers/customer-tariff-reader-fixture';
 
 const actor = '11111111-1111-4111-8111-111111111111';
 
-test('all 6,804 Seedance prices use native bounded admin transactions, refresh current displays and preserve paid history', { timeout: 180_000 }, async () => {
+test('all 8,748 Seedance prices use native bounded admin transactions, refresh current displays and preserve paid history', { timeout: 180_000 }, async () => {
   const saved = ENV.SEEDANCE_2_5_EDIT_TRANSPORT;
   ENV.SEEDANCE_2_5_EDIT_TRANSPORT = 'modelark';
   try { await withTariffBatchFixture(async ({ db }) => {
     await db.pool.query(readFileSync('neon/migrations/58_customer_tariff_bulk_interval_lock.sql', 'utf8'));
     const standard = prepareSeedance25CommercialTariffs({ modelId: 'seedance-2-5', at: '2026-01-01', standardEditTransport: 'modelark' });
-    const beforeRows = standard.cells.map(cell => ({ id: `old-${cell.id}`, selector_key: tariffSelectorKey(cell.selector),
+    const beforeRows = standard.cells.filter(cell => cell.selector.resolution !== '4k').map(cell => ({ id: `old-${cell.id}`, selector_key: tariffSelectorKey(cell.selector),
       selector_json: cell.selector, price_json: cell.price.kind === 'fixed' ? { ...cell.price, customerCents: 10000 }
         : { ...cell.price, components: cell.price.kind === 'unit_components' ? cell.price.components.map(c => ({ ...c,
           flatCents: c.flatCents * 1.25, terms: c.terms.map(t => ({ ...t, centsPerUnit: t.centsPerUnit * 1.25 })) })) : [] } }));
@@ -48,7 +48,7 @@ test('all 6,804 Seedance prices use native bounded admin transactions, refresh c
         assert.ok(proposal.intent !== 'rollback');
         const preview = await previewTariffBatch(proposal, actor);
         assert.equal(preview.plan.counts.conflict, 0);
-        assert.equal(preview.plan.counts[modelId === 'seedance-2-5' ? 'update' : 'create'], proposal.selections.length);
+        assert.equal(preview.plan.counts[proposal.intent === 'replace_selected' ? 'update' : 'create'], proposal.selections.length);
         const committed = await confirmTariffBatch(preview.id, preview.fingerprint, actor,
           changed === 0 ? () => { throw new Error('simulated page refresh failure'); } : refresh);
         assert.equal(committed.status, 'committed', committed.failure ?? undefined);
@@ -66,10 +66,10 @@ test('all 6,804 Seedance prices use native bounded admin transactions, refresh c
         }
       }
     }
-    assert.equal(changed, 6804);
+    assert.equal(changed, 8748);
     assert.equal((await db.pool.query('SELECT count(*) FROM app_customer_tariff_cell_versions')).rows[0].count, '4860');
-    assert.equal((await db.pool.query('SELECT count(*) FROM app_pricing_change_events')).rows[0].count, '6804');
-    assert.equal((await db.pool.query('SELECT count(*) FROM app_tariff_batch_receipts')).rows[0].count, '31');
+    assert.equal((await db.pool.query('SELECT count(*) FROM app_pricing_change_events')).rows[0].count, '8748');
+    assert.equal((await db.pool.query('SELECT count(*) FROM app_tariff_batch_receipts')).rows[0].count, '40');
     const historical = (await db.pool.query('SELECT tariff_id AS id,selector_key,selector_json,price_json FROM app_customer_tariff_cell_versions ORDER BY tariff_id')).rows;
     assert.deepEqual(historical, beforeRows.sort((a, b) => a.id.localeCompare(b.id)));
     assert.deepEqual((await db.pool.query("SELECT * FROM app_jobs WHERE job_id='seedance-prior-paid'")).rows, paidBefore);
@@ -81,6 +81,10 @@ test('all 6,804 Seedance prices use native bounded admin transactions, refresh c
     if (publicAfter.status !== 'exact') throw new Error('Expected refreshed public price');
     assert.equal(publicAfter.amountCents, 232);
     assert.notEqual(publicAfter.revision, publicBefore.revision);
+    const fourK = await quotePublicModelScenario({ ...publicScenario, resolution: '4k' });
+    assert.equal(fourK.status, 'exact');
+    if (fourK.status !== 'exact') throw new Error('Expected the newly activated 4K price');
+    assert.equal(fourK.amountCents, 914);
     const flash = prepareSeedance25CommercialTariffs({ modelId: 'seedance-2-5-flash', at: '2026-01-01', standardEditTransport: 'modelark' });
     const flashContext = flash.scenarios.find(s => s.context.mode === 't2v' && s.context.durationSec === 5
       && s.context.resolution === '720p' && s.context.aspectRatio === '16:9')!.context;

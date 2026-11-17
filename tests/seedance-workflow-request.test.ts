@@ -9,7 +9,7 @@ const parent = { prompt: 'Original prompt', durationSec: 5, aspectRatio: '16:9',
 
 test('final pricing inherits owned Draft facts and rejects missing ownership before any quote', async () => {
   const resolve = requests.resolveSeedanceWorkflowRequest;
-  const body = { engineId: 'seedance-2-5', mode: 't2v', prompt: 'Changed!', durationSec: 30, resolution: '480p',
+  const body = { engineId: 'seedance-2-5', mode: 't2v', prompt: 'Changed!', durationSec: 30, resolution: '1080p',
     aspectRatio: '9:16', audio: true, voiceControl: true, voiceIds: ['forged-voice'], multiPrompt: [{ prompt: 'forged', duration: 30 }],
     fps: 120, audio_url: 'https://evil.example/audio.mp3', cfgScale: 50, inputs: [], seedanceWorkflow: { step: 'final', draftJobId: 'draft-owned' } };
   const resolved = await resolve({ body, userId: 'owner', engineId: 'seedance-2-5', enabled: true }, {

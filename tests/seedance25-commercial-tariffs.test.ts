@@ -13,13 +13,13 @@ const selected = (plan: typeof flash, mode: string, resolution: string, workflow
   && s.context.aspectRatio === '16:9' && s.context.workflowStep === workflowStep)!;
 const cents = (row: typeof flash.scenarios[number], seconds = 4) => evaluateManualTariffPrice(row.cell.price, { input_video_seconds: seconds }).customerTotalCents;
 
-test('commercial proposal covers all 4,860 standard and 1,944 Flash classes without adding unsupported tiers', () => {
-  assert.equal(standard.cells.length, 4860);
+test('commercial proposal covers all 6,804 standard and 1,944 Flash classes without adding unsupported tiers', () => {
+  assert.equal(standard.cells.length, 6804);
   assert.equal(flash.cells.length, 1944);
   assert.deepEqual(new Set(flash.cells.map(c => c.selector.resolution)), new Set(['480p', '720p']));
   assert.ok(flash.cells.every(c => !c.selector.workflowStep));
   assert.ok(standard.cells.filter(c => c.selector.workflowStep === 'draft').every(c => c.selector.resolution === '480p'));
-  assert.ok(standard.cells.filter(c => c.selector.workflowStep === 'final').every(c => c.selector.resolution === '1080p'));
+  assert.ok(standard.cells.filter(c => c.selector.workflowStep === 'final').every(c => ['1080p', '4k'].includes(c.selector.resolution!)));
   assert.equal(flash.fingerprint, prepareSeedance25CommercialTariffs({ modelId: 'seedance-2-5-flash', at: '2026-11-14T00:00:00Z', standardEditTransport: 'modelark' }).fingerprint);
 });
 

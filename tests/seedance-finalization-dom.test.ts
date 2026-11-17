@@ -104,3 +104,24 @@ test('a definitive provider rejection with its exact confirmed refund allows a f
     assert.equal(f.submissions.length, 1);
   } finally { await f.dispose(); }
 });
+
+test('changing Final resolution invalidates the old quote and binds the new quote and submission to 4K', async () => {
+  const f = await mount();
+  try {
+    await act(async () => { void f.action.requestFinal(); }); await f.quote();
+    await act(async () => { f.action.selectResolution('4k'); void f.action.confirm(); });
+    assert.equal(f.action.quote, null); assert.equal(f.action.confirming, false);
+    assert.equal(f.submissions.length, 0, 'the old 1080p quote cannot authorize a 4K final');
+    await act(async () => { void f.action.requestFinal(); });
+    assert.equal((f.quotes[1].body as { resolution: string }).resolution, '4k');
+    await act(async () => f.action.selectResolution('1080p'));
+    assert.equal(f.action.resolution, '4k', 'selection is locked while a request is in flight');
+    await f.quote(1);
+    await act(async () => { void f.action.confirm(); });
+    assert.equal(f.submissions[0].body.resolution, '4k');
+    await act(async () => f.submissions[0].reject(new Error('response lost')));
+    await act(async () => { f.action.selectResolution('1080p'); void f.action.requestFinal(); });
+    assert.equal(f.action.uncertain, true); assert.equal(f.action.resolution, '4k');
+    assert.equal(f.quotes.length, 2, 'switching resolution must not unlock an ambiguous paid submission');
+  } finally { await f.dispose(); }
+});

@@ -24,7 +24,7 @@ test('owned Draft and final HTTP preflight select independent tariffs rather tha
       await db.pool.query(readFileSync(`neon/migrations/${migration}`, 'utf8'));
     }
     const engine = getFalEngineById('seedance-2-5')!.engine;
-    const normal = ['480p', '1080p'].map(resolution => buildManualTariffCoverageScenario({ engine, mode: 't2v',
+    const normal = ['480p', '1080p', '4k'].map(resolution => buildManualTariffCoverageScenario({ engine, mode: 't2v',
       durationSec: 4, resolution, aspectRatio: '16:9', addons: { audio: false }, membershipTier: 'member' }, 'workflow-preflight'));
     cells.push(...[...normal, ...seedanceWorkflowScenarios(normal)].map((s, index) => ({
       id: `preflight-${index}`, source: 'versioned' as const, version: 1, currency: 'USD',
@@ -52,6 +52,10 @@ test('owned Draft and final HTTP preflight select independent tariffs rather tha
       assert.equal(result.pricing.totalCents, step === 'draft' ? 77 : 777);
     }
     assert.equal((await (await send()).json()).pricing.totalCents, 9999, 'ordinary 480p remains a separate offer');
+    const fourK = await send({ step: 'final', draftJobId: 'owned-draft' }, '4k');
+    assert.equal(fourK.status, 200);
+    assert.equal((await fourK.json()).pricing.totalCents, 777);
+    assert.equal((await send({ step: 'final', draftJobId: 'owned-draft' }, '720p')).status, 409);
     assert.equal((await send({ step: 'final', draftJobId: 'someone-elses-draft' }, '1080p')).status, 409);
     await db.pool.query('UPDATE app_customer_tariff_state SET active = FALSE');
     const unavailable = await send({ step: 'draft' });

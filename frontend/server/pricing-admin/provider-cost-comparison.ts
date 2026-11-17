@@ -352,7 +352,7 @@ function listCost(input: ProviderCostComparisonInput, at: string): Pick<Provider
       return unavailable('unsupported_model_options');
     }
     const rate = input.engineId === 'seedance-2-5' && input.step !== 'normal'
-      ? getSeedance25StepListRate({ step: input.step, billingInputType: input.billingInputType })
+      ? getSeedance25StepListRate({ step: input.step, resolution: input.resolution, billingInputType: input.billingInputType })
       : getBytePlusVideoListRate({ profile, resolution: input.resolution, billingInputType: input.billingInputType });
     if ('resolution' in rate && rate.resolution !== input.resolution) return unavailable('unsupported_model_options');
     const promotion = getPublishedPromotionAt(rate, at);

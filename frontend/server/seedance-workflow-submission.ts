@@ -1,3 +1,4 @@
+import { isSeedanceFinalResolution } from '@/lib/seedance-workflow-contract';
 import { BytePlusModelArkError } from '@/server/video-providers/byteplus-modelark-error';
 import { buildSeedance25DraftRequest, buildSeedance25FinalRequest } from '@/server/video-providers/byteplus-modelark-draft';
 import { captureSeedanceDraftValidityStart, markSeedanceFinalState, registerSeedanceDraftLink } from './seedance-draft-links';
@@ -34,7 +35,7 @@ export async function prepareSeedanceWorkflowSubmission(input: {
   if (!stored || stored.step !== input.workflow.step) throw invalid();
   if (settings?.inputMode && settings.inputMode !== input.payloadInput.mode) throw invalid();
   if (input.workflow.step === 'final') {
-    if (stored.step !== 'final' || stored.draftJobId !== input.workflow.draftJobId || input.payloadInput.resolution !== '1080p') throw invalid();
+    if (stored.step !== 'final' || stored.draftJobId !== input.workflow.draftJobId || !isSeedanceFinalResolution(input.payloadInput.resolution)) throw invalid();
     const links = await read<{ provider_task_id: string; provider_model_id: string }>(`
       SELECT d.provider_task_id, d.provider_model_id FROM seedance_draft_links d
       JOIN app_jobs j ON j.job_id = d.draft_job_id AND j.user_id = d.user_id
@@ -47,7 +48,7 @@ export async function prepareSeedanceWorkflowSubmission(input: {
     if (!link) throw invalid();
     const advanced = isRecord(settings?.advanced) ? settings.advanced : {};
     const extra = isRecord(advanced.extraInputValues) ? advanced.extraInputValues : {};
-    return { payload: buildSeedance25FinalRequest({ modelId: link.provider_model_id, draftProviderTaskId: link.provider_task_id,
+    return { payload: buildSeedance25FinalRequest({ modelId: link.provider_model_id, draftProviderTaskId: link.provider_task_id, resolution: input.payloadInput.resolution,
       outputFormat: extra.output_format as 'mp4' | 'mov' | undefined,
       returnLastFrame: extra.return_last_frame as boolean | undefined, watermark: extra.watermark as boolean | undefined }),
       recordAccepted: async () => {

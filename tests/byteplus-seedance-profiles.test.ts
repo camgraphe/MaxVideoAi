@@ -106,7 +106,7 @@ const expected = [
     defaultResolution: '480p',
     defaultAspectRatio: '16:9',
     motionControls: false,
-    resolutions: ['480p', '720p', '1080p'],
+    resolutions: ['480p', '720p', '1080p', '4k'],
     durations: Array.from({ length: 27 }, (_, index) => index + 4),
     alwaysDirect: false,
     providerOverrideKey: 'SEEDANCE_2_5_PROVIDER',
@@ -287,10 +287,10 @@ test('Seedance 2.5 runtime keeps its canary defaults while accepting 1080p outpu
     '9:16',
   ]);
   assert.deepEqual(runtime.modes, ['t2v']);
-  assert.deepEqual(runtime.resolutions, ['480p', '720p', '1080p']);
+  assert.deepEqual(runtime.resolutions, ['480p', '720p', '1080p', '4k']);
   assert.deepEqual(
     fields.find((field) => field.id === 'resolution')?.values,
-    ['480p', '720p', '1080p']
+    ['480p', '720p', '1080p', '4k']
   );
   assert.equal(profile.generatedAudio, true);
   assert.equal(runtime.audio, true);

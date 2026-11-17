@@ -9,14 +9,14 @@ import { estimateBytePlusBillableTokens } from '../frontend/server/byteplus-acco
 import { getBytePlusVideoListRate } from '../frontend/server/byteplus-list-tariff';
 import { evaluateManualTariffPrice } from '../packages/pricing/src/manual-tariff-price';
 
-test('the full approved Seedance grids use 31 bounded native admin batches and canonical quotes', async () => {
+test('the full approved Seedance grids use 40 bounded native admin batches and canonical quotes', async () => {
   const saved = ENV.SEEDANCE_2_5_EDIT_TRANSPORT;
   ENV.SEEDANCE_2_5_EDIT_TRANSPORT = 'modelark';
   try {
-    for (const [modelId, count, batchCount] of [['seedance-2-5', 4860, 22], ['seedance-2-5-flash', 1944, 9]] as const) {
+    for (const [modelId, count, batchCount] of [['seedance-2-5', 6804, 31], ['seedance-2-5-flash', 1944, 9]] as const) {
       const grid = prepareSeedance25CommercialTariffs({ modelId, at: '2026-11-13T00:00:00Z', standardEditTransport: 'modelark' });
       const state = { status: 'loaded' as const, active: true, revision: 7, versionedCells: [], databaseCells:
-        modelId === 'seedance-2-5' ? grid.cells.map(cell => ({ ...cell, id: `existing-${cell.id}` })) : [] };
+        modelId === 'seedance-2-5' ? grid.cells.filter(cell => cell.selector.resolution !== '4k').map(cell => ({ ...cell, id: `existing-${cell.id}` })) : [] };
       const batches = prepareSeedanceAdminBatches(modelId);
       assert.equal(batches.length, batchCount);
       let checked = 0;
@@ -30,7 +30,8 @@ test('the full approved Seedance grids use 31 bounded native admin batches and c
         for (const row of plan.rows) {
           assert.ok(row.proposedCents! >= Math.ceil(row.supplierListCents - 1e-9));
           if (row.selector.billingInputType === 'video_input') assert.equal(row.domain?.maxInputSeconds, 30);
-          if (modelId === 'seedance-2-5') assert.equal(row.proposedCell?.id, row.previousCell?.id);
+          if (modelId === 'seedance-2-5' && row.selector.resolution !== '4k') assert.equal(row.proposedCell?.id, row.previousCell?.id);
+          if (row.selector.resolution === '4k') assert.equal(row.previousCell, null);
         }
         checked += plan.rows.length;
       }

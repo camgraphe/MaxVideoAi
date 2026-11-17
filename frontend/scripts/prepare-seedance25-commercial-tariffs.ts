@@ -12,9 +12,9 @@ async function main() {
   if (!snapshotPath || !outputDirectory) throw new Error('Usage: prepare-seedance25-commercial-tariffs.ts CURRENT_SNAPSHOT_JSON OUTPUT_DIRECTORY');
   const snapshot = JSON.parse(await readFile(snapshotPath, 'utf8')) as { revision: number; cells: ManualTariffCell[] };
   snapshot.revision = Number(snapshot.revision);
-  if (!Number.isSafeInteger(snapshot.revision) || snapshot.cells.length !== 4860
+  if (!Number.isSafeInteger(snapshot.revision) || ![4860, 6804].includes(snapshot.cells.length)
     || snapshot.cells.some(cell => cell.selector.engineId !== 'seedance-2-5' || cell.currency !== 'USD')) {
-    throw new Error('Expected the complete current 4,860-cell Seedance 2.5 USD snapshot.');
+    throw new Error('Expected the complete Seedance 2.5 USD snapshot: 4,860 legacy cells, optionally plus all 1,944 4K cells.');
   }
   const key = (cell: ManualTariffCell) => JSON.stringify(Object.entries(cell.selector).sort(([a], [b]) => a.localeCompare(b)));
   const current = new Map(snapshot.cells.map(cell => [key(cell), cell]));
@@ -23,10 +23,12 @@ async function main() {
   const plans = ['seedance-2-5', 'seedance-2-5-flash'].map(modelId => prepareSeedance25CommercialTariffs({
     modelId: modelId as 'seedance-2-5' | 'seedance-2-5-flash', at, standardEditTransport: 'modelark',
   }));
+  const expected = new Set(plans[0].cells.map(key));
+  if ([...current.keys()].some(selector => !expected.has(selector))) throw new Error('Unexpected current tariff selector.');
   const counts = { lower: 0, higher: 0, unchanged: 0, created: 0 };
   const rows = plans.flatMap(plan => plan.scenarios.map(({ context, cell }) => {
     const before = current.get(key(cell));
-    if (plan.modelId === 'seedance-2-5' && !before) throw new Error('Existing tariff scope changed.');
+    if (plan.modelId === 'seedance-2-5' && !before && (cell.selector.resolution !== '4k' || snapshot.cells.length !== 4860)) throw new Error('Existing tariff scope changed.');
     const quantities = { input_video_seconds: 2 };
     const beforeCents = before ? evaluateManualTariffPrice(before.price, quantities).customerTotalCents : null;
     const afterCents = evaluateManualTariffPrice(cell.price, quantities).customerTotalCents;

@@ -10,7 +10,7 @@ import { getBytePlusVideoListRate } from '@/server/byteplus-list-tariff';
 import { customerTariffCellId } from './customer-tariff-seed';
 
 export type Seedance25CommercialModel = 'seedance-2-5' | 'seedance-2-5-flash';
-/** Adrien's explicit decisions on 2026-11-13, including increases where needed. */
+/** Adrien's decisions on 2026-11-13, extended to standard 4K on 2026-11-17. */
 export const SEEDANCE25_COMMERCIAL_MULTIPLIERS = { 'seedance-2-5': 2, 'seedance-2-5-flash': 1.6 } as const;
 export const SEEDANCE25_COMMERCIAL_POLICY = 'seedance25-list-2x-flash-1_6x-2026-11-13';
 
@@ -26,11 +26,12 @@ export function prepareSeedance25CommercialTariffs(input: {
   const engine = getBaseEngineIncludingHidden(input.modelId);
   if (!engine) throw new Error('Seedance commercial model is missing.');
   const flash = input.modelId === 'seedance-2-5-flash';
+  const policy = flash ? SEEDANCE25_COMMERCIAL_POLICY : 'seedance25-list-2x-4k-2026-11-17';
   const multiplier = SEEDANCE25_COMMERCIAL_MULTIPLIERS[input.modelId];
   const stages: Array<{ workflowStep?: 'draft' | 'final'; resolutions: string[] }> = [
-    { resolutions: flash ? ['480p', '720p'] : ['480p', '720p', '1080p'] },
+    { resolutions: flash ? ['480p', '720p'] : ['480p', '720p', '1080p', '4k'] },
     ...(!flash ? [{ workflowStep: 'draft' as const, resolutions: ['480p'] },
-      { workflowStep: 'final' as const, resolutions: ['1080p'] }] : []),
+      { workflowStep: 'final' as const, resolutions: ['1080p', '4k'] }] : []),
   ];
   const cells: ManualTariffCell[] = [];
   const scenarios: Array<{ context: PricingContext; cell: ManualTariffCell; supplierMinimumUsd: number }> = [];
@@ -68,9 +69,9 @@ export function prepareSeedance25CommercialTariffs(input: {
   }
   const key = (cell: ManualTariffCell) => JSON.stringify(Object.entries(cell.selector).sort(([a], [b]) => a.localeCompare(b)));
   if (new Set(cells.map(key)).size !== cells.length) throw new Error('Duplicate commercial tariff class.');
-  const fingerprint = createHash('sha256').update(JSON.stringify({ policy: SEEDANCE25_COMMERCIAL_POLICY,
+  const fingerprint = createHash('sha256').update(JSON.stringify({ policy,
     modelId: input.modelId, multiplier, transport: input.standardEditTransport,
     cells: cells.map(({ selector, price, currency }) => ({ selector, price, currency })) })).digest('hex');
-  return { policy: SEEDANCE25_COMMERCIAL_POLICY, modelId: input.modelId, multiplier,
+  return { policy, modelId: input.modelId, multiplier,
     transport: input.standardEditTransport, fingerprint, cells, scenarios };
 }

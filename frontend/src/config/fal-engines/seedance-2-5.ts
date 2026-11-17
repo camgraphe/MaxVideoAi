@@ -16,7 +16,7 @@ import {
 } from './launch-config';
 
 const DURATION_OPTIONS = Array.from({ length: 27 }, (_, index) => index + 4);
-const RESOLUTIONS: EngineCaps['resolutions'] = ['480p', '720p', '1080p'];
+const RESOLUTIONS: EngineCaps['resolutions'] = ['480p', '720p', '1080p', '4k'];
 const ASPECT_RATIOS: EngineCaps['aspectRatios'] = ['auto', '21:9', '16:9', '4:3', '1:1', '3:4', '9:16'];
 const IMAGE_FORMATS = SEEDANCE_MODELARK_IMAGE_FORMATS;
 const VIDEO_FORMATS = ['mp4', 'mov'];
@@ -230,11 +230,11 @@ function seedance25Mode(mode: Seedance25Mode): RawFalEngineEntry['modes'][number
     .filter(Boolean)
     .join('; ');
   const workflowNotes: Record<Seedance25Mode, string> = {
-    t2v: 'Create 4-30 second videos up to 1080p in landscape, square, or vertical formats with generated audio available.',
-    i2v: 'Animate one start image with an optional end image; 4-30 seconds, up to 1080p, landscape, square, or vertical, with generated audio.',
+    t2v: 'Create 4-30 second videos up to 4K (10-bit HEVC) in landscape, square, or vertical formats with generated audio available.',
+    i2v: 'Animate one start image with an optional end image; 4-30 seconds, up to 4K (10-bit HEVC), landscape, square, or vertical, with generated audio.',
     ref2v: `Use up to ${BYTEPLUS_SEEDANCE_2_5_MAX_IMAGES} images, ${BYTEPLUS_SEEDANCE_2_5_MAX_VIDEOS} video clips, and ${BYTEPLUS_SEEDANCE_2_5_MAX_AUDIO} audio clips, with ${BYTEPLUS_SEEDANCE_2_5_MAX_REFERENCES} unique references total.`,
-    v2v: 'Edit one source video with optional image, video and audio references; 4-30 seconds, up to 1080p, landscape, square, or vertical, with generated audio.',
-    extend: 'Continue one to ten source clips with optional image and audio references; 4-30 seconds, up to 1080p, landscape, square, or vertical, with generated audio.',
+    v2v: 'Edit one source video with optional image, video and audio references; 4-30 seconds, up to 4K (10-bit HEVC), landscape, square, or vertical, with generated audio.',
+    extend: 'Continue one to ten source clips with optional image and audio references; 4-30 seconds, up to 4K (10-bit HEVC), landscape, square, or vertical, with generated audio.',
   };
 
   return {

@@ -12,6 +12,11 @@ export const BYTEPLUS_SEEDANCE_25_FLASH_LIST_PRICE_SOURCE = {
   checkedAt: '2026-11-13', currency: 'USD',
 } as const;
 
+export const BYTEPLUS_SEEDANCE_25_4K_LIST_PRICE_SOURCE = {
+  url: 'https://docs.byteplus.com/en/docs/ModelArk/model-pricing',
+  checkedAt: '2026-11-17', currency: 'USD',
+} as const;
+
 type VideoRate = Readonly<{ noVideoInput: number; videoInput: number }>;
 type VideoProfile = 'seedance15' | 'standard' | 'fast' | 'mini' | 'seedance25' | 'seedance25Flash';
 
@@ -41,6 +46,7 @@ const VIDEO_RATES_USD_PER_1K_TOKENS: Readonly<Record<Exclude<VideoProfile, 'seed
     '720p': { noVideoInput: 0.007, videoInput: 0.0043 },
   },
   seedance25: {
+    '4k': { noVideoInput: 0.0047, videoInput: 0.0029 },
     '480p': { noVideoInput: 0.0107, videoInput: 0.0064 },
     '720p': { noVideoInput: 0.0107, videoInput: 0.0064 },
     '1080p': { noVideoInput: 0.0117, videoInput: 0.007 },
@@ -77,7 +83,7 @@ export function getBytePlusVideoListRate(input: {
     unitPriceUsdPer1kTokens,
     unit: 'USD / 1,000 tokens' as const,
     status: 'published_list' as const,
-    source: input.profile === 'seedance25Flash' ? BYTEPLUS_SEEDANCE_25_FLASH_LIST_PRICE_SOURCE : BYTEPLUS_MODELARK_LIST_PRICE_SOURCE,
+    source: input.profile === 'seedance25' && input.resolution.toLowerCase() === '4k' ? BYTEPLUS_SEEDANCE_25_4K_LIST_PRICE_SOURCE : input.profile === 'seedance25Flash' ? BYTEPLUS_SEEDANCE_25_FLASH_LIST_PRICE_SOURCE : BYTEPLUS_MODELARK_LIST_PRICE_SOURCE,
     promotion: promotionFactor === null ? null : {
       unitPriceUsdPer1kTokens: Number((unitPriceUsdPer1kTokens * promotionFactor).toFixed(9)),
       ...LIMITED_CAMPAIGN,
@@ -106,12 +112,16 @@ export function getSeedance15ListRate(input: { audio: boolean; step: 'normal' | 
   };
 }
 
-/** Draft uses a 480p task; the later 1080p render is a second paid task. */
+/** Draft and the selected final resolution are separately billed tasks. */
 export function getSeedance25StepListRate(input: {
   step: 'draft' | 'final';
+  resolution?: string;
   billingInputType: 'no_video_input' | 'video_input';
 }) {
-  const resolution = input.step === 'draft' ? '480p' : '1080p';
+  const resolution = input.resolution ?? (input.step === 'draft' ? '480p' : '1080p');
+  if (input.step === 'draft' ? resolution !== '480p' : !['1080p', '4k'].includes(resolution)) {
+    throw new Error('Unsupported Seedance workflow resolution.');
+  }
   return {
     ...getBytePlusVideoListRate({ profile: 'seedance25', resolution, billingInputType: input.billingInputType }),
     resolution,

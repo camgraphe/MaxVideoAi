@@ -8,7 +8,7 @@ import { SWRConfig, unstable_serialize } from 'swr';
 import { SeedanceDraftFinalAction } from '../frontend/components/library/SeedanceDraftFinalAction.client';
 import type { SeedanceWorkflowView } from '../frontend/lib/seedance-workflow-contract';
 
-test('shared library/Studio action shows a fresh separate charge, retains the Draft and disables expired finalization', async () => {
+for (const resolution of ['1080p', '4k'] as const) test(`shared library/Studio ${resolution} action shows a fresh separate charge, retains the Draft and disables expired finalization`, async () => {
   const dom = new JSDOM('<div id="root"></div>', { url: 'http://localhost/app' });
   const previous = new Map<string, PropertyDescriptor | undefined>();
   let view: SeedanceWorkflowView = { draft: { jobId: 'draft', status: 'completed', amountCents: 129, currency: 'USD', paymentStatus: 'paid_wallet', videoUrl: '/draft.mp4', thumbUrl: null },
@@ -16,9 +16,9 @@ test('shared library/Studio action shows a fresh separate charge, retains the Dr
   let submissions = 0;
   const navigation: string[] = [];
   for (const [key, value] of Object.entries({ React, window: dom.window, document: dom.window.document, navigator: dom.window.navigator, IS_REACT_ACT_ENVIRONMENT: true,
-    fetch: async (url: string) => {
-      if (url === '/api/preflight') return new Response(JSON.stringify({ ok: true, total: 651, currency: 'USD', pricing: { totalCents: 651, currency: 'USD', meta: { workflowStep: 'final', pricingMode: 'manual_tariff', customerTariffRevision: 328 } } }));
-      if (url === '/api/generate') { submissions++; view = { ...view, eligibility: 'finalized', final: { jobId: 'final', status: 'completed', amountCents: 651, currency: 'USD', paymentStatus: 'paid_wallet', videoUrl: '/final.mp4', thumbUrl: null } }; return new Response(JSON.stringify({ ok: true, jobId: 'final' })); }
+    fetch: async (url: string, init?: RequestInit) => {
+      if (url === '/api/preflight') { assert.equal(JSON.parse(String(init?.body)).resolution, resolution); return new Response(JSON.stringify({ ok: true, total: 651, currency: 'USD', pricing: { totalCents: 651, currency: 'USD', meta: { workflowStep: 'final', pricingMode: 'manual_tariff', customerTariffRevision: 328 } } })); }
+      if (url === '/api/generate') { assert.equal(JSON.parse(String(init?.body)).resolution, resolution); submissions++; view = { ...view, eligibility: 'finalized', final: { jobId: 'final', resolution, status: 'completed', amountCents: 651, currency: 'USD', paymentStatus: 'paid_wallet', videoUrl: '/final.mp4', thumbUrl: null } }; return new Response(JSON.stringify({ ok: true, jobId: 'final' })); }
       return new Response(JSON.stringify(url.endsWith('/seedance-workflow') ? view : { ok: true, status: 'completed' }));
     },
   })) { previous.set(key, Object.getOwnPropertyDescriptor(globalThis, key)); Object.defineProperty(globalThis, key, { configurable: true, writable: true, value }); }
@@ -33,7 +33,10 @@ test('shared library/Studio action shows a fresh separate charge, retains the Dr
     await act(async () => dom.window.document.querySelector('a[href="/app?job=draft"]')!.dispatchEvent(navigationEvent));
     assert.equal(navigationEvent.defaultPrevented, true, 'Studio must await its save/ACK owner before navigation');
     assert.deepEqual(navigation, ['/app?job=draft']);
-    await click('Finaliser en 1080p');
+    const select = dom.window.document.querySelector('select')!;
+    assert.deepEqual([...select.options].map(option => option.value), ['1080p', '4k']);
+    await act(async () => { select.value = resolution; select.dispatchEvent(new dom.window.Event('change', { bubbles: true })); });
+    await click(`Finaliser en ${resolution === '4k' ? '4K' : '1080p'}`);
     assert.match(dom.window.document.body.textContent!, /Draft déjà payé/);
     assert.match(dom.window.document.body.textContent!, /1,29/);
     assert.match(dom.window.document.body.textContent!, /6,51/);
@@ -42,7 +45,7 @@ test('shared library/Studio action shows a fresh separate charge, retains the Dr
     await click('Lancer le final');
     assert.equal(submissions, 1);
     assert.equal(dom.window.document.querySelector('a[href="/app?job=draft"]')?.textContent, 'Revoir le Draft 480p');
-    assert.equal(dom.window.document.querySelector('a[href="/app?job=final"]')?.textContent, 'Voir le final 1080p');
+    assert.equal(dom.window.document.querySelector('a[href="/app?job=final"]')?.textContent, `Voir le final ${resolution === '4k' ? '4K' : '1080p'}`);
     await act(async () => root.unmount());
     view = { ...view, final: null, eligibility: 'expired' };
     root = createRoot(dom.window.document.getElementById('root')!); await mount();
