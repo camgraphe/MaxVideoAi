@@ -16,5 +16,5 @@ export function WorkspaceComposerModel(props: EngineSelectProps) {
   const label = locale.startsWith('fr') ? 'Changer de modèle' : locale.startsWith('es') ? 'Cambiar modelo' : 'Change model';
   return <EngineSelect {...props} showModeSelect={false} showBillingNote={false} className={styles.modelControl}
     trigger={{ label: `${label}: ${fullName}`, className: styles.modelTrigger, variantClassName: styles.variantTrigger,
-      content: <><span aria-hidden="true" className={styles.modelIcon}><EngineIcon engine={model} size={16} framed={false} /></span><span className={styles.modelName} title={fullName}>{buttonName}</span><ChevronDown size={14} aria-hidden /></> }} />;
+      content: <><span aria-hidden="true" className={styles.modelIcon}><EngineIcon engine={model} size={16} framed={false} /></span><span className={styles.modelName} title={fullName}>{buttonName}</span><ChevronDown size={16} aria-hidden /></> }} />;
 }
