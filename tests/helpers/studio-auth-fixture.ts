@@ -30,6 +30,7 @@ type FixtureGrant = {
   subject: string;
   clientId: string;
   grantedAt: string;
+  scopes: string[];
 };
 
 const encode = (value: unknown) => Buffer.from(JSON.stringify(value)).toString('base64url');
@@ -38,8 +39,9 @@ export async function startStudioAuthFixture(options: { appOrigin?: string; port
   const { publicKey, privateKey } = generateKeyPairSync('ec', { namedCurve: 'prime256v1' });
   const kid = randomUUID();
   const anonKey = 'studio-disposable-auth-fixture-anon';
+  const serviceRoleKey = 'studio-disposable-auth-fixture-service';
   const publicJwk = { ...publicKey.export({ format: 'jwk' }), kid, alg: 'ES256', use: 'sig' };
-  const sessions = new Map<string, { subject: string; sessionId: string; clientId?: string }>();
+  const sessions = new Map<string, { subject: string; sessionId: string; clientId?: string; scopes: string[] }>();
   const grants = new Map<string, FixtureGrant>();
   let origin = '';
 
@@ -48,6 +50,7 @@ export async function startStudioAuthFixture(options: { appOrigin?: string; port
     clientId?: string;
     registerGrant?: boolean;
     issuedAt?: number;
+    scopes?: string[];
   } = {}): FixtureSession {
     if (!STUDIO_FIXTURE_USERS.includes(subject)) throw new Error('Unknown fixture user.');
     const issuedAt = settings.issuedAt ?? Math.floor(Date.now() / 1000);
@@ -69,7 +72,8 @@ export async function startStudioAuthFixture(options: { appOrigin?: string; port
     const payload = `${encode({ alg: 'ES256', typ: 'JWT', kid })}.${encode(claims)}`;
     const signature = sign('sha256', Buffer.from(payload), { key: privateKey, dsaEncoding: 'ieee-p1363' }).toString('base64url');
     const refreshToken = randomUUID();
-    sessions.set(refreshToken, { subject, sessionId, clientId: settings.clientId });
+    const scopes = settings.scopes ?? ['openid', 'email', 'profile'];
+    sessions.set(refreshToken, { subject, sessionId, clientId: settings.clientId, scopes });
     if (settings.clientId && settings.registerGrant !== false) {
       const grantKey = `${subject}\0${settings.clientId}`;
       if (!grants.has(grantKey)) {
@@ -78,6 +82,7 @@ export async function startStudioAuthFixture(options: { appOrigin?: string; port
           subject,
           clientId: settings.clientId,
           grantedAt: timestamp,
+          scopes,
         });
       }
     }
@@ -128,14 +133,47 @@ export async function startStudioAuthFixture(options: { appOrigin?: string; port
       const token = request.headers.authorization?.replace(/^Bearer /i, '') ?? '';
       const claims = verifyToken(token);
       if (!claims) { reply(401, { code: 'bad_jwt', message: 'Invalid or inactive fixture token.' }); return; }
+      if (claims.client_id) { reply(403, { code: 'no_authorization', message: 'OAuth client access tokens are not allowed to access this endpoint' }); return; }
       reply(200, [...grants.values()]
         .filter((grant) => grant.subject === claims.sub)
         .map((grant) => ({
           id: grant.id,
-          scopes: ['openid', 'email', 'profile'],
+          scopes: grant.scopes,
           granted_at: grant.grantedAt,
           client: { id: grant.clientId, name: 'Studio fixture client', uri: '' },
         })));
+      return;
+    }
+    if (request.method === 'GET' && url.pathname === '/auth/v1/oauth/userinfo') {
+      const claims = verifyToken(request.headers.authorization?.replace(/^Bearer /i, '') ?? '');
+      if (!claims) { reply(401, { code: 'bad_jwt' }); return; }
+      const session = [...sessions.values()].find(session => session.sessionId === claims.session_id);
+      reply(200, { sub: claims.sub, ...(session?.scopes.includes('email') ? { email_verified: true } : {}) }); return;
+    }
+    if (request.method === 'GET' && url.pathname.startsWith('/auth/v1/admin/users/')) {
+      if (request.headers.authorization !== `Bearer ${serviceRoleKey}` || request.headers.apikey !== serviceRoleKey) {
+        reply(403, {}); return;
+      }
+      const id = decodeURIComponent(url.pathname.slice('/auth/v1/admin/users/'.length));
+      if (!STUDIO_FIXTURE_USERS.includes(id)) { reply(404, {}); return; }
+      reply(200, { id, email_confirmed_at: '2026-07-11T12:00:00.000Z' }); return;
+    }
+    if (request.method === 'POST' && url.pathname === '/rest/v1/rpc/mcp_oauth_grant_is_active') {
+      if (request.headers.authorization !== `Bearer ${serviceRoleKey}` || request.headers.apikey !== serviceRoleKey) {
+        reply(403, { code: 'no_authorization' }); return;
+      }
+      let body = '';
+      for await (const chunk of request) {
+        body += chunk.toString();
+        if (body.length > 16_384) { reply(413, {}); return; }
+      }
+      const input = JSON.parse(body);
+      const activeSession = [...sessions.values()].find(session => session.subject === input.p_user_id
+        && session.sessionId === input.p_session_id && session.clientId === input.p_client_id);
+      const grant = grants.get(`${input.p_user_id}\0${input.p_client_id}`);
+      reply(200, !!activeSession && !!grant
+        && Array.isArray(input.p_required_scopes)
+        && input.p_required_scopes.every((scope: string) => activeSession.scopes.includes(scope) && grant.scopes.includes(scope)));
       return;
     }
     if (request.method === 'POST' && url.pathname === '/auth/v1/token' && url.searchParams.get('grant_type') === 'refresh_token') {
@@ -163,7 +201,7 @@ export async function startStudioAuthFixture(options: { appOrigin?: string; port
   origin = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
 
   return {
-    origin, anonKey, createSession,
+    origin, anonKey, serviceRoleKey, createSession,
     cookiesFor(session: FixtureSession): Array<{ name: string; value: string }> {
       const value = `base64-${encode(session)}`;
       if (value.length <= 3000) return [{ name: 'sb-127-auth-token', value }];

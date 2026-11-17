@@ -9,7 +9,7 @@ import { handleMcpHttpRequest } from '../frontend/src/server/mcp/http-handler';
 
 const policy = { issuer: 'https://identity.example.invalid/auth/v1', resourceUrl: 'https://openai-mcp.maxvideoai.com/mcp', requiredGrantScopes: ['openid'] };
 const request = new Request(policy.resourceUrl, { headers: { authorization: 'Bearer signed-fixture-token' } });
-const validClaims = () => ({ sub: 'policy-user', client_id: 'policy-client', iss: policy.issuer, aud: policy.resourceUrl, exp: Math.floor(Date.now() / 1000) + 3600 });
+const validClaims = () => ({ sub: 'policy-user', client_id: 'policy-client', session_id: 'policy-session', iss: policy.issuer, aud: policy.resourceUrl, exp: Math.floor(Date.now() / 1000) + 3600 });
 function deps(claims: OAuthClaims, scopes: unknown = ['openid', 'email', 'profile']) {
   const calls = { user: 0, grant: 0 };
   const adapter: OAuthAdapterDeps = {
@@ -17,11 +17,12 @@ function deps(claims: OAuthClaims, scopes: unknown = ['openid', 'email', 'profil
       getClaims: async () => ({ data: { claims }, error: null }),
       getUser: async () => { calls.user++; return { data: { user: { id: 'policy-user', email_confirmed_at: '2026-10-02T12:00:00Z' } }, error: null }; },
     }),
-    hasActiveGrant: async (token, clientId, requiredScopes) => {
+    hasActiveGrant: async (_token, clientId, requiredScopes, binding) => {
       calls.grant++;
-      return hasActiveOAuthGrant(token, clientId, {
-        supabaseUrl: 'https://identity.example.invalid', anonKey: 'fixture-public-key',
-        fetcher: async () => Response.json([{ client: { id: 'policy-client' }, scopes }]),
+      return hasActiveOAuthGrant(binding, clientId, {
+        supabaseUrl: 'https://identity.example.invalid', serviceRoleKey: 'fixture-server-key',
+        fetcher: async () => Response.json(Array.isArray(scopes) && scopes.every(scope => typeof scope === 'string')
+          && (requiredScopes ?? []).every(scope => scopes.includes(scope))),
       }, requiredScopes);
     },
   };
@@ -61,7 +62,7 @@ test('resource-bound token still needs a fresh matching user and an active grant
 test('directory accepts a valid audience array and direct authentication retains its existing signed-session contract', async () => {
   const directory = deps({ ...validClaims(), aud: ['authenticated', policy.resourceUrl], nbf: Math.floor(Date.now() / 1000) - 1 });
   assert.equal((await resolveMcpAgentPrincipal(request, directory.adapter, policy)).userId, 'policy-user');
-  const direct = deps({ sub: 'policy-user', client_id: 'policy-client' }, []);
+  const direct = deps({ sub: 'policy-user', client_id: 'policy-client', session_id: 'policy-session' }, []);
   assert.equal((await resolveMcpAgentPrincipal(new Request('https://api.maxvideoai.com/mcp', request), direct.adapter)).userId, 'policy-user');
 });
 

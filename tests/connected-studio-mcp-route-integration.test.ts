@@ -15,7 +15,7 @@ test('real loopback MCP authenticates signed bearer, discovers gated tools and w
     },
   });
   try {
-    const session = runtime.auth.createSession(STUDIO_FIXTURE_OWNERS[0], { clientId: 'studio-mcp-local-fixture' });
+    const session = runtime.auth.createSession(STUDIO_FIXTURE_OWNERS[0], { clientId: 'studio-mcp-local-fixture', scopes: ['openid'] });
     const request = (body: unknown, token?: string, cookie?: string) => postStudioMcpRequest(runtime, body, { token, cookie });
     const initialize = { jsonrpc: '2.0', id: 1, method: 'initialize', params: {
       protocolVersion: '2025-06-18', capabilities: {}, clientInfo: { name: 'codex', version: 'fixture' },
@@ -42,5 +42,17 @@ test('real loopback MCP authenticates signed bearer, discovers gated tools and w
       { event_type: 'tool_discovery', user_id: STUDIO_FIXTURE_OWNERS[0], oauth_client_id: 'studio-mcp-local-fixture', client_family: null },
     ]);
     assert.equal((await runtime.database.pool.query('SELECT count(*)::int AS count FROM studio_projects')).rows[0].count, 0);
+    for (const id of ['seedream-5-5', 'seedance-2-5-flash']) {
+      const listed = await readStudioMcpResponse(await request({ jsonrpc: '2.0', id: 3, method: 'tools/call', params: {
+        name: 'list_models', arguments: { id },
+      } }, session.access_token));
+      assert.ok(!listed.result.isError, JSON.stringify(listed.result));
+      assert.equal(listed.result.structuredContent.models[0]?.id, id);
+      const details = await readStudioMcpResponse(await request({ jsonrpc: '2.0', id: 4, method: 'tools/call', params: {
+        name: 'get_model_details', arguments: { id },
+      } }, session.access_token));
+      assert.ok(!details.result.isError, JSON.stringify(details.result));
+      assert.equal(details.result.structuredContent.id, id);
+    }
   } finally { await runtime.close(); }
 });
