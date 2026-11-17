@@ -100,3 +100,25 @@ owned by the existing route/content helpers.
 Additional contracts: `model-cinematic-migration.test.ts`,
 `model-keyframe-demo.test.ts`, `flux-3-max-prompting.test.ts` and
 `model-decision-content-contract.test.ts`.
+
+## Compact workflow coverage
+
+An optional exact-locale `cinematic.capabilities` block explains all the modes a
+model exposes, separately from its reviewed video proofs. Do not add an unproved
+Modify/Extend film to `workflows.items` just to document a supported workflow.
+`ModelCinematicCapabilities.client.tsx` renders every explanation in server HTML
+and selects one panel at a time, with tab/arrow/Home/End keyboard navigation.
+The block sits inside the Create proof section and replaces redundant specialty
+note cards. It adds no media downloads.
+
+`_lib/model-page-capabilities.ts` validates each action against the actual engine's
+modes and constructs locale-preserving Create links. A cross-model action must name
+its destination. Seedance 2.5 documents Create (text, images and multimodal), Modify
+and Extend; FLUX 3 Max documents text, opening image, first/last frames and keyframes.
+Max's extension/editing links explicitly target FLUX 3 and Seedance 2.5 respectively;
+they must never imply those modes exist in Max. These examples explain uses and
+limits, not additional rendered proof or new provider capabilities.
+
+The pricing harness executes both the legacy commercial boundary and the cinematic
+page/details composition. It checks the visible formatted offer, scenario repricing
+and JSON-LD together; a renderer migration must not remove that parity coverage.

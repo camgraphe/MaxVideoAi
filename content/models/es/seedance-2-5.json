@@ -579,9 +579,9 @@
         "body": "Vista previa 480p → final 1080p."
       },
       {
-        "target": "specs",
-        "title": "Dirige los detalles",
-        "body": "Modify, Extend y audio generado opcional."
+        "target": "capabilities",
+        "title": "Create. Modify. Extend.",
+        "body": "Elige tu punto de partida: crear, modificar un plano o continuar la historia."
       }
     ],
     "specialty": {
@@ -603,23 +603,9 @@
           "body": "Conserva la configuración del Draft y solicita el final."
         }
       ],
-      "note": "Esquema del flujo. Draft y final son generaciones con presupuestos separados. Un render normal a 480p no es un Draft nativo; el final hereda prompt, duración, encuadre, audio y referencias del Draft completado.",
+      "note": "Esquema del flujo. Draft y final son generaciones con presupuestos separados. Un render normal a 480p no es un Draft nativo; el final hereda prompt, duración, encuadre, audio y referencias del Draft completado. Draft está disponible en Create, Modify y Extend; la fuente y las referencias permanecen vinculadas al flujo de finalización.",
       "action": "Abrir Create · elegir Draft",
       "mode": "t2v",
-      "details": [
-        {
-          "title": "Referencias con una función",
-          "body": "Usa imágenes para la apariencia, vídeo para movimiento o ritmo y audio para el sonido. Explica la función de cada referencia; una referencia de movimiento no es una pista de keyframes temporizados."
-        },
-        {
-          "title": "Modify y Extend",
-          "body": "Edita un clip de origen o continúa una secuencia en sus modos específicos. Revisa duración de origen, límites de referencias y presupuesto del modo antes de generar."
-        },
-        {
-          "title": "¿Standard o Flash?",
-          "body": "Elige standard para Draft nativo → final y hasta 1080p. Flash es una opción distinta hasta 720p; compara el precio actual con la misma duración, entradas y audio."
-        }
-      ],
       "source": {
         "label": "Fuente: BytePlus · flujo Draft",
         "href": "https://docs.byteplus.com/en/docs/ModelArk/seedance-2-5"
@@ -629,6 +615,94 @@
         "caption": "En Create · Draft activado. La finalización es otra generación de pago."
       }
     },
-    "specsReviewedAt": "2026-11-16"
+    "specsReviewedAt": "2026-11-17",
+    "capabilities": {
+      "title": "Un modelo. Tres formas de construir una película.",
+      "intro": "Elige tu punto de partida: crear, modificar un plano o continuar la historia.",
+      "diagramLabel": "El flujo de un vistazo",
+      "items": [
+        {
+          "id": "create",
+          "label": "Create",
+          "title": "Parte de una idea. O trae tus referencias.",
+          "body": "Escribe una escena, anima una imagen inicial o guía el resultado con imágenes, vídeos y audio de referencia. Asigna una función a cada referencia: personaje, movimiento, cámara, entorno o sonido.",
+          "stages": [
+            "Texto / imágenes / vídeo / audio",
+            "Tu dirección",
+            "Una nueva escena"
+          ],
+          "uses": [
+            "Primer + último fotograma: guía el inicio y el final de un plano creado desde imágenes.",
+            "Referencia de movimiento: toma un gesto o recorrido de cámara y describe el personaje y el entorno deseados.",
+            "Multimodal: combina hasta 30 imágenes, 10 vídeos y 10 referencias de audio."
+          ],
+          "note": "De 4 a 30 segundos, o duración automática. Los vídeos de referencia comparten 30 segundos; las referencias de audio tienen otros 30 segundos en total.",
+          "actions": [
+            {
+              "label": "Crear desde texto",
+              "mode": "t2v"
+            },
+            {
+              "label": "Partir de una imagen",
+              "mode": "i2v"
+            },
+            {
+              "label": "Usar referencias",
+              "mode": "ref2v"
+            }
+          ]
+        },
+        {
+          "id": "modify",
+          "label": "Modify",
+          "title": "Conserva el plano. Cambia lo que importa.",
+          "body": "Trae un clip y describe la edición. Cambia un personaje o su vestuario, sustituye el fondo, modifica la luz y la atmósfera, o añade y elimina elementos. Explica también qué debe mantenerse.",
+          "stages": [
+            "Clip original",
+            "Instrucciones + referencias",
+            "Plano modificado"
+          ],
+          "uses": [
+            "Personaje y estilo: cambia la apariencia, la ropa o un objeto.",
+            "Entorno y atmósfera: transforma el lugar, la iluminación, el tiempo o el tratamiento visual.",
+            "Sonido y referencias: guía cambios de audio y explica la edición con imágenes, vídeos o sonidos."
+          ],
+          "note": "Modify sigue el encuadre y la duración de la fuente. Regenera el plano: revisa rostros, manos, movimiento y continuidad. Los ajustes disponibles aparecen en Create.",
+          "actions": [
+            {
+              "label": "Abrir Modify",
+              "mode": "v2v"
+            }
+          ]
+        },
+        {
+          "id": "extend",
+          "label": "Extend",
+          "title": "Dale otro momento a la escena.",
+          "body": "Continúa después de un clip, crea una entrada antes de él o describe una transición entre planos. Explica la acción en el corte, así como la cámara y el sonido que deben continuar.",
+          "stages": [
+            "Material existente",
+            "La siguiente acción",
+            "Un nuevo segmento"
+          ],
+          "uses": [
+            "Después: termina una acción, revela el entorno o mantén una reacción.",
+            "Antes: establece una llegada o una entrada al plano original.",
+            "Entre: usa varios clips originales para guiar una transición."
+          ],
+          "note": "Hasta 10 clips originales, 30 segundos en total. Solicita un nuevo segmento de 4–30 segundos con el formato de la fuente, para revisar y montar con tu material.",
+          "actions": [
+            {
+              "label": "Abrir Extend",
+              "mode": "extend"
+            }
+          ]
+        }
+      ],
+      "controls": {
+        "title": "Completa la dirección",
+        "body": "Añade diálogo, ambiente y efectos, o desactiva el audio generado. Usa referencias de imagen y audio para fijar los detalles. Elige duración, formato y resolución en Create; revisa el presupuesto antes de cada generación."
+      }
+    }
   }
 }

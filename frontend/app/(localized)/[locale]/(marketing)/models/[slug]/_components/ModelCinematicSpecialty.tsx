@@ -39,6 +39,6 @@ export function ModelCinematicSpecialty({ presentation, demo }: {
       <span className="cinema-sequence-index" aria-hidden="true">0{index + 1}</span><strong>{step.label}</strong><p>{step.body}</p>{index < 2 ? <CinematicArrow /> : null}
     </li>)}</ol></>}
     <div className="cinema-specialty-footer"><div><p>{copy.note}</p><a className="cinema-source-link" href={copy.source.href} target="_blank" rel="noopener noreferrer">{copy.source.label}<CinematicArrow direction="external" /></a></div><a href={href} className="cinema-button" data-analytics-event="cta_click" data-analytics-cta-name="open_workspace" data-analytics-cta-location="model_specialty" data-analytics-target-family="workspace">{copy.action}<CinematicArrow disc /></a></div>
-    <div className="cinema-capability-notes">{copy.details.map(item => <article key={item.title}><h3>{item.title}</h3><p>{item.body}</p></article>)}</div>
+    {copy.details ? <div className="cinema-capability-notes">{copy.details.map(item => <article key={item.title}><h3>{item.title}</h3><p>{item.body}</p></article>)}</div> : null}
   </div></section>;
 }

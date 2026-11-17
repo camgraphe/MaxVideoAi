@@ -570,9 +570,9 @@
         "body": "1 à 10 images réparties dans le clip."
       },
       {
-        "target": "specs",
-        "title": "Préparer la livraison",
-        "body": "5 à 20 secondes, son optionnel et contrôle du raisonnement."
+        "target": "capabilities",
+        "title": "Quatre façons de commencer.",
+        "body": "Choisissez ce que vous voulez définir avant de mettre le plan en mouvement."
       }
     ],
     "specialty": {
@@ -597,20 +597,6 @@
       "note": "Les positions utilisent des index : à 24 images/s, 8 secondes correspondent à l’image 192. Donnez un index unique par image, de 0 à durée × 24 inclus. Les keyframes guident les états visuels, sans garantir des coupes ou un montage exacts.",
       "action": "Créer avec des keyframes",
       "mode": "ref2v",
-      "details": [
-        {
-          "title": "Quatre points de départ",
-          "body": "Générez depuis du texte, animez une image initiale, reliez début et fin ou placez plusieurs keyframes. Une paire début/fin ne se configure pas comme une séquence d’images minutées."
-        },
-        {
-          "title": "Raisonnement et livraison",
-          "body": "Le raisonnement high est activé par défaut ; low reste disponible. La sortie par défaut est 720p, et le 1080p utilise une mise à l’échelle. Choisissez durée et format avant de vérifier le devis."
-        },
-        {
-          "title": "Max ou FLUX 3 ?",
-          "body": "Max ajoute la génération depuis du texte et les keyframes minutées. L’intégration FLUX 3 propose Extend ; FLUX 3 Max ne le propose pas. Choisissez selon le parcours dont vous avez besoin."
-        }
-      ],
       "source": {
         "label": "Source : fal · keyframes minutées",
         "href": "https://fal.ai/models/blackforestlabs/flux-3-max/keyframes-to-video/api"
@@ -620,6 +606,125 @@
         "caption": "Dans Create · Trois images de référence placées à 0, 8 et 16 secondes."
       }
     },
-    "specsReviewedAt": "2026-11-16"
+    "specsReviewedAt": "2026-11-17",
+    "capabilities": {
+      "title": "Quatre points de départ. Votre direction.",
+      "intro": "Choisissez ce que vous voulez définir avant de mettre le plan en mouvement.",
+      "diagramLabel": "Le parcours en un regard",
+      "items": [
+        {
+          "id": "text",
+          "label": "Texte vers vidéo",
+          "title": "Faites naître une scène avec des mots.",
+          "body": "Décrivez le lieu, l’action et la caméra, puis les dialogues, l’ambiance ou les bruitages. Le texte vers vidéo permet d’explorer une idée visuelle sans préparer d’image.",
+          "stages": [
+            "Votre prompt",
+            "Action + caméra + son",
+            "Un nouveau film"
+          ],
+          "uses": [
+            "Développez une scène ou une idée visuelle à partir d’un brief.",
+            "Mettez en scène un échange et attribuez chaque réplique à son personnage.",
+            "Dirigez une révélation, une performance ou un film produit."
+          ],
+          "note": "De 5 à 20 secondes entières. Laissez le temps de lire chaque action ; un prompt plus long ne garantit pas une chorégraphie plus précise.",
+          "actions": [
+            {
+              "label": "Créer depuis un texte",
+              "mode": "t2v"
+            }
+          ]
+        },
+        {
+          "id": "image",
+          "label": "Image de départ",
+          "title": "Donnez une suite à une image fixe.",
+          "body": "Importez une image de départ, puis décrivez les mouvements et la réaction de la caméra. Ancrez le sujet, le cadrage et le décor tout en dirigeant l’action suivante.",
+          "stages": [
+            "Image de départ",
+            "Direction du mouvement",
+            "Un plan animé"
+          ],
+          "uses": [
+            "Animez un portrait, un environnement ou une image produit.",
+            "Conservez la composition initiale en ajoutant un mouvement de caméra.",
+            "Décrivez la fin de l’action, pas seulement son premier geste."
+          ],
+          "note": "PNG, JPEG ou WebP. L’image guide l’ouverture ; vérifiez l’identité et la composition dans les images suivantes.",
+          "actions": [
+            {
+              "label": "Animer une image",
+              "mode": "i2v"
+            }
+          ]
+        },
+        {
+          "id": "endpoints",
+          "label": "Début + fin",
+          "title": "Définissez aussi le point d’arrivée.",
+          "body": "Fournissez une première et une dernière image, puis décrivez l’action qui les relie. Utile lorsque la pose finale, la révélation ou la composition compte.",
+          "stages": [
+            "Première image",
+            "La transition",
+            "Dernière image"
+          ],
+          "uses": [
+            "Passez d’un plan d’ensemble à une composition plus rapprochée.",
+            "Guidez un changement de pose ou une révélation avec une fin définie.",
+            "Reliez deux états visuels avec une action claire et plausible."
+          ],
+          "note": "Les deux images sont requises dans ce mode. Elles guident un nouveau clip : ce mode ne prolonge ni ne retouche une vidéo existante.",
+          "actions": [
+            {
+              "label": "Relier deux images",
+              "mode": "fl2v"
+            }
+          ]
+        },
+        {
+          "id": "keyframes",
+          "label": "Keyframes",
+          "title": "Placez les moments clés sur la timeline.",
+          "body": "Ajoutez de 1 à 10 images ordonnées avec leur position en frames. Décrivez le mouvement entre elles. L’éditeur de keyframes dans Create transforme ces repères en séquence rythmée.",
+          "stages": [
+            "Images ordonnées",
+            "Positions + prompt",
+            "Séquence guidée"
+          ],
+          "uses": [
+            "Planifiez une séquence autour de plusieurs étapes visuelles.",
+            "Choisissez quand une pose, un décor ou une composition doit apparaître.",
+            "Inspectez les entrées et le résultat de l’exemple réel ci-dessous."
+          ],
+          "note": "Les positions suivent une timeline de 24 i/s, de 0 à durée × 24. Elles doivent être uniques et suivre l’ordre des images ; vérifiez les transitions.",
+          "actions": [
+            {
+              "label": "Ouvrir les keyframes",
+              "mode": "ref2v"
+            }
+          ]
+        }
+      ],
+      "controls": {
+        "title": "Son, raisonnement et rendu",
+        "body": "Son généré optionnel, raisonnement Low ou High et seed facultative. Choisissez 720p ou 1080p mis à l’échelle. Ces contrôles sont communs aux quatre modes de création ; le prix actuel s’affiche avant de générer."
+      },
+      "handoff": {
+        "title": "Vous avez déjà un clip à retoucher ou prolonger ?",
+        "body": "FLUX 3 Max crée de nouveaux clips ; cette intégration ne propose ni Modify ni Extend. Prolongez une vidéo avec FLUX 3 ou retravaillez-la avec Seedance 2.5 dans le même espace MaxVideoAI.",
+        "actions": [
+          {
+            "label": "Extend avec FLUX 3",
+            "mode": "extend",
+            "model": "flux-3"
+          },
+          {
+            "label": "Modify avec Seedance 2.5",
+            "mode": "v2v",
+            "model": "seedance-2-5"
+          }
+        ]
+      }
+    }
   }
 }

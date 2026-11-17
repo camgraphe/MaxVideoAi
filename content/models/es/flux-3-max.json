@@ -570,9 +570,9 @@
         "body": "De 1 a 10 imágenes repartidas en el clip."
       },
       {
-        "target": "specs",
-        "title": "Prepara la entrega",
-        "body": "De 5 a 20 segundos, audio opcional y controles de razonamiento."
+        "target": "capabilities",
+        "title": "Cuatro formas de empezar.",
+        "body": "Elige cuánto quieres definir antes de poner el plano en movimiento."
       }
     ],
     "specialty": {
@@ -597,20 +597,6 @@
       "note": "Las posiciones usan índices: a 24 fps, 8 segundos son el fotograma 192. Añade un índice único por imagen, de 0 a duración × 24 inclusive. Los keyframes guían estados visuales; no garantizan cortes ni montaje exactos.",
       "action": "Crear con keyframes",
       "mode": "ref2v",
-      "details": [
-        {
-          "title": "Cuatro formas de empezar",
-          "body": "Genera desde texto, anima una imagen inicial, conecta inicio y final o coloca varios keyframes. Una pareja inicio/final no se configura como una secuencia de imágenes temporizadas."
-        },
-        {
-          "title": "Razonamiento y entrega",
-          "body": "El razonamiento high es el predeterminado; low también está disponible. La salida predeterminada es 720p; 1080p usa reescalado. Elige duración y formato antes de consultar el presupuesto."
-        },
-        {
-          "title": "¿Max o FLUX 3?",
-          "body": "Max añade generación desde texto y keyframes temporizados. La integración FLUX 3 ofrece Extend; FLUX 3 Max no. Elige según el flujo que necesites."
-        }
-      ],
       "source": {
         "label": "Fuente: fal · keyframes temporizados",
         "href": "https://fal.ai/models/blackforestlabs/flux-3-max/keyframes-to-video/api"
@@ -620,6 +606,125 @@
         "caption": "En Create · Tres imágenes de referencia situadas a los 0, 8 y 16 segundos."
       }
     },
-    "specsReviewedAt": "2026-11-16"
+    "specsReviewedAt": "2026-11-17",
+    "capabilities": {
+      "title": "Cuatro puntos de partida. Tu dirección.",
+      "intro": "Elige cuánto quieres definir antes de poner el plano en movimiento.",
+      "diagramLabel": "El flujo de un vistazo",
+      "items": [
+        {
+          "id": "text",
+          "label": "Texto a vídeo",
+          "title": "Haz que la escena nazca de las palabras.",
+          "body": "Describe el entorno, la acción y la cámara, y después el diálogo, el ambiente o los efectos. Texto a vídeo permite explorar una idea visual sin preparar una imagen.",
+          "stages": [
+            "Tu prompt",
+            "Acción + cámara + sonido",
+            "Una nueva película"
+          ],
+          "uses": [
+            "Desarrolla una escena o concepto visual desde un brief.",
+            "Escenifica un intercambio y asigna cada frase a su personaje.",
+            "Dirige una revelación, una actuación o una historia de producto."
+          ],
+          "note": "De 5 a 20 segundos enteros. Deja tiempo para entender cada acción; un prompt más largo no garantiza una coreografía más precisa.",
+          "actions": [
+            {
+              "label": "Crear desde texto",
+              "mode": "t2v"
+            }
+          ]
+        },
+        {
+          "id": "image",
+          "label": "Imagen inicial",
+          "title": "Dale vida a una imagen fija.",
+          "body": "Aporta una imagen inicial y describe qué se mueve y cómo responde la cámara. Fija el sujeto, la composición y el entorno mientras diriges la acción posterior.",
+          "stages": [
+            "Imagen inicial",
+            "Dirección del movimiento",
+            "Un plano animado"
+          ],
+          "uses": [
+            "Anima un retrato, un entorno o una imagen de producto.",
+            "Mantén la composición inicial y añade un movimiento de cámara.",
+            "Describe el final de la acción, no solo su primer gesto."
+          ],
+          "note": "PNG, JPEG o WebP. La imagen guía el inicio; revisa identidad y composición en los fotogramas posteriores.",
+          "actions": [
+            {
+              "label": "Animar una imagen",
+              "mode": "i2v"
+            }
+          ]
+        },
+        {
+          "id": "endpoints",
+          "label": "Inicio + final",
+          "title": "Define también el punto de llegada.",
+          "body": "Proporciona una imagen inicial y otra final, y describe la acción que las une. Útil cuando importan la pose final, la revelación o la composición.",
+          "stages": [
+            "Primer fotograma",
+            "La transición",
+            "Último fotograma"
+          ],
+          "uses": [
+            "Pasa de un plano general a una composición más cercana.",
+            "Guía un cambio de pose o una revelación con un final definido.",
+            "Conecta dos estados visuales con una acción clara y plausible."
+          ],
+          "note": "Este modo requiere ambas imágenes. Guían un clip nuevo; no amplía ni edita un vídeo existente.",
+          "actions": [
+            {
+              "label": "Conectar dos imágenes",
+              "mode": "fl2v"
+            }
+          ]
+        },
+        {
+          "id": "keyframes",
+          "label": "Keyframes",
+          "title": "Sitúa los momentos clave en la línea de tiempo.",
+          "body": "Añade de 1 a 10 imágenes ordenadas y asigna una posición a cada una. Describe el movimiento entre ellas. El editor de keyframes de Create convierte esas referencias en una secuencia.",
+          "stages": [
+            "Imágenes ordenadas",
+            "Posiciones + prompt",
+            "Secuencia guiada"
+          ],
+          "uses": [
+            "Planifica una secuencia en torno a varios momentos visuales.",
+            "Elige cuándo debe aparecer una pose, un entorno o una composición.",
+            "Inspecciona las entradas y el resultado del ejemplo real de abajo."
+          ],
+          "note": "Las posiciones usan una línea de tiempo de 24 fps, desde 0 hasta duración × 24. Deben ser únicas y seguir el orden de las imágenes; revisa las transiciones.",
+          "actions": [
+            {
+              "label": "Abrir keyframes",
+              "mode": "ref2v"
+            }
+          ]
+        }
+      ],
+      "controls": {
+        "title": "Sonido, razonamiento y entrega",
+        "body": "Audio generado opcional, razonamiento Low o High y seed opcional. Elige 720p o 1080p reescalado. Estos controles se comparten entre los cuatro modos; el precio actual aparece antes de generar."
+      },
+      "handoff": {
+        "title": "¿Ya tienes un clip que editar o continuar?",
+        "body": "FLUX 3 Max crea clips nuevos; esta integración no ofrece Modify ni Extend. Continúa un vídeo con FLUX 3 o modifícalo con Seedance 2.5 en el mismo espacio de MaxVideoAI.",
+        "actions": [
+          {
+            "label": "Extend con FLUX 3",
+            "mode": "extend",
+            "model": "flux-3"
+          },
+          {
+            "label": "Modify con Seedance 2.5",
+            "mode": "v2v",
+            "model": "seedance-2-5"
+          }
+        ]
+      }
+    }
   }
 }

@@ -21,7 +21,7 @@ export function ModelCinematicWorkflowProofs({ presentation, workspaceHref }: { 
       const asset = assets.find(asset => asset.id === panel.assetIds[0])!;
       const board = media.boards.find(board => board.id === item.id);
       const focusAsset = item.focus ? assets.find(asset => asset.id === item.focus!.assetId) : undefined;
-      if (item.id === 'create') return <ModelCinematicCreateProof key={item.id} item={item} panel={panel} asset={asset} focusAsset={focusAsset} workflows={workflows} ui={ui} workspaceHref={workspaceHref} promptBaseHref={presentation.assistantHref} media={media} />;
+      if (item.id === 'create') return <ModelCinematicCreateProof key={item.id} item={item} panel={panel} asset={asset} focusAsset={focusAsset} workflows={workflows} ui={ui} workspaceHref={workspaceHref} promptBaseHref={presentation.assistantHref} media={media} capabilities={presentation.capabilities} />;
       const heading = <header className="cinema-workflow-heading"><p className="cinema-eyebrow">{panel.eyebrow}</p><h2 id={`cinema-${item.id}`}>{panel.title}</h2></header>;
       const limits = <dl className="cinema-workflow-limits cinema-workflow-facts" aria-label={workflows.limitsLabel}>{item.limits.map((limit, index) => {
         const Icon = index === 0 ? item.id === 'modify' ? Video : Layers : index === 1 ? Clock3 : Scan;

@@ -6,15 +6,17 @@ import { cinematicWorkflowHref, cinematicVideoPromptLinks } from '../_lib/model-
 import { CinematicArrow } from './ModelCinematicMarks';
 import { ModelCinematicVideoPrompt } from './ModelCinematicVideoPrompt.client';
 import { ModelCinematicWorkflowFocus } from './ModelCinematicWorkflowFocus';
+import { ModelCinematicCapabilities } from './ModelCinematicCapabilities.client';
 
 type Workflows = NonNullable<CinematicPresentation['content']['workflows']>;
 type Panel = CinematicPresentation['examples']['panels'][number];
 
 /** Actual reviewed film in the approved editorial composition. */
-export function ModelCinematicCreateProof({ item, panel, asset, focusAsset, workflows, ui, workspaceHref, promptBaseHref, media }: {
+export function ModelCinematicCreateProof({ item, panel, asset, focusAsset, workflows, ui, workspaceHref, promptBaseHref, media, capabilities }: {
   item: Workflows['items'][number]; panel: Panel; asset: CinematicAsset; focusAsset?: CinematicAsset;
   workflows: Workflows; ui: CinematicPresentation['ui']; workspaceHref: string; promptBaseHref: string;
   media: CinematicVideoMedia;
+  capabilities?: CinematicPresentation['capabilities'];
 }) {
   return <article id="proof-create" className="cinema-workflow-proof cinema-workflow-proof--create" aria-labelledby="cinema-create">
     <div className="cinema-wrap">
@@ -38,6 +40,7 @@ export function ModelCinematicCreateProof({ item, panel, asset, focusAsset, work
         </div>
       </div>
       {item.focus && focusAsset ? <ModelCinematicWorkflowFocus focus={item.focus} ui={ui} workspaceHref={promptBaseHref} media={media.focuses[item.focus.id]} /> : null}
+      {capabilities ? <ModelCinematicCapabilities copy={capabilities} /> : null}
     </div>
   </article>;
 }

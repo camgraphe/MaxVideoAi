@@ -7,6 +7,9 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { NextIntlClientProvider } from 'next-intl';
 import { JSDOM } from 'jsdom';
 import previews from '../frontend/config/model-cinematic-workspace-previews.json';
+import { getFalEngineBySlug } from '../frontend/src/config/falEngines';
+import { buildCinematicCapabilities } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-capabilities';
+import { ModelCinematicCapabilities } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelCinematicCapabilities.client';
 import proofs from '../frontend/config/model-cinematic-public-proofs.json';
 import { parseModelCinematicContent } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-cinematic-content';
 import { parseModelExamplesContent } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-examples-content';
@@ -21,6 +24,36 @@ import { buildCinematicSpecExports } from '../frontend/app/(localized)/[locale]/
 const locales = ['en', 'fr', 'es'] as const;
 const slugs = ['seedance-2-5', 'flux-3-max'];
 const read = (slug: string, locale: string) => JSON.parse(readFileSync(`content/models/${locale}/${slug}.json`, 'utf8'));
+
+test('compact workflow coverage explains every creation mode without inventing Max editing support', () => {
+  for (const slug of slugs) for (const locale of locales) {
+    const content = parseModelCinematicContent(read(slug, locale).cinematic, slug)!;
+    const copy = buildCinematicCapabilities(content.capabilities, slug, locale)!;
+    const modes = copy.items.flatMap(item => item.actions.map(action => action.mode));
+    assert.deepEqual(new Set(modes), new Set(getFalEngineBySlug(slug)!.engine.modes), 'Every current mode has an explanation and a direct entry');
+    const doc = new JSDOM(renderToStaticMarkup(React.createElement(ModelCinematicCapabilities, {copy}))).window.document;
+    assert.equal(doc.querySelectorAll('[role=tab]').length, slug === 'seedance-2-5' ? 3 : 4);
+    assert.equal(doc.querySelectorAll('[role=tabpanel]:not([hidden])').length, 1);
+    for (const item of copy.items) {
+      const panel = doc.getElementById(`capability-${item.id}`)!;
+      assert.ok(panel.textContent?.includes(item.body), 'All explanations are present in server HTML');
+      assert.equal(panel.querySelectorAll('.cinema-capability-uses li').length, 3);
+      for (const action of item.actions) {
+        const url = new URL(action.href, 'https://maxvideoai.com');
+        assert.equal(url.pathname, '/app'); assert.equal(url.searchParams.get('lang'), locale);
+        assert.equal(url.searchParams.get('engine'), slug); assert.equal(url.searchParams.get('mode'), action.mode);
+        assert.ok(!url.searchParams.has('generate'));
+      }
+    }
+    if (slug === 'flux-3-max') {
+      assert.deepEqual(copy.handoff!.actions.map(a => [a.model, a.mode]), [['flux-3', 'extend'], ['seedance-2-5', 'v2v']]);
+      const invalid = structuredClone(content.capabilities!); invalid.items[0].actions[0].mode = 'v2v';
+      assert.throws(() => buildCinematicCapabilities(invalid, slug, locale), /Unsupported cinematic workflow/);
+      const unnamed = structuredClone(content.capabilities!); unnamed.handoff!.actions[0].label = 'Continue here';
+      assert.throws(() => buildCinematicCapabilities(unnamed, slug, locale), /must name the destination/);
+    }
+  }
+});
 
 test('migrated models retain exact identity, localized destinations and model-owned public recipes', () => {
   for (const slug of slugs) for (const locale of locales) {

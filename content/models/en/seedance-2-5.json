@@ -579,9 +579,9 @@
         "body": "480p preview → 1080p final."
       },
       {
-        "target": "specs",
-        "title": "Direct the details",
-        "body": "Modify, Extend and optional generated audio."
+        "target": "capabilities",
+        "title": "Create. Modify. Extend.",
+        "body": "Choose your starting point. Keep creating, change a shot or continue the story."
       }
     ],
     "specialty": {
@@ -603,23 +603,9 @@
           "body": "Keep the draft’s setup and request its final render."
         }
       ],
-      "note": "Workflow illustration. Draft and final are separately quoted generations. A normal 480p render is not a native Draft; the final inherits the completed Draft’s prompt, duration, framing, audio and references.",
+      "note": "Workflow illustration. Draft and final are separately quoted generations. A normal 480p render is not a native Draft; the final inherits the completed Draft’s prompt, duration, framing, audio and references. Draft is available for Create, Modify and Extend; the source and references remain attached to the finalization workflow.",
       "action": "Open Create · choose Draft",
       "mode": "t2v",
-      "details": [
-        {
-          "title": "References with a role",
-          "body": "Use images for appearance, video for motion or pacing, and audio for sound. Describe what each reference should control; a movement reference is not a timed keyframe track."
-        },
-        {
-          "title": "Modify and Extend",
-          "body": "Edit a source clip or continue an existing sequence in their dedicated workspace modes. Check the source duration, reference limits and quote for that mode before rendering."
-        },
-        {
-          "title": "Standard or Flash?",
-          "body": "Choose standard for native Draft → final and up to 1080p. Flash is a separate option up to 720p; compare the current price for the same duration, inputs and audio."
-        }
-      ],
       "source": {
         "label": "Source: BytePlus · Draft workflow",
         "href": "https://docs.byteplus.com/en/docs/ModelArk/seedance-2-5"
@@ -629,6 +615,94 @@
         "caption": "Inside Create · Draft enabled. Finalizing is a separate paid generation."
       }
     },
-    "specsReviewedAt": "2026-11-16"
+    "specsReviewedAt": "2026-11-17",
+    "capabilities": {
+      "title": "One model. Three ways to shape a film.",
+      "intro": "Choose your starting point. Keep creating, change a shot or continue the story.",
+      "diagramLabel": "Workflow at a glance",
+      "items": [
+        {
+          "id": "create",
+          "label": "Create",
+          "title": "Start with an idea. Or bring your references.",
+          "body": "Write a scene from scratch, animate an opening image, or guide the result with image, video and audio references. Name the role of each reference: character, movement, camera, setting or sound.",
+          "stages": [
+            "Text / images / video / audio",
+            "Your direction",
+            "A new scene"
+          ],
+          "uses": [
+            "First + last frame: guide where an image-led shot begins and ends.",
+            "Motion reference: borrow a gesture or camera path, then describe the character and setting to use.",
+            "Multimodal: combine up to 30 images, 10 videos and 10 audio references."
+          ],
+          "note": "4–30 seconds, or automatic duration. Video references share a 30-second budget; audio references have a separate 30-second budget.",
+          "actions": [
+            {
+              "label": "Create from text",
+              "mode": "t2v"
+            },
+            {
+              "label": "Start with an image",
+              "mode": "i2v"
+            },
+            {
+              "label": "Use references",
+              "mode": "ref2v"
+            }
+          ]
+        },
+        {
+          "id": "modify",
+          "label": "Modify",
+          "title": "Keep the shot. Change what matters.",
+          "body": "Bring an existing clip and describe the edit. Change a character or wardrobe, replace the background, shift the light and atmosphere, or add and remove scene elements. Say what should stay consistent as well as what should change.",
+          "stages": [
+            "Source clip",
+            "Edit instructions + references",
+            "Reworked shot"
+          ],
+          "uses": [
+            "Character and styling: change a performer’s appearance, clothing or an object.",
+            "World and atmosphere: rework the location, lighting, weather or visual treatment.",
+            "Sound and references: guide audio changes and use images, video or audio to explain the intended edit."
+          ],
+          "note": "Modify follows the source framing and timing. It re-generates the shot; inspect faces, hands, motion and continuity. Available output settings appear in Create.",
+          "actions": [
+            {
+              "label": "Open Modify",
+              "mode": "v2v"
+            }
+          ]
+        },
+        {
+          "id": "extend",
+          "label": "Extend",
+          "title": "Give the scene another beat.",
+          "body": "Continue after a clip, create a lead-in before it, or describe a transition between supplied shots. Explain the action across the join and the camera and sound that should continue.",
+          "stages": [
+            "Existing footage",
+            "The next action",
+            "A new segment"
+          ],
+          "uses": [
+            "After: let an action finish, reveal the setting or hold on a reaction.",
+            "Before: establish an approach or a lead-in to the original shot.",
+            "Between: use multiple source clips to guide a connecting passage."
+          ],
+          "note": "Up to 10 source clips, 30 seconds combined. Request a 4–30-second new segment with the source aspect ratio; this is a continuation to review and assemble with your footage.",
+          "actions": [
+            {
+              "label": "Open Extend",
+              "mode": "extend"
+            }
+          ]
+        }
+      ],
+      "controls": {
+        "title": "Finish the direction",
+        "body": "Add dialogue, ambience and sound effects, or turn generated audio off. Use image and audio references to anchor the details. Choose duration, aspect ratio and resolution in Create; review its current quote before each generation."
+      }
+    }
   }
 }

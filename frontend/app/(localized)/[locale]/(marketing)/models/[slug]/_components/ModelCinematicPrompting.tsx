@@ -1,4 +1,4 @@
-import { cinematicVideoPromptLinks } from '../_lib/model-page-workflow-proofs';
+import { cinematicVideoPromptLinks, cinematicRecipeLinks } from '../_lib/model-page-workflow-proofs';
 import { Link } from '@/i18n/navigation';
 import NextLink from 'next/link';
 import type { ModelPromptingViewModel } from '../_lib/model-page-prompting-view-model';
@@ -38,15 +38,12 @@ export function ModelCinematicPrompting({ viewModel: vm, presentation }: { viewM
       <ul>{vm.globalPrinciples.map(item => <li key={item}>{item}</li>)}</ul>{vm.section.tip ? <p>{vm.section.tip}</p> : null}
     </div></details>{vm.section.guide ? <a className="cinema-source-link" href={vm.section.guide.href} target="_blank" rel="noopener noreferrer">{vm.section.guide.label} ↗</a> : null}</div>
     {vm.tabs.items.length && content.specialty ? <div className="cinema-recipes">{vm.tabs.items.map(item => {
-      const entry = item.exampleLinks?.usePromptHref ? new URL(item.exampleLinks.usePromptHref, 'https://maxvideoai.com') : null;
-      entry?.searchParams.set('lang', presentation.locale);
-      const href = entry ? entry.pathname + entry.search : null;
       return <article key={item.id} className="cinema-recipe-link">
         <div><h3>{item.title}</h3>{item.description ? <p>{item.description}</p> : null}
           {item.exampleLinks?.exampleHref ? <Link href={item.exampleLinks.exampleHref} prefetch={false} className="cinema-source-link">{content.examplesLabel}<CinematicArrow /></Link> : null}</div>
         <ModelCinematicVideoPrompt title={item.title} prompt={item.copy} note={vm.tabs.notesById[item.id] ?? item.description ?? vm.section.tip ?? content.intro}
           imageDetailsLabel={ui.sourcePrompt} ui={ui}
-          creation={href ? { href, refineHref: `${href}${href.includes('?') ? '&' : '?'}assistant=milo&refine=example` } : undefined} />
+          creation={cinematicRecipeLinks(item.exampleLinks?.usePromptHref, presentation.locale)} />
       </article>;
     })}</div> : vm.tabs.items.length ? <div className="cinema-recipes">{vm.tabs.items.map(item => <details className="cinema-disclosure" key={item.id}><summary>{item.title}<CinematicPlus /></summary><div><p>{item.description}</p><p>{item.copy}</p><div className="cinema-actions"><ModelDecisionCopyButton copyText={item.copy} label={vm.ui.copyPrompt} copiedLabel={vm.ui.copied} />{item.exampleLinks?.usePromptHref ? <Link href={item.exampleLinks.usePromptHref} prefetch={false}>{vm.ui.usePrompt} ↗</Link> : null}</div></div></details>)}</div> : null}
   </div></section>;

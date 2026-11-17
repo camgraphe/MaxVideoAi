@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { buildCinematicCapabilities, type CinematicCapabilities } from './model-page-capabilities';
 import workspacePreviews from '@/config/model-cinematic-workspace-previews.json';
 import type { AppLocale } from '@/i18n/locales';
 import type { ModelEditorialImage } from './model-page-editorial-images';
@@ -44,6 +45,7 @@ export type CinematicPresentation = {
   assets: CinematicAsset[];
   hero: CinematicAsset;
   media?: CinematicVideoMedia;
+  capabilities?: CinematicCapabilities;
   workspacePreview?: { url: string; width: number; height: number; mobile: { url: string; width: number; height: number } };
   assistantHref: string;
   ui: typeof ui.en & typeof creationUi.en;
@@ -102,7 +104,7 @@ export function buildCinematicPresentation(content: ModelCinematicContent | null
       throw new Error('Cinematic overview benefits must link to distinct visible proof panels');
     }
   }
-  const highlightTargets = new Set(['proof-create', 'specs', 'prompting', ...(content.specialty ? ['model-workflow'] : [])]);
+  const highlightTargets = new Set(['proof-create', 'specs', 'prompting', ...(content.specialty ? ['model-workflow'] : []), ...(content.capabilities ? ['capabilities'] : [])]);
   if (content.highlights?.some(item => !highlightTargets.has(item.target))) throw new Error('Highlight needs a visible section');
   const focuses = content.workflows?.items.flatMap(item => item.focus ? [item.focus] : []) ?? [];
   if (focuses.some(focus => !media?.focuses[focus.id])) throw new Error('Missing reviewed media for cinematic focus');
@@ -137,5 +139,5 @@ export function buildCinematicPresentation(content: ModelCinematicContent | null
   if (content.variant === 'video') assistantEntry.searchParams.set('mode', 't2v');
   const workspacePreview = content.specialty ? workspacePreviews.entries.find(entry => entry.modelSlug === content.modelSlug && entry.locale === locale) : undefined;
   if (content.specialty && !workspacePreview) throw new Error('Missing exact-locale workspace preview');
-  return { locale, content, workspacePreview, examples: examples.cinematic, assets, hero, media, ui: { ...ui[locale], ...creationUi[locale] }, assistantHref: assistantEntry.pathname + assistantEntry.search };
+  return { locale, content, capabilities: buildCinematicCapabilities(content.capabilities, content.modelSlug, locale), workspacePreview, examples: examples.cinematic, assets, hero, media, ui: { ...ui[locale], ...creationUi[locale] }, assistantHref: assistantEntry.pathname + assistantEntry.search };
 }

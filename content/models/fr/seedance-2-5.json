@@ -579,9 +579,9 @@
         "body": "Aperçu 480p → final 1080p."
       },
       {
-        "target": "specs",
-        "title": "Diriger les détails",
-        "body": "Modify, Extend et son généré optionnel."
+        "target": "capabilities",
+        "title": "Create. Modify. Extend.",
+        "body": "Choisissez votre point de départ : créer, modifier un plan ou prolonger le récit."
       }
     ],
     "specialty": {
@@ -603,23 +603,9 @@
           "body": "Conservez les réglages du Draft et lancez son final."
         }
       ],
-      "note": "Schéma du parcours. Draft et final sont deux générations avec leurs propres devis. Un rendu 480p ordinaire n’est pas un Draft natif ; le final reprend le prompt, la durée, le cadrage, le son et les références du Draft terminé.",
+      "note": "Schéma du parcours. Draft et final sont deux générations avec leurs propres devis. Un rendu 480p ordinaire n’est pas un Draft natif ; le final reprend le prompt, la durée, le cadrage, le son et les références du Draft terminé. Draft est disponible dans Create, Modify et Extend ; la source et les références restent rattachées au parcours de finalisation.",
       "action": "Ouvrir Create · choisir Draft",
       "mode": "t2v",
-      "details": [
-        {
-          "title": "Des références avec un rôle",
-          "body": "Utilisez les images pour l’apparence, la vidéo pour le mouvement ou le rythme, et l’audio pour le son. Précisez le rôle de chaque référence ; une référence de mouvement n’est pas une piste de keyframes minutées."
-        },
-        {
-          "title": "Modify et Extend",
-          "body": "Retouchez un clip source ou prolongez une séquence dans les modes dédiés. Vérifiez la durée source, les limites de références et le devis du mode avant de générer."
-        },
-        {
-          "title": "Standard ou Flash ?",
-          "body": "Choisissez standard pour le Draft natif → final et les sorties jusqu’en 1080p. Flash est une option distincte jusqu’en 720p ; comparez le prix actuel à durée, entrées et audio identiques."
-        }
-      ],
       "source": {
         "label": "Source : BytePlus · parcours Draft",
         "href": "https://docs.byteplus.com/en/docs/ModelArk/seedance-2-5"
@@ -629,6 +615,94 @@
         "caption": "Dans Create · Draft activé. La finalisation est une génération payante distincte."
       }
     },
-    "specsReviewedAt": "2026-11-16"
+    "specsReviewedAt": "2026-11-17",
+    "capabilities": {
+      "title": "Un modèle. Trois façons de construire un film.",
+      "intro": "Choisissez votre point de départ : créer, modifier un plan ou prolonger le récit.",
+      "diagramLabel": "Le parcours en un regard",
+      "items": [
+        {
+          "id": "create",
+          "label": "Create",
+          "title": "Partez d’une idée. Ou de vos références.",
+          "body": "Décrivez une scène, animez une image de départ ou guidez le résultat avec des images, vidéos et sons de référence. Attribuez un rôle à chaque référence : personnage, mouvement, caméra, décor ou son.",
+          "stages": [
+            "Texte / images / vidéo / son",
+            "Votre direction",
+            "Une nouvelle scène"
+          ],
+          "uses": [
+            "Première + dernière image : guidez le début et la fin d’un plan construit à partir d’images.",
+            "Référence de mouvement : reprenez un geste ou un trajet de caméra, puis décrivez le personnage et le décor souhaités.",
+            "Multimodal : combinez jusqu’à 30 images, 10 vidéos et 10 références audio."
+          ],
+          "note": "De 4 à 30 secondes, ou durée automatique. Les vidéos de référence partagent un budget de 30 secondes ; les références audio ont leur propre budget de 30 secondes.",
+          "actions": [
+            {
+              "label": "Créer depuis un texte",
+              "mode": "t2v"
+            },
+            {
+              "label": "Partir d’une image",
+              "mode": "i2v"
+            },
+            {
+              "label": "Utiliser des références",
+              "mode": "ref2v"
+            }
+          ]
+        },
+        {
+          "id": "modify",
+          "label": "Modify",
+          "title": "Gardez le plan. Changez ce qui compte.",
+          "body": "Importez un clip et décrivez la retouche. Changez un personnage ou sa tenue, remplacez le décor, modifiez la lumière et l’atmosphère, ajoutez ou retirez des éléments. Précisez aussi ce qui doit rester cohérent.",
+          "stages": [
+            "Clip source",
+            "Consignes + références",
+            "Plan retravaillé"
+          ],
+          "uses": [
+            "Personnage et style : modifiez l’apparence, les vêtements ou un objet.",
+            "Décor et atmosphère : transformez le lieu, la lumière, la météo ou le traitement visuel.",
+            "Son et références : guidez les changements audio et illustrez la retouche avec des images, vidéos ou sons."
+          ],
+          "note": "Modify suit le cadrage et la durée de la source. Le plan est régénéré : vérifiez les visages, mains, mouvements et raccords. Les réglages disponibles sont affichés dans Create.",
+          "actions": [
+            {
+              "label": "Ouvrir Modify",
+              "mode": "v2v"
+            }
+          ]
+        },
+        {
+          "id": "extend",
+          "label": "Extend",
+          "title": "Donnez une suite à la scène.",
+          "body": "Poursuivez après un clip, créez une amorce avant lui ou décrivez une transition entre plusieurs plans. Expliquez l’action au raccord, ainsi que la caméra et le son à prolonger.",
+          "stages": [
+            "Plans existants",
+            "La prochaine action",
+            "Un nouveau segment"
+          ],
+          "uses": [
+            "Après : terminez une action, révélez le décor ou restez sur une réaction.",
+            "Avant : préparez une arrivée ou une amorce avant le plan original.",
+            "Entre : utilisez plusieurs clips sources pour guider une transition."
+          ],
+          "note": "Jusqu’à 10 clips sources, 30 secondes cumulées. Demandez un nouveau segment de 4 à 30 secondes au format de la source, à vérifier puis à assembler avec vos plans.",
+          "actions": [
+            {
+              "label": "Ouvrir Extend",
+              "mode": "extend"
+            }
+          ]
+        }
+      ],
+      "controls": {
+        "title": "Précisez la réalisation",
+        "body": "Ajoutez dialogues, ambiance et bruitages, ou désactivez le son généré. Ancrez les détails avec des références image et audio. Choisissez la durée, le format et la résolution dans Create, puis vérifiez le devis avant chaque génération."
+      }
+    }
   }
 }

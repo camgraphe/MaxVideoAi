@@ -570,9 +570,9 @@
         "body": "1–10 images, positioned across the clip."
       },
       {
-        "target": "specs",
-        "title": "Shape the delivery",
-        "body": "5–20 seconds, optional audio and reasoning controls."
+        "target": "capabilities",
+        "title": "Four ways to begin.",
+        "body": "Choose how much of the shot you want to define before it moves."
       }
     ],
     "specialty": {
@@ -597,20 +597,6 @@
       "note": "Positions use frame indexes: at 24 fps, 8 seconds is frame 192. Supply one unique index per image, from 0 through duration × 24. Keyframes guide visual states; they do not guarantee exact cuts or editing.",
       "action": "Create with keyframes",
       "mode": "ref2v",
-      "details": [
-        {
-          "title": "Four ways to begin",
-          "body": "Generate from text, animate an opening image, connect first and last images, or position multiple keyframes. A first/last-frame pair is not the same setup as a timed image sequence."
-        },
-        {
-          "title": "Reasoning and delivery",
-          "body": "High reasoning is the default; low is also available. 720p is the default output, while 1080p uses upscaling. Choose duration and format before checking the quote."
-        },
-        {
-          "title": "Max or FLUX 3?",
-          "body": "Max adds text-first generation and timed keyframes. The FLUX 3 integration offers Extend; FLUX 3 Max does not. Choose the workflow you need rather than assuming every family member has the same tools."
-        }
-      ],
       "source": {
         "label": "Source: fal · timed keyframes",
         "href": "https://fal.ai/models/blackforestlabs/flux-3-max/keyframes-to-video/api"
@@ -620,6 +606,125 @@
         "caption": "Inside Create · Three reference images placed at 0, 8 and 16 seconds."
       }
     },
-    "specsReviewedAt": "2026-11-16"
+    "specsReviewedAt": "2026-11-17",
+    "capabilities": {
+      "title": "Four starting points. Your direction.",
+      "intro": "Choose how much of the shot you want to define before it moves.",
+      "diagramLabel": "Workflow at a glance",
+      "items": [
+        {
+          "id": "text",
+          "label": "Text to video",
+          "title": "Write the scene into existence.",
+          "body": "Describe the setting, action and camera, then the dialogue, atmosphere or sound effects. Text-to-video is useful when you want to explore a new visual idea without preparing an image.",
+          "stages": [
+            "Your prompt",
+            "Action + camera + sound",
+            "A new film"
+          ],
+          "uses": [
+            "Develop a scene or a visual concept from a written brief.",
+            "Stage an interaction and assign dialogue to each speaker.",
+            "Direct a cinematic reveal, performance or product story."
+          ],
+          "note": "5–20 whole seconds. Give each action time to read; a longer prompt is not a guarantee of more accurate choreography.",
+          "actions": [
+            {
+              "label": "Create from text",
+              "mode": "t2v"
+            }
+          ]
+        },
+        {
+          "id": "image",
+          "label": "Opening image",
+          "title": "Give a still a life beyond the frame.",
+          "body": "Supply one opening image, then describe what moves and how the camera responds. Anchor the subject, composition and setting while directing the action that follows.",
+          "stages": [
+            "Opening image",
+            "Motion direction",
+            "An animated shot"
+          ],
+          "uses": [
+            "Animate a character portrait, an environment or a product image.",
+            "Keep the opening composition while adding a camera move.",
+            "Describe the end of the action, not only its first gesture."
+          ],
+          "note": "PNG, JPEG or WebP. The image anchors the opening; inspect later frames for identity and composition changes.",
+          "actions": [
+            {
+              "label": "Animate an image",
+              "mode": "i2v"
+            }
+          ]
+        },
+        {
+          "id": "endpoints",
+          "label": "First + last frame",
+          "title": "Set the destination as well as the departure.",
+          "body": "Provide a starting image and an ending image, then describe how the action connects them. Use this when the final pose, reveal or composition matters.",
+          "stages": [
+            "First frame",
+            "The transition",
+            "Last frame"
+          ],
+          "uses": [
+            "Move from an establishing frame into a closer composition.",
+            "Guide a change of pose or a reveal with a defined ending.",
+            "Connect two visual states with a clear, plausible action."
+          ],
+          "note": "Both endpoint images are required in this mode. They guide a new clip; this does not extend or edit an existing video.",
+          "actions": [
+            {
+              "label": "Connect two frames",
+              "mode": "fl2v"
+            }
+          ]
+        },
+        {
+          "id": "keyframes",
+          "label": "Keyframes",
+          "title": "Place the important moments on a timeline.",
+          "body": "Add 1–10 ordered images and give each a frame position. Describe the motion between them. The keyframe editor in Create turns those visual beats into a timed sequence.",
+          "stages": [
+            "Ordered images",
+            "Frame positions + prompt",
+            "A guided sequence"
+          ],
+          "uses": [
+            "Plan a sequence around several visual beats.",
+            "Control when a pose, setting or composition should appear.",
+            "Use the real keyframe example below to inspect inputs and result."
+          ],
+          "note": "Positions use a 24 fps timeline, from frame 0 through duration × 24. Positions must be unique and follow image order; transitions still need review.",
+          "actions": [
+            {
+              "label": "Open keyframes",
+              "mode": "ref2v"
+            }
+          ]
+        }
+      ],
+      "controls": {
+        "title": "Sound, reasoning & delivery",
+        "body": "Optional generated audio, Low or High reasoning, and an optional seed. Choose 720p or upscaled 1080p. These controls are shared across the four creation modes; the current price is shown before generation."
+      },
+      "handoff": {
+        "title": "Already have a clip to change or continue?",
+        "body": "FLUX 3 Max creates new clips; this integration does not offer Modify or Extend. Continue a video with FLUX 3, or rework it with Seedance 2.5 in the same MaxVideoAI workspace.",
+        "actions": [
+          {
+            "label": "Extend with FLUX 3",
+            "mode": "extend",
+            "model": "flux-3"
+          },
+          {
+            "label": "Modify with Seedance 2.5",
+            "mode": "v2v",
+            "model": "seedance-2-5"
+          }
+        ]
+      }
+    }
   }
 }

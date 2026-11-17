@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { cinematicCapabilitiesSchema } from './model-page-capabilities';
 
 const text = z.string().trim().min(1);
 const id = z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
@@ -20,6 +21,7 @@ const heroSchema = z.object({
   examplesLabel: text,
   pricingLabel: text,
   highlights: z.array(z.object({ target: id, title: text, body: text }).strict()).length(3).optional(),
+  capabilities: cinematicCapabilitiesSchema.optional(),
   specsReviewedAt: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   specialty: z.object({
     kind: z.enum(['draft', 'keyframes']), eyebrow: text, title: text, intro: text,
@@ -27,7 +29,7 @@ const heroSchema = z.object({
     note: text, action: text, mode: z.enum(['t2v', 'ref2v']),
     source: z.object({ label: text, href: z.string().url() }).strict(),
     workspacePreview: z.object({ alt: text, caption: text }).strict(),
-    details: z.array(z.object({ title: text, body: text }).strict()).length(3),
+    details: z.array(z.object({ title: text, body: text }).strict()).length(3).optional(),
   }).strict().optional(),
   overview: z.object({
     titleLines: z.array(text).length(2),
