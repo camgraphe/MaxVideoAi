@@ -35,10 +35,29 @@ Official references:
 - https://docs.byteplus.com/en/docs/ModelArk/create-video-generation-task-api
 
 Do not publish the 4K marketing availability from the provider documentation alone.
-When that integration is merged/tested, update all three Seedance locale files as
+After that integration is merged/tested and production activation is confirmed,
+update all three Seedance locale files as
 one release: metadata, overview/hero, comparison/decision copy, FAQ Draft answer,
 cinematic intro/facts, Create limits/compact facts and Draft final step. Re-capture
 the real Draft controls after their final-target selector is available. Describe
 4K as 3840×2160 for 16:9, not as the dimensions of every aspect ratio. Check per-mode
 output restrictions (especially Modify's LAS transport) and original-file codecs.
 Keep the exact current customer quote; supplier token prices are not customer prices.
+
+Integration-owner update, 17 November (reported readiness, not production activation):
+
+- ModelArk supports the 4K target and Draft 480p → 1080p/4K finalization in all five
+  modes: text-to-video, image-to-video, references, Modify and Extend. Ordinary
+  Modify may still use LAS at 480p/720p; distinguish that transport from Draft
+  finalization instead of applying its resolution limit to both paths.
+- 1080p and 4K originals are HEVC 10-bit. Do not infer HDR or 4:4:4 from that fact.
+- Runtime/catalog cards now derive 4K from shared capabilities in the integration
+  branch. Reconcile authored `keySpecs`, cinematic copy and comparison/example
+  destinations in EN/FR/ES at activation so the two surfaces agree.
+- The owner reports Studio/Milo, MCP and final-target selector browser checks
+  passing, with independent review clear. Await its PR and release signal before
+  treating this as deployed behavior. Re-capture the actual controls then.
+- The owner's Standard ×2 tariff change does not affect Flash. Verify actual
+  current quotes and their marketing projections at release; do not substitute
+  the multiplier for a customer-facing price.
+- The plugin package and OpenAI review submission remain outside this change.
