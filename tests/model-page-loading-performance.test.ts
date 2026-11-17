@@ -88,6 +88,7 @@ async function makeRouteHarness() {
       plugins: [{ name: 'model-read-boundaries', setup(builder) {
         builder.onResolve({ filter: /.*/ }, args => {
           if (args.path === 'model-fixture') return { path: 'fixture', namespace: 'controlled' };
+          if (args.importer === routePath && args.path.endsWith('/model-page-flux-release')) return;
           if (args.importer === routePath && !args.path.endsWith('/model-page-inputs') && args.path !== '@/server/model-gallery-projection' && !args.path.startsWith('react')) {
             return { path: args.path.endsWith('.css') ? 'empty' : 'fixture', namespace: 'controlled' };
           }

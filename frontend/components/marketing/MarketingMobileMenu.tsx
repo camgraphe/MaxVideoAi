@@ -91,8 +91,7 @@ export function MarketingMobileMenu({
           className="marketing-menu-invoker min-h-0 h-11 w-11 rounded-lg border border-hairline bg-surface p-2 text-text-primary"
           aria-label={t('nav.mobileClose', 'Close menu')}
           autoFocus
-          popoverTarget={menuId}
-          popoverTargetAction="hide"
+          popoverTarget={menuId} popoverTargetAction="hide"
         >
           <span className="marketing-menu-close-icon" aria-hidden="true" />
         </Button>
