@@ -30,7 +30,7 @@ export function ModelCinematicKeyframeBoard({ images, seconds, labels, title, fr
       {images.map((url, index) => <li key={url}>
         <button type="button" aria-controls={previewId} aria-pressed={selected === index}
           aria-label={`${labels[index]} · ${position(index)}`} onClick={() => setSelected(index)}>
-          <Image src={url} alt="" width={192} height={108} sizes="(min-width: 900px) 110px, 17vw" loading="lazy" />
+          <Image src={url} alt="" aria-hidden="true" width={192} height={108} sizes="(min-width: 900px) 110px, 17vw" loading="lazy" />
           <span>{seconds[index]} s</span>
         </button>
       </li>)}

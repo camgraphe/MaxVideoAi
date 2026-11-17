@@ -61,7 +61,7 @@ export function ModelCinematicFilm({ video, poster, title, ui, mask = 'create', 
       <ol className="cinema-film-anchors-list">{keyframes.timeline.map((frame, index) => <li key={frame.frameIndex} id={`keyframe-example-frame-${frame.frameIndex}`}>
         <button type="button" onClick={() => selectFrame(frame.seconds)}
           aria-current={controls.currentTime + 1 / 24 >= frame.seconds && (index + 1 === keyframes.timeline.length || controls.currentTime + 1 / 24 < keyframes.timeline[index + 1].seconds) ? 'step' : undefined}>
-          <Image src={frame.imageUrl} alt="" width={240} height={135} sizes="(min-width: 800px) 180px, 120px" loading="lazy" />
+          <Image src={frame.imageUrl} alt="" aria-hidden="true" width={240} height={135} sizes="(min-width: 800px) 180px, 120px" loading="lazy" />
           <strong>{frame.timeLabel}</strong><span>{frame.caption || `${keyframes.copy.frameLabel} ${frame.number}`}</span>
         </button>
       </li>)}</ol>

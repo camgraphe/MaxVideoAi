@@ -34,7 +34,7 @@ export function ModelCinematicDraftWorkflow({ copy, href, visual }: {
               const angleCopy = labels.angles.find(item => item.id === angle.id)!;
               const active = selectedId === angle.id;
               return <button key={angle.id} type="button" className="cinema-draft-angle" aria-pressed={active} aria-controls="cinema-draft-final-preview" onClick={() => setSelectedId(angle.id)}>
-                <span className="cinema-draft-angle-image"><Image src={angle.url} width={angle.width} height={angle.height} alt="" sizes="(min-width: 1200px) 190px, (min-width: 768px) 16vw, 30vw" loading="lazy" />
+                <span className="cinema-draft-angle-image"><Image src={angle.url} width={angle.width} height={angle.height} alt={angleCopy.description} sizes="(min-width: 1200px) 190px, (min-width: 768px) 16vw, 30vw" loading="lazy" />
                   {active ? <span className="cinema-draft-check" aria-hidden="true"><Check size={15} strokeWidth={2.5} /></span> : null}
                 </span>
                 <span className="cinema-draft-angle-label">{angleCopy.label}</span>

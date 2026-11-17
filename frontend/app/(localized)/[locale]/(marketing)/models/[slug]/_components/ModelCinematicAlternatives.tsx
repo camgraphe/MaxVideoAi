@@ -29,7 +29,7 @@ export function ModelCinematicAlternatives({ content, slug, family, quickLinks, 
     <ul className="cinema-choice-list">{links.map(model => <li key={model.slug}>
       <Link href={model.href} prefetch={false} className="cinema-choice-model" data-analytics-event="cta_click"
         data-analytics-cta-name="choose_model" data-analytics-cta-location="model_related" data-analytics-target-family="models">
-        {model.poster ? <Image src={model.poster} alt="" width={268} height={178} sizes="(max-width: 480px) 82px, 134px" loading="lazy" /> : null}
+        {model.poster ? <Image src={model.poster} alt="" aria-hidden="true" width={268} height={178} sizes="(max-width: 480px) 82px, 134px" loading="lazy" /> : null}
         <span><strong>{model.label}</strong><span>{model.reason}</span></span>
       </Link>
       {model.compareHref ? <Link href={model.compareHref} prefetch={false} className="cinema-choice-vs"
