@@ -22,7 +22,7 @@ export function ComposerPromptHeader({ promptId, promptLabel, prompt, onPromptCh
         ? <h2 id={`${promptId}-heading`} className={hideLabel ? 'sr-only' : 'text-[11px] font-semibold uppercase tracking-micro text-text-muted'}>{promptLabel}</h2>
         : <label htmlFor={promptId} className={hideLabel ? 'sr-only' : 'text-[11px] font-semibold uppercase tracking-micro text-text-muted'}>{promptLabel}</label>}
       {typeof promptMaxChars === 'number' ? (
-        <div className={clsx('text-[12px]', promptTooLong ? 'text-error' : 'text-text-muted')}>
+        <div data-composer-prompt-count className={clsx('text-[12px]', promptTooLong ? 'text-error' : 'text-text-muted')}>
           {prompt.length}/{promptMaxChars}
         </div>
       ) : null}
