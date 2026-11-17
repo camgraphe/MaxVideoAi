@@ -18,7 +18,8 @@ import { parseModelDecisionContent } from '../frontend/app/(localized)/[locale]/
 import { ModelCinematicSpecialty } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelCinematicSpecialty';
 import { ModelCinematicWorkflowProofs } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelCinematicWorkflowProofs';
 import { publicCardWithKeyframeRecipeToVideo } from '../frontend/server/local-public-examples-data';
-import { buildCinematicSpecExports } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-cinematic-specs';
+import { buildCinematicSpecExports, buildCinematicSpecRows } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-cinematic-specs';
+import { buildModelPageSpecProjection } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-spec-projection';
 
 (globalThis as typeof globalThis & { React: typeof React }).React = React;
 const locales = ['en', 'fr', 'es'] as const;
@@ -137,5 +138,35 @@ test('citable exports carry the model, canonical source and explicit review date
       assert.ok(value.includes('2026-11-16'));
       assert.ok(value.includes('1–10'));
     }
+  }
+});
+
+test('the 4K editorial candidate carries its codec into exports without relabelling existing proof films', () => {
+  const authored = JSON.parse(readFileSync('data/benchmarks/engine-key-specs.v1.json', 'utf8')).specs.find((item: {modelSlug: string}) => item.modelSlug === 'seedance-2-5');
+  // Runtime 4K activation belongs to the coordinated integration PR. Exercise its
+  // target capability here without changing generation or price configuration.
+  const engine = structuredClone(getFalEngineBySlug('seedance-2-5')!);
+  engine.engine.resolutions = [...new Set([...engine.engine.resolutions, '4k'])];
+  for (const locale of locales) {
+    const copy = read('seedance-2-5', locale);
+    const content = parseModelCinematicContent(copy.cinematic, 'seedance-2-5')!;
+    const presentation = buildCinematicPresentation(content, parseModelExamplesContent(copy.examples, 'seedance-2-5', locale), [], locale)!;
+    assert.match(copy.seo.title, /4K/);
+    assert.match(content.intro, /4K/);
+    assert.match(content.specialty!.steps[2].label, /1080p.*4K/);
+    assert.match(content.capabilities!.items.find(item => item.id === 'modify')!.note, /480p\/720p.*1080p.*4K/);
+    const projected = buildModelPageSpecProjection({ engine, locale, isImageEngine: false, showPriceInSpecs: false, keySpecs: authored.keySpecs });
+    const rows = buildCinematicSpecRows(projected.keySpecRows, engine.engine, locale, false);
+    assert.match(rows.find(row => row.id === 'maxResolution')!.value, /4K/);
+    const codec = rows.find(row => row.id === 'outputFormats')!.value;
+    assert.match(codec, /1080p.*4K.*HEVC 10-bit/);
+    const exported = buildCinematicSpecExports({ title: 'Seedance 2.5', rows, locale, source: 'https://maxvideoai.com/models/seedance-2-5#specs' });
+    for (const value of Object.values(exported)) assert.ok(value.includes(codec));
+    const proof = presentation.assets.find(asset => asset.id === 'sd25-prompt')!;
+    assert.equal(proof.video?.width, 1280);
+    assert.equal(proof.video?.height, 720);
+    assert.doesNotMatch(proof.metadataLabel, /4K/);
+    assert.equal(copy.prompting.demo.prompt, proof.prompt);
+    assert.ok(proof.videoCreation!.href.includes('from=job_ff94f180-0a2f-4f2b-acb2-bda8352fa9d9'));
   }
 });

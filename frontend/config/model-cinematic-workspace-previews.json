@@ -1,51 +1,57 @@
 {
-  "capturedAt": "2026-11-16",
-  "purpose": "Actual Create components with example settings; no generation or price quote",
+  "capturedAt": "2026-11-17",
+  "purpose": "Actual workspace components with example state; no generation or price quote",
   "entries": [
     {
       "modelSlug": "seedance-2-5",
       "locale": "en",
-      "url": "/assets/model-examples/workspace-controls/e120d528314ec4984b030bb62e5725aea5145850fce473cd92f3fa9d30427534.webp",
-      "sha256": "e120d528314ec4984b030bb62e5725aea5145850fce473cd92f3fa9d30427534",
+      "url": "/assets/model-examples/workspace-controls/050571e3fce6d17e30e17687023e668a741d9cb122173caad9f49ed1a6e08489.webp",
+      "sha256": "050571e3fce6d17e30e17687023e668a741d9cb122173caad9f49ed1a6e08489",
       "width": 1520,
-      "height": 308,
+      "height": 474,
       "mobile": {
-        "url": "/assets/model-examples/workspace-controls/79a19bedd0c9bd4e421f9906a87619df1e589e9b66b2c368a67e4de14786fe11.webp",
-        "sha256": "79a19bedd0c9bd4e421f9906a87619df1e589e9b66b2c368a67e4de14786fe11",
+        "url": "/assets/model-examples/workspace-controls/74d7485288af802d6614e4418dd099b7144bf77d20de36f380ed4e807fe0ec28.webp",
+        "sha256": "74d7485288af802d6614e4418dd099b7144bf77d20de36f380ed4e807fe0ec28",
         "width": 780,
-        "height": 364
+        "height": 474
       },
-      "component": "SeedanceDraftSettingsNotice"
+      "component": "SeedanceDraftFinalAction",
+      "capturedAt": "2026-11-17",
+      "sourceSha256": "fa3c8a75d98a647b0d82c02dfa78530aa04224d1f6ca3a2e410b89c637a8f7ec"
     },
     {
       "modelSlug": "seedance-2-5",
       "locale": "fr",
-      "url": "/assets/model-examples/workspace-controls/9d9d1c1c5eee091eceaa54d8a8a77ff62706ff9b1fb5c380042fcd26fd4411d1.webp",
-      "sha256": "9d9d1c1c5eee091eceaa54d8a8a77ff62706ff9b1fb5c380042fcd26fd4411d1",
+      "url": "/assets/model-examples/workspace-controls/6cbfaa60c606157a10d36b578e55ba986f5bc3c5746cc0724e2684985ade9208.webp",
+      "sha256": "6cbfaa60c606157a10d36b578e55ba986f5bc3c5746cc0724e2684985ade9208",
       "width": 1520,
-      "height": 308,
+      "height": 474,
       "mobile": {
-        "url": "/assets/model-examples/workspace-controls/fcad442a1889ce917fa1adf124a6a5ff25a2e40ebae2b110dbdfa9230566513c.webp",
-        "sha256": "fcad442a1889ce917fa1adf124a6a5ff25a2e40ebae2b110dbdfa9230566513c",
+        "url": "/assets/model-examples/workspace-controls/9292a120acb977c05f89a1acc204f60acacd9e1f8fc3a96abc340aebecc01964.webp",
+        "sha256": "9292a120acb977c05f89a1acc204f60acacd9e1f8fc3a96abc340aebecc01964",
         "width": 780,
-        "height": 402
+        "height": 474
       },
-      "component": "SeedanceDraftSettingsNotice"
+      "component": "SeedanceDraftFinalAction",
+      "capturedAt": "2026-11-17",
+      "sourceSha256": "fa3c8a75d98a647b0d82c02dfa78530aa04224d1f6ca3a2e410b89c637a8f7ec"
     },
     {
       "modelSlug": "seedance-2-5",
       "locale": "es",
-      "url": "/assets/model-examples/workspace-controls/31d3134cb5240f9d91ecc3de6ffad83383b4d33401d7d74289e1f6dcfcca9962.webp",
-      "sha256": "31d3134cb5240f9d91ecc3de6ffad83383b4d33401d7d74289e1f6dcfcca9962",
+      "url": "/assets/model-examples/workspace-controls/128f222a0952e0d51129e62c2c498b0d5e4b1bc1da8a607f128b9b6981cbd474.webp",
+      "sha256": "128f222a0952e0d51129e62c2c498b0d5e4b1bc1da8a607f128b9b6981cbd474",
       "width": 1520,
-      "height": 308,
+      "height": 474,
       "mobile": {
-        "url": "/assets/model-examples/workspace-controls/337943de965e59bfc4f0ccf61fd58156675b1d9aec35f5a9cebb4a80aaca2a05.webp",
-        "sha256": "337943de965e59bfc4f0ccf61fd58156675b1d9aec35f5a9cebb4a80aaca2a05",
+        "url": "/assets/model-examples/workspace-controls/16c15bf5cb6345898b1aeabacaa82cf1e3bf66b01c00bace7ddbe17bb3ab9312.webp",
+        "sha256": "16c15bf5cb6345898b1aeabacaa82cf1e3bf66b01c00bace7ddbe17bb3ab9312",
         "width": 780,
-        "height": 364
+        "height": 474
       },
-      "component": "SeedanceDraftSettingsNotice"
+      "component": "SeedanceDraftFinalAction",
+      "capturedAt": "2026-11-17",
+      "sourceSha256": "fa3c8a75d98a647b0d82c02dfa78530aa04224d1f6ca3a2e410b89c637a8f7ec"
     },
     {
       "modelSlug": "flux-3-max",

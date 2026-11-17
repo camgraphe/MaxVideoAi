@@ -4,7 +4,7 @@ export const seedance25TemplateConfig: ModelPageTemplateConfig = {
   slug: 'seedance-2-5',
   intent: 'production',
   hero: {
-    eyebrow: 'New · Up to 30 seconds · 1080p · Native audio',
+    eyebrow: 'Up to 4K · 30 seconds · Native Draft · Audio',
     subtitleHighlightTerms: ['4–30-second videos', 'multimodal references', 'optional generated audio'],
     primaryCtaHref: '/app?engine=seedance-2-5',
     secondaryCtaHref: '/examples/seedance',
@@ -33,7 +33,7 @@ export const seedance25TemplateConfig: ModelPageTemplateConfig = {
         highlightKey: 'mostPopular',
       },
       { id: '24s-1080p', seconds: 24, resolution: '1080p', labelKey: 'storyboardPass' },
-      { id: 'max-duration', fixedValueKey: 'maxDurationValue', labelKey: 'maxDuration', noteKey: 'upTo1080p' },
+      { id: 'max-duration', fixedValueKey: 'maxDurationValue', labelKey: 'maxDuration', noteKey: 'upTo4K' },
     ],
   },
   sections: {

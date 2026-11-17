@@ -929,14 +929,14 @@
     {
       "modelSlug": "seedance-2-5",
       "sources": [
-        "https://ai.byteplus.com/ark"
+        "https://docs.byteplus.com/en/docs/ModelArk/seedance-2-5",
+        "https://docs.byteplus.com/en/docs/ModelArk/create-video-generation-task-api"
       ],
       "provenance": {
-        "basis": "maxvideoai-production-route-contract",
-        "mechanicsSources": [
-          "https://docs.byteplus.com/en/docs/modelark/1520757"
-        ],
-        "note": "The live ModelArk product announcement is the source for Seedance 2.5 1080p availability; the documentation URL covers generic asynchronous video task mechanics only. MaxVideoAI input schemas at 90af7ed3b expose generated audio but no separate lip-sync parameter; this describes the available controls, not measured dialogue quality."
+        "basis": "coordinated-seedance-25-4k-release-candidate",
+        "reviewedAt": "2026-11-17",
+        "releaseDependency": "Seedance 2.5 4K runtime and tariff activation; do not deploy this editorial candidate first.",
+        "note": "ModelArk supports direct 4K and native Draft 480p to 1080p/4K across t2v, i2v, ref2v, v2v and extend. Normal LAS Edit remains 480p/720p. Both 1080p and 4K use 10-bit HEVC; no HDR or 4:4:4 claim. Existing examples retain their measured output dimensions. Generated audio has no separate lip-sync control."
       },
       "keySpecs": {
         "textToVideo": "Supported",
@@ -956,7 +956,7 @@
         "referenceImageStyle": "Up to 30 image references",
         "referenceVideo": "Up to 10 video references",
         "referenceAudio": "Up to 10 audio references",
-        "maxResolution": "480p / 720p / 1080p",
+        "maxResolution": "480p / 720p / 1080p / 4K",
         "maxDuration": "4-30s",
         "aspectRatios": [
           "21:9",
@@ -972,7 +972,8 @@
         "audioOutput": "Optional generated audio",
         "nativeAudioGeneration": "Optional",
         "outputFormats": [
-          "MP4"
+          "MP4",
+          "1080p / 4K: HEVC 10-bit"
         ],
         "lipSync": "No separate lip-sync control"
       }

@@ -3,18 +3,18 @@
   "en": {
     "meta": {
       "title": "Seedance 2.5 Flash vs Seedance 2.5 | MaxVideoAI",
-      "description": "Compare Seedance 2.5 and Seedance 2.5 Flash on MaxVideoAI: 1080p and native Draft, 480p/720p iteration, reference limits and current prices.",
+      "description": "Compare Seedance 2.5 and Flash: 4K and native Draft versus 480p/720p, reference limits and current generation prices on MaxVideoAI.",
       "titleBranding": "none"
     },
-    "heroIntro": "Standard or Flash: choose the controls and delivery size. Seedance 2.5 offers up to 1080p and a separate native Draft-to-final workflow. Flash stops at 720p and has its own reference limits. Both can cover a scene up to 30 seconds; compare the same inputs and a fresh quote before choosing.",
+    "heroIntro": "Standard or Flash: choose the controls and delivery size. Seedance 2.5 offers up to 4K and native 480p Draft → 1080p/4K finalization. Flash offers 480p/720p with its own reference limits. Both support scenes up to 30 seconds; compare the same inputs and a current quote.",
     "quickVerdict": {
       "title": "Choose by the job",
-      "body": "Use standard for a 1080p delivery or an owned native Draft that you want to finalize. Use Flash when 480p or 720p fits the brief. A Flash clip is not a native Draft cache and cannot be finalized through that workflow."
+      "body": "Choose Seedance 2.5 for 1080p/4K delivery or native Draft finalization. Both higher-resolution outputs use 10-bit HEVC. Choose Flash for 480p/720p work. Standard Modify remains limited to 480p/720p; native Draft finalization still offers 1080p/4K. A Flash clip is not a native Draft."
     },
     "topCards": [
       {
         "title": "Standard or Flash: choose the controls and delivery size",
-        "body": "Seedance 2.5 offers up to 1080p and a separate native Draft-to-final workflow. Flash stops at 720p and has its own reference limits. Both can cover a scene up to 30 seconds; compare the same inputs and a fresh quote before choosing."
+        "body": "Standard or Flash: choose the controls and delivery size. Seedance 2.5 offers up to 4K and native 480p Draft → 1080p/4K finalization. Flash offers 480p/720p with its own reference limits. Both support scenes up to 30 seconds; compare the same inputs and a current quote."
       },
       {
         "title": "Flash controls",
@@ -58,7 +58,7 @@
       "items": [
         {
           "question": "What is the main difference?",
-          "answer": "Use standard for a 1080p delivery or an owned native Draft that you want to finalize. Use Flash when 480p or 720p fits the brief. A Flash clip is not a native Draft cache and cannot be finalized through that workflow."
+          "answer": "Choose Seedance 2.5 for 1080p/4K delivery or native Draft finalization. Both higher-resolution outputs use 10-bit HEVC. Choose Flash for 480p/720p work. Standard Modify remains limited to 480p/720p; native Draft finalization still offers 1080p/4K. A Flash clip is not a native Draft."
         },
         {
           "question": "Does Seedance 2.5 Flash offer 4K?",
@@ -82,18 +82,18 @@
   "fr": {
     "meta": {
       "title": "Seedance 2.5 Flash vs Seedance 2.5 | MaxVideoAI",
-      "description": "Comparez Seedance 2.5 et Seedance 2.5 Flash sur MaxVideoAI : 1080p et Draft natif, itération en 480p/720p, limites de références et tarifs actuels.",
+      "description": "Comparez Seedance 2.5 et Flash : 4K et Draft natif face au 480p/720p, limites de références et tarifs actuels sur MaxVideoAI.",
       "titleBranding": "none"
     },
-    "heroIntro": "Standard ou Flash : choisir les outils et le format de livraison. Seedance 2.5 propose jusqu’au 1080p et un parcours natif Draft vers rendu final distinct. Flash s’arrête au 720p et possède ses propres limites de références. Les deux peuvent couvrir une scène jusqu’à 30 secondes ; comparez les mêmes entrées et un devis à jour avant de choisir.",
+    "heroIntro": "Standard ou Flash : choisissez les outils et le format de livraison. Seedance 2.5 propose jusqu’à la 4K et un Draft natif 480p → final 1080p/4K. Flash propose le 480p/720p avec ses propres limites de références. Les deux couvrent jusqu’à 30 secondes ; comparez les mêmes entrées et un devis actuel.",
     "quickVerdict": {
       "title": "Choisir selon le travail",
-      "body": "Choisissez standard pour une livraison 1080p ou pour finaliser un Draft natif de votre compte. Flash convient aux briefs en 480p ou 720p. Un clip Flash n’est pas un cache Draft natif et ne peut pas être finalisé par ce parcours."
+      "body": "Choisissez Seedance 2.5 pour livrer en 1080p/4K ou finaliser un Draft natif. Les deux résolutions supérieures utilisent le HEVC 10 bits. Flash convient au 480p/720p. Modify standard reste en 480p/720p ; la finalisation Draft native propose le 1080p/4K. Un clip Flash n’est pas un Draft natif."
     },
     "topCards": [
       {
         "title": "Standard ou Flash : choisir les outils et le format de livraison",
-        "body": "Seedance 2.5 propose jusqu’au 1080p et un parcours natif Draft vers rendu final distinct. Flash s’arrête au 720p et possède ses propres limites de références. Les deux peuvent couvrir une scène jusqu’à 30 secondes ; comparez les mêmes entrées et un devis à jour avant de choisir."
+        "body": "Standard ou Flash : choisissez les outils et le format de livraison. Seedance 2.5 propose jusqu’à la 4K et un Draft natif 480p → final 1080p/4K. Flash propose le 480p/720p avec ses propres limites de références. Les deux couvrent jusqu’à 30 secondes ; comparez les mêmes entrées et un devis actuel."
       },
       {
         "title": "Les outils de Flash",
@@ -137,7 +137,7 @@
       "items": [
         {
           "question": "Quelle est la différence principale ?",
-          "answer": "Choisissez standard pour une livraison 1080p ou pour finaliser un Draft natif de votre compte. Flash convient aux briefs en 480p ou 720p. Un clip Flash n’est pas un cache Draft natif et ne peut pas être finalisé par ce parcours."
+          "answer": "Choisissez Seedance 2.5 pour livrer en 1080p/4K ou finaliser un Draft natif. Les deux résolutions supérieures utilisent le HEVC 10 bits. Flash convient au 480p/720p. Modify standard reste en 480p/720p ; la finalisation Draft native propose le 1080p/4K. Un clip Flash n’est pas un Draft natif."
         },
         {
           "question": "Seedance 2.5 Flash propose-t-il la 4K ?",
@@ -161,18 +161,18 @@
   "es": {
     "meta": {
       "title": "Seedance 2.5 Flash vs Seedance 2.5 | MaxVideoAI",
-      "description": "Compara Seedance 2.5 y Seedance 2.5 Flash en MaxVideoAI: 1080p y Draft nativo, iteración en 480p/720p, límites de referencias y precios actuales.",
+      "description": "Compara Seedance 2.5 y Flash: 4K y Draft nativo frente a 480p/720p, límites de referencias y precios actuales en MaxVideoAI.",
       "titleBranding": "none"
     },
-    "heroIntro": "Estándar o Flash: elegir controles y tamaño de entrega. Seedance 2.5 ofrece hasta 1080p y un flujo nativo de Draft a resultado final independiente. Flash llega a 720p y tiene sus propios límites de referencias. Ambos permiten escenas de hasta 30 segundos; compara las mismas entradas y un presupuesto actualizado antes de elegir.",
+    "heroIntro": "Estándar o Flash: elige controles y tamaño de entrega. Seedance 2.5 ofrece hasta 4K y Draft nativo 480p → final 1080p/4K. Flash ofrece 480p/720p con sus propios límites de referencias. Ambos admiten hasta 30 segundos; compara las mismas entradas y un presupuesto actual.",
     "quickVerdict": {
       "title": "Elegir según el trabajo",
-      "body": "Elige estándar para entregar en 1080p o finalizar un Draft nativo de tu cuenta. Flash encaja en trabajos a 480p o 720p. Un clip Flash no es una caché Draft nativa y no se puede finalizar mediante ese flujo."
+      "body": "Elige Seedance 2.5 para entregar en 1080p/4K o finalizar un Draft nativo. Ambas resoluciones superiores usan HEVC de 10 bits. Flash encaja en 480p/720p. Modify estándar sigue en 480p/720p; la finalización Draft nativa ofrece 1080p/4K. Un clip Flash no es un Draft nativo."
     },
     "topCards": [
       {
         "title": "Estándar o Flash: elegir controles y tamaño de entrega",
-        "body": "Seedance 2.5 ofrece hasta 1080p y un flujo nativo de Draft a resultado final independiente. Flash llega a 720p y tiene sus propios límites de referencias. Ambos permiten escenas de hasta 30 segundos; compara las mismas entradas y un presupuesto actualizado antes de elegir."
+        "body": "Estándar o Flash: elige controles y tamaño de entrega. Seedance 2.5 ofrece hasta 4K y Draft nativo 480p → final 1080p/4K. Flash ofrece 480p/720p con sus propios límites de referencias. Ambos admiten hasta 30 segundos; compara las mismas entradas y un presupuesto actual."
       },
       {
         "title": "Controles de Flash",
@@ -216,7 +216,7 @@
       "items": [
         {
           "question": "¿Cuál es la diferencia principal?",
-          "answer": "Elige estándar para entregar en 1080p o finalizar un Draft nativo de tu cuenta. Flash encaja en trabajos a 480p o 720p. Un clip Flash no es una caché Draft nativa y no se puede finalizar mediante ese flujo."
+          "answer": "Elige Seedance 2.5 para entregar en 1080p/4K o finalizar un Draft nativo. Ambas resoluciones superiores usan HEVC de 10 bits. Flash encaja en 480p/720p. Modify estándar sigue en 480p/720p; la finalización Draft nativa ofrece 1080p/4K. Un clip Flash no es un Draft nativo."
         },
         {
           "question": "¿Seedance 2.5 Flash ofrece 4K?",

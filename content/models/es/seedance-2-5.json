@@ -2,15 +2,15 @@
   "marketingName": "Seedance 2.5",
   "versionLabel": "2.5",
   "seo": {
-    "title": "Generador de vídeo con IA Seedance 2.5: 30 s, 1080p y audio",
-    "description": "Genera vídeos Seedance 2.5 de 4 a 30 segundos hasta 1080p con texto, imágenes inicial y final, referencias multimodales, edición de vídeo, extensión y audio opcional.",
+    "title": "Generador de vídeo IA Seedance 2.5: 4K, 30 s y audio",
+    "description": "Crea vídeos Seedance 2.5 hasta 4K con texto, imágenes o referencias. Prueba un Draft 480p, finaliza en 1080p o 4K y utiliza Modify, Extend y audio generado.",
     "image": "/models/seedance-2-5-launch.jpg"
   },
-  "overview": "Crea vídeos de 4 a 30 segundos en formatos horizontal, cuadrado o vertical, en 480p, 720p o 1080p y a 24 FPS. Empieza con texto o imágenes, dirige el resultado mediante referencias multimodales, edita o extiende vídeo y añade audio generado cuando el proyecto lo necesite.",
+  "overview": "Crea vídeos de 4 a 30 segundos a 24 FPS, desde 480p hasta 4K. Empieza con texto o imágenes, guía el resultado con referencias multimodales o utiliza Modify y Extend. Las salidas 1080p y 4K usan HEVC de 10 bits; las resoluciones disponibles dependen del flujo.",
   "hero": {
     "title": "Seedance 2.5 — crea vídeos con IA más largos y control multimodal",
-    "intro": "Convierte un prompt, imágenes o referencias en un vídeo coherente de 4 a 30 segundos, hasta 1080p, con audio generado opcional.",
-    "badge": "Nuevo · Hasta 30 segundos · 1080p · Audio nativo",
+    "intro": "Convierte un prompt, imágenes o referencias en un vídeo coherente de 4 a 30 segundos, hasta 4K, con audio generado opcional.",
+    "badge": "Hasta 4K · 30 segundos · Draft nativo · Audio",
     "ctaPrimary": {
       "label": "Generar con Seedance 2.5",
       "href": "/app?engine=seedance-2-5"
@@ -55,7 +55,7 @@
     },
     {
       "label": "Salida",
-      "body": "480p, 720p o 1080p · 21:9, 16:9, 4:3, 1:1, 3:4 o 9:16 · 24 FPS"
+      "body": "480p / 720p / 1080p / 4K · 24 FPS · 1080p y 4K: HEVC de 10 bits"
     },
     {
       "label": "Entradas creativas",
@@ -63,7 +63,7 @@
     },
     {
       "label": "Flujos de vídeo",
-      "body": "Edición de un vídeo fuente o extensión de uno a tres clips"
+      "body": "Edita un vídeo fuente o crea una extensión con hasta 10 clips fuente, con 30 segundos combinados."
     },
     {
       "label": "Audio",
@@ -86,7 +86,7 @@
     },
     {
       "q": "¿Cuánto duran las escenas que se muestran?",
-      "a": "Los ejemplos del tren y del andén duran 24 segundos. Seedance 2.5 permite escenas de 4 a 30 segundos; la galería incluye otras duraciones."
+      "a": "La comedia pop de Create dura 30 segundos; Hard Bounce en la guía de prompts dura 24 segundos. Seedance 2.5 admite clips de 4 a 30 segundos y cada ejemplo conserva su resolución de salida real."
     },
     {
       "q": "¿Cómo se escribe el prompt de una escena más larga?",
@@ -98,7 +98,15 @@
     },
     {
       "q": "¿Cómo funciona Draft nativo en Seedance 2.5?",
-      "a": "Draft nativo es un flujo de Seedance 2.5 en dos generaciones: crea una vista previa a 480p, revisa movimiento y composición y solicita el final a 1080p desde ese Draft completado. Draft y final son generaciones con presupuestos separados. Un render normal a 480p no es un Draft nativo; el final hereda prompt, duración, encuadre, audio y referencias del Draft completado."
+      "a": "Genera un Draft nativo a 480p para revisar movimiento y composición. Conserva la toma y elige un final en 1080p o 4K desde ese Draft completado. Draft y final son generaciones con presupuestos separados. El final conserva el prompt, la duración, el encuadre, el audio y las referencias del Draft. El flujo cubre texto, imágenes, referencias, Modify y Extend; un render normal a 480p no es un Draft nativo."
+    },
+    {
+      "q": "¿Seedance 2.5 puede generar vídeo en 4K?",
+      "a": "Sí. Genera directamente en 4K a partir de texto, imágenes o referencias, o finaliza un Draft nativo en 4K. En 16:9, 4K corresponde a 3840 × 2160; otras proporciones usan dimensiones distintas. Las salidas 1080p y 4K usan HEVC de 10 bits. La resolución de edición depende del flujo: Modify estándar ofrece 480p/720p, mientras que un Draft nativo de Modify se puede finalizar en 1080p o 4K."
+    },
+    {
+      "q": "¿Cuándo elegir Seedance 2.5 en lugar de Flash?",
+      "a": "Elige Seedance 2.5 para entregar en 1080p o 4K, utilizar Draft nativo y disponer de más referencias. Flash encaja en trabajos a 480p/720p con sus propios límites de referencias; no permite finalizar Drafts nativos. Compara el presupuesto actual con las entradas y los ajustes de tu proyecto."
     }
   ],
   "decision": {
@@ -110,7 +118,7 @@
       "subtitleHighlights": [
         "Dirige la escena."
       ],
-      "paragraph": "Crea videos de 4 a 30 segundos, hasta 1080p. Empieza con texto o imágenes, guía el movimiento con referencias y elige si quieres generar sonido.",
+      "paragraph": "Convierte un prompt, imágenes o referencias en un vídeo coherente de 4 a 30 segundos, hasta 4K, con audio generado opcional.",
       "primaryCta": {
         "label": "Generar con Seedance 2.5",
         "href": "/app?engine=seedance-2-5"
@@ -152,7 +160,7 @@
     "features": [
       {
         "title": "Vídeo de 4 a 30 segundos",
-        "body": "Elige la duración que necesita la historia y genera en 480p, 720p o 1080p a 24 FPS.",
+        "body": "Elige una duración de 4 a 30 segundos y una resolución de entrega hasta 4K a 24 FPS. 1080p y 4K usan HEVC de 10 bits.",
         "tone": "duration"
       },
       {
@@ -190,7 +198,7 @@
       },
       {
         "title": "Editar o extender vídeo",
-        "body": "Cambia el estilo de un clip fuente o extiende de uno a tres clips sin salir del mismo flujo de dirección.",
+        "body": "Edita un vídeo fuente o crea una extensión con hasta 10 clips fuente, con 30 segundos combinados.",
         "cta": {
           "label": "Abrir Prompt Lab",
           "href": "#prompting"
@@ -208,7 +216,7 @@
       },
       {
         "title": "Edición y extensión de vídeo",
-        "body": "Edita un vídeo fuente o extiende de uno a tres clips para crear una continuación más larga."
+        "body": "Edita un vídeo fuente o crea una extensión con hasta 10 clips fuente, con 30 segundos combinados."
       },
       {
         "title": "Audio generado opcional",
@@ -223,16 +231,16 @@
       "ctaHref": "/app?engine=seedance-2-5"
     },
     "meta": {
-      "title": "Generador de vídeo con IA Seedance 2.5: 30 s, 1080p y audio",
-      "description": "Genera vídeos Seedance 2.5 de 4 a 30 segundos hasta 1080p con texto, imágenes, referencias multimodales, edición de vídeo, extensión y audio opcional."
+      "title": "Generador de vídeo IA Seedance 2.5: 4K, 30 s y audio",
+      "description": "Crea vídeos Seedance 2.5 hasta 4K con texto, imágenes o referencias. Prueba un Draft 480p, finaliza en 1080p o 4K y utiliza Modify, Extend y audio generado."
     }
   },
   "prompting": {
     "modelSlug": "seedance-2-5",
     "section": {
       "title": "Cómo promptear Seedance 2.5",
-      "intro": "Empieza por lo que cambia durante la escena. Da a cada momento narrativo una acción legible, una intención de cámara y tiempo para desarrollarse. Usa referencias para fijar los detalles importantes.",
-      "tip": "Asigna una acción visible y una instrucción de cámara a cada tramo temporal.",
+      "intro": "Empieza con la idea que une la secuencia. Para una historia puede ser un personaje o un objetivo; para un vídeo musical, una forma, un movimiento o un sonido. Describe la conexión entre planos y asigna a los momentos importantes su propio tiempo.",
+      "tip": "Usa los tiempos para marcar ritmo y énfasis. Explica el vínculo visual entre planos; una lista detallada dirige el resultado, pero no garantiza cortes exactos al fotograma.",
       "guide": null,
       "referencesTitle": "Un flujo desde texto para escenas más largas"
     },
@@ -274,7 +282,7 @@
       }
     ],
     "globalPrinciples": [
-      "Describe un arco completo antes de añadir detalles de cada toma.",
+      "Elige una idea que una la secuencia: un arco narrativo, un motivo visual recurrente o un ritmo físico.",
       "Usa tramos temporales para ordenar las acciones en lugar de pedirlo todo a la vez.",
       "Mantén un lenguaje de cámara deliberado y físicamente compatible con la escena.",
       "Vincula gestos, expresiones y diálogos breves a momentos narrativos visibles."
@@ -285,55 +293,55 @@
       "Las reglas físicas explícitas ayudan a conservar movimiento y reacciones creíbles durante la secuencia."
     ],
     "demo": {
-      "title": "Demostración cronológica de Seedance 2.5",
-      "promptLabel": "Escena cinematográfica pautada",
-      "prompt": "Cinematic 24-second landscape video, 16:9. A woman in her early thirties waits alone on a quiet European railway platform at sunrise. She wears a timeless camel coat and places a weathered brown suitcase on the ground. Maintain her appearance, clothing, the suitcase design, and the platform architecture consistently throughout the video.\n\n0-4 seconds: medium-low camera angle. She opens the suitcase. A warm golden light immediately illuminates her face from inside. The camera begins one slow, continuous forward dolly toward the open suitcase.\n\n4-17 seconds: inside the suitcase, a realistic miniature coastal city unfolds and comes alive in one continuous action: compact buildings rise, a small train moves along the coast, tiny cars begin moving, harbor water ripples, and waves reach the shore. The camera continues the same smooth forward movement and descends into the city. Preserve believable scale, geometry, gravity, and natural motion. No sudden transformation, no cut, no change of visual style.\n\n17-24 seconds: the camera gently rises into a wide view showing the complete living coastal city still contained inside the open suitcase. The woman remains visible beyond it at giant scale, watching in quiet amazement. Golden sunrise, subtle sea mist, realistic materials, cinematic contrast, premium feature-film photography. End on a stable, readable composition with no text, no logo, and no watermark.",
+      "title": "Hard Bounce — dirigir un montaje rítmico",
+      "promptLabel": "Prompt original del vídeo musical multiplano",
+      "prompt": "Create a 24-second ultra-stylized experimental underground music film.\n\nTITLE / CONCEPT:\nHARD BOUNCE\n\nOne fluorescent orange ball drives the entire edit.\n\nEvery impact, bounce, spin or circular motion creates the next shot.\n\nThe film becomes progressively faster, stranger and more visually aggressive.\n\nThe ORANGE CIRCLE is the recurring graphic motif:\nbasketball,\nwheel,\nvinyl record,\nspeaker,\nwashing-machine window,\nhuman eye,\ntunnel light,\nmoon,\nthen basketball again.\n\nEvery transition must be visually motivated by:\nSHAPE,\nMOTION,\nDIRECTION,\nor IMPACT.\n\nThis is NOT a story.\nThis is visual rhythm.\n\nDark, raw, underground, tactile, energetic.\nPhotorealistic but highly art-directed.\n\nNo text.\nNo logos.\nNo subtitles.\n\n--------------------------------\nSHOT 1 — 0:00–0:02\n--------------------------------\n\nTOTAL BLACK.\n\nA fluorescent orange basketball drops from above into a single hard spotlight.\n\nConcrete floor.\n\nBOOM.\n\nOne massive dry impact.\n\nOn the first bounce, camera drops violently with the ball.\n\nSecond bounce:\n\nBOOM.\n\nHARD CUT EXACTLY ON IMPACT.\n\n--------------------------------\nSHOT 2 — 0:02–0:04\n--------------------------------\n\nNighttime underground basketball court.\n\nWet black asphalt.\nChain-link fencing.\nSodium-vapor lights.\nSteam in the distance.\n\nEXTREME LOW FISHEYE CAMERA only centimeters above the floor.\n\nA player in black sneakers dribbles the orange ball directly toward camera.\n\nBOOM.\nBOOM.\nBOOM.\n\nEach bounce becomes part of the beat.\n\nOn the final bounce, the ball completely fills frame.\n\nMATCH CUT.\n\n--------------------------------\nSHOT 3 — 0:04–0:05.7\n--------------------------------\n\nThe orange circle becomes the glowing hub of a motorcycle wheel.\n\nCamera mounted inches beside the spinning wheel.\n\nThe motorcycle races through a wet concrete tunnel.\n\nReflections streak across the road.\n\nExtreme speed.\nStrong parallax.\nRealistic vibration.\n\nThe wheel spins faster.\n\nMATCH CUT ON ROTATION.\n\n--------------------------------\nSHOT 4 — 0:05.7–0:07.3\n--------------------------------\n\nA BLACK VINYL RECORD spins at exactly the same speed.\n\nOrange center label.\n\nExtreme macro.\n\nNeedle violently drops.\n\nCRACK.\n\nBass enters.\n\nRapid macro details:\ngrooves,\ndust,\nneedle vibration,\nchrome reflections.\n\nCamera dives INTO the spinning grooves.\n\n--------------------------------\nSHOT 5 — 0:07.3–0:09\n--------------------------------\n\nThe vinyl grooves become curved concrete lines inside a brutalist skate bowl.\n\nA skateboarder drops in at extreme speed.\n\nWide fisheye lens.\n\nCamera races backward directly in front of the skateboard.\n\nWheels scream across concrete.\n\nSkater launches over camera.\n\nThe underside of the board wipes the entire frame.\n\nWHIP TRANSITION.\n\n--------------------------------\nSHOT 6 — 0:09–0:10.7\n--------------------------------\n\nUnderground rave.\n\nAlmost total darkness.\n\nHard white strobe.\n\nBodies appear only for fractions of a second.\n\nSweat.\nChrome jewelry.\nBlack clothing.\nCondensation.\nHands in the air.\n\nIn the center:\n\na giant circular orange speaker cone pulses.\n\nEvery bass hit physically moves the cone.\n\nPUSH IN violently on the speaker.\n\nBOOM.\n\nBOOM.\n\nBOOM.\n\nOn the third hit—\n\ncamera passes through it.\n\n--------------------------------\nSHOT 7 — 0:10.7–0:12.3\n--------------------------------\n\nInside a fluorescent laundromat at 2AM.\n\nPerfect symmetrical composition.\n\nRows of washing machines.\n\nAll machine windows are black...\n\nexcept ONE glowing orange circular door.\n\nCamera crash-zooms toward it.\n\nInside, orange fabric spins violently.\n\nSPINNING MOTION MATCH CUT.\n\n--------------------------------\nSHOT 8 — 0:12.3–0:14\n--------------------------------\n\nEXTREME MACRO HUMAN EYE.\n\nThe orange washing-machine circle becomes a vivid amber iris.\n\nNatural skin.\nTiny eyelashes.\nWet eye reflections.\n\nThe pupil rapidly contracts.\n\nReflected inside the pupil:\n\na subway train approaches.\n\nCamera pushes directly through the pupil.\n\n--------------------------------\nSHOT 9 — 0:14–0:16\n--------------------------------\n\nSUBWAY PLATFORM.\n\nTrain blasts past camera at enormous speed.\n\nHandheld.\nHarsh fluorescent light.\nWind hits clothing and newspapers.\n\nVery fast cuts:\n\ntrain wheel —\nshoe hitting platform —\ndoor slamming —\nhand grabbing metal rail —\norange emergency light —\neyes —\nmoving tunnel lights.\n\nEach shot lasts only fractions of a second.\n\nCLACK.\nCLACK.\nCLACK.\nCLACK.\n\nThe rhythm accelerates.\n\n--------------------------------\nSHOT 10 — 0:16–0:18\n--------------------------------\n\nCAMERA IS NOW ATTACHED TO THE FRONT OF THE TRAIN.\n\nWe rocket through a black subway tunnel.\n\nCircular tunnel lights flash directly toward camera.\n\nEach light appears for one frame:\n\nWHITE.\nBLACK.\nORANGE.\nBLACK.\nWHITE.\nBLACK.\n\nSpeed increases impossibly.\n\nThen the final tunnel light becomes enormous.\n\nMATCH CUT.\n\n--------------------------------\nSHOT 11 — 0:18–0:20\n--------------------------------\n\nThe circle is now the FULL MOON.\n\nHuge orange moon above brutalist apartment towers.\n\nCamera drops vertically from the moon toward the city at extreme speed.\n\nDown past rooftops,\nbalconies,\nneon,\nfire escapes,\nstreetlights.\n\nFPV dive.\n\nAt street level—\n\nsomeone throws the orange basketball upward directly toward camera.\n\n--------------------------------\nSHOT 12 — 0:20–0:22\n--------------------------------\n\nBALL FLIES PAST CAMERA.\n\nULTRA-FAST RHYTHMIC MONTAGE.\n\n0.2–0.4 second fragments:\n\nbasketball bounce\n\nmotorcycle wheel\n\nvinyl needle\n\nskateboard landing\n\nspeaker pumping\n\nwashing machine spinning\n\neye blinking\n\nsubway wheel\n\ntunnel light\n\nmoon\n\nball\n\nEvery circular image perfectly aligned in the center of frame.\n\nFaster.\n\nFaster.\n\nFaster.\n\nThe soundtrack becomes a brutal synchronized audiovisual crescendo.\n\n--------------------------------\nSHOT 13 — 0:22–0:24\n--------------------------------\n\nSuddenly:\n\nSILENCE.\n\nBack to the exact dark concrete room from the opening.\n\nThe fluorescent orange ball drops into frame.\n\nBut this time—\n\na hand catches it ONE CENTIMETER before it hits the ground.\n\nNo impact.\n\nAbsolute silence.\n\nHold.\n\nThe fingers slowly release the ball.\n\nIt begins falling again.\n\nCUT TO BLACK\n\none frame BEFORE impact.\n\nBOOM.\n\nEND.\n\n--------------------------------\n\nAUDIO DESIGN:\n\nBuild an original underground electronic track entirely around PHYSICAL IMPACT.\n\nThe basketball bounce is the kick drum.\n\nMotorcycle vibration becomes bass texture.\n\nVinyl crackle becomes high-frequency percussion.\n\nSkateboard wheels become rhythmic noise.\n\nSpeaker cone becomes sub-bass.\n\nSubway wheels become industrial percussion.\n\nTrain-door impacts become snares.\n\nTunnel lights introduce sharp electronic pulses.\n\nThe track must progressively accelerate from minimal rhythm into an aggressive experimental club beat.\n\nEvery important edit must land precisely on sound.\n\nUse aggressive stereo movement during fast camera passages.\n\nAt 22 seconds:\nREMOVE EVERYTHING.\n\nAbsolute silence.\n\nFinal BOOM occurs only after picture cuts to black.\n\n--------------------------------\n\nCAMERA LANGUAGE:\n\nextreme fisheye\nmacro cinematography\ncamera mounted to moving objects\nFPV flight\ncrash zooms\nwhip pans\nsnap zooms\nrapid tracking\nextreme low angles\nDutch camera rolls\nhard handheld\nspeed ramps\none-frame inserts\nperfect graphic match cuts\n\nAvoid generic slow floating AI camera movement.\n\nCamera movement should feel physical, dangerous and intentional.\n\n--------------------------------\n\nVISUAL LANGUAGE:\n\nunderground editorial cinema\nbrutalist architecture\nlate-night city culture\nwet concrete\nblack asphalt\nsteel\nchrome\nsweat\nsteam\nfluorescent practical lights\nhard flash photography\n16mm texture mixed with sharp modern digital cinematography\ndeep blacks\ncontrolled highlights\nstrong grain\ndirty lens moments\nrealistic motion blur\n\nPALETTE:\nalmost monochrome world,\nblack,\nconcrete gray,\ncold white,\ndirty metallic tones.\n\nFLUORESCENT ORANGE is the only strong recurring color.\n\nKeep orange visually dominant only in the circular motif.\n\n--------------------------------\n\nEDITING RULE:\n\nThe audience should constantly anticipate the next impact.\n\nBOUNCE = CUT.\nROTATION = MATCH CUT.\nCIRCLE = NEW WORLD.\nIMPACT = MUSIC.\n\nDo not create random beautiful shots.\n\nEvery shot must visually or rhythmically connect to the previous one.\n\nThe video should feel edited by an exceptional human music-video editor:\nfast,\nprecise,\ndirty,\ncool,\ngraphic,\nunpredictable.\n\nAvoid generic cyberpunk.\nAvoid glossy sci-fi.\nAvoid random morphing.\nAvoid fantasy imagery.\nAvoid excessive slow motion.\n\nMake it PHYSICAL.\nMake it LOUD.\nMake it UNDERGROUND.",
       "notes": [
         "Abre el ejemplo para ver el prompt original y los ajustes. Las plantillas anteriores son puntos de partida que puedes adaptar.",
         "En el siguiente intento, cambia una acción visible o indicación de cámara. Mira el resultado completo antes de complicar el plano."
       ],
       "summary": {
-        "subject": "Una historia humana realista en un entorno urbano",
-        "action": "Una secuencia de acciones pautadas con un final claro",
-        "camera": "Movimiento inicial, transición controlada y encuadre final estable",
-        "style": "Naturalismo cinematográfico con luz y vestuario estables",
-        "output": "Escena 16:9 más larga con estado de audio derivado del medio"
+        "subject": "Un motivo circular naranja en escenarios urbanos underground",
+        "action": "Rebotes, giros e impactos conectan imágenes sucesivas",
+        "camera": "Ojo de pez bajo, detalles macro y puntos de vista en movimiento rápido",
+        "style": "Vídeo musical de alto contraste con texturas físicas y un acento naranja recurrente",
+        "output": "24 segundos · 16:9 · 720p · audio generado"
       },
       "presentationOverrides": {
-        "modeLabel": "Planificación desde texto",
+        "modeLabel": "Vídeo musical desde texto",
         "outputLabel": "Render 720p",
         "duration": null,
         "aspectRatio": null,
         "audioChipMode": "media",
         "audioChipLabel": null,
-        "altContext": "demostración de una escena cinematográfica pautada de Seedance 2.5"
+        "altContext": "Balón naranja y cortes gráficos en un vídeo musical de Seedance 2.5"
       }
     },
     "imageExamples": null,
     "recipe": {
       "label": "La idea de esta escena",
-      "excerpt": "Al amanecer, una mujer abre una maleta en un andén. Dentro se despliega una ciudad costera en miniatura; un movimiento continuo de cámara acompaña la revelación de 24 segundos.",
+      "excerpt": "Un círculo naranja conecta un balón, una rueda, un disco y un ojo. Hard Bounce repite formas y movimientos en un vídeo musical de 24 segundos. El prompt relaciona los impactos con el sonido y construye una pausa final.",
       "note": "Prompt original de este ejemplo público. Reutilizar abre Create para revisarlo, sin iniciar una generación.",
       "factors": [
         {
           "icon": "subject",
-          "title": "La escena",
-          "body": "Define quién aparece, dónde y qué cambia."
+          "title": "El motivo visual",
+          "body": "Repite un motivo reconocible. Aquí, el círculo naranja conecta objetos y lugares distintos."
         },
         {
           "icon": "motion",
-          "title": "La acción",
-          "body": "Da una acción visible a cada momento. El ritmo sigue el relato."
+          "title": "El montaje",
+          "body": "Describe el enlace al siguiente plano: un rebote, una rotación similar o una forma que llena el encuadre."
         },
         {
           "icon": "framing",
           "title": "La cámara",
-          "body": "Elige un recorrido legible y conserva la dirección en pantalla."
+          "body": "Da a cada momento un punto de vista: ojo de pez bajo, un detalle macro o un avance rápido. Conserva el movimiento a través del corte."
         },
         {
           "icon": "sound",
           "title": "El sonido",
-          "body": "Identifica hablantes, frases exactas, ambiente y silencios."
+          "body": "Relaciona los impactos físicos con el ritmo. Indica cómo crece la música y dónde se detiene; este ejemplo no pide diálogo."
         }
       ]
     }
@@ -415,7 +423,7 @@
         },
         {
           "id": "sd25-prompt",
-          "title": "Una ciudad en una maleta"
+          "title": "Hard Bounce — un motivo, muchos mundos"
         },
         {
           "id": "sd25-detail",
@@ -441,7 +449,7 @@
           "layout": "shots",
           "eyebrow": "Guía de prompts",
           "title": "Seedance 2.5",
-          "body": "Empieza por lo que cambia durante la escena. Da a cada momento narrativo una acción legible, una intención de cámara y tiempo para desarrollarse. Usa referencias para fijar los detalles importantes.",
+          "body": "Empieza con la idea que une la secuencia. Para una historia puede ser un personaje o un objetivo; para un vídeo musical, una forma, un movimiento o un sonido. Describe la conexión entre planos y asigna a los momentos importantes su propio tiempo.",
           "note": "Prompt original de este ejemplo público. Reutilizar abre Create para revisarlo, sin iniciar una generación.",
           "assetIds": [
             "sd25-prompt"
@@ -453,7 +461,7 @@
           "layout": "shots",
           "eyebrow": "Detalles",
           "title": "Seedance 2.5",
-          "body": "Crea vídeos de 4 a 30 segundos desde texto, imágenes o referencias multimodales, hasta 1080p con audio opcional. Explora la escena en Draft nativo antes de lanzar el render final.",
+          "body": "Crea vídeos de 4 a 30 segundos hasta 4K desde texto, imágenes o referencias multimodales, con audio opcional. Explora la escena en Draft 480p y elige un final en 1080p o 4K.",
           "note": "Prompt original de este ejemplo público. Reutilizar abre Create para revisarlo, sin iniciar una generación.",
           "assetIds": [
             "sd25-detail"
@@ -463,9 +471,9 @@
       "shotPlans": [
         {
           "assetId": "sd25-prompt",
-          "motion": "Observa el tren, la luz y la dirección del movimiento durante los 24 segundos.",
-          "sound": "Consulta el prompt exacto y el resultado.",
-          "prompt": "Cinematic 24-second landscape video, 16:9. A woman in her early thirties waits alone on a quiet European railway platform at sunrise. She wears a timeless camel coat and places a weathered brown suitcase on the ground. Maintain her appearance, clothing, the suitcase design, and the platform architecture consistently throughout the video.\n\n0-4 seconds: medium-low camera angle. She opens the suitcase. A warm golden light immediately illuminates her face from inside. The camera begins one slow, continuous forward dolly toward the open suitcase.\n\n4-17 seconds: inside the suitcase, a realistic miniature coastal city unfolds and comes alive in one continuous action: compact buildings rise, a small train moves along the coast, tiny cars begin moving, harbor water ripples, and waves reach the shore. The camera continues the same smooth forward movement and descends into the city. Preserve believable scale, geometry, gravity, and natural motion. No sudden transformation, no cut, no change of visual style.\n\n17-24 seconds: the camera gently rises into a wide view showing the complete living coastal city still contained inside the open suitcase. The woman remains visible beyond it at giant scale, watching in quiet amazement. Golden sunrise, subtle sea mist, realistic materials, cinematic contrast, premium feature-film photography. End on a stable, readable composition with no text, no logo, and no watermark.",
+          "motion": "Compara el círculo naranja recurrente, la dirección del movimiento y las transiciones entre planos.",
+          "sound": "Los impactos y el ritmo electrónico guían el montaje. Compara la banda sonora generada con la dirección original.",
+          "prompt": "Create a 24-second ultra-stylized experimental underground music film.\n\nTITLE / CONCEPT:\nHARD BOUNCE\n\nOne fluorescent orange ball drives the entire edit.\n\nEvery impact, bounce, spin or circular motion creates the next shot.\n\nThe film becomes progressively faster, stranger and more visually aggressive.\n\nThe ORANGE CIRCLE is the recurring graphic motif:\nbasketball,\nwheel,\nvinyl record,\nspeaker,\nwashing-machine window,\nhuman eye,\ntunnel light,\nmoon,\nthen basketball again.\n\nEvery transition must be visually motivated by:\nSHAPE,\nMOTION,\nDIRECTION,\nor IMPACT.\n\nThis is NOT a story.\nThis is visual rhythm.\n\nDark, raw, underground, tactile, energetic.\nPhotorealistic but highly art-directed.\n\nNo text.\nNo logos.\nNo subtitles.\n\n--------------------------------\nSHOT 1 — 0:00–0:02\n--------------------------------\n\nTOTAL BLACK.\n\nA fluorescent orange basketball drops from above into a single hard spotlight.\n\nConcrete floor.\n\nBOOM.\n\nOne massive dry impact.\n\nOn the first bounce, camera drops violently with the ball.\n\nSecond bounce:\n\nBOOM.\n\nHARD CUT EXACTLY ON IMPACT.\n\n--------------------------------\nSHOT 2 — 0:02–0:04\n--------------------------------\n\nNighttime underground basketball court.\n\nWet black asphalt.\nChain-link fencing.\nSodium-vapor lights.\nSteam in the distance.\n\nEXTREME LOW FISHEYE CAMERA only centimeters above the floor.\n\nA player in black sneakers dribbles the orange ball directly toward camera.\n\nBOOM.\nBOOM.\nBOOM.\n\nEach bounce becomes part of the beat.\n\nOn the final bounce, the ball completely fills frame.\n\nMATCH CUT.\n\n--------------------------------\nSHOT 3 — 0:04–0:05.7\n--------------------------------\n\nThe orange circle becomes the glowing hub of a motorcycle wheel.\n\nCamera mounted inches beside the spinning wheel.\n\nThe motorcycle races through a wet concrete tunnel.\n\nReflections streak across the road.\n\nExtreme speed.\nStrong parallax.\nRealistic vibration.\n\nThe wheel spins faster.\n\nMATCH CUT ON ROTATION.\n\n--------------------------------\nSHOT 4 — 0:05.7–0:07.3\n--------------------------------\n\nA BLACK VINYL RECORD spins at exactly the same speed.\n\nOrange center label.\n\nExtreme macro.\n\nNeedle violently drops.\n\nCRACK.\n\nBass enters.\n\nRapid macro details:\ngrooves,\ndust,\nneedle vibration,\nchrome reflections.\n\nCamera dives INTO the spinning grooves.\n\n--------------------------------\nSHOT 5 — 0:07.3–0:09\n--------------------------------\n\nThe vinyl grooves become curved concrete lines inside a brutalist skate bowl.\n\nA skateboarder drops in at extreme speed.\n\nWide fisheye lens.\n\nCamera races backward directly in front of the skateboard.\n\nWheels scream across concrete.\n\nSkater launches over camera.\n\nThe underside of the board wipes the entire frame.\n\nWHIP TRANSITION.\n\n--------------------------------\nSHOT 6 — 0:09–0:10.7\n--------------------------------\n\nUnderground rave.\n\nAlmost total darkness.\n\nHard white strobe.\n\nBodies appear only for fractions of a second.\n\nSweat.\nChrome jewelry.\nBlack clothing.\nCondensation.\nHands in the air.\n\nIn the center:\n\na giant circular orange speaker cone pulses.\n\nEvery bass hit physically moves the cone.\n\nPUSH IN violently on the speaker.\n\nBOOM.\n\nBOOM.\n\nBOOM.\n\nOn the third hit—\n\ncamera passes through it.\n\n--------------------------------\nSHOT 7 — 0:10.7–0:12.3\n--------------------------------\n\nInside a fluorescent laundromat at 2AM.\n\nPerfect symmetrical composition.\n\nRows of washing machines.\n\nAll machine windows are black...\n\nexcept ONE glowing orange circular door.\n\nCamera crash-zooms toward it.\n\nInside, orange fabric spins violently.\n\nSPINNING MOTION MATCH CUT.\n\n--------------------------------\nSHOT 8 — 0:12.3–0:14\n--------------------------------\n\nEXTREME MACRO HUMAN EYE.\n\nThe orange washing-machine circle becomes a vivid amber iris.\n\nNatural skin.\nTiny eyelashes.\nWet eye reflections.\n\nThe pupil rapidly contracts.\n\nReflected inside the pupil:\n\na subway train approaches.\n\nCamera pushes directly through the pupil.\n\n--------------------------------\nSHOT 9 — 0:14–0:16\n--------------------------------\n\nSUBWAY PLATFORM.\n\nTrain blasts past camera at enormous speed.\n\nHandheld.\nHarsh fluorescent light.\nWind hits clothing and newspapers.\n\nVery fast cuts:\n\ntrain wheel —\nshoe hitting platform —\ndoor slamming —\nhand grabbing metal rail —\norange emergency light —\neyes —\nmoving tunnel lights.\n\nEach shot lasts only fractions of a second.\n\nCLACK.\nCLACK.\nCLACK.\nCLACK.\n\nThe rhythm accelerates.\n\n--------------------------------\nSHOT 10 — 0:16–0:18\n--------------------------------\n\nCAMERA IS NOW ATTACHED TO THE FRONT OF THE TRAIN.\n\nWe rocket through a black subway tunnel.\n\nCircular tunnel lights flash directly toward camera.\n\nEach light appears for one frame:\n\nWHITE.\nBLACK.\nORANGE.\nBLACK.\nWHITE.\nBLACK.\n\nSpeed increases impossibly.\n\nThen the final tunnel light becomes enormous.\n\nMATCH CUT.\n\n--------------------------------\nSHOT 11 — 0:18–0:20\n--------------------------------\n\nThe circle is now the FULL MOON.\n\nHuge orange moon above brutalist apartment towers.\n\nCamera drops vertically from the moon toward the city at extreme speed.\n\nDown past rooftops,\nbalconies,\nneon,\nfire escapes,\nstreetlights.\n\nFPV dive.\n\nAt street level—\n\nsomeone throws the orange basketball upward directly toward camera.\n\n--------------------------------\nSHOT 12 — 0:20–0:22\n--------------------------------\n\nBALL FLIES PAST CAMERA.\n\nULTRA-FAST RHYTHMIC MONTAGE.\n\n0.2–0.4 second fragments:\n\nbasketball bounce\n\nmotorcycle wheel\n\nvinyl needle\n\nskateboard landing\n\nspeaker pumping\n\nwashing machine spinning\n\neye blinking\n\nsubway wheel\n\ntunnel light\n\nmoon\n\nball\n\nEvery circular image perfectly aligned in the center of frame.\n\nFaster.\n\nFaster.\n\nFaster.\n\nThe soundtrack becomes a brutal synchronized audiovisual crescendo.\n\n--------------------------------\nSHOT 13 — 0:22–0:24\n--------------------------------\n\nSuddenly:\n\nSILENCE.\n\nBack to the exact dark concrete room from the opening.\n\nThe fluorescent orange ball drops into frame.\n\nBut this time—\n\na hand catches it ONE CENTIMETER before it hits the ground.\n\nNo impact.\n\nAbsolute silence.\n\nHold.\n\nThe fingers slowly release the ball.\n\nIt begins falling again.\n\nCUT TO BLACK\n\none frame BEFORE impact.\n\nBOOM.\n\nEND.\n\n--------------------------------\n\nAUDIO DESIGN:\n\nBuild an original underground electronic track entirely around PHYSICAL IMPACT.\n\nThe basketball bounce is the kick drum.\n\nMotorcycle vibration becomes bass texture.\n\nVinyl crackle becomes high-frequency percussion.\n\nSkateboard wheels become rhythmic noise.\n\nSpeaker cone becomes sub-bass.\n\nSubway wheels become industrial percussion.\n\nTrain-door impacts become snares.\n\nTunnel lights introduce sharp electronic pulses.\n\nThe track must progressively accelerate from minimal rhythm into an aggressive experimental club beat.\n\nEvery important edit must land precisely on sound.\n\nUse aggressive stereo movement during fast camera passages.\n\nAt 22 seconds:\nREMOVE EVERYTHING.\n\nAbsolute silence.\n\nFinal BOOM occurs only after picture cuts to black.\n\n--------------------------------\n\nCAMERA LANGUAGE:\n\nextreme fisheye\nmacro cinematography\ncamera mounted to moving objects\nFPV flight\ncrash zooms\nwhip pans\nsnap zooms\nrapid tracking\nextreme low angles\nDutch camera rolls\nhard handheld\nspeed ramps\none-frame inserts\nperfect graphic match cuts\n\nAvoid generic slow floating AI camera movement.\n\nCamera movement should feel physical, dangerous and intentional.\n\n--------------------------------\n\nVISUAL LANGUAGE:\n\nunderground editorial cinema\nbrutalist architecture\nlate-night city culture\nwet concrete\nblack asphalt\nsteel\nchrome\nsweat\nsteam\nfluorescent practical lights\nhard flash photography\n16mm texture mixed with sharp modern digital cinematography\ndeep blacks\ncontrolled highlights\nstrong grain\ndirty lens moments\nrealistic motion blur\n\nPALETTE:\nalmost monochrome world,\nblack,\nconcrete gray,\ncold white,\ndirty metallic tones.\n\nFLUORESCENT ORANGE is the only strong recurring color.\n\nKeep orange visually dominant only in the circular motif.\n\n--------------------------------\n\nEDITING RULE:\n\nThe audience should constantly anticipate the next impact.\n\nBOUNCE = CUT.\nROTATION = MATCH CUT.\nCIRCLE = NEW WORLD.\nIMPACT = MUSIC.\n\nDo not create random beautiful shots.\n\nEvery shot must visually or rhythmically connect to the previous one.\n\nThe video should feel edited by an exceptional human music-video editor:\nfast,\nprecise,\ndirty,\ncool,\ngraphic,\nunpredictable.\n\nAvoid generic cyberpunk.\nAvoid glossy sci-fi.\nAvoid random morphing.\nAvoid fantasy imagery.\nAvoid excessive slow motion.\n\nMake it PHYSICAL.\nMake it LOUD.\nMake it UNDERGROUND.",
           "proofNote": "Prompt original de este ejemplo público. Reutilizar abre Create para revisarlo, sin iniciar una generación."
         },
         {
@@ -479,7 +487,7 @@
     }
   },
   "cinematic": {
-    "intro": "Crea vídeos de 4 a 30 segundos desde texto, imágenes o referencias multimodales, hasta 1080p con audio opcional. Explora la escena en Draft nativo antes de lanzar el render final.",
+    "intro": "Crea vídeos de 4 a 30 segundos hasta 4K desde texto, imágenes o referencias multimodales, con audio opcional. Explora la escena en Draft 480p y elige un final en 1080p o 4K.",
     "caption": "Render real de Seedance 2.5",
     "proofLabel": "Del primer fotograma al cine",
     "examplesLabel": "Explorar las escenas",
@@ -494,7 +502,7 @@
       },
       {
         "label": "Salida",
-        "value": "480p / 720p / 1080p"
+        "value": "480p / 720p / 1080p / 4K"
       },
       {
         "label": "Audio",
@@ -513,8 +521,8 @@
     "workflows": {
       "eyebrow": "CREAR · EXTENDER · MODIFICAR",
       "title": "Seedance 2.5",
-      "intro": "Crea vídeos de 4 a 30 segundos desde texto, imágenes o referencias multimodales, hasta 1080p con audio opcional. Explora la escena en Draft nativo antes de lanzar el render final.",
-      "note": "Esquema del flujo. Draft y final son generaciones con presupuestos separados. Un render normal a 480p no es un Draft nativo; el final hereda prompt, duración, encuadre, audio y referencias del Draft completado.",
+      "intro": "Crea vídeos de 4 a 30 segundos hasta 4K desde texto, imágenes o referencias multimodales, con audio opcional. Explora la escena en Draft 480p y elige un final en 1080p o 4K.",
+      "note": "Draft y final son generaciones con presupuestos separados. El final conserva el prompt, la duración, el encuadre, el audio y las referencias del Draft. El flujo cubre texto, imágenes, referencias, Modify y Extend; un render normal a 480p no es un Draft nativo.",
       "action": "Abrir el espacio de vídeo",
       "items": [
         {
@@ -526,7 +534,7 @@
           "steps": [
             "Draft 480p",
             "Revisa la toma",
-            "Final 1080p"
+            "Final 1080p o 4K"
           ],
           "action": "Generar con Seedance 2.5",
           "prompt": "30-second live-action POP COMEDY commercial, 16:9, set in present-day Southern California. A mischievous giant DESKTOP MOUSE CURSOR edits the real world around a young woman. Nine short, connected comic beats with a beginning, escalating playful chaos and a cute final punchline. Preserve the playful abundance: ice cream, duplication, a fluffy dog, candy-colored paint, an eraser, a rescue and a surprise hairstyle. Bright, youthful, funny and charming.\n\nLOOK AND PLACE\nA sunny Santa Monica neighborhood shopping street: broad American concrete sidewalks, low pastel-pink and mint storefronts, a small ice-cream shop with a striped awning, palm trees, a turquoise bench, a parked compact white delivery van, a coral-brick side alley. Real California street proportions and contemporary American summer styling. Midday sunshine, clear cobalt sky, vivid candy colors, clean whites, crisp faces, colorful details and real tactile materials. Light, buoyant commercial photography with kinetic tracking and comic reaction cuts. No muted sepia palette, brown grading, bleak backstreet or solemn luxury-ad mood. No readable brands or lettering.\n\nCHARACTER CONTINUITY\nOne fictional 23-year-old woman, called MAYA only for prompt clarity: lively expressive face, shoulder-length dark-brown hair in a high ponytail, small silver hoop earrings, coral-pink fitted short-sleeve T-shirt, white wide-leg jeans, clean white-and-pink sneakers. Natural young-adult American streetwear. Keep her face, body, clothes and accessories identical in every shot. Only her hairstyle changes near the end. She reacts with surprise, mischievous amusement and comic exasperation, never terror.\nOne small fluffy white bichon with round dark eyes, a tiny pink bandana and a happy wagging tail, initially on a slack coral leash held by a young adult dog walker in a mint sweatshirt. Its later enlarged form is exactly the same adorable dog, with proportional paws and soft detailed curls, never monstrous.\n\nTHE CURSOR MUST LOOK LIKE A REAL COMPUTER POINTER\nUse the unmistakable classic desktop mouse-pointer silhouette: a broad asymmetric white arrowhead pointing diagonally UPPER LEFT, an inward notch on the lower-right edge and a short diagonal tail. Thin black outline, matte white face, shallow solid thickness. It is NOT an upright street-direction arrow, not a spear, not a signpost. It floats at waist-to-head height, normally about 1.2 meters tall, with accurate shadows, perspective and occlusion in the street. It has an impish personality expressed by quick tilts and bouncy motion, but no face, eyes or limbs.\nEVERY click is visible and audible: the pointer tip jabs forward a few centimeters, a crisp mechanical mouse CLICK is clearly heard, and the edit happens immediately in the same shot. A black-and-white dotted selection rectangle and small square transform handles briefly make the operation legible. These are physical graphic shapes embedded in the scene, not a full-screen software interface. For the paint and eraser beats the cursor snaps briefly into those recognizable tool icons, then returns to the same diagonal mouse pointer.\n\nSOUND IS ESSENTIAL\nDeliver a clearly audible soundtrack from the first second: original upbeat playful electro-funk/pop instrumental around 116 BPM, bouncy bass, handclaps, tight drums and little sparkling synth accents. Mix sound effects forward so each mouse click and comic action remains unmistakable above the music. Add real footsteps, street ambience, ice-cream pops, a soft elastic enlargement, happy dog barks, paint swoosh, eraser squeaks, rubber-toy squeaks, a splash shake and a final springy BOING. Briefly cut the music before the final hairstyle gag, then bring back a playful ending sting. No dialogue, voice-over, singing or subtitles. Let expressions and synchronized sounds tell the story.\n\nSHOT 1 | 0.0–3.5 s | A DELIGHTFUL LITTLE FAVOR\nMedium close shot, slight upward camera tilt following the action. Maya sits on the turquoise bench about to lick a single scoop of strawberry-pink ice cream. Within the first second the classic diagonal mouse cursor swoops into frame and selects the scoop with a tiny dotted rectangle. Four fast visible clicks, each with a distinct CLICK-POP, duplicate the scoop upward into a wobbly five-scoop tower. Each scoop physically rests on the one below. Glossy creamy texture, little melting drips catching the sun. Her eyes follow the growing tower; she breaks into a delighted grin and gives the cursor an appreciative nod. Immediate cute surprise, no static introduction.\n\nSHOT 2 | 3.5–7.0 s | NOW IT GETS CHEEKY\nSame bench and screen direction. The cursor pivots toward Maya; CLICK: a dotted rectangle encloses her and the bench. Her grin turns into a suspicious side-eye. Keeping her ice cream upright, she carefully scoots sideways out of the rectangle. CLICK-THUMP: the empty bench duplicates beside the original. The bump makes the upper scoops tumble onto the pavement with soft SPLATS. She looks at her sad remaining scoop, then at the cursor: an unmistakable “really?” look. She leaves the cone on the bench and springs into a playful run toward screen right. Pan with her.\n\nSHOT 3 | 7.0–11.0 s | THE CUTEST ACCIDENT\nLateral tracking shot. Maya nimbly runs around the small bichon and its walker. The cursor's selection misses Maya and lands on the fluffy dog. CLICK: corner handles pull outward, and the dog scales smoothly and proportionally to small-pony size. Elastic BOOP, then one happy low WOOF. Its paws stay grounded; its fur and pink bandana remain identical. The walker lets go of the slack leash in surprised delight, safely staying clear. The giant dog wags its tail enthusiastically and focuses on the cursor as if it were an irresistible toy. Maya does a quick comic double take while continuing right. Make the dog endearing and huggable.\n\nSHOT 4 | 11.0–14.0 s | COLOR FLOOD\nMaya ducks alongside the parked white delivery van. The cursor instantly becomes a paint-bucket icon, tips toward the van and CLICKS. A vivid glossy LILAC color races across the van's painted panels with a satisfying liquid SWOOSH. The windows, wheels and headlights remain unchanged. Maya hops clear just before the color reaches where she was leaning, checks her spotless white jeans, gives a tiny relieved smile and keeps moving. Rich purple against pink storefronts and blue sky; clean, instantaneous visual comedy.\n\nSHOT 5 | 14.0–17.5 s | THE ERASER\nTracking alongside the coral-brick wall. The cursor snaps into a chunky white eraser and sweeps toward Maya; she ducks beneath it in one smooth motion. SQUEAK-SQUEAK: the eraser rubs a square of brick into a flat gray-and-white transparency checkerboard, still in perspective on the wall. Maya stops for a fraction of a second, pokes the flat checkerboard with one finger, raises an eyebrow, then darts away as the eraser comes back. The checkerboard is a solid flat surface, not a glowing portal. Keep this curious reaction light and quick.\n\nSHOT 6 | 17.5–22.0 s | THE FLUFFY RESCUE\nMaya reaches the end of the colorful side alley and turns. At the entrance, the cursor becomes the diagonal arrow again, briefly scales larger and prepares a selection. Before it can click Maya, the huge happy bichon bounds in from behind it and gently catches the cursor's tail like a rubber dog toy. WOOF, then a clear toy SQUEAK. Cut to a side view of the whole playful action: the dog settles onto its paws, cursor reduced to its usual size, gently chewing it while its tail thumps the sidewalk. Maya exhales and laughs silently with relief. No biting a person, no aggression, no harm.\n\nSHOT 7 | 22.0–25.0 s | FALSE VICTORY\nMedium two-shot, warm faces and fluffy texture. Maya scratches the dog's chin, delighted with her rescuer. The dog opens its mouth to pant; the soggy cursor slips onto the pavement. Behind Maya, it bobs back into the air and shakes droplets off with a little PRRR-SPLASH, straightening back into its pristine diagonal pointer shape. She is busy cuddling the dog and does not notice. The audience sees the mischievous comeback.\n\nSHOT 8 | 25.0–27.5 s | ONE LAST CLICK\nThe music stops for a comic beat. A loud, clean CLICK: a small dotted selection frames ONLY Maya's hair. POP-BOING: her ponytail instantly becomes a huge fluffy BUBBLEGUM-PINK curly hairstyle, a round cloud of springy, individual curls. Keep her exact face, clothing and earrings. She freezes, slowly pats the top of the new hair; it bounces twice with a soft spring sound. Her expression is deadpan disbelief, not distress. The cursor gives an innocent little tilt.\n\nSHOT 9 | 27.5–30.0 s | THE LOOK\nClose group composition with the entire pink hairstyle visible, Maya in the middle, the diagonal mouse cursor beside her and the giant bichon's face entering from below. Maya side-eyes the cursor. The adorable dog notices the round bouncy pink hair, tilts its head, wags faster and lowers its front paws into a playful bow. Maya's eyes slide toward the dog: “don't even think about it.” The cursor innocently rocks twice to two little electronic BLIPS. End on this funny three-way reaction with a bright musical button and tail THUMP-THUMP. The dog does not jump on Maya. Hold the expression for the final half-second.\n\nDIRECTING PRIORITIES\nEach edit must show target selection, a visible click, a sharp audible click and an immediate result. Keep the cheerful pop energy throughout, with enough reaction time for every joke. Camera tracking carries Maya consistently left to right until the alley; normal clean cuts maintain geography. Physical effects are crisp and harmless, with shadows and material detail. Preserve natural live-action actors and a realistic fluffy dog rather than plastic 3D characters. No text, logos, watermark, unrelated landscape cutaways, beach, doorway or spoken slogan. The final brand title will be added later; generate only the complete colorful comedy with sound.\n",
@@ -538,14 +546,14 @@
             },
             {
               "label": "Salida",
-              "value": "480p / 720p / 1080p"
+              "value": "480p / 720p / 1080p / 4K"
             },
             {
               "label": "Audio",
               "value": "Audio generado opcional"
             }
           ],
-          "compactFacts": "4–30 s · 480p / 720p / 1080p",
+          "compactFacts": "4–30 s · 480p / 720p / 1080p / 4K",
           "promptLabel": "Prompt y ajustes",
           "proofLabel": "Creado con Seedance 2.5",
           "proofNote": "Prompt original de este ejemplo público. Reutilizar abre Create para revisarlo, sin iniciar una generación."
@@ -576,7 +584,7 @@
       {
         "target": "model-workflow",
         "title": "Explora en Draft",
-        "body": "Vista previa 480p → final 1080p."
+        "body": "Vista previa 480p → final 1080p o 4K."
       },
       {
         "target": "capabilities",
@@ -587,8 +595,8 @@
     "specialty": {
       "kind": "draft",
       "eyebrow": "NATIVE DRAFT → FINAL",
-      "title": "Encuentra la toma. Después, termínala.",
-      "intro": "Draft nativo es un flujo de Seedance 2.5 en dos generaciones: crea una vista previa a 480p, revisa movimiento y composición y solicita el final a 1080p desde ese Draft completado.",
+      "title": "Encuentra la toma. Finaliza en 4K.",
+      "intro": "Genera un Draft nativo a 480p para revisar movimiento y composición. Conserva la toma y elige un final en 1080p o 4K desde ese Draft completado.",
       "steps": [
         {
           "label": "Draft 480p",
@@ -599,11 +607,11 @@
           "body": "Comprueba acción, encuadre y ritmo."
         },
         {
-          "label": "Final 1080p",
-          "body": "Conserva la configuración del Draft y solicita el final."
+          "label": "Final 1080p o 4K",
+          "body": "Elige la resolución de entrega. Las dos opciones usan HEVC de 10 bits."
         }
       ],
-      "note": "Esquema del flujo. Draft y final son generaciones con presupuestos separados. Un render normal a 480p no es un Draft nativo; el final hereda prompt, duración, encuadre, audio y referencias del Draft completado. Draft está disponible en Create, Modify y Extend; la fuente y las referencias permanecen vinculadas al flujo de finalización.",
+      "note": "Draft y final son generaciones con presupuestos separados. El final conserva el prompt, la duración, el encuadre, el audio y las referencias del Draft. El flujo cubre texto, imágenes, referencias, Modify y Extend; un render normal a 480p no es un Draft nativo.",
       "action": "Abrir Create · elegir Draft",
       "mode": "t2v",
       "source": {
@@ -611,8 +619,8 @@
         "href": "https://docs.byteplus.com/en/docs/ModelArk/seedance-2-5"
       },
       "workspacePreview": {
-        "alt": "Opción Draft de Seedance 2.5 en Create, con el flujo de 480p a 1080p seleccionado.",
-        "caption": "En Create · Draft activado. La finalización es otra generación de pago."
+        "alt": "Finalización de un Draft Seedance 2.5 en la biblioteca de MaxVideoAI, con 4K seleccionado y 1080p también disponible.",
+        "caption": "En la biblioteca · elige la resolución final y revisa su presupuesto separado. Tu Draft sigue disponible."
       }
     },
     "specsReviewedAt": "2026-11-17",
@@ -636,7 +644,7 @@
             "Referencia de movimiento: toma un gesto o recorrido de cámara y describe el personaje y el entorno deseados.",
             "Multimodal: combina hasta 30 imágenes, 10 vídeos y 10 referencias de audio."
           ],
-          "note": "De 4 a 30 segundos, o duración automática. Los vídeos de referencia comparten 30 segundos; las referencias de audio tienen otros 30 segundos en total.",
+          "note": "De 4 a 30 segundos o duración automática, hasta 4K. Las referencias de vídeo comparten 30 segundos; las de audio disponen de otros 30 segundos. El Draft nativo se puede finalizar en 1080p o 4K.",
           "actions": [
             {
               "label": "Crear desde texto",
@@ -667,7 +675,7 @@
             "Entorno y atmósfera: transforma el lugar, la iluminación, el tiempo o el tratamiento visual.",
             "Sonido y referencias: guía cambios de audio y explica la edición con imágenes, vídeos o sonidos."
           ],
-          "note": "Modify sigue el encuadre y la duración de la fuente. Regenera el plano: revisa rostros, manos, movimiento y continuidad. Los ajustes disponibles aparecen en Create.",
+          "note": "Revisa rostros, manos, movimiento y continuidad después de editar. Modify estándar ofrece 480p/720p; un Draft nativo de Modify se puede finalizar en 1080p o 4K.",
           "actions": [
             {
               "label": "Abrir Modify",
@@ -690,7 +698,7 @@
             "Antes: establece una llegada o una entrada al plano original.",
             "Entre: usa varios clips originales para guiar una transición."
           ],
-          "note": "Hasta 10 clips originales, 30 segundos en total. Solicita un nuevo segmento de 4–30 segundos con el formato de la fuente, para revisar y montar con tu material.",
+          "note": "Hasta 10 clips fuente, con 30 segundos combinados. Solicita un segmento nuevo de 4 a 30 segundos hasta 4K con el formato de la fuente, o explora un Draft antes del final en 1080p/4K. Revisa y monta la continuación junto a tu material.",
           "actions": [
             {
               "label": "Abrir Extend",
