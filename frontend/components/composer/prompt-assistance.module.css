@@ -57,8 +57,9 @@
 .messageField > textarea { display: block; width: 100%; border: 0; background: transparent; padding: 0; min-height: 46px; max-height: 120px; resize: vertical; font-size: 14px; line-height: 1.65; }
 .messageField > textarea:focus, .messageField > textarea:focus-visible { outline: none; box-shadow: none; }
 /* Subtract the 44 px identity row, 12 px input padding and 1 px border from the manual writing area. */
-.panel[data-assistance-empty] .messageField { display: flex; flex-direction: column; height: calc(var(--manual-writing-height, 148px) - 57px); }
-.panel[data-assistance-empty] .messageField > textarea { flex: 1; height: 0; max-height: none; }
+/* Keep short standalone manual inputs from collapsing the assistant entry. */
+.panel[data-assistance-empty] .messageField { display: flex; flex-direction: column; min-height: 64px; height: calc(var(--manual-writing-height, 148px) - 57px); }
+.panel[data-assistance-empty] .messageField > textarea { flex: 1; height: 0; min-height: 0; max-height: none; }
 .panel[data-assistance-empty] .messageField[data-assistance-input-notice] > textarea { min-height: 0; }
 .inputNotice { flex-shrink: 0; color: var(--text-muted); font-size: 14px; line-height: 1.65; }
 .inputNotice a { color: var(--text-secondary); text-decoration: underline; text-underline-offset: .2em; }

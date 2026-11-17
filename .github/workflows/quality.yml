@@ -76,7 +76,8 @@ jobs:
     if: ${{ needs.plan.outputs.integration == 'true' }}
     # Match the validated PostgreSQL/FFmpeg image; 26.04 package downloads timed out before tests.
     runs-on: ubuntu-24.04
-    timeout-minutes: 25
+    # Allow the complete database/media suite and subsequent isolated Studio routes to finish.
+    timeout-minutes: 35
     steps:
       - name: Checkout
         uses: actions/checkout@v5

@@ -204,6 +204,12 @@ PostgreSQL/FFmpeg before the database/media job reached its 25-minute limit.
 Pinning that lane to the same stable image preserves both the complete integration
 suite and the isolated Studio route checks; it does not turn a timeout into a pass.
 
+The database/media job now has a 35-minute total limit. On the 2026-11-17
+candidate, the main suite completed 1,930 tests with zero failures in 22 minutes
+16 seconds, then the 25-minute job limit canceled the still-progressing isolated
+Studio routes. The additional allowance preserves both complete suites and their
+existing assertions; the Quality CI gate still rejects a timeout or cancellation.
+
 `frontend/next.config.js` explicitly enables `experimental.webpackBuildWorker`
 because next-intl adds a custom Webpack hook, which disables Next 15's automatic
 worker selection. This is a build-memory mitigation; it does not establish the
