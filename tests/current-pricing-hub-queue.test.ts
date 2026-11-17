@@ -59,19 +59,19 @@ test('a hub quotes each authored exact input once through at most eight distinct
     const data = await pending;
     assert.deepEqual(new Set(requests.map(key)), new Set(authored.map(key)), 'every exact authored input remains quoted');
     assert.equal(requests.length, new Set(requests.map(key)).size, 'identical matrix inputs share one quote');
-    assert.equal(requests.length, 152, '124 current video inputs and 28 image inputs remain individually quoted');
+    assert.equal(requests.length, 153, '125 current video inputs and 28 image inputs remain individually quoted');
     assert.ok(requests.every(input => input.modelId !== 'pika-text-to-video'), 'archived Pika never enters the current quote queue');
-    assert.equal(requests.filter((input) => input.mode !== 't2i' && !['flux-3-max', 'kling-v4-flash'].includes(input.modelId)).length, 117);
+    assert.equal(requests.filter((input) => input.mode !== 't2i' && !['flux-3-max', 'kling-v4-flash'].includes(input.modelId)).length, 118);
     assert.equal(requests.filter((input) => input.modelId === 'flux-3-max').length, 5);
     assert.equal(requests.filter((input) => input.modelId === 'kling-v4-flash').length, 2);
-    assert.equal(requests.filter((input) => input.mode !== 't2i').length, 124);
+    assert.equal(requests.filter((input) => input.mode !== 't2i').length, 125);
     assert.equal(requests.filter((input) => input.mode === 't2i' && !['nano-banana-2-1', 'gpt-image-2-6-flare', 'gpt-image-2-6-sunburst', 'seedream-5-5', 'seedream-5-0-flash'].includes(input.modelId)).length, 18);
     assert.equal(requests.filter((input) => input.modelId === 'nano-banana-2-1').length, 2);
     for (const modelId of ['gpt-image-2-6-flare', 'gpt-image-2-6-sunburst', 'seedream-5-5', 'seedream-5-0-flash']) {
       assert.equal(requests.filter((input) => input.modelId === modelId).length, 2);
     }
     assert.equal(requests.filter((input) => input.mode === 't2i').length, 28);
-    assert.equal(requests.length + audioCalls + productCalls, 173);
+    assert.equal(requests.length + audioCalls + productCalls, 174);
     assert.equal(maximum, 8);
     assert.equal(audioCalls, 9);
     assert.equal(productCalls, 12);
@@ -94,7 +94,7 @@ test('unavailable quotes are shared only within one hub and the next hub retries
       calls[1].push(input);
       return exact(321);
     }, other);
-    assert.equal(calls[0].length, 152);
+    assert.equal(calls[0].length, 153);
     assert.deepEqual(calls[1].map(key), calls[0].map(key), 'a later invocation makes fresh canonical calls');
     for (const row of failed.video.rows) for (const quote of Object.values(row.quotes)) {
       assert.notEqual(quote.status, 'exact', 'unavailability must not retain a catalogue exact amount');
@@ -112,7 +112,7 @@ test('an unexpected quote rejection still rejects the hub and cannot poison the 
   await assert.rejects(buildCurrentPricingHubData('en', async () => { throw failure; }, other), (error) => error === failure);
   let calls = 0;
   const recovered = await buildCurrentPricingHubData('en', async () => { calls++; return exact(654); }, other);
-  assert.equal(calls, 152);
+  assert.equal(calls, 153);
   assert.ok(recovered.video.rows.some((row) => Object.values(row.quotes).some((quote) => quote.amountCents === 654)));
 });
 
@@ -158,7 +158,7 @@ test('eight model and four other quotes overlap until all model workers stop, th
   assert.deepEqual(held.active, { model: 0, other: 12 }, 'slow other work gets the complete budget after the last model worker');
   while (held.others.length) { held.others.shift()!.resolve(); await flush(); }
   const data = await pending;
-  assert.deepEqual(held.calls, { model: 152, other: 21 });
+  assert.deepEqual(held.calls, { model: 153, other: 21 });
   assert.deepEqual(held.maximum, { model: 8, other: 12, total: 12 });
   assert.deepEqual(held.active, { model: 0, other: 0 });
   assert.ok(data.otherSurfaces.imageRows.every(row => row.standardImage === '$7.77' && row.highQualityImage === '$7.77'),
@@ -184,13 +184,13 @@ test('early model rejection retains its original error and holds extra other wor
   // Late other errors retain their localized fallback and must remain observed after hub rejection.
   while (held.others.length) { held.others.shift()!.reject(new Error('late other failure')); await flush(); }
   assert.deepEqual(held.maximum, { model: 8, other: 12, total: 12 });
-  assert.deepEqual(held.calls, { model: 152, other: 21 });
+  assert.deepEqual(held.calls, { model: 153, other: 21 });
   let models = 0, others = 0;
   const recovered = await buildCurrentPricingHubData('fr', async () => { models++; return exact(321); }, {
     audio: async () => { others++; return { totalCents: 432, currency: 'USD' }; },
     product: async () => { others++; return { totalCents: 543, currency: 'USD' }; },
   });
-  assert.equal(models, 152, 'the next request retries all distinct model inputs');
+  assert.equal(models, 153, 'the next request retries all distinct model inputs');
   assert.equal(others, 21, 'the next request retries all other inputs');
   assert.ok(recovered.otherSurfaces.imageRows.every(row => /3,21/.test(row.standardImage)));
 });

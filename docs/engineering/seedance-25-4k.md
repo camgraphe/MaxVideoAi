@@ -48,6 +48,13 @@ Direct and final 4K refuse quotation when their active tariff is missing; the
 display basis cannot enable legacy percentage billing. Historical prices and
 paid receipts are not rewritten.
 
+The historical initial-cutover rehearsal uses its pre-4K catalogue. It must not
+invent a previous customer amount for this new tier or replace these native
+imports with a legacy margin calculation. Current inventory tests still count
+the added 4K classes and transport differences. The frozen public-price baseline
+is also preserved; a separate dated delta checks the offline 10s 16:9 projection
+at $18.28. Production public prices continue to read active admin tariffs.
+
 ## Web, Studio/Milo and MCP
 
 Shared engine and mode capabilities project 4K to the workspace, Studio/Milo and
@@ -60,6 +67,8 @@ actual stored final resolution. Changing the choice invalidates its quote;
 in-flight and ambiguous submissions keep the choice locked. Parent ownership,
 references, creative settings, expiry, atomic reservation and refund recovery
 continue through the existing workflow owners.
+The web flow sends the tariff revision and recomputes pricing server-side;
+MCP additionally binds the full normalized request to its persisted quote.
 
 MCP accepts `settings.resolution` through its existing input contract. Discovery
 adds `final.resolutions` while retaining `final.resolution: "1080p"` as the default.
@@ -72,6 +81,27 @@ The plugin archive, version, manifests, OAuth, tool names, input/output schemas,
 tool descriptors and OpenAI review submission are unchanged. These additive live
 facts use the existing passthrough result contracts. Deterministic MCP checks do
 not establish host refresh, OpenAI approval or real-host behavior.
+
+## Local validation
+
+The 17 November candidate passed the 11,517-test fast selection (11,516 passed,
+one skipped), both exhaustive PostgreSQL financial rehearsals, focused 4K/Draft
+provider and billing tests, and all 659 public-price reference rows. The financial
+replay retains all 27,071 historical checkpoints and its rollback/history checks.
+
+The 1,931-test database/media selection had seven obsolete quote-count assertions
+in the Pricing policy fixture: adding the 4K scenario adds one independent tariff
+transaction. After updating those counts, all eight tests in that file passed;
+the remaining selection had no failures (three skips). Both native MCP final
+tiers and the 8,748-cell standard/Flash admin import were exercised on disposable
+PostgreSQL, without production reads or writes.
+
+The real shared finalization component passed Chromium in EN/FR/ES at desktop
+and mobile widths, including quote invalidation, separate confirmation and both
+result links. TypeScript, production build, exposure and registry checks passed;
+lint retains seven existing warnings. MCP client validation passed 245 tests with
+one skip. Two independent review passes found no remaining actionable issue.
+Required GitHub CI still evaluates the final committed PR candidate separately.
 
 ## Release boundary
 

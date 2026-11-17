@@ -33,7 +33,7 @@ test('all historical checkpoints and independently enumerated additive operation
   assert.equal(cases.filter(row => row.scenario.modelId === 'pika-text-to-video').length, 8);
   const novemberModels = ['kling-v4-flash', 'gpt-image-2-6-flare', 'gpt-image-2-6-sunburst', 'seedance-2-5-flash'];
   const seedreamModels = ['seedream-5-5', 'seedream-5-0-flash'];
-  assert.equal(cases.filter(row => row.kind === 'ordinary' && !['kling-v4', 'nano-banana-2-1', ...novemberModels, ...seedreamModels].includes(row.scenario.modelId)).length, 20286);
+  assert.equal(cases.filter(row => row.kind === 'ordinary' && !['kling-v4', 'nano-banana-2-1', ...novemberModels, ...seedreamModels].includes(row.scenario.modelId)).length, 20286 + 810);
   assert.deepEqual(novemberModels.map(id => cases.filter(row => row.scenario.modelId === id).length), [72, 1020, 1020, 3888]);
   assert.deepEqual(seedreamModels.map(id => cases.filter(row => row.scenario.modelId === id).length), [33, 6]);
   assert.ok(cases.filter(row => seedreamModels.includes(row.scenario.modelId)).every(row => row.kind === 'ordinary'
@@ -42,10 +42,10 @@ test('all historical checkpoints and independently enumerated additive operation
   assert.equal(cases.filter(row => row.scenario.modelId === 'kling-v4').length, 280);
   assert.equal(cases.filter(row => row.scenario.modelId === 'nano-banana-2-1').length, 6,
     'new native fixed image cells remain separate from the old video inventory');
-  assert.equal(cases.filter(row => row.kind === 'local_workflow').length, 324);
-  assert.equal(cases.filter(row => row.kind === 'input_stress').length, 6372 + 1944);
+  assert.equal(cases.filter(row => row.kind === 'local_workflow').length, 324 + 162);
+  assert.equal(cases.filter(row => row.kind === 'input_stress').length, 6372 + 1944 + 648);
   assert.equal(cases.filter(row => String(row.kind) === 'new_offer').length, 89);
-  assert.equal(cases.length, 27071 + 280 + 6 + 72 + 1020 + 1020 + 33 + 6 + 3888);
+  assert.equal(cases.length, 27071 + 280 + 6 + 72 + 1020 + 1020 + 33 + 6 + 3888 + 1620);
   assert.equal(new Set(cases.map(row => row.key)).size, cases.length);
   const veo = coverage.scenarios.filter(row => row.modelId === 'veo-3-1' && row.selector.mode === 'i2v');
   assert.equal(veo.length, 18);

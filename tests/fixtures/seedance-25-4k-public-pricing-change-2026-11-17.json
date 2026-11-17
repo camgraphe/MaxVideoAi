@@ -1,0 +1,25 @@
+{
+  "policy": "Seedance 2.5 4K, public LIST ×2, 10 seconds, 16:9, no video input. Offline projection only; live prices require an active admin tariff.",
+  "rows": [
+    {
+      "previous": {
+        "id": "pricing-hub-video:seedance-2-5:4k-route",
+        "surface": "pricing-hub-video",
+        "engineId": "seedance-2-5",
+        "status": "unavailable"
+      },
+      "current": {
+        "id": "pricing-hub-video:seedance-2-5:4k-route",
+        "surface": "pricing-hub-video",
+        "engineId": "seedance-2-5",
+        "status": "exact",
+        "currency": "USD",
+        "customerTotalCents": 1828,
+        "unit": "scenario",
+        "quantity": 1,
+        "displayedAmount": "$18.28",
+        "compatibilityProfile": "standard"
+      }
+    }
+  ]
+}
