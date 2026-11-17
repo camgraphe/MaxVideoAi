@@ -3,7 +3,6 @@ import test from 'node:test';
 
 import { AgentApiError } from '../frontend/src/server/agent-api/errors';
 import {
-  hasActiveOAuthGrant,
   resolveAgentPrincipal,
   resolveMcpAgentPrincipal,
   type OAuthAdapterDeps,
@@ -31,7 +30,7 @@ function createDeps(options?: {
         async getClaims() {
           return {
             data: options?.claims === null ? null : {
-              claims: options?.claims ?? { sub: 'user-1', client_id: 'client-1' },
+              claims: options?.claims ?? { sub: 'user-1', client_id: 'client-1', session_id: 'session-1' },
             },
             error: options?.claimsError ?? null,
           };
@@ -63,6 +62,30 @@ function createDeps(options?: {
 function isAuthRequired(error: unknown): boolean {
   return error instanceof AgentApiError && error.code === 'AUTH_REQUIRED';
 }
+
+test('OAuth-bound principals require a signed session identity before live lookups', async () => {
+  await assert.rejects(resolveMcpAgentPrincipal(requestWithToken(), createDeps({
+    claims: { sub: 'user-1', client_id: 'client-1' },
+  })), isAuthRequired);
+});
+
+test('OAuth principals pass the verified session binding and consume fresh OIDC email verification', async () => {
+  let boundClient: string | undefined;
+  let checkedBinding: unknown;
+  const principal = await resolveMcpAgentPrincipal(requestWithToken(), {
+    createAuthClient: async () => ({
+      getClaims: async () => ({ data: { claims: { sub: 'user-1', client_id: 'client-1', session_id: 'session-1' } }, error: null }),
+      getUser: async (_token: string, clientId?: string) => {
+        boundClient = clientId;
+        return { data: { user: { id: 'user-1', email_verified: true } }, error: null };
+      },
+    }),
+    hasActiveGrant: async (_token, _clientId, _scopes, binding) => { checkedBinding = binding; return true; },
+  });
+  assert.equal(boundClient, 'client-1');
+  assert.deepEqual(checkedBinding, { userId: 'user-1', sessionId: 'session-1' });
+  assert.equal(principal.emailVerified, true);
+});
 
 test('OAuth principal requires a bearer access token', async () => {
   await assert.rejects(
@@ -114,7 +137,7 @@ test('OAuth principal checks the active grant with the verified bearer and clien
   await resolveAgentPrincipal(
     requestWithToken('verified-access-token'),
     createDeps({
-      claims: { sub: 'user-1', client_id: 'client-1' },
+      claims: { sub: 'user-1', client_id: 'client-1', session_id: 'session-1' },
       onGrantCheck: (accessToken, clientId) => { checkedGrant = { accessToken, clientId }; },
     }),
   );
@@ -123,83 +146,6 @@ test('OAuth principal checks the active grant with the verified bearer and clien
     accessToken: 'verified-access-token',
     clientId: 'client-1',
   });
-});
-
-test('active OAuth grant lookup accepts only the matching client grant', async () => {
-  const requests: Request[] = [];
-  const active = await hasActiveOAuthGrant('access-token', 'client-1', {
-    supabaseUrl: 'https://project.supabase.co',
-    anonKey: 'public-anon-key',
-    fetcher: async (input, init) => {
-      requests.push(new Request(input, init));
-      return Response.json([
-        {
-          id: 'grant-1',
-          scopes: ['openid', 'email', 'profile'],
-          granted_at: '2026-09-14T08:00:00.000Z',
-          client: { id: 'client-1', name: 'GitHub Copilot CLI', uri: '' },
-        },
-      ]);
-    },
-  });
-
-  assert.equal(active, true);
-  assert.equal(requests.length, 1);
-  assert.equal(requests[0]?.url, 'https://project.supabase.co/auth/v1/user/oauth/grants');
-  assert.equal(requests[0]?.method, 'GET');
-  assert.equal(requests[0]?.headers.get('authorization'), 'Bearer access-token');
-  assert.equal(requests[0]?.headers.get('apikey'), 'public-anon-key');
-  assert.equal(requests[0]?.cache, 'no-store');
-
-  const inactive = await hasActiveOAuthGrant('access-token', 'client-1', {
-    supabaseUrl: 'https://project.supabase.co',
-    anonKey: 'public-anon-key',
-    fetcher: async () => Response.json([
-      {
-        id: 'grant-2',
-        scopes: ['openid', 'email', 'profile'],
-        granted_at: '2026-09-14T08:00:00.000Z',
-        client: { id: 'client-2', name: 'Another client', uri: '' },
-      },
-    ]),
-  });
-  assert.equal(inactive, false);
-});
-
-test('active OAuth grant lookup does not treat consent timestamps as token-generation identifiers', async () => {
-  const config = {
-    supabaseUrl: 'https://project.supabase.co',
-    anonKey: 'public-anon-key',
-    fetcher: async () => Response.json([{
-      id: 'replacement-grant',
-      scopes: ['openid', 'email', 'profile'],
-      granted_at: '2026-09-14T08:00:01.000Z',
-      client: { id: 'client-1', name: 'GitHub Copilot CLI', uri: '' },
-    }]),
-  };
-
-  assert.equal(await hasActiveOAuthGrant('old-token', 'client-1', config), true);
-  assert.equal(await hasActiveOAuthGrant('new-token', 'client-1', config), true);
-});
-
-test('active OAuth grant lookup fails closed on unavailable or malformed Auth responses', async () => {
-  const config = {
-    supabaseUrl: 'https://project.supabase.co',
-    anonKey: 'public-anon-key',
-  };
-
-  assert.equal(await hasActiveOAuthGrant('access-token', 'client-1', {
-    ...config,
-    fetcher: async () => new Response(null, { status: 503 }),
-  }), false);
-  assert.equal(await hasActiveOAuthGrant('access-token', 'client-1', {
-    ...config,
-    fetcher: async () => Response.json({ grants: [] }),
-  }), false);
-  assert.equal(await hasActiveOAuthGrant('access-token', 'client-1', {
-    ...config,
-    fetcher: async () => { throw new Error('network unavailable'); },
-  }), false);
 });
 
 test('first-party OAuth principal accepts a signed bearer without an OAuth client binding', async () => {
@@ -246,7 +192,7 @@ test('OAuth principal does not trust claims or user metadata for email verificat
   const principal = await resolveAgentPrincipal(
     requestWithToken(),
     createDeps({
-      claims: { sub: 'user-1', client_id: 'client-1', email_verified: true },
+      claims: { sub: 'user-1', client_id: 'client-1', session_id: 'session-1', email_verified: true },
       user: {
         id: 'user-1',
         email_confirmed_at: null,

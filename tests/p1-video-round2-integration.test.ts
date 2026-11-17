@@ -41,7 +41,7 @@ function supabasePrincipalResolver(input: {
             data: {
               claims: {
                 sub: input.userId,
-                ...(input.clientId ? { client_id: input.clientId, iat: 1_789_372_800 } : {}),
+                ...(input.clientId ? { client_id: input.clientId, session_id: 'fixture-session', iat: 1_789_372_800 } : {}),
               },
             },
             error: null,

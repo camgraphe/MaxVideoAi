@@ -564,6 +564,14 @@ actionnables suit les [recommandations Anthropic sur les outils](https://www.ant
 
 ## Plugin installé mais outils indisponibles
 
+Le diagnostic du 17 novembre 2026 a confirmé une incompatibilité avec la route
+Supabase de liste des consentements : les jetons OAuth y reçoivent désormais
+403 même après un renouvellement réussi. Le correctif local, ses contrôles
+de révocation et sa dépendance Auth sont décrits dans
+[MCP OAuth verification](mcp-oauth-verification.md). Il ne constitue pas une
+preuve de déploiement ni de lecture authentifiée rétablie. Aucun descripteur,
+budget d'instructions, paquet installé ou état de soumission n'est modifié.
+
 La déconnexion ordinaire du site doit préserver les sessions OAuth indépendantes
 des connecteurs. Suivre [la politique de portée des déconnexions](auth-signout-scope.md)
 pour les appels Supabase et la vérification du renouvellement après expiration.

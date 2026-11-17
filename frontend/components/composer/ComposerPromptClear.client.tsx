@@ -37,7 +37,7 @@ export function ComposerPromptClear({ prompt, onPromptChange, inputId, locale }:
     input.focus({ preventScroll: true });
     input.setSelectionRange(next.length, next.length);
   };
-  return <span className="inline-flex min-h-11 shrink-0 items-center">
+  return <span data-composer-prompt-clear className="inline-flex min-h-11 shrink-0 items-center">
     <Button type="button" variant="ghost" size="sm"
       className="!min-h-11 min-w-11 rounded-full px-3 py-0 text-xs"
       disabled={!prompt.length && !canUndo}

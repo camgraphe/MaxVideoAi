@@ -15,7 +15,9 @@ The API must report a returned SDK error rather than claiming signout succeeded.
 
 Connector revocation remains an explicit action on `/account/connections`, using
 `supabase.auth.oauth.revokeGrant({ clientId })`. Keep the MCP server's token and
-active-grant checks. Do not extend access-token lifetimes or bypass revocation to
+active-grant checks, following the [OAuth verification owner](mcp-oauth-verification.md)
+for provider-compatible identity and service-only consent/session validation.
+Do not extend access-token lifetimes or bypass revocation to
 make directory health checks succeed. A deliberate sign-out-everywhere feature
 would require a separate, clearly labelled action and corresponding tests.
 
