@@ -7,6 +7,7 @@ import {
   hasActiveOAuthGrant,
   resolveAgentPrincipal,
 } from '../frontend/src/server/mcp/oauth-adapter';
+import { readOAuthUserInfo, type VerifiedOAuthSession } from '../frontend/src/server/mcp/oauth-session-validation';
 
 const requireFrontend = createRequire(resolve('frontend/package.json'));
 const { createClient } = requireFrontend('@supabase/supabase-js');
@@ -48,7 +49,11 @@ test('disposable auth revokes the OAuth grant and its client-bound session', asy
       authorization: `Bearer ${session.access_token}`,
     };
 
-    const activeResponse = await fetch(`${fixture.origin}/auth/v1/user/oauth/grants`, { headers });
+    assert.equal((await fetch(`${fixture.origin}/auth/v1/user/oauth/grants`, { headers })).status, 403);
+    const websiteSession = fixture.createSession(STUDIO_FIXTURE_OWNERS[0]);
+    const activeResponse = await fetch(`${fixture.origin}/auth/v1/user/oauth/grants`, {
+      headers: { ...headers, authorization: `Bearer ${websiteSession.access_token}` },
+    });
     assert.equal(activeResponse.status, 200);
     const activeGrants = await activeResponse.json() as Array<{
       scopes: string[];
@@ -63,6 +68,7 @@ test('disposable auth revokes the OAuth grant and its client-bound session', asy
     const revokedResponse = await fetch(`${fixture.origin}/auth/v1/user/oauth/grants`, { headers });
     assert.equal(revokedResponse.status, 401);
     assert.equal((await fetch(`${fixture.origin}/auth/v1/user`, { headers })).status, 401);
+    assert.equal((await fetch(`${fixture.origin}/auth/v1/oauth/userinfo`, { headers })).status, 401);
   } finally {
     await fixture.close();
   }
@@ -81,14 +87,20 @@ test('re-authorizing the same OAuth client rejects the old access token and acce
     const newSession = fixture.createSession(STUDIO_FIXTURE_OWNERS[0], {
       clientId: 'studio-fixture-client',
       issuedAt,
+      scopes: ['openid'],
     });
     const deps = {
-      createAuthClient: async () => client.auth,
-      hasActiveGrant: (accessToken: string, clientId: string) =>
-        hasActiveOAuthGrant(accessToken, clientId, {
+      createAuthClient: async () => ({
+        getClaims: (token: string) => client.auth.getClaims(token),
+        getUser: async (token: string) => ({ data: { user: await readOAuthUserInfo(token, {
+          supabaseUrl: fixture.origin, anonKey: fixture.anonKey, serviceRoleKey: fixture.serviceRoleKey,
+        }) }, error: null }),
+      }),
+      hasActiveGrant: (_token: string, clientId: string, scopes: readonly string[] | undefined, binding: VerifiedOAuthSession) =>
+        hasActiveOAuthGrant(binding, clientId, {
           supabaseUrl: fixture.origin,
-          anonKey: fixture.anonKey,
-        }),
+          serviceRoleKey: fixture.serviceRoleKey,
+        }, scopes),
     };
 
     await assert.rejects(
@@ -102,6 +114,7 @@ test('re-authorizing the same OAuth client rejects the old access token and acce
     }), deps);
     assert.equal(principal.userId, STUDIO_FIXTURE_OWNERS[0]);
     assert.equal(principal.clientId, 'studio-fixture-client');
+    assert.equal(principal.emailVerified, true, 'OpenID-only consent must not downgrade an already confirmed account.');
   } finally {
     await fixture.close();
   }
