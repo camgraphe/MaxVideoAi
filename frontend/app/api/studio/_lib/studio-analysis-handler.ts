@@ -2,11 +2,16 @@ import type {NextRequest} from 'next/server';
 import {z,ZodError} from 'zod';
 import {resolveStudioApiAccess} from '@/server/studio/access';
 import {AgentApiError} from '@/server/agent-api/errors';
-import {studioAnalysisPrepareSchema,studioAnalysisConfirmSchema} from '@/lib/studio/media-analysis-contract';
+import {studioAnalysisPrepareSchema,studioAnalysisConfirmSchema,STUDIO_ANALYSIS_PILOT_HEADER} from '@/lib/studio/media-analysis-contract';
 import {createStudioAnalysisService} from '@/server/studio/media-analysis/service';
 import {isStudioSameOriginRequest, studioJson} from './studio-route-utils';
+import {studioAnalysisPilotEnabled} from '@/server/studio/media-analysis/pilot-funding';
 import {scheduleStudioWorker} from '@/server/studio/worker-host';
 
+function isSponsoredQuote(value:unknown):value is {analysisId:string;confirmationRequired:false}{
+  return value!==null&&typeof value==='object'&&'confirmationRequired' in value&&value.confirmationRequired===false
+    &&'analysisId' in value&&typeof value.analysisId==='string';
+}
 type AnalysisService={read(id:string):Promise<unknown>;prepare(request:unknown,key:string):Promise<unknown>;confirm(request:unknown):Promise<unknown>};
 async function readBody(req:NextRequest){
   const reader=req.body?.getReader();if(!reader)throw new SyntaxError('INVALID_BODY');
@@ -23,11 +28,24 @@ export async function handleStudioAnalysis(req:NextRequest,projectId:string,oper
   try{
     const actor={authMethod:'studio-session' as const,userId:access.userId,projectId,clientId:null};
     const service=(dependencies.serviceFactory??createStudioAnalysisService)(actor);
-    if(operation==='read')return studioJson({ok:true,result:await service.read(analysisId!)});
+    const supportsPilot=req.headers.get(STUDIO_ANALYSIS_PILOT_HEADER)==='1';
+    const refreshRequired=()=>studioJson({ok:false,error:'ANALYSIS_REFRESH_REQUIRED',message:'Refresh Studio to use included media analysis.'},{status:409});
+    if(operation==='read'){
+      const result=await service.read(analysisId!);
+      if(!supportsPilot&&result&&typeof result==='object'&&'quote' in result&&isSponsoredQuote(result.quote)){
+        return refreshRequired();
+      }
+      return studioJson({ok:true,result});
+    }
     const raw=await readBody(req);
     if(operation==='prepare'){
+      if(studioAnalysisPilotEnabled()&&!supportsPilot)return refreshRequired();
       const input=z.object({request:studioAnalysisPrepareSchema,requestKey:z.string().uuid()}).strict().parse(raw);
-      return studioJson({ok:true,result:await service.prepare(input.request,input.requestKey)});
+      const result=await service.prepare(input.request,input.requestKey);
+      if(isSponsoredQuote(result)){
+        (dependencies.scheduleWorker??scheduleStudioWorker)('analysis',{userId:access.userId,projectId,requestId:result.analysisId});
+      }
+      return studioJson({ok:true,result});
     }
     const input=studioAnalysisConfirmSchema.parse(raw);
     if(input.analysisId!==analysisId)return studioJson({ok:false,error:'INVALID_ANALYSIS'},{status:400});

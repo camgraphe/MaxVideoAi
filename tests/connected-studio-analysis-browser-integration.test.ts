@@ -71,6 +71,17 @@ test('analysis review works on desktop/mobile and only explicit confirmation que
     assert.equal((await runtime.database.pool.query('SELECT count(*)::int n FROM studio_assistance_calls')).rows[0].n,0,'Browser delivery never creates an analytical model call');
     await page.reload();await expect(page.getByRole('region',{name:'Media analysis'}).getByText('Analysis in progress. Your media is preserved.')).toBeVisible();
     assert.equal((await runtime.database.pool.query('SELECT count(*)::int n FROM studio_analysis_credit_funding')).rows[0].n,1);
+
+    const pilot=createStudioAnalysisService(actor,{policy,assistancePolicy:studioAssistancePolicy({STUDIO_ASSISTANCE_ENABLED:'true'}),sponsoredPilot:true});
+    const sponsored=await pilot.prepare({ref,goal:'Inspect the camera position',reason:'requested',startSec:0,endSec:4},randomUUID());
+    const sponsoredTurn=await claimImageTurn(actor,{requestId:randomUUID(),message:'Inspect the camera position',references:[],attachments:[ref]});
+    await persistImageDraft(actor,sponsoredTurn.turn,{reply:'I’ll inspect the excerpt.',image:null,analysisQuote:sponsored},'b'.repeat(64));
+    await page.reload();
+    const included=page.getByRole('region',{name:'Media analysis'}).filter({has:page.getByRole('heading',{name:'Included analysis'})});
+    await expect(included.getByText('Analysis in progress.',{exact:true})).toBeVisible();
+    await expect(included.getByRole('button',{name:/credits maximum/})).toHaveCount(0);
+    assert.equal((await pilot.read(sponsored.analysisId)).state,'queued');
+    assert.equal((await runtime.database.pool.query('SELECT count(*)::int n FROM studio_analysis_credit_allocations WHERE call_id=$1',[sponsored.analysisId])).rows[0].n,0);
   }catch(error){
     console.error(summarizeStudioReadinessFailure(runtime.readLogs(),8000));
     throw error;

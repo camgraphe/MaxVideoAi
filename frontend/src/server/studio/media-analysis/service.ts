@@ -13,9 +13,10 @@ import {quoteStudioAnalysis,studioAnalysisPolicy,type StudioAnalysisPolicy} from
 import {analysisSourceFingerprint} from './source';
 import {readAnalysis,projectAnalysis,resolveAnalysisSource,type AnalysisRun} from './repository';
 import {readStudioAnalysisExposure} from './exposure';
+import {reserveStudioAnalysisPilot,studioAnalysisPilotEnabled} from './pilot-funding';
 import {analysisScopeParts,assertAnalysisScope,type AnalysisScope} from './scope';
 
-type AnalysisDependencies={policy?:StudioAnalysisPolicy|null;assistancePolicy?:StudioAssistancePolicy};
+type AnalysisDependencies={policy?:StudioAnalysisPolicy|null;assistancePolicy?:StudioAssistancePolicy;sponsoredPilot?:boolean};
 export function createStudioAnalysisService(actor:StudioGenerationActor,dependencies:AnalysisDependencies={}) {
   requireGenerationActor(actor);if(actor.authMethod!=='studio-session'||actor.projectId.startsWith('composer:'))throw new AgentApiError('AUTH_REQUIRED','Studio session required.');
   return createAnalysisService(actor,dependencies);
@@ -28,18 +29,25 @@ function createAnalysisService(actor:AnalysisScope,dependencies:AnalysisDependen
   const parts=analysisScopeParts(actor);
   const policy=dependencies.policy===undefined?studioAnalysisPolicy():dependencies.policy;
   const assistance=dependencies.assistancePolicy??studioAssistancePolicy();
+  const sponsored=dependencies.sponsoredPilot??studioAnalysisPilotEnabled();
   function enabled(){if(!policy||!assistance.enabled||!assistance.credits)throw new AgentApiError('ENGINE_UNAVAILABLE','This analysis profile is not available.');return policy;}
   async function preparationAvailability(kind:'video'|'audio') {
     const current=enabled();
     if(!current[kind])throw new AgentApiError('ENGINE_UNAVAILABLE','The requested analysis profile has not been qualified.');
     await assertAnalysisScope({query},actor);
     const selected=(await query<{selected_model:string}>('SELECT selected_model FROM studio_assistance_accounts WHERE user_id=$1',[actor.userId]))[0]?.selected_model??(parts.sessionId?'gpt-6-luna':'gpt-6.1-sol');
-    if(parts.sessionId&&selected==='gpt-6-luna')throw new AgentApiError('ENGINE_UNAVAILABLE','Choose Standard or Max to analyse video or audio.');
-    const model=selected==='gpt-6.1-terra'?'gpt-6.1-terra' as const:'gpt-6.1-sol' as const;
+    if(parts.sessionId&&!sponsored&&selected==='gpt-6-luna')throw new AgentApiError('ENGINE_UNAVAILABLE','Choose Standard or Max to analyse video or audio.');
+    const model=selected==='gpt-6.1-terra'||(sponsored&&selected==='gpt-6-luna')?'gpt-6.1-terra' as const:'gpt-6.1-sol' as const;
     return {current,model};
   }
   return {
     read:async(id:string)=>projectAnalysis(await readAnalysis(actor,id)),
+    async readByRequest(key:string) {
+      await assertAnalysisScope({query},actor,false,false);
+      const column=parts.sessionId?'composer_session_id':'project_id';
+      const [run]=await query<AnalysisRun>('SELECT * FROM studio_media_analysis_runs WHERE user_id=$1 AND '+column+'=$2 AND request_key=$3',[actor.userId,parts.sessionId??parts.projectId,key]);
+      return run?projectAnalysis(run):null;
+    },
     checkPreparationAvailable:async(kind:'video'|'audio')=>{await preparationAvailability(kind);},
     async prepare(raw:unknown,key:string,onPrepared?:(quote:StudioPreparedAnalysis,tx:TransactionQueryExecutor)=>Promise<void>) {
       enabled();const request=studioAnalysisPrepareSchema.parse(raw);
@@ -53,9 +61,16 @@ function createAnalysisService(actor:AnalysisScope,dependencies:AnalysisDependen
         await assertAnalysisScope(tx,actor,'update');
         const prior=(await tx.query<AnalysisRun>(`SELECT * FROM studio_media_analysis_runs WHERE user_id=$1 AND ${parts.sessionId?'composer_session_id':'project_id'}=$2 AND request_key=$3`,[actor.userId,parts.sessionId??parts.projectId,key]))[0];
         if(prior){if(prior.request_hash!==requestHash)throw new AgentApiError('PARAMETER_INVALID','This analysis identity belongs to another request.');await onPrepared?.(prior.quote_json,tx);return prior.quote_json;}
-        const quote:StudioPreparedAnalysis={analysisId:randomUUID(),...request,...(source.originalName?{sourceName:source.originalName.slice(0,160)}:{}),maxCredits:price.maxCredits,policyVersion:current.version,expiresAt:new Date(Date.now()+15*60_000).toISOString(),profile:studioAnalysisKind(request)==='audio'?'audio-window-v1':'video-frames-v1',model,confirmationRequired:true};
+        const quote:StudioPreparedAnalysis={analysisId:randomUUID(),...request,...(source.originalName?{sourceName:source.originalName.slice(0,160)}:{}),maxCredits:sponsored?0:price.maxCredits,policyVersion:current.version,expiresAt:new Date(Date.now()+15*60_000).toISOString(),profile:studioAnalysisKind(request)==='audio'?'audio-window-v1':'video-frames-v1',model,confirmationRequired:!sponsored};
         await tx.query(`INSERT INTO studio_media_analysis_runs(id,user_id,${parts.sessionId?'composer_session_id':'project_id'},request_key,request_hash,request_json,source_fingerprint,policy_json,quote_json,reserved_supplier_nano_usd,expires_at)
           VALUES($1,$2,$3,$4,$5,$6::jsonb,$7,$8::jsonb,$9::jsonb,$10,$11)`,[quote.analysisId,actor.userId,parts.sessionId??parts.projectId,key,requestHash,JSON.stringify(request),fingerprint,JSON.stringify(current),JSON.stringify(quote),price.reservedSupplierNanoUsd,quote.expiresAt]);
+        if(sponsored){
+          if(await getActiveAccountRestrictionInExecutor(actor.userId,tx))throw new AgentApiError('ACCOUNT_RESTRICTED','This account is temporarily restricted.');
+          const currentSource=await resolveAnalysisSource(actor,request,tx,true);
+          if(analysisSourceFingerprint(currentSource)!==fingerprint)throw new AgentApiError('REFERENCE_INVALID','The selected source changed before analysis.');
+          await reserveStudioAnalysisPilot(tx,quote.analysisId,actor.userId,price.reservedSupplierNanoUsd);
+          await tx.query("UPDATE studio_media_analysis_runs SET state='queued',confirmed_at=clock_timestamp() WHERE id=$1",[quote.analysisId]);
+        }
         await onPrepared?.(quote,tx);return quote;
       });
     },

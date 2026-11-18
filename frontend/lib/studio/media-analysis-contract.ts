@@ -2,6 +2,7 @@ import {z} from 'zod';
 import {toolAssetRefSchema} from '@/lib/toolbox/contract';
 import type {StudioAssistantModel} from '@/lib/studio/assistance-contract';
 
+export const STUDIO_ANALYSIS_PILOT_HEADER='x-maxvideoai-analysis-pilot';
 export const STUDIO_ANALYSIS_LIMITS={videoSeconds:60,audioSeconds:30,frames:12,sourceBytes:100*1024*1024,decodeMs:60_000} as const;
 export function studioAnalysisCapabilities(model:StudioAssistantModel,available:{video:boolean;audio:boolean}) {
   return {imageVision:true,simpleEditing:true,videoAnalysis:model!=='gpt-6-luna'&&available.video,audioAnalysis:model!=='gpt-6-luna'&&available.audio};
@@ -33,9 +34,9 @@ export const studioPreparedAnalysisSchema=z.object({
   analysisId:z.string().uuid(),ref:toolAssetRefSchema,goal:z.string().min(1).max(1000),reason:z.enum(['requested','required_for_request']),
   sourceName:z.string().min(1).max(160).optional(),
   modality:z.enum(['visual','audio']).optional(),
-  startSec:z.number().nonnegative(),endSec:z.number().positive(),maxCredits:z.number().int().positive(),policyVersion:z.string(),expiresAt:z.string().datetime(),
-  profile:z.enum(['video-frames-v1','audio-window-v1']),model:z.enum(['gpt-6.1-sol','gpt-6.1-terra']),confirmationRequired:z.literal(true),
-}).strict();
+  startSec:z.number().nonnegative(),endSec:z.number().positive(),maxCredits:z.number().int().nonnegative(),policyVersion:z.string(),expiresAt:z.string().datetime(),
+  profile:z.enum(['video-frames-v1','audio-window-v1']),model:z.enum(['gpt-6.1-sol','gpt-6.1-terra']),confirmationRequired:z.boolean(),
+}).strict().refine(quote=>quote.confirmationRequired===(quote.maxCredits>0),'Sponsored analyses have no credit charge or confirmation.');
 export type StudioPreparedAnalysis=z.infer<typeof studioPreparedAnalysisSchema>;
 export const studioAnalysisStatusSchema=z.object({quote:studioPreparedAnalysisSchema,state:z.enum(['prepared','queued','running','completed','failed','unknown']),result:studioAnalysisResultSchema.nullable(),chargedCredits:z.number().int().nonnegative().nullable(),error:z.string().nullable()}).strict();
 export type StudioAnalysisStatus=z.infer<typeof studioAnalysisStatusSchema>;
@@ -50,7 +51,9 @@ export const STUDIO_ANALYSIS_DIRECTOR_TOOLS=[
   {action:'analysis.prepare',name:'analysis_prepare',description:'Prepare a bounded analysis quote only on request or for necessary unfinished client work. No inspection, provider call or credit reservation. Lite may prepare a Max handoff; Standard and Max retain their level. The client confirms the ceiling. Use exact attached media or ready project output. Choose visual for video frames, audio for sound from audio/video. Use only qualified modalities and a goal in the client’s language. Never call on completion or unsolicited review. Success ends the turn with a card.',properties:{ref:reference,modality:{type:'string',enum:['visual','audio']},goal:{type:'string'},reason:{type:'string',enum:['requested','required_for_request']},startSec:{type:'number',minimum:0},endSec:{type:'number',exclusiveMinimum:0},reply:{type:'string'}}},
   {action:'analysis.read',name:'analysis_read',description:'Read this project’s exact saved analysis status and timestamped observations, including on Lite. Does not start, retry, extend or charge an analysis. Sparse coverage and approximate timing are not full inspection or exact beats.',properties:{analysisId:{type:'string'}}},
 ] as const;
-export function studioAnalysisDirectorTools(available:{video:boolean;audio:boolean}){
+export function studioAnalysisDirectorTools(available:{video:boolean;audio:boolean},sponsored=false){
   const prepare=STUDIO_ANALYSIS_DIRECTOR_TOOLS[0];
-  return [{...prepare,properties:{...prepare.properties,modality:{type:'string',enum:[...(available.video?['visual']:[]),...(available.audio?['audio']:[])]},ref:{anyOf:reference.anyOf.filter(branch=>(branch.properties.kind as {enum:string[]}).enum[0]==='video'?available.video||available.audio:available.audio)}}},STUDIO_ANALYSIS_DIRECTOR_TOOLS[1]];
+  return [{...prepare,description:sponsored
+    ? 'Start an included bounded analysis only when requested or necessary for unfinished requested work. Use exact attached media or a ready project output. Choose the modality and interval needed. Success ends the turn with an analysis status card.'
+    :prepare.description,properties:{...prepare.properties,modality:{type:'string',enum:[...(available.video?['visual']:[]),...(available.audio?['audio']:[])]},ref:{anyOf:reference.anyOf.filter(branch=>(branch.properties.kind as {enum:string[]}).enum[0]==='video'?available.video||available.audio:available.audio)}}},STUDIO_ANALYSIS_DIRECTOR_TOOLS[1]];
 }

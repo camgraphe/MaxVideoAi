@@ -1,4 +1,7 @@
 import {randomUUID} from 'node:crypto';
+import {isCurrentPromptAnalysisRequest} from '@/lib/prompt-assistance/analysis-request';
+import {AgentApiError} from '@/server/agent-api/errors';
+import {studioAnalysisPilotEnabled} from '@/server/studio/media-analysis/pilot-funding';
 import {query,withDbTransaction,type TransactionQueryExecutor} from '@/lib/db';
 import type {z} from 'zod';
 import {promptAnalysisPrepareSchema} from '@/lib/prompt-assistance/analysis-contract';
@@ -8,13 +11,25 @@ import {createComposerAnalysisService} from '@/server/studio/media-analysis/serv
 import {analysisSourceFingerprint} from '@/server/studio/media-analysis/source';
 import {studioAnalysisPolicy} from '@/server/studio/media-analysis/policy';
 import type {StudioResolvedMedia} from '@/server/studio/media-resolver';
-import {ensurePromptSession,composerScope} from './repository';
+import {ensurePromptSession,composerScope,readPromptRequest} from './repository';
 import {buildPromptAssistanceContext} from './context';
 import {resolvePromptAnalysisSource,promptAnalysisSourceIdentity,withinPromptAnalysisPreparation} from './analysis-source';
 import {resolveAnalysisSource} from '@/server/studio/media-analysis/repository';
 
+export async function startRecommendedPromptAnalysis(userId:string,sessionId:string,requestId:string) {
+  if(!studioAnalysisPilotEnabled())throw new AgentApiError('ENGINE_UNAVAILABLE','The free analysis pilot is unavailable.');
+  const saved=await readPromptRequest(userId,sessionId,requestId);
+  const recommendation=saved.state==='complete'?saved.reply_json?.analysisRequest:undefined;
+  if(!recommendation||!isCurrentPromptAnalysisRequest(recommendation,saved.input_json.draft.references)){
+    throw new AgentApiError('REFERENCE_INVALID','This message does not have an available reference analysis.');
+  }
+  const {fieldId,slot,modality,startSec,endSec}=recommendation;
+  return preparePromptReferenceAnalysis(userId,{action:'prepare',sessionId,requestId,draft:saved.input_json.draft,fieldId,slot,modality,startSec,endSec});
+}
+
 export async function preparePromptReferenceAnalysis(userId:string,input:z.infer<typeof promptAnalysisPrepareSchema>) {
-  return withinPromptAnalysisPreparation(signal=>prepareWithDeadline(userId,input,signal));
+  const persist=await withinPromptAnalysisPreparation(signal=>prepareWithDeadline(userId,input,signal));
+  return persist();
 }
 async function prepareWithDeadline(userId:string,input:z.infer<typeof promptAnalysisPrepareSchema>,signal:AbortSignal) {
   if(process.env.PROMPT_ASSISTANCE_PERCEPTION_ENABLED!=='true')throw new Error('ANALYSIS_UNAVAILABLE');
@@ -50,10 +65,16 @@ async function prepareWithDeadline(userId:string,input:z.infer<typeof promptAnal
     [userId,input.sessionId,analysisSourceFingerprint(source),input.modality,analysisId]);
     signal.throwIfAborted();
   };
-  if(cached){await withDbTransaction(tx=>select(cached.id,tx));signal.throwIfAborted();return {status:projectAnalysis(cached),sessionId:cached.composer_session_id!,reused:true};}
-  const quote=await service.prepare(request,input.requestId,(prepared,tx)=>select(prepared.analysisId,tx));
-  const status=await service.read(quote.analysisId);signal.throwIfAborted();
-  return {status,sessionId:input.sessionId,reused:false};
+  // Once a preparation commits, acknowledge that exact identity even if the
+  // qualification timer expires during status readback.
+  return async()=>{
+    if(cached){
+      await withDbTransaction(tx=>select(cached.id,tx));
+      return {status:projectAnalysis(cached),sessionId:cached.composer_session_id!,reused:true};
+    }
+    const quote=await service.prepare(request,input.requestId,(prepared,tx)=>select(prepared.analysisId,tx));
+    return {status:await service.read(quote.analysisId),sessionId:input.sessionId,reused:false};
+  };
 }
 export async function readPromptReferenceAnalyses(userId:string,sessionId:string,source:StudioResolvedMedia) {
   const policy=studioAnalysisPolicy();

@@ -34,6 +34,8 @@ import {createStudioConversationDirector, type StudioResponseCreator} from './co
 import {createStudioActionExecutor} from './conversation-actions';
 import {createStudioAnalysisService} from './media-analysis/service';
 import {studioAnalysisPolicy} from './media-analysis/policy';
+import {studioAnalysisPilotEnabled} from './media-analysis/pilot-funding';
+import {scheduleStudioWorker} from './worker-host';
 import {beginStudioAction, completeStudioAction, checkpointStudioResponse, readCompletedStudioAction, readStudioConversationProject, saveStudioConversationMemory} from './conversation-run-repository';
 import {attachImageQuote, persistImageDraft, type StoredImageTurn} from './image-conversation-repository';
 import type {ImageGenerationFactory} from './image-conversation-service';
@@ -169,12 +171,13 @@ export async function runStudioImageActions(options: {
   let currentModel=usedLuna?'gpt-6-luna' as const:assistance?.model??'gpt-6.1-sol';
   const analysisPolicy=studioAnalysisPolicy();
   const analysisEnabled=!!analysisPolicy&&policy.credits===true;
-  const analysis=createStudioAnalysisService(actor,{assistancePolicy:policy});
+  const analysisSponsored=analysisEnabled&&studioAnalysisPilotEnabled();
+  const analysis=createStudioAnalysisService(actor,{assistancePolicy:policy,sponsoredPilot:analysisSponsored});
   const hasGreetingCheckpoint=studioGreetingReply(input.message,options.references.length>0)
     ? (await query<{exists:boolean}>('SELECT EXISTS(SELECT 1 FROM studio_conversation_responses WHERE user_id=$1 AND project_id=$2 AND request_id=$3) exists',[actor.userId,actor.projectId,turn.request_id]))[0].exists:false;
   const creator=(options.creatorFactory??createStudioCreatorToolsService)(actor,{enabled:options.enabled&&(options.creatorEnabled??isCreatorExecutionEnabled()),accountUrl:options.requestOrigin,
     attachedRefs:options.references.map(ref=>({type:'asset' as const,assetId:ref.assetId,kind:ref.mediaKind??'image'}))});
-  const director = createStudioConversationDirector({creatorEnabled:creator.executionEnabled,model: assistance?.model,runtimePolicy:assistance?.tariff_snapshot?.runtime,modelForNextCall:()=>currentModel,createResponse: options.createResponse, mediaEnabled: options.mediaEnabled,characterEnabled:options.characterEnabled,characterBuilderEnabled:options.characterBuilderEnabled,editingEnabled: options.editingEnabled,exportsEnabled: options.exportsEnabled,analysisEnabled,analysisProfiles:{video:!!analysisPolicy?.video,audio:!!analysisPolicy?.audio},assistanceCreditsEnabled:policy.credits===true,taskExecution:options.taskExecution,localGreetingEnabled:!options.responseReplayOnly&&!hasGreetingCheckpoint});
+  const director = createStudioConversationDirector({creatorEnabled:creator.executionEnabled,model: assistance?.model,runtimePolicy:assistance?.tariff_snapshot?.runtime,modelForNextCall:()=>currentModel,createResponse: options.createResponse, mediaEnabled: options.mediaEnabled,characterEnabled:options.characterEnabled,characterBuilderEnabled:options.characterBuilderEnabled,editingEnabled: options.editingEnabled,exportsEnabled: options.exportsEnabled,analysisEnabled,analysisSponsored,analysisProfiles:{video:!!analysisPolicy?.video,audio:!!analysisPolicy?.audio},assistanceCreditsEnabled:policy.credits===true,taskExecution:options.taskExecution,localGreetingEnabled:!options.responseReplayOnly&&!hasGreetingCheckpoint});
   const character = () => (options.characterFactory ?? createCharacterStudioIntegration)(actor,{executionEnabled:options.characterEnabled===true});
   let currentCallId: string;
   const execute = createStudioActionExecutor(actor, {accountUrl:options.requestOrigin,referenceFingerprint:options.referenceFingerprint,enabled: options.enabled, generation, factories: options.factories, mediaEnabled: options.mediaEnabled,
@@ -191,9 +194,11 @@ export async function runStudioImageActions(options: {
       const request={ref:action.ref,...(action.modality?{modality:action.modality}:{}),goal:action.goal,reason:action.reason,startSec:action.startSec,endSec:action.endSec};
       const ref=request.ref;
       if(ref.type==='asset'&&!options.references.some(item=>item.assetId===ref.assetId&&item.mediaKind===ref.kind))throw new AgentApiError('REFERENCE_INVALID','Attach the selected media before preparing its analysis.');
-      return analysis.prepare(request,turn.request_id+':'+currentCallId.slice(0,80),async(quote,executor)=>{
+      const prepared=await analysis.prepare(request,turn.request_id+':'+currentCallId.slice(0,80),async(quote,executor)=>{
         await completeStudioAction(actor,turn,currentCallId,{ok:true,action:'analysis.prepare',data:quote},executor);
       });
+      if(!prepared.confirmationRequired)scheduleStudioWorker('analysis',{userId:actor.userId,projectId:actor.projectId,requestId:prepared.analysisId});
+      return prepared;
     },
     attachedImageIds: input.references,attachedMedia:options.references,
     editingEnabled: options.editingEnabled,exportsEnabled: options.exportsEnabled,

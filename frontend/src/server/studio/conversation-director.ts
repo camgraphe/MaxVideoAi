@@ -104,7 +104,7 @@ function freezeStudioFilmResponse(response:StudioDirectorResponse,filmDuration:n
 import type {StudioTaskExecution} from "./tasks/execution";
 import {isStudioConstraintMismatch,isStudioComparisonMismatch,studioComparisonFingerprint,studioComparisonAttemptFingerprint,studioRepeatedComparisonReply,studioRecoveredComparisonReply} from './conversation-comparison-recovery';
 
-export function createStudioConversationDirector(options: {model?: StudioAssistantModel;runtimePolicy?:MiloRuntimePolicy;modelForNextCall?:()=>StudioAssistantModel;createResponse?: StudioResponseCreator; mediaEnabled?: boolean;characterEnabled?:boolean;characterBuilderEnabled?:boolean;creatorEnabled?:boolean;editingEnabled?: boolean;exportsEnabled?: boolean;analysisEnabled?:boolean;analysisProfiles?:{video:boolean;audio:boolean};assistanceCreditsEnabled?: boolean;taskExecution?:StudioTaskExecution;localGreetingEnabled?:boolean} = {}) {
+export function createStudioConversationDirector(options: {model?: StudioAssistantModel;runtimePolicy?:MiloRuntimePolicy;modelForNextCall?:()=>StudioAssistantModel;createResponse?: StudioResponseCreator; mediaEnabled?: boolean;characterEnabled?:boolean;characterBuilderEnabled?:boolean;creatorEnabled?:boolean;editingEnabled?: boolean;exportsEnabled?: boolean;analysisEnabled?:boolean;analysisSponsored?:boolean;analysisProfiles?:{video:boolean;audio:boolean};assistanceCreditsEnabled?: boolean;taskExecution?:StudioTaskExecution;localGreetingEnabled?:boolean} = {}) {
   return async (context: StudioDirectorContext): Promise<ImageDraft> => {
     const locale=studioConversationLanguage(context.message,context.history,context.locale??options.taskExecution?.locale??'en');
     const greeting=studioGreetingReply(context.message,context.references.length>0);
@@ -156,7 +156,7 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
     }
     const maxResponses=options.taskExecution?.maxCalls??4;
     for (let index = 0; index < maxResponses; index++) {
-      const analysisTools=options.analysisEnabled?studioAnalysisDirectorTools(options.analysisProfiles??{video:true,audio:true}):context.project.analyses?.length?[STUDIO_ANALYSIS_DIRECTOR_TOOLS[1]]:[];
+      const analysisTools=options.analysisEnabled?studioAnalysisDirectorTools(options.analysisProfiles??{video:true,audio:true},options.analysisSponsored):context.project.analyses?.length?[STUDIO_ANALYSIS_DIRECTOR_TOOLS[1]]:[];
       const availableTools = [...STUDIO_DIRECTOR_TOOLS,...STUDIO_CREATOR_DIRECTOR_TOOLS.filter(tool=>(!tool.action.endsWith('.prepare')||options.creatorEnabled)&&(tool.action!=='creator.studio-subtitles.prepare'||options.editingEnabled)),...(options.taskExecution?STUDIO_TASK_DIRECTOR_TOOLS:[]), ...(options.mediaEnabled ? STUDIO_MEDIA_DIRECTOR_TOOLS : []),...(characterEnabled ? STUDIO_CHARACTER_DIRECTOR_TOOLS : []),...(characterEnabled&&options.characterBuilderEnabled?STUDIO_CHARACTER_AUTHORING_DIRECTOR_TOOLS:[]),...(options.editingEnabled ? STUDIO_EDITING_DIRECTOR_TOOLS : []),...(options.exportsEnabled ? STUDIO_EXPORT_DIRECTOR_TOOLS : []),...analysisTools]
         .filter(tool=>!selectedFilmPlan||tool.action!=='pricing.compare');
       // A final comparison renders its own reply; other reads need another Response.
@@ -294,7 +294,12 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
         return {reply:projectStudioReply(action.reply),image:null,creatorQuote:result.data};
       }
       if(action.action==='analysis.prepare'){
-        if(!result.ok)throw new AgentApiError(result.error.code,result.error.message,result.error.retryable,result.error.nextAction);
+        if(!result.ok){
+          if(options.analysisSponsored&&['RATE_LIMITED','ENGINE_UNAVAILABLE'].includes(result.error.code)){
+            return {reply:projectStudioReply(result.error.message),image:null};
+          }
+          throw new AgentApiError(result.error.code,result.error.message,result.error.retryable,result.error.nextAction);
+        }
         if(result.action!=='analysis.prepare')throw new AgentApiError('INTERNAL_ERROR','Studio could not recover the analysis quote.');
         return {reply:projectStudioReply(action.reply),image:null,analysisQuote:result.data};
       }

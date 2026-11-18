@@ -1,12 +1,14 @@
 import {NextResponse,type NextRequest} from 'next/server';
 import {z,ZodError} from 'zod';
 import {resolveStudioApiAccess,type StudioAccessDecision} from '@/server/studio/access';
+import {STUDIO_ANALYSIS_PILOT_HEADER} from '@/lib/studio/media-analysis-contract';
+import {studioAnalysisPilotEnabled} from '@/server/studio/media-analysis/pilot-funding';
 import {AgentApiError} from '@/server/agent-api/errors';
 import {promptAnalysisActionSchema} from '@/lib/prompt-assistance/analysis-contract';
 import {createComposerAnalysisService} from '@/server/studio/media-analysis/service';
 import {scheduleStudioWorker} from '@/server/studio/worker-host';
 import {composerScope} from './repository';
-import {preparePromptReferenceAnalysis} from './reference-analysis';
+import {preparePromptReferenceAnalysis,startRecommendedPromptAnalysis} from './reference-analysis';
 import {boundedPromptJson} from './route-handler';
 // Reference-analysis actions retain their original bound; long chat bodies use a separate envelope.
 const PROMPT_ANALYSIS_BODY_MAX_BYTES=64*1024;
@@ -18,11 +20,27 @@ export async function handlePromptAnalysis(req:NextRequest,deps:{enabled?:boolea
   if(req.method==='POST'&&(req.headers.get('origin')!==req.nextUrl.origin||req.headers.get('sec-fetch-site')==='cross-site'))return json({ok:false,error:'SAME_ORIGIN_REQUIRED'},403);
   try {
     if(req.method==='GET'){
-      const session=z.string().uuid().parse(req.nextUrl.searchParams.get('sessionId')),id=z.string().uuid().parse(req.nextUrl.searchParams.get('analysisId'));
-      return json({ok:true,result:{status:await createComposerAnalysisService(access.userId,session).read(id)}});
+      const session=z.string().uuid().parse(req.nextUrl.searchParams.get('sessionId'));
+      const service=createComposerAnalysisService(access.userId,session);
+      const key=req.nextUrl.searchParams.get('requestId');
+      const status=key===null
+        ? await service.read(z.string().uuid().parse(req.nextUrl.searchParams.get('analysisId')))
+        : await service.readByRequest(z.string().uuid().parse(key));
+      return json({ok:true,result:{status,sessionId:session}});
     }
     const input=promptAnalysisActionSchema.parse(await boundedPromptJson(req,PROMPT_ANALYSIS_BODY_MAX_BYTES));
-    if(input.action==='prepare')return json({ok:true,result:await preparePromptReferenceAnalysis(access.userId,input)});
+    if(input.action!=='confirm'){
+      if(input.action==='prepare'&&studioAnalysisPilotEnabled()&&req.headers.get(STUDIO_ANALYSIS_PILOT_HEADER)!=='1'){
+        return json({ok:false,error:'ANALYSIS_REFRESH_REQUIRED',message:'Refresh Milo to start an included analysis.'},409);
+      }
+      const result=input.action==='prepare'
+        ?await preparePromptReferenceAnalysis(access.userId,input)
+        :await startRecommendedPromptAnalysis(access.userId,input.sessionId,input.requestId);
+      if(result.status.state==='queued'){
+        scheduleStudioWorker('analysis',{...composerScope(access.userId,result.sessionId),requestId:result.status.quote.analysisId});
+      }
+      return json({ok:true,result});
+    }
     if(process.env.PROMPT_ASSISTANCE_PERCEPTION_ENABLED!=='true')throw new Error('ANALYSIS_UNAVAILABLE');
     const status=await createComposerAnalysisService(access.userId,input.sessionId).confirm(input.confirmation);
     if(status.state==='queued')scheduleStudioWorker('analysis',{...composerScope(access.userId,input.sessionId),requestId:status.quote.analysisId});

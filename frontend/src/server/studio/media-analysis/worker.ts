@@ -1,6 +1,6 @@
 import {studioAnalysisKind} from '@/lib/studio/media-analysis-contract';
 import {randomUUID} from 'node:crypto';
-import {query,withDbTransaction} from '@/lib/db';
+import {query,withDbTransaction,type TransactionQueryExecutor} from '@/lib/db';
 import {getActiveAccountRestrictionInExecutor} from '@/server/fraud-cleanup/restrictions';
 import {analysisScopeParts,analysisRunScope,assertAnalysisScope} from './scope';
 import {stableJson} from '@/server/agent-api/generation-normalization';
@@ -13,6 +13,13 @@ import {prepareStudioAnalysisProvider,parseStudioAnalysisObservations,readStudio
 import {resolveAnalysisSource,type AnalysisRun} from './repository';
 import {studioAnalysisLeaseExpiredSql} from './lease';
 import type {StudioWorkerScope} from '../worker-host';
+
+async function stopBeforeDispatch(tx:TransactionQueryExecutor,run:AnalysisRun){
+  const processing=run.quote_json.confirmationRequired===false
+    ?priceStudioAnalysis(run.policy_json,run.request_json.endSec-run.request_json.startSec,0).processingNanoUsd:0;
+  await settleStudioCredits(tx,run.id,0,processing,'analysis');
+  await tx.query("UPDATE studio_media_analysis_runs SET state='failed',charged_credits=0,error='Analysis stopped before provider dispatch. No analysis credits were charged.',settled_at=clock_timestamp() WHERE id=$1",[run.id]);
+}
 
 type WorkerDependencies={policy?:StudioAnalysisPolicy|null;assistancePolicy?:StudioAssistancePolicy;extract?:typeof extractStudioAnalysisSource;provider?:typeof prepareStudioAnalysisProvider;scope?:StudioWorkerScope};
 /** Worker-only entry. No generation callback, API GET or chat poll calls this function. */
@@ -32,11 +39,18 @@ export async function runStudioAnalysisWorkerOnce(dependencies:WorkerDependencie
     const current=(await tx.query<AnalysisRun>(`SELECT * FROM studio_media_analysis_runs WHERE id=$1 AND
       (state='queued' OR (provider_snapshot IS NOT NULL AND (state='running' OR (state='unknown' AND error='ANALYSIS_SETTLEMENT_PENDING'))) OR (state='running' AND ${studioAnalysisLeaseExpiredSql()})) FOR UPDATE SKIP LOCKED`,[candidate.id]))[0];
     if(!current)return null;
+    // An expired sponsored extraction might already have consumed compute.
+    // Settle that allowance once and fence the old worker.
+    if(current.state==='running'&&current.quote_json.confirmationRequired===false&&!current.dispatched_at){
+      await stopBeforeDispatch(tx,current);
+      return null;
+    }
     if(current.dispatched_at&&!current.provider_snapshot){await tx.query("UPDATE studio_media_analysis_runs SET state='unknown',error='Provider usage remains unresolved.' WHERE id=$1",[current.id]);return null;}
     await tx.query("UPDATE studio_media_analysis_runs SET state='running',worker_id=$2,started_at=clock_timestamp() WHERE id=$1",[current.id,workerId]);
     return {...current,state:'running' as const,worker_id:workerId};
   });
   if(!run)return false;
+  const sponsored=run.quote_json.confirmationRequired===false;
   let dispatched=!!run.dispatched_at;
   let settlementPending=false;
   const actor=analysisRunScope(run);
@@ -70,7 +84,9 @@ export async function runStudioAnalysisWorkerOnce(dependencies:WorkerDependencie
     const providerNanoUsd=readStudioAnalysisProviderCost(snapshot,studioAnalysisKind(run.request_json),run.policy_json,run.quote_json.model);
     if(providerNanoUsd===null)throw new Error('ANALYSIS_USAGE_UNKNOWN');
     const price=priceStudioAnalysis(run.policy_json,run.request_json.endSec-run.request_json.startSec,providerNanoUsd);
-    if(price.credits>run.quote_json.maxCredits||price.supplierNanoUsd>Number(run.reserved_supplier_nano_usd))throw new Error('ANALYSIS_USAGE_UNKNOWN');
+    const customerCents=sponsored?0:price.cents;
+    const customerCredits=sponsored?0:price.credits;
+    if(customerCredits>run.quote_json.maxCredits||price.supplierNanoUsd>Number(run.reserved_supplier_nano_usd))throw new Error('ANALYSIS_USAGE_UNKNOWN');
     let result:AnalysisRun['result_json']=null;
     try{result=parseStudioAnalysisObservations(snapshot.outputText,run.request_json,snapshot.sampledAtSec??[]);}catch{/* Known paid usage, but no reliable artistic observation. */}
     settlementPending=true;
@@ -79,8 +95,8 @@ export async function runStudioAnalysisWorkerOnce(dependencies:WorkerDependencie
       const state=(await tx.query<AnalysisRun>('SELECT * FROM studio_media_analysis_runs WHERE id=$1 FOR UPDATE',[run.id]))[0];
       if(state.settled_at)return;
       if(state.worker_id!==workerId)throw new Error('ANALYSIS_WORKER_SUPERSEDED');
-      await settleStudioCredits(tx,run.id,price.cents,price.supplierNanoUsd,'analysis');
-      await tx.query(`UPDATE studio_media_analysis_runs SET state=$2,result_json=$3::jsonb,charged_credits=$4,error=$5,settled_at=clock_timestamp() WHERE id=$1`,[run.id,result?'completed':'failed',JSON.stringify(result),price.credits,result?null:'The analysis returned no reliable observations. Known usage has been settled.']);
+      await settleStudioCredits(tx,run.id,customerCents,price.supplierNanoUsd,'analysis');
+      await tx.query(`UPDATE studio_media_analysis_runs SET state=$2,result_json=$3::jsonb,charged_credits=$4,error=$5,settled_at=clock_timestamp() WHERE id=$1`,[run.id,result?'completed':'failed',JSON.stringify(result),customerCredits,result?null:'The analysis returned no reliable observations. Known usage has been settled.']);
     });
     return true;
   } catch {
@@ -88,11 +104,8 @@ export async function runStudioAnalysisWorkerOnce(dependencies:WorkerDependencie
       await lockAccount(tx,run.user_id,assistance);
       const current=(await tx.query<AnalysisRun>('SELECT * FROM studio_media_analysis_runs WHERE id=$1 FOR UPDATE',[run.id]))[0];
       if(current.settled_at||current.worker_id!==workerId)return;
-      if(dispatched){await tx.query("UPDATE studio_media_analysis_runs SET state='unknown',error=$2 WHERE id=$1",[run.id,settlementPending?'ANALYSIS_SETTLEMENT_PENDING':'Provider usage is unresolved. Credits remain reserved; do not repeat this analysis.']);}
-      else {
-        await settleStudioCredits(tx,run.id,0,0,'analysis');
-        await tx.query("UPDATE studio_media_analysis_runs SET state='failed',charged_credits=0,error='Analysis stopped before provider dispatch. No analysis credits were charged.',settled_at=clock_timestamp() WHERE id=$1",[run.id]);
-      }
+      if(dispatched||current.dispatched_at){await tx.query("UPDATE studio_media_analysis_runs SET state='unknown',error=$2 WHERE id=$1",[run.id,settlementPending?'ANALYSIS_SETTLEMENT_PENDING':sponsored?'Provider usage is unresolved. Check this analysis before trying again.':'Provider usage is unresolved. Credits remain reserved; do not repeat this analysis.']);}
+      else await stopBeforeDispatch(tx,current);
     });
     return true;
   }

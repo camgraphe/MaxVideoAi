@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {NextRequest} from '../frontend/node_modules/next/server';
+import {STUDIO_ANALYSIS_PILOT_HEADER} from '../frontend/lib/studio/media-analysis-contract';
 import {handleStudioAnalysis} from '../frontend/app/api/studio/_lib/studio-analysis-handler';
 
 const access=async()=>({ok:true as const,userId:'owner'});
@@ -37,4 +38,33 @@ test('only exact client confirmation schedules owned analysis; status reads neve
   const response=await handleStudioAnalysis(new NextRequest(endpoint,{method:'POST',headers:{origin:'https://maxvideoai.com'},body:JSON.stringify({analysisId:id,maxCredits:80,policyVersion:'v1',confirmed:true})}),'film','confirm',id,dependencies);
   assert.equal(response.status,200);
   assert.deepEqual(scheduled,[['analysis',{userId:'owner',projectId:'film',requestId:id}]]);
+});
+
+test('preparing a sponsored Studio analysis wakes the owned worker without a confirmation POST',async()=>{
+  const scheduled:unknown[]=[];
+  const dependencies={
+    resolveAccess:access,
+    scheduleWorker:(...args:unknown[])=>{scheduled.push(args);},
+    serviceFactory:()=>({read:async()=>null,prepare:async()=>({analysisId:id,confirmationRequired:false,maxCredits:0}),confirm:async()=>{throw new Error('Unexpected confirmation');}}),
+  };
+  const response=await handleStudioAnalysis(new NextRequest('https://maxvideoai.com/api/studio/projects/film/analyses',{
+    method:'POST',headers:{origin:'https://maxvideoai.com'},body:JSON.stringify({
+      requestKey:id,request:{ref:{type:'asset',assetId:'ma_'+'a'.repeat(32),kind:'video'},goal:'Inspect the scene',reason:'requested',startSec:0,endSec:12},
+    }),
+  }),'film','prepare',undefined,dependencies);
+  assert.equal(response.status,200);
+  assert.deepEqual(scheduled,[['analysis',{userId:'owner',projectId:'film',requestId:id}]]);
+});
+
+
+test('the sponsored status can be reopened with the supported client and tells old tabs to refresh',async()=>{
+  const quote={analysisId:id,confirmationRequired:false,maxCredits:0};
+  const dependencies={resolveAccess:access,serviceFactory:()=>({read:async()=>({state:'queued',quote}),prepare:async()=>null,confirm:async()=>null})};
+  const endpoint='https://maxvideoai.com/api/studio/projects/film/analyses/'+id;
+  const oldTab=await handleStudioAnalysis(new NextRequest(endpoint),'film','read',id,dependencies);
+  assert.equal(oldTab.status,409);
+  assert.match((await oldTab.json()).message,/Refresh Studio/);
+  const updated=await handleStudioAnalysis(new NextRequest(endpoint,{headers:{[STUDIO_ANALYSIS_PILOT_HEADER]:'1'}}),'film','read',id,dependencies);
+  assert.equal(updated.status,200);
+  assert.deepEqual((await updated.json()).result.quote,quote);
 });

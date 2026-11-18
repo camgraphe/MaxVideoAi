@@ -74,13 +74,13 @@ test('Milo cost review verifies an older owned Wan Modify output without using r
     const audio=await preparePromptReferenceAnalysis(user,{...input,requestId:randomUUID(),modality:'audio'});
     assert.equal(audio.status.quote.endSec,6);assert.equal(audio.status.quote.profile,'audio-window-v1');assert.equal(downloads,1);
   });
-  await t.test('an aborted qualification never creates a quote, selection, reservation or late measurement',async()=>{
+  await t.test('an aborted qualification never creates a quote, selection, reservation or late measurement',async subtest=>{
     await pg.pool.query("UPDATE job_outputs SET metadata='{}' WHERE id=$1",[output]);
     const quotes=(await pg.pool.query('SELECT count(*)::int n FROM studio_media_analysis_runs')).rows[0].n;
     const selections=(await pg.pool.query('SELECT count(*)::int n FROM prompt_assistance_analysis_selections')).rows[0].n;
     const deadline=new AbortController(),originalTimeout=AbortSignal.timeout;
-    t.mock.method(AbortSignal,'timeout',(milliseconds:number)=>milliseconds===20_000?deadline.signal:originalTimeout.call(AbortSignal,milliseconds));
-    t.mock.method(dns,'lookup',async()=>{deadline.abort();return [{address:'8.8.8.8',family:4}];});
+    subtest.mock.method(AbortSignal,'timeout',(milliseconds:number)=>milliseconds===20_000?deadline.signal:originalTimeout.call(AbortSignal,milliseconds));
+    subtest.mock.method(dns,'lookup',async()=>{deadline.abort();return [{address:'8.8.8.8',family:4}];});
     await assert.rejects(preparePromptReferenceAnalysis(user,{...input,requestId:randomUUID()}),/REFERENCE_DURATION_UNKNOWN/);
     await new Promise(resolve=>setImmediate(resolve));
     assert.equal(downloads,1);
@@ -91,4 +91,31 @@ test('Milo cost review verifies an older owned Wan Modify output without using r
   for(const table of ['studio_assistance_calls','studio_assistance_credit_funding','app_receipts'])
     assert.equal((await pg.pool.query(`SELECT count(*)::int n FROM ${table}`)).rows[0].n,0,'Cost review must not reserve or charge.');
   assert.equal((await pg.pool.query("SELECT count(*)::int n FROM studio_media_analysis_runs WHERE state<>'prepared'")).rows[0].n,0);
+  await t.test('a sent Lite message starts its saved recommendation exactly once',async()=>{
+    await pg.pool.query("UPDATE job_outputs SET metadata=$2::jsonb WHERE id=$1",[output,JSON.stringify(row.metadata)]);
+    const {composerScope}=await import('../frontend/src/server/prompt-assistance/repository');
+    const {openStudioAssistanceTurn}=await import('../frontend/src/server/studio/assistance-ledger');
+    const {startRecommendedPromptAnalysis}=await import('../frontend/src/server/prompt-assistance/reference-analysis');
+    const requestId=randomUUID(),scope=composerScope(user,input.sessionId);
+    await pg.pool.query("UPDATE studio_assistance_accounts SET selected_model='gpt-6-luna' WHERE user_id=$1",[user]);
+    await openStudioAssistanceTurn(scope,requestId,studioAssistancePolicy());
+    const sentMessage={requestId,sessionId:input.sessionId,draftRevision:0,message:'Describe the camera in this reference',draft:input.draft};
+    const reply={reply:'I’ll inspect this excerpt.',text:null,analysisRequest:{fieldId:'video_url',slot:0,modality:'visual',startSec:1,endSec:5,ref:input.draft.references[0].ref}};
+    await pg.pool.query("INSERT INTO prompt_assistance_requests(user_id,session_id,request_id,input_hash,input_json,lease_id,state,model,reply_json) VALUES($1,$2,$3,'fixture',$4,$5,'complete','gpt-6-luna',$6)",[user,input.sessionId,requestId,JSON.stringify(sentMessage),randomUUID(),JSON.stringify(reply)]);
+    await assert.rejects(startRecommendedPromptAnalysis(user,input.sessionId,requestId),/pilot is unavailable/i);
+    process.env.STUDIO_MEDIA_ANALYSIS_SPONSORED_PILOT='true';
+    try {
+      await assert.rejects(startRecommendedPromptAnalysis('foreign',input.sessionId,requestId),/REQUEST_NOT_FOUND/);
+      const started=await startRecommendedPromptAnalysis(user,input.sessionId,requestId);
+      const replay=await startRecommendedPromptAnalysis(user,input.sessionId,requestId);
+      assert.equal(started.status.state,'queued');
+      assert.deepEqual([started.status.quote.startSec,started.status.quote.endSec],[1,5]);
+      assert.equal(started.status.quote.analysisId,replay.status.quote.analysisId);
+      assert.equal(started.status.quote.confirmationRequired,false);
+      assert.equal((await pg.pool.query("SELECT selected_model FROM studio_assistance_accounts WHERE user_id=$1",[user])).rows[0].selected_model,'gpt-6-luna');
+      assert.equal((await pg.pool.query('SELECT count(*)::int n FROM studio_analysis_credit_allocations')).rows[0].n,0);
+    } finally {
+      delete process.env.STUDIO_MEDIA_ANALYSIS_SPONSORED_PILOT;
+    }
+  });
 });

@@ -209,7 +209,11 @@ export function usePromptAssistanceTransport(scopeKey:string,enabled:boolean,onR
       if(active()&&owner.pending===pending&&chatEpoch===owner.chatEpoch)await perform({action:'message',request:{...request,sessionId:pending.sessionId,requestId:pending.requestId}},pending);
     })();return true;
   }
-  function pendingAnalysis(){return !!readAnalysisIdentity(`milo-analysis:${options?`${scopeKey}:${owner.sessionId}`:scopeKey}`)||(owner.legacy&&!!readAnalysisIdentity(`milo-analysis:${legacyPromptScopeKey(scopeKey)}`));}
+  function pendingAnalysis(){
+    const current=readAnalysisIdentity(`milo-analysis:${options?`${scopeKey}:${owner.sessionId}`:scopeKey}`);
+    const legacy=owner.legacy?readAnalysisIdentity(`milo-analysis:${legacyPromptScopeKey(scopeKey)}`):null;
+    return Boolean(current&&!current.nonBlocking||legacy&&!legacy.nonBlocking);
+  }
   function newChat(unsentMessage=''){
     if(!active()||pendingAnalysis())return false;
     owner.controller?.abort();owner.controller=null;owner.previousController?.abort();owner.previousController=null;owner.previousViewRef=null;stopPreviousObserver();

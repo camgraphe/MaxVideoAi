@@ -13,6 +13,8 @@ import {readPendingPromptRequestPointer} from './repository';
 import {schedulePromptAssistanceWorker} from './worker-host';
 import {PROMPT_INLINE_ANALYSIS_HEADER} from '@/lib/prompt-assistance/client-capability';
 import {publicPromptResult,publicPromptSession} from './public-response';
+import {studioAnalysisPilotEnabled} from '@/server/studio/media-analysis/pilot-funding';
+import {studioAnalysisPolicy} from '@/server/studio/media-analysis/policy';
 
 const bodySchema=z.discriminatedUnion('action',[
   z.object({action:z.literal('message'),request:promptAssistanceRequestSchema}).strict(),
@@ -39,7 +41,9 @@ export async function handlePromptAssistance(req:NextRequest,overrides:{enabled?
       const session=req.nextUrl.searchParams.get('sessionId'),request=req.nextUrl.searchParams.get('requestId');
       if(req.nextUrl.searchParams.has('scope'))return json({ok:true,result:publicPromptSession(await readPromptSession(access.userId,z.string().uuid().parse(session),promptSessionScopeSchema.parse(req.nextUrl.searchParams.get('scope'))),inlineAnalysis)});
       if(session||request)return json({ok:true,result:publicPromptResult(await readPromptAssistance(access.userId,z.string().uuid().parse(session),z.string().uuid().parse(request)),inlineAnalysis)});
-      return json({ok:true,result:await readStudioAssistanceStatus(access.userId),pendingRequest:await readPendingPromptRequestPointer(access.userId)});
+      const analysisSponsored=inlineAnalysis&&process.env.PROMPT_ASSISTANCE_PERCEPTION_ENABLED==='true'
+        &&studioAnalysisPilotEnabled()&&!!studioAnalysisPolicy();
+      return json({ok:true,result:await readStudioAssistanceStatus(access.userId),pendingRequest:await readPendingPromptRequestPointer(access.userId),...(analysisSponsored?{analysisSponsored}:{})});
     }
     const input=bodySchema.parse(await boundedPromptJson(req));
     if(input.action==='choose')return json({ok:true,result:await chooseStudioAssistance(access.userId,input.choice)});
