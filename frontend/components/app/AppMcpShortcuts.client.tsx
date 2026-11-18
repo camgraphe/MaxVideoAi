@@ -1,9 +1,12 @@
 'use client';
 
 import { ChevronDown } from 'lucide-react';
-import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Locale } from '@/lib/i18n/types';
 import { AppAssistantConnections, appMcpIntegrations } from './AppAssistantConnections';
+
+const panelId = 'app-header-connect-panel';
+const titleId = 'app-header-connect-title';
 
 export function AppMcpShortcuts({ locale }: { locale: Locale }) {
   const [open, setOpen] = useState(false);
@@ -13,8 +16,6 @@ export function AppMcpShortcuts({ locale }: { locale: Locale }) {
   const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingFocus = useRef<'first' | 'last' | null>(null);
   const pinned = useRef(false);
-  const panelId = useId();
-  const titleId = useId();
   const cancelLeave = useCallback(() => {
     if (leaveTimer.current !== null) clearTimeout(leaveTimer.current);
     leaveTimer.current = null;
