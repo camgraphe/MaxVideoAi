@@ -85,7 +85,7 @@ export function PromptReferenceAnalysis({scopeKey,legacyScopeKey,recoveryOnly,lo
         <p><strong>{quote.maxCredits} credits maximum</strong>. Uses your existing Milo credits. Actual usage is settled after analysis.</p>
         {stale?<p>The estimate expired or the selection or Milo level changed. Review a new estimate.</p>:null}
       </section>:null}
-      {(state==='queued'||state==='running')?<p role="status">{t('Analyzing the selected excerpt…','Analyse de l’extrait en cours…','Analizando el fragmento seleccionado…')}</p>:null}
+      {(state==='queued'||state==='running')?<p role="status">{sponsored?t('Analyzing the selected excerpt…','Analyse de l’extrait en cours…','Analizando el fragmento seleccionado…'):'Analyzing the selected excerpt… You can close this panel.'}</p>:null}
       {(state==='unknown'||analysis.recover)?<p role="status">Check the saved analysis before starting another. This does not repeat the analysis.</p>:null}
       {state==='failed'?<p role="alert">The analysis stopped. Recorded usage: {analysis.status?.chargedCredits??'pending'} credits.</p>:null}
       {state==='completed'&&analysis.status?.result?<section className={styles.result}>
