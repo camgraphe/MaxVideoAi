@@ -55,7 +55,7 @@ export const MODEL_GUIDANCE: Record<string, ModelGuidance> = {
   'seedance-2-5': {
     tag: text('Room for a longer scene', 'De la place pour raconter', 'Espacio para una escena más larga'),
     reason: text('Build a scene up to 30 seconds, starting with text, an image or a mix of visual and audio references.', 'Construisez une scène jusqu’à 30 secondes à partir de texte, d’une image ou de références visuelles et sonores.', 'Construye una escena de hasta 30 segundos desde texto, una imagen o referencias visuales y sonoras.'),
-    limit: text('Output goes up to 1080p. References guide the result; they do not guarantee an identical face or object.', 'La sortie va jusqu’au 1080p. Les références guident le résultat sans garantir un visage ou un objet identique.', 'La salida llega a 1080p. Las referencias guían el resultado sin garantizar caras u objetos idénticos.'),
+    limit: text('Create supports up to 4K. Standard Modify runs at 480p or 720p. References guide the result; they do not guarantee an identical face or object.', 'Create permet une sortie jusqu’en 4K. Modify standard propose le 480p ou le 720p. Les références guident le résultat sans garantir un visage ou un objet identique.', 'Create admite hasta 4K. Modify estándar ofrece 480p o 720p. Las referencias guían el resultado sin garantizar caras u objetos idénticos.'),
   },
   'minimax-h3': {
     tag: text('Create for a larger screen', 'Créer pour le grand écran', 'Crear para una pantalla grande'),
@@ -105,7 +105,7 @@ export const MODEL_GUIDANCE: Record<string, ModelGuidance> = {
   'seedance-2-0': {
     tag: text('References with 4K options', 'Références et options 4K', 'Referencias con opciones 4K'),
     reason: text('Work from text, images or mixed references, transform or extend a clip, with output options up to 4K.', 'Travaillez depuis un texte, des images ou des références mixtes, transformez ou prolongez un clip, avec des options jusqu’en 4K.', 'Trabaja desde texto, imágenes o referencias mixtas, transforma o extiende un clip, con opciones hasta 4K.'),
-    limit: text('Seedance versions have different contracts: the 4K option here does not mean Seedance 2.5 has it.', 'Les versions de Seedance ont des possibilités différentes : cette option 4K n’implique pas sa présence sur Seedance 2.5.', 'Las versiones de Seedance tienen opciones distintas: la opción 4K aquí no implica que Seedance 2.5 la tenga.'),
+    limit: text('Seedance 2.0 supports clips up to 15 seconds. For longer scenes or a native Draft you can finalize in 4K, choose Seedance 2.5.', 'Seedance 2.0 accepte des clips de 15 secondes au maximum. Pour une scène plus longue ou pour finaliser un Draft natif en 4K, choisissez Seedance 2.5.', 'Seedance 2.0 admite clips de hasta 15 segundos. Para una escena más larga o para finalizar un borrador nativo en 4K, elige Seedance 2.5.'),
   },
   'seedance-2-0-fast': {
     tag: text('Develop a direction at 720p', 'Développer une direction en 720p', 'Desarrollar una dirección en 720p'),

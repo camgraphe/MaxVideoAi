@@ -1,0 +1,29 @@
+{
+  "modelSlug": "seedance-2-5-flash",
+  "id": "midnight-run",
+  "mode": "t2v",
+  "jobId": "1d4af5e6-e75c-4a10-8b1a-7119a92c325e",
+  "originalSha256": "c0844a137b5c8bafff6c0364c832a60723f8e2d6716cb769f4e7c808fd86ca68",
+  "prompt": "One unbroken six-second automotive film shot, widescreen 16:9. Blue hour on an empty coastal road. A silver two-door grand touring coupe travels at a steady, moderate speed from left to right through an open-sided concrete gallery. The camera tracks parallel from another vehicle in the next lane, exactly matching its speed. Show the complete car with both wheels and a little road beneath it, at a clean side angle, holding its position on the right side of the composition. Leave deep navy road and soft distant landscape at left for website typography. The roadside columns glide behind the car with convincing parallax. Twice, equally spaced openings in the gallery cast a warm band of evening light across the silver roof and rear quarter. The tyres roll forward smoothly; the body, windows, paint and wheelbase stay consistent. The last moment returns to soft blue shade at the same camera distance and angle as the opening. Restrained high-end 35 mm photography, gentle highlights, tactile asphalt, real speed. No cuts, zoom, camera orbit, drift or passing vehicles. No captions, graphics, branding or music.",
+  "settings": {
+    "durationSec": 6,
+    "resolution": "720p",
+    "aspectRatio": "16:9",
+    "audio": false
+  },
+  "clip": {
+    "src": "/assets/model-examples/seedance-2-5-flash/775217f258e268fd83ac7224c84497c6f4e1c684ead03ad762a3180883fdf2c3.mp4",
+    "sha256": "775217f258e268fd83ac7224c84497c6f4e1c684ead03ad762a3180883fdf2c3",
+    "width": 1280,
+    "height": 720,
+    "durationSeconds": 6.041667,
+    "audio": false,
+    "poster": "/assets/model-examples/seedance-2-5-flash/ff1eb44b9ea96e7d2cf16ad104203be4c7b0ab9bfed897905bc6607dec437590.webp"
+  },
+  "original": {
+    "url": "/assets/model-examples/seedance-2-5-flash/ff1eb44b9ea96e7d2cf16ad104203be4c7b0ab9bfed897905bc6607dec437590.webp",
+    "sha256": "ff1eb44b9ea96e7d2cf16ad104203be4c7b0ab9bfed897905bc6607dec437590",
+    "width": 1280,
+    "height": 720
+  }
+}

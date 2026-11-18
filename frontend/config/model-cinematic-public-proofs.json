@@ -1,0 +1,243 @@
+[
+  {
+    "id": "sd25-hero",
+    "modelSlug": "seedance-2-5",
+    "jobId": "c474084a-6b30-4d6c-a48d-4615e0e8b36d",
+    "kind": "video-poster",
+    "prompt": "Ultra-realistic cinematic FPV drone flight over the surreal mega-city in the references. Reference Mapping: @Image1 = the exact visual reference for the city, landmarks, geography, architecture, golden-hour light and atmosphere. The red path and arrow inside @Image1 are used ONLY as the camera route. Create a 28-second, 16:9, first-person FPV video in one single continuous take from first frame to last. Absolutely no cuts, shot changes, scene changes, teleportation, time jumps or camera resets. The drone physically travels through the same connected city throughout. The map is the primary director. Follow its red path, direction, curves and landmark positions as closely as possible. Let the map control the timing: accelerate, bank, dip and climb dynamically inside one uninterrupted forward flight. The red line, arrow and all markings are guidance only. Completely remove them from the final footage; never render a route overlay, marker, UI or annotation. Continuous checkpoints in this exact order—not separate shots: 1. Begin beyond the lower-left edge, already moving forward at low rooftop height, then fly through the large open arch beneath the Eiffel Tower. 2. Continue through the central opening of the Arc de Triomphe. 3. Bank smoothly beside the Sagrada Familia, using its spires for parallax, without circling it. 4. Cross the dense city toward the Sydney Opera House and make one natural broad waterfront flyby past the white sails, never an orbit. 5. Follow the mapped curve beneath the Golden Gate Bridge through a large open span, with the deck and cables rushing overhead. 6. During and just after the bridge, keep the Statue of Liberty clearly recognizable in the distance on its island. A distant reveal is enough; remain on the mapped route. 7. Make one wide progressive climbing turn back left and pass behind the Burj Khalifa for strong foreground occlusion. 8. Continue through the open gap between the Petronas Twin Towers, keeping one stable tower on each side of frame. 9. Glide just above Big Ben and the Westminster rooftops. 10. Rise toward Christ the Redeemer for the final reveal. Once readable, continue into a shadowed rock or dark stone edge beneath the hill until the frame is naturally occluded for an editorial loop point. The Colosseum, Taj Mahal, pyramids and Mount Fuji remain background scenery. Show them naturally when the mapped angle permits, without diverting from the route. Camera style: ultra-wide cinematic FPV, fast but readable, smooth stabilized banking, realistic inertia and altitude changes, continuous forward momentum, stable horizon recovery, strong depth and parallax, controlled motion blur and physically plausible clearances. Keep all architecture rigid and recognizable. Visual style: preserve @Image1 as a photorealistic golden-hour travel film with detailed architecture, realistic water, boats, traffic, warm shadows, atmospheric haze and HDR. Do not invent landmarks. Audio: synchronized wind rush and powerful whooshes, stronger resonance through the Eiffel Tower, Arc and Golden Gate span, subtle city and harbor ambience, a restrained rising orchestral pulse during the return, then a muffled cutoff at the final occlusion. No dialogue.",
+    "original": {
+      "url": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/42c1d1fe-c9dc-46f7-8d96-4f34232b11cc.jpg",
+      "sha256": "13bc06da60f91d47328bf93efdd415389137948d705db5fac37f5b25f210c8ce",
+      "width": 1280,
+      "height": 720
+    },
+    "display": {
+      "url": "/assets/model-examples/seedance-2-5/ca3df1e9a0bc552a6300c6097f2c6d97803b489f90b3a6050f3431725a81c3c3.webp",
+      "sha256": "ca3df1e9a0bc552a6300c6097f2c6d97803b489f90b3a6050f3431725a81c3c3",
+      "width": 1280,
+      "height": 720
+    },
+    "clip": {
+      "src": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/5a02f950-44fa-4cbe-bec0-3f73a91440c7.mp4",
+      "poster": "/assets/model-examples/seedance-2-5/ca3df1e9a0bc552a6300c6097f2c6d97803b489f90b3a6050f3431725a81c3c3.webp",
+      "width": 854,
+      "height": 480,
+      "durationSeconds": 28.041667,
+      "audio": true,
+      "displayFormat": "854 × 480"
+    },
+    "sourcePoster": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/42c1d1fe-c9dc-46f7-8d96-4f34232b11cc.jpg",
+    "reviewedPublicAt": "2026-11-16"
+  },
+  {
+    "id": "sd25-create",
+    "modelSlug": "seedance-2-5",
+    "jobId": "job_85e2a105-108b-4328-9360-74a99c9d016c",
+    "kind": "video-poster",
+    "prompt": "30-second live-action POP COMEDY commercial, 16:9, set in present-day Southern California. A mischievous giant DESKTOP MOUSE CURSOR edits the real world around a young woman. Nine short, connected comic beats with a beginning, escalating playful chaos and a cute final punchline. Preserve the playful abundance: ice cream, duplication, a fluffy dog, candy-colored paint, an eraser, a rescue and a surprise hairstyle. Bright, youthful, funny and charming.\n\nLOOK AND PLACE\nA sunny Santa Monica neighborhood shopping street: broad American concrete sidewalks, low pastel-pink and mint storefronts, a small ice-cream shop with a striped awning, palm trees, a turquoise bench, a parked compact white delivery van, a coral-brick side alley. Real California street proportions and contemporary American summer styling. Midday sunshine, clear cobalt sky, vivid candy colors, clean whites, crisp faces, colorful details and real tactile materials. Light, buoyant commercial photography with kinetic tracking and comic reaction cuts. No muted sepia palette, brown grading, bleak backstreet or solemn luxury-ad mood. No readable brands or lettering.\n\nCHARACTER CONTINUITY\nOne fictional 23-year-old woman, called MAYA only for prompt clarity: lively expressive face, shoulder-length dark-brown hair in a high ponytail, small silver hoop earrings, coral-pink fitted short-sleeve T-shirt, white wide-leg jeans, clean white-and-pink sneakers. Natural young-adult American streetwear. Keep her face, body, clothes and accessories identical in every shot. Only her hairstyle changes near the end. She reacts with surprise, mischievous amusement and comic exasperation, never terror.\nOne small fluffy white bichon with round dark eyes, a tiny pink bandana and a happy wagging tail, initially on a slack coral leash held by a young adult dog walker in a mint sweatshirt. Its later enlarged form is exactly the same adorable dog, with proportional paws and soft detailed curls, never monstrous.\n\nTHE CURSOR MUST LOOK LIKE A REAL COMPUTER POINTER\nUse the unmistakable classic desktop mouse-pointer silhouette: a broad asymmetric white arrowhead pointing diagonally UPPER LEFT, an inward notch on the lower-right edge and a short diagonal tail. Thin black outline, matte white face, shallow solid thickness. It is NOT an upright street-direction arrow, not a spear, not a signpost. It floats at waist-to-head height, normally about 1.2 meters tall, with accurate shadows, perspective and occlusion in the street. It has an impish personality expressed by quick tilts and bouncy motion, but no face, eyes or limbs.\nEVERY click is visible and audible: the pointer tip jabs forward a few centimeters, a crisp mechanical mouse CLICK is clearly heard, and the edit happens immediately in the same shot. A black-and-white dotted selection rectangle and small square transform handles briefly make the operation legible. These are physical graphic shapes embedded in the scene, not a full-screen software interface. For the paint and eraser beats the cursor snaps briefly into those recognizable tool icons, then returns to the same diagonal mouse pointer.\n\nSOUND IS ESSENTIAL\nDeliver a clearly audible soundtrack from the first second: original upbeat playful electro-funk/pop instrumental around 116 BPM, bouncy bass, handclaps, tight drums and little sparkling synth accents. Mix sound effects forward so each mouse click and comic action remains unmistakable above the music. Add real footsteps, street ambience, ice-cream pops, a soft elastic enlargement, happy dog barks, paint swoosh, eraser squeaks, rubber-toy squeaks, a splash shake and a final springy BOING. Briefly cut the music before the final hairstyle gag, then bring back a playful ending sting. No dialogue, voice-over, singing or subtitles. Let expressions and synchronized sounds tell the story.\n\nSHOT 1 | 0.0–3.5 s | A DELIGHTFUL LITTLE FAVOR\nMedium close shot, slight upward camera tilt following the action. Maya sits on the turquoise bench about to lick a single scoop of strawberry-pink ice cream. Within the first second the classic diagonal mouse cursor swoops into frame and selects the scoop with a tiny dotted rectangle. Four fast visible clicks, each with a distinct CLICK-POP, duplicate the scoop upward into a wobbly five-scoop tower. Each scoop physically rests on the one below. Glossy creamy texture, little melting drips catching the sun. Her eyes follow the growing tower; she breaks into a delighted grin and gives the cursor an appreciative nod. Immediate cute surprise, no static introduction.\n\nSHOT 2 | 3.5–7.0 s | NOW IT GETS CHEEKY\nSame bench and screen direction. The cursor pivots toward Maya; CLICK: a dotted rectangle encloses her and the bench. Her grin turns into a suspicious side-eye. Keeping her ice cream upright, she carefully scoots sideways out of the rectangle. CLICK-THUMP: the empty bench duplicates beside the original. The bump makes the upper scoops tumble onto the pavement with soft SPLATS. She looks at her sad remaining scoop, then at the cursor: an unmistakable “really?” look. She leaves the cone on the bench and springs into a playful run toward screen right. Pan with her.\n\nSHOT 3 | 7.0–11.0 s | THE CUTEST ACCIDENT\nLateral tracking shot. Maya nimbly runs around the small bichon and its walker. The cursor's selection misses Maya and lands on the fluffy dog. CLICK: corner handles pull outward, and the dog scales smoothly and proportionally to small-pony size. Elastic BOOP, then one happy low WOOF. Its paws stay grounded; its fur and pink bandana remain identical. The walker lets go of the slack leash in surprised delight, safely staying clear. The giant dog wags its tail enthusiastically and focuses on the cursor as if it were an irresistible toy. Maya does a quick comic double take while continuing right. Make the dog endearing and huggable.\n\nSHOT 4 | 11.0–14.0 s | COLOR FLOOD\nMaya ducks alongside the parked white delivery van. The cursor instantly becomes a paint-bucket icon, tips toward the van and CLICKS. A vivid glossy LILAC color races across the van's painted panels with a satisfying liquid SWOOSH. The windows, wheels and headlights remain unchanged. Maya hops clear just before the color reaches where she was leaning, checks her spotless white jeans, gives a tiny relieved smile and keeps moving. Rich purple against pink storefronts and blue sky; clean, instantaneous visual comedy.\n\nSHOT 5 | 14.0–17.5 s | THE ERASER\nTracking alongside the coral-brick wall. The cursor snaps into a chunky white eraser and sweeps toward Maya; she ducks beneath it in one smooth motion. SQUEAK-SQUEAK: the eraser rubs a square of brick into a flat gray-and-white transparency checkerboard, still in perspective on the wall. Maya stops for a fraction of a second, pokes the flat checkerboard with one finger, raises an eyebrow, then darts away as the eraser comes back. The checkerboard is a solid flat surface, not a glowing portal. Keep this curious reaction light and quick.\n\nSHOT 6 | 17.5–22.0 s | THE FLUFFY RESCUE\nMaya reaches the end of the colorful side alley and turns. At the entrance, the cursor becomes the diagonal arrow again, briefly scales larger and prepares a selection. Before it can click Maya, the huge happy bichon bounds in from behind it and gently catches the cursor's tail like a rubber dog toy. WOOF, then a clear toy SQUEAK. Cut to a side view of the whole playful action: the dog settles onto its paws, cursor reduced to its usual size, gently chewing it while its tail thumps the sidewalk. Maya exhales and laughs silently with relief. No biting a person, no aggression, no harm.\n\nSHOT 7 | 22.0–25.0 s | FALSE VICTORY\nMedium two-shot, warm faces and fluffy texture. Maya scratches the dog's chin, delighted with her rescuer. The dog opens its mouth to pant; the soggy cursor slips onto the pavement. Behind Maya, it bobs back into the air and shakes droplets off with a little PRRR-SPLASH, straightening back into its pristine diagonal pointer shape. She is busy cuddling the dog and does not notice. The audience sees the mischievous comeback.\n\nSHOT 8 | 25.0–27.5 s | ONE LAST CLICK\nThe music stops for a comic beat. A loud, clean CLICK: a small dotted selection frames ONLY Maya's hair. POP-BOING: her ponytail instantly becomes a huge fluffy BUBBLEGUM-PINK curly hairstyle, a round cloud of springy, individual curls. Keep her exact face, clothing and earrings. She freezes, slowly pats the top of the new hair; it bounces twice with a soft spring sound. Her expression is deadpan disbelief, not distress. The cursor gives an innocent little tilt.\n\nSHOT 9 | 27.5–30.0 s | THE LOOK\nClose group composition with the entire pink hairstyle visible, Maya in the middle, the diagonal mouse cursor beside her and the giant bichon's face entering from below. Maya side-eyes the cursor. The adorable dog notices the round bouncy pink hair, tilts its head, wags faster and lowers its front paws into a playful bow. Maya's eyes slide toward the dog: “don't even think about it.” The cursor innocently rocks twice to two little electronic BLIPS. End on this funny three-way reaction with a bright musical button and tail THUMP-THUMP. The dog does not jump on Maya. Hold the expression for the final half-second.\n\nDIRECTING PRIORITIES\nEach edit must show target selection, a visible click, a sharp audible click and an immediate result. Keep the cheerful pop energy throughout, with enough reaction time for every joke. Camera tracking carries Maya consistently left to right until the alley; normal clean cuts maintain geography. Physical effects are crisp and harmless, with shadows and material detail. Preserve natural live-action actors and a realistic fluffy dog rather than plastic 3D characters. No text, logos, watermark, unrelated landscape cutaways, beach, doorway or spoken slogan. The final brand title will be added later; generate only the complete colorful comedy with sound.\n",
+    "original": {
+      "url": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/8db1f16e-dcae-4a9f-a59b-568a58848ea9.jpg",
+      "sha256": "5053619c5afabaa9093a544dc952693d798e4a1c9cbec612f29ea81a06b18a03",
+      "width": 1280,
+      "height": 720
+    },
+    "display": {
+      "url": "/assets/model-examples/seedance-2-5/67f32df3a3a93b9436afe2b6ef8f3af9577140a137df2364ad8d4af21bff1a97.webp",
+      "sha256": "67f32df3a3a93b9436afe2b6ef8f3af9577140a137df2364ad8d4af21bff1a97",
+      "width": 1280,
+      "height": 720
+    },
+    "clip": {
+      "src": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/219dcfdf-6901-432f-a9cb-1f8106f1877a.mp4",
+      "poster": "/assets/model-examples/seedance-2-5/67f32df3a3a93b9436afe2b6ef8f3af9577140a137df2364ad8d4af21bff1a97.webp",
+      "width": 854,
+      "height": 480,
+      "durationSeconds": 30.041667,
+      "audio": true,
+      "displayFormat": "854 × 480"
+    },
+    "sourcePoster": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/8db1f16e-dcae-4a9f-a59b-568a58848ea9.jpg",
+    "reviewedPublicAt": "2026-11-17"
+  },
+  {
+    "id": "sd25-prompt",
+    "modelSlug": "seedance-2-5",
+    "jobId": "job_ff94f180-0a2f-4f2b-acb2-bda8352fa9d9",
+    "kind": "video-poster",
+    "prompt": "Create a 24-second ultra-stylized experimental underground music film.\n\nTITLE / CONCEPT:\nHARD BOUNCE\n\nOne fluorescent orange ball drives the entire edit.\n\nEvery impact, bounce, spin or circular motion creates the next shot.\n\nThe film becomes progressively faster, stranger and more visually aggressive.\n\nThe ORANGE CIRCLE is the recurring graphic motif:\nbasketball,\nwheel,\nvinyl record,\nspeaker,\nwashing-machine window,\nhuman eye,\ntunnel light,\nmoon,\nthen basketball again.\n\nEvery transition must be visually motivated by:\nSHAPE,\nMOTION,\nDIRECTION,\nor IMPACT.\n\nThis is NOT a story.\nThis is visual rhythm.\n\nDark, raw, underground, tactile, energetic.\nPhotorealistic but highly art-directed.\n\nNo text.\nNo logos.\nNo subtitles.\n\n--------------------------------\nSHOT 1 — 0:00–0:02\n--------------------------------\n\nTOTAL BLACK.\n\nA fluorescent orange basketball drops from above into a single hard spotlight.\n\nConcrete floor.\n\nBOOM.\n\nOne massive dry impact.\n\nOn the first bounce, camera drops violently with the ball.\n\nSecond bounce:\n\nBOOM.\n\nHARD CUT EXACTLY ON IMPACT.\n\n--------------------------------\nSHOT 2 — 0:02–0:04\n--------------------------------\n\nNighttime underground basketball court.\n\nWet black asphalt.\nChain-link fencing.\nSodium-vapor lights.\nSteam in the distance.\n\nEXTREME LOW FISHEYE CAMERA only centimeters above the floor.\n\nA player in black sneakers dribbles the orange ball directly toward camera.\n\nBOOM.\nBOOM.\nBOOM.\n\nEach bounce becomes part of the beat.\n\nOn the final bounce, the ball completely fills frame.\n\nMATCH CUT.\n\n--------------------------------\nSHOT 3 — 0:04–0:05.7\n--------------------------------\n\nThe orange circle becomes the glowing hub of a motorcycle wheel.\n\nCamera mounted inches beside the spinning wheel.\n\nThe motorcycle races through a wet concrete tunnel.\n\nReflections streak across the road.\n\nExtreme speed.\nStrong parallax.\nRealistic vibration.\n\nThe wheel spins faster.\n\nMATCH CUT ON ROTATION.\n\n--------------------------------\nSHOT 4 — 0:05.7–0:07.3\n--------------------------------\n\nA BLACK VINYL RECORD spins at exactly the same speed.\n\nOrange center label.\n\nExtreme macro.\n\nNeedle violently drops.\n\nCRACK.\n\nBass enters.\n\nRapid macro details:\ngrooves,\ndust,\nneedle vibration,\nchrome reflections.\n\nCamera dives INTO the spinning grooves.\n\n--------------------------------\nSHOT 5 — 0:07.3–0:09\n--------------------------------\n\nThe vinyl grooves become curved concrete lines inside a brutalist skate bowl.\n\nA skateboarder drops in at extreme speed.\n\nWide fisheye lens.\n\nCamera races backward directly in front of the skateboard.\n\nWheels scream across concrete.\n\nSkater launches over camera.\n\nThe underside of the board wipes the entire frame.\n\nWHIP TRANSITION.\n\n--------------------------------\nSHOT 6 — 0:09–0:10.7\n--------------------------------\n\nUnderground rave.\n\nAlmost total darkness.\n\nHard white strobe.\n\nBodies appear only for fractions of a second.\n\nSweat.\nChrome jewelry.\nBlack clothing.\nCondensation.\nHands in the air.\n\nIn the center:\n\na giant circular orange speaker cone pulses.\n\nEvery bass hit physically moves the cone.\n\nPUSH IN violently on the speaker.\n\nBOOM.\n\nBOOM.\n\nBOOM.\n\nOn the third hit—\n\ncamera passes through it.\n\n--------------------------------\nSHOT 7 — 0:10.7–0:12.3\n--------------------------------\n\nInside a fluorescent laundromat at 2AM.\n\nPerfect symmetrical composition.\n\nRows of washing machines.\n\nAll machine windows are black...\n\nexcept ONE glowing orange circular door.\n\nCamera crash-zooms toward it.\n\nInside, orange fabric spins violently.\n\nSPINNING MOTION MATCH CUT.\n\n--------------------------------\nSHOT 8 — 0:12.3–0:14\n--------------------------------\n\nEXTREME MACRO HUMAN EYE.\n\nThe orange washing-machine circle becomes a vivid amber iris.\n\nNatural skin.\nTiny eyelashes.\nWet eye reflections.\n\nThe pupil rapidly contracts.\n\nReflected inside the pupil:\n\na subway train approaches.\n\nCamera pushes directly through the pupil.\n\n--------------------------------\nSHOT 9 — 0:14–0:16\n--------------------------------\n\nSUBWAY PLATFORM.\n\nTrain blasts past camera at enormous speed.\n\nHandheld.\nHarsh fluorescent light.\nWind hits clothing and newspapers.\n\nVery fast cuts:\n\ntrain wheel —\nshoe hitting platform —\ndoor slamming —\nhand grabbing metal rail —\norange emergency light —\neyes —\nmoving tunnel lights.\n\nEach shot lasts only fractions of a second.\n\nCLACK.\nCLACK.\nCLACK.\nCLACK.\n\nThe rhythm accelerates.\n\n--------------------------------\nSHOT 10 — 0:16–0:18\n--------------------------------\n\nCAMERA IS NOW ATTACHED TO THE FRONT OF THE TRAIN.\n\nWe rocket through a black subway tunnel.\n\nCircular tunnel lights flash directly toward camera.\n\nEach light appears for one frame:\n\nWHITE.\nBLACK.\nORANGE.\nBLACK.\nWHITE.\nBLACK.\n\nSpeed increases impossibly.\n\nThen the final tunnel light becomes enormous.\n\nMATCH CUT.\n\n--------------------------------\nSHOT 11 — 0:18–0:20\n--------------------------------\n\nThe circle is now the FULL MOON.\n\nHuge orange moon above brutalist apartment towers.\n\nCamera drops vertically from the moon toward the city at extreme speed.\n\nDown past rooftops,\nbalconies,\nneon,\nfire escapes,\nstreetlights.\n\nFPV dive.\n\nAt street level—\n\nsomeone throws the orange basketball upward directly toward camera.\n\n--------------------------------\nSHOT 12 — 0:20–0:22\n--------------------------------\n\nBALL FLIES PAST CAMERA.\n\nULTRA-FAST RHYTHMIC MONTAGE.\n\n0.2–0.4 second fragments:\n\nbasketball bounce\n\nmotorcycle wheel\n\nvinyl needle\n\nskateboard landing\n\nspeaker pumping\n\nwashing machine spinning\n\neye blinking\n\nsubway wheel\n\ntunnel light\n\nmoon\n\nball\n\nEvery circular image perfectly aligned in the center of frame.\n\nFaster.\n\nFaster.\n\nFaster.\n\nThe soundtrack becomes a brutal synchronized audiovisual crescendo.\n\n--------------------------------\nSHOT 13 — 0:22–0:24\n--------------------------------\n\nSuddenly:\n\nSILENCE.\n\nBack to the exact dark concrete room from the opening.\n\nThe fluorescent orange ball drops into frame.\n\nBut this time—\n\na hand catches it ONE CENTIMETER before it hits the ground.\n\nNo impact.\n\nAbsolute silence.\n\nHold.\n\nThe fingers slowly release the ball.\n\nIt begins falling again.\n\nCUT TO BLACK\n\none frame BEFORE impact.\n\nBOOM.\n\nEND.\n\n--------------------------------\n\nAUDIO DESIGN:\n\nBuild an original underground electronic track entirely around PHYSICAL IMPACT.\n\nThe basketball bounce is the kick drum.\n\nMotorcycle vibration becomes bass texture.\n\nVinyl crackle becomes high-frequency percussion.\n\nSkateboard wheels become rhythmic noise.\n\nSpeaker cone becomes sub-bass.\n\nSubway wheels become industrial percussion.\n\nTrain-door impacts become snares.\n\nTunnel lights introduce sharp electronic pulses.\n\nThe track must progressively accelerate from minimal rhythm into an aggressive experimental club beat.\n\nEvery important edit must land precisely on sound.\n\nUse aggressive stereo movement during fast camera passages.\n\nAt 22 seconds:\nREMOVE EVERYTHING.\n\nAbsolute silence.\n\nFinal BOOM occurs only after picture cuts to black.\n\n--------------------------------\n\nCAMERA LANGUAGE:\n\nextreme fisheye\nmacro cinematography\ncamera mounted to moving objects\nFPV flight\ncrash zooms\nwhip pans\nsnap zooms\nrapid tracking\nextreme low angles\nDutch camera rolls\nhard handheld\nspeed ramps\none-frame inserts\nperfect graphic match cuts\n\nAvoid generic slow floating AI camera movement.\n\nCamera movement should feel physical, dangerous and intentional.\n\n--------------------------------\n\nVISUAL LANGUAGE:\n\nunderground editorial cinema\nbrutalist architecture\nlate-night city culture\nwet concrete\nblack asphalt\nsteel\nchrome\nsweat\nsteam\nfluorescent practical lights\nhard flash photography\n16mm texture mixed with sharp modern digital cinematography\ndeep blacks\ncontrolled highlights\nstrong grain\ndirty lens moments\nrealistic motion blur\n\nPALETTE:\nalmost monochrome world,\nblack,\nconcrete gray,\ncold white,\ndirty metallic tones.\n\nFLUORESCENT ORANGE is the only strong recurring color.\n\nKeep orange visually dominant only in the circular motif.\n\n--------------------------------\n\nEDITING RULE:\n\nThe audience should constantly anticipate the next impact.\n\nBOUNCE = CUT.\nROTATION = MATCH CUT.\nCIRCLE = NEW WORLD.\nIMPACT = MUSIC.\n\nDo not create random beautiful shots.\n\nEvery shot must visually or rhythmically connect to the previous one.\n\nThe video should feel edited by an exceptional human music-video editor:\nfast,\nprecise,\ndirty,\ncool,\ngraphic,\nunpredictable.\n\nAvoid generic cyberpunk.\nAvoid glossy sci-fi.\nAvoid random morphing.\nAvoid fantasy imagery.\nAvoid excessive slow motion.\n\nMake it PHYSICAL.\nMake it LOUD.\nMake it UNDERGROUND.",
+    "original": {
+      "url": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/9d9b1cee-df9e-4033-b184-f9d6d036b4e5.jpg",
+      "sha256": "15591c2614b6dfeaa479b77b3804b8f689d841b6ba1187736ff7aee9b5a36bf5",
+      "width": 1280,
+      "height": 720
+    },
+    "display": {
+      "url": "/assets/model-examples/seedance-2-5/4dbaf85cdb4cd19d6064fec6761f4a8d3a58e2fcadeda462244c9000a0d4f6c9.webp",
+      "sha256": "4dbaf85cdb4cd19d6064fec6761f4a8d3a58e2fcadeda462244c9000a0d4f6c9",
+      "width": 1280,
+      "height": 720
+    },
+    "clip": {
+      "src": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/d4a69e8b-c4e9-4400-8b72-2f092ad2a73b.mp4",
+      "poster": "/assets/model-examples/seedance-2-5/4dbaf85cdb4cd19d6064fec6761f4a8d3a58e2fcadeda462244c9000a0d4f6c9.webp",
+      "width": 1280,
+      "height": 720,
+      "durationSeconds": 24.064,
+      "audio": true,
+      "displayFormat": "1280 × 720"
+    },
+    "sourcePoster": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/9d9b1cee-df9e-4033-b184-f9d6d036b4e5.jpg",
+    "reviewedPublicAt": "2026-11-17"
+  },
+  {
+    "id": "sd25-detail",
+    "modelSlug": "seedance-2-5",
+    "jobId": "9b226917-75ce-41df-a5b6-e66d7913a8a2",
+    "kind": "video-poster",
+    "prompt": "SEEDANCE | TEXT TO VIDEO | SINGLE CONTINUOUS TAKE | 15s | HORIZONTAL 16:9 SCENE AND LOCATION A hidden volcanic spring canyon deep in a Pacific Northwest pine forest on a bright summer day. A narrow deep gorge with high walls of dark gray basalt columns, tan and rust streaks, bright green moss and ferns. At the bottom is a crystal-clear natural spring pool: turquoise shallow edges, deep sapphire center, honeycomb volcanic rock, mossy boulders and two pale submerged logs. Two white waterfalls, one at the far back and one spilling from the right cliff. Tall pine trees line the rim under a clear blue sky. The same canyon layout throughout. THE JUMPER First-person view only. Tanned bare feet, lightly hairy shins and loose navy-blue swim shorts with a mustard-yellow hibiscus pattern. Bare hands and forearms naturally enter frame. No face, shoes or gloves. CAMERA AND REALISM Forehead-mounted action-camera POV with a natural ultra-wide lens. Breathing micro-jitter, head bob, fast exposure shifts between sky and shade, water droplets after immersion, wind buffeting during the fall. Authentic action-camera footage. The drop is about 35 meters. Continuous real-time motion, gravity and water behaviour; keep the same limbs and shorts. 0-2s | THE EDGE AND TAKEOFF Look steeply down at the turquoise pool from the basalt ledge: feet at the bottom of frame and a pink-and-white inflatable tube already floating far below. One sharp breath and a quick \"Let's go!\" Two quick steps and a decisive push off the edge. The pool and the two waterfalls remain in view as the cliff edge falls away. 2-5s | THE FALL Fast uninterrupted descent. Arms briefly spread at frame edges, then tuck in; legs straighten for a feet-first pencil dive. Basalt and moss rush upward past the lens, right-side waterfall spray catches the sun, wind builds and the camera shakes naturally. The pool and pink tube grow quickly without changing position. One breathless \"Wooo!\" No pause or slow motion. 5-6s | IMPACT The water fills frame. Feet-first entry: one hard splash, then white bubbles swallow the lens. Audio immediately becomes muffled underwater. 6-10s | UNDERWATER AND ASCENT The bubbles clear into transparent blue water, sun shafts, the same pale logs and basalt bottom. One strong arm pull enters frame, then upward kicks towards the bright surface; bubbles stream past. Keep the ascent fast and purposeful. 10-12s | SURFACE BREAK Burst through the surface. Droplets slide down the lens, wind and waterfall sound return clearly, one hand grabs the pink-and-white tube beside the camera. 12-15s | REWARD Bob on the turquoise water holding the tube. Tilt up to show the towering basalt cliff, the tiny takeoff ledge, pines and right-side waterfall. A real breath, then natural spoken English: \"That was insane!\" Finish on the cliff view with the water gently bobbing. AUDIO AND CONTINUITY Wind, breathing, waterfall roar, one clear impact splash, bubbles underwater, water movement on resurfacing and the three brief English reactions. One continuous upbeat chill electronic instrumental beneath the real sounds: build through the fall, muffled underwater, then restore clarity with a small beat drop on surfacing. No narration or sung lyrics. One continuous first-person shot, no third-person cut, hovering, extra slow motion, morphing cliffs, changing water colour, extra limbs, titles, subtitles, borders or watermarks.",
+    "original": {
+      "url": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/fef24135-7fcc-4ce5-b66b-47405cc8c49d.jpg",
+      "sha256": "178ced02bd4bebede4ece3fcb5d72abb280f4aa83d339c08cecd3446e4e73407",
+      "width": 1280,
+      "height": 720
+    },
+    "display": {
+      "url": "/assets/model-examples/seedance-2-5/0990ca2d66946d6942fbeb371af28b31172350b0182997c5882f58c61d3fb77d.webp",
+      "sha256": "0990ca2d66946d6942fbeb371af28b31172350b0182997c5882f58c61d3fb77d",
+      "width": 1280,
+      "height": 720
+    },
+    "clip": {
+      "src": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/2a60e39e-249e-43b6-bf05-b5a948752bbe.mp4",
+      "poster": "/assets/model-examples/seedance-2-5/0990ca2d66946d6942fbeb371af28b31172350b0182997c5882f58c61d3fb77d.webp",
+      "width": 854,
+      "height": 480,
+      "durationSeconds": 15.072,
+      "audio": true,
+      "displayFormat": "854 × 480"
+    },
+    "sourcePoster": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/fef24135-7fcc-4ce5-b66b-47405cc8c49d.jpg",
+    "reviewedPublicAt": "2026-11-16"
+  },
+  {
+    "id": "fluxmax-hero",
+    "modelSlug": "flux-3-max",
+    "jobId": "job_external_fal_23c389d529d3ba2482e59286ca9d19970c235559",
+    "kind": "video-poster",
+    "prompt": "A dark-fantasy film scene in a monumental, deserted throne hall. An imposing woman in her sixties, with dark skin, close-cropped white hair and a scar crossing her right eyebrow, wears battered black armor under a long cloak embroidered with tarnished gold. She carries a narrow black crown in her right hand. Pale morning light cuts through high windows, illuminating dust and rows of empty stone seats. Begin with a frontal tracking view as she advances toward the throne, then use a close view of her worn face and a wide composition that makes the throne feel oppressive. She stops before it, considers it, and says in English, \"Keep it.\" She releases the crown onto the stone floor. At the instant it touches the floor, it breaks apart into a flock of small black birds that rush upward through the light. She does not watch them. She turns away from the throne and walks toward the open doors and bright morning beyond. Let the cutting become expansive at the birds' release, then settle into a held rear view of her leaving. Preserve the hall's geography, her armor and the direction of the exit. Sound: armored footsteps, a quiet voice, one sharp metallic impact, wings filling the room, then morning wind. Restrained original low strings, no additional dialogue.",
+    "original": {
+      "url": "/assets/model-examples/flux-3-max/f0589c0c141b9ddfabe127a816212d49171fc1eea36a46e3b68f595800f2ba5c.png",
+      "sha256": "f0589c0c141b9ddfabe127a816212d49171fc1eea36a46e3b68f595800f2ba5c",
+      "width": 1280,
+      "height": 704
+    },
+    "display": {
+      "url": "/assets/model-examples/flux-3-max/114b3eed020adb07abfae8f9a68f03eaef8af5ff5f99b5d5241caa19654b6f4d.webp",
+      "sha256": "114b3eed020adb07abfae8f9a68f03eaef8af5ff5f99b5d5241caa19654b6f4d",
+      "width": 1280,
+      "height": 704
+    },
+    "clip": {
+      "src": "https://media.maxvideoai.com/user-assets/by-content/c780259ed79d025b4ac74ccc513f18bf/4f6d6a092189ae292be5d06216af34edbbc9bd6ee553182a8f7c96f2b3a495eb.mp4",
+      "poster": "/assets/model-examples/flux-3-max/114b3eed020adb07abfae8f9a68f03eaef8af5ff5f99b5d5241caa19654b6f4d.webp",
+      "width": 1280,
+      "height": 704,
+      "durationSeconds": 18.041667,
+      "audio": true,
+      "displayFormat": "1280 × 704"
+    },
+    "sourcePoster": "https://media.maxvideoai.com/user-asset-thumbs/301cc489-d689-477f-94c4-0b051deda0bc/63d7eb5d-10f7-4aeb-90e6-7bd4ba4b9f5f.jpg",
+    "reviewedPublicAt": "2026-11-16",
+    "posterFrameSeconds": 0
+  },
+  {
+    "id": "fluxmax-create",
+    "modelSlug": "flux-3-max",
+    "jobId": "job_external_fal_38061bc977ff126b5248f9f835436a9370a2f7bb",
+    "kind": "video-poster",
+    "prompt": "A black comedy played with absolute seriousness in a small, exquisitely theatrical funeral chapel. An elderly widow with a severe white fringe, a black veil and bright red lipstick stands beside a closed polished coffin. A tall adult funeral director with a shaved head and white gloves prepares to speak. A small black mobile phone already lies on top of the coffin. Establish the precise arrangement in a symmetrical wide frame: pale flowers, dark wood, a low chandelier and these two people. Just as the director draws breath, the phone sounds a cheap electronic ringtone. Both freeze. He looks at the widow. She closes her eyes for a moment, irritated rather than shocked, then picks up the phone. She listens for one beat and says quietly in English, \"He's unavailable.\" She ends the call and places the phone back on the same spot. The director straightens his posture and prepares to begin again. The phone immediately rings a second time. Cut to the widow's exhausted stare and hold long enough for the joke to land. Deliberate reaction cuts and uncomfortable silence, never comic mugging. Keep the coffin closed throughout. Sound: the ringtone, breath, her voice and the chapel's slight room echo. No music, laugh track, visible deceased person, readable phone screen or captions.",
+    "original": {
+      "url": "https://media.maxvideoai.com/user-asset-thumbs/301cc489-d689-477f-94c4-0b051deda0bc/7c8072c1-d7ac-4ec0-b27a-73aa5957a757.jpg",
+      "sha256": "419585e8a57b7cf695867b6b192cb2bca6a5bd749c16cbbff8b2186e2263a954",
+      "width": 640,
+      "height": 352
+    },
+    "display": {
+      "url": "/assets/model-examples/flux-3-max/be2b180fcd50065cb939105622d136c25156c7a9bfe1e5a4baf2689a342e2be2.webp",
+      "sha256": "be2b180fcd50065cb939105622d136c25156c7a9bfe1e5a4baf2689a342e2be2",
+      "width": 640,
+      "height": 352
+    },
+    "clip": {
+      "src": "https://media.maxvideoai.com/user-assets/by-content/c780259ed79d025b4ac74ccc513f18bf/0ed92d4517b23b3218ff97c2464fbec9d42b33d283f9aec2d43e103b65c6b2f1.mp4",
+      "poster": "/assets/model-examples/flux-3-max/be2b180fcd50065cb939105622d136c25156c7a9bfe1e5a4baf2689a342e2be2.webp",
+      "width": 1280,
+      "height": 704,
+      "durationSeconds": 16.041667,
+      "audio": true,
+      "displayFormat": "1280 × 704"
+    },
+    "sourcePoster": "https://media.maxvideoai.com/user-asset-thumbs/301cc489-d689-477f-94c4-0b051deda0bc/7c8072c1-d7ac-4ec0-b27a-73aa5957a757.jpg",
+    "reviewedPublicAt": "2026-11-17"
+  },
+  {
+    "id": "fluxmax-prompt",
+    "modelSlug": "flux-3-max",
+    "jobId": "job_external_fal_348334c2377e9d31bda23c030095861ad2e9d55c",
+    "kind": "video-poster",
+    "prompt": "An intimate romantic film scene at dawn in an old boxing gym. Alone inside the ring are two adult former fighters: a woman in her forties with tightly braided black hair, a small scar above her lip and a worn crimson boxing robe; and a broad man in his fifties with a graying beard, a broken nose and a plain white vest. Their hands are bare, their faces tired, their affection unspoken. Golden light enters through high dusty windows. A small radio outside the ring plays an original, barely audible slow waltz. Begin wide with them standing apart on the worn canvas, then cut to their eyes as they approach with the caution of opponents. She almost raises her hands into a guard, changes her mind, and offers him an open hand instead. She says softly in English, \"You lead.\" He takes her hand. After one awkward step, they begin a simple slow dance in the center of the ring. Keep their full bodies readable during the first steps, then move closer as their guarded expressions give way to private smiles. End in a quiet wide view beyond the ropes, the ring containing their tenderness. Sound: the little radio, shoes brushing canvas, breathing and her voice. No boxing gloves, punches, audience or additional dialogue.",
+    "original": {
+      "url": "https://media.maxvideoai.com/user-asset-thumbs/301cc489-d689-477f-94c4-0b051deda0bc/d1c12d8f-a91a-4957-88e9-6aad85fced92.jpg",
+      "sha256": "fe3b129f73613b3236a0cacc035589c4d2ddbb8917200b8931d8c48e3827d9cf",
+      "width": 640,
+      "height": 352
+    },
+    "display": {
+      "url": "/assets/model-examples/flux-3-max/194bf7640f18d7598717f27f57c21bdd6027d3d2dd190080924916d4a2798ff9.webp",
+      "sha256": "194bf7640f18d7598717f27f57c21bdd6027d3d2dd190080924916d4a2798ff9",
+      "width": 640,
+      "height": 352
+    },
+    "clip": {
+      "src": "https://media.maxvideoai.com/user-assets/by-content/c780259ed79d025b4ac74ccc513f18bf/89a0cad4a8f434fe42e65eba0a3889e3039c785c2b68a8633497b247c097db49.mp4",
+      "poster": "/assets/model-examples/flux-3-max/194bf7640f18d7598717f27f57c21bdd6027d3d2dd190080924916d4a2798ff9.webp",
+      "width": 1280,
+      "height": 704,
+      "durationSeconds": 18.041667,
+      "audio": true,
+      "displayFormat": "1280 × 704"
+    },
+    "sourcePoster": "https://media.maxvideoai.com/user-asset-thumbs/301cc489-d689-477f-94c4-0b051deda0bc/d1c12d8f-a91a-4957-88e9-6aad85fced92.jpg",
+    "reviewedPublicAt": "2026-11-16"
+  },
+  {
+    "id": "fluxmax-detail",
+    "modelSlug": "flux-3-max",
+    "jobId": "job_external_fal_70534037da6795d2e16dd135bf2a0ec3bfa550cc",
+    "kind": "video-poster",
+    "prompt": "Inside a silent space station, an adult astronaut with a visible face and an ivory spacesuit places a hand against a large observation window overlooking a dark nebula. Outside, an immense translucent shape slowly approaches; one of its long luminous extremities comes to rest directly opposite the astronaut's palm, on the other side of the glass. The astronaut holds their breath. End the encounter on these two answering gestures. Contemplative science fiction: begin with the astronaut's solitude, gradually reveal the scale of the presence, then return to the intimacy of the contact. Sound: interior ventilation, breathing, original low, delicate music; no exterior impact sound in the vacuum. No dialogue.",
+    "original": {
+      "url": "https://media.maxvideoai.com/user-asset-thumbs/301cc489-d689-477f-94c4-0b051deda0bc/e4f84cab-510f-4a23-8458-871470e71ff7.jpg",
+      "sha256": "2eea96a37864813b4c7ac0609434f3efd5d10ec3aaf14c3528748d6128f4666e",
+      "width": 640,
+      "height": 352
+    },
+    "display": {
+      "url": "/assets/model-examples/flux-3-max/8e7e845f3b51d0e8484332b8b24e6844527beebc8b70962e57285361738d2001.webp",
+      "sha256": "8e7e845f3b51d0e8484332b8b24e6844527beebc8b70962e57285361738d2001",
+      "width": 640,
+      "height": 352
+    },
+    "clip": {
+      "src": "https://media.maxvideoai.com/user-assets/by-content/c780259ed79d025b4ac74ccc513f18bf/556d12f7c45a0726eebc946615f4a0cbf4fba1993565c5f6cc6b469b90d726c3.mp4",
+      "poster": "/assets/model-examples/flux-3-max/8e7e845f3b51d0e8484332b8b24e6844527beebc8b70962e57285361738d2001.webp",
+      "width": 1280,
+      "height": 704,
+      "durationSeconds": 16.041667,
+      "audio": true,
+      "displayFormat": "1280 × 704"
+    },
+    "sourcePoster": "https://media.maxvideoai.com/user-asset-thumbs/301cc489-d689-477f-94c4-0b051deda0bc/e4f84cab-510f-4a23-8458-871470e71ff7.jpg",
+    "reviewedPublicAt": "2026-11-16"
+  }
+]

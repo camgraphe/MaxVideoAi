@@ -1,0 +1,102 @@
+{
+  "capturedAt": "2026-11-17",
+  "purpose": "Actual workspace components with example state; no generation or price quote",
+  "entries": [
+    {
+      "modelSlug": "seedance-2-5",
+      "locale": "en",
+      "url": "/assets/model-examples/workspace-controls/050571e3fce6d17e30e17687023e668a741d9cb122173caad9f49ed1a6e08489.webp",
+      "sha256": "050571e3fce6d17e30e17687023e668a741d9cb122173caad9f49ed1a6e08489",
+      "width": 1520,
+      "height": 474,
+      "mobile": {
+        "url": "/assets/model-examples/workspace-controls/74d7485288af802d6614e4418dd099b7144bf77d20de36f380ed4e807fe0ec28.webp",
+        "sha256": "74d7485288af802d6614e4418dd099b7144bf77d20de36f380ed4e807fe0ec28",
+        "width": 780,
+        "height": 474
+      },
+      "component": "SeedanceDraftFinalAction",
+      "capturedAt": "2026-11-17",
+      "sourceSha256": "fa3c8a75d98a647b0d82c02dfa78530aa04224d1f6ca3a2e410b89c637a8f7ec"
+    },
+    {
+      "modelSlug": "seedance-2-5",
+      "locale": "fr",
+      "url": "/assets/model-examples/workspace-controls/6cbfaa60c606157a10d36b578e55ba986f5bc3c5746cc0724e2684985ade9208.webp",
+      "sha256": "6cbfaa60c606157a10d36b578e55ba986f5bc3c5746cc0724e2684985ade9208",
+      "width": 1520,
+      "height": 474,
+      "mobile": {
+        "url": "/assets/model-examples/workspace-controls/9292a120acb977c05f89a1acc204f60acacd9e1f8fc3a96abc340aebecc01964.webp",
+        "sha256": "9292a120acb977c05f89a1acc204f60acacd9e1f8fc3a96abc340aebecc01964",
+        "width": 780,
+        "height": 474
+      },
+      "component": "SeedanceDraftFinalAction",
+      "capturedAt": "2026-11-17",
+      "sourceSha256": "fa3c8a75d98a647b0d82c02dfa78530aa04224d1f6ca3a2e410b89c637a8f7ec"
+    },
+    {
+      "modelSlug": "seedance-2-5",
+      "locale": "es",
+      "url": "/assets/model-examples/workspace-controls/128f222a0952e0d51129e62c2c498b0d5e4b1bc1da8a607f128b9b6981cbd474.webp",
+      "sha256": "128f222a0952e0d51129e62c2c498b0d5e4b1bc1da8a607f128b9b6981cbd474",
+      "width": 1520,
+      "height": 474,
+      "mobile": {
+        "url": "/assets/model-examples/workspace-controls/16c15bf5cb6345898b1aeabacaa82cf1e3bf66b01c00bace7ddbe17bb3ab9312.webp",
+        "sha256": "16c15bf5cb6345898b1aeabacaa82cf1e3bf66b01c00bace7ddbe17bb3ab9312",
+        "width": 780,
+        "height": 474
+      },
+      "component": "SeedanceDraftFinalAction",
+      "capturedAt": "2026-11-17",
+      "sourceSha256": "fa3c8a75d98a647b0d82c02dfa78530aa04224d1f6ca3a2e410b89c637a8f7ec"
+    },
+    {
+      "modelSlug": "flux-3-max",
+      "locale": "en",
+      "url": "/assets/model-examples/workspace-controls/546328d4c1eb5e9b691976d93b1bba8049a166b5521558e900d51d544997c2e2.webp",
+      "sha256": "546328d4c1eb5e9b691976d93b1bba8049a166b5521558e900d51d544997c2e2",
+      "width": 1520,
+      "height": 1040,
+      "mobile": {
+        "url": "/assets/model-examples/workspace-controls/cc30a0ab9c0400c8696a0462ca463b69c6026c21b0f5ce2da5a7faea5f859172.webp",
+        "sha256": "cc30a0ab9c0400c8696a0462ca463b69c6026c21b0f5ce2da5a7faea5f859172",
+        "width": 780,
+        "height": 1166
+      },
+      "component": "LumaRay32KeyframeEditor"
+    },
+    {
+      "modelSlug": "flux-3-max",
+      "locale": "fr",
+      "url": "/assets/model-examples/workspace-controls/d8aa30ae8284dde503bc8194694863ebcd8c993b73eacf7ea5362940588ea092.webp",
+      "sha256": "d8aa30ae8284dde503bc8194694863ebcd8c993b73eacf7ea5362940588ea092",
+      "width": 1520,
+      "height": 1040,
+      "mobile": {
+        "url": "/assets/model-examples/workspace-controls/c6a39b8049be833d6f3cf8483f1788a6e4bb93966ab9ee430c6b149a25f83407.webp",
+        "sha256": "c6a39b8049be833d6f3cf8483f1788a6e4bb93966ab9ee430c6b149a25f83407",
+        "width": 780,
+        "height": 1166
+      },
+      "component": "LumaRay32KeyframeEditor"
+    },
+    {
+      "modelSlug": "flux-3-max",
+      "locale": "es",
+      "url": "/assets/model-examples/workspace-controls/9ef091538f6c931773c40c977606ba7eab84049890ebb1abd8dd45f599b5cd5e.webp",
+      "sha256": "9ef091538f6c931773c40c977606ba7eab84049890ebb1abd8dd45f599b5cd5e",
+      "width": 1520,
+      "height": 1040,
+      "mobile": {
+        "url": "/assets/model-examples/workspace-controls/63740b38c23a745331bfcc13e17e1353c6c52aa5c81d621434112612afc18175.webp",
+        "sha256": "63740b38c23a745331bfcc13e17e1353c6c52aa5c81d621434112612afc18175",
+        "width": 780,
+        "height": 1166
+      },
+      "component": "LumaRay32KeyframeEditor"
+    }
+  ]
+}

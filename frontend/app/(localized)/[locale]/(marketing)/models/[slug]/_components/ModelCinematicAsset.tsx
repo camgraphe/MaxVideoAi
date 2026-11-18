@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import { Link } from '@/i18n/navigation';
 import type { ReactNode } from 'react';
 import { CinematicArrow } from './ModelCinematicMarks';
 import type { CinematicAsset, CinematicPresentation } from '../_lib/model-page-cinematic-data';
@@ -18,7 +19,7 @@ export function ModelCinematicAsset({ asset, ui, plan, compact = false, inspect 
         sizes={compact ? '(min-width: 768px) 42vw, 90vw' : '(min-width: 1440px) 1280px, 90vw'} loading="lazy" />
       <span aria-hidden="true"><CinematicArrow direction="external" /></span>
     </a>}
-    <figcaption><h4>{asset.title}</h4><p>{asset.metadataLabel}</p></figcaption>
+    <figcaption><h4>{asset.watchHref ? <Link href={asset.watchHref} prefetch={false} className="cinema-watch-title">{asset.title}<CinematicArrow /></Link> : asset.title}</h4><p>{asset.metadataLabel}</p></figcaption>
     {details ?? <>{plan ? <ModelCinematicShotPlan plan={plan} ui={ui} /> : null}<ModelCinematicPrompt asset={asset} ui={ui} /></>}
   </figure>;
 }

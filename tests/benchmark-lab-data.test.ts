@@ -60,7 +60,8 @@ test('Seedance 2.5 specifications expose the factual public model card contract'
   assert.ok(spec?.keySpecs);
 
   assert.equal(spec.keySpecs.maxDuration, '4-30s');
-  assert.equal(spec.keySpecs.maxResolution, '480p / 720p / 1080p');
+  assert.equal(spec.keySpecs.maxResolution, '480p / 720p / 1080p / 4K');
+  assert.deepEqual(spec.keySpecs.outputFormats, ['MP4', '1080p / 4K: HEVC 10-bit']);
   assert.deepEqual(spec.keySpecs.aspectRatios, [
     '21:9',
     '16:9',
@@ -82,12 +83,13 @@ test('Seedance 2.5 specifications expose the factual public model card contract'
   assert.equal(spec.keySpecs.referenceImageStyle, 'Up to 30 image references');
   assert.equal(spec.keySpecs.referenceVideo, 'Up to 10 video references');
   assert.equal(spec.keySpecs.referenceAudio, 'Up to 10 audio references');
-  assert.deepEqual(spec.sources ?? [], ['https://ai.byteplus.com/ark']);
-  assert.deepEqual(spec.provenance, {
-    basis: 'maxvideoai-production-route-contract',
-    mechanicsSources: ['https://docs.byteplus.com/en/docs/modelark/1520757'],
-    note: 'The live ModelArk product announcement is the source for Seedance 2.5 1080p availability; the documentation URL covers generic asynchronous video task mechanics only. MaxVideoAI input schemas at 90af7ed3b expose generated audio but no separate lip-sync parameter; this describes the available controls, not measured dialogue quality.',
-  });
+  assert.deepEqual(spec.sources, [
+    'https://docs.byteplus.com/en/docs/ModelArk/seedance-2-5',
+    'https://docs.byteplus.com/en/docs/ModelArk/create-video-generation-task-api',
+  ]);
+  assert.equal(spec.provenance?.basis, 'maxvideoai-release-candidate-contract');
+  assert.match(spec.provenance?.note ?? '', /Normal LAS Edit remains 480p\/720p/);
+  assert.match(spec.provenance?.note ?? '', /no separate lip-sync control/i);
 });
 
 test('score slug lookup exposes the exact current editorial roster', async () => {

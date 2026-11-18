@@ -5,6 +5,8 @@ import type { CinematicPresentation } from '../_lib/model-page-cinematic-data';
 import type { ModelDecisionData } from '../_lib/model-page-decision-data';
 import type { ModelExamplesViewModel } from '../_lib/model-page-examples-view-model';
 import type { ModelPromptingViewModel } from '../_lib/model-page-prompting-view-model';
+import type { ModelKeyframeDemoViewModel } from '../_lib/model-page-keyframe-demo';
+import { ModelCinematicSpecialty } from './ModelCinematicSpecialty';
 import { ModelCinematicHero } from './ModelCinematicHero';
 import { ModelCinematicExamples } from './ModelCinematicExamples';
 import { ModelCinematicPrompting } from './ModelCinematicPrompting';
@@ -12,7 +14,8 @@ import { ModelCinematicDetails, type CinematicDetailsProps } from './ModelCinema
 import { ModelCinematicWorkflowProofs } from './ModelCinematicWorkflowProofs';
 
 /** Independent composition. Legacy model sections are deliberately not its visual primitives. */
-export function ModelCinematicPage({ presentation, decision, examples, hasRenderedVideos, prompting, details }: {
+export function ModelCinematicPage({ presentation, decision, examples, hasRenderedVideos, prompting, details, keyframeDemo }: {
+  keyframeDemo?: ModelKeyframeDemoViewModel | null;
   presentation: CinematicPresentation; decision: ModelDecisionData;
   examples: ModelExamplesViewModel; hasRenderedVideos: boolean;
   prompting: ModelPromptingViewModel; details: CinematicDetailsProps;
@@ -30,7 +33,8 @@ export function ModelCinematicPage({ presentation, decision, examples, hasRender
       </div>
     </nav>
     {content.workflows ? <ModelCinematicWorkflowProofs presentation={presentation} workspaceHref={decision.hero.primaryCta.href} /> : <ModelCinematicExamples presentation={presentation} viewModel={examples} hasRenderedVideos={hasRenderedVideos} />}
-    {content.workflows && (hasRenderedVideos || presentation.examples.gallery) ? <ModelCinematicExamples presentation={presentation} viewModel={examples} hasRenderedVideos={hasRenderedVideos} galleryOnly /> : null}
+    {content.specialty ? <ModelCinematicSpecialty presentation={presentation} demo={keyframeDemo} /> : null}
+    {content.workflows && (hasRenderedVideos || presentation.examples.gallery) ? <ModelCinematicExamples presentation={presentation} viewModel={examples} hasRenderedVideos={hasRenderedVideos} excludedJobId={keyframeDemo?.recipe.jobId} galleryOnly /> : null}
     <ModelCinematicPrompting viewModel={prompting} presentation={presentation} />
     {content.variant === 'video' ? <Suspense fallback={<div className="cinema-wrap cinema-details-pending" role="status"><p>{content.detailsLabel}</p><Link href={decision.pricing.cta.href} prefetch={false}>{decision.pricing.cta.label} ↗</Link></div>}><ModelCinematicDetails {...details} presentation={presentation} /></Suspense> : <ModelCinematicDetails {...details} presentation={presentation} />}
   </div>;

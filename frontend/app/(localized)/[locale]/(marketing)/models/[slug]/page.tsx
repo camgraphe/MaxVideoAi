@@ -1,6 +1,7 @@
 import { modelExamplePlaylistKeys, projectModelPageGallery } from '@/server/model-gallery-projection';
 import '@/styles/marketing-models.css';
 import '@/styles/marketing-models-cinematic.css';
+import '@/styles/marketing-models-specialties.css';
 import { ModelArchivePage } from './_components/ModelArchivePage';
 import { buildModelArchiveMetadata } from './_lib/model-page-archive-metadata';
 import { notFound, permanentRedirect } from 'next/navigation';
@@ -17,6 +18,7 @@ import { locales, type AppLocale } from '@/i18n/locales';
 import { buildMetadataUrls } from '@/lib/metadataUrls';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { resolveLocalesForEnglishPath } from '@/lib/seo/alternateLocales';
+import { heldModelPageDemo, projectModelPageRelease, projectModelPageSpecs } from './_lib/model-page-flux-release';
 import { getEngineLocalized, type EngineLocalizedContent } from '@/lib/models/i18n';
 import { resolvePublicMarketingVideoUrl } from '@/lib/media';
 import { listModelExamplePlaylist, getPublicVideosByIds, getPublicVideoIds, type GalleryVideo } from '@/server/videos';
@@ -95,7 +97,7 @@ export async function generateMetadata(props: PageParams): Promise<Metadata> {
   }
 
   const canonicalSlug = model.slug;
-  const localized = await getEngineLocalized(canonicalSlug, locale);
+  const localized = projectModelPageRelease(await getEngineLocalized(canonicalSlug, locale), canonicalSlug, locale);
   if (model.lifecycle === 'deep_legacy' && localized.archive) {
     return buildModelArchiveMetadata(model, localized.archive, locale);
   }
@@ -236,7 +238,9 @@ async function renderMarketingModelPage({
     },
   );
   const { benchmarkScoreSlugs, keySpecsMap, gallery } = await inputs.critical;
-  const { galleryVideos, preferredIds, managed: managedCuration } = gallery;
+  const { preferredIds, managed: managedCuration } = gallery;
+  const heldDemo = heldModelPageDemo(engine.modelSlug);
+  const galleryVideos = heldDemo ? gallery.galleryVideos.filter(video => video.id !== heldDemo) : gallery.galleryVideos;
   const showBenchmarkLink = isVideoEngine && benchmarkScoreSlugs.has(engine.modelSlug);
   const modelName = localizedContent.marketingName ?? engine.marketingName;
   const fallbackMedia: FeaturedMedia = {
@@ -278,7 +282,7 @@ async function renderMarketingModelPage({
   const faqEntries = localizedContent.faqs.length ? localizedContent.faqs : copy.faqs;
   const keySpecsEntry =
     keySpecsMap.get(engine.modelSlug) ?? keySpecsMap.get(engine.id) ?? null;
-  const specInput = { engine, locale, isImageEngine, showPriceInSpecs, keySpecs: keySpecsEntry?.keySpecs };
+  const specInput = { engine, locale, isImageEngine, showPriceInSpecs, keySpecs: projectModelPageSpecs(keySpecsEntry?.keySpecs, engine.modelSlug, locale) };
   const { keySpecValues, keySpecRows } = buildModelPageSpecProjection(specInput);
   const pricing = inputs.pricing.then((projection) => {
     if (!projection) throw new Error('Model price projection was not started');
@@ -337,7 +341,7 @@ export default async function ModelDetailPage(props: PageParams) {
       ...(dictionary.models.detail ?? {}),
       breadcrumb: { ...DEFAULT_DETAIL_COPY.breadcrumb, ...(dictionary.models.detail?.breadcrumb ?? {}) },
     };
-    const localizedContent = await getEngineLocalized(model.slug, activeLocale);
+    const localizedContent = projectModelPageRelease(await getEngineLocalized(model.slug, activeLocale), model.slug, activeLocale);
     if (model.lifecycle === 'deep_legacy' && localizedContent.archive) {
       return <ModelArchivePage model={model} value={localizedContent.archive} locale={activeLocale} />;
     }

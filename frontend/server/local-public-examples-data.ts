@@ -1,3 +1,4 @@
+import { parsePublicKeyframeRecipe, buildPublicKeyframeSettingsSnapshot } from '@/lib/public-keyframe-demo';
 import { normalizeEngineId } from '@/lib/engine-alias';
 import { isDiscoverableExampleEngine } from '@/lib/examples/discovery';
 import type { GalleryVideo } from './videos-normalization';
@@ -13,6 +14,8 @@ export type PublicExamplesSnapshot = {
   version: 1; source: 'https://maxvideoai.com/api/examples' | 'local-generated-review'; capturedAt: string;
   cards: Record<string, PublicExampleCard>;
   feeds: Record<string, { playlist: string[]; 'date-desc': string[] }>;
+  /** Optional recipes captured from the anonymous public video reader, never inferred from cards. */
+  keyframeRecipes?: Record<string, unknown>;
 };
 
 export function canUseLocalPublicExamples(env: NodeJS.ProcessEnv): boolean {
@@ -50,4 +53,13 @@ export function selectLocalModelExamples(snapshot: PublicExamplesSnapshot, model
     .filter(card => normalizeEngineId(card.engineIconId)?.toLowerCase() === canonical)
     .slice(0, Math.max(0, limit))
     .map(publicCardToVideo);
+}
+
+/** Match a separately captured public recipe; never infer references from a card. */
+export function publicCardWithKeyframeRecipeToVideo(card: PublicExampleCard | undefined, input: unknown): GalleryVideo | null {
+  const recipe = parsePublicKeyframeRecipe(input);
+  if (!card || !recipe) return null;
+  const video = publicCardToVideo(card);
+  if (recipe.jobId !== card.id || recipe.engineId !== video.engineId || recipe.prompt !== video.prompt || recipe.durationSec !== video.durationSec) return null;
+  return { ...video, settingsSnapshot: buildPublicKeyframeSettingsSnapshot(recipe) };
 }

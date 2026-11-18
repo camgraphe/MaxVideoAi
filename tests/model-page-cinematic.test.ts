@@ -7,8 +7,10 @@ import test from 'node:test';
 import { JSDOM } from 'jsdom';
 import seedreamRecords from '../frontend/config/seedream-editorial-images.json';
 import createMedia from '../frontend/config/model-cinematic-create-media.json';
+import flashHero from '../frontend/config/model-cinematic-flash-hero.json';
 import finalMedia from '../frontend/config/model-cinematic-final-media.json';
 import startFrames from '../frontend/config/model-cinematic-start-frames.json';
+import publicProofs from '../frontend/config/model-cinematic-public-proofs.json';
 import heroDisplays from '../frontend/config/model-cinematic-hero-displays.json';
 import { parseSeedreamEditorialImages } from '../frontend/lib/seedream-editorial-images';
 import { mergeEngineLocalizedContent } from '../frontend/lib/models/i18n-normalization';
@@ -18,7 +20,6 @@ import { parseModelExamplesContent } from '../frontend/app/(localized)/[locale]/
 import { buildCinematicPresentation } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-cinematic-data';
 import { listModelEditorialImages } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-editorial-images';
 import { buildModelDecisionData } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-decision-data';
-import { ModelCinematicOverview } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelCinematicOverview';
 import { ModelCinematicHero } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelCinematicHero';
 import { ModelCinematicPrompt } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelCinematicAsset';
 import { ModelCinematicWorkflowProofs } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelCinematicWorkflowProofs';
@@ -243,8 +244,9 @@ test('the image introduction and proof links belong to a single enriched hero', 
     }
     assert.equal(doc.querySelectorAll('img').length, 1, 'One optimized hero image');
     assert.equal(doc.querySelector('.cinema-overview-detail'), null, 'No artificial magnification of the hero image');
-    assert.equal(doc.querySelector('.cinema-hero-caption a, .cinema-hero dialog, .cinema-hero details'), null);
-    const evidence = new JSDOM(renderToStaticMarkup(React.createElement(ModelCinematicOverview, {presentation}))).window.document;
+    assert.equal(doc.querySelector('.cinema-hero-caption a, .cinema-hero details'), null);
+    assert.equal(doc.querySelectorAll('.cinema-hero-evidence .cinema-prompt-trigger').length, 1);
+    const evidence = doc;
     assert.ok(evidence.querySelector('dialog p[lang=en]')!.textContent!.includes(presentation.hero.prompt));
     assert.equal(evidence.querySelector('dialog')!.hasAttribute('open'), false);
     assert.ok(evidence.querySelector('dialog')!.textContent!.includes(presentation.examples.provenance));
@@ -283,7 +285,7 @@ test('Flash replaces reviewed start frames with accurately attributed films and 
     assert.equal(placements.length, 6);
     assert.deepEqual(new Set(placements), new Set(startFrames.map(frame => frame.id)));
     assert.ok(presentation.assets.filter(asset => !asset.video).every(asset => asset.metadataLabel.includes('GPT Image 2.6 Sunburst')));
-    assert.equal(presentation.assets.filter(asset => asset.video).length, 2);
+    assert.equal(presentation.assets.filter(asset => asset.video).length, 3);
     assert.ok(presentation.assets.filter(asset => asset.video).every(asset => asset.metadataLabel.includes('Seedance 2.5 Flash') && !asset.creation));
     assert.deepEqual(new Set(presentation.examples.shotPlans!.map(plan => plan.assetId)), new Set(placements.slice(1)));
     const missingTitle = structuredClone(examples);
@@ -300,9 +302,13 @@ test('Flash replaces reviewed start frames with accurately attributed films and 
     assert.equal(doc.querySelector('.cinema-hero-intro')?.textContent, content.cinematic.intro);
     assert.equal(doc.querySelectorAll('.cinema-workflow-nav a').length, 3);
     assert.ok(doc.querySelector('#overview'));
-    assert.equal(doc.querySelector('.cinema-hero dialog, .cinema-hero details'), null);
-    const provenance = new JSDOM(renderToStaticMarkup(React.createElement(ModelCinematicOverview, {presentation}))).window.document;
-    assert.ok(provenance.querySelector('dialog')!.textContent?.includes('GPT Image 2.6 Sunburst'), 'The full image source remains in the server-rendered evidence dialog');
+    assert.equal(doc.querySelector('.cinema-hero details'), null);
+    assert.equal(doc.querySelectorAll('.cinema-hero-evidence .cinema-prompt-trigger').length, 1);
+    const provenance = doc;
+    assert.equal(provenance.querySelector('dialog')!.hasAttribute('open'), false);
+    assert.ok(provenance.querySelector('dialog')!.textContent?.includes(flashHero.prompt));
+    assert.equal(presentation.hero.video?.src, flashHero.clip.src);
+    assert.equal(presentation.hero.display.sha256, flashHero.original.sha256);
     assert.equal(doc.querySelectorAll('video, script[type="application/ld+json"]').length, 0);
   }
 });
@@ -332,7 +338,7 @@ test('originals and displays retain measured geometry, immutable hashes and real
 });
 
 test('responsive cinematic hero displays retain their exact sources and immutable geometry', async () => {
-  const originals = [...parseSeedreamEditorialImages(seedreamRecords), ...startFrames];
+  const originals = [flashHero, ...parseSeedreamEditorialImages(seedreamRecords), ...startFrames, ...publicProofs];
   for (const asset of heroDisplays.assets) {
     assert.equal(asset.originalSha256, originals.find(original => original.id === asset.id)?.original.sha256);
     assert.equal(asset.desktop.length, 3);
@@ -345,7 +351,7 @@ test('responsive cinematic hero displays retain their exact sources and immutabl
       assert.equal(meta.width, file.width);
       assert.equal(meta.height, file.height);
     }
-    assert.ok(asset.mobile.every(file => asset.id === '55-above-the-clouds' ? file.height === file.width * 2 : file.width * 9 === file.height * 16));
+    assert.ok(asset.mobile.every(file => Math.abs(file.width / file.height - asset.crop.width / asset.crop.height) < 0.002));
   }
 });
 
@@ -400,9 +406,9 @@ test('cinematic pilots own a separate composition while the legacy model rendere
   assert.doesNotMatch(renderer, /ModelPageContentSections|ModelCurrentDetails|ModelDecisionHeroSection|container-page|model-editorial/);
   assert.match(renderer, /content\.variant === 'video' \? <Suspense/, 'Only video details stream; image details remain in the initial visible HTML');
   for (const section of ['ModelCinematicHero', 'ModelCinematicExamples', 'ModelCinematicPrompting', 'ModelCinematicDetails']) assert.match(renderer, new RegExp('<' + section));
-  assert.doesNotMatch(source('ModelCinematicHero.tsx'), /<ModelCinematicOverview/, 'The hero has no expanding provenance controls');
+  assert.match(source('ModelCinematicHero.tsx'), /<ModelCinematicOverview/, 'The hero owns its compact prompt drawer without an inline expanding panel');
   assert.doesNotMatch(source('ModelCinematicExamples.tsx'), /cinema-provenance|<ModelCinematicOverview/, 'No extra disclosure interrupts the visual sequence');
-  assert.match(source('ModelCinematicDetails.tsx'), /<ModelCinematicOverview/, 'Supplementary hero evidence remains available with the technical details');
+  assert.doesNotMatch(source('ModelCinematicDetails.tsx'), /<ModelCinematicOverview/, 'The specifications never contain an unrelated hero prompt');
   assert.doesNotMatch(renderer, /<ModelCinematicOverview/, 'No separate provenance band interrupts the transition to examples');
   const details = source('ModelCinematicDetails.tsx');
   assert.match(details, /Promise\.all\(\[pricing, commercial\]\)/);

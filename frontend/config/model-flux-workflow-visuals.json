@@ -1,0 +1,82 @@
+{
+  "modelSlug": "flux-3-max",
+  "text": {
+    "images": [
+      "/assets/model-examples/flux-3-max/598fd8335d65478ba44d77cc285da9b0849f96c07d20d692be862f5b7a7b5f1a.webp"
+    ],
+    "video": "https://media.maxvideoai.com/user-assets/by-content/c780259ed79d025b4ac74ccc513f18bf/129578bb105f5270776bff78ce498566093132bb7e670c27b82eb875e4479f8c.mp4",
+    "jobId": "job_external_fal_3cdccbf38fa871d2667fa1597de53e6fc52d036d"
+  },
+  "image": {
+    "images": [
+      "/assets/model-examples/flux-3-max/c46f37c3f873dc51667ee1658c08edf65f90f4019cf012b44a4562d638340eb5.webp"
+    ],
+    "sourceJobId": "job_external_fal_0364588a92fccd36f86ff54951f798349e440f7c",
+    "video": "/assets/model-examples/flux-3-max/edbe832bcbc96411f850b30f73c74a2b91b590abb74605dd0ce0a1f16008f56c.mp4",
+    "poster": "/assets/model-examples/flux-3-max/e60ceb30afcb36ec0f9ef22de05f625102b66d8ba96ebac2db3afaa64941a53e.webp",
+    "jobId": "e993ea94-9c20-4d79-a603-b276ddec3153",
+    "recipe": {
+      "id": "paper-boat",
+      "prompt": "Begin on the supplied photograph of the woman holding a folded paper boat by the sea. Let the wind catch one corner of her coat. She looks down, bends to the water and, with both hands, lets the little boat float free. Follow her hands in a gentle, deliberate tilt down. Hold low as a shallow outgoing ripple carries the boat away from her open fingertips. Keep the same face, coat, folds in the paper and dawn light. The horizon stays level. Natural surf, paper rustle, wind close to the microphone. No dialogue, music or titles.",
+      "mode": "i2v",
+      "settings": {
+        "durationSec": 8,
+        "resolution": "720p",
+        "aspectRatio": "16:9",
+        "audio": true
+      }
+    },
+    "width": 1280,
+    "height": 704
+  },
+  "endpoints": {
+    "images": [
+      "/assets/model-examples/flux-3-max/21c38eb65ada86aee81bf6528a4ba614dccd9fbf89fe26a0dd174725cdd001fd.webp",
+      "/assets/model-examples/flux-3-max/3c46ef84313c05e51d107a2fd8ef081727f45a57bfbadfaa586693fa46916e1c.webp"
+    ],
+    "video": "/assets/model-examples/flux-3-max/a0e1af96f72b21d1617d8a4d9f7da4acc6f5214f7c95257c0557b7d770e407e6.mp4",
+    "poster": "/assets/model-examples/flux-3-max/41762c5b4c6248a4d10b7578fc2571ae3c83295b29d5654f645021dc95b1b9a8.webp",
+    "jobId": "961afef3-9b29-4714-9958-4f6761139497",
+    "recipe": {
+      "id": "first-cable",
+      "prompt": "An alpine cable car leaves its mountain station at first light. Begin exactly on the supplied interior composition, close beside the guide in the mustard shell and navy cap. Her breath traces a faint mist and the red window frame shivers as the cable takes the load. The stone platform slips backward. As the guide lifts her eyes, cut on her look to the outside of this same small red cabin and let the camera drift back and sideways. Keep the carriage on its cable and the sunrise fixed on the horizon. Reveal the scale of the snowy valley, with low cloud and a band of gold along the peaks. Settle on the supplied wide exterior end frame, with the cabin at frame right. Two shots joined by one motivated cut. Natural cable hum, a soft wheel clack, then wind. No music, voices, lettering or titles.",
+      "mode": "fl2v",
+      "settings": {
+        "durationSec": 10,
+        "resolution": "720p",
+        "aspectRatio": "16:9",
+        "audio": true
+      }
+    },
+    "width": 1280,
+    "height": 704
+  },
+  "keyframes": {
+    "images": [
+      "/assets/model-examples/flux-3-max/60016f55abbc49caa4044d9e204be16ca7038f8264e4bbab382d45913cff06f5.webp",
+      "/assets/model-examples/flux-3-max/57af8f50e40353ccb9db761fe0942f05248891dc3eca06e4faa089be81f3fb17.webp",
+      "/assets/model-examples/flux-3-max/7bad7fa6ac18df01f076bf84caca80759b68fef852b4225853857ad0d4e954c0.webp",
+      "/assets/model-examples/flux-3-max/c08812808b2adfbeaaa499e8414de67101d7fa7ff179d64fa312641d7430c3fc.webp",
+      "/assets/model-examples/flux-3-max/1404073c276fdec1546f52d65f6b1cff0774c9fb194186da2ec7b35a0a02cbf0.webp"
+    ],
+    "seconds": [
+      0,
+      3,
+      6,
+      11,
+      16
+    ],
+    "sourceJobId": "3ce4f562-0ed1-4d3d-982f-565e269045e7",
+    "recipe": {
+      "id": "the-first-light",
+      "prompt": "The First Light. A cinematic dawn inside one mountain observatory. Use the five ordered reference pictures as visual anchors at 0, 3, 6, 11 and 16 seconds. Begin very wide inside the blue dome; the lone copper-haired engineer in an ochre canvas jacket steps towards the controls. Cut in as her hand settles on the worn brass lever, hold a beat for the click, then follow her arm into a side view as she leans her weight into the pull. The first warm slit of dawn appears behind the turquoise telescope. Give the heavy shutters time to travel: move low along the tube as their opening sweeps a band of gold across the metal and admits the distant mountains. Resolve into her still profile at the eyepiece. Hold on the light reaching her cheek. Preserve the telescope, jacket, haircut and screen direction. Sound is entirely diegetic: shoes and coat in the quiet dome, the short brass click, a deep rolling mechanism, a final soft wash of mountain wind. No dialogue, score, titles or lettering.",
+      "settings": {
+        "durationSec": 16,
+        "resolution": "720p",
+        "aspectRatio": "16:9",
+        "audio": true
+      },
+      "reasoningLevel": "high"
+    }
+  }
+}

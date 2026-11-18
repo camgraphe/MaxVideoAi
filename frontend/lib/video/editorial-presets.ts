@@ -1,4 +1,7 @@
+import flashHero from '@/config/model-cinematic-flash-hero.json';
+import fluxVisuals from '@/config/model-flux-workflow-visuals.json';
 import flash from '../../../content/models/en/seedance-2-5-flash.json';
+import seedance from '../../../content/models/en/seedance-2-5.json';
 import { getGalleryVideoPreset } from './gallery-presets';
 
 // Register each model's authored English recipes explicitly. Never use another
@@ -7,6 +10,33 @@ const authoredModels: Record<string, typeof flash> = { [flash.cinematic.modelSlu
 
 /** Public prompt/settings recipes only; no generated assets or private provenance. */
 export function getVideoEditorialPreset(engineId: string, exampleId: string) {
+  if (engineId === fluxVisuals.modelSlug) {
+    const recipe = [fluxVisuals.image.recipe, fluxVisuals.endpoints.recipe].find(film => film.id === exampleId);
+    if (recipe) return { engineId, mode: recipe.mode, prompt: recipe.prompt, snapshot: {
+      schemaVersion: 1, surface: 'video', engineId, inputMode: recipe.mode, prompt: recipe.prompt, core: recipe.settings, refs: {},
+    } };
+  }
+  const board = fluxVisuals.keyframes;
+  if (engineId === fluxVisuals.modelSlug && exampleId === board.recipe.id) {
+    const { prompt, settings, reasoningLevel } = board.recipe;
+    return { engineId, mode: 'ref2v', prompt, snapshot: {
+      schemaVersion: 1, surface: 'video', engineId, inputMode: 'ref2v', prompt, core: settings,
+      advanced: { extraInputValues: { reasoning_level: reasoningLevel, keyframe_indexes: board.seconds.map(second => second * 24).join(',') } },
+      refs: {},
+    } };
+  }
+  const capability = engineId === seedance.cinematic.modelSlug
+    ? seedance.cinematic.capabilities.items.find(item => `capability-${item.id}` === exampleId) : undefined;
+  if (capability) {
+    const mode = capability.id === 'create' ? 'ref2v' : capability.id === 'modify' ? 'v2v' : 'extend';
+    return { engineId, mode, prompt: capability.proof.prompt,
+      snapshot: { schemaVersion: 1, surface: 'video', engineId, inputMode: mode, prompt: capability.proof.prompt, refs: {} } };
+  }
+  if (engineId === flashHero.modelSlug && exampleId === flashHero.id) {
+    const { prompt, mode } = flashHero;
+    return { engineId, mode, prompt, snapshot: { schemaVersion: 1, surface: 'video', engineId, inputMode: mode,
+      prompt, core: flashHero.settings, refs: {} } };
+  }
   const gallery = getGalleryVideoPreset(engineId, exampleId);
   if (gallery) return {
     engineId, mode: 't2v', prompt: gallery.prompt,

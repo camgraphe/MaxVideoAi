@@ -156,7 +156,13 @@ export async function makeModelPagePricingHarness({
           }
           // Section rendering is outside this pricing test. Capture the props assembled
           // by the real layout, including its hero and shared visible/schema offer.
-          if (!executeSections && args.importer === layoutPath && args.path.startsWith('./') && args.path !== './ModelCurrentDetails') {
+          if (!executeSections && args.importer === layoutPath && args.path.startsWith('./') && !['./ModelCurrentDetails', './ModelCinematicPage'].includes(args.path)) {
+            return {path:args.path,namespace:'sections'};
+          }
+          if (!executeSections && args.importer.endsWith('/ModelCinematicPage.tsx') && args.path.startsWith('./') && !['./ModelCinematicDetails', './ModelCinematicMarks'].includes(args.path)) {
+            return {path:args.path,namespace:'sections'};
+          }
+          if (!executeSections && args.importer.endsWith('/ModelCinematicDetails.tsx') && args.path.startsWith('./') && args.path !== './ModelCinematicMarks') {
             return {path:args.path,namespace:'sections'};
           }
           if (!executeSections && args.importer.endsWith('/ModelCurrentDetails.tsx') && args.path.startsWith('./')) {
@@ -221,7 +227,7 @@ async function settleModelLayout(value: any): Promise<any> {
   if (value && typeof value.then === 'function') return settleModelLayout(await value);
   if (!value || typeof value !== 'object' || value instanceof Map || value instanceof Set) return value;
   if (Array.isArray(value)) return Promise.all(value.map(settleModelLayout));
-  if (typeof value.type === 'function' && value.type.constructor.name === 'AsyncFunction') {
+  if (typeof value.type === 'function' && (value.type.constructor.name === 'AsyncFunction' || value.type.name.replace(/\d+$/, '') === 'ModelCinematicPage')) {
     return settleModelLayout(await value.type(value.props));
   }
   if (value.props) return {...value,props:await settleModelLayout(value.props)};

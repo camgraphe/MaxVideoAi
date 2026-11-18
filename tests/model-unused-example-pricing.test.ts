@@ -12,6 +12,7 @@ import { I18nProvider } from '../frontend/lib/i18n/I18nProvider';
 import { ModelDefaultExamplesSection } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelDefaultExamplesSection';
 import { ModelDecisionExamplesGallery } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelDecisionExamplesGallery.client';
 import { makeModelPagePricingHarness, findModelLayoutElements } from './helpers/model-page-pricing-harness';
+import { formatModelPublicOffer } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-offer-display';
 import { FEATURED_EXAMPLE_MEDIA, PREFERRED_MEDIA } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-static-media';
 
 const locales = ['en', 'fr', 'es'] as const;
@@ -45,12 +46,13 @@ async function fixture(modelId: string, locale: typeof locales[number]) {
 
 async function layoutProjection(h: any, props: any) {
   const elements = findModelLayoutElements(await h.layout(props));
-  const section = elements.find(element => element.name === 'ModelPageContentSections');
+  const section = elements.find(element => ['ModelPageContentSections', 'ModelCinematicExamples'].includes(element.name));
   assert.ok(section, 'the real layout must build the examples view model');
-  const offer = elements.find(element => ['ModelDecisionPricingCard','ModelPublicOfferLine'].includes(element.name));
+  const offer = elements.find(element => ['ModelDecisionPricingCard','ModelPublicOfferLine','ModelCinematicPricing'].includes(element.name));
   assert.ok(offer?.props.offer, 'this current model retains a visible canonical offer');
-  return { viewModel: section.props.examplesProps.viewModel, offer: offer.props.offer,
-    pricing: elements.filter(element => element.name === 'ModelDecisionPricingCard').map(element => element.props.pricing),
+  return { viewModel: section.props.examplesProps?.viewModel ?? section.props.viewModel,
+    offerPrice: offer.name === 'ModelCinematicPricing' ? offer.props.offer.price : formatModelPublicOffer(offer.props.offer, props.locale).price,
+    pricing: elements.filter(element => ['ModelDecisionPricingCard', 'ModelCinematicPricing'].includes(element.name)).map(element => element.name === 'ModelCinematicPricing' ? { scenarios: element.props.scenarios } : element.props.pricing),
     schemas: elements.filter(element => element.name === 'script').map(element => JSON.parse(element.props.dangerouslySetInnerHTML.__html)) };
 }
 
@@ -87,13 +89,13 @@ test('the real model gallery callback validates and orders cards without request
       assert.ok(Object.keys(metadata.alternates.languages).length >= 3);
       assert.equal(h.exampleQuoteCalls.length,0, 'Model examples do not consume card prices; do not quote them after public validation.');
       assert.ok(h.calls.length > 0, 'visible model unit/spec pricing still uses its canonical reader');
-      assert.equal(projection.offer.amountCents,123);
+      assert.equal(projection.offerPrice, {en:'$1.23',fr:'1,23\u00a0$US',es:'USD\u00a01.23'}[locale]);
       assert.ok(JSON.stringify(projection.schemas).includes('1.23'), 'the current visible offer still reaches JSON-LD');
       h.configure({...input,rate:20});
       h.setPublicQuote(async () => ({status:'exact',amountCents:246,currency:'USD'}));
       const repriced = await h.render(input), repricedProjection = await layoutProjection(h,repriced.props);
       assert.notDeepEqual(repriced.props.keySpecRows,result.props.keySpecRows, 'current visible specs remain sensitive to canonical prices');
-      assert.equal(repricedProjection.offer.amountCents,246);
+      assert.equal(repricedProjection.offerPrice, {en:'$2.46',fr:'2,46\u00a0$US',es:'USD\u00a02.46'}[locale]);
       assert.ok(JSON.stringify(repricedProjection.schemas).includes('2.46'));
       const pricedPresetIds = modelId === 'seedance-2-5'
         ? ['4s-480p','15s-720p-audio','24s-1080p']

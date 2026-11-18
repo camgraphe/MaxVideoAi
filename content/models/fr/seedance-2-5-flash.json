@@ -93,7 +93,7 @@
     },
     {
       "q": "Quelle différence entre Flash et Seedance 2.5 standard ?",
-      "a": "Dans MaxVideoAI, Flash propose du 480p ou du 720p. Seedance 2.5 standard propose aussi le 1080p et un parcours natif Draft vers final, avec d’autres limites de références. Une génération Flash ordinaire n’est pas un Draft finalisable. Comparez les réglages et les devis actuels selon votre besoin."
+      "a": "Dans MaxVideoAI, Flash propose du 480p ou du 720p. Seedance 2.5 standard propose aussi le 1080p et la 4K et un parcours natif Draft vers final, avec d’autres limites de références. Une génération Flash ordinaire n’est pas un Draft finalisable. Comparez les réglages et les devis actuels selon votre besoin."
     },
     {
       "q": "Combien coûte Seedance 2.5 Flash ?",
@@ -349,7 +349,7 @@
       "assetTitles": [
         {
           "id": "midnight-run",
-          "title": "Course de minuit — travelling au ras du sol"
+          "title": "À l’heure bleue sur la côte"
         },
         {
           "id": "after-the-beat",
@@ -372,7 +372,7 @@
           "title": "Avant la descente — action en vertical"
         }
       ],
-      "provenance": "Create, le transfert de mouvement, la retouche de tenue, le dialogue au diner et la scène orbitale montrent de vraies vidéos Seedance 2.5 Flash. La référence au manteau rouge vient de Seedream 5.5. Extend reste un fonctionnement illustré ; le héros et l’aperçu de galerie sont des images fixes.",
+      "provenance": "Le travelling côtier, la batteuse, le transfert de mouvement, le changement de tenue, le dialogue au diner et la scène orbitale ont été rendus avec Seedance 2.5 Flash. Le personnage en manteau rouge vient de Seedream 5.5. La timeline Extend illustre une prolongation.",
       "panels": [
         {
           "id": "create",
@@ -475,7 +475,7 @@
   },
   "cinematic": {
     "intro": "Créez des vidéos de 4 à 30 secondes à partir de texte, d’une première image ou de références, en 480p ou 720p avec audio généré en option. Composez avec Create, retouchez avec Modify ou poursuivez un plan avec Extend.",
-    "caption": "Concept frame · GPT Image 2.6 Sunburst",
+    "caption": "Seedance 2.5 Flash · Texte vers vidéo · 720p",
     "proofLabel": "De la première image au film",
     "examplesLabel": "Explorer les scènes",
     "pricingLabel": "Prix et comparatif",

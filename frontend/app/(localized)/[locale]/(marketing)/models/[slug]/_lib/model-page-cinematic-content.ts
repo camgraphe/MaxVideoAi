@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { cinematicCapabilitiesSchema } from './model-page-capabilities';
 
 const text = z.string().trim().min(1);
 const id = z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
@@ -19,6 +20,29 @@ const heroSchema = z.object({
   proofLabel: text,
   examplesLabel: text,
   pricingLabel: text,
+  highlights: z.array(z.object({ target: id, title: text, body: text }).strict()).length(3).optional(),
+  capabilities: cinematicCapabilitiesSchema.optional(),
+  benchmarkSource: z.object({ label: text, href: z.string().url() }).strict().optional(),
+  alternatives: z.object({
+    title: text,
+    models: z.array(z.object({ slug: id, reason: text }).strict()).min(1).max(3),
+  }).strict().optional(),
+  specsReviewedAt: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  specialty: z.object({
+    kind: z.enum(['draft', 'keyframes']), eyebrow: text, title: text, intro: text,
+    steps: z.array(z.object({ label: text, body: text }).strict()).length(3),
+    note: text, action: text, mode: z.enum(['t2v', 'ref2v']),
+    source: z.object({ label: text, href: z.string().url() }).strict(),
+    workspacePreview: z.object({ alt: text, caption: text }).strict(),
+    draftPreview: z.object({
+      draftLabel: text, draftLocation: text, draftHint: text,
+      finalLabel: text, finalLocation: text, finalHint: text,
+      resolutionLabel: text, continuity: text, illustration: text, imageAlt: text,
+      detailsLabel: text, quoteNote: text, selectionLabel: text, selectedLabel: text,
+      angles: z.array(z.object({ id: text, label: text, description: text }).strict()).length(3),
+    }).strict().optional(),
+    details: z.array(z.object({ title: text, body: text }).strict()).length(3).optional(),
+  }).strict().optional(),
   overview: z.object({
     titleLines: z.array(text).length(2),
     source: z.object({ label: text, href: z.string().url() }).strict(),
@@ -51,7 +75,7 @@ export const cinematicExamplesSchema = z.object({
   intro: text.optional(),
   gallery: z.object({
     navLabel: text, title: text, intro: text, linkLabel: text,
-    previewAssetId: id, previewLabel: text,
+    previewAssetId: id.optional(), previewLabel: text,
   }).strict().optional(),
   assetTitles: z.array(z.object({ id, title: text }).strict()).optional(),
   provenance: text,

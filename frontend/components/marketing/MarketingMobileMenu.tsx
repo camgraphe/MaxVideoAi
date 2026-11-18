@@ -74,7 +74,7 @@ export function MarketingMobileMenu({
   const loginHref = buildLoginHref({ mode: 'signin', nextPath: '/app', locale });
   return (
     <div id={menuId} ref={menuRef} popover="auto" className="marketing-menu-overlay fixed inset-0 z-50 overflow-y-auto overscroll-y-contain lg:hidden">
-      <button type="button" tabIndex={-1} aria-hidden="true" className="marketing-menu-backdrop" {...{ popovertarget: menuId, popovertargetaction: 'hide' }} />
+      <button type="button" tabIndex={-1} aria-hidden="true" className="marketing-menu-backdrop" popoverTarget={menuId} popoverTargetAction="hide" />
     <div
       ref={panelRef}
       role="dialog"
@@ -91,7 +91,7 @@ export function MarketingMobileMenu({
           className="marketing-menu-invoker min-h-0 h-11 w-11 rounded-lg border border-hairline bg-surface p-2 text-text-primary"
           aria-label={t('nav.mobileClose', 'Close menu')}
           autoFocus
-          {...{ popovertarget: menuId, popovertargetaction: 'hide' }}
+          popoverTarget={menuId} popoverTargetAction="hide"
         >
           <span className="marketing-menu-close-icon" aria-hidden="true" />
         </Button>

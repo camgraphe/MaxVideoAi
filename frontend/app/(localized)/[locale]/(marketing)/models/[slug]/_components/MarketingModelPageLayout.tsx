@@ -418,7 +418,7 @@ export async function MarketingModelPageLayout({
   const legacyPricingCallout = !templateData && pricingCallout ? pricingCallout : null;
   const legacyMicroCta = !templateData && isImageEngine ? copy.microCta : null;
 
-  if (cinematic && templateData) return <ModelCinematicPage presentation={cinematic} decision={templateData}
+  if (cinematic && templateData) return <ModelCinematicPage presentation={cinematic} decision={templateData} keyframeDemo={keyframeDemo}
     examples={examplesViewModel} hasRenderedVideos={galleryVideos.some(video => Boolean(video.videoUrl))} prompting={promptingViewModel}
     details={{ pricing, commercial, schema, decision: templateData, locale, specTitle, specNote, specSections: specSectionsToShow,
       safetyRules, safetyInterpretation, boundaries, troubleshootingItems, faqList, faqTitle, copy }} />;

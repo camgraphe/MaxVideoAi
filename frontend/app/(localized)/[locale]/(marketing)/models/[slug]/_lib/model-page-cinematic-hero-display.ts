@@ -5,6 +5,6 @@ import type { CinematicAsset } from './model-page-cinematic-data';
 export function resolveCinematicHeroDisplay(hero: CinematicAsset) {
   const record = manifest.assets.find(asset => asset.id === hero.id);
   if (!record || record.originalSha256 !== hero.original.sha256) throw new Error('Cinematic hero needs its reviewed display profile');
-  const srcSet = (files: typeof record.desktop) => files.map(file => `${file.url} ${file.width}w`).join(', ');
+  const srcSet = (files: typeof record.desktop) => Array.from(new Map(files.map(file => [file.width, file])).values()).map(file => `${file.url} ${file.width}w`).join(', ');
   return { desktop: srcSet(record.desktop), mobile: srcSet(record.mobile) };
 }

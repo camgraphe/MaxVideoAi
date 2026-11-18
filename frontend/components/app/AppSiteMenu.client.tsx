@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect, useId, useImperativeHandle, useRef, type MouseEvent, type MutableRefObject, type ReactNode } from 'react';
+import { useEffect, useImperativeHandle, useRef, type MouseEvent, type MutableRefObject, type ReactNode } from 'react';
 import { AppLanguageToggle } from '@/components/AppLanguageToggle';
 import { MARKETING_TOP_NAV_LINKS } from '@/config/navigation';
 import { getPathname } from '@/i18n/navigation';
@@ -36,12 +36,13 @@ type AppSiteMenuController = {
   open: (trigger: HTMLElement) => void;
 };
 
+const titleId = 'app-header-site-menu-title';
+
 export function AppSiteMenuButton({ email, authResolved, isAdmin, signinHref, signupHref, onSignOut, controllerRef, onAppNavigate, studioVisible }: AppSiteMenuButtonProps) {
   const { locale, t } = useI18n();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
   const openerRef = useRef<HTMLElement | null>(null);
-  const titleId = useId();
   const copy = locale === 'fr'
     ? { menu: 'Menu', openMenu: 'Ouvrir le menu MaxVideoAI', close: 'Fermer', site: 'Explorer MaxVideoAI', app: 'Application', preferences: 'Préférences', language: 'Langue', theme: 'Apparence', signIn: 'Connexion', signUp: 'Créer un compte', signOut: 'Déconnexion', assistants: 'Assistants', account: 'Compte', newTab: 'nouvel onglet' }
     : locale === 'es'

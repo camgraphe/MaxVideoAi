@@ -9,14 +9,14 @@ import { ModelCinematicGallery } from './ModelCinematicGallery.client';
 import { buildCinematicGalleryItems } from '../_lib/model-page-cinematic-gallery';
 import { ModelCinematicDetailCrop } from './ModelCinematicZoom.client';
 
-export function ModelCinematicExamples({ presentation, viewModel, hasRenderedVideos, galleryOnly = false }: {
-  presentation: CinematicPresentation; viewModel: ModelExamplesViewModel; hasRenderedVideos: boolean; galleryOnly?: boolean;
+export function ModelCinematicExamples({ presentation, viewModel, hasRenderedVideos, galleryOnly = false, excludedJobId }: {
+  presentation: CinematicPresentation; viewModel: ModelExamplesViewModel; hasRenderedVideos: boolean; galleryOnly?: boolean; excludedJobId?: string;
 }) {
   const { assets, examples, ui } = presentation;
   const preview = galleryOnly && !hasRenderedVideos && examples.gallery ? assets.find(asset => asset.id === examples.gallery!.previewAssetId) : null;
   const proofPanels = galleryOnly ? [] : examples.panels.filter(panel => !panel.placement || panel.placement === 'examples');
   return <section id={galleryOnly ? 'rendered-examples' : 'examples'} className="cinema-examples" aria-label={examples.title ?? viewModel.section.title}>
-    {!galleryOnly && viewModel.anchorId !== 'examples' ? <span id={viewModel.anchorId} /> : null}
+    {viewModel.anchorId !== 'examples' && viewModel.anchorId !== 'rendered-examples' ? <span id={viewModel.anchorId} /> : null}
     {preview && examples.gallery ? <div className="cinema-gallery-bridge"><div className="cinema-wrap cinema-gallery-bridge-inner">
       <figure><Image src={preview.display.url} width={preview.display.width} height={preview.display.height} alt={preview.title} sizes="(min-width: 768px) 200px, 35vw" loading="lazy" /><figcaption>{examples.gallery.previewLabel}</figcaption></figure>
       <div><p className="cinema-eyebrow">{examples.gallery.navLabel}</p><h2>{examples.gallery.title}</h2><p>{examples.gallery.intro}</p>
@@ -24,7 +24,7 @@ export function ModelCinematicExamples({ presentation, viewModel, hasRenderedVid
       </div>
     </div></div> : null}
     {hasRenderedVideos ? <ModelCinematicGallery title={viewModel.section.title}
-      items={buildCinematicGalleryItems(viewModel.decision.items, presentation.content.modelSlug, presentation.locale)} ui={ui}
+      items={buildCinematicGalleryItems(viewModel.decision.items.filter(item => item.id !== excludedJobId && !presentation.media?.publicProofs?.some(proof => proof.jobId === item.id)), presentation.content.modelSlug, presentation.locale)} ui={ui}
       examplesHref={viewModel.decision.examplesLinkHref} examplesLabel={viewModel.decision.viewAllLabel} /> : null}
     {proofPanels.map((panel, index) => {
       const selected = panel.assetIds.map(id => assets.find(asset => asset.id === id)!);

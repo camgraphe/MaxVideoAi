@@ -5,7 +5,10 @@ import { Link } from '@/i18n/navigation';
 import type { CinematicPresentation } from '../_lib/model-page-cinematic-data';
 import type { ModelDecisionData } from '../_lib/model-page-decision-data';
 import { ModelCinematicBenefits } from './ModelCinematicBenefits';
+import { ModelCinematicHighlights } from './ModelCinematicHighlights';
 import { ModelCinematicWorkflowNav } from './ModelCinematicWorkflowNav';
+import { ModelCinematicOverview } from './ModelCinematicOverview';
+import { ModelCinematicHeroMotion } from './ModelCinematicHeroMotion.client';
 
 /** Full-bleed opening owned by the opt-in cinematic template. */
 export function ModelCinematicHero({ presentation, decision }: {
@@ -26,6 +29,7 @@ export function ModelCinematicHero({ presentation, decision }: {
       <Image src={hero.display.url} width={hero.display.width} height={hero.display.height} alt={hero.title}
         loading="eager" fetchPriority="high" sizes="100vw" className="cinema-hero-image" />
     </picture></div>
+    {isVideo && hero.video ? <ModelCinematicHeroMotion key={hero.video.src} src={hero.video.src} title={hero.title} ui={presentation.ui} /> : null}
     <div id="overview" className="cinema-wrap cinema-hero-content">
       <p className="cinema-byline">{content.byline}</p>
       <h1 id="cinema-model-title">{content.titleLines.map((line, index) => <span key={line}>{index ? ' ' : ''}{line}</span>)}</h1>
@@ -37,7 +41,8 @@ export function ModelCinematicHero({ presentation, decision }: {
           <a href="#examples" className="cinema-text-link">{content.examplesLabel}<CinematicArrow direction="down" /></a>
         </div>
       </div>
-      {content.workflows ? <ModelCinematicWorkflowNav workflows={content.workflows} /> : overview ? <ModelCinematicBenefits overview={overview} /> : <dl className="cinema-hero-facts">{content.facts.map(fact => <div key={fact.label}><dt>{fact.label}</dt><dd>{fact.value}</dd></div>)}</dl>}
+      {content.highlights ? <ModelCinematicHighlights items={content.highlights} /> : content.workflows ? <ModelCinematicWorkflowNav workflows={content.workflows} /> : overview ? <ModelCinematicBenefits overview={overview} /> : <dl className="cinema-hero-facts">{content.facts.map(fact => <div key={fact.label}><dt>{fact.label}</dt><dd>{fact.value}</dd></div>)}</dl>}
     </div>
+    <ModelCinematicOverview presentation={presentation} />
   </section>;
 }

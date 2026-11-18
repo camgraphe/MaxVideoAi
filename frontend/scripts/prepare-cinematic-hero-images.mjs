@@ -10,11 +10,13 @@ const manifestPath = path.join(root, 'config/model-cinematic-hero-displays.json'
 const readJson = async file => JSON.parse(await readFile(file, 'utf8'));
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 const originals = [
+  await readJson(path.join(root, 'config/model-cinematic-flash-hero.json')),
   ...(await readJson(path.join(root, 'config/seedream-editorial-images.json'))),
   ...(await readJson(path.join(root, 'config/model-cinematic-start-frames.json'))),
+  ...(await readJson(path.join(root, 'config/model-cinematic-public-proofs.json'))),
 ];
 // This reviewed editorial profile is independent of the shared Next image optimizer.
-const profile = { version: 2, format: 'avif', quality: 40, effort: 6, desktopWidths: [960, 1600, 2560], mobile: { '55-above-the-clouds': { widths: [480, 720], aspect: .5, position: .45 }, 'midnight-run': { widths: [640, 1280], aspect: 16 / 9, position: 1 } } };
+const profile = { version: 2, format: 'avif', quality: 40, effort: 6, desktopWidths: [960, 1600, 2560], mobile: { '55-above-the-clouds': { widths: [480, 720], aspect: .5, position: .45 }, 'midnight-run': { widths: [640, 1280], aspect: 16 / 9, position: 1 }, 'sd25-hero': { widths: [640, 1280], aspect: 16 / 9, position: 0.5 }, 'fluxmax-hero': { widths: [640, 1280], aspect: 20 / 11, position: 0.5 } } };
 const requestedSources = Object.fromEntries(process.argv.filter(arg => arg.startsWith('--source=')).map(arg => {
   const value = arg.slice(9); const index = value.indexOf('=');
   assert.ok(index > 0, 'Use --source=asset-id=/absolute/original');
@@ -52,7 +54,7 @@ if (process.argv.includes('--write')) {
 }
 const manifest = await readJson(manifestPath);
 assert.deepEqual(manifest.profile, profile);
-assert.deepEqual(manifest.assets.map(asset => asset.id).sort(), ['55-above-the-clouds', 'midnight-run']);
+assert.deepEqual(manifest.assets.map(asset => asset.id).sort(), Object.keys(profile.mobile).sort());
 for (const asset of manifest.assets) {
   assert.equal(asset.originalSha256, originals.find(original => original.id === asset.id)?.original.sha256);
   for (const file of [...asset.desktop, ...asset.mobile]) {
@@ -63,4 +65,4 @@ for (const asset of manifest.assets) {
     assert.ok(file.url.endsWith(`/${file.sha256}.avif`));
   }
 }
-console.log('Cinematic hero displays verified: 2 exact originals, 10 immutable responsive AVIF files.');
+console.log(`Cinematic hero displays verified: ${manifest.assets.length} exact originals and their immutable responsive AVIF files.`);
