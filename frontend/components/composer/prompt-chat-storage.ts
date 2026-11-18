@@ -12,7 +12,10 @@ const localSchema=z.object({
 // Invalid optional edits cannot discard the owned session or its pending recovery identity.
 const pendingReferencesSchema=z.array(promptReferenceLocationSchema.extend({label:z.string().max(40)})).max(60);
 const storedSchema=z.object({sessionId:z.string().uuid(),pending:z.object({sessionId:z.string().uuid(),requestId:z.string().uuid(),references:pendingReferencesSchema.optional().catch(undefined)}).nullable(),pendingReview:pendingReviewSchema.optional().catch(undefined),local:localSchema.optional().catch(undefined),legacy:z.boolean().optional()});
-export const analysisIdentitySchema=z.object({sessionId:z.string().uuid(),analysisId:z.string().uuid()});
+export const analysisIdentitySchema=z.object({
+  sessionId:z.string().uuid(),analysisId:z.string().uuid().optional(),requestId:z.string().uuid().optional(),
+  nonBlocking:z.literal(true).optional(),recommended:z.literal(true).optional(),
+}).refine(identity=>Boolean(identity.analysisId)!==Boolean(identity.requestId));
 export type PromptChatRecord=z.infer<typeof storedSchema>;
 export type PromptChatLocal=z.infer<typeof localSchema>;
 export type PromptPendingReview=z.infer<typeof pendingReviewSchema>;
@@ -55,7 +58,7 @@ export function readLegacyPromptRecovery(scopeKey:string){
   const analysis=readAnalysisIdentity(`milo-analysis:${legacyScope}`);
   // Only unfinished identities cross the rollout; never import broad old chat history.
   if(chat?.pending)return {...chat,local:undefined,legacy:true};
-  if(analysis)return {sessionId:analysis.sessionId,pending:null,local:undefined,legacy:true};
+  if(analysis&&!analysis.nonBlocking)return {sessionId:analysis.sessionId,pending:null,local:undefined,legacy:true};
   return null;
 }
 export function clearLegacyPromptRecovery(scopeKey:string,requestId:string){

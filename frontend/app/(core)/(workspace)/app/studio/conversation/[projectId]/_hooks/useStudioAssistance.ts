@@ -8,7 +8,7 @@ export function useStudioAssistance(accountKey:string,conversationBusy:boolean,o
   const session=useMemo(()=>({accountKey,active:false,status:null as StudioAssistanceStatus|null,epoch:0,mutation:false,controller:null as AbortController|null}),[accountKey]);
   const current=useRef(session);current.current=session;
   const pendingObserver=useRef(options.onPendingRequest);pendingObserver.current=options.onPendingRequest;
-  const [state,setState]=useState<{owner:typeof session;status:StudioAssistanceStatus|null;busy:boolean;error:string|null}>({owner:session,status:null,busy:false,error:null});
+  const [state,setState]=useState<{owner:typeof session;status:StudioAssistanceStatus|null;busy:boolean;error:string|null;analysisSponsored:boolean}>({owner:session,status:null,busy:false,error:null,analysisSponsored:false});
   const isCurrent=useCallback(()=>session.active&&current.current===session,[session]);
   const update=useCallback((values:Partial<Omit<typeof state,'owner'>>)=>{if(isCurrent()){if('status' in values)session.status=values.status??null;setState(previous=>({...previous,...values,owner:session}));}},[isCurrent,session]);
   const refresh=useCallback(async()=>{
@@ -19,13 +19,13 @@ export function useStudioAssistance(accountKey:string,conversationBusy:boolean,o
       const response=await fetch(endpoint,{headers:endpoint==='/api/prompt-assistance'?promptInlineAnalysisHeaders():undefined,cache:'no-store',signal:request.signal});const body=await response.json(),parsed=assistanceStatusSchema.safeParse(body.result);
       if(!response.ok||!body.ok||!parsed.success)throw new Error(response.status===401?'AUTH_REQUIRED':'UNAVAILABLE');
       if(isCurrent()&&session.epoch===version&&!request.signal.aborted){
-        update({status:parsed.data,error:null});
+        update({status:parsed.data,error:null,analysisSponsored:body.analysisSponsored===true});
         // Only a validated, authenticated read belonging to this owner may supply discovery metadata.
         pendingObserver.current?.(body.pendingRequest);
       }
     }catch(failure){if(isCurrent()&&session.epoch===version)update(failure instanceof Error&&failure.message==='AUTH_REQUIRED'?{error:'AUTH_REQUIRED',status:null}:{error:'UNAVAILABLE'});}finally{window.clearTimeout(timeout);}
   },[isCurrent,session,update,enabled,endpoint]);
-  useEffect(()=>{session.active=true;update({status:null,busy:false,error:null});void refresh();return()=>{session.active=false;session.epoch++;session.controller?.abort();};},[refresh,session,update]);
+  useEffect(()=>{session.active=true;update({status:null,busy:false,error:null,analysisSponsored:false});void refresh();return()=>{session.active=false;session.epoch++;session.controller?.abort();};},[refresh,session,update]);
   useEffect(()=>{
     if(!enabled)return;
     const visible=()=>{if(document.visibilityState==='visible')void refresh();};
@@ -47,5 +47,5 @@ export function useStudioAssistance(accountKey:string,conversationBusy:boolean,o
     }catch(failure){if(isCurrent()&&version===session.epoch)update({...((failure instanceof Error&&failure.message==='AUTH_REQUIRED')?{status:null}:{}),error:failure instanceof Error&&['STALE','WALLET_INSUFFICIENT','AUTH_REQUIRED'].includes(failure.message)?failure.message:'UNAVAILABLE'});return false;}
     finally{window.clearTimeout(timeout);session.mutation=false;update({busy:false});}
   },[isCurrent,session,update,enabled,endpoint,wrapChoice]);
-  return {getStatus:()=>isCurrent()?session.status:null,status:state.owner===session?state.status:null,busy:state.owner===session&&state.busy,error:state.owner===session?state.error:null,refresh,choose};
+  return {getStatus:()=>isCurrent()?session.status:null,status:state.owner===session?state.status:null,busy:state.owner===session&&state.busy,error:state.owner===session?state.error:null,analysisSponsored:state.owner===session&&!state.error&&state.analysisSponsored,refresh,choose};
 }

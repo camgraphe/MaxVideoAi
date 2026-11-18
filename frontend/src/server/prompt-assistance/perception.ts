@@ -7,13 +7,14 @@ import {resolvePromptReference} from './reference-resolution';
 import {loadPromptReferenceImage} from './reference-images';
 import {readPromptReferenceAnalyses} from './reference-analysis';
 import {studioAnalysisPolicy} from '@/server/studio/media-analysis/policy';
+import {studioAnalysisPilotEnabled} from '@/server/studio/media-analysis/pilot-funding';
 
 type Context=Awaited<ReturnType<typeof buildPromptAssistanceContext>>;
 type Perception={image?:'provided';analyses?:Awaited<ReturnType<typeof readPromptReferenceAnalyses>>};
 export type PerceivedContext=Omit<Context,'references'|'referencePerception'>&{
   references:Array<Context['references'][number]&{perception?:Perception}>;
   referencePerception:'metadata_only'|'provided_content';
-  analysisAvailability?:{visual:boolean;audio:boolean;requiresUpgrade:boolean};
+  analysisAvailability?:{visual:boolean;audio:boolean;requiresUpgrade:boolean;sponsored?:true};
 };
 export async function preparePromptPerception(userId:string,input:PromptAssistanceRequest,model:StudioAssistantModel,context:Context,
   deps:{enabled?:boolean;resolve?:typeof resolveStudioMedia;image?:(media:StudioResolvedMedia,signal:AbortSignal)=>Promise<string>;analyses?:typeof readPromptReferenceAnalyses;analysisPolicy?:typeof studioAnalysisPolicy}={}) {
@@ -21,7 +22,8 @@ export async function preparePromptPerception(userId:string,input:PromptAssistan
   const enriched:PerceivedContext={...context,references:context.references.map(ref=>({...ref}))};
   const policy=(deps.analysisPolicy??studioAnalysisPolicy)();
   const enabled=deps.enabled??process.env.PROMPT_ASSISTANCE_PERCEPTION_ENABLED==='true';
-  enriched.analysisAvailability={visual:enabled&&!!policy?.video,audio:enabled&&!!policy?.audio,requiresUpgrade:model==='gpt-6-luna'};
+  const sponsored=enabled&&!!policy&&studioAnalysisPilotEnabled();
+  enriched.analysisAvailability={visual:enabled&&!!policy?.video,audio:enabled&&!!policy?.audio,requiresUpgrade:model==='gpt-6-luna'&&!sponsored,...(sponsored?{sponsored:true}:{})};
   if(!enabled)return {context:enriched,content};
   const deadline=AbortSignal.timeout(45_000);let size=0;
   for(const reference of enriched.references){
@@ -34,7 +36,7 @@ export async function preparePromptPerception(userId:string,input:PromptAssistan
       if(size>16*1024*1024)throw new Error('REFERENCE_IMAGES_TOO_LARGE');
       content.push({type:'input_text',text:`${reference.label} (${reference.role})`},{type:'input_image',image_url:image,detail:'auto'});
       reference.perception={image:'provided'};
-    }else if(model!=='gpt-6-luna') {
+    }else if(model!=='gpt-6-luna'||sponsored) {
       const analyses=await(deps.analyses??readPromptReferenceAnalyses)(userId,input.sessionId,media);
       if(analyses.length)reference.perception={analyses};
     }

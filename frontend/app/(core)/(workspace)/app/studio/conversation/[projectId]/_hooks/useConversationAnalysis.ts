@@ -1,6 +1,6 @@
 'use client';
 import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
-import {studioAnalysisStatusSchema,type StudioPreparedAnalysis,type StudioAnalysisStatus} from '@/lib/studio/media-analysis-contract';
+import {STUDIO_ANALYSIS_PILOT_HEADER,studioAnalysisStatusSchema,type StudioPreparedAnalysis,type StudioAnalysisStatus} from '@/lib/studio/media-analysis-contract';
 
 export function useConversationAnalysis(projectId:string,accountKey:string,quote:StudioPreparedAnalysis){
   const session=useMemo(()=>({scope:`${accountKey}:${projectId}:${quote.analysisId}`,active:false,version:0,mutation:false,reading:false,controller:null as AbortController|null}),[projectId,accountKey,quote.analysisId]);
@@ -15,7 +15,7 @@ export function useConversationAnalysis(projectId:string,accountKey:string,quote
     const version=++session.version;const controller=new AbortController();session.controller=controller;
     const timeout=window.setTimeout(()=>controller.abort(),20_000);
     try{
-      const response=await fetch(endpoint,confirm?{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({analysisId:quote.analysisId,maxCredits:quote.maxCredits,policyVersion:quote.policyVersion,confirmed:true}),signal:controller.signal}:{cache:'no-store',signal:controller.signal});
+      const response=await fetch(endpoint,confirm?{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({analysisId:quote.analysisId,maxCredits:quote.maxCredits,policyVersion:quote.policyVersion,confirmed:true}),signal:controller.signal}:{cache:'no-store',headers:{[STUDIO_ANALYSIS_PILOT_HEADER]:'1'},signal:controller.signal});
       const body=await response.json(),parsed=studioAnalysisStatusSchema.safeParse(body.result);
       if(!response.ok||!body.ok||!parsed.success||parsed.data.quote.analysisId!==quote.analysisId)throw new Error(typeof body.message==='string'?body.message:'Analysis status unavailable. Refresh before trying again.');
       if(!isCurrent()||version!==session.version)return false;

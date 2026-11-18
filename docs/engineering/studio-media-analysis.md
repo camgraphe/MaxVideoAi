@@ -10,6 +10,50 @@ clips, end images and supplied music can be assembled from explicit timing witho
 content analysis. A delivered result ends the request: generation completion,
 polling and montage delivery never enqueue an inspection or buy another model call.
 
+## Sponsored pilot for Milo and Studio
+
+Enable new sponsored work with the server flag
+`STUDIO_MEDIA_ANALYSIS_SPONSORED_PILOT=true`. The qualified media policy, Milo
+and Studio gates, owned source, and existing workers remain prerequisites.
+In Studio a requested analysis action queues the exact interval with the turn
+receipt. In Milo the freshly delivered recommendation can start the analysis
+by posting the original owned message identity. Users can also select an
+excerpt in the analysis card. Reads and historical chat hydration recover saved
+status. Image references are part of the regular conversation response.
+
+The pilot uses the existing `studio_analysis_credit_funding` journal under
+`studio-media-analysis-pilot-v1`. One campaign lock covers both surfaces, with
+one unfinished sponsored analysis per account. The reserved supplier and
+processing envelope counts toward the campaign cap until settlement. The
+processing allowance is charged to the pilot once the worker starts, including
+failed or expired preparation. Customer
+reservations, allocations, and settlement are zero. An exhausted campaign
+refuses new trial runs, including for accounts with purchased credits.
+
+Use this read-only query to assess adoption and spend. The committed figure
+includes pending and unresolved holds. Amounts in USD include the processing
+envelope. Known model-only costs remain in `provider_snapshot`.
+
+```sql
+SELECT CASE WHEN r.composer_session_id IS NULL THEN 'Studio' ELSE 'Milo' END AS surface,
+       r.quote_json->>'profile' AS profile,
+       count(*) AS started,
+       count(DISTINCT r.user_id) AS accounts,
+       count(*) FILTER (WHERE r.state='completed') AS completed,
+       count(*) FILTER (WHERE r.state='failed') AS failed,
+       count(*) FILTER (WHERE r.state='unknown') AS unresolved,
+       COALESCE(sum(f.charged_sponsored_nano_usd),0) / 1e9 AS settled_usd,
+       sum(COALESCE(f.charged_sponsored_nano_usd,f.reserved_sponsored_nano_usd))
+         / 1e9 AS committed_usd
+FROM studio_analysis_credit_funding f
+JOIN studio_media_analysis_runs r ON r.id=f.call_id
+WHERE f.campaign_id='studio-media-analysis-pilot-v1'
+GROUP BY 1,2;
+```
+
+Disable new sponsored runs through the flag on a Git-backed deployment. For
+readback and recovery, use code that understands the saved zero-credit quotes.
+
 ## Owners and client flow
 
 `frontend/lib/studio/media-analysis-contract.ts` owns strict requests, effective

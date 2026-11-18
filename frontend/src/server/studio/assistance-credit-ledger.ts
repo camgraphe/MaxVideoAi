@@ -39,7 +39,7 @@ export async function purchaseStudioCreditPack(tx:TransactionQueryExecutor,userI
   if(!debit.ok)throw new AgentApiError('INSUFFICIENT_FUNDS','Your MaxVideoAI balance cannot fund this Max pack. Top up your balance before purchasing.');
   await tx.query(`INSERT INTO studio_assistance_credit_lots(id,user_id,kind,total_credits,amount_cents,purchase_key,tariff_version,receipt_id) VALUES($1,$2,'purchased',$3,$4,$5,$6,$7)`,[id,userId,choice.amountCents*creditsPerCent,choice.amountCents,choice.purchaseKey,choice.tariffVersion,debit.receiptId]);
 }
-export type CreditReservation={allocations:Array<{lotId:string;credits:number}>;quotedCents:number;sponsoredNanoUsd:number};
+export type CreditReservation={allocations:Array<{lotId:string;credits:number}>;quotedCents:number;sponsoredNanoUsd:number;campaignId?:string};
 /** Account lock serializes plans. A plan is persisted together with the call checkpoint. */
 export async function planStudioCreditReservation(tx:TransactionQueryExecutor,userId:string,quotedCents:number,supplierNanoUsd:number,paidEnabled:boolean,priorSponsored=false):Promise<CreditReservation|null>{
   const month=await period(tx);
@@ -51,7 +51,7 @@ export async function planStudioCreditReservation(tx:TransactionQueryExecutor,us
 }
 export async function reserveStudioCredits(tx:TransactionQueryExecutor,callId:string,plan:CreditReservation,consumer:StudioCreditConsumer='chat'){
   const {funding,allocations}=creditTables(consumer);
-  if(consumer==='analysis')await tx.query(`INSERT INTO ${funding}(call_id,quoted_cents,reserved_sponsored_nano_usd,campaign_id) VALUES($1,$2,$3,$4)`,[callId,plan.quotedCents,plan.sponsoredNanoUsd,STUDIO_ASSISTANCE_CAMPAIGN_ID]);
+  if(consumer==='analysis')await tx.query(`INSERT INTO ${funding}(call_id,quoted_cents,reserved_sponsored_nano_usd,campaign_id) VALUES($1,$2,$3,$4)`,[callId,plan.quotedCents,plan.sponsoredNanoUsd,plan.campaignId??STUDIO_ASSISTANCE_CAMPAIGN_ID]);
   else await tx.query(`INSERT INTO ${funding}(call_id,quoted_cents,reserved_sponsored_nano_usd) VALUES($1,$2,$3)`,[callId,plan.quotedCents,plan.sponsoredNanoUsd]);
   for(const allocation of plan.allocations){
     await tx.query('UPDATE studio_assistance_credit_lots SET reserved_credits=reserved_credits+$2 WHERE id=$1',[allocation.lotId,allocation.credits]);

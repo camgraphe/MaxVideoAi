@@ -8,6 +8,7 @@ export const promptAnalysisPrepareSchema=z.object({
 }).strict();
 export const promptAnalysisActionSchema=z.discriminatedUnion('action',[
   promptAnalysisPrepareSchema,
+  z.object({action:z.literal('startRecommended'),sessionId:z.string().uuid(),requestId:z.string().uuid()}).strict(),
   z.object({action:z.literal('confirm'),sessionId:z.string().uuid(),confirmation:studioAnalysisConfirmSchema}).strict(),
 ]);
 export const PROMPT_REFERENCE_PERCEPTION=process.env.NEXT_PUBLIC_PROMPT_ASSISTANCE_PERCEPTION==='1';

@@ -28,6 +28,46 @@ test('analysis has owned quotes, shared funding and durable exactly-once provide
   const {resolveStudioMedia}=await import('../frontend/src/server/studio/media-resolver');
   assert.equal((await resolveStudioMedia(actor.userId,ref)).durationSec,30);
   const request={ref,goal:'Find the turn',reason:'requested' as const,startSec:0,endSec:30};
+  await t.test('sponsored analysis queues on request, settles zero credits and respects the shared budget',async()=>{
+    const pilot=createStudioAnalysisService(actor,{policy:analysisPolicy,assistancePolicy,sponsoredPilot:true});
+    const pilotKey=randomUUID();
+    const [first,replay]=await Promise.all([pilot.prepare(request,pilotKey),pilot.prepare(request,pilotKey)]);
+    assert.equal(first.analysisId,replay.analysisId);
+    assert.equal(first.confirmationRequired,false);
+    assert.equal(first.maxCredits,0);
+    assert.equal((await pilot.read(first.analysisId)).state,'queued');
+    assert.equal((await pg.pool.query('SELECT count(*)::int n FROM studio_assistance_credit_lots')).rows[0].n,0);
+    assert.equal((await pg.pool.query('SELECT count(*)::int n FROM studio_analysis_credit_allocations')).rows[0].n,0);
+    await assert.rejects(pilot.prepare(request,randomUUID()),/finish|in progress/i);
+
+    let calls=0;
+    const worker={policy:analysisPolicy,assistancePolicy,scope:{...actor,requestId:first.analysisId},
+      extract:async()=>({frames:[{atSec:0,imageUrl:'data:image/jpeg;base64,AAAA'}],sourceHash:'hash'}),
+      provider:async()=>({inputTokens:100,dispatch:async()=>{
+        calls++;
+        return {id:'pilot-response',model:first.model,serviceTier:'default',usage:{input_tokens:100,input_tokens_details:{cached_tokens:0},output_tokens:20},
+          outputText:'{"summary":"A turn occurs.","observations":[]}',inputTokens:100,outputTokenBound:2200,providerNanoUsd:450_000};
+      }})};
+    assert.equal(await runStudioAnalysisWorkerOnce(worker),true);
+    assert.equal((await pilot.read(first.analysisId)).chargedCredits,0);
+    assert.equal((await pilot.read(first.analysisId)).result?.summary,'A turn occurs.');
+    assert.equal(await runStudioAnalysisWorkerOnce(worker),false);
+    assert.equal(calls,1);
+    const funding=(await pg.pool.query('SELECT campaign_id,charged_cents,charged_sponsored_nano_usd FROM studio_analysis_credit_funding WHERE call_id=$1',[first.analysisId])).rows[0];
+    assert.equal(funding.charged_cents,0);
+    assert.equal(Number(funding.charged_sponsored_nano_usd),3_450_000);
+    const broken=await pilot.prepare({...request,goal:'Extract a broken clip'},randomUUID());
+    await runStudioAnalysisWorkerOnce({...worker,scope:{...actor,requestId:broken.analysisId},
+      extract:async()=>{throw new Error('fixture decode failed');}});
+    assert.equal((await pilot.read(broken.analysisId)).state,'failed');
+    assert.equal((await pilot.read(broken.analysisId)).chargedCredits,0);
+    const failedCost=(await pg.pool.query('SELECT charged_sponsored_nano_usd FROM studio_analysis_credit_funding WHERE call_id=$1',[broken.analysisId])).rows[0];
+    assert.equal(Number(failedCost.charged_sponsored_nano_usd),3_000_000);
+    assert.equal(calls,1);
+    await pg.pool.query('UPDATE studio_assistance_campaigns SET limit_nano_usd=7000000 WHERE id=$1',[funding.campaign_id]);
+    await assert.rejects(pilot.prepare({...request,goal:'Look at the camera movement'},randomUUID()),/pilot|budget/i);
+    assert.equal((await pg.pool.query('SELECT count(*)::int n FROM studio_media_analysis_runs')).rows[0].n,2);
+  });
   const key=randomUUID(),quote=await service.prepare(request,key);
   assert.equal((await readStudioAssistanceStatus(actor.userId,assistancePolicy)).credits?.included.reserved,0,'Preparation never reserves or grants');
   assert.equal((await pg.pool.query('SELECT count(*)::int n FROM studio_assistance_credit_lots')).rows[0].n,0);

@@ -1,6 +1,6 @@
 import {applicationSettingChanges,type ProposalApplicationContext} from './application-review';
 import type {PromptAnalysisRequest} from './analysis-request';
-export type PreviewMessage = { id: string; role: 'user' | 'assistant'; text: string; deliveryFailed?:boolean; analysisRequest?:PromptAnalysisRequest };
+export type PreviewMessage = { id: string; role: 'user' | 'assistant'; text: string; deliveryFailed?:boolean; analysisRequestId?:string; analysisRequest?:PromptAnalysisRequest };
 export type PreviewState = {
   scope: string; fingerprint: string; revision: number; mode: 'prompt' | 'milo'; message: string;
   messages: PreviewMessage[];
@@ -64,7 +64,7 @@ export function previewReducer(state: PreviewState, action: Action): PreviewStat
     case 'edit': return state.proposal ? { ...state, proposal: { ...state.proposal, text: action.text },review:state.review?{...state.review,text:action.text}:null } : state;
     case 'send': return state.pending || !action.message.trim() ? state : { ...state, message: '', review:null,pending: { id: action.id, revision: state.revision,applicationContext:state.applicationContext,compatibilityRevision:state.compatibilityRevision }, messages: [...state.messages, { id: `${action.id}-user`, role: 'user', text: action.message }] };
     case 'reply':
-      return state.pending?.id !== action.id ? state : { ...state, pending: null, review:null,proposal: action.text ? { text: action.text, id:action.id,requestId:action.requestId,revision: state.pending.revision,applicationContext:state.pending.applicationContext,compatibilityRevision:state.pending.compatibilityRevision } : state.proposal, messages: [...state.messages, { id: `${action.id}-assistant`, role: 'assistant', text: action.reply, ...(action.analysisRequest?{analysisRequest:action.analysisRequest}:{}) }] };
+      return state.pending?.id !== action.id ? state : { ...state, pending: null, review:null,proposal: action.text ? { text: action.text, id:action.id,requestId:action.requestId,revision: state.pending.revision,applicationContext:state.pending.applicationContext,compatibilityRevision:state.pending.compatibilityRevision } : state.proposal, messages: [...state.messages, { id: `${action.id}-assistant`, role: 'assistant', text: action.reply, ...(action.analysisRequest?{analysisRequest:action.analysisRequest,...(action.requestId?{analysisRequestId:action.requestId}:{})}:{}) }] };
     case 'failed': {
       if(state.pending?.id!==action.id)return state;
       const failedId=`${action.id}-user`;

@@ -13,21 +13,31 @@ globalThis.replaceReference=()=>setAsset('audio-replacement');
 return <PromptAssistanceComposer context={{scopeKey:'inline-analysis',contextKey:'constant',live:{surface:'video',engineId:'seedance-2-5',mode:'t2v',settings:{durationSec:8},references:[{fieldId:'reference_audio_urls',slot:0,label:'Audio 1',ref:{type:'asset',assetId:asset,kind:'audio'}}]}}} locale="en" modelLabel="Seedance 2.5" draftText="Original draft" onApplyText={()=>{}}><textarea aria-label="Manual prompt" defaultValue="Original draft"/></PromptAssistanceComposer>;}
 createRoot(document.getElementById('root')).render(<Fixture/>);`;
 
-async function setup(options:{lite?:boolean;expires?:number}={}){
+async function setup(options:{lite?:boolean;expires?:number;sponsored?:boolean;dropSponsoredAck?:boolean;reuseFromOtherSession?:boolean}={}){
  const fixture=await startWorkspaceReferenceFixture({source,config:{},assistanceLive:true,perception:true});
  const browser=await chromium.launch();const page=await browser.newPage({viewport:{width:390,height:844}});
  const selectedModel=options.lite?'gpt-6-luna':'gpt-6.1-terra';
  const status={...initialStatus,selectedModel,tariff:studioCreditTariffForModel(selectedModel)};
- const posts:any[]=[],messages:any[]=[],choices:any[]=[];let run:any,session='';
+ const posts:any[]=[],messages:any[]=[],choices:any[]=[];const reads:URLSearchParams[]=[];let run:any,session='';
  await page.route('**/api/prompt-assistance',async route=>{
-  if(route.request().method()==='GET'){await route.fulfill({json:{ok:true,result:status}});return;}
+  if(route.request().method()==='GET'){await route.fulfill({json:{ok:true,result:status,analysisSponsored:options.sponsored===true}});return;}
   const body=route.request().postDataJSON();
   if(!body.request){choices.push(body);await route.fulfill({json:{ok:true,result:status}});return;}
   const request=body.request;messages.push(request);
-  await route.fulfill({json:{ok:true,result:{sessionId:request.sessionId,requestId:request.requestId,draftRevision:request.draftRevision,target:'prompt',message:request.message,state:'complete',reply:{reply:'I can inspect the selected sound excerpt here.',text:null,analysisRequest:{fieldId:'reference_audio_urls',slot:0,modality:'audio',startSec:2,endSec:7,ref:{type:'asset',assetId:'audio-original',kind:'audio'}}},assistance:status}}});
+  await route.fulfill({json:{ok:true,result:{sessionId:request.sessionId,requestId:request.requestId,draftRevision:request.draftRevision,target:'prompt',message:request.message,state:'complete',reply:{reply:'I can inspect the selected sound excerpt here.',text:null,...(messages.length===1?{analysisRequest:{fieldId:'reference_audio_urls',slot:0,modality:'audio',startSec:2,endSec:7,ref:{type:'asset',assetId:'audio-original',kind:'audio'}}}:{})},assistance:status}}});
  });
  await page.route('**/api/prompt-assistance/analyses**',async route=>{
+  if(route.request().method()==='GET'){
+   reads.push(new URL(route.request().url()).searchParams);
+   await route.fulfill({json:{ok:true,result:{status:run,sessionId:session,reused:false}}});return;
+  }
   const body=route.request().postDataJSON();posts.push(body);
+  if(body.action==='startRecommended'&&options.sponsored){
+   session=options.reuseFromOtherSession?randomUUID():body.sessionId;
+   run={state:'completed',chargedCredits:0,error:null,result:{summary:'A short rhythmic drum pattern.',observations:[],coverage:{startSec:2,endSec:7,sampledAtSec:[],complete:false}},quote:{analysisId:randomUUID(),ref:{type:'asset',assetId:'audio-original',kind:'audio'},goal:'Inspect reference',reason:'requested',modality:'audio',startSec:2,endSec:7,maxCredits:0,policyVersion:'test',expiresAt:new Date(Date.now()+900_000).toISOString(),profile:'audio-window-v1',model:'gpt-6.1-terra',confirmationRequired:false}};
+   if(options.dropSponsoredAck){await route.abort('failed');return;}
+   await route.fulfill({json:{ok:true,result:{status:run,sessionId:session,reused:options.reuseFromOtherSession===true}}});return;
+  }
   if(body.action==='prepare'){
    session=body.sessionId;
    run={state:'prepared',chargedCredits:null,error:null,result:null,quote:{analysisId:randomUUID(),ref:body.draft.references[0].ref,goal:'Inspect reference',reason:'requested',modality:body.modality,startSec:body.startSec,endSec:body.endSec,maxCredits:15,policyVersion:'test',expiresAt:new Date(Date.now()+(options.expires??900_000)).toISOString(),profile:'audio-window-v1',model:'gpt-6.1-terra',confirmationRequired:true}};
@@ -36,7 +46,7 @@ async function setup(options:{lite?:boolean;expires?:number}={}){
  });
  await page.goto(fixture.url);await page.getByRole('tab',{name:'AI assistant',exact:true}).click();
  await page.getByRole('textbox',{name:'Message Milo',exact:true}).fill('listen to this first');await page.getByRole('button',{name:'Send message to Milo'}).click();
- return {page,posts,messages,choices,card:page.locator('[data-assistance-transcript]').getByRole('region',{name:'Analyze references'}),close:async()=>{await browser.close();await fixture.close();}};
+ return {page,posts,messages,choices,reads,card:page.locator('[data-assistance-transcript]').getByRole('region',{name:'Analyze references'}),close:async()=>{await browser.close();await fixture.close();}};
 }
 
 test('Milo recommends an inline excerpt, requires confirmation and preserves the unsent message',{timeout:60_000},async()=>{
@@ -54,6 +64,49 @@ test('Milo recommends an inline excerpt, requires confirmation and preserves the
   await f.card.getByRole('button',{name:'Continue with this analysis'}).click();
   await expect(f.page.getByRole('textbox',{name:'Message Milo',exact:true})).toHaveValue('Keep my next instruction');
   assert.equal(f.messages.length,1);assert.equal(f.choices.length,0);
+ }finally{await f.close();}
+});
+
+test('Milo Lite starts a sponsored recommendation from the sent message and recovers it by read',{timeout:60_000},async()=>{
+ const f=await setup({lite:true,sponsored:true});try{
+  await expect(f.card.getByText('A short rhythmic drum pattern.')).toBeVisible();
+  await expect(f.card.getByText('Analysis included.',{exact:false})).toBeVisible();
+  await expect(f.card.getByRole('button',{name:'Review analysis cost'})).toHaveCount(0);
+  assert.deepEqual(f.posts.map(p=>p.action),['startRecommended']);
+  assert.equal(f.posts[0].requestId,f.messages[0].requestId);
+  assert.equal(f.messages.length,1);
+  assert.equal(f.choices.length,0);
+  await f.page.reload();
+  await f.page.getByRole('tab',{name:'AI assistant',exact:true}).click();
+  await expect(f.card.getByText('A short rhythmic drum pattern.')).toBeVisible();
+  const input=f.page.getByRole('textbox',{name:'Message Milo',exact:true});
+  await input.fill('Use the rhythm in my draft');
+  const send=f.page.getByRole('button',{name:'Send message to Milo'});
+  await expect(send).toBeEnabled();
+  await send.click();
+  await expect.poll(()=>f.messages.length).toBe(2);
+  await expect(f.page.getByRole('button',{name:'New chat',exact:true})).toBeEnabled();
+  assert.equal(f.posts.length,1);
+ }finally{await f.close();}
+});
+
+test('Milo recovers a committed pilot analysis by request when its acknowledgement is lost',{timeout:60_000},async()=>{
+ const f=await setup({lite:true,sponsored:true,dropSponsoredAck:true});try{
+  await expect(f.card.getByText(/Check the saved analysis/)).toBeVisible();
+  await f.page.reload();
+  await f.page.getByRole('tab',{name:'AI assistant',exact:true}).click();
+  await expect(f.card.getByText('A short rhythmic drum pattern.')).toBeVisible();
+  assert.ok(f.reads.some(query=>query.get('requestId')===f.posts[0].requestId));
+  assert.equal(f.posts.length,1);
+ }finally{await f.close();}
+});
+
+test('Milo accepts a completed owned analysis from another chat when the server reuses it',{timeout:60_000},async()=>{
+ const f=await setup({lite:true,sponsored:true,reuseFromOtherSession:true});try{
+  await expect(f.card.getByText('A short rhythmic drum pattern.')).toBeVisible();
+  await expect(f.card.getByText(/Saved analysis reused/)).toBeVisible();
+  await expect(f.page.getByRole('button',{name:'New chat',exact:true})).toBeEnabled();
+  assert.equal(f.posts.length,1);
  }finally{await f.close();}
 });
 

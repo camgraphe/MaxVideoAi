@@ -86,7 +86,7 @@ test('media and browser validation retain their full coverage on the stable tool
   assert.ok(workflow.jobs.integration.steps.some(step => step.run === 'pnpm run test:validate -- --suite studio'));
   assert.ok(workflow.jobs.browser.steps.some(step => step.run === 'pnpm run test:validate -- --suite browser --shard ${{ matrix.shard }}/2'));
   assert.ok(workflow.jobs.browser.steps.some(step => step.run === 'pnpm run test:admin-smoke'));
-  assert.equal(workflow.jobs.browser['timeout-minutes'], 40);
+  assert.equal(workflow.jobs.browser['timeout-minutes'], 50);
 });
 
 test('Browser runs both independent partitions without canceling a sibling failure', () => {

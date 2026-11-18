@@ -13,7 +13,7 @@ export const promptReplyTextFormat={type:'json_schema' as const,name:'prompt_ass
     kind:{type:'string',enum:['conversation','replacement'],description:'conversation for advice/questions; replacement only for text intended for the selected editor target.'},
     reply:{type:'string',description:`The complete conversational answer, including advice or an external plan (up to ${PROMPT_ASSISTANCE_TEXT_MAX_CHARS} characters); a short explanation for a replacement.`},
     text:{type:['string','null'],description:'Complete replacement for currentDraft.target only; null for conversation, including external editing plans.'},
-    analysisRequest:{type:['object','null'],additionalProperties:false,required:['fieldId','slot','modality','startSec','endSec'],description:'Suggest review of an attached video/audio analysis quote only when needed. Never starts work. Null otherwise.',properties:{
+    analysisRequest:{type:['object','null'],additionalProperties:false,required:['fieldId','slot','modality','startSec','endSec'],description:'Identify the attached video/audio excerpt needed for this request. Null otherwise. The application controls whether analysis is available and how it starts.',properties:{
       fieldId:{type:'string',description:'Exact current reference field, never a URL or media ID.'},slot:{type:'integer',minimum:0,maximum:99},
       modality:{type:'string',enum:['visual','audio']},startSec:{type:'number',minimum:0,maximum:86400},endSec:{type:['number','null'],description:'End of a positive interval within verified duration; at most60s visual or30s audio. Null lets the app choose its bounded interval.'},
     }},
