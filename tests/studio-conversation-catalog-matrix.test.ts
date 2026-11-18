@@ -164,7 +164,7 @@ test('action-specific recommendations preserve exact compatible choices and excl
   assert.deepEqual(pika.recommendations,[],'Archived Pika must not become a current recommendation or a substituted model.');
   const fourK=await recommendAgentModels({surface:'video',mode:'t2v',resolution:'4k',preferredModelIds:['seedance-2-5']},deps);
   assert.ok(fourK.recommendations.length>0);
-  assert.notEqual(fourK.recommendations[0].model.id,'seedance-2-5');
+  assert.equal(fourK.recommendations[0].model.id,'seedance-2-5', 'Milo preserves the explicitly preferred model now that it supports 4K.');
   assert.ok(fourK.recommendations[0].model.resolutions.includes('4k'));
   const unavailable=await recommendAgentModels({id:'seedance-2-0-fast-byteplus',surface:'video',mode:'t2v'},deps);
   assert.deepEqual(unavailable.recommendations,[],'An exact unavailable choice must not silently become another model.');

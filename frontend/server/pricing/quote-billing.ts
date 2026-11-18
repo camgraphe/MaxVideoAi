@@ -113,10 +113,11 @@ export async function computeCanonicalBillingSnapshot(
   const requiresEditTariff = !context.workflowStep && isSeedance25EditInputPricing(context.engine.id, context.mode);
   const requiresKlingV4Tariff = isKlingV4FalQueueEngineId(context.engine.id);
   const requiresSeedanceFlashTariff = context.engine.id === 'seedance-2-5-flash';
+  const requiresSeedance4kTariff = context.engine.id === 'seedance-2-5' && context.resolution === '4k';
   const requiresNano21Tariff = context.engine.id === NANO21_ENGINE_ID;
   const requiresGpt26Tariff = isGptImage26EngineId(context.engine.id);
   const requiresNewSeedreamTariff = isNewSeedreamEngineId(context.engine.id);
-  if (requiresSeedanceFlashTariff || requiresNewSeedreamTariff || requiresGpt26Tariff || requiresKlingV4Tariff || requiresNano21Tariff || requiresOperationTariff || requiresEditTariff || context.workflowStep || dependencies.loadCustomerTariffState || dependencies.loadCustomerTariffQuoteState || customerTariffsEnabledByCode()) {
+  if (requiresSeedance4kTariff || requiresSeedanceFlashTariff || requiresNewSeedreamTariff || requiresGpt26Tariff || requiresKlingV4Tariff || requiresNano21Tariff || requiresOperationTariff || requiresEditTariff || context.workflowStep || dependencies.loadCustomerTariffState || dependencies.loadCustomerTariffQuoteState || customerTariffsEnabledByCode()) {
     const selector = buildManualTariffScenario(context, billingFacts.facts).selector;
     const tariffState = await (dependencies.loadCustomerTariffState
       ? dependencies.loadCustomerTariffState()
@@ -156,6 +157,7 @@ export async function computeCanonicalBillingSnapshot(
   }
   if (requiresNewSeedreamTariff) throw new CustomerTariffUnavailableError('An active reviewed Seedream customer tariff is required.');
   if (requiresSeedanceFlashTariff) throw new CustomerTariffUnavailableError('An active reviewed Seedance 2.5 Flash tariff is required.');
+  if (requiresSeedance4kTariff) throw new CustomerTariffUnavailableError('An active reviewed Seedance 2.5 4K tariff is required.');
   if (requiresKlingV4Tariff) throw new CustomerTariffUnavailableError('A separate active reviewed Kling V4 customer tariff is required.');
   if (requiresGpt26Tariff) throw new CustomerTariffUnavailableError('An active reviewed GPT Image 2.6 customer tariff is required.');
   if (requiresNano21Tariff) throw new CustomerTariffUnavailableError('An active reviewed Nano Banana 2.1 customer tariff is required.');

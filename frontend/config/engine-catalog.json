@@ -16808,7 +16808,8 @@
       "resolutions": [
         "480p",
         "720p",
-        "1080p"
+        "1080p",
+        "4k"
       ],
       "aspectRatios": [
         "auto",
@@ -16981,7 +16982,8 @@
             "values": [
               "480p",
               "720p",
-              "1080p"
+              "1080p",
+              "4k"
             ],
             "default": "480p"
           },
@@ -17183,10 +17185,49 @@
             "no_video_input": 0.020576923076923076,
             "video_input": 0.012307692307692308
           },
+          "unitPriceUsdPer1kTokensByResolution": {
+            "4k": 0.007230769230769231
+          },
+          "unitPriceUsdPer1kTokensByResolutionAndInputType": {
+            "4k": {
+              "no_video_input": 0.007230769230769231,
+              "video_input": 0.004461538461538461
+            }
+          },
           "pricingSource": "byteplus_seedance_2_5_260628_approved_2_5x",
           "framesPerSecond": 24,
           "defaultAspectRatio": "16:9",
           "dimensions": {
+            "4k": {
+              "auto": {
+                "width": 3840,
+                "height": 2160
+              },
+              "21:9": {
+                "width": 4398,
+                "height": 1886
+              },
+              "16:9": {
+                "width": 3840,
+                "height": 2160
+              },
+              "4:3": {
+                "width": 3326,
+                "height": 2494
+              },
+              "1:1": {
+                "width": 2880,
+                "height": 2880
+              },
+              "3:4": {
+                "width": 2494,
+                "height": 3326
+              },
+              "9:16": {
+                "width": 2160,
+                "height": 3840
+              }
+            },
             "480p": {
               "21:9": {
                 "width": 1120,
@@ -17327,7 +17368,8 @@
           "resolution": [
             "480p",
             "720p",
-            "1080p"
+            "1080p",
+            "4k"
           ],
           "aspectRatio": [
             "auto",
@@ -17339,7 +17381,7 @@
             "9:16"
           ],
           "audioToggle": true,
-          "notes": "Create 4-30 second videos up to 1080p in landscape, square, or vertical formats with generated audio available."
+          "notes": "Create 4-30 second videos up to 4K (10-bit HEVC) in landscape, square, or vertical formats with generated audio available."
         }
       },
       {
@@ -17385,7 +17427,8 @@
           "resolution": [
             "480p",
             "720p",
-            "1080p"
+            "1080p",
+            "4k"
           ],
           "acceptsImageFormats": [
             "jpg",
@@ -17401,7 +17444,7 @@
           ],
           "maxUploadMB": 30,
           "audioToggle": true,
-          "notes": "Animate one start image with an optional end image; 4-30 seconds, up to 1080p, landscape, square, or vertical, with generated audio. images: jpg, jpeg, png, webp, bmp, tif, tiff, gif, heic, heif"
+          "notes": "Animate one start image with an optional end image; 4-30 seconds, up to 4K (10-bit HEVC), landscape, square, or vertical, with generated audio. images: jpg, jpeg, png, webp, bmp, tif, tiff, gif, heic, heif"
         }
       },
       {
@@ -17447,7 +17490,8 @@
           "resolution": [
             "480p",
             "720p",
-            "1080p"
+            "1080p",
+            "4k"
           ],
           "aspectRatio": [
             "auto",
@@ -17517,7 +17561,8 @@
           "resolution": [
             "480p",
             "720p",
-            "1080p"
+            "1080p",
+            "4k"
           ],
           "aspectRatio": [
             "auto",
@@ -17542,7 +17587,7 @@
           ],
           "maxUploadMB": 200,
           "audioToggle": true,
-          "notes": "Edit one source video with optional image, video and audio references; 4-30 seconds, up to 1080p, landscape, square, or vertical, with generated audio. images: jpg, jpeg, png, webp, bmp, tif, tiff, gif, heic, heif; video: mp4, mov; audio: mp3, wav"
+          "notes": "Edit one source video with optional image, video and audio references; 4-30 seconds, up to 4K (10-bit HEVC), landscape, square, or vertical, with generated audio. images: jpg, jpeg, png, webp, bmp, tif, tiff, gif, heic, heif; video: mp4, mov; audio: mp3, wav"
         }
       },
       {
@@ -17588,7 +17633,8 @@
           "resolution": [
             "480p",
             "720p",
-            "1080p"
+            "1080p",
+            "4k"
           ],
           "aspectRatio": [
             "auto",
@@ -17613,7 +17659,7 @@
           ],
           "maxUploadMB": 200,
           "audioToggle": true,
-          "notes": "Continue one to ten source clips with optional image and audio references; 4-30 seconds, up to 1080p, landscape, square, or vertical, with generated audio. images: jpg, jpeg, png, webp, bmp, tif, tiff, gif, heic, heif; video: mp4, mov; audio: mp3, wav"
+          "notes": "Continue one to ten source clips with optional image and audio references; 4-30 seconds, up to 4K (10-bit HEVC), landscape, square, or vertical, with generated audio. images: jpg, jpeg, png, webp, bmp, tif, tiff, gif, heic, heif; video: mp4, mov; audio: mp3, wav"
         }
       }
     ],

@@ -36,6 +36,9 @@ test('workflow reads expose owned eligibility and expiry without provider identi
     assert.equal(final?.eligibility, 'finalized');
     assert.equal(final?.draft.amountCents, 129);
     assert.equal(final?.final?.amountCents, 651);
+    assert.equal(final?.final?.resolution, '1080p', 'historical finals without stored resolution retain their original tier');
+    await db.pool.query(`UPDATE app_jobs SET settings_snapshot = settings_snapshot || '{"core":{"resolution":"4k"}}'::jsonb WHERE job_id='final'`);
+    assert.equal((await views.readOwnedSeedanceWorkflowView('owner', 'draft', query))?.final?.resolution, '4k');
     await db.pool.query(`UPDATE app_jobs SET status = 'failed', payment_status = 'refunded_wallet',
       message = 'Private provider error: req_private https://private.example/token',
       settings_snapshot = settings_snapshot || '{"providerFailure":{"failureCode":"seedance_output_copyright_restricted","providerErrorCode":"private-provider-code"}}'::jsonb

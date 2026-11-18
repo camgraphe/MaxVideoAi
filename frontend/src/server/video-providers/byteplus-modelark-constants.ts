@@ -35,7 +35,7 @@ export const BYTEPLUS_SEEDANCE_2_5_DURATION_OPTIONS = Array.from(
   { length: 27 },
   (_, index) => index + 4
 );
-export const BYTEPLUS_SEEDANCE_2_5_RESOLUTIONS: Resolution[] = ['480p', '720p', '1080p'];
+export const BYTEPLUS_SEEDANCE_2_5_RESOLUTIONS: Resolution[] = ['480p', '720p', '1080p', '4k'];
 export const BYTEPLUS_SEEDANCE_2_5_ASPECT_RATIOS: AspectRatio[] = [
   'auto',
   '21:9',

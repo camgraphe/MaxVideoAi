@@ -1,3 +1,4 @@
+import { isSeedanceFinalResolution } from '@/lib/seedance-workflow-contract';
 import type { PricingContext } from './pricing-context';
 
 /** Separate commercial dimensions within Seedance 2.5, never a new model. */
@@ -5,7 +6,7 @@ export function assertSeedanceWorkflowPricing(context: PricingContext): void {
   if (context.workflowStep === undefined) return;
   if (!['draft', 'final'].includes(context.workflowStep) || context.engine.id !== 'seedance-2-5'
     || !['t2v', 'i2v', 'ref2v', 'v2v', 'extend'].includes(context.mode ?? '')
-    || context.resolution !== (context.workflowStep === 'draft' ? '480p' : '1080p')
+    || (context.workflowStep === 'draft' ? context.resolution !== '480p' : !isSeedanceFinalResolution(context.resolution))
     || !Number.isInteger(context.durationSec) || context.durationSec < 4 || context.durationSec > 30
     || (context.mode === 't2v' && (context.hasVideoInput || context.referenceImageCount || context.inputImageCount
       || context.inputVideoDurationSec || context.inputAudioDurationSec))
