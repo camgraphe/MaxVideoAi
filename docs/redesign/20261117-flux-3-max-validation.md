@@ -1,6 +1,6 @@
 # FLUX 3 Max — validation de la fiche avant publication
 
-Revue du 17 novembre 2026. La maquette peut être validée sur le contenu, le maillage et les trois modes de création démontrés. Pour cette migration, conserver la fiche actuelle en production jusqu’à la validation du mode à images clés minutées. C’est la seule démonstration technique de l’ancienne page qui manque à la candidate et un motif de choix du modèle.
+Décision de publication du 18 novembre 2026. La fiche présente les trois modes démontrés, avec leurs films et leurs prompts. Le mode à images clés minutées pourra retrouver sa place après un rendu réussi de bout en bout dans MaxVideoAI. Le suivi ci-dessous conserve la référence de la page précédente pour mesurer l’effet de ce retrait.
 
 ## Le résultat Google à protéger
 
