@@ -160,6 +160,15 @@ async function main(): Promise<void> {
     row.previous.id !== row.current.id || row.current.engineId !== 'gemini-omni-flash'
   )) throw new Error('Invalid Omni 1.2 supplier-cost projection matrix.');
   const appliedOmniChanges = new Set<string>();
+  const seedance4kChange = JSON.parse(await readFile(new URL('../../tests/fixtures/seedance-25-4k-public-pricing-change-2026-11-17.json', import.meta.url), 'utf8')) as {
+    rows: Array<{ previous: typeof rows[number]; current: typeof rows[number] }>;
+  };
+  const seedance4kPrevious = { id: 'pricing-hub-video:seedance-2-5:4k-route', surface: 'pricing-hub-video', engineId: 'seedance-2-5', status: 'unavailable' };
+  if (!isDeepStrictEqual(seedance4kChange.rows, [{ previous: seedance4kPrevious, current: {
+    ...seedance4kPrevious, status: 'exact', currency: 'USD', customerTotalCents: 1828,
+    unit: 'scenario', quantity: 1, displayedAmount: '$18.28', compatibilityProfile: 'standard',
+  } }])) throw new Error('Invalid Seedance 2.5 4K ×2 projection change.');
+  let appliedSeedance4kChange = false;
   const byId = new Map(fixture.rows.map((row) => [row.id, row]));
   const expected = fixture.rows.map((row) => {
     const standardId = row.id.replace(/:(plus|pro):/u, ':member:');
@@ -260,7 +269,15 @@ async function main(): Promise<void> {
       appliedOmniChanges.add(row.id);
       return change.current;
     })
+    .map(row => {
+      const change = seedance4kChange.rows[0];
+      if (row.id !== change.previous.id) return row;
+      if (!isDeepStrictEqual(row, change.previous)) throw new Error('Seedance 4K change does not match historical evidence.');
+      appliedSeedance4kChange = true;
+      return change.current;
+    })
     .sort((left, right) => left.id.localeCompare(right.id));
+  if (!appliedSeedance4kChange) throw new Error('Missing Seedance 4K projection scenario.');
   if (appliedOmniChanges.size !== omniChanges.size) throw new Error('Missing Omni 1.2 supplier-cost projection scenario.');
   if (appliedCharacterChanges.size !== characterChanges.size) throw new Error('Missing Character Studio pricing transition scenario.');
   if (appliedH3Changes.size !== h3Changes.size) throw new Error('Missing H3 capability pricing scenario.');

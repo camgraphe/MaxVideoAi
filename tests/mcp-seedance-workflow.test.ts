@@ -58,8 +58,9 @@ test('discovery distinguishes native workflow availability from standard resolut
   assert.equal(enabled.available,true);
   assert.equal(enabled.draft.resolution,'480p');
   assert.equal(enabled.final.resolution,'1080p');
+  assert.deepEqual(enabled.final.resolutions,['1080p','4k']);
   assert.equal(enabled.validity.days,7);
-  assert.match(enabled.guidance.join(' '),/direct.*1080p/i);
+  assert.match(enabled.guidance.join(' '),/1080p.*direct/i);
   assert.match(enabled.guidance.join(' '),/ordinary 480p/i);
   const disabled = (await getAgentModelDetails('seedance-2-5',{...deps,seedanceWorkflowAvailability:()=>({mcp:false,web:true})})).seedanceWorkflow!;
   assert.equal(disabled.available,false);
@@ -135,4 +136,9 @@ test('missing or differently denominated future final prices never become free f
   assert.equal(mixed?.final?.currency,'EUR');
   assert.equal(mixed?.total,null);
   assert.equal(mixed?.separateFinalQuoteRequired,true);
+  const tiers = await readSeedanceWorkflowPrices(request,'owner',pricing,{}, {priceGeneration:async request => ({...pricing,
+    priceCents:request.settings.resolution==='4k' ? 914 : 569})});
+  assert.equal(tiers?.finalResolution, '1080p', 'the existing default estimate keeps an explicit resolution');
+  assert.deepEqual(tiers?.finalOptions.map(option => [option.resolution, option.final?.amountCents, option.total?.amountCents]),
+    [['1080p', 569, 646], ['4k', 914, 991]]);
 });

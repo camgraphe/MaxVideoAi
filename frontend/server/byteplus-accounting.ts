@@ -7,7 +7,7 @@ import {
 } from '@/server/video-providers/byteplus-modelark';
 import { isRecord } from './byteplus-record-utils';
 import type { BytePlusPendingJob } from './byteplus-poll-types';
-import { BYTEPLUS_MODELARK_LIST_PRICE_SOURCE, BYTEPLUS_SEEDANCE_25_FLASH_LIST_PRICE_SOURCE, getBytePlusVideoListRate } from './byteplus-list-tariff';
+import { BYTEPLUS_MODELARK_LIST_PRICE_SOURCE, BYTEPLUS_SEEDANCE_25_FLASH_LIST_PRICE_SOURCE, BYTEPLUS_SEEDANCE_25_4K_LIST_PRICE_SOURCE, getBytePlusVideoListRate } from './byteplus-list-tariff';
 import { seedanceOutputDimensions } from '@/lib/seedance-output-dimensions';
 import { quoteSeedance25LasListCost, BYTEPLUS_LAS_LIST_PRICE_SOURCE } from './byteplus-las-tariff';
 
@@ -26,7 +26,8 @@ export function estimateBytePlusOutputTokens(input: {
     * Math.max(1, Math.round(input.durationSec)) * profile.framesPerSecond / 1024 };
 }
 
-/** Formula inferred from all 531 rows of the published minimum tables (2026-10-01).
+/** Formula inferred from all 531 rows of the published minimum tables (2026-10-01),
+ * also checked against all 108 Seedance 2.5 4K rows on 2026-11-17 (dated fixtures).
  * Matches their integer token floor across every published duration/raster/ratio;
  * do not extrapolate outside those domains. Provider usage overrides the estimate.
  */
@@ -256,7 +257,7 @@ export function buildBytePlusListCostBreakdown(input: {
     provider_cost_status: reportedTokens != null ? 'list_estimate_from_provider_usage'
       : totalTokens == null ? 'list_estimate_unavailable' : 'list_estimate_from_dimensions',
     provider_cost_unavailable_reason: totalTokens == null ? 'input_video_duration_unavailable' : null,
-    provider_list_rate_source: (job.engine_id === 'seedance-2-5-flash' ? BYTEPLUS_SEEDANCE_25_FLASH_LIST_PRICE_SOURCE : BYTEPLUS_MODELARK_LIST_PRICE_SOURCE).url,
+    provider_list_rate_source: (job.engine_id === 'seedance-2-5-flash' ? BYTEPLUS_SEEDANCE_25_FLASH_LIST_PRICE_SOURCE : job.engine_id === 'seedance-2-5' && input.resolution === '4k' ? BYTEPLUS_SEEDANCE_25_4K_LIST_PRICE_SOURCE : BYTEPLUS_MODELARK_LIST_PRICE_SOURCE).url,
     model: input.model,
     mode: accounting.mode,
     input_type: accounting.inputType,

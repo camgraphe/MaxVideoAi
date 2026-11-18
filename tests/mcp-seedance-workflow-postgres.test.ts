@@ -10,11 +10,10 @@ import { getAgentGenerationStatus } from '../frontend/src/server/agent-api/gener
 import { buildManualTariffCoverageScenario } from '../frontend/lib/pricing-audit/manual-tariff-coverage';
 import { seedanceWorkflowScenarios } from '../frontend/lib/pricing-audit/seedance-workflow-scenarios';
 import { createPaidGenerationTestSchema, startDisposablePostgres } from './helpers/disposable-postgres';
-import { ensureAssetSchema } from '../frontend/src/lib/schema/asset-schema';
 import type { ResolvedReference } from '../frontend/src/server/agent-api/reference-types';
 import type { AgentPublicGenerationEngine } from '../frontend/src/server/agent-api/model-catalog';
 
-test('MCP native Draft and final use separate tariffs, true provider lineage, atomic reservation and same-attempt recovery', { timeout: 90000 }, async () => {
+for (const finalResolution of ['1080p', '4k'] as const) test(`MCP native Draft and ${finalResolution} final use separate tariffs, true provider lineage, atomic reservation and same-attempt recovery`, { timeout: 90000 }, async () => {
   const db = await startDisposablePostgres('mcp-native-draft');
   const envKeys = ['DATABASE_URL', 'NODE_ENV', 'PRICING_SANDBOX', 'SEEDANCE_2_5_DRAFT_ENABLED', 'MCP_RESOURCE_URL'] as const;
   const previous = envKeys.map(key => process.env[key]);
@@ -46,7 +45,7 @@ test('MCP native Draft and final use separate tariffs, true provider lineage, at
     const entry = getFalEngineById('seedance-2-5')!;
     const candidate: AgentPublicGenerationEngine = { engine: entry.engine, surface: 'video', publicModes: ['t2v','i2v','ref2v','extend'],
       modeCaps: Object.fromEntries(entry.modes.map(m => [m.mode,m.ui])) as AgentPublicGenerationEngine['modeCaps'] };
-    const normal = ['480p','1080p'].map(resolution => buildManualTariffCoverageScenario({ engine: entry.engine, mode: 't2v',
+    const normal = ['480p','1080p','4k'].map(resolution => buildManualTariffCoverageScenario({ engine: entry.engine, mode: 't2v',
       durationSec: 4, resolution, aspectRatio: '16:9', addons: { audio: false }, membershipTier: 'member' }, 'mcp-native'));
     for (const [index, scenario] of [...normal,...seedanceWorkflowScenarios(normal)].entries()) {
       const price = scenario.context.workflowStep === 'draft' ? 77 : scenario.context.workflowStep === 'final' ? 777 : 999;
@@ -79,7 +78,7 @@ test('MCP native Draft and final use separate tariffs, true provider lineage, at
     assert.equal((await row(draft.quoteId)).settings_snapshot.seedanceWorkflow.step,'draft');
     await confirm({quoteId:draft.quoteId,confirmed:true},identity);
     assert.equal(payloads.length,1);
-    const finalInput = {surface:'video' as const,engineId:'seedance-2-5',seedanceWorkflow:{step:'final' as const,draftJobId:draft.quoteId}};
+    const finalInput = {surface:'video' as const,engineId:'seedance-2-5',settings:{resolution:finalResolution},seedanceWorkflow:{step:'final' as const,draftJobId:draft.quoteId}};
     await assert.rejects(prepare(finalInput,identity),/Draft/i,'pending Drafts cannot be finalized');
     // Fixture durable completion; the existing real poll/refund tests own storage and callback qualification.
     await db.pool.query("UPDATE app_jobs SET status='completed',video_url='https://cdn.example.test/draft.mp4' WHERE job_id=$1",[draft.quoteId]);
@@ -101,15 +100,16 @@ test('MCP native Draft and final use separate tariffs, true provider lineage, at
     assert.equal(first.seedanceWorkflowPrices?.final?.amountCents,777);
     assert.equal(first.seedanceWorkflowPrices?.total?.amountCents,854);
     assert.equal(first.seedanceWorkflowPrices?.finalPriceStatus,'exact_quote');
+    assert.equal(first.seedanceWorkflowPrices?.finalResolution,finalResolution);
     assert.equal(first.summary.prompt,request.prompt);
-    assert.equal(first.summary.settings.resolution,'1080p');
+    assert.equal(first.summary.settings.resolution,finalResolution);
     assert.equal(first.summary.settings.durationSec,4);
     assert.ok(!JSON.stringify(first).includes('cgt-fixture'));
     const results = await Promise.allSettled([first,second].map(q=>confirm({quoteId:q.quoteId,confirmed:true},identity)));
     assert.equal(results.filter(r=>r.status==='fulfilled').length,1);
     assert.equal(payloads.length,2);
     assert.deepEqual(payloads[1].content,[{type:'draft_task',draft_task:{id:'cgt-fixture-1'}}]);
-    assert.equal(payloads[1].resolution,'1080p');
+    assert.equal(payloads[1].resolution,finalResolution);
     assert.equal(payloads[1].draft,undefined);
     const finalId = (await db.pool.query('SELECT final_job_id FROM seedance_draft_links')).rows[0].final_job_id;
     await confirm({quoteId:finalId,confirmed:true},identity);
@@ -126,7 +126,9 @@ test('MCP native Draft and final use separate tariffs, true provider lineage, at
     await assert.rejects(prepare({...request,seedanceWorkflow:{step:'draft'}},identity),/Draft/i);
     assert.equal(payloads.length,2);
     process.env.SEEDANCE_2_5_DRAFT_ENABLED='1';
-    await ensureAssetSchema();
+    await db.pool.query(`CREATE TABLE user_assets (asset_id text PRIMARY KEY, user_id text, url text NOT NULL,
+      width integer, height integer, mime_type text, size_bytes bigint, source text, metadata jsonb,
+      created_at timestamptz NOT NULL DEFAULT now())`);
     const imageReferences: ResolvedReference[] = Array.from({length:7}, (_,index) => ({
       assetId:`owned-image-${index}`, role:'reference', mediaKind:'image',
       storageUrl:`https://media.maxvideoai.com/owned/image-${index}.jpg`,
@@ -137,7 +139,7 @@ test('MCP native Draft and final use separate tariffs, true provider lineage, at
       await db.pool.query('INSERT INTO user_assets(asset_id,user_id,url,width,height) VALUES($1,$2,$3,$4,$5)',
         [reference.assetId,identity.userId,reference.storageUrl,reference.width,reference.height]);
     }
-    const imageScenarios = ['480p','1080p'].map(resolution => buildManualTariffCoverageScenario({
+    const imageScenarios = ['480p','1080p','4k'].map(resolution => buildManualTariffCoverageScenario({
       engine:entry.engine,mode:'ref2v',durationSec:25,resolution,aspectRatio:'16:9',addons:{audio:true},
       membershipTier:'member',hasVideoInput:false,inputVideoDurationSec:0,referenceImageCount:7,inputImageCount:7,
     },'mcp-draft-seven-images'));
@@ -176,7 +178,7 @@ test('MCP native Draft and final use separate tariffs, true provider lineage, at
         ...(video?{inputVideoDurationSec:4}:{}),
         ...(mode==='v2v'?{seedanceEditSource:{durationSec:4,width:1280,height:720,billedDurationSec:4,
           pricingAspectRatio:'16:9' as const,outputDuration:'source' as const,outputAspectRatio:'source' as const}}:{})};
-      const base = ['480p','1080p'].map(resolution=>buildManualTariffCoverageScenario({...context,resolution},`mcp-${mode}`));
+      const base = ['480p','1080p','4k'].map(resolution=>buildManualTariffCoverageScenario({...context,resolution},`mcp-${mode}`));
       for (const [index,scenario] of seedanceWorkflowScenarios(base).entries()) {
         const selector=scenario.selector;
         await db.pool.query(`INSERT INTO app_customer_tariff_cells(id,selector_key,selector_json,price_json,currency,effective_from,revision,updated_by)

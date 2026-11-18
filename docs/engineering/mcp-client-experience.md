@@ -796,6 +796,11 @@ sections précédentes restent ceux de leurs révisions respectives.
 
 ## Native Seedance Draft — 18 October 2026 source candidate
 
+The [17 November 4K candidate](seedance-25-4k.md) adds 4K to live model/workflow
+results and resolution-labeled final price options. Tool descriptors, schemas,
+global instructions, plugin packaging and the pending OpenAI submission are
+unchanged; no policy-fingerprint refresh or plugin release is needed for this change.
+
 The additive `seedanceWorkflow` preparation field exposes the existing native
 Draft/final business owners. Model details own live availability, constraints
 and the useful direct 1080p versus Draft-then-final choice. The assistant offers

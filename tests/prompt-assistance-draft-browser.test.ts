@@ -47,7 +47,7 @@ test('Draft remains discoverable in the composer preview without enabling execut
   const browser=await launch();
   try {for(const width of [390,1440]) {
    const page=await browser.newPage({viewport:{width,height:900}});await page.goto(fixture.url);
-   const draft=page.getByRole('checkbox',{name:'Enable Draft · 480p → final 1080p',exact:true});
+   const draft=page.getByRole('checkbox',{name:'Enable Draft · 480p → final 1080p or 4K',exact:true});
    for(const mode of ['Create','Modify','Extend']) {
     if(mode!=='Create') await page.getByRole('button',{name:mode+' fixture',exact:true}).click();
     for(const tab of ['Prompt','AI assistant']) {
@@ -78,7 +78,7 @@ test('ordinary workspace keeps Draft hidden when the server has not enabled it',
  const browser=await chromium.launch({headless:true});
  try {
   const page=await browser.newPage();await page.goto(fixture.url);
-  const draft=page.getByRole('checkbox',{name:'Enable Draft · 480p → final 1080p',exact:true});
+  const draft=page.getByRole('checkbox',{name:'Enable Draft · 480p → final 1080p or 4K',exact:true});
   await expect(page.locator('[data-workspace-prompt]')).toBeVisible();
   await expect(draft).toHaveCount(0);
   await page.getByRole('button',{name:'Enable workflow fixture',exact:true}).click();

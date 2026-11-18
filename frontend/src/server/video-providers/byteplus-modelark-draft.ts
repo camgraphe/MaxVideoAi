@@ -8,6 +8,8 @@ import {
   type BytePlusSeedancePayload,
 } from './byteplus-modelark-payload';
 
+import { isSeedanceFinalResolution, type SeedanceFinalResolution } from '@/lib/seedance-workflow-contract';
+
 type DraftInput = Parameters<typeof buildBytePlusSeedancePayload>[0];
 
 export type Seedance25DraftRequest = BytePlusSeedancePayload & { draft: true };
@@ -15,7 +17,7 @@ export type Seedance25DraftRequest = BytePlusSeedancePayload & { draft: true };
 export type Seedance25FinalRequest = {
   model: string;
   content: [{ type: 'draft_task'; draft_task: { id: string } }];
-  resolution: '1080p';
+  resolution: SeedanceFinalResolution;
   watermark: false;
   output_format?: 'mp4' | 'mov';
 };
@@ -42,11 +44,16 @@ export function buildSeedance25DraftRequest(input: DraftInput): Seedance25DraftR
 export function buildSeedance25FinalRequest(input: {
   modelId: string;
   draftProviderTaskId: string;
+  resolution?: SeedanceFinalResolution;
   outputFormat?: 'mp4' | 'mov';
   // Legacy inputs remain readable; neither option can be enabled on new tasks.
   returnLastFrame?: boolean;
   watermark?: boolean;
 }): Seedance25FinalRequest {
+  const resolution = input.resolution === undefined ? '1080p' : input.resolution;
+  if (!isSeedanceFinalResolution(resolution)) {
+    throw new BytePlusModelArkError('Unsupported final resolution.', { code: 'BYTEPLUS_FINAL_RESOLUTION_UNSUPPORTED' });
+  }
   const model = input.modelId.trim();
   const draftProviderTaskId = input.draftProviderTaskId.trim();
   if (!model || !draftProviderTaskId || draftProviderTaskId.length > 255 || /\s/u.test(draftProviderTaskId)
@@ -60,7 +67,7 @@ export function buildSeedance25FinalRequest(input: {
   return {
     model,
     content: [{ type: 'draft_task', draft_task: { id: draftProviderTaskId } }],
-    resolution: '1080p',
+    resolution,
     watermark: false,
     ...(input.outputFormat !== undefined ? { output_format: input.outputFormat } : {}),
   };

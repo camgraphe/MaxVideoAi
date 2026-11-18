@@ -42,7 +42,7 @@ for (const [name, lasEnabled, lasKey, available] of [
     assert.equal(projected.modeAvailability?.v2v?.available, available);
     for (const mode of ['t2v', 'i2v', 'ref2v', 'extend']) {
       assert.equal(projected.modeAvailability?.[mode]?.available, true, mode);
-      assert.deepEqual(projected.modeCaps[mode].resolution, ['480p', '720p', '1080p']);
+      assert.deepEqual(projected.modeCaps[mode].resolution, ['480p', '720p', '1080p', '4k']);
     }
     assert.deepEqual(projected.modeCaps.v2v.resolution, ['480p', '720p']);
     assert.equal(JSON.stringify(result).includes('ark-fixture'), false);
@@ -64,7 +64,7 @@ test('saved Edit source retains its intent while unavailable modes and source ad
 });
 
 test('ModelArk Edit advertises 1080p while the retained LAS runtime rejects it', () => {
-  assert.deepEqual(getFalEngineById('seedance-2-5')?.modes.find(({ mode }) => mode === 'v2v')?.ui.resolution, ['480p', '720p', '1080p']);
+  assert.deepEqual(getFalEngineById('seedance-2-5')?.modes.find(({ mode }) => mode === 'v2v')?.ui.resolution, ['480p', '720p', '1080p', '4k']);
   for (const mode of modes) {
     const result = normalizeBytePlusOptions({ engineId: 'seedance-2-5', mode, durationSec: 4, requestedResolution: '1080p', aspectRatio: '16:9' });
     assert.equal(result.ok, mode !== 'v2v', mode);
@@ -72,7 +72,7 @@ test('ModelArk Edit advertises 1080p while the retained LAS runtime rejects it',
   }
   const runtime = applyBytePlusSeedanceRuntimeOptions(engine(), { provider: 'byteplus_modelark', allowedModes: modes });
   assert.deepEqual(runtime.modeCaps?.v2v?.resolution, ['480p', '720p']);
-  assert.deepEqual(runtime.modeCaps?.t2v?.resolution, ['480p', '720p', '1080p']);
+  assert.deepEqual(runtime.modeCaps?.t2v?.resolution, ['480p', '720p', '1080p', '4k']);
 });
 
 test('server Edit preflight refuses unavailable execution before media verification or pricing', async () => {

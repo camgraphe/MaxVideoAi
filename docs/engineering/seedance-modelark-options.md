@@ -1,5 +1,9 @@
 # Seedance ModelArk creative options
 
+The [17 November 4K candidate](seedance-25-4k.md) extends standard 2.5 direct and
+Draft-final resolution through the shared web/Studio/MCP capabilities, with
+independent ×2 tariff activation. Its evidence and release limits are recorded there.
+
 Reviewed 2026-10-14 against the [ModelArk task API](https://docs.byteplus.com/en/docs/modelark/create-video-generation-task-api).
 
 `frontend/lib/seedance-modelark-options.ts` extends the authored current

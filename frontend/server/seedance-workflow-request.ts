@@ -1,3 +1,4 @@
+import { isSeedanceFinalResolution } from '@/lib/seedance-workflow-contract';
 import { withoutRetiredOutputControls } from '@/lib/generation-output-policy';
 import { query, type QueryExecutor } from '@/lib/db';
 import { isRecord } from './byteplus-record-utils';
@@ -54,6 +55,8 @@ export async function resolveSeedanceWorkflowRequest(input: {
     if (body.resolution !== undefined && body.resolution !== '480p') throw invalid();
     return { body: { ...body, ...(isRecord(body.extraInputValues) ? { extraInputValues: withoutRetiredOutputControls(body.extraInputValues) } : {}), resolution: '480p', iterationCount: 1, audio: body.audio !== false }, workflow: { step: 'draft' } };
   }
+  const resolution = body.resolution === undefined ? '1080p' : body.resolution;
+  if (!isSeedanceFinalResolution(resolution)) throw invalid('Unsupported final resolution.');
   const draftJobId = raw.draftJobId;
   if (typeof draftJobId !== 'string' || !draftJobId || draftJobId.length > 255 || /\s|\0/u.test(draftJobId)) throw invalid();
   const link = await (deps.getOwnedReadyFn ?? getOwnedReadySeedanceDraftLink)(input.userId, draftJobId, deps.queryFn);
@@ -79,7 +82,7 @@ export async function resolveSeedanceWorkflowRequest(input: {
     finalFacts,
     body: { ...body, mode: settings.inputMode, prompt: parent.prompt, durationSec, duration: durationSec,
       durationOption: mediaFacts?.durationOption ?? core.durationOption,
-      resolution: '1080p', aspectRatio: finalFacts.aspectRatio, audio: parent.audio, iterationCount: 1,
+      resolution, aspectRatio: finalFacts.aspectRatio, audio: parent.audio, iterationCount: 1,
       inputs: finalFacts.attachments, referenceImages: refs.referenceImages ?? [], reference_images: [],
       imageUrl: refs.imageUrl ?? refs.firstFrameUrl, image_url: undefined,
       audioUrl: refs.audioUrl, audio_url: undefined, videoUrls: refs.videoUrls ?? [], audioUrls: [], endImageUrl: refs.endImageUrl,
