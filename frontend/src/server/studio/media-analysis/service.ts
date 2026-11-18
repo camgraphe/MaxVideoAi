@@ -43,7 +43,7 @@ function createAnalysisService(actor:AnalysisScope,dependencies:AnalysisDependen
   return {
     read:async(id:string)=>projectAnalysis(await readAnalysis(actor,id)),
     async readByRequest(key:string) {
-      await assertAnalysisScope({query},actor,false,false);
+      // An unacknowledged request may never have created its composer session.
       const column=parts.sessionId?'composer_session_id':'project_id';
       const [run]=await query<AnalysisRun>('SELECT * FROM studio_media_analysis_runs WHERE user_id=$1 AND '+column+'=$2 AND request_key=$3',[actor.userId,parts.sessionId??parts.projectId,key]);
       return run?projectAnalysis(run):null;

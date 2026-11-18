@@ -68,10 +68,11 @@ export function usePromptReferenceAnalysis(scopeKey:string,onCompleted:()=>void,
       if(identity?.analysisId&&status.quote.analysisId!==identity.analysisId)throw new Error('Unexpected analysis identity.');
       if(action==='prepare'||action==='startRecommended'||identity?.requestId){
         const sessionId=data.result.sessionId;
-        if(typeof sessionId!=='string'||identity&&sessionId!==identity.sessionId)throw new Error('Invalid analysis session.');
+        const reused=data.result.reused===true&&status.state==='completed';
+        if(typeof sessionId!=='string'||identity&&sessionId!==identity.sessionId&&!reused)throw new Error('Invalid analysis session.');
         owner.identity={sessionId,analysisId:status.quote.analysisId};
         owner.startRequest=null;
-        update({reused:!!data.result.reused});
+        update({reused});
       }
       accept(status);
     }catch(error){

@@ -13,7 +13,7 @@ globalThis.replaceReference=()=>setAsset('audio-replacement');
 return <PromptAssistanceComposer context={{scopeKey:'inline-analysis',contextKey:'constant',live:{surface:'video',engineId:'seedance-2-5',mode:'t2v',settings:{durationSec:8},references:[{fieldId:'reference_audio_urls',slot:0,label:'Audio 1',ref:{type:'asset',assetId:asset,kind:'audio'}}]}}} locale="en" modelLabel="Seedance 2.5" draftText="Original draft" onApplyText={()=>{}}><textarea aria-label="Manual prompt" defaultValue="Original draft"/></PromptAssistanceComposer>;}
 createRoot(document.getElementById('root')).render(<Fixture/>);`;
 
-async function setup(options:{lite?:boolean;expires?:number;sponsored?:boolean;dropSponsoredAck?:boolean}={}){
+async function setup(options:{lite?:boolean;expires?:number;sponsored?:boolean;dropSponsoredAck?:boolean;reuseFromOtherSession?:boolean}={}){
  const fixture=await startWorkspaceReferenceFixture({source,config:{},assistanceLive:true,perception:true});
  const browser=await chromium.launch();const page=await browser.newPage({viewport:{width:390,height:844}});
  const selectedModel=options.lite?'gpt-6-luna':'gpt-6.1-terra';
@@ -33,10 +33,10 @@ async function setup(options:{lite?:boolean;expires?:number;sponsored?:boolean;d
   }
   const body=route.request().postDataJSON();posts.push(body);
   if(body.action==='startRecommended'&&options.sponsored){
-   session=body.sessionId;
+   session=options.reuseFromOtherSession?randomUUID():body.sessionId;
    run={state:'completed',chargedCredits:0,error:null,result:{summary:'A short rhythmic drum pattern.',observations:[],coverage:{startSec:2,endSec:7,sampledAtSec:[],complete:false}},quote:{analysisId:randomUUID(),ref:{type:'asset',assetId:'audio-original',kind:'audio'},goal:'Inspect reference',reason:'requested',modality:'audio',startSec:2,endSec:7,maxCredits:0,policyVersion:'test',expiresAt:new Date(Date.now()+900_000).toISOString(),profile:'audio-window-v1',model:'gpt-6.1-terra',confirmationRequired:false}};
    if(options.dropSponsoredAck){await route.abort('failed');return;}
-   await route.fulfill({json:{ok:true,result:{status:run,sessionId:session,reused:false}}});return;
+   await route.fulfill({json:{ok:true,result:{status:run,sessionId:session,reused:options.reuseFromOtherSession===true}}});return;
   }
   if(body.action==='prepare'){
    session=body.sessionId;
@@ -97,6 +97,15 @@ test('Milo recovers a committed pilot analysis by request when its acknowledgeme
   await f.page.getByRole('tab',{name:'AI assistant',exact:true}).click();
   await expect(f.card.getByText('A short rhythmic drum pattern.')).toBeVisible();
   assert.ok(f.reads.some(query=>query.get('requestId')===f.posts[0].requestId));
+  assert.equal(f.posts.length,1);
+ }finally{await f.close();}
+});
+
+test('Milo accepts a completed owned analysis from another chat when the server reuses it',{timeout:60_000},async()=>{
+ const f=await setup({lite:true,sponsored:true,reuseFromOtherSession:true});try{
+  await expect(f.card.getByText('A short rhythmic drum pattern.')).toBeVisible();
+  await expect(f.card.getByText(/Saved analysis reused/)).toBeVisible();
+  await expect(f.page.getByRole('button',{name:'New chat',exact:true})).toBeEnabled();
   assert.equal(f.posts.length,1);
  }finally{await f.close();}
 });

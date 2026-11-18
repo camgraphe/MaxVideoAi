@@ -112,6 +112,9 @@ test('Milo cost review verifies an older owned Wan Modify output without using r
       assert.deepEqual([started.status.quote.startSec,started.status.quote.endSec],[1,5]);
       assert.equal(started.status.quote.analysisId,replay.status.quote.analysisId);
       assert.equal(started.status.quote.confirmationRequired,false);
+      assert.equal((await createComposerAnalysisService(user,input.sessionId).readByRequest(requestId))?.quote.analysisId,started.status.quote.analysisId);
+      assert.equal(await createComposerAnalysisService(user,randomUUID()).readByRequest(requestId),null);
+      assert.equal(await createComposerAnalysisService('foreign',input.sessionId).readByRequest(requestId),null);
       assert.equal((await pg.pool.query("SELECT selected_model FROM studio_assistance_accounts WHERE user_id=$1",[user])).rows[0].selected_model,'gpt-6-luna');
       assert.equal((await pg.pool.query('SELECT count(*)::int n FROM studio_analysis_credit_allocations')).rows[0].n,0);
     } finally {
