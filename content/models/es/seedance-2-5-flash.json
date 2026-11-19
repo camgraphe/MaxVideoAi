@@ -209,7 +209,7 @@
       "subtitle": "Elige la duración, resolución, sonido y referencias en Create. Verás el precio exacto antes de generar.",
       "footnote": "Los vídeos de origen pueden modificar la duración facturable. Consulta el presupuesto para tus entradas.",
       "ctaLabel": "Ver todos los precios",
-      "ctaHref": "/es/precios"
+      "ctaHref": "/es/precios#seedance-2-5-flash-pricing"
     },
     "meta": {
       "title": "Seedance 2.5 Flash: generación y edición de vídeo IA | MaxVideoAI",
@@ -647,6 +647,23 @@
       },
       "promptNote": "Usa este prompt en Create. Añade tus referencias o vídeo original y revisa los ajustes y el precio actual. Reutilizar el prompt no adjunta automáticamente los medios del ejemplo.",
       "imageDetailsLabel": "Sobre la imagen inicial"
+    },
+    "alternatives": {
+      "title": "¿Qué modelo encaja con tu plano?",
+      "models": [
+        {
+          "slug": "seedance-2-5",
+          "reason": "Prueba el movimiento de cámara en un borrador a 480p y termina la toma que elijas en 1080p o 4K."
+        },
+        {
+          "slug": "kling-v4-flash",
+          "reason": "Usa varias vistas de un personaje como referencia para guiar su aspecto en un nuevo plano a 720p."
+        },
+        {
+          "slug": "minimax-h3",
+          "reason": "Parte de tu propia banda sonora para marcar el ritmo de una escena de 5 a 15 segundos."
+        }
+      ]
     },
     "promptAssistant": {
       "title": "Milo — asistente de IA para prompts",

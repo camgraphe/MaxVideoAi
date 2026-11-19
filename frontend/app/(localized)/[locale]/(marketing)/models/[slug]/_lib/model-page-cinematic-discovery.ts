@@ -27,6 +27,10 @@ export const cinematicDiscoveryCopy = {
 const alternativesPosters: Readonly<Record<string, string>> = {
   'seedance-2-5-flash': flashMedia.create.poster,
   'seedance-2-5': '/hero/showcase-seedance-2-5-cat-15s.webp',
+  // Compartment 9, the published Kling 4.0 Flash hero (job_external_fal_6712f839e8fdd81095934387795fdac464ae58ac).
+  'kling-v4-flash': '/assets/model-examples/kling-v4-flash/80010ee9e26bd73f0a921255ebe90621d342c857bfab746cba2a9699c49d212d.webp',
+  // Public MiniMax H3 model-page poster, b9aec85c-9114-4bc0-a8e7-2cf990c3490f.jpg.
+  'minimax-h3': '/assets/model-examples/minimax-h3/8faa476af43165998ede409240b2c589ca515acb1babdc650c3c4554031c76f2.webp',
   // Public FLUX 3 example 7a4db1b2-bfee-4279-a936-651a6c091995, an illustrated Andalusian courtyard.
   'flux-3': '/assets/model-examples/flux-3/be8b45a6256f9ded1ade7dfe52ab920ff1642b87bb2bf73e61420f42d8a0350f.webp',
   'wan-3': '/hero/showcase-wan-3-city-22s.webp',
