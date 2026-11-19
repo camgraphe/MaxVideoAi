@@ -209,7 +209,7 @@
       "subtitle": "Choose the duration, resolution, sound and references in Create. See the exact price before you generate.",
       "footnote": "Source videos can affect the billable duration. Check the quote for your exact inputs.",
       "ctaLabel": "View full pricing",
-      "ctaHref": "/pricing"
+      "ctaHref": "/pricing#seedance-2-5-flash-pricing"
     },
     "meta": {
       "title": "Seedance 2.5 Flash AI Video Generator & Editing | MaxVideoAI",
@@ -647,6 +647,23 @@
       },
       "promptNote": "Use this prompt in Create. Add your own required references or source video, then review the settings and current price. Reusing a prompt does not automatically attach this example’s media.",
       "imageDetailsLabel": "About the start image"
+    },
+    "alternatives": {
+      "title": "Which model fits your shot?",
+      "models": [
+        {
+          "slug": "seedance-2-5",
+          "reason": "Try the camera move in a 480p Draft, then finish the take you choose in 1080p or 4K."
+        },
+        {
+          "slug": "kling-v4-flash",
+          "reason": "Use several views of a character as a subject reference to guide their appearance in a new 720p shot."
+        },
+        {
+          "slug": "minimax-h3",
+          "reason": "Start with a soundtrack. Use your own audio to set the rhythm of a 5–15-second scene."
+        }
+      ]
     },
     "promptAssistant": {
       "title": "Milo — AI prompt assistant",

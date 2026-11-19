@@ -251,7 +251,7 @@ test('the 4K editorial candidate carries its codec into exports without relabell
 });
 
 test('video closing sections link to model-specific alternatives, published comparisons and the localized tariff row', () => {
-  for (const slug of slugs) for (const locale of locales) {
+  for (const slug of [...slugs, 'seedance-2-5-flash']) for (const locale of locales) {
     const page = read(slug, locale);
     const choices = parseModelCinematicContent(page.cinematic, slug)!.alternatives!.models;
     const links = buildCinematicAlternatives(slug, locale, [...choices, { slug, reason: 'self' }, { slug: 'missing-model', reason: 'missing' }]);
@@ -259,6 +259,13 @@ test('video closing sections link to model-specific alternatives, published comp
     if (slug === 'flux-3-max') {
       assert.deepEqual(links.map(link => link.slug), ['flux-3', 'seedance-2-5', 'minimax-h3-max']);
       assert.equal(links[0].compareHref, compareBase + 'flux-3-vs-flux-3-max?order=flux-3-max');
+    } else if (slug === 'seedance-2-5-flash') {
+      assert.deepEqual(links.map(link => link.slug), ['seedance-2-5', 'kling-v4-flash', 'minimax-h3']);
+      assert.deepEqual(links.map(link => link.compareHref), [
+        compareBase + 'seedance-2-5-vs-seedance-2-5-flash?order=seedance-2-5-flash',
+        compareBase + 'kling-v4-flash-vs-seedance-2-5-flash?order=seedance-2-5-flash',
+        compareBase + 'minimax-h3-vs-seedance-2-5-flash?order=seedance-2-5-flash',
+      ]);
     } else {
       assert.deepEqual(links.map(link => link.slug), ['seedance-2-5-flash', 'wan-3', 'minimax-h3-max']);
       assert.deepEqual(links.map(link => link.compareHref), [
