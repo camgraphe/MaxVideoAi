@@ -10,7 +10,7 @@
 .surface[open]>.surfaceHead>svg,.wallet details[open]>summary svg:last-child { transform:rotate(180deg); }
 .thumb { width:clamp(86px,14vw,165px); height:64px; flex:none; overflow:hidden; border-radius:4px; background:#29231e; }
 .thumb img { width:100%; height:100%; object-fit:cover; }
-.surfaceBody { padding:8px 0 24px; }
+.surfaceBody { padding:8px 0 24px; scroll-margin-top:calc(6rem + 84px); }
 .surfaceNote { font-size:15px; line-height:1.55; color:var(--text-secondary); max-width:80ch; }
 .surfaceBody table,.checks table { width:100%; }
 .surfaceBody thead,.checks thead { background:var(--surface-2); }
