@@ -86,7 +86,7 @@
     },
     "media": {
       "caption": "Kling Image 4.0 renders",
-      "description": "Stand-up poster, streetwear fitting, a sleeve print and a graphic beauty close-up.",
+      "description": "A shoe repair poster, a streetwear fitting, a jacket logo and a graphic beauty close-up.",
       "renderLabel": "Inspect the image",
       "badges": [
         "Kling Image 4.0"
@@ -199,11 +199,11 @@
       "workspaceLabel": "Create with Kling Image 4.0",
       "items": [
         {
-          "id": "kling-image-4-bus-shelter-poster",
+          "id": "kling-image-4-bus-shelter-sole-print",
           "title": "I CAN WALK FROM HERE.",
-          "badge": "Bus shelter · typography",
+          "badge": "Bus shelter · poster design",
           "kind": "typography",
-          "prompt": "Photograph a real-looking bus shelter on a dry neighbourhood street in late-morning side light. The subject is the printed advertisement mounted in the shelter's vertical panel. Use a 40 mm street-photography perspective from the pavement, only a few degrees off front-on. Frame all four edges of the panel and enough roof, bench, kerb and brickwork to make its location obvious. Let the panel take roughly two-thirds of the frame width, with the print in sharp focus. The dark metal frame is slightly scuffed at its base. The glass is clear over all lettering.\n\nThe ad is for a neighbourhood shoe repair shop. Lay it out on vivid chartreuse matte paper, using deep green ink and a bold, condensed sans-serif. Give the type wide margins and align both text groups left. Set the large headline once, following the exact line break and punctuation below.\n\n\"I CAN WALK\nFROM HERE.\"\n\nLeave a clear gap below the headline. Set \"SHOE REPAIR\" once at the bottom left in smaller capitals. Print the words and the final period without the quotation marks. The artwork consists only of these two text groups on the single flat colour. Keep the rest of the scene free of readable signs, logos and extra lettering.\n\nOn the narrow right side of the frame, a stylish adult in an ink-blue work jacket, wide slate trousers and worn leather sneakers steps away along the pavement, a burnt-orange shoulder bag swinging behind the hip. Catch a natural mid-stride, with clear dry shadows and a warm edge of sun on the jacket. Keep the person beside the panel with the entire headline and small line clear. Make the setting feel inhabited through the worn paving and the light on the brick, as in a candid photograph taken on an ordinary morning."
+          "prompt": "Use @Image1 as the exact street photograph and edit only the printed artwork inside the existing bus-shelter ad panel. Keep the camera, framing, metal shelter, glass, brick walls, bench, passer-by and bag exactly in place. The existing shadows and subtle reflections still fall naturally over the new artwork.\n\nRedesign the ad on warm chalk-cream matte stock. Use near-black plum ink and vivid vermilion thread. The central image is a single oversized shoe-tread print, like an ink impression on paper, split at midfoot and visibly sewn back together. Three thick vermilion stitches cross the opening. Use a clean graphic silhouette and a few broad tread shapes, with enough space around the stitches for the repair to read in one glance. Fit the whole illustration below the headline and above the service line. Make the finished print feel like a real independent shoe repair campaign.\n\nKeep the following headline once, large and bold, over these exact two lines. Print the words without quotation marks.\n\n\"I CAN WALK\nFROM HERE.\"\n\nPlace \"SHOE REPAIR\" once at the bottom in smaller bold capitals, aligned with the headline. Use strong contrast and generous outer margins. Keep the period after HERE. The headline, the tread print and the service line are the three elements of the new ad. Add no other words or logos."
         },
         {
           "id": "kling-image-4-pop-up-series",
@@ -213,11 +213,11 @@
           "prompt": "Deliver exactly three separate 3:2 campaign images in the order below. They follow Inès, a 28-year-old designer, during an impromptu fitting at an independent streetwear pop-up. Inès has a short blunt black bob with one apricot-coloured strand over her left brow, a silver ear cuff on her right ear, freckles across her nose and a direct gaze. She wears the same original cobalt-blue cropped jacket in every shot: matte fabric, three broad horizontal quilt channels, a visibly off-centre silver zip and plain unmarked sleeves. Keep the face, ear cuff and jacket construction consistent across all views. The styling is deliberate and current, with wide charcoal trousers and boxy white shoes, no visible branding.\n\n1. Wide, low 24 mm shot outside the gallery. Inès steps off an orange shipping crate as if testing the jacket in motion. Photograph the full outfit in clear afternoon sun. A sharp cast shadow cuts across the pale concrete steps. Use strong geometric diagonals and plenty of room around the body.\n\n2. Steep overhead view from above the cutting table. Inès sits on an orange stool with both forearms on the matte orange tabletop, taking a folded paper pattern out of a sleeve cuff. Put her face and the plain outer panel of her left sleeve in the same frame. Use diffuse north-window light, soft shadows and clean, readable fabric seams. This is the source image for the later sleeve edit.\n\n3. Tight angle just below eye height at the entrance after dark. Inès glances back towards someone arriving, her face and asymmetric collar caught by direct white flash against a deep plum entrance. Keep the apricot strand, collar construction and silver cuff recognizable. Compose a confident diagonal running from the collar towards her eye.\n\nEach result is a single complete image. Clear faces, purposeful gestures, dry surfaces and contemporary editorial finish. Keep the scene free of writing, brand marks and extra outfits."
         },
         {
-          "id": "kling-image-4-sleeve-edit",
-          "title": "Six squares on one sleeve",
-          "badge": "Editing · a localised motif",
+          "id": "kling-image-4-jacket-back-mark",
+          "title": "An ivory logo on Inès’s jacket",
+          "badge": "Editing · jacket logo",
           "kind": "edit",
-          "prompt": "Edit @Image1 in place. Add one small graphic motif to the outer upper arm of Inès's right sleeve, on the right side of the image. Place it on the visible cobalt fabric above the bend of the elbow. The motif consists of six pale-ivory squares in two staggered rows of three. Treat it as a matte screen print sitting inside that panel. Allow the squares to follow the existing folds, and leave a clear cobalt border between the motif and the sleeve seams, cuff and elbow.\n\nMatch the reference framing and light. Preserve Inès's face, hands and hair, the other sleeve, every seam, the silver zip, the orange table, the paper and all background details. The output should look like the same shot immediately after this one screen print was added. Keep the squares free from text or additional symbols."
+          "prompt": "Edit @Image1 in place. Apply one large ivory screen-printed emblem to the centre of the upper back of Inès's cobalt jacket, between the shoulder blades. Draw a single, wide asymmetrical silhouette that looks like a strip of sewing pattern paper folded back onto itself. Use a bold continuous shape with one sharp diagonal notch. The emblem spans about three fifths of the visible width of the back and reads clearly at phone size. Its placement and proportions feel like the main graphic on a designer's jacket.\n\nPrint the emblem flat onto the textile. Let the cobalt jacket's surface, quilt seams and existing folds remain legible under the ink. Keep the sleeves plain. Preserve the original overhead camera angle, cropping, cobalt colour, haircut, ear cuff, hands, paper, orange cutting table, light and background. All creative change is confined to the single emblem. Add no letters, extra graphics or hardware."
         },
         {
           "id": "kling-image-4-pixel-makeup",
@@ -304,24 +304,24 @@
           "showWhenReady": true,
           "assetIds": [
             "kling-image-4-pop-up-overhead",
-            "kling-image-4-sleeve-edit"
+            "kling-image-4-jacket-back-mark"
           ],
           "eyebrow": "Image editing",
-          "title": "Change the print. Keep the shot.",
-          "body": "Start from the overhead frame and add six ivory squares to the right sleeve.",
-          "note": "Drag the slider over the sleeve to compare the edit with the exact source image."
+          "title": "One bold logo across the back.",
+          "body": "The ivory mark follows the quilting on Inès’s cobalt jacket. Drag the slider to see where it was added.",
+          "note": "Compare the edit with the original overhead shot."
         },
         {
           "id": "street-poster",
           "layout": "poster",
           "showWhenReady": true,
           "assetIds": [
-            "kling-image-4-bus-shelter-poster"
+            "kling-image-4-bus-shelter-sole-print"
           ],
           "eyebrow": "Text in the image",
-          "title": "An ad that belongs on the street.",
-          "body": "A neighbourhood shoe repair ad uses a bus shelter and two blocks of type to make its point.",
-          "note": "Open the original to check the headline, the small print and the spacing."
+          "title": "A poster that makes the repair visible.",
+          "body": "The sole print is stitched back together in red. The image tells you what the shop does before you read “SHOE REPAIR”.",
+          "note": "Open the original to read the headline and the small print."
         }
       ],
       "imageBriefs": {
@@ -329,10 +329,10 @@
         "intro": "Each prompt opens in Create with its model and settings.",
         "items": [
           {
-            "recipeId": "kling-image-4-bus-shelter-poster",
-            "use": "Bus shelter · typography",
+            "recipeId": "kling-image-4-bus-shelter-sole-print",
+            "use": "Bus shelter · poster design",
             "title": "I CAN WALK FROM HERE.",
-            "body": "A passer-by walks away from a bus stop beside a bright green ad for a neighbourhood shoe repair shop."
+            "body": "Add the original bus shelter shot as @Image1. Redesign the printed ad around a stitched sole print, keeping the headline and service line in place."
           },
           {
             "recipeId": "kling-image-4-pop-up-series",
@@ -341,10 +341,10 @@
             "body": "Inès wears the same cobalt jacket in three shots. Start low in full sun, move overhead at the cutting table, then finish close on flash."
           },
           {
-            "recipeId": "kling-image-4-sleeve-edit",
-            "use": "Editing · a localised motif",
-            "title": "Six squares on one sleeve",
-            "body": "Add the overhead pop-up image as @Image1. Ask for six ivory squares on the right sleeve, the one facing the camera."
+            "recipeId": "kling-image-4-jacket-back-mark",
+            "use": "Editing · jacket logo",
+            "title": "An ivory logo on Inès’s jacket",
+            "body": "Add the overhead shot of Inès as @Image1. Give the back of her jacket a single ivory logo that follows the quilting."
           },
           {
             "recipeId": "kling-image-4-pixel-makeup",
@@ -377,8 +377,12 @@
         "title": "Inès at the door after dark"
       },
       {
-        "id": "kling-image-4-sleeve-edit",
-        "title": "Six ivory squares on the sleeve"
+        "id": "kling-image-4-jacket-back-mark",
+        "title": "An ivory logo on Inès’s jacket"
+      },
+      {
+        "id": "kling-image-4-bus-shelter-sole-print",
+        "title": "I CAN WALK FROM HERE. · A stitched sole print in a bus shelter"
       }
     ]
   },

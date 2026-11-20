@@ -135,8 +135,8 @@
     }
   },
   {
-    "id": "kling-image-4-sleeve-edit",
-    "recipeId": "kling-image-4-sleeve-edit",
+    "id": "kling-image-4-jacket-back-mark",
+    "recipeId": "kling-image-4-jacket-back-mark",
     "engineId": "kling-image-v4",
     "settings": {
       "mode": "i2i",
@@ -144,23 +144,52 @@
       "aspectRatio": "3:2",
       "quantity": 1
     },
-    "promptSha256": "10e76521b269bc0ca89f9715fad0a7e411a3d7cf506bb4afdbee99d2e71f1750",
-    "requestSha256": "68de0c0bd5ad4e9edda2dd49951e3afc74fb68418ea80ca5d56f5b3e40e2e5dd",
-    "receiptSha256": "7975fd119ac3c65d0ab0b9e2e639a2b9bd7edb5e4feb49d9087cf6cda44669b1",
+    "promptSha256": "7748bf6dc64a93c969396434fc9fda57041867575170b067aeb8fd73cbea1eea",
+    "requestSha256": "f7fb50fd539c0a27859eec37163fca09c3efdb818c9128cfd868469f56cd8d6c",
+    "receiptSha256": "acf4081e1c38e1f2b5f02bd670fb5d82dbd1e09e22bd68f4d25abd6888112e09",
     "sourceImageId": "kling-image-4-pop-up-overhead",
     "sourceOriginalSha256": "df165e81c243e015fe9994ad802a67d38080110a07efcba2c107a20f383f5d62",
     "original": {
-      "url": "/assets/model-examples/kling-image-v4/f2c7b76a30939d8d31a6f2dd7e098f3b7a015fcad254f37418912ce48d798814.png",
+      "url": "/assets/model-examples/kling-image-v4/e352aebf8d07fabbefaf6433ccd26be92c5d515bd0740b38a6f552b369b8cb6b.png",
+      "sha256": "e352aebf8d07fabbefaf6433ccd26be92c5d515bd0740b38a6f552b369b8cb6b",
       "width": 2496,
-      "height": 1664,
-      "sha256": "f2c7b76a30939d8d31a6f2dd7e098f3b7a015fcad254f37418912ce48d798814"
+      "height": 1664
     },
     "display": {
-      "url": "/assets/model-examples/kling-image-v4/ea4315d7058fe16cd36400f2f2f8e220f533d245c03ead2942c490475d958e84.webp",
-      "width": 1100,
-      "height": 733,
-      "sha256": "ea4315d7058fe16cd36400f2f2f8e220f533d245c03ead2942c490475d958e84",
-      "sourceSha256": "f2c7b76a30939d8d31a6f2dd7e098f3b7a015fcad254f37418912ce48d798814"
+      "url": "/assets/model-examples/kling-image-v4/3425715a559f68ccad046ee0456e5cd19dee0280d4d3dab98ffcdecbc54342f3.webp",
+      "sha256": "3425715a559f68ccad046ee0456e5cd19dee0280d4d3dab98ffcdecbc54342f3",
+      "width": 1140,
+      "height": 760,
+      "sourceSha256": "e352aebf8d07fabbefaf6433ccd26be92c5d515bd0740b38a6f552b369b8cb6b"
+    }
+  },
+  {
+    "id": "kling-image-4-bus-shelter-sole-print",
+    "recipeId": "kling-image-4-bus-shelter-sole-print",
+    "engineId": "kling-image-v4",
+    "settings": {
+      "mode": "i2i",
+      "resolution": "2K",
+      "aspectRatio": "2:3",
+      "quantity": 1
+    },
+    "promptSha256": "406ca90267dade2c7e0d50e06d051ef35ad6b653abadd8df02c9f63ddf9cb92e",
+    "requestSha256": "e11d0af42716903a9ebe834b56dc12b72e277c3cbd615dfe0b98ce52b1016122",
+    "receiptSha256": "e56b28ea9c2140d9e555d12ff5dcbaaae333865d1eebfc92bdf15dab418b5d7a",
+    "sourceImageId": "kling-image-4-bus-shelter-poster",
+    "sourceOriginalSha256": "fee1ceb4cf20de3685ff6cb267104ae6877da7ceda6fef908a57585b14ef9ceb",
+    "original": {
+      "url": "/assets/model-examples/kling-image-v4/dba85abcaef6e7f7a31ae063af22015b4442bc0ab9fadd5429b2aca6b01e9111.png",
+      "sha256": "dba85abcaef6e7f7a31ae063af22015b4442bc0ab9fadd5429b2aca6b01e9111",
+      "width": 1664,
+      "height": 2496
+    },
+    "display": {
+      "url": "/assets/model-examples/kling-image-v4/b46d470bd4a57f3b59a6648d8ba64624672f66ba6f0378904d585cdec43c3ba2.webp",
+      "sha256": "b46d470bd4a57f3b59a6648d8ba64624672f66ba6f0378904d585cdec43c3ba2",
+      "width": 960,
+      "height": 1440,
+      "sourceSha256": "dba85abcaef6e7f7a31ae063af22015b4442bc0ab9fadd5429b2aca6b01e9111"
     }
   }
 ]
