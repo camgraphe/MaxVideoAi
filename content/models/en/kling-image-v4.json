@@ -167,7 +167,7 @@
     "recipe": {
       "label": "Text on the bus shelter ad",
       "excerpt": "\"I CAN WALK FROM HERE.\" / \"SHOE REPAIR\"",
-      "note": "Open the I CAN WALK FROM HERE. brief for the full prompt and settings.",
+      "note": "Open Prompt & settings under the bus shelter image to see the complete brief.",
       "factors": [
         {
           "icon": "subject",
@@ -217,7 +217,7 @@
           "title": "Six squares on one sleeve",
           "badge": "Editing · a localised motif",
           "kind": "edit",
-          "prompt": "Edit @Image1 in place. Add one small graphic motif to the visible cobalt outer panel of Inès's left sleeve. The motif consists of six pale-ivory squares in two staggered rows of three. Treat it as a matte screen print sitting inside that panel. Allow the squares to follow the existing folds, and leave a clear cobalt border between the motif and the sleeve seams, cuff and elbow.\n\nMatch the reference framing and light. Preserve Inès's face, hands and hair, the other sleeve, every seam, the silver zip, the orange table, the paper and all background details. The output should look like the same shot immediately after this one screen print was added. Keep the squares free from text or additional symbols."
+          "prompt": "Edit @Image1 in place. Add one small graphic motif to the outer upper arm of Inès's right sleeve, on the right side of the image. Place it on the visible cobalt fabric above the bend of the elbow. The motif consists of six pale-ivory squares in two staggered rows of three. Treat it as a matte screen print sitting inside that panel. Allow the squares to follow the existing folds, and leave a clear cobalt border between the motif and the sleeve seams, cuff and elbow.\n\nMatch the reference framing and light. Preserve Inès's face, hands and hair, the other sleeve, every seam, the silver zip, the orange table, the paper and all background details. The output should look like the same shot immediately after this one screen print was added. Keep the squares free from text or additional symbols."
         },
         {
           "id": "kling-image-4-pixel-makeup",
@@ -279,10 +279,54 @@
     "fallbackItems": null,
     "cinematic": {
       "provenance": "Kling Image 4.0 renders",
-      "panels": [],
+      "panels": [
+        {
+          "id": "image-series",
+          "layout": "series",
+          "showWhenReady": true,
+          "assetIds": [
+            "kling-image-4-pop-up-wide",
+            "kling-image-4-pop-up-overhead",
+            "kling-image-4-pop-up-flash"
+          ],
+          "eyebrow": "Image Set",
+          "title": "One jacket, three points of view.",
+          "body": "Inès wears the same cobalt jacket outside the pop-up, at the cutting table and at the door after dark.",
+          "note": "Compare her face, the zip and the jacket seams across the three original images.",
+          "recipe": {
+            "id": "kling-image-4-pop-up-series",
+            "label": "Use the three-image prompt"
+          }
+        },
+        {
+          "id": "sleeve-edit",
+          "layout": "edit",
+          "showWhenReady": true,
+          "assetIds": [
+            "kling-image-4-pop-up-overhead",
+            "kling-image-4-sleeve-edit"
+          ],
+          "eyebrow": "Image editing",
+          "title": "Change the print. Keep the shot.",
+          "body": "Start from the overhead frame and add six ivory squares to the right sleeve.",
+          "note": "Drag the slider over the sleeve to compare the edit with the exact source image."
+        },
+        {
+          "id": "street-poster",
+          "layout": "poster",
+          "showWhenReady": true,
+          "assetIds": [
+            "kling-image-4-bus-shelter-poster"
+          ],
+          "eyebrow": "Text in the image",
+          "title": "An ad that belongs on the street.",
+          "body": "A neighbourhood shoe repair ad uses a bus shelter and two blocks of type to make its point.",
+          "note": "Open the original to check the headline, the small print and the spacing."
+        }
+      ],
       "imageBriefs": {
-        "title": "Four scenes to try.",
-        "intro": "Each brief opens the full prompt and settings in Create. The gallery will show reviewed Kling Image 4.0 renders.",
+        "title": "Prompts to try",
+        "intro": "Each prompt opens in Create with its model and settings.",
         "items": [
           {
             "recipeId": "kling-image-4-bus-shelter-poster",
@@ -300,7 +344,7 @@
             "recipeId": "kling-image-4-sleeve-edit",
             "use": "Editing · a localised motif",
             "title": "Six squares on one sleeve",
-            "body": "Add the overhead pop-up image as @Image1. Ask for an ivory pattern inside one sleeve panel. Check where it lands and how it follows the folds."
+            "body": "Add the overhead pop-up image as @Image1. Ask for six ivory squares on the right sleeve, the one facing the camera."
           },
           {
             "recipeId": "kling-image-4-pixel-makeup",
@@ -310,24 +354,50 @@
           }
         ]
       }
-    }
+    },
+    "editorialImages": [
+      {
+        "id": "kling-image-4-bus-shelter-poster",
+        "title": "I CAN WALK FROM HERE. · Shoe repair ad in a bus shelter"
+      },
+      {
+        "id": "kling-image-4-pixel-makeup",
+        "title": "PIXEL CUT · A 4K beauty close-up"
+      },
+      {
+        "id": "kling-image-4-pop-up-wide",
+        "title": "Inès outside the pop-up"
+      },
+      {
+        "id": "kling-image-4-pop-up-overhead",
+        "title": "Inès at the cutting table"
+      },
+      {
+        "id": "kling-image-4-pop-up-flash",
+        "title": "Inès at the door after dark"
+      },
+      {
+        "id": "kling-image-4-sleeve-edit",
+        "title": "Six ivory squares on the sleeve"
+      }
+    ]
   },
   "cinematic": {
     "modelSlug": "kling-image-v4",
     "variant": "image",
-    "heroAssetId": null,
+    "heroAssetId": "kling-image-4-pixel-makeup",
     "titleLines": [
       "Kling Image 4.0"
     ],
-    "subtitle": "One brief. A whole series of images.",
+    "subtitle": "Create an image. Build a campaign around it.",
     "byline": "AI image generator and editor",
-    "intro": "Create a still, retouch it with references or plan a series around the same subject. Choose 2K, 4K or 8K for the detail your project needs.",
+    "intro": "Create a single visual, carry a character across a series or edit a detail using a reference image.",
     "primaryLabel": "Create with Kling Image 4.0",
     "caption": "Kling Image 4.0 renders",
     "proofLabel": "Explore image ideas",
     "overviewLabel": "Overview",
     "detailsLabel": "Specifications",
-    "examplesLabel": "Explore the briefs",
+    "examplesLabel": "Examples & prompts",
     "promptingLabel": "Prompt guide",
     "pricingLabel": "Pricing",
     "specsReviewedAt": "2026-11-20",

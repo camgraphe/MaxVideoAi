@@ -17,18 +17,20 @@ export function ModelCinematicHero({ presentation, decision }: {
   const { content, hero } = presentation;
   const display = hero ? resolveCinematicHeroDisplay(hero) : undefined;
   const isVideo = content.variant === 'video';
+  const framed = !isVideo && Boolean(presentation.imageBriefs && display);
   const overview = content.overview;
   // The landscape Flash poster covers a tall mobile opening; choose its prepared 1280 px copy.
   const mobileSizes = isVideo ? '1200px' : '100vw';
-  return <section id="top" className={`cinema-hero cinema-hero--${content.variant} cinema-hero--with-overview${display ? '' : ' cinema-hero--briefs'}`} aria-labelledby="cinema-model-title">
+  const desktopSizes = framed ? '55vw' : '100vw';
+  return <section id="top" className={`cinema-hero cinema-hero--${content.variant} cinema-hero--with-overview${display ? '' : ' cinema-hero--briefs'}${framed ? ' cinema-hero--framed' : ''}`} aria-labelledby="cinema-model-title">
     {hero && display ? <>
     <link rel="preload" as="image" type="image/avif" media="(max-width: 767px)" imageSrcSet={display.mobile} imageSizes={mobileSizes} fetchPriority="high" />
-    <link rel="preload" as="image" type="image/avif" media="(min-width: 768px)" imageSrcSet={display.desktop} imageSizes="100vw" fetchPriority="high" />
+    <link rel="preload" as="image" type="image/avif" media="(min-width: 768px)" imageSrcSet={display.desktop} imageSizes={desktopSizes} fetchPriority="high" />
     <div className="cinema-hero-art"><picture>
       <source media="(max-width: 767px)" type="image/avif" srcSet={display.mobile} sizes={mobileSizes} />
-      <source media="(min-width: 768px)" type="image/avif" srcSet={display.desktop} sizes="100vw" />
+      <source media="(min-width: 768px)" type="image/avif" srcSet={display.desktop} sizes={desktopSizes} />
       <Image src={hero.display.url} width={hero.display.width} height={hero.display.height} alt={hero.title}
-        loading="eager" fetchPriority="high" sizes="100vw" className="cinema-hero-image" />
+        loading="eager" fetchPriority="high" sizes={`(max-width: 767px) 100vw, ${desktopSizes}`} className="cinema-hero-image" />
     </picture></div></> : null}
     {isVideo && hero?.video ? <ModelCinematicHeroMotion key={hero.video.src} src={hero.video.src} title={hero.title} ui={presentation.ui} autoplay={presentation.media?.heroAutoplay} /> : null}
     <div id="overview" className="cinema-wrap cinema-hero-content">

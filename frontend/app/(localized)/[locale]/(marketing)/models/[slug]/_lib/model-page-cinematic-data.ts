@@ -119,12 +119,16 @@ export function buildCinematicPresentation(content: ModelCinematicContent | null
       locale, isStartFrame: content.variant === 'video' } };
   });
   const hero = assets.find(asset => asset.id === content.heroAssetId);
-  const briefCopy = examples.cinematic.imageBriefs;
-  if (!hero && (content.heroAssetId !== null || content.variant !== 'image' || !briefCopy)) {
+  const { imageBriefs: briefCopy, panels: authoredPanels } = examples.cinematic;
+  const hasHeroBrief = content.variant === 'image' && briefCopy &&
+    (content.heroAssetId === null || briefCopy.items.some(item => item.recipeId === content.heroAssetId));
+  if (!hero && !hasHeroBrief) {
     throw new Error('Missing reviewed cinematic hero');
   }
-  const renderedRecipes = new Set(examples.cinematic.panels.flatMap(panel =>
+  const panels = authoredPanels.filter(panel => !panel.showWhenReady || panel.assetIds.every(id => assets.some(asset => asset.id === id)));
+  const renderedRecipes = new Set(panels.flatMap(panel =>
     panel.recipe ? [panel.recipe.id, ...panel.assetIds] : panel.assetIds));
+  if (hero) renderedRecipes.add(hero.id);
   const imageBriefs = briefCopy && {
     ...briefCopy,
     items: briefCopy.items.filter(item => !renderedRecipes.has(item.recipeId)).map(item => {
@@ -136,10 +140,10 @@ export function buildCinematicPresentation(content: ModelCinematicContent | null
         href: imageEditorialPresetHref(content.modelSlug, item.recipeId, locale) };
     }),
   };
-  const panelIds = examples.cinematic.panels.map(panel => panel.id);
+  const panelIds = authoredPanels.map(panel => panel.id);
   if (new Set(panelIds).size !== panelIds.length) throw new Error('Duplicate cinematic panel');
   if (content.workflows) {
-    const proofIds = examples.cinematic.panels.filter(panel => !panel.placement || panel.placement === 'examples').map(panel => panel.id);
+    const proofIds = panels.filter(panel => !panel.placement || panel.placement === 'examples').map(panel => panel.id);
     const workflowIds = content.workflows.items.map(item => item.id);
     if (workflowIds.length !== proofIds.length || workflowIds.some(id => !proofIds.includes(id))) {
       throw new Error('Each offered workflow needs its own visible proof panel');
@@ -147,7 +151,7 @@ export function buildCinematicPresentation(content: ModelCinematicContent | null
   }
   if (content.overview) {
     const targets = content.overview.benefits.map(benefit => benefit.panelId);
-    if (new Set(targets).size !== targets.length || targets.some(target => !examples.cinematic!.panels.some(panel => panel.id === target && (!panel.placement || panel.placement === 'examples')))) {
+    if (new Set(targets).size !== targets.length || targets.some(target => !panels.some(panel => panel.id === target && (!panel.placement || panel.placement === 'examples')))) {
       throw new Error('Cinematic overview benefits must link to distinct visible proof panels');
     }
   }
@@ -168,7 +172,8 @@ export function buildCinematicPresentation(content: ModelCinematicContent | null
   }
   // A reviewed comparison board replaces its original single-frame placeholder.
   // That unused frame can illustrate a focus, but visible images still occur once.
-  const panelVisualIds = examples.cinematic.panels.flatMap(panel => {
+  const panelVisualIds = panels.flatMap(panel => {
+    if (panel.layout === 'edit') return panel.assetIds.slice(1);
     const workflow = content.workflows?.items.find(item => item.id === panel.id);
     return workflow && workflow.id !== 'create' && media?.boards.some(board => board.id === workflow.id) ? [] : panel.assetIds;
   });
@@ -176,21 +181,26 @@ export function buildCinematicPresentation(content: ModelCinematicContent | null
   if (galleryAssetId && !assets.some(asset => asset.id === galleryAssetId)) throw new Error('Gallery preview needs a reviewed asset');
   const visualIds = [...(hero ? [hero.id] : []), ...panelVisualIds, ...focuses.map(focus => focus.assetId), ...(galleryAssetId ? [galleryAssetId] : [])];
   if (new Set(visualIds).size !== visualIds.length) throw new Error('A cinematic visual has one placement; only the edit comparator may reuse its sources');
-  for (const panel of examples.cinematic.panels) {
+  for (const panel of panels) {
     const selected = panel.assetIds.map(id => assets.find(asset => asset.id === id));
     if (selected.some(asset => !asset)) throw new Error('Missing reviewed cinematic example');
     if (panel.layout === 'edit') {
-      if (selected.length !== 3 || selected[1]?.source?.original.sha256 !== selected[0]?.original.sha256 || selected[2]?.source?.original.sha256 !== selected[1]?.original.sha256) throw new Error('Cinematic edit needs the exact successive references');
+      if (selected.length < 2 || selected.length > 3 || selected.slice(1).some((asset, index) =>
+        asset?.source?.original.sha256 !== selected[index]?.original.sha256
+      )) throw new Error('Cinematic edit needs the exact successive references');
     }
     if (panel.layout === 'cutout' && (selected.length !== 1 || !selected[0]?.alphaVerified)) throw new Error('Cinematic cutout needs verified alpha');
     if (panel.layout === 'series' && (
       content.variant !== 'image' || selected.length !== 3 ||
       !panel.recipe || !getImageEditorialPreset(content.modelSlug, panel.recipe.id)
     )) throw new Error('Cinematic image series needs three reviewed illustrations and a preset');
+    if (panel.layout === 'poster' && (content.variant !== 'image' || selected.length !== 1)) {
+      throw new Error('Cinematic poster needs one reviewed image');
+    }
   }
   for (const placement of ['prompting', 'details']) {
-    const panels = examples.cinematic.panels.filter(panel => panel.placement === placement);
-    if (panels.length > 1 || (panels[0] && panels[0].assetIds.length !== 1)) throw new Error(`Cinematic ${placement} allows one dedicated visual`);
+    const placed = authoredPanels.filter(panel => panel.placement === placement);
+    if (placed.length > 1 || (placed[0] && placed[0].assetIds.length !== 1)) throw new Error(`Cinematic ${placement} allows one dedicated visual`);
   }
   const assistantEntry = new URL(miloEntryHref(locale), 'https://maxvideoai.com');
   assistantEntry.pathname = content.variant === 'image' ? '/app/image' : '/app';
@@ -204,5 +214,5 @@ export function buildCinematicPresentation(content: ModelCinematicContent | null
     if (new Set(angleIds).size !== 3 || !draftVisual.angles.every(angle => angleIds.includes(angle.id)) || !angleIds.includes(draftVisual.selectedAngleId)) throw new Error('Draft illustration needs matching localized camera angles');
   }
   if (content.specialty && !draftVisual && !workspacePreview) throw new Error('Missing exact-locale workspace preview');
-  return { locale, content, capabilities: buildCinematicCapabilities(content.capabilities, content.modelSlug, locale), workspacePreview, draftVisual, examples: examples.cinematic, assets, hero, imageBriefs, media, ui: { ...ui[locale], ...creationUi[locale] }, assistantHref: assistantEntry.pathname + assistantEntry.search };
+  return { locale, content, capabilities: buildCinematicCapabilities(content.capabilities, content.modelSlug, locale), workspacePreview, draftVisual, examples: { ...examples.cinematic, panels }, assets, hero, imageBriefs, media, ui: { ...ui[locale], ...creationUi[locale] }, assistantHref: assistantEntry.pathname + assistantEntry.search };
 }

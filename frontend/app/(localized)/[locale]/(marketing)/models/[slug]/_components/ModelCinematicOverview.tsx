@@ -14,6 +14,7 @@ export function ModelCinematicOverview({ presentation }: { presentation: Cinemat
     ui={ui} triggerLabel={ui.heroPrompt} creation={hero.videoCreation}
     details={hero.watchHref ? <Link href={hero.watchHref} prefetch={false} className="cinema-source-link">{getModelExamplesUiCopy(presentation.locale).renderLabel}<CinematicArrow /></Link> : undefined} /></div>;
   return <div className="cinema-hero-evidence" title={ui.heroPrompt}>
+    {presentation.imageBriefs ? <p className="cinema-hero-native-caption">{hero.metadataLabel}</p> : null}
     <ModelCinematicPrompt asset={hero} ui={ui} label={ui.heroPrompt}>
       <p>{examples.provenance}</p>
       {content.overview ? <a className="cinema-overview-source" href={content.overview.source.href} target="_blank" rel="noopener noreferrer">{content.overview.source.label}<CinematicArrow direction="external" /></a> : null}

@@ -42,7 +42,7 @@ export function ModelCinematicExamples({ presentation, viewModel, hasRenderedVid
         <div className="cinema-panel-media">
           {panel.layout === 'edit' ? <ModelCinematicCompare assets={selected} ui={ui} note={panel.note} />
             : panel.layout === 'cutout' ? <><ModelCinematicCutout asset={selected[0]} ui={ui} /><ModelCinematicPrompt asset={selected[0]} ui={ui} /></>
-            : <div className={mediaClass}>{selected.map(asset => <ModelCinematicAsset key={asset.id} asset={asset} ui={ui} compact={selected.length > 1 || portrait} inspect={portrait}
+            : <div className={mediaClass}>{selected.map(asset => <ModelCinematicAsset key={asset.id} asset={asset} ui={ui} compact={selected.length > 1 || portrait || panel.layout === 'poster'} inspect={portrait}
               sizes={series ? '(min-width: 1440px) 420px, (min-width: 900px) 31vw, 90vw' : undefined}
               plan={examples.shotPlans?.find(plan => plan.assetId === asset.id)} />)}</div>}
         </div>
@@ -61,8 +61,8 @@ export function ModelCinematicExamples({ presentation, viewModel, hasRenderedVid
         <p>{brief.body}</p>
         <p className="cinema-image-brief-settings">{brief.settings}</p>
         <div className="cinema-image-brief-action">
-          <Link href={brief.href} prefetch={false} className="cinema-button" data-analytics-event="cta_click" data-analytics-cta-name="reuse_example"
-            data-analytics-cta-location="model_examples" data-analytics-target-family="workspace">{ui.reuse}<CinematicArrow disc /></Link>
+          <Link href={brief.href} prefetch={false} className="cinema-source-link" data-analytics-event="cta_click" data-analytics-cta-name="reuse_example"
+            data-analytics-cta-location="model_examples" data-analytics-target-family="workspace">{ui.reuse}<CinematicArrow /></Link>
         </div>
         <details className="cinema-disclosure"><summary>{ui.prompt}<CinematicPlus /></summary><div>
           <pre className="cinema-image-brief-prompt" lang="en">{brief.prompt}</pre>

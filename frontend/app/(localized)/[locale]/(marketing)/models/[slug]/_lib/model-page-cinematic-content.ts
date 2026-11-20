@@ -94,7 +94,8 @@ export const cinematicExamplesSchema = z.object({
   panels: z.array(z.object({
     id,
     placement: z.enum(['examples', 'prompting', 'details']).optional(),
-    layout: z.enum(['edit', 'feature', 'cutout', 'grid', 'shots', 'series']),
+    layout: z.enum(['edit', 'feature', 'cutout', 'grid', 'shots', 'series', 'poster']),
+    showWhenReady: z.literal(true).optional(),
     eyebrow: text,
     title: text,
     body: text,

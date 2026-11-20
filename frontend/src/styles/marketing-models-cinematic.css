@@ -349,13 +349,14 @@ html:has(.model-cinematic-page)::-webkit-scrollbar-thumb{background:#707b8880;bo
 .marketing-site .model-cinematic-page--video .cinema-path-body{background:#223441}
 .marketing-site .model-cinematic-page--video .cinema-path-body p,.marketing-site .model-cinematic-page--video .cinema-path-body li{color:#b8c8d4}
 @media(min-width:900px){
- .marketing-site .model-cinematic-page .cinema-panel--feature:not(.cinema-panel--portrait) .cinema-panel-inner{display:grid;grid-template-columns:.8fr 1.2fr;gap:0 6%;align-items:center}
- .marketing-site .model-cinematic-page .cinema-panel--feature:not(.cinema-panel--portrait) .cinema-panel-heading{display:block;grid-column:1;grid-row:1;align-self:end;margin:0}
- .marketing-site .model-cinematic-page .cinema-panel--feature:not(.cinema-panel--portrait) .cinema-panel-heading h2{font-size:clamp(36px,4vw,58px)}
- .marketing-site .model-cinematic-page .cinema-panel--feature:not(.cinema-panel--portrait) .cinema-panel-heading>p{margin-top:26px}
- .marketing-site .model-cinematic-page .cinema-panel--feature:not(.cinema-panel--portrait) .cinema-panel-media{grid-column:2;grid-row:1/3;min-width:0}
- .marketing-site .model-cinematic-page .cinema-panel--feature:not(.cinema-panel--portrait) .cinema-panel-note{grid-column:1;grid-row:2;align-self:start;margin-top:22px}
+ .marketing-site .model-cinematic-page :is(.cinema-panel--feature:not(.cinema-panel--portrait),.cinema-panel--poster) .cinema-panel-inner{display:grid;grid-template-columns:.8fr 1.2fr;gap:0 6%;align-items:center}
+ .marketing-site .model-cinematic-page :is(.cinema-panel--feature:not(.cinema-panel--portrait),.cinema-panel--poster) .cinema-panel-heading{display:block;grid-column:1;grid-row:1;align-self:end;margin:0}
+ .marketing-site .model-cinematic-page :is(.cinema-panel--feature:not(.cinema-panel--portrait),.cinema-panel--poster) .cinema-panel-heading h2{font-size:clamp(36px,4vw,58px)}
+ .marketing-site .model-cinematic-page :is(.cinema-panel--feature:not(.cinema-panel--portrait),.cinema-panel--poster) .cinema-panel-heading>p{margin-top:26px}
+ .marketing-site .model-cinematic-page :is(.cinema-panel--feature:not(.cinema-panel--portrait),.cinema-panel--poster) .cinema-panel-media{grid-column:2;grid-row:1/3;min-width:0}
+ .marketing-site .model-cinematic-page :is(.cinema-panel--feature:not(.cinema-panel--portrait),.cinema-panel--poster) .cinema-panel-note{grid-column:1;grid-row:2;align-self:start;margin-top:22px}
 }
+.marketing-site .model-cinematic-page .cinema-panel--poster .cinema-panel-media{width:min(100%,540px);margin-inline:auto}
 @media(max-width:767px){
  .marketing-site .model-cinematic-page .cinema-prompt-lab,.marketing-site .model-cinematic-page .cinema-specs-layout{grid-template-columns:1fr;gap:32px}
  .marketing-site .model-cinematic-page .cinema-recipes{grid-template-columns:1fr;gap:0;margin-top:20px}
@@ -1034,11 +1035,116 @@ html:has(.model-cinematic-page)::-webkit-scrollbar-thumb{background:#707b8880;bo
  .marketing-site .model-cinematic-page .cinema-media-grid--series{grid-template-columns:minmax(0,1fr);gap:24px}
 }
 
+.marketing-site .model-cinematic-page .cinema-hero--image.cinema-hero--briefs {
+  --cinema-ink: #222b25;
+  --cinema-muted: #4e5d54;
+  --cinema-line: #c5d0c6;
+  background: #e9eee7;
+  color: var(--cinema-ink);
+}
+.marketing-site .model-cinematic-page .cinema-hero--image.cinema-hero--briefs::before,
+.marketing-site .model-cinematic-page .cinema-hero--image.cinema-hero--briefs::after {
+  display: none;
+}
 .marketing-site .model-cinematic-page .cinema-hero--briefs .cinema-hero-content {
-  padding-block: clamp(44px, 6vw, 80px) clamp(28px, 4vw, 48px);
+  padding-block: clamp(36px, 5vw, 64px) clamp(28px, 4vw, 44px);
+}
+.marketing-site .model-cinematic-page .cinema-hero--briefs .cinema-hero-facts,
+.marketing-site .model-cinematic-page .cinema-hero--briefs .cinema-text-link {
+  border-color: var(--cinema-line);
+}
+.marketing-site .model-cinematic-page .cinema-hero--briefs .cinema-hero-facts dt,
+.marketing-site .model-cinematic-page .cinema-hero--briefs .cinema-hero-intro {
+  color: var(--cinema-muted);
+}
+.marketing-site .model-cinematic-page .cinema-hero--image.cinema-hero--framed {
+  --cinema-ink: #282524;
+  --cinema-muted: #574a45;
+  --cinema-line: #d4c7bf;
+  --cinema-surface: #eee8e2;
+  display: grid;
+  grid-template-columns: minmax(0, 45fr) minmax(0, 55fr);
+  grid-template-areas: "copy art" "proof proof";
+  align-items: center;
+  background: var(--cinema-surface);
+  color: var(--cinema-ink);
+}
+.marketing-site .model-cinematic-page .cinema-hero--image.cinema-hero--framed::before,
+.marketing-site .model-cinematic-page .cinema-hero--image.cinema-hero--framed::after {
+  display: none;
+}
+.marketing-site .model-cinematic-page .cinema-hero--framed .cinema-hero-art {
+  position: static;
+  z-index: auto;
+  grid-area: art;
+  width: 100%;
+  height: auto;
+}
+.marketing-site .model-cinematic-page .cinema-hero--framed .cinema-hero-art picture,
+.marketing-site .model-cinematic-page .cinema-hero--framed .cinema-hero-image {
+  display: block;
+  height: auto;
+}
+.marketing-site .model-cinematic-page .cinema-hero--framed .cinema-hero-content {
+  grid-area: copy;
+  padding-block: clamp(28px, 4vw, 64px);
+}
+.marketing-site .model-cinematic-page .cinema-hero--framed .cinema-hero-facts {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-color: var(--cinema-line);
+  margin-top: 24px;
+  padding-top: 18px;
+}
+.marketing-site .model-cinematic-page .cinema-hero--framed .cinema-text-link {
+  border-color: var(--cinema-line);
+}
+.marketing-site .model-cinematic-page .cinema-hero--framed .cinema-hero-intro,
+.marketing-site .model-cinematic-page .cinema-hero--framed .cinema-hero-facts dt {
+  color: var(--cinema-muted);
+}
+.marketing-site .model-cinematic-page .cinema-hero--framed .cinema-hero-evidence {
+  grid-area: proof;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  position: relative;
+  inset: auto;
+  padding: 4px var(--cinema-pad) 16px;
+  border-top: 1px solid var(--cinema-line);
+}
+.marketing-site .model-cinematic-page .cinema-hero--framed .cinema-hero-native-caption {
+  font-size: 12px;
+  color: var(--cinema-muted);
+}
+.marketing-site .model-cinematic-page .cinema-hero--framed .cinema-hero-evidence .cinema-prompt-trigger {
+  display: flex;
+  width: auto;
+  gap: 10px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--cinema-ink);
+  backdrop-filter: none;
+}
+.marketing-site .model-cinematic-page .cinema-hero--framed .cinema-hero-evidence .cinema-prompt-trigger>span:first-child {
+  position: static;
+  width: auto;
+  height: auto;
+  clip-path: none;
+}
+@media (max-width: 767px) {
+  .marketing-site .model-cinematic-page .cinema-hero--image.cinema-hero--framed {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "art" "copy" "proof";
+  }
+  .marketing-site .model-cinematic-page .cinema-hero--framed .cinema-hero-evidence {
+    justify-content: flex-start;
+  }
 }
 .marketing-site .model-cinematic-page .cinema-image-briefs {
-  padding-block: clamp(40px, 6vw, 88px);
+  padding-block: clamp(32px, 5vw, 64px);
 }
 .marketing-site .model-cinematic-page .cinema-image-brief-grid {
   display: grid;
@@ -1048,27 +1154,39 @@ html:has(.model-cinematic-page)::-webkit-scrollbar-thumb{background:#707b8880;bo
 }
 .marketing-site .model-cinematic-page .cinema-image-brief {
   min-width: 0;
-  padding: clamp(20px, 3vw, 34px);
+  padding: clamp(18px, 2.4vw, 30px);
   border: 1px solid var(--cinema-line);
   border-radius: 10px;
   background: var(--cinema-surface);
   scroll-margin-top: 140px;
 }
 .marketing-site .model-cinematic-page .cinema-image-brief h3 {
-  margin-block: 12px;
-  font-size: clamp(23px, 2.8vw, 36px);
+  margin-block: 9px;
+  font-size: clamp(21px, 2.1vw, 31px);
   line-height: 1.12;
 }
 .marketing-site .model-cinematic-page .cinema-image-brief p:not(.cinema-eyebrow) {
   color: var(--cinema-muted);
 }
-.marketing-site .model-cinematic-page .cinema-image-brief-settings {
-  margin-block: 18px;
+.marketing-site .model-cinematic-page .cinema-image-brief p.cinema-image-brief-settings {
+  display: inline-block;
+  margin-block: 12px 4px;
+  padding: 4px 10px;
+  border: 1px solid var(--cinema-line);
+  border-radius: 99px;
   font-size: 13px;
   font-variant-numeric: tabular-nums;
 }
 .marketing-site .model-cinematic-page .cinema-image-brief-action {
-  margin-block: 14px 18px;
+  margin-block: 4px 12px;
+}
+.marketing-site .model-cinematic-page .cinema-image-brief-action .cinema-source-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  margin-top: 0;
+  font-size: 14px;
 }
 .marketing-site .model-cinematic-page .cinema-image-brief .cinema-disclosure {
   margin: 0;

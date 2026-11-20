@@ -167,7 +167,7 @@
     "recipe": {
       "label": "Texte de l’affiche",
       "excerpt": "\"I CAN WALK FROM HERE.\" / \"SHOE REPAIR\"",
-      "note": "Ouvrez le brief de l’abribus pour retrouver le prompt complet et ses réglages.",
+      "note": "Le brief complet est dans « Prompt et réglages », sous l’image de l’abribus.",
       "factors": [
         {
           "icon": "subject",
@@ -217,7 +217,7 @@
           "title": "Six carrés sur une manche",
           "badge": "Retouche · motif localisé",
           "kind": "edit",
-          "prompt": "Edit @Image1 in place. Add one small graphic motif to the visible cobalt outer panel of Inès's left sleeve. The motif consists of six pale-ivory squares in two staggered rows of three. Treat it as a matte screen print sitting inside that panel. Allow the squares to follow the existing folds, and leave a clear cobalt border between the motif and the sleeve seams, cuff and elbow.\n\nMatch the reference framing and light. Preserve Inès's face, hands and hair, the other sleeve, every seam, the silver zip, the orange table, the paper and all background details. The output should look like the same shot immediately after this one screen print was added. Keep the squares free from text or additional symbols."
+          "prompt": "Edit @Image1 in place. Add one small graphic motif to the outer upper arm of Inès's right sleeve, on the right side of the image. Place it on the visible cobalt fabric above the bend of the elbow. The motif consists of six pale-ivory squares in two staggered rows of three. Treat it as a matte screen print sitting inside that panel. Allow the squares to follow the existing folds, and leave a clear cobalt border between the motif and the sleeve seams, cuff and elbow.\n\nMatch the reference framing and light. Preserve Inès's face, hands and hair, the other sleeve, every seam, the silver zip, the orange table, the paper and all background details. The output should look like the same shot immediately after this one screen print was added. Keep the squares free from text or additional symbols."
         },
         {
           "id": "kling-image-4-pixel-makeup",
@@ -279,10 +279,54 @@
     "fallbackItems": null,
     "cinematic": {
       "provenance": "Rendus Kling Image 4.0",
-      "panels": [],
+      "panels": [
+        {
+          "id": "image-series",
+          "layout": "series",
+          "showWhenReady": true,
+          "assetIds": [
+            "kling-image-4-pop-up-wide",
+            "kling-image-4-pop-up-overhead",
+            "kling-image-4-pop-up-flash"
+          ],
+          "eyebrow": "Série d’images",
+          "title": "Une veste, trois points de vue.",
+          "body": "Inès porte la même veste cobalt devant le pop-up, à la table de coupe et à l’entrée après la tombée de la nuit.",
+          "note": "Comparez le visage, la fermeture et les coutures sur les trois images originales.",
+          "recipe": {
+            "id": "kling-image-4-pop-up-series",
+            "label": "Reprendre le prompt des trois images"
+          }
+        },
+        {
+          "id": "sleeve-edit",
+          "layout": "edit",
+          "showWhenReady": true,
+          "assetIds": [
+            "kling-image-4-pop-up-overhead",
+            "kling-image-4-sleeve-edit"
+          ],
+          "eyebrow": "Retouche par référence",
+          "title": "Changez le motif de la manche.",
+          "body": "Partez de la vue de dessus et ajoutez six carrés ivoire sur la manche droite.",
+          "note": "Faites glisser le curseur sur la manche pour comparer la retouche à son image source."
+        },
+        {
+          "id": "street-poster",
+          "layout": "poster",
+          "showWhenReady": true,
+          "assetIds": [
+            "kling-image-4-bus-shelter-poster"
+          ],
+          "eyebrow": "Texte dans l’image",
+          "title": "Une affiche faite pour la rue.",
+          "body": "Une cordonnerie de quartier joue avec le lieu où l’on découvre sa pub. Deux blocs de texte suffisent à faire passer l’idée.",
+          "note": "Ouvrez l’original pour vérifier l’accroche, la mention du service et les espacements."
+        }
+      ],
       "imageBriefs": {
-        "title": "Quatre scènes à essayer.",
-        "intro": "Chaque brief ouvre le prompt complet et ses réglages dans Create. La galerie accueillera les rendus validés de Kling Image 4.0.",
+        "title": "Prompts à essayer",
+        "intro": "Chaque prompt s’ouvre dans Create avec son modèle et ses réglages.",
         "items": [
           {
             "recipeId": "kling-image-4-bus-shelter-poster",
@@ -300,7 +344,7 @@
             "recipeId": "kling-image-4-sleeve-edit",
             "use": "Retouche · motif localisé",
             "title": "Six carrés sur une manche",
-            "body": "Ajoutez la vue de dessus du pop-up en @Image1. Demandez un motif crème à l’intérieur d’un panneau de la manche. Vérifiez son placement et la façon dont il suit les plis."
+            "body": "Ajoutez la vue de dessus du pop-up en @Image1. Demandez six carrés ivoire sur la manche droite, celle qui est dégagée."
           },
           {
             "recipeId": "kling-image-4-pixel-makeup",
@@ -310,24 +354,50 @@
           }
         ]
       }
-    }
+    },
+    "editorialImages": [
+      {
+        "id": "kling-image-4-bus-shelter-poster",
+        "title": "I CAN WALK FROM HERE. · Publicité de cordonnerie dans un abribus"
+      },
+      {
+        "id": "kling-image-4-pixel-makeup",
+        "title": "PIXEL CUT · Gros plan beauté en 4K"
+      },
+      {
+        "id": "kling-image-4-pop-up-wide",
+        "title": "Inès devant le pop-up"
+      },
+      {
+        "id": "kling-image-4-pop-up-overhead",
+        "title": "Inès à la table de coupe"
+      },
+      {
+        "id": "kling-image-4-pop-up-flash",
+        "title": "Inès à l’entrée, après la tombée de la nuit"
+      },
+      {
+        "id": "kling-image-4-sleeve-edit",
+        "title": "Six carrés ivoire sur la manche"
+      }
+    ]
   },
   "cinematic": {
     "modelSlug": "kling-image-v4",
     "variant": "image",
-    "heroAssetId": null,
+    "heroAssetId": "kling-image-4-pixel-makeup",
     "titleLines": [
       "Kling Image 4.0"
     ],
-    "subtitle": "Une idée, toute une série d’images.",
+    "subtitle": "Créez une image. Déclinez-la en campagne.",
     "byline": "Générateur et éditeur d’images IA",
-    "intro": "Créez un visuel, retouchez-le avec des références ou déclinez le même sujet sur plusieurs images. Choisissez la définition qui convient à votre projet, en 2K, 4K ou 8K.",
+    "intro": "Partez d’un prompt, gardez le même personnage au fil d’une série ou retouchez un détail à partir d’une image.",
     "primaryLabel": "Créer avec Kling Image 4.0",
     "caption": "Rendus Kling Image 4.0",
     "proofLabel": "Explorer les idées",
     "overviewLabel": "Vue d’ensemble",
     "detailsLabel": "Caractéristiques",
-    "examplesLabel": "Voir les briefs",
+    "examplesLabel": "Exemples et prompts",
     "promptingLabel": "Guide de prompts",
     "pricingLabel": "Prix",
     "specsReviewedAt": "2026-11-20",
