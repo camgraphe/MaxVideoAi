@@ -52,12 +52,24 @@ export function getGitLastModified(sourceFile?: string): string | undefined {
   if (cached !== undefined) {
     return cached ?? undefined;
   }
-  const relative = path.relative(process.cwd(), sourceFile);
-  const result = spawnSync('git', ['log', '-1', '--pretty=format:%cs', '--', relative], {
-    encoding: 'utf8',
+  const cwd = path.dirname(sourceFile);
+  const result = spawnSync('git', ['log', '-1', '--format=%cs %H %P', '--', path.basename(sourceFile)], {
+    cwd, encoding: 'utf8',
   });
   if (!result.error && result.status === 0) {
-    const formatted = formatLastModified(result.stdout.trim());
+    const [day, commit, parent] = result.stdout.trim().split(' ');
+    let formatted = formatLastModified(day);
+    // At a shallow boundary, Git presents every inherited file as newly added.
+    // A genuine root commit can still establish a file's publication date.
+    if (formatted && !parent) {
+      const location = spawnSync('git', ['rev-parse', '--git-path', 'shallow'], { cwd, encoding: 'utf8' });
+      if (location.status === 0) {
+        const shallowFile = path.resolve(cwd, location.stdout.trim());
+        if (fs.existsSync(shallowFile) && fs.readFileSync(shallowFile, 'utf8').split('\n').includes(commit)) {
+          formatted = undefined;
+        }
+      }
+    }
     GIT_LASTMOD_CACHE.set(sourceFile, formatted ?? null);
     return formatted;
   }

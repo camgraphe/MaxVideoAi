@@ -57,6 +57,33 @@ test('a deployment archive can recover model dates without Git', () => {
   assert.equal(dates['seedance-2-5-flash'], '2026-11-19');
 });
 
+test('a shallow checkout dates real route edits and omits inherited files at the boundary', async () => {
+  const react = frontendRequire('react') as { cache?: (fn: unknown) => unknown };
+  react.cache ??= (fn) => fn;
+  const { getGitLastModified } = await import('../frontend/lib/sitemap/lastmod.ts');
+  const root = mkdtempSync(path.join(tmpdir(), 'sitemap-route-history-'));
+  const source = path.join(root, 'source');
+  const clone = path.join(root, 'shallow');
+  try {
+    execFileSync('git', ['init', '-q', source]);
+    for (const [name, day] of [['about', '2025-07-12'], ['other', '2025-11-17'], ['changed', '2025-11-20']]) {
+      writeFileSync(path.join(source, name), name);
+      execFileSync('git', ['add', name], { cwd: source });
+      const timestamp = day + 'T12:00:00Z';
+      execFileSync('git', ['-c', 'user.name=Test', '-c', 'user.email=test@example.invalid',
+        '-c', 'commit.gpgsign=false', 'commit', '-qm', name], {
+        cwd: source, env: { ...process.env, GIT_AUTHOR_DATE: timestamp, GIT_COMMITTER_DATE: timestamp },
+      });
+    }
+    execFileSync('git', ['clone', '-q', '--no-local', '--depth=2', source, clone]);
+    assert.equal(getGitLastModified(path.join(source, 'about')), '2025-07-12');
+    assert.equal(getGitLastModified(path.join(clone, 'changed')), '2025-11-20');
+    assert.equal(getGitLastModified(path.join(clone, 'about')), undefined);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test('published dates survive the migration and a subsequent model edit advances only that model', () => {
   const { readModelContentDates } = frontendRequire('./config/model-content-dates.cjs');
   const published = frontendRequire('./config/model-content-date-baseline.json');
