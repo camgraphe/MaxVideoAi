@@ -63,7 +63,8 @@ the explicit reference and the Storyboard job hint separately.
   workflow's combined limits. Other references stay in the account's active
   draft until they fit again or the user removes them. Timed images keep their
   positions across compatible FLUX variants. An automatic duration fallback
-  leaves room for the last keyframe. Luma Create retains its own ordered
+  leaves room for the last keyframe. Timeline cards stay separately actionable
+  even when their frame markers are adjacent. Luma Create retains its own ordered
   positions. Kling subjects keep their grouped inputs. Inactive references
   are excluded from quotes, generation and Milo context. Explicit removal updates
   the last complete draft even when an unrelated import is pending or failed.

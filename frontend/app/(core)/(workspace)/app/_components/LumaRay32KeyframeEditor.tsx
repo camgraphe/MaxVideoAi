@@ -366,7 +366,7 @@ export function LumaRay32KeyframeEditor({
     setSelectedSlotIndex(index);
     const control=keyframeSlotRefs.current[referenceTarget.slot];
     control?.scrollIntoView({block:'center',inline:'nearest'});
-    control?.querySelector<HTMLButtonElement>('button')?.focus({preventScroll:true});
+    timelineRef.current?.querySelector<HTMLButtonElement>(`[data-keyframe-handle="${referenceTarget.slot}"]`)?.focus({preventScroll:true});
   },[referenceTarget,imageFieldId,keyframeAssets,keyframeSlots]);
 
   if ((!isFluxMax && !sourceVideoEntry) || !keyframeEntry) return null;
