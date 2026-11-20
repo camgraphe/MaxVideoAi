@@ -10,7 +10,7 @@ const featuredModels = ['seedance-2-0-mini', 'kling-v4', 'seedance-2-5'] as cons
 const exampleVideoId = 'job_d9481a70-db5c-4072-8ab7-adc82a8a5100';
 const settings = { durationSec: 5, resolution: '720p', aspectRatio: '16:9', audio: true, mode: 't2v' } as const;
 
-export type OpeningRow = { id: string; anchor: string; name: string; price: string | null; href: string };
+export type OpeningRow = { id: (typeof featuredModels)[number]; anchor: string; name: string; price: string | null; href: string };
 
 export async function readPricingOpening(locale: AppLocale) {
   const catalogue = getReadOnlyConfiguredEnginesByCategory('all');

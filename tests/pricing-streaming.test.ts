@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import test from 'node:test';
 import { build } from 'esbuild';
+import { JSDOM } from 'jsdom';
 
 const requireFrontend = createRequire(resolve('frontend/package.json'));
 const pricing = './frontend/app/(localized)/[locale]/(marketing)/pricing';
@@ -100,16 +101,25 @@ test('Pricing serves three verified opening quotes before the remaining current 
       assert.match(shell, /pricing-service-jsonld/);
       assert.doesNotMatch(shell, /data-pricing-(?:content|quick-start)-ready/);
       assert.equal(fixture.openingCalls, 3);
+      const dom = JSDOM.fragment(shell);
+      const cards = Array.from(dom.querySelectorAll('#video-quote li'));
+      assert.deepEqual(cards.map(card => card.querySelector('[data-estimate]')?.getAttribute('data-estimate')),
+        ['seedance-2-0-mini', 'kling-v4', 'seedance-2-5'], 'The inexpensive hero example also leads the visible comparison');
+      const heroHref = dom.querySelector('header > div a[data-analytics-cta-name="pricing_quote"]')?.getAttribute('href');
+      assert.equal(cards[0].querySelector('[data-estimate]')?.getAttribute('href'), heroHref);
       if (unavailable) {
         assert.doesNotMatch(shell, /id="quote-(?:seedance|kling)|0[.,]39|1[.,]18|2[.,]32/);
+        assert.equal(dom.querySelectorAll('#video-quote li a[href^="#quote-"]').length, 0);
       } else {
-        for (const amount of [/0[.,]39/, /1[.,]18/, /2[.,]32/]) assert.match(shell, amount);
-        for (const engine of ['seedance-2-0-mini','kling-v4','seedance-2-5']) {
-          assert.ok(shell.includes('data-estimate="' + engine + '"'));
-          assert.ok(shell.includes('id="quote-' + engine + '"'));
+        const amounts = [/0[.,]39/, /1[.,]18/, /2[.,]32/];
+        for (const [index, card] of cards.entries()) {
+          const link = card.querySelector('a[data-estimate]')!;
+          assert.match(link.getAttribute('href')!, /remix=1&mode=t2v&duration=5&resolution=720p&aspect=16%3A9&audio=1/);
+          assert.match(card.querySelector('strong')!.textContent, amounts[index]);
+          const target = 'quote-' + link.getAttribute('data-estimate');
+          assert.equal(card.querySelector('a[href^="#quote-"]')?.getAttribute('href'), '#' + target);
+          assert.match(dom.getElementById(target)!.textContent, amounts[index]);
         }
-        assert.equal((shell.match(/remix=1&amp;mode=t2v&amp;duration=5&amp;resolution=720p&amp;aspect=16%3A9&amp;audio=1/g) ?? []).length, 3);
-        assert.match(shell, /id="video-quote"/);
       }
       assert.equal(fixture.calls, 1);
       fixture.release();

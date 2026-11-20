@@ -7,6 +7,12 @@ import { pricingOpeningCopy } from '../_lib/pricing-opening-copy';
 import { PricingCopy } from './PricingCopy.client';
 import styles from './pricing-feature.module.css';
 
+const comparisonStills = {
+  'seedance-2-0-mini': { src: '/assets/pricing/seedance-mini-last-light.webp', alt: 'miniStill' },
+  'kling-v4': { src: '/assets/pricing/kling-4-concert.webp', alt: 'klingStill' },
+  'seedance-2-5': { src: '/assets/model-examples/seedance-2-5/ca3df1e9a0bc552a6300c6097f2c6d97803b489f90b3a6050f3431725a81c3c3.webp', alt: 'seedanceStill' },
+} as const satisfies Record<OpeningRow['id'], { src: string; alt: keyof typeof pricingOpeningCopy.en }>;
+
 type Props = {
   locale: AppLocale;
   hero: { title: string };
@@ -24,7 +30,7 @@ function cite(locale: AppLocale, row: OpeningRow, date: string) {
 export function PricingHeroSection({ locale, hero, rows, quotedOn, canonical }: Props) {
   const copy = pricingOpeningCopy[locale];
   const main = rows.find(row => row.id === 'seedance-2-0-mini');
-  const alternatives = rows.filter(row => row !== main);
+  const quotedRows = rows.filter(row => row.price !== null);
   const app = '/app?mode=t2v&lang=' + locale;
   const watch = '/video/job_d9481a70-db5c-4072-8ab7-adc82a8a5100';
   const date = new Intl.DateTimeFormat(locale, { dateStyle: 'long', timeZone: 'UTC' }).format(new Date(quotedOn));
@@ -41,7 +47,7 @@ export function PricingHeroSection({ locale, hero, rows, quotedOn, canonical }: 
 
         {main && <div className={styles.offer}><a className={styles.engine} href={'#' + main.anchor}>{main.name.replace(/^Dreamina /, '')}</a>
           <strong>{main.price ?? copy.check}</strong><span className={styles.promise}>{copy.intro}</span><span className={styles.spec}>{copy.heroSpec}</span></div>}
-        <a href={main?.href ?? app} className={styles.cta} data-estimate={main?.id}
+        <a href={main?.href ?? app} className={styles.cta}
           data-analytics-event="cta_click" data-analytics-cta-name="pricing_quote" data-analytics-cta-location="pricing_hero" data-analytics-target-family="workspace">
           {copy.try}<ArrowUpRight size={17} aria-hidden="true" /></a>
         {main && <p className={styles.hint}>{copy.prefill}</p>}
@@ -54,16 +60,35 @@ export function PricingHeroSection({ locale, hero, rows, quotedOn, canonical }: 
       <nav aria-label={copy.nav} className={styles.nav}>{navigation.map(({ href, label, Icon }) =>
         <a key={href} href={href}><Icon size={18} aria-hidden="true" />{label}<ArrowDown size={14} aria-hidden="true" /></a>)}</nav>
       <section id="video-quote" aria-labelledby="video-quote-title" className={styles.comparison}>
-        <div className={styles.compareTitle}><h2 id="video-quote-title">{alternatives.length === 2 ? copy.compare : copy.examples}</h2><p className={styles.conditions}>{copy.conditions}</p></div>
-        <div className={styles.choices}>{alternatives.map(row => <div key={row.id} className={styles.choice}>
-          <Image className={styles.modelStill} src={row.id === 'kling-v4' ? '/assets/pricing/kling-4-concert.webp' : '/assets/model-examples/seedance-2-5/ca3df1e9a0bc552a6300c6097f2c6d97803b489f90b3a6050f3431725a81c3c3.webp'} alt={row.id === 'kling-v4' ? copy.klingStill : copy.seedanceStill} width={420} height={154} sizes="(max-width: 720px) 46vw, 310px" loading="lazy" />
-          <a className={styles.model} href={'#' + row.anchor}>{row.name}</a><span>{copy.meta}</span><strong>{row.price ?? copy.check}</strong>
-          <a href={row.href} data-estimate={row.id} aria-label={copy.quote + ' · ' + row.name}
-            data-analytics-event="cta_click" data-analytics-cta-name="pricing_quote" data-analytics-cta-location="pricing_hero" data-analytics-target-family="workspace">{copy.quote} ↗</a>
-        </div>)}</div>
-        {rows.some(row => row.price) && <details className={styles.citations}><summary>{copy.cite}</summary>
+        <div className={styles.compareTitle}>
+          <h2 id="video-quote-title">{rows.length ? copy.compare : copy.examples}</h2>
+          <div className={styles.conditions}>
+            <p>{copy.meta}</p>
+            <p>{copy.conditions}</p>
+            {quotedRows.length > 0 && <p>{copy.quotedOn} <time dateTime={quotedOn}>{date}</time></p>}
+          </div>
+        </div>
+        {rows.length > 0 && <ul className={styles.choices} role="list">
+          {rows.map(row => {
+            const still = comparisonStills[row.id];
+            return <li key={row.id} className={styles.choice}>
+              <Image className={styles.modelStill} src={still.src} alt={copy[still.alt]} width={720} height={405}
+                sizes="(max-width: 720px) 88px, (max-width: 1240px) 30vw, 366px" loading="lazy" />
+              <h3 className={styles.model}><a href={'#' + row.anchor}>{row.name.replace(/^Dreamina /, '')}</a></h3>
+              <strong className={styles.price}>{row.price ?? copy.check}</strong>
+              <div className={styles.actions}>
+                <a href={row.href} data-estimate={row.id} aria-label={copy.quote + ' · ' + row.name}
+                  data-analytics-event="cta_click" data-analytics-cta-name="pricing_quote" data-analytics-cta-location="pricing_hero" data-analytics-target-family="workspace">
+                  {copy.quote}<ArrowUpRight size={14} aria-hidden="true" />
+                </a>
+                {row.price && <a href={'#quote-' + row.id} aria-label={copy.source + ' · ' + row.name}>{copy.source}</a>}
+              </div>
+            </li>;
+          })}
+        </ul>}
+        {quotedRows.length > 0 && <details className={styles.citations}><summary>{copy.cite}</summary>
           <time dateTime={quotedOn}>{date}</time>
-          {rows.filter(row => row.price).map(row => {
+          {quotedRows.map(row => {
             const sentence = cite(locale, row, date);
             const source = canonical + '#quote-' + row.id;
             return <div key={row.id} id={'quote-' + row.id}><p>{sentence} <a href={'#quote-' + row.id}>{copy.source}</a></p>
