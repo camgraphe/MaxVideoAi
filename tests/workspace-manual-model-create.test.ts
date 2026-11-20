@@ -358,6 +358,51 @@ for (const fluxId of ['flux-3', 'flux-3-draft', 'flux-3-max']) test(`${fluxId} t
   assert.equal(direct.setup.parkedCreateReferences?.length ?? 0, 0);
 });
 
+test('FLUX restores late keyframes with a compatible duration after a parked draft is reloaded', () => {
+  const flux = engine('flux-3'), wan = engine('wan-3-prime'), draft = engine('flux-3-draft');
+  const fieldId = 'reference_image_urls';
+  const assets = [readyReference('first.jpg', fieldId, 'image'), null, readyReference('late.jpg', fieldId, 'image')];
+  const current: WorkspaceModelSetup = {
+    ...createDraft(),
+    form: {
+      ...coerceFormState(flux, 'ref2v', null),
+      durationSec: 20, durationOption: '20', createPreferences: { durationSec: 30, durationOption: 'auto' },
+      extraInputValues: { keyframe_indexes: '0, 320', keyframe_slot_indexes: '0:0, 2:320' },
+    },
+    inputAssets: { [fieldId]: assets },
+  };
+
+  const away = preparePickerScenario({ current, currentEngine: flux, engine: wan, locale: 'fr' });
+  const persisted = serializeWorkspaceModelSetup(away.setup);
+  assert.ok(persisted.ok);
+  const back = preparePickerScenario({ current: persisted.setup, currentEngine: wan, engine: draft, locale: 'fr' });
+  assert.equal(back.workflow.submissionMode, 'ref2v');
+  assert.equal(back.setup.form.durationSec, 20);
+  assert.equal(back.setup.form.extraInputValues.keyframe_indexes, '0, 320');
+  assert.deepEqual(back.setup.inputAssets[fieldId], assets);
+  const slots = parseEditorKeyframeSlots(back.setup.form.extraInputValues.keyframe_slot_indexes, undefined, assets, 10, 480);
+  assert.deepEqual(slots.filter(slot => assets[slot.assetSlot]), [{ assetSlot: 0, frameIndex: 0 }, { assetSlot: 2, frameIndex: 320 }]);
+  assert.equal(back.setup.form.createPreferences?.durationSec, 30);
+  assert.equal(back.setup.form.createPreferences?.durationOption, 'auto');
+  assert.deepEqual(back.blockingReasons, []);
+  const choice = buildWorkspacePickerOptions({
+    current: persisted.setup, engines: [wan, draft], locale: 'fr', memberTier: 'Member',
+  })[draft.id];
+  assert.equal(choice.request?.durationSec, 20);
+
+  const shortened = preparePickerScenario({
+    current: persisted.setup, currentEngine: wan, engine: draft, locale: 'fr', overrides: { durationSec: 5 },
+  });
+  assert.equal(shortened.setup.form.durationSec, 5);
+  assert.equal(shortened.setup.form.extraInputValues.keyframe_indexes, '0, 120');
+
+  const unsupported = preparePickerScenario({
+    current, currentEngine: flux, engine: draft, locale: 'fr', overrides: { durationSec: 4 },
+  });
+  assert.equal(unsupported.setup.form.durationSec, 14);
+  assert.equal(unsupported.setup.form.extraInputValues.keyframe_indexes, '0, 320');
+});
+
 test('a Kling 4 video subject can return to Create without driving Kling Omni into Modify', () => {
   const kling4 = engine('kling-v4'), omni = engine('kling-o3-pro');
   const image = { ...readyReference('space.jpg', 'image_urls', 'image'), assetId: 'owned-space' };

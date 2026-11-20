@@ -19,7 +19,7 @@ export function fieldAcceptsMode(field: EngineInputField, mode: Mode): boolean {
 
 /** The generation path can use a two-frame start slot as the i2v opening image. */
 export function getAlternateCreateOpeningFrame(engine: EngineCaps, mode: Mode) {
-  if (mode !== 'i2v' || !engine.modes.includes('fl2v')) return null;
+  if (mode !== 'i2v' || !engine.modes?.includes('fl2v')) return null;
   const fields = { inputSchema: engine.inputSchema, candidateFieldIds: VIDEO_MEDIA_FIELD_CANDIDATES.firstFrame, type: 'image' as const };
   const primary = resolveActiveVideoInputField({ ...fields, mode: 'i2v' });
   const alternate = resolveActiveVideoInputField({ ...fields, mode: 'fl2v' });

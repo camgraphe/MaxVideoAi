@@ -62,8 +62,9 @@ the explicit reference and the Storyboard job hint separately.
   workflow. Compatibility includes the field role, media limits and the target
   workflow's combined limits. Other references stay in the account's active
   draft until they fit again or the user removes them. Timed images keep their
-  positions across compatible FLUX variants and Luma Create retains its own
-  ordered positions. Kling subjects keep their grouped inputs. Inactive references
+  positions across compatible FLUX variants. An automatic duration fallback
+  leaves room for the last keyframe. Luma Create retains its own ordered
+  positions. Kling subjects keep their grouped inputs. Inactive references
   are excluded from quotes, generation and Milo context. Explicit removal updates
   the last complete draft even when an unrelated import is pending or failed.
   Source workflows keep their own snapshots. A complete recall or Storyboard

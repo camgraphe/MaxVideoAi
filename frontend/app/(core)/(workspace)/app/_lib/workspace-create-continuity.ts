@@ -22,6 +22,7 @@ import { resolveWorkspaceWorkflow } from './workspace-workflow-projection';
 const FLUX_KEYFRAME_ASSET_FIELD = 'reference_image_urls';
 const LUMA_KEYFRAME_ASSET_FIELD = 'keyframe_urls';
 const FLUX_KEYFRAME_SLOT_LIMIT = 10;
+const FLUX_KEYFRAME_FPS = 24;
 const CREATE_REFERENCE_ROLES = ['primary', 'frame', 'reference', 'generic', 'keyframe'] as const;
 export type WorkspaceParkedCreateMedia = {
   fieldId: string;
@@ -44,7 +45,7 @@ export function workspaceCreateReferenceRole(engine: EngineCaps | null, fieldId:
 }
 
 function keyframeLimit(form: FormState) {
-  return Math.max(5, Math.min(20, Number(form.durationOption ?? form.durationSec) || 5)) * 24;
+  return Math.max(5, Math.min(20, Number(form.durationOption ?? form.durationSec) || 5)) * FLUX_KEYFRAME_FPS;
 }
 
 export function readCreateKeyframePositions(form: FormState, fieldId: string, assets: readonly (ReferenceAsset | null)[]) {
@@ -67,8 +68,11 @@ export function restoreCreateKeyframePositions(
   form: FormState,
   inputAssets: Record<string, (ReferenceAsset | null)[]>,
   references: WorkspaceParkedCreateMedia[],
+  engine: EngineCaps,
+  requestedDurationSec?: number,
 ): FormState {
-  const isLuma = form.engineId === 'luma-ray-3-2';
+  const isLuma = engine.id === 'luma-ray-3-2';
+  if (!isLuma && !hasFluxCreateKeyframes(engine.inputSchema)) return form;
   const fieldId = isLuma ? LUMA_KEYFRAME_ASSET_FIELD : FLUX_KEYFRAME_ASSET_FIELD;
   const assets = inputAssets[fieldId] ?? [];
   const positions = references.flatMap(reference =>
@@ -80,6 +84,20 @@ export function restoreCreateKeyframePositions(
     ...form,
     extraInputValues: { ...form.extraInputValues, keyframe_indexes: formatIndexes(getPayloadIndexes(positions, assets)) },
   };
+
+  const lastFrame = Math.max(...positions.map(position => position.frameIndex));
+  const duration = getModeCaps(engine, 'ref2v')?.duration;
+  // An automatic fallback must leave enough room for the authored frame positions.
+  if (form.durationSec !== requestedDurationSec && lastFrame > keyframeLimit(form) && duration && 'options' in duration) {
+    const preferredSeconds = form.createPreferences?.durationSec ?? form.durationSec;
+    const compatible = duration.options.map(parseDurationOptionValue).filter(option =>
+      option.value * FLUX_KEYFRAME_FPS >= lastFrame && option.value <= engine.maxDurationSec
+      && !getVideoSchemaControlConstraintViolation({
+        inputSchema: engine.inputSchema, duration: option.value, resolution: form.resolution, fps: form.fps,
+      }));
+    const [closest] = compatible.sort((a, b) => Math.abs(a.value - preferredSeconds) - Math.abs(b.value - preferredSeconds) || a.value - b.value);
+    if (closest) form = { ...form, durationSec: closest.value, durationOption: closest.raw, numFrames: null };
+  }
   const slots = parseKeyframeSlots(formatKeyframeSlots(positions), assets, FLUX_KEYFRAME_SLOT_LIMIT, keyframeLimit(form))
     .sort((first, second) => first.assetSlot - second.assetSlot);
   return {

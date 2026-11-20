@@ -191,7 +191,7 @@ function validateCandidate(engine: EngineCaps, setup: WorkspaceModelSetup, workf
 }
 
 /** Build an isolated preview. Never applies state, releases media, writes storage or requests a quote. */
-export function prepareWorkspaceModelCandidate({ engine: targetEngine, current, locale, currentEngine, restoreSetup, returnToCreate = false }: {
+export function prepareWorkspaceModelCandidate({ engine: targetEngine, current, locale, currentEngine, restoreSetup, returnToCreate = false, requestedDurationSec }: {
   engine: EngineCaps;
   current: WorkspaceModelSetup;
   locale: string;
@@ -201,6 +201,8 @@ export function prepareWorkspaceModelCandidate({ engine: targetEngine, current, 
   restoreSetup?: WorkspaceModelSetup;
   /** Manual other-model selection only; comparisons and explicit restoration keep their workflow. */
   returnToCreate?: boolean;
+  /** A deliberate, supported duration choice may shorten the keyframe timeline. */
+  requestedDurationSec?: number;
 }): WorkspaceModelCandidate {
   let engine = targetEngine;
   const manualChange = returnToCreate && engine.id !== current.form.engineId;
@@ -269,7 +271,9 @@ export function prepareWorkspaceModelCandidate({ engine: targetEngine, current, 
     ...setup, form: { ...setup.form, mode: projected.mode }, inputAssets: projected.inputAssets, klingElements: subjects?.klingElements ?? [],
   }, projected.roles) : stabilize(setup);
   setup = normalized.setup;
-  if (manualCreate) setup.form = restoreCreateKeyframePositions(setup.form, setup.inputAssets, [...createReferences, ...parked]);
+  if (manualCreate) {
+    setup.form = restoreCreateKeyframePositions(setup.form, setup.inputAssets, [...createReferences, ...parked], engine, requestedDurationSec);
+  }
   const stable = normalized.stable;
   if (!stable) blockingReasons.push({ code: 'not-stable', scope: 'apply', message: 'This configuration could not be stabilized for the selected model.' });
   const workflow = resolveWorkspaceWorkflow({ engine, ...setup });
