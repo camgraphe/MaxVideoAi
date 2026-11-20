@@ -1,8 +1,10 @@
-import { AudioLines, Image as ImageIcon, SlidersHorizontal } from 'lucide-react';
+import Image from 'next/image';
+import { ChevronDown } from 'lucide-react';
 import styles from './pricing-catalog.module.css';
 import type { AppLocale } from '@/i18n/locales';
 import { Link, type LocalizedLinkHref } from '@/i18n/navigation';
 import type { ImagePricingRow, OtherSurfacePricingData } from '../_lib/pricingHubData';
+import { pricingOpeningCopy } from '../_lib/pricing-opening-copy';
 import { getPricingHubCopy } from '../_lib/pricingHubCopy';
 import { PricingTableScrollRegion } from './PricingTableScrollRegion';
 
@@ -58,24 +60,27 @@ const readingNotes = {
 export function PricingOtherSurfacesSection({ data, locale }: { data: OtherSurfacePricingData; locale: AppLocale }) {
   const copy = getPricingHubCopy(locale);
   const notes = readingNotes[locale];
+  const editorial = pricingOpeningCopy[locale];
   const imageExample = data.imageRows.find(row => row.id === 'gpt-image-2' && row.standardImage !== copy.liveQuote && row.highQualityImage !== copy.liveQuote);
   const voice = data.audioRows.find(row => row.id === 'audio-voice-only' && row.thirtySeconds !== copy.liveQuote && row.sixtySeconds !== copy.liveQuote);
   return (
-    <section className="space-y-5" aria-labelledby="other-pricing-title">
+    <section className={styles.surfaces} aria-labelledby="other-pricing-title">
       <div className={styles.sectionIntro}>
         <h2 id="other-pricing-title" className="text-2xl font-semibold tracking-normal text-text-primary">
-          {copy.otherSurfaces.title}
+          {editorial.surfaceTitle}
         </h2>
         <p className="mt-2 max-w-[760px] text-sm leading-6 text-text-secondary">
           {copy.otherSurfaces.intro}
         </p>
       </div>
 
-      <div id="image-pricing" className={`scroll-mt-24 sm:scroll-mt-28 ${styles.chapter}`}>
-        <header className={styles.chapterHeader}>
-          <h3 id="image-pricing-title"><ImageIcon aria-hidden="true" /> {copy.otherSurfaces.imageTitle}</h3>
-          <p>{imageExample ? notes.imageQuote(imageExample) : notes.image}</p>
-        </header>
+      <details id="image-pricing" className={`scroll-mt-24 sm:scroll-mt-28 ${styles.surface}`}>
+        <summary className={styles.surfaceHead}>
+          <span className={styles.thumb}><Image src="/assets/model-examples/seedream-5-0-pro/campaign.webp" width={280} height={120} sizes="(max-width: 760px) 78px, 360px" alt="" loading="lazy" /></span>
+          <h3 id="image-pricing-title">{editorial.imageHead}</h3>
+          <ChevronDown size={20} aria-hidden="true" />
+        </summary>
+        <div className={styles.surfaceBody}><p className={styles.surfaceNote}>{imageExample ? notes.imageQuote(imageExample) : notes.image}</p>
         <PricingTableScrollRegion labelledBy="image-pricing-title" className="mt-4">
           <table className="min-w-[940px] text-left text-sm">
             <thead>
@@ -106,13 +111,16 @@ export function PricingOtherSurfacesSection({ data, locale }: { data: OtherSurfa
             </tbody>
           </table>
         </PricingTableScrollRegion>
-      </div>
+        </div>
+      </details>
 
-      <div id="audio-pricing" className={`scroll-mt-24 sm:scroll-mt-28 ${styles.chapter}`}>
-        <header className={styles.chapterHeader}>
-          <h3 id="audio-pricing-title"><AudioLines aria-hidden="true" /> {copy.otherSurfaces.audioTitle}</h3>
-          <p>{voice ? notes.audioQuote(voice.mode, voice.thirtySeconds, voice.sixtySeconds) : notes.audio}</p>
-        </header>
+      <details id="audio-pricing" className={`scroll-mt-24 sm:scroll-mt-28 ${styles.surface}`}>
+        <summary className={styles.surfaceHead}>
+          <span className={styles.thumb}><Image src="/assets/pricing/opal-waveform.webp" width={280} height={120} sizes="(max-width: 760px) 78px, 360px" alt="" loading="lazy" /></span>
+          <h3 id="audio-pricing-title">{editorial.audioHead}</h3>
+          <ChevronDown size={20} aria-hidden="true" />
+        </summary>
+        <div className={styles.surfaceBody}><p className={styles.surfaceNote}>{voice ? notes.audioQuote(voice.mode, voice.thirtySeconds, voice.sixtySeconds) : notes.audio}</p>
         <PricingTableScrollRegion labelledBy="audio-pricing-title" className="mt-4">
           <table className="min-w-[860px] text-left text-sm">
             <thead>
@@ -141,13 +149,16 @@ export function PricingOtherSurfacesSection({ data, locale }: { data: OtherSurfa
             </tbody>
           </table>
         </PricingTableScrollRegion>
-      </div>
+        </div>
+      </details>
 
-      <div id="tool-pricing" className={`scroll-mt-24 sm:scroll-mt-28 ${styles.chapter}`}>
-        <header className={styles.chapterHeader}>
-          <h3 id="tool-pricing-title"><SlidersHorizontal aria-hidden="true" /> {copy.otherSurfaces.toolTitle}</h3>
-          <p>{notes.tools}</p>
-        </header>
+      <details id="tool-pricing" className={`scroll-mt-24 sm:scroll-mt-28 ${styles.surface}`}>
+        <summary className={styles.surfaceHead}>
+          <span className={styles.thumb}><Image src="/assets/tools/angle-orbit-hero-dialogue-elevated.webp" width={280} height={120} sizes="(max-width: 760px) 78px, 360px" alt="" loading="lazy" /></span>
+          <h3 id="tool-pricing-title">{editorial.toolHead}</h3>
+          <ChevronDown size={20} aria-hidden="true" />
+        </summary>
+        <div className={styles.surfaceBody}><p className={styles.surfaceNote}>{notes.tools}</p>
         <p className="mt-2 max-w-[760px] text-sm leading-6 text-text-secondary">
           {copy.otherSurfaces.characterImageNote}
         </p>
@@ -196,7 +207,8 @@ export function PricingOtherSurfacesSection({ data, locale }: { data: OtherSurfa
             </tbody>
           </table>
         </PricingTableScrollRegion>
-      </div>
+        </div>
+      </details>
     </section>
   );
 }

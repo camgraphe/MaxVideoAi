@@ -118,6 +118,10 @@ test('Pricing serves three verified opening quotes before the remaining current 
       assert.equal(fixture.openingCalls, 3, 'The catalogue does not requote the three examples');
       assert.equal(fixture.calls, 1, 'Quick start and all matrices must share one complete current hub');
       assert.match(tail, /data-pricing-content-ready/);
+      assert.equal((tail.match(/data-faq-question=""/g) ?? []).length, 12, 'All questions survive topic grouping in the streamed HTML');
+      for (const surface of ['image', 'audio', 'tool']) {
+        assert.ok(tail.includes('<details id="' + surface + '-pricing"'), 'The public price details remain in the initial document');
+      }
       assert.match(tail, /data-pricing-quick-start-ready/);
       if (unavailable) {
         assert.equal(fixture.result.video.highlights.filter((highlight: { featured?: unknown }) => highlight.featured).length, 0);

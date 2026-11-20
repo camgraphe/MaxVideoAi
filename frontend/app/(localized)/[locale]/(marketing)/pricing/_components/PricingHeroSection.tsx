@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowUpRight, AudioLines, Film, Image as ImageIcon, SlidersHorizontal } from 'lucide-react';
+import { ArrowDown, ArrowUpRight, Play, AudioLines, Film, Image as ImageIcon, SlidersHorizontal } from 'lucide-react';
 import Image from 'next/image';
 import NextLink from 'next/link';
 import type { AppLocale } from '@/i18n/locales';
@@ -26,7 +26,7 @@ export function PricingHeroSection({ locale, hero, rows, quotedOn, canonical }: 
   const main = rows.find(row => row.id === 'seedance-2-0-mini');
   const alternatives = rows.filter(row => row !== main);
   const app = '/app?mode=t2v&lang=' + locale;
-  const watch = '/video/dreamina-seedance-2-0-mini-pov-canyon-dive';
+  const watch = '/video/job_d9481a70-db5c-4072-8ab7-adc82a8a5100';
   const date = new Intl.DateTimeFormat(locale, { dateStyle: 'long', timeZone: 'UTC' }).format(new Date(quotedOn));
   const navigation = [
     { href: '#video-pricing', label: copy.video, Icon: Film },
@@ -36,27 +36,28 @@ export function PricingHeroSection({ locale, hero, rows, quotedOn, canonical }: 
   ];
   return <header className={styles.opening}>
     <div className={styles.cover}><div className={styles.hero}>
-      <div>
+      <div className={styles.lead}>
         <h1>{hero.title}</h1>
-        <p className={styles.intro}>{copy.intro}</p>
-        {main && <div className={styles.offer}><a href={'#' + main.anchor}>{main.name}</a>
-          <strong>{main.price ?? copy.check}</strong><span>{copy.meta}</span></div>}
+
+        {main && <div className={styles.offer}><a className={styles.engine} href={'#' + main.anchor}>{main.name.replace(/^Dreamina /, '')}</a>
+          <strong>{main.price ?? copy.check}</strong><span className={styles.promise}>{copy.intro}</span><span className={styles.spec}>{copy.heroSpec}</span></div>}
         <a href={main?.href ?? app} className={styles.cta} data-estimate={main?.id}
           data-analytics-event="cta_click" data-analytics-cta-name="pricing_quote" data-analytics-cta-location="pricing_hero" data-analytics-target-family="workspace">
           {copy.try}<ArrowUpRight size={17} aria-hidden="true" /></a>
         {main && <p className={styles.hint}>{copy.prefill}</p>}
       </div>
-      <figure><NextLink href={watch} prefetch={false}><Image priority src="/assets/pricing/seedance-mini-canyon.webp" width={1000} height={562} sizes="(max-width: 720px) 100vw, 52vw" alt={copy.pic} /></NextLink>
-        <figcaption><span>{copy.caption}</span><NextLink href={watch} prefetch={false}>{copy.watch} ↗</NextLink></figcaption>
+      <figure><NextLink href={watch} prefetch={false}><Image priority src="/assets/pricing/seedance-mini-metro.webp" width={1280} height={720} sizes="(max-width: 720px) 100vw, 70vw" alt={copy.pic} /></NextLink>
+        <figcaption><span>{copy.caption}</span><NextLink href={watch} prefetch={false}><Play size={13} fill="currentColor" aria-hidden="true" />{copy.watch}</NextLink></figcaption>
       </figure>
     </div></div>
     <div className={styles.body}>
       <nav aria-label={copy.nav} className={styles.nav}>{navigation.map(({ href, label, Icon }) =>
         <a key={href} href={href}><Icon size={18} aria-hidden="true" />{label}<ArrowDown size={14} aria-hidden="true" /></a>)}</nav>
       <section id="video-quote" aria-labelledby="video-quote-title" className={styles.comparison}>
-        <h2 id="video-quote-title">{alternatives.length === 2 ? copy.compare : copy.examples}</h2><p className={styles.conditions}>{copy.conditions}</p>
+        <div className={styles.compareTitle}><h2 id="video-quote-title">{alternatives.length === 2 ? copy.compare : copy.examples}</h2><p className={styles.conditions}>{copy.conditions}</p></div>
         <div className={styles.choices}>{alternatives.map(row => <div key={row.id} className={styles.choice}>
-          <a className={styles.model} href={'#' + row.anchor}>{row.name}</a><span>{copy.meta}</span><strong>{row.price ?? '—'}</strong>
+          <Image className={styles.modelStill} src={row.id === 'kling-v4' ? '/assets/pricing/kling-4-concert.webp' : '/assets/model-examples/seedance-2-5/ca3df1e9a0bc552a6300c6097f2c6d97803b489f90b3a6050f3431725a81c3c3.webp'} alt="" width={420} height={154} sizes="(max-width: 720px) 46vw, 310px" loading="lazy" />
+          <a className={styles.model} href={'#' + row.anchor}>{row.name}</a><span>{copy.meta}</span><strong>{row.price ?? copy.check}</strong>
           <a href={row.href} data-estimate={row.id} aria-label={copy.quote + ' · ' + row.name}
             data-analytics-event="cta_click" data-analytics-cta-name="pricing_quote" data-analytics-cta-location="pricing_hero" data-analytics-target-family="workspace">{copy.quote} ↗</a>
         </div>)}</div>

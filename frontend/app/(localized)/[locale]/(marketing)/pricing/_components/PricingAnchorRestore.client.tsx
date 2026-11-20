@@ -5,7 +5,7 @@ import { consumeAnchorHistoryArrival } from '@/lib/anchor-history-arrival';
 
 const CANCEL_EVENTS = ['wheel', 'touchstart', 'pointerdown', 'keydown', 'pagehide'] as const;
 const MAX_WAIT_MS = 30_000;
-const FIXED_ANCHORS = new Set(['video-pricing', 'image-pricing', 'audio-pricing', 'tool-pricing', 'full-video-pricing-table', 'pricing-faq']);
+const FIXED_ANCHORS = new Set(['video-pricing', 'image-pricing', 'audio-pricing', 'tool-pricing', 'full-video-pricing-table', 'pricing-faq', 'pricing-credits', 'pricing-film-example', 'video-quote', 'pricing-minute-budget', 'popular-pricing-checks-title', 'other-pricing-title']);
 type AnchorIntent = { href: string; fromHref: string; id: string; x: number; y: number; explicit: boolean };
 
 /** Restore Pricing destinations missed during streaming, without overriding later navigation intent. */

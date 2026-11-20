@@ -58,7 +58,7 @@ export default async function PricingPage(props: { params: Promise<{ locale: App
         quotedOn={quotedOn}
       />
 
-      <div className="container-page max-w-[1440px] py-8 sm:py-10">
+      <div className="container-page max-w-[1240px] py-8 sm:py-12">
         <div className="stack-gap-lg">
           <Suspense fallback={<PricingPendingSections locale={locale} />}>
             <PricingCurrentSections pricingHub={pricingHub} locale={locale} quotedOn={quotedOn} faq={faq} faqEntries={faqEntries} />

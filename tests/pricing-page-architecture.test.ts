@@ -148,7 +148,7 @@ test('opening exposes localized navigation, exact preset links and the existing 
   assert.match(heroSource, /row.href/);
   assert.match(heroSource, /\/app\?mode=t2v\&lang=/);
   for (const id of ['video', 'image', 'audio', 'tool']) assert.ok(heroSource.includes(`#${id}-pricing`));
-  assert.match(heroSource, /seedance-mini-canyon\.webp/);
+  assert.match(heroSource, /seedance-mini-metro\.webp/);
   assert.match(heroSource, /time dateTime=/);
 });
 

@@ -26,7 +26,7 @@ function groupRows(rows: VideoPricingRow[]) {
     if (!groups.has(key)) groups.set(key, []);
     groups.get(key)!.push(row);
   }
-  return Array.from(groups).filter(([, items]) => items.length);
+  return Array.from(groups).filter(([, items]) => items.length).map(([key, items]) => [key, items.sort((a, b) => rank(a) - rank(b))] as const);
 }
 
 export function PricingVideoMatrixSection({ locale, video, quotedOn }: { locale: AppLocale; video: VideoPricingMatrixData; quotedOn: string }) {
@@ -45,12 +45,15 @@ export function PricingVideoMatrixSection({ locale, video, quotedOn }: { locale:
         <Link href="/app" prefetch={false}>{hub.video.openCreate}</Link></p>}
       <PricingFamilyComparison locale={locale} presets={presets} canonical={canonical} date={quotedOn}>
         {groupRows(video.rows).map(([key, rows]) => <details className={styles.family} key={key} data-family={key}>
-          <summary id={'family-' + key}>{families[key] ?? key}<small>{rows.length} {copy.catalogueCount}</small></summary>
+          <summary id={'family-' + key}>
+            <EngineIcon engine={rows[0].engineIcon} label="" size={28} rounded="xl" />
+            <span>{families[key] ?? key}</span><small>{rows.length} {copy.catalogueCount}</small>
+          </summary>
           <PricingTableScrollRegion labelledBy={'family-' + key}>
             <table><thead><tr><th scope="col">{copy.model}</th>
               {presets.map(p => <th key={p.id} data-preset={p.id} scope="col">{p.label}</th>)}
               <th className={styles.pick} scope="col">{copy.add}</th>
-            </tr></thead><tbody>{rows.sort((a,b) => rank(a) - rank(b)).map(row =>
+            </tr></thead><tbody>{rows.map(row =>
               <tr key={row.id} id={row.anchorId} data-model={row.engineName}>
                 <th scope="row"><div className={styles.model}><EngineIcon engine={row.engineIcon} label={row.engineName} size={24} rounded="xl" />
                   {row.modelHref ? <Link href={row.modelHref} prefetch={false}>{row.engineName}</Link> : row.engineName}</div>

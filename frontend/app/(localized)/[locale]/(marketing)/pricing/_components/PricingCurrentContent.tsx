@@ -25,7 +25,7 @@ export async function PricingCurrentQuickStart({ pricingHub, title, note }: Curr
 
 export async function PricingCurrentSections({
   pricingHub, locale, quotedOn, faq, faqEntries,
-}: CurrentPricingProps & { locale: AppLocale; quotedOn: string } & ComponentProps<typeof PricingRefundsFaqSection>) {
+}: CurrentPricingProps & { locale: AppLocale; quotedOn: string } & Omit<ComponentProps<typeof PricingRefundsFaqSection>, 'locale'>) {
   const data = await pricingHub;
   return (
     <>
@@ -43,7 +43,7 @@ export async function PricingCurrentSections({
         <PricingCreditsRefundsSection locale={locale} />
       </DeferredMarketingContent>
       <DeferredMarketingContent>
-        <PricingRefundsFaqSection faq={faq} faqEntries={faqEntries} />
+        <PricingRefundsFaqSection locale={locale} faq={faq} faqEntries={faqEntries} />
       </DeferredMarketingContent>
       <span hidden data-pricing-content-ready="" />
     </>
