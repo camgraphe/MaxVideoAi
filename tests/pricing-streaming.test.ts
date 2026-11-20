@@ -22,12 +22,10 @@ async function bundle() {
       export function reject(error){fail(error);}
       export function record(){calls++;}
       export async function openingQuote(input){
-        if (input.modelId==='kling-3-standard' && input.durationSec===15 && input.audio && input.resolution==='1080p' && input.aspectRatio==='16:9' && input.mode==='t2v') {
-          return unavailable ? {status:'unavailable'} : {status:'exact',amountCents:246,currency:'USD',revision:'current',scenarioLabel:'Film'};
-        }
-        if (!['kling-3-standard','kling-3-pro'].includes(input.modelId) || input.durationSec!==10 || input.resolution!=='1080p' || typeof input.audio!=='boolean') return quote(input);
+        const amounts={'seedance-2-0-mini':39,'kling-v4':118,'seedance-2-5':232};
+        if (!(input.modelId in amounts) || input.durationSec!==5 || input.resolution!=='720p' || input.audio!==true || input.aspectRatio!=='16:9' || input.mode!=='t2v') return quote(input);
         openingCalls++;
-        return unavailable ? {status:'unavailable'} : {status:'exact',amountCents:input.audio?789:654,currency:'USD',revision:'current',scenarioLabel:'Opening'};
+        return unavailable ? {status:'unavailable'} : {status:'exact',amountCents:amounts[input.modelId],currency:'USD',revision:'current',scenarioLabel:'Opening'};
       }
       export async function quote(input){await gate;if(unavailable)return {status:'unavailable'};return {status:'exact',amountCents:input.mode==='t2i'?321:654,currency:'USD',revision:'current',scenarioLabel:'Controlled current scenario'};}
       export function save(data){result=data;return data;}
@@ -61,7 +59,7 @@ async function bundle() {
 
 // Catch a route-level await reappearing, a second pricing read, stale pending amounts,
 // or a reveal that replaces static hero/SEO instead of only the current-price slots.
-test('Pricing serves four verified opening quotes before the remaining current prices, then reveals one exact localized hub', async (t) => {
+test('Pricing serves three verified opening quotes before the remaining current prices, then reveals one exact localized hub', async (t) => {
   const Module = requireFrontend('node:module');
   const priorResolve = Module._resolveFilename;
   const aliases = Object.fromEntries(['react', 'react/jsx-runtime', 'react/jsx-dev-runtime', 'react-dom', 'react-dom/server', 'react-dom/client'].map(name => [name, requireFrontend.resolve(`next/dist/compiled/${name}`)]));
@@ -101,23 +99,23 @@ test('Pricing serves four verified opening quotes before the remaining current p
       assert.match(shell, /pricing-breadcrumb-jsonld/);
       assert.match(shell, /pricing-service-jsonld/);
       assert.doesNotMatch(shell, /data-pricing-(?:content|quick-start)-ready/);
-      assert.equal(fixture.openingCalls, 4);
+      assert.equal(fixture.openingCalls, 3);
       if (unavailable) {
-        assert.doesNotMatch(shell, /pricingPreset=|2[.,]46|6[.,]54|7[.,]89|pricing-minute-budget/);
+        assert.doesNotMatch(shell, /id="quote-(?:seedance|kling)|0[.,]39|1[.,]18|2[.,]32/);
       } else {
-        assert.match(shell, /2[.,]46/);
-        assert.match(shell, /39[.,]24/);
-        assert.match(shell, /47[.,]34/);
-        assert.match(shell, /6[.,]54/);
-        assert.match(shell, /7[.,]89/);
-        assert.equal((shell.match(/href="[^"]*pricingPreset=/g) ?? []).length, 4);
+        for (const amount of [/0[.,]39/, /1[.,]18/, /2[.,]32/]) assert.match(shell, amount);
+        for (const engine of ['seedance-2-0-mini','kling-v4','seedance-2-5']) {
+          assert.ok(shell.includes('data-estimate="' + engine + '"'));
+          assert.ok(shell.includes('id="quote-' + engine + '"'));
+        }
+        assert.equal((shell.match(/remix=1&amp;mode=t2v&amp;duration=5&amp;resolution=720p&amp;aspect=16%3A9&amp;audio=1/g) ?? []).length, 3);
         assert.match(shell, /id="video-quote"/);
       }
       assert.equal(fixture.calls, 1);
       fixture.release();
       let tail = '';
       for (;;) { const next = await reader.read(); if (next.done) break; tail += decoder.decode(next.value, { stream: true }); }
-      assert.equal(fixture.openingCalls, 4, 'The catalogue reuses all four opening quotes');
+      assert.equal(fixture.openingCalls, 3, 'The catalogue does not requote the three examples');
       assert.equal(fixture.calls, 1, 'Quick start and all matrices must share one complete current hub');
       assert.match(tail, /data-pricing-content-ready/);
       assert.match(tail, /data-pricing-quick-start-ready/);
@@ -129,7 +127,7 @@ test('Pricing serves four verified opening quotes before the remaining current p
       }
       for (const [Component, props] of [
         [fixture.PricingQuickStart, { highlights: fixture.result.video.highlights, title: dictionary.pricing.hero.quickStartTitle, note: dictionary.pricing.hero.quickStartNote }],
-        [fixture.PricingVideoMatrixSection, { video: fixture.result.video, locale }],
+        [fixture.PricingVideoMatrixSection, { video: fixture.result.video, locale, quotedOn: new Date().toISOString().slice(0,10) }],
         [fixture.PricingPopularChecksSection, { checks: fixture.result.popularChecks, locale }],
         [fixture.PricingOtherSurfacesSection, { data: fixture.result.otherSurfaces, locale }],
       ]) {

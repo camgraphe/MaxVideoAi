@@ -4,6 +4,7 @@ import type { PricingHubData } from '../_lib/pricingHubData';
 import { PricingCreditsRefundsSection } from './PricingCreditsRefundsSection';
 import { PricingOtherSurfacesSection } from './PricingOtherSurfacesSection';
 import { PricingPopularChecksSection } from './PricingPopularChecksSection';
+import { PricingFilmExample } from './PricingFilmExample';
 import { PricingQuickStart } from './PricingQuickStart';
 import { PricingRefundsFaqSection } from './PricingRefundsFaqSection';
 import { PricingVideoMatrixSection } from './PricingVideoMatrixSection';
@@ -23,14 +24,15 @@ export async function PricingCurrentQuickStart({ pricingHub, title, note }: Curr
 }
 
 export async function PricingCurrentSections({
-  pricingHub, locale, faq, faqEntries,
-}: CurrentPricingProps & { locale: AppLocale } & ComponentProps<typeof PricingRefundsFaqSection>) {
+  pricingHub, locale, quotedOn, faq, faqEntries,
+}: CurrentPricingProps & { locale: AppLocale; quotedOn: string } & ComponentProps<typeof PricingRefundsFaqSection>) {
   const data = await pricingHub;
   return (
     <>
       <DeferredMarketingContent>
-        <PricingVideoMatrixSection video={data.video} locale={locale} />
+        <PricingVideoMatrixSection video={data.video} locale={locale} quotedOn={quotedOn} />
       </DeferredMarketingContent>
+      <PricingFilmExample locale={locale} />
       <DeferredMarketingContent>
         <PricingPopularChecksSection checks={data.popularChecks} locale={locale} />
       </DeferredMarketingContent>

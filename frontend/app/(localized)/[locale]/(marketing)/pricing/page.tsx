@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import NextLink from 'next/link';
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { FAQSchema } from '@/components/seo/FAQSchema';
@@ -9,7 +10,7 @@ import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { PricingCurrentQuickStart, PricingCurrentSections } from './_components/PricingCurrentContent';
 import { PricingPendingQuickStart, PricingPendingSections } from './_components/PricingPendingContent';
 import { PricingAnchorRestore } from './_components/PricingAnchorRestore.client';
-import { PricingFilmExample } from './_components/PricingFilmExample';
+import { pricingOpeningCopy } from './_lib/pricing-opening-copy';
 import { PricingHeroSection } from './_components/PricingHeroSection';
 import { PricingJsonLdScripts } from './_components/PricingJsonLdScripts';
 import { readPricingOpening } from './_lib/pricing-opening';
@@ -37,7 +38,7 @@ export default async function PricingPage(props: { params: Promise<{ locale: App
   const locale = params.locale;
   const { dictionary } = await resolveDictionary({ locale });
   const content = dictionary.pricing;
-  const { pricingHub, rows, quotedOn, filmPrice } = await readPricingOpening(locale);
+  const { pricingHub, rows, quotedOn } = await readPricingOpening(locale);
   // Observe an early rejection without converting it into a successful pricing fallback.
   void pricingHub.catch(() => undefined);
   const faq = content.faq;
@@ -53,20 +54,26 @@ export default async function PricingPage(props: { params: Promise<{ locale: App
         locale={locale}
         hero={content.hero}
         rows={rows}
-        filmPrice={filmPrice}
+        canonical={canonical}
         quotedOn={quotedOn}
-      >
-        <Suspense fallback={<PricingPendingQuickStart locale={locale} title={content.hero.quickStartTitle} note={content.hero.quickStartNote} />}>
-          <PricingCurrentQuickStart pricingHub={pricingHub} title={content.hero.quickStartTitle} note={content.hero.quickStartNote} />
-        </Suspense>
-      </PricingHeroSection>
+      />
 
       <div className="container-page max-w-[1440px] py-8 sm:py-10">
         <div className="stack-gap-lg">
-          <PricingFilmExample locale={locale} />
           <Suspense fallback={<PricingPendingSections locale={locale} />}>
-            <PricingCurrentSections pricingHub={pricingHub} locale={locale} faq={faq} faqEntries={faqEntries} />
+            <PricingCurrentSections pricingHub={pricingHub} locale={locale} quotedOn={quotedOn} faq={faq} faqEntries={faqEntries} />
           </Suspense>
+          <details id="pricing-minute-budget" className="mx-auto w-full max-w-[1124px] border-t border-hairline py-4">
+            <summary className="cursor-pointer font-semibold">{pricingOpeningCopy[locale].budget}</summary>
+            <Suspense fallback={<PricingPendingQuickStart locale={locale} title={content.hero.quickStartTitle} note={content.hero.quickStartNote} />}>
+              <PricingCurrentQuickStart pricingHub={pricingHub} title={content.hero.quickStartTitle} note={content.hero.quickStartNote} />
+            </Suspense>
+            <div className="mt-4 flex flex-wrap gap-4 text-sm">
+              <NextLink prefetch={false} href="/video/kling-3-standard-rainy-neon-street-multi-shot-example-99e0f0fa">{pricingOpeningCopy[locale].oldClip} ↗</NextLink>
+              {content.hero.badges.map((badge, i) => i === content.hero.badges.length - 1
+                ? <NextLink key={badge} prefetch={false} href="/return-policy">{badge}</NextLink> : <span key={badge}>{badge}</span>)}
+            </div>
+          </details>
         </div>
       </div>
 

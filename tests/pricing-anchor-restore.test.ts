@@ -91,6 +91,24 @@ test('late localized Pricing destinations restore once without rewriting navigat
   });
 });
 
+test('a streamed model bookmark opens both catalogue and family before scrolling', async () => {
+  const id = 'kling-3-pro-pricing';
+  const f = await fixture('#' + id);
+  try {
+    const document = f.dom.window.document;
+    const outer = document.createElement('details');
+    const family = document.createElement('details');
+    document.getElementById('client')!.append(outer);
+    outer.append(family);
+    family.append(f.insert(id));
+    f.ready();
+    await f.flush();
+    assert.equal(outer.open, true);
+    assert.equal(family.open, true);
+    assert.deepEqual(f.scrolls.map(item => item.id), [id]);
+  } finally { await f.dispose(); }
+});
+
 test('Pricing ignores pending duplicate IDs and hidden React transport segments until reveal', async t => {
   for (const intent of ['arrival', 'click']) await t.test(intent, async () => {
     const f = await fixture(intent === 'arrival' ? '#video-pricing' : '', { scrollY: intent === 'click' ? 640 : 0 });

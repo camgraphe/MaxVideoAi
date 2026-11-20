@@ -72,7 +72,7 @@ test('pricing tables use labelled keyboard-focusable scroll regions', () => {
   assert.match(source, /tabIndex=\{0\}/);
   assert.match(source, /aria-labelledby=\{labelledBy\}/);
   assert.match(source, /focus-visible:ring-2/);
-  assert.match(videoMatrixSource, /labelledBy="video-pricing-table-title"/);
+  assert.match(videoMatrixSource, /labelledBy=\{'family-' \+ key\}/);
   assert.match(popularChecksSource, /labelledBy="popular-pricing-checks-title"/);
   assert.match(otherSurfacesSource, /labelledBy="image-pricing-title"/);
   assert.match(otherSurfacesSource, /labelledBy="audio-pricing-title"/);
@@ -144,11 +144,11 @@ test('pricing page does not regain calculator-first or long model-section owners
 
 test('opening exposes localized navigation, exact preset links and the existing live app destination', () => {
   assert.match(heroSource, /pricingOpeningCopy\[locale\]/);
-  assert.match(heroSource, /scope="row"/);
-  assert.match(heroSource, /price.href/);
-  assert.match(heroSource, /href="\/app"/);
+  assert.match(heroSource, /data-estimate=/);
+  assert.match(heroSource, /row.href/);
+  assert.match(heroSource, /\/app\?mode=t2v\&lang=/);
   for (const id of ['video', 'image', 'audio', 'tool']) assert.ok(heroSource.includes(`#${id}-pricing`));
-  assert.match(heroSource, /kling-night-run-portrait\.webp/);
+  assert.match(heroSource, /seedance-mini-canyon\.webp/);
   assert.match(heroSource, /time dateTime=/);
 });
 
@@ -252,8 +252,8 @@ test('video matrix renders exact scenario columns and compact links', () => {
   assert.doesNotMatch(hubCopySource, /Best-value current-gen 5s 720p/);
   assert.match(hubCopySource, /Prix le plus bas affiché/);
   assert.match(videoMatrixSource, /tabular-nums/);
-  assert.match(videoMatrixSource, /sticky left-0/);
-  assert.match(videoMatrixSource, /scope="colgroup"/);
+  assert.match(videoMatrixSource, /data-preset=/);
+  assert.match(videoMatrixSource, /scope="row"/);
   assert.match(videoMatrixSource, /<tbody>/);
   assert.match(hubCopySource, /Live price/);
   assert.match(hubCopySource, /More/);

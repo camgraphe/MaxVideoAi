@@ -1,124 +1,75 @@
-import type { ReactNode } from 'react';
-import { ArrowDown, ArrowUpRight, AudioLines, Film, Image as ImageIcon, SlidersHorizontal, Volume2, VolumeX } from 'lucide-react';
-import { Link } from '@/i18n/navigation';
+import { ArrowDown, ArrowUpRight, AudioLines, Film, Image as ImageIcon, SlidersHorizontal } from 'lucide-react';
 import Image from 'next/image';
 import NextLink from 'next/link';
 import type { AppLocale } from '@/i18n/locales';
 import type { OpeningRow } from '../_lib/pricing-opening';
-import { pricingOpeningCopy, pricingCitation, pricingMinuteEstimate } from '../_lib/pricing-opening-copy';
-import { formatCurrencyForLocale } from '../_lib/pricingPageContent';
-import { getPricingHubCopy } from '../_lib/pricingHubCopy';
-import styles from './pricing-opening.module.css';
+import { pricingOpeningCopy } from '../_lib/pricing-opening-copy';
+import { PricingCopy } from './PricingCopy.client';
+import styles from './pricing-feature.module.css';
 
 type Props = {
   locale: AppLocale;
-  hero: { title: string; subtitle: string; primaryCta: string; badges: string[] };
+  hero: { title: string };
   rows: OpeningRow[];
-  filmPrice: string | null;
   quotedOn: string;
-  children: ReactNode;
+  canonical: string;
 };
 
-export function PricingHeroSection({ locale, hero, rows, filmPrice, quotedOn, children }: Props) {
+function cite(locale: AppLocale, row: OpeningRow, date: string) {
+  if (locale === 'fr') return `Le ${date}, MaxVideoAI proposait à ${row.price} un plan de 5 secondes en 720p au format 16:9 avec ${row.name}, à partir de texte, avec son et sans référence.`;
+  if (locale === 'es') return `El ${date}, MaxVideoAI cotizó en ${row.price} un plano de 5 segundos en 720p, formato 16:9, con ${row.name}, generado a partir de texto, con audio y sin referencias.`;
+  return `On ${date}, MaxVideoAI quoted ${row.price} USD for one 5-second, 720p, 16:9 text-to-video shot with ${row.name}, audio on and no references.`;
+}
+
+export function PricingHeroSection({ locale, hero, rows, quotedOn, canonical }: Props) {
   const copy = pricingOpeningCopy[locale];
-  const { tabs } = getPricingHubCopy(locale).video;
-  const surfaces = [
-    { href: '#video-pricing', label: tabs.video, icon: Film },
-    { href: '#image-pricing', label: tabs.image, icon: ImageIcon },
-    { href: '#audio-pricing', label: tabs.audio, icon: AudioLines },
-    { href: '#tool-pricing', label: copy.tools, icon: SlidersHorizontal },
-  ];
+  const main = rows.find(row => row.id === 'seedance-2-0-mini');
+  const alternatives = rows.filter(row => row !== main);
+  const app = '/app?mode=t2v&lang=' + locale;
+  const watch = '/video/dreamina-seedance-2-0-mini-pov-canyon-dive';
   const date = new Intl.DateTimeFormat(locale, { dateStyle: 'long', timeZone: 'UTC' }).format(new Date(quotedOn));
-
-  const standard = rows.find(row => row.id === 'kling-3-standard');
-  const [silent, audio] = standard?.prices ?? [];
-  const filmHref = '/video/kling-3-standard-rainy-neon-street-multi-shot-example-99e0f0fa';
-
-  return (
-    <header className={styles.opening}>
-      <div className={styles.inner}>
-        <div className={styles.intro}>
-          <div className={styles.lead}>
-            <h1>{hero.title}</h1>
-            <p>{hero.subtitle}</p>
-            {filmPrice && <div className={styles.casePrice}>
-              <span>{copy.filmLabel} <time dateTime={quotedOn}>{date}</time></span>
-              <strong>{filmPrice}</strong>
-              <p><b>Kling 3 Standard</b><br />{copy.filmSpecs}</p>
-            </div>}
-          </div>
-          <NextLink href={filmHref} prefetch={false} className={styles.scene}>
-            <span className={styles.stills}>
-              <Image unoptimized aria-hidden="true" alt="" className={styles.backStill} src="/assets/pricing/kling-night-run-crossing.webp" width={440} height={248} />
-              <Image unoptimized aria-hidden="true" alt="" className={styles.midStill} src="/assets/pricing/kling-night-run-splash.webp" width={440} height={248} />
-              <Image unoptimized priority className={styles.frontStill} alt={copy.filmAlt} src="/assets/pricing/kling-night-run-portrait.webp" width={840} height={472} />
-            </span>
-            <span className={styles.sceneLink}>{copy.watch} <ArrowUpRight size={15} aria-hidden="true" /></span>
-          </NextLink>
-        </div>
-        <nav aria-label={copy.nav} className={styles.nav}>
-          {surfaces.map(({ href, label, icon: Icon }) => <Link href={href} key={href}><Icon size={19} aria-hidden="true" /><span>{label}</span><ArrowDown size={14} aria-hidden="true" /></Link>)}
-        </nav>
-        <section id="video-quote" aria-labelledby="video-quote-title" className={styles.compare}>
-          <div className={styles.heading}>
-            <h2 id="video-quote-title">{copy.question}</h2>
-            <p>{copy.format} <span aria-hidden="true">/</span> {copy.unit}</p>
-          </div>
-          <div className={styles.figures}>
-          {rows.length > 0 ? (
-            <table className={styles.table} aria-labelledby="video-quote-title">
-              <thead><tr>
-                <th scope="col">{copy.model}</th>
-                <th scope="col"><VolumeX aria-hidden="true" /> {copy.silent}</th>
-                <th scope="col"><Volume2 aria-hidden="true" /> {copy.audio}</th>
-              </tr></thead>
-              <tbody>{rows.map(row => (
-                <tr key={row.id}>
-                  <th scope="row"><Link href={`#${row.id}-pricing`}>{row.name}</Link></th>
-                  {row.prices.map((price, index) => <td key={index}>
-                    {price ? <Link href={price.href} prefetch={false}
-                      aria-label={`${copy.openQuote} · ${row.name} · 10 s · 1080p · ${index ? copy.audio : copy.silent} · ${price.display}`}
-                      data-analytics-event="cta_click" data-analytics-cta-name="pricing_quote"
-                      data-analytics-cta-location="pricing_hero" data-analytics-target-family="workspace">
-                      {price.display}<ArrowUpRight aria-hidden="true" />
-                    </Link> : <span aria-label={copy.fallback}>—</span>}
-                  </td>)}
-                </tr>
-              ))}</tbody>
-            </table>
-          ) : <p>{copy.fallback}</p>}
-          <div className={styles.sources}>
-            <a href="#video-pricing">{copy.full}<ArrowDown size={14} aria-hidden="true" /></a>
-            {rows.length > 0 && <small>MaxVideoAI · {copy.checked} <time dateTime={quotedOn}>{date}</time></small>}
-          </div>
-          {rows.some(row => row.prices.every(Boolean)) && (
-            <details className={styles.citations}>
-              <summary>{copy.cite}</summary>
-              {rows.map(row => {
-                const [silent, audio] = row.prices;
-                if (!silent || !audio) return null;
-                return <p key={row.id}>{pricingCitation[locale](row.name, silent.display, audio.display, date)}{' '}
-                  <a href={`#${row.id}-pricing`}>{copy.source}</a></p>;
-              })}
-            </details>
-          )}
-          </div>
-        </section>
-        {standard && silent && audio && silent.currency === audio.currency && (
-          <aside className={styles.budget} aria-labelledby="pricing-minute-budget">
-            <h3 id="pricing-minute-budget">{copy.budgetTitle}</h3>
-            <p>{pricingMinuteEstimate[locale](standard.name,
-              formatCurrencyForLocale(locale, silent.currency, 6 * silent.amountCents / 100),
-              formatCurrencyForLocale(locale, audio.currency, 6 * audio.amountCents / 100))}{' '}
-              <a href="#kling-3-standard-pricing">{copy.source}</a></p>
-          </aside>
-        )}
+  const navigation = [
+    { href: '#video-pricing', label: copy.video, Icon: Film },
+    { href: '#image-pricing', label: copy.image, Icon: ImageIcon },
+    { href: '#audio-pricing', label: 'Audio', Icon: AudioLines },
+    { href: '#tool-pricing', label: copy.tools, Icon: SlidersHorizontal },
+  ];
+  return <header className={styles.opening}>
+    <div className={styles.cover}><div className={styles.hero}>
+      <div>
+        <h1>{hero.title}</h1>
+        <p className={styles.intro}>{copy.intro}</p>
+        {main && <div className={styles.offer}><a href={'#' + main.anchor}>{main.name}</a>
+          <strong>{main.price ?? copy.check}</strong><span>{copy.meta}</span></div>}
+        <a href={main?.href ?? app} className={styles.cta} data-estimate={main?.id}
+          data-analytics-event="cta_click" data-analytics-cta-name="pricing_quote" data-analytics-cta-location="pricing_hero" data-analytics-target-family="workspace">
+          {copy.try}<ArrowUpRight size={17} aria-hidden="true" /></a>
+        {main && <p className={styles.hint}>{copy.prefill}</p>}
       </div>
-      {children}
-      <div className={styles.terms}>
-        <ul>{hero.badges.map(badge => <li key={badge}>{badge === hero.badges.at(-1) ? <NextLink href="/return-policy" prefetch={false}>{badge}</NextLink> : badge}</li>)}</ul>
-        <Link href="/app" prefetch={false}>{hero.primaryCta} <ArrowUpRight size={15} aria-hidden="true" /></Link>
-      </div>
-    </header>
-  );
+      <figure><NextLink href={watch} prefetch={false}><Image priority src="/assets/pricing/seedance-mini-canyon.webp" width={1000} height={562} sizes="(max-width: 720px) 100vw, 52vw" alt={copy.pic} /></NextLink>
+        <figcaption><span>{copy.caption}</span><NextLink href={watch} prefetch={false}>{copy.watch} ↗</NextLink></figcaption>
+      </figure>
+    </div></div>
+    <div className={styles.body}>
+      <nav aria-label={copy.nav} className={styles.nav}>{navigation.map(({ href, label, Icon }) =>
+        <a key={href} href={href}><Icon size={18} aria-hidden="true" />{label}<ArrowDown size={14} aria-hidden="true" /></a>)}</nav>
+      <section id="video-quote" aria-labelledby="video-quote-title" className={styles.comparison}>
+        <h2 id="video-quote-title">{alternatives.length === 2 ? copy.compare : copy.examples}</h2><p className={styles.conditions}>{copy.conditions}</p>
+        <div className={styles.choices}>{alternatives.map(row => <div key={row.id} className={styles.choice}>
+          <a className={styles.model} href={'#' + row.anchor}>{row.name}</a><span>{copy.meta}</span><strong>{row.price ?? '—'}</strong>
+          <a href={row.href} data-estimate={row.id} aria-label={copy.quote + ' · ' + row.name}
+            data-analytics-event="cta_click" data-analytics-cta-name="pricing_quote" data-analytics-cta-location="pricing_hero" data-analytics-target-family="workspace">{copy.quote} ↗</a>
+        </div>)}</div>
+        {rows.some(row => row.price) && <details className={styles.citations}><summary>{copy.cite}</summary>
+          <time dateTime={quotedOn}>{date}</time>
+          {rows.filter(row => row.price).map(row => {
+            const sentence = cite(locale, row, date);
+            const source = canonical + '#quote-' + row.id;
+            return <div key={row.id} id={'quote-' + row.id}><p>{sentence} <a href={'#quote-' + row.id}>{copy.source}</a></p>
+              <PricingCopy label={copy.copy} text={sentence + ' ' + source} copied={copy.copied} manual={copy.manual} /></div>;
+          })}</details>}
+        <a className={styles.secondary} href={app} data-analytics-event="cta_click" data-analytics-cta-name="pricing_simulator" data-analytics-cta-location="pricing_hero" data-analytics-target-family="workspace">{copy.otherSim} ↗</a>
+      </section>
+    </div>
+  </header>;
 }
