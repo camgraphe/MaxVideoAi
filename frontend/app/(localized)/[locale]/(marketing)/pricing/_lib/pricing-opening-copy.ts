@@ -1,5 +1,6 @@
 export const pricingOpeningCopy = {
   "en": {
+    "audioOn": "sound on",
     "examples": "Example video prices",
     "intro": "What does one shot cost? Start with five seconds, then adjust the settings in Create.",
     "meta": "5 s · 720p · 16:9 · sound on",
@@ -38,6 +39,7 @@ export const pricingOpeningCopy = {
     "oldClip": "Watch Night Run with Kling 3 Standard"
   },
   "fr": {
+    "audioOn": "avec son",
     "examples": "Exemples de tarifs vidéo",
     "intro": "Combien coûte un plan ? Partez sur cinq secondes, puis ajustez vos réglages dans Create.",
     "meta": "5 s · 720p · 16:9 · avec son",
@@ -76,6 +78,7 @@ export const pricingOpeningCopy = {
     "oldClip": "Voir Night Run réalisé avec Kling 3 Standard"
   },
   "es": {
+    "audioOn": "con audio",
     "examples": "Ejemplos de precios de video",
     "intro": "¿Cuánto cuesta un plano? Empieza con cinco segundos y ajusta los parámetros en Create.",
     "meta": "5 s · 720p · 16:9 · con audio",

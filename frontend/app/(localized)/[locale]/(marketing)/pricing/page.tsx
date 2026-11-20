@@ -69,6 +69,7 @@ export default async function PricingPage(props: { params: Promise<{ locale: App
               <PricingCurrentQuickStart pricingHub={pricingHub} title={content.hero.quickStartTitle} note={content.hero.quickStartNote} />
             </Suspense>
             <div className="mt-4 flex flex-wrap gap-4 text-sm">
+              <a href="#full-video-pricing-table">{pricingOpeningCopy[locale].catalogue}</a>
               <NextLink prefetch={false} href="/video/kling-3-standard-rainy-neon-street-multi-shot-example-99e0f0fa">{pricingOpeningCopy[locale].oldClip} ↗</NextLink>
               {content.hero.badges.map((badge, i) => i === content.hero.badges.length - 1
                 ? <NextLink key={badge} prefetch={false} href="/return-policy">{badge}</NextLink> : <span key={badge}>{badge}</span>)}

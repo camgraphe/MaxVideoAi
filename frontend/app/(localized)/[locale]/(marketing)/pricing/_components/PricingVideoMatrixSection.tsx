@@ -33,7 +33,10 @@ export function PricingVideoMatrixSection({ locale, video, quotedOn }: { locale:
   const copy = pricingOpeningCopy[locale];
   const hub = getPricingHubCopy(locale);
   const canonical = buildMetadataUrls(locale, PRICING_SLUG_MAP, { englishPath: '/pricing' }).canonical;
-  const presets = video.presets.map(p => ({ id: p.id, label: hub.video.presetLabels[p.id] ?? p.label }));
+  const presets = video.presets.map(preset => ({
+    id: preset.id,
+    label: preset.id === '10s-1080p-audio' ? '10 s · 1080p · ' + copy.audioOn : hub.video.presetLabels[preset.id] ?? preset.label,
+  }));
   return <section id="video-pricing" className={styles.section}>
     <details id="full-video-pricing-table" className={styles.catalogue}>
       <summary><h2 id="video-pricing-table-title">{copy.catalogue}</h2><span>{video.rows.length} {copy.catalogueCount}</span></summary>
@@ -52,6 +55,7 @@ export function PricingVideoMatrixSection({ locale, video, quotedOn }: { locale:
                 <th scope="row"><div className={styles.model}><EngineIcon engine={row.engineIcon} label={row.engineName} size={24} rounded="xl" />
                   {row.modelHref ? <Link href={row.modelHref} prefetch={false}>{row.engineName}</Link> : row.engineName}</div>
                   <details className={styles.links}><summary>{copy.more}</summary><p>{row.limitsLabel}</p>
+                    <a href={'#' + row.anchorId}>{copy.source}</a>
                     {row.links.map(link => <Link key={link.href} href={link.href} prefetch={false}>{link.label}</Link>)}
                     {['kling-3-standard', 'kling-3-pro'].includes(row.id) && ['10s-1080p', '10s-1080p-audio'].map(preset =>
                       <a key={preset} href={'/app?' + new URLSearchParams({ engine: row.id, mode: 't2v', pricingPreset: preset, lang: locale })}>{copy.quote} · {presets.find(p => p.id === preset)?.label}</a>)}
