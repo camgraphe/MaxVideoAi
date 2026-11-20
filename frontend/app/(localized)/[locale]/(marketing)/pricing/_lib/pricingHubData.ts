@@ -193,6 +193,7 @@ export type VideoPricingHighlight = {
 };
 
 export type VideoPricingMatrixData = {
+  createCatalogue?: { total: number; current: number };
   presets: readonly VideoPricePreset[];
   rows: VideoPricingRow[];
   highlights: VideoPricingHighlight[];
@@ -782,7 +783,6 @@ export function buildVideoHighlights(rows: VideoPricingRow[], locale: AppLocale)
     eligibleRows.filter((row) => row.limitsLabel.toLowerCase().includes(copy.quote.dedicated.toLowerCase()) || row.engineName.toLowerCase().includes('4k')),
     '4k-route'
   );
-  const currentGenCount = eligibleRows.length;
   return [
     {
       label: copy.video.highlights.bestDraft,
@@ -818,8 +818,9 @@ export function buildVideoHighlights(rows: VideoPricingRow[], locale: AppLocale)
       href: dedicated4k ? `#${dedicated4k.row.anchorId}` : undefined,
     },
     {
-      label: copy.video.highlights.currentGenCount,
-      value: copy.video.highlights.currentGenValue(currentGenCount),
+      label: copy.video.highlights.tableScope,
+      value: copy.video.highlights.tableCount(rows.length),
+      href: '#full-video-pricing-table',
     },
   ];
 }

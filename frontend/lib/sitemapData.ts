@@ -7,7 +7,6 @@ import {
   formatLastModified,
   getLatestEntryDate,
   getManualSitemapLastModified,
-  getModelsSitemapLastModified,
   getSitemapFileName,
   getVideoPagesSitemapLastModified,
   getVideoSitemapLastModified,
@@ -123,7 +122,7 @@ export async function buildSitemapIndexXml(): Promise<string> {
   const modelsFileName = getSitemapFileName(modelsPath);
   const modelsLastMod = getLatestEntryDate([
     { lastModified: getManualSitemapLastModified(modelsFileName) },
-    { lastModified: getModelsSitemapLastModified() },
+    { lastModified: getLatestEntryDate(buildModelRouteEntriesFromRoster(modelRoster)) },
   ]);
   entries.push({
     loc: buildAbsoluteUrl(modelsPath),

@@ -1,6 +1,22 @@
 {
   "slug": "gemini-omni-flash-vs-veo-3-1",
   "en": {
+    "galleryEvidence": [
+      {
+        "modelSlug": "gemini-omni-flash",
+        "videoId": "46b7eafe-089c-4135-958c-95c6670150c2",
+        "href": "/video/gemini-omni-flash-1-1-salt-valley",
+        "label": "Salt Valley (Omni Flash 1.1).",
+        "observation": "The camera skims the water, then rises above the terraces. This eight-second text-to-video example predates version 1.2."
+      },
+      {
+        "modelSlug": "veo-3-1",
+        "videoId": "job_e9ddb92e-2930-4901-be83-41607b82ac76",
+        "href": "/video/job_e9ddb92e-2930-4901-be83-41607b82ac76",
+        "label": "Office tracking shot (Veo 3.1).",
+        "observation": "The camera tracks backwards as a knight walks through an office. He stays near the centre of the frame as his colleagues stand up."
+      }
+    ],
     "pricingCreditLink": {
       "href": "/pay-as-you-go-ai-video-generator",
       "label": "How credits work"
@@ -47,6 +63,22 @@
     }
   },
   "fr": {
+    "galleryEvidence": [
+      {
+        "modelSlug": "gemini-omni-flash",
+        "videoId": "46b7eafe-089c-4135-958c-95c6670150c2",
+        "href": "/video/gemini-omni-flash-1-1-salt-valley",
+        "label": "Salt Valley (Omni Flash 1.1).",
+        "observation": "La caméra rase l’eau puis s’élève au-dessus des bassins en terrasses. Ce plan de huit secondes, généré à partir de texte, est antérieur à la version 1.2."
+      },
+      {
+        "modelSlug": "veo-3-1",
+        "videoId": "job_e9ddb92e-2930-4901-be83-41607b82ac76",
+        "href": "/video/job_e9ddb92e-2930-4901-be83-41607b82ac76",
+        "label": "Travelling au bureau (Veo 3.1).",
+        "observation": "La caméra recule devant un chevalier qui traverse un bureau. Il reste près du centre du cadre pendant que ses collègues se lèvent."
+      }
+    ],
     "pricingCreditLink": {
       "href": "/pay-as-you-go-ai-video-generator",
       "label": "Comment fonctionnent les crédits"
@@ -93,6 +125,22 @@
     }
   },
   "es": {
+    "galleryEvidence": [
+      {
+        "modelSlug": "gemini-omni-flash",
+        "videoId": "46b7eafe-089c-4135-958c-95c6670150c2",
+        "href": "/video/gemini-omni-flash-1-1-salt-valley",
+        "label": "Salt Valley (Omni Flash 1.1).",
+        "observation": "La cámara roza el agua y luego se eleva sobre las terrazas. Este plano de ocho segundos se generó a partir de texto con la versión anterior a la 1.2."
+      },
+      {
+        "modelSlug": "veo-3-1",
+        "videoId": "job_e9ddb92e-2930-4901-be83-41607b82ac76",
+        "href": "/video/job_e9ddb92e-2930-4901-be83-41607b82ac76",
+        "label": "Travelling en la oficina (Veo 3.1).",
+        "observation": "La cámara retrocede mientras un caballero atraviesa una oficina. Él permanece cerca del centro del encuadre mientras sus compañeros se levantan."
+      }
+    ],
     "pricingCreditLink": {
       "href": "/pay-as-you-go-ai-video-generator",
       "label": "Cómo funcionan los créditos"

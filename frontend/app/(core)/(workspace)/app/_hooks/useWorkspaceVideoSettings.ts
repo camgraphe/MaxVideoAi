@@ -1,3 +1,4 @@
+import { usePricingVideoPreset } from './usePricingVideoPreset';
 import { hasPublishedRecreationSnapshot } from '../_lib/workspace-shared-video-snapshot';
 import { writeParkedSources } from '../_lib/workspace-parked-source';
 import { buildExampleRecreationSnapshot } from '../_lib/workspace-example-recreation';
@@ -868,6 +869,9 @@ export function useWorkspaceVideoSettings({
     setSelectedPreview,
     storageScope,
   ]);
+
+  usePricingVideoPreset({ searchString, ready: activeDraftReady && authChecked && hydratedForScope === storageScope,
+    form, setForm, setMultiPromptEnabled, setVoiceIdsInput });
 
   const editorialPromptPending = useVideoEditorialPreset({
     searchString, ready: activeDraftReady && authChecked && hydratedForScope === storageScope,

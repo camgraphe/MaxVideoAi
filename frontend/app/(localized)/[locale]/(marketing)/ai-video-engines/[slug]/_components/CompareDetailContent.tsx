@@ -142,7 +142,7 @@ export function CompareDetailContent({
             rightOverall={rightOverall}
           />
 
-          <CompareModelGalleries locale={activeLocale} left={left} right={right} galleries={galleries} returnPath={returnPath} />
+          <CompareModelGalleries locale={activeLocale} left={left} right={right} galleries={galleries} returnPath={returnPath} evidence={pageOverride?.galleryEvidence} />
           <section className="mx-auto max-w-[940px]">
             <CompareScorecardSection
               leftScoreReview={leftScoreReview}

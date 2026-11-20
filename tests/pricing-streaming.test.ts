@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import test from 'node:test';
 import { build } from 'esbuild';
+import { JSDOM } from 'jsdom';
 
 const requireFrontend = createRequire(resolve('frontend/package.json'));
 const pricing = './frontend/app/(localized)/[locale]/(marketing)/pricing';
@@ -14,24 +15,30 @@ async function bundle() {
   const output = join(directory, 'owners.cjs');
   const mocks: Record<string, string> = {
     probe: `
-      export let calls=0, result;
+      export let calls=0, openingCalls=0, result;
       let done, fail;
       let gate, unavailable;
-      export function reset(missing=false){unavailable=missing;calls=0;result=undefined;gate=new Promise((resolve,reject)=>{done=resolve;fail=reject;});}
+      export function reset(missing=false){unavailable=missing;calls=0;openingCalls=0;result=undefined;gate=new Promise((resolve,reject)=>{done=resolve;fail=reject;});}
       export function release(){done();}
       export function reject(error){fail(error);}
       export function record(){calls++;}
+      export async function openingQuote(input){
+        const amounts={'seedance-2-0-mini':39,'kling-v4':118,'seedance-2-5':232};
+        if (!(input.modelId in amounts) || input.durationSec!==5 || input.resolution!=='720p' || input.audio!==true || input.aspectRatio!=='16:9' || input.mode!=='t2v') return quote(input);
+        openingCalls++;
+        return unavailable ? {status:'unavailable'} : {status:'exact',amountCents:amounts[input.modelId],currency:'USD',revision:'current',scenarioLabel:'Opening'};
+      }
       export async function quote(input){await gate;if(unavailable)return {status:'unavailable'};return {status:'exact',amountCents:input.mode==='t2i'?321:654,currency:'USD',revision:'current',scenarioLabel:'Controlled current scenario'};}
       export function save(data){result=data;return data;}
     `,
     '@/lib/i18n/server': `import en from ${JSON.stringify(resolve('frontend/messages/en.json'))};import fr from ${JSON.stringify(resolve('frontend/messages/fr.json'))};import es from ${JSON.stringify(resolve('frontend/messages/es.json'))};export async function resolveDictionary({locale}){return {dictionary:{en,fr,es}[locale]};}`,
     'next-intl/server': `export async function getTranslations(){return key=>key;}`,
-    '@/server/pricing/quote-public-model-scenario': `export const createScopedPublicModelQuoter=()=>{throw new Error('Use controlled quote I/O');};`,
+    '@/server/pricing/quote-public-model-scenario': `import {openingQuote} from 'probe';export const createScopedPublicModelQuoter=()=>openingQuote;`,
     '@/server/pricing/quote-public': `export const computeCurrentAudioSnapshot=()=>{throw new Error('Use controlled audio I/O');};`,
     '@/lib/billing-products': `export const computeBillingProductSnapshot=()=>{throw new Error('Use controlled tool I/O');};`,
     '@/server/images/estimate-image-generation': `export const estimateWebImageGeneration=()=>{throw new Error('Use controlled Character Studio I/O');};`,
     '@/server/character-studio/recast-public-price': `export const readRecastPublicPrice=()=>{throw new Error('Use controlled Recast I/O');};`,
-    hub: `import {buildCurrentPricingHubData as actual} from ${JSON.stringify(resolve(`${pricing}/_lib/currentPricingHubData.ts`))};import {quote,record,save} from 'probe';export function buildCurrentPricingHubData(locale){record();return actual(locale,quote,{audio:async()=>({totalCents:432,currency:'USD'}),product:async()=>({totalCents:543,currency:'USD'})}).then(save);}`,
+    hub: `import {buildCurrentPricingHubData as actual} from ${JSON.stringify(resolve(`${pricing}/_lib/currentPricingHubData.ts`))};import {quote,record,save} from 'probe';export function buildCurrentPricingHubData(locale,quoter,_deps,catalog){record();return actual(locale,quoter,{audio:async()=>({totalCents:432,currency:'USD'}),product:async()=>({totalCents:543,currency:'USD'})},catalog).then(save);}`,
   };
   await build({
     stdin: { contents: `export {default as PricingPage} from '${pricing}/page';export {PricingQuickStart} from '${pricing}/_components/PricingQuickStart';export {PricingVideoMatrixSection} from '${pricing}/_components/PricingVideoMatrixSection';export {PricingPopularChecksSection} from '${pricing}/_components/PricingPopularChecksSection';export {PricingOtherSurfacesSection} from '${pricing}/_components/PricingOtherSurfacesSection';export {I18nProvider} from './frontend/lib/i18n/I18nProvider';export * from 'probe';`, resolveDir: process.cwd() },
@@ -42,7 +49,7 @@ async function bundle() {
       builder.onResolve({ filter: /.*/ }, args => {
         if (args.path.startsWith(resolve('frontend/messages') + '/')) return { path: args.path, external: true };
         if (args.path in mocks) return { path: args.path, namespace: 'controlled' };
-        if (args.path === './_lib/currentPricingHubData') return { path: 'hub', namespace: 'controlled' };
+        if (args.path === './currentPricingHubData') return { path: 'hub', namespace: 'controlled' };
         if (!args.path.startsWith('.') && !args.path.startsWith('/') && !args.path.startsWith('@/') && !args.path.startsWith('node:')) return { path: requireFrontend.resolve(args.path), external: true };
       });
       builder.onLoad({ filter: /.*/, namespace: 'controlled' }, args => ({ loader: 'js', resolveDir: process.cwd(), contents: mocks[args.path] }));
@@ -53,7 +60,7 @@ async function bundle() {
 
 // Catch a route-level await reappearing, a second pricing read, stale pending amounts,
 // or a reveal that replaces static hero/SEO instead of only the current-price slots.
-test('Pricing streams its static hero before current prices, then reveals one exact localized hub', async (t) => {
+test('Pricing serves three verified opening quotes before the remaining current prices, then reveals one exact localized hub', async (t) => {
   const Module = requireFrontend('node:module');
   const priorResolve = Module._resolveFilename;
   const aliases = Object.fromEntries(['react', 'react/jsx-runtime', 'react/jsx-dev-runtime', 'react-dom', 'react-dom/server', 'react-dom/client'].map(name => [name, requireFrontend.resolve(`next/dist/compiled/${name}`)]));
@@ -93,14 +100,38 @@ test('Pricing streams its static hero before current prices, then reveals one ex
       assert.match(shell, /pricing-breadcrumb-jsonld/);
       assert.match(shell, /pricing-service-jsonld/);
       assert.doesNotMatch(shell, /data-pricing-(?:content|quick-start)-ready/);
-      assert.doesNotMatch(shell, /[$€]\d+[.,]\d|\d+[.,]\d+\s*(?:[$€]|USD)/, 'Pending content must not display current or historical numeric estimates');
-      assert.doesNotMatch(shell, /data-analytics-cta-name="pricing_scenario"/, 'Pending cards cannot guess a winning row destination');
+      assert.equal(fixture.openingCalls, 3);
+      const dom = JSDOM.fragment(shell);
+      const cards = Array.from(dom.querySelectorAll('#video-quote li'));
+      assert.deepEqual(cards.map(card => card.querySelector('[data-estimate]')?.getAttribute('data-estimate')),
+        ['seedance-2-0-mini', 'kling-v4', 'seedance-2-5'], 'The inexpensive hero example also leads the visible comparison');
+      const heroHref = dom.querySelector('header > div a[data-analytics-cta-name="pricing_quote"]')?.getAttribute('href');
+      assert.equal(cards[0].querySelector('[data-estimate]')?.getAttribute('href'), heroHref);
+      if (unavailable) {
+        assert.doesNotMatch(shell, /id="quote-(?:seedance|kling)|0[.,]39|1[.,]18|2[.,]32/);
+        assert.equal(dom.querySelectorAll('#video-quote li a[href^="#quote-"]').length, 0);
+      } else {
+        const amounts = [/0[.,]39/, /1[.,]18/, /2[.,]32/];
+        for (const [index, card] of cards.entries()) {
+          const link = card.querySelector('a[data-estimate]')!;
+          assert.match(link.getAttribute('href')!, /remix=1&mode=t2v&duration=5&resolution=720p&aspect=16%3A9&audio=1/);
+          assert.match(card.querySelector('strong')!.textContent, amounts[index]);
+          const target = 'quote-' + link.getAttribute('data-estimate');
+          assert.equal(card.querySelector('a[href^="#quote-"]')?.getAttribute('href'), '#' + target);
+          assert.match(dom.getElementById(target)!.textContent, amounts[index]);
+        }
+      }
       assert.equal(fixture.calls, 1);
       fixture.release();
       let tail = '';
       for (;;) { const next = await reader.read(); if (next.done) break; tail += decoder.decode(next.value, { stream: true }); }
+      assert.equal(fixture.openingCalls, 3, 'The catalogue does not requote the three examples');
       assert.equal(fixture.calls, 1, 'Quick start and all matrices must share one complete current hub');
       assert.match(tail, /data-pricing-content-ready/);
+      assert.equal((tail.match(/data-faq-question=""/g) ?? []).length, 12, 'All questions survive topic grouping in the streamed HTML');
+      for (const surface of ['image', 'audio', 'tool']) {
+        assert.match(tail, new RegExp('</summary><div id="' + surface + '-pricing"'), 'Each bookmark targets the expandable content so the browser opens it on arrival');
+      }
       assert.match(tail, /data-pricing-quick-start-ready/);
       if (unavailable) {
         assert.equal(fixture.result.video.highlights.filter((highlight: { featured?: unknown }) => highlight.featured).length, 0);
@@ -110,7 +141,7 @@ test('Pricing streams its static hero before current prices, then reveals one ex
       }
       for (const [Component, props] of [
         [fixture.PricingQuickStart, { highlights: fixture.result.video.highlights, title: dictionary.pricing.hero.quickStartTitle, note: dictionary.pricing.hero.quickStartNote }],
-        [fixture.PricingVideoMatrixSection, { video: fixture.result.video, locale }],
+        [fixture.PricingVideoMatrixSection, { video: fixture.result.video, locale, quotedOn: new Date().toISOString().slice(0,10) }],
         [fixture.PricingPopularChecksSection, { checks: fixture.result.popularChecks, locale }],
         [fixture.PricingOtherSurfacesSection, { data: fixture.result.otherSurfaces, locale }],
       ]) {

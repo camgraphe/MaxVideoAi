@@ -32,3 +32,8 @@ test('pricing scenario clicks retain their bounded attribution without collectin
     prompt: 'private customer text',
   }), { cta_name: 'pricing_scenario', cta_location: 'pricing_hero', target_family: 'pricing' });
 });
+
+test('preset quotes can be measured independently from catalogue jumps', () => {
+  const payload = { cta_name: 'pricing_quote', cta_location: 'pricing_hero', target_family: 'workspace' };
+  assert.deepEqual(projectAllowedAnalyticsPayload('cta_click', payload), payload);
+});
