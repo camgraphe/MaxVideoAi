@@ -36,7 +36,7 @@ export function ModelCinematicGallery({ title, items, ui, examplesHref, examples
         <button type="button" disabled={edges.end} onClick={() => move(1)} aria-label={ui.nextExamples}><ChevronRight size={18} aria-hidden="true" /></button>
       </div> : null}
     </div></header>
-    <div className="cinema-gallery-rail" ref={rail} role="region" aria-label={title} tabIndex={0}>
+    {items.length ? <div className="cinema-gallery-rail" ref={rail} role="region" aria-label={title} tabIndex={0}>
       {items.map(item => {
         const [width, height] = (item.aspectRatio ?? '16:9').split(':').map(Number);
         const ratio = width > 0 && height > 0 ? width / height : 16 / 9;
@@ -51,6 +51,6 @@ export function ModelCinematicGallery({ title, items, ui, examplesHref, examples
           <figcaption><Link href={item.href as LocalizedLinkHref} prefetch={false}>{item.title}</Link><small>{item.metadata}</small></figcaption>
         </figure>;
       })}
-    </div>
+    </div> : null}
   </div>;
 }

@@ -178,6 +178,7 @@ export type AgentModelOutputCountDetails = Readonly<{
   min: number;
   max: number;
   default: number;
+  description?: string;
 }>;
 
 export type AgentModelSettingDetails = Readonly<{

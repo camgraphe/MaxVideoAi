@@ -3740,6 +3740,7 @@
         "presetsHint": "Tap a preset · 1–8 per run",
         "numImagesLabel": "Number of images",
         "numImagesCount": "{count} {unit}",
+        "klingImageSetCount": "Set of {count} images",
         "numImagesUnit": {
           "singular": "image",
           "plural": "images"

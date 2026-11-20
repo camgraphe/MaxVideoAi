@@ -1,5 +1,23 @@
 # Pricing Engine
 
+## Kling 4.0 native 4K candidate (2026-11-20)
+
+Kling 4.0 sends `resolution: "4k"` for native SDR output on its four existing fal
+endpoints. For text-to-video, image-to-video and reference without video input,
+fal lists $0.549 per output second. Reference with video inputs or video elements
+and Edit use $0.329 per billable second, where billable seconds are
+`max(input + output, 2 × output)`. The standard owned-media timing checks also
+apply to 4K. [Text](https://fal.ai/models/kling/v4/text-to-video),
+[image](https://fal.ai/models/kling/v4/image-to-video),
+[reference](https://fal.ai/models/kling/v4/reference-to-video),
+[edit](https://fal.ai/models/kling/v4/video-to-video/edit).
+
+The canonical tariff reader requires a current active literal 4K cell. The
+existing administrative ×1.50 recipe is the candidate for review. It compiles
+output-only rows to fixed USD cents and source-video rows to a literal
+49.35¢/billable-second term with upward final cent rounding. Preview,
+confirmation and refresh follow the [native batch workflow](pricing-admin-batches.md#kling-40-native-4k).
+
 ## Seedance 2.5 / Flash commercial candidate (2026-11-13)
 
 The approved authoring inputs are public BytePlus LIST ×2 for every standard 2.5
@@ -74,6 +92,47 @@ canonical selectors and revisioned cells as billing, including continuous
 Inactive or missing V4 cells refuse a quote; no legacy policy can supply a retail
 amount. No cell is seeded or activated by this integration. See the
 [current release and QA boundary](../launch/kling-v4/INTEGRATION-2026-10-25.md).
+
+## Kling Image 4.0 launch qualification (2026-11-20)
+
+Kling Image uses Fal's exact 2K, 4K and 8K choices. A request for one output sends
+`result_type: "single"`. Counts 2–10 send `result_type: "series"` and an explicit
+`series_amount`. The ordered input list accepts 1–10 owned originals in Edit
+and zero references in Text to Image. Auto series counts and standalone batch
+variants are outside the launch. Studio's certified image workflows keep their
+single-output contract.
+
+The two Fal endpoint prices are USD 0.063 per billing unit. The published
+pages and authenticated Pricing API do not specify quantity per resolution,
+output or reference. `KLING_IMAGE_V4_FAL_BILLING_UNITS` requires a supplier
+schedule qualified against actual Fal billing records before any customer quote.
+The JSON contains `t2i` and `i2i` objects keyed by `2K`, `4K` and `8K` with
+positive units per output, plus nonnegative `editReferenceUnits` per input
+image. Validate that the observed quantities follow that formula before
+providing the schedule. The endpoint unit price retains its own dated source.
+No default quantity or launch price is configured.
+
+The canonical customer quote uses a reviewed exact selector. It can price
+all supported requests using six authored quantity cells in
+`frontend/config/customer-tariffs.json`. Use `durationSec: "continuous"` per
+mode and resolution, and `inputImageCount: "continuous"` for Edit. Use
+`price.kind: "unit_terms"` with final upward rounding and the reviewed
+`output_units` rate, plus an explicit `input_images` rate (including zero
+if approved) for Edit. An exact fixed-quantity cell remains reviewable in
+Admin after the supplier schedule is qualified. The Quote database must
+be active. Each quote binds requested output quantity and the total
+ordered input count. A missing schedule or active cell makes quotation
+unavailable across workspace, Studio, MCP, and the public pages.
+
+Kling Image submits once and records its accepted Fal queue receipt for
+webhook and polling recovery. A signed callback can recover a lost
+acknowledgement. Completion persists the ordered images and responsive copies
+in MaxVideoAI storage. An incomplete result follows the wallet failure
+settlement path. No Fal generation was required for the disposable PostgreSQL
+and payload/response contract tests.
+
+[Text to Image pricing](https://fal.ai/models/kling/v4/text-to-image) and
+[Image to Image pricing](https://fal.ai/models/kling/v4/image-to-image) were checked on 2026-11-20.
 
 ## Fixed image tool product reservations
 

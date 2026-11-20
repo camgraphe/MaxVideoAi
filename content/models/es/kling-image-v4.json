@@ -1,0 +1,391 @@
+{
+  "marketingName": "Kling Image 4.0",
+  "versionLabel": "4.0",
+  "seo": {
+    "title": "Kling Image 4.0, generador y editor de imágenes hasta 8K | MaxVideoAI",
+    "description": "Crea imágenes en 2K, 4K y 8K, edita con hasta diez referencias y genera series ordenadas con Kling Image 4.0 en MaxVideoAI.",
+    "image": "/assets/model-examples/kling-image-v4/b3321181f57796ad37df7ef6ddac2c126ba8414f01147385f61bafc235f148cb.webp"
+  },
+  "hero": {
+    "title": "Kling Image 4.0",
+    "intro": "Crea y edita imágenes en 2K, 4K u 8K. Usa hasta diez referencias ordenadas o crea una serie coherente de dos a diez imágenes a partir de un mismo prompt.",
+    "badge": "2K · 4K · 8K",
+    "cta": {
+      "label": "Crear con Kling Image 4.0",
+      "href": "/app/image?engine=kling-image-v4"
+    }
+  },
+  "overview": "Crea y edita imágenes en 2K, 4K u 8K. Usa hasta diez referencias ordenadas o crea una serie coherente de dos a diez imágenes a partir de un mismo prompt.",
+  "bestUseCases": [
+    "Fotografía de producto y series de campaña",
+    "Fotogramas de concepto y storyboards",
+    "Edición con referencias y diseños con textos breves"
+  ],
+  "pricingNotes": [
+    "Consulta el precio actual de una imagen a cada resolución. Create calcula el importe de toda la serie para la cantidad elegida.",
+    "Revisa el presupuesto exacto de tus ajustes antes de generar."
+  ],
+  "faqs": [
+    {
+      "q": "¿Qué es Kling Image 4.0?",
+      "a": "Es el modelo de generación y edición de imágenes de Kuaishou. Crea una imagen o una serie ordenada desde un prompt y añade referencias en el modo de edición."
+    },
+    {
+      "q": "¿Qué resoluciones y formatos puedo elegir?",
+      "a": "Create ofrece 2K, 4K y 8K en ambos modos. Elige Auto, 16:9, 9:16, 1:1, 4:3, 3:4, 3:2, 2:3 o 21:9."
+    },
+    {
+      "q": "¿Cómo funcionan las imágenes de referencia?",
+      "a": "Añade entre una y diez imágenes en el modo de edición. Menciónalas en el orden en que las añadiste, de @Image1 a @Image10. Indica la que define el producto, el sujeto, la composición o el estilo."
+    },
+    {
+      "q": "¿Qué es una serie de imágenes?",
+      "a": "Elige entre dos y diez imágenes para generar un grupo ordenado a partir de un mismo brief. Describe las vistas o planos en orden y comprueba qué detalles se mantienen en toda la serie."
+    },
+    {
+      "q": "¿Cuánto cuesta Kling Image 4.0?",
+      "a": "Create muestra el importe actual de tus ajustes antes de confirmar. Elige la resolución y el número de imágenes para ver el precio de una imagen o de la serie completa."
+    },
+    {
+      "q": "¿Puedo utilizar una imagen como fotograma inicial de vídeo?",
+      "a": "Guarda la imagen y elígela como fotograma de apertura de una generación de imagen a vídeo con Kling 4.0. El vídeo tiene sus propios ajustes y presupuesto."
+    }
+  ],
+  "custom": {
+    "specTitle": "Especificaciones",
+    "specNote": "Create ofrece 2K, 4K y 8K en ambos modos. Elige Auto, 16:9, 9:16, 1:1, 4:3, 3:4, 3:2, 2:3 o 21:9.",
+    "safetyNote": "Usa referencias que tengas permiso de utilizar. Revisa los rostros, los textos y las afirmaciones antes de publicar."
+  },
+  "decision": {
+    "modelSlug": "kling-image-v4",
+    "hero": {
+      "eyebrow": "Generador de imágenes con IA en MaxVideoAI",
+      "title": "Kling Image 4.0",
+      "subtitle": "Crea una imagen o prepara toda una serie.",
+      "subtitleHighlights": [
+        "8K"
+      ],
+      "paragraph": "Crea y edita imágenes en 2K, 4K u 8K. Usa hasta diez referencias ordenadas o crea una serie coherente de dos a diez imágenes a partir de un mismo prompt.",
+      "primaryCta": {
+        "label": "Crear con Kling Image 4.0",
+        "href": "/app/image?engine=kling-image-v4"
+      },
+      "secondaryCta": {
+        "label": "Especificaciones",
+        "href": "#specs"
+      },
+      "quickLinks": [
+        {
+          "label": "Guía de prompts",
+          "href": "#prompting"
+        },
+        {
+          "label": "Especificaciones",
+          "href": "#specs"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Ilustración de ImageGen",
+      "description": "Ilustraciones editoriales creadas con ImageGen. La galería de fal muestra resultados de Kling Image 4.0.",
+      "renderLabel": "Ver ejemplos de Kling Image 4.0 en fal",
+      "badges": [
+        "Ilustración de ImageGen"
+      ],
+      "altContext": "Una mujer con chaqueta cobalto en una costa volcánica"
+    },
+    "features": [
+      {
+        "title": "Dirigir una imagen",
+        "body": "Describe el sujeto, su posición y la luz, y elige una proporción adecuada para tu diseño.",
+        "tone": "quality"
+      },
+      {
+        "title": "Dar un papel a cada referencia",
+        "body": "Añade las imágenes en orden. Usa @Image1 para la forma del producto y @Image2 para la iluminación. Indica qué quieres conservar y qué quieres cambiar.",
+        "tone": "reference"
+      },
+      {
+        "title": "Planificar una serie",
+        "body": "Elige de dos a diez imágenes. Define un sujeto y una dirección artística común, y describe cada vista o plano en orden.",
+        "tone": "continuity"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Anima una imagen terminada",
+        "body": "Guarda la imagen y úsala como fotograma de apertura en una generación de vídeo independiente con Kling 4.0.",
+        "cta": {
+          "label": "Explorar Kling 4.0 vídeo",
+          "href": "/es/modelos/kling-v4"
+        }
+      },
+      {
+        "title": "Explora Seedream 5.5",
+        "body": "Usa Seedream para generar un PNG con transparencia nativa o una sola imagen con edición guiada por referencias.",
+        "cta": {
+          "label": "Ver Seedream 5.5",
+          "href": "/es/modelos/seedream-5-5"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Dirigir una imagen",
+        "body": "Describe el sujeto, su posición y la luz, y elige una proporción adecuada para tu diseño."
+      },
+      {
+        "title": "Dar un papel a cada referencia",
+        "body": "Añade las imágenes en orden. Usa @Image1 para la forma del producto y @Image2 para la iluminación. Indica qué quieres conservar y qué quieres cambiar."
+      },
+      {
+        "title": "Planificar una serie",
+        "body": "Elige de dos a diez imágenes. Define un sujeto y una dirección artística común, y describe cada vista o plano en orden."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Precio de Kling Image 4.0",
+      "subtitle": "Consulta el precio actual de una imagen a cada resolución. Create calcula el importe de toda la serie para la cantidad elegida.",
+      "footnote": "Revisa el presupuesto exacto de tus ajustes antes de generar.",
+      "ctaLabel": "Ver precios de imagen",
+      "ctaHref": "/es/precios#kling-image-v4-pricing"
+    },
+    "meta": {
+      "title": "Kling Image 4.0, generador y editor de imágenes hasta 8K | MaxVideoAI",
+      "description": "Crea imágenes en 2K, 4K y 8K, edita con hasta diez referencias y genera series ordenadas con Kling Image 4.0 en MaxVideoAI."
+    }
+  },
+  "prompting": {
+    "modelSlug": "kling-image-v4",
+    "section": {
+      "title": "Cómo escribir un prompt para Kling Image 4.0",
+      "intro": "Describe una imagen, guía una edición con referencias ordenadas o planifica las tomas de una serie.",
+      "tip": null,
+      "guide": {
+        "label": "Guía de Kling Image 4.0 en fal",
+        "href": "https://fal.ai/learn/tools/kling-image-4-prompting-guide"
+      },
+      "referencesTitle": "Guiar la imagen"
+    },
+    "tabs": [
+      {
+        "id": "references",
+        "label": "Referencias ordenadas",
+        "title": "Asignar un papel a cada imagen",
+        "description": "Usa referencias que tengas permiso de utilizar.",
+        "copy": "Usa @Image1 para la forma y las proporciones exactas de la linterna. Usa @Image2 solo para la iluminación azul y el basalto oscuro. Coloca la linterna sobre basalto mojado y conserva los detalles del botón y la lente."
+      },
+      {
+        "id": "series",
+        "label": "Serie de imágenes",
+        "title": "Planificar tres imágenes conectadas",
+        "description": "Selecciona tres salidas en Create antes de generar.",
+        "copy": "Crea tres imágenes de un fotógrafo que cruza una bahía en plena tormenta. Conserva el mismo abrigo rojo, la cámara y la paleta. Imagen 1, plano general en la cubierta. Imagen 2, plano medio junto a la ventana mojada. Imagen 3, primer plano de una mano sujetando la correa de la cámara."
+      }
+    ],
+    "recipe": {
+      "label": "Un brief para una imagen",
+      "excerpt": "Un fotógrafo con impermeable rojo observa la tormenta por la ventana de un ferry. El mar proyecta luz fría dentro de la cabina.",
+      "note": "Adapta este prompt de ilustración de ImageGen en Create.",
+      "factors": [
+        {
+          "icon": "subject",
+          "title": "Sujeto y gesto",
+          "body": "Define la persona, su ropa y una acción fácil de leer."
+        },
+        {
+          "icon": "framing",
+          "title": "Encuadre",
+          "body": "Pide un plano medio y deja espacio para la ventana."
+        },
+        {
+          "icon": "light",
+          "title": "Luz y materiales",
+          "body": "Contrasta la luz fría del mar con la luz cálida interior. Describe el tejido mojado y sus reflejos."
+        }
+      ]
+    },
+    "tabNotes": [],
+    "globalPrinciples": [
+      "Escribe entre comillas el texto exacto y revísalo en la imagen terminada.",
+      "Antes de exportar una serie, revisa la continuidad visual entre todas las imágenes."
+    ],
+    "engineWhy": [],
+    "demo": null,
+    "imageExamples": {
+      "title": "Cómo escribir un prompt para Kling Image 4.0",
+      "intro": "Describe una imagen, guía una edición con referencias ordenadas o planifica las tomas de una serie.",
+      "workspaceLabel": "Crear con Kling Image 4.0",
+      "items": [
+        {
+          "id": "kling-image-4-prompt",
+          "title": "Un fotógrafo en un ferry durante una tormenta",
+          "badge": "Ilustración de ImageGen",
+          "kind": "image",
+          "prompt": "Cinematic editorial still photograph for a model prompt guide. Landscape 3:2. On a ferry in a storm, a middle-aged East Asian documentary photographer in a red waterproof coat stands at a dark window, seen in slightly imperfect side profile, holding a weathered film camera at chest height. Outside, cold cobalt sea and sea spray, a warm fluorescent ceiling practical gives pale amber rim light to wet fabric. Close medium shot, human and unposed, careful fine texture and layered reflections, no typography, brand or watermark."
+        }
+      ]
+    }
+  },
+  "examples": {
+    "modelSlug": "kling-image-v4",
+    "showWhenEmpty": false,
+    "section": {
+      "title": "Ideas de imágenes para Kling Image 4.0",
+      "intro": "Explora retratos, fotografías de producto y composiciones, y adapta un brief en Create.",
+      "defaultCtaLabel": null,
+      "recreateLabel": "Crear con Kling Image 4.0"
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "Todo"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "image-proof-image",
+        "icon": "image",
+        "title": "Texto a imagen",
+        "body": "Describe una imagen fija."
+      },
+      {
+        "id": "image-proof-pen",
+        "icon": "pen",
+        "title": "Edición con referencias",
+        "body": "Añade de una a diez imágenes ordenadas."
+      },
+      {
+        "id": "image-proof-maximize",
+        "icon": "maximize",
+        "title": "Resolución",
+        "body": "Elige 2K, 4K u 8K."
+      },
+      {
+        "id": "image-proof-sparkles",
+        "icon": "sparkles",
+        "title": "Series de imágenes",
+        "body": "Pide de dos a diez imágenes relacionadas."
+      },
+      {
+        "id": "image-proof-shield",
+        "icon": "shield",
+        "title": "Precio actual",
+        "body": "Revisa tu presupuesto en Create."
+      }
+    ],
+    "fallbackItems": null,
+    "editorialImages": [
+      {
+        "id": "kling-image-4-hero",
+        "title": "Una mujer con chaqueta cobalto en una costa volcánica"
+      },
+      {
+        "id": "kling-image-4-product",
+        "title": "Una linterna índigo sobre basalto mojado"
+      },
+      {
+        "id": "kling-image-4-typography",
+        "title": "Cartel de una exposición titulado AFTER THE RAIN"
+      },
+      {
+        "id": "kling-image-4-prompt",
+        "title": "Un fotógrafo en un ferry durante una tormenta"
+      },
+      {
+        "id": "kling-image-4-specs",
+        "title": "Lluvia sobre una cremallera y tejido antidesgarro"
+      }
+    ],
+    "cinematic": {
+      "title": "Ideas de imágenes para Kling Image 4.0",
+      "intro": "Explora retratos, fotografías de producto y composiciones, y adapta un brief en Create.",
+      "provenance": "Ilustraciones editoriales creadas con ImageGen. La galería de fal muestra resultados de Kling Image 4.0.",
+      "source": {
+        "label": "Ver ejemplos de Kling Image 4.0 en fal",
+        "href": "https://fal.ai/kling-image-4"
+      },
+      "panels": [
+        {
+          "id": "concepts",
+          "layout": "grid",
+          "eyebrow": "Ideas de imágenes",
+          "title": "Construye la imagen en torno a una idea.",
+          "body": "Describe el producto protagonista o el lugar de un texto breve dentro de la composición.",
+          "note": "Usa una referencia para orientar la forma de un producto. En un cartel, indica las palabras exactas, los saltos de línea y la superficie.",
+          "assetIds": [
+            "kling-image-4-product",
+            "kling-image-4-typography"
+          ]
+        },
+        {
+          "id": "image-brief",
+          "placement": "prompting",
+          "layout": "feature",
+          "eyebrow": "Guía de prompts",
+          "title": "Dirige el sujeto, la luz y el encuadre.",
+          "body": "Un brief sencillo puede definir el gesto, la silueta, los reflejos y la fuente de luz.",
+          "note": "Abre el prompt de la ilustración como punto de partida para una imagen 2K en Create.",
+          "assetIds": [
+            "kling-image-4-prompt"
+          ]
+        },
+        {
+          "id": "resolution",
+          "placement": "details",
+          "layout": "feature",
+          "eyebrow": "Opciones de salida",
+          "title": "Ajusta el tamaño al uso final.",
+          "body": "Elige 2K para explorar una idea o 4K u 8K cuando el proyecto necesite más píxeles.",
+          "note": "Selecciona la resolución y el encuadre en Create.",
+          "assetIds": [
+            "kling-image-4-specs"
+          ]
+        }
+      ]
+    }
+  },
+  "cinematic": {
+    "modelSlug": "kling-image-v4",
+    "variant": "image",
+    "heroAssetId": "kling-image-4-hero",
+    "titleLines": [
+      "Kling Image 4.0"
+    ],
+    "subtitle": "Crea una imagen o prepara toda una serie.",
+    "byline": "Generador de imágenes con IA en MaxVideoAI",
+    "intro": "Crea y edita imágenes en 2K, 4K u 8K. Usa hasta diez referencias ordenadas o crea una serie coherente de dos a diez imágenes a partir de un mismo prompt.",
+    "primaryLabel": "Crear con Kling Image 4.0",
+    "caption": "Ilustración de ImageGen",
+    "proofLabel": "Explorar ideas",
+    "overviewLabel": "Resumen",
+    "detailsLabel": "Especificaciones",
+    "examplesLabel": "Explorar ideas",
+    "promptingLabel": "Guía de prompts",
+    "pricingLabel": "Precios",
+    "specsReviewedAt": "2026-11-20",
+    "facts": [
+      {
+        "label": "Resolución",
+        "value": "2K · 4K · 8K"
+      },
+      {
+        "label": "Referencias",
+        "value": "Hasta 10 imágenes"
+      },
+      {
+        "label": "Series",
+        "value": "2 a 10 imágenes relacionadas"
+      },
+      {
+        "label": "Encuadre",
+        "value": "9 opciones, incluida Auto"
+      }
+    ],
+    "promptAssistant": {
+      "title": "Dale forma al brief con Milo.",
+      "body": "Describe la imagen a Milo. Revisa su propuesta en Create y aplícala cuando encaje con tu idea.",
+      "action": "Abrir Milo en Create"
+    }
+  }
+}

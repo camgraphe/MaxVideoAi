@@ -1,3 +1,4 @@
+import { isKlingImageV4EngineId } from '@/lib/image/kling-image-v4';
 import type {
   GeneratedImage,
   ImageGenerationMode,
@@ -74,6 +75,8 @@ export function buildResponseFromExistingJob(args: {
 
   return {
     ok: true,
+    ...(isKlingImageV4EngineId(args.job.engine_id) && !['completed', 'failed', 'provider_polling_stalled'].includes(args.job.status)
+      ? { pending: true } : {}),
     mode: args.mode,
     images,
     description: args.job.message ?? null,

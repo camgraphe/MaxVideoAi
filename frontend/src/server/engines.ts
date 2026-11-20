@@ -41,7 +41,7 @@ import {
   projectConfiguredEngine,
 } from '@/server/engine-configuration-projection';
 import { getPrivateRuntimeEngineById } from '@/server/video-generation/private-engine-registry';
-import { resolveRuntimeResolutionPolicy } from '@/server/video-generation/runtime-resolution';
+import { getKlingV4Native4kAvailabilityError, resolveRuntimeResolutionPolicy } from '@/server/video-generation/runtime-resolution';
 import {
   getReadOnlyConfiguredEngine,
   getReadOnlyConfiguredEnginesByCategory,
@@ -210,6 +210,10 @@ export async function computeConfiguredPreflight(
   const supportsResolution = resolutionPolicy.supportsResolution;
   const supportsAspectRatio = Boolean(capability?.aspectRatio?.length);
   const requestedResolution = request.resolution;
+  const resolutionError = getKlingV4Native4kAvailabilityError(engine, requestedResolution);
+  if (resolutionError) {
+    return { ok: false, messages: [resolutionError], error: { code: 'ENGINE_CONSTRAINT', message: resolutionError } };
+  }
   const availableResolutions: string[] = engine.resolutions.map((value) => value);
   const fallbackResolution = resolutionPolicy.pricingFallbackResolution as NonNullable<typeof requestedResolution>;
   let effectiveResolution = (

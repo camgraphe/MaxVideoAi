@@ -1,3 +1,4 @@
+import klingImageIllustrations from '../../config/model-kling-image-4-illustrations.json';
 import startFrames from '../../config/model-cinematic-start-frames.json';
 import { listSeedreamEditorialImages } from '../seedream-editorial-images';
 import type { PublicModelQuoteInput } from '../pricing-public-model-contract';
@@ -14,6 +15,18 @@ export function getImageEditorialPreset(engineId: string, exampleId: string, ori
       quoteInput,
       snapshot: { schemaVersion: 1, surface: 'image', engineId, inputMode: image.settings.mode, prompt: image.prompt,
         core: { ...image.settings }, refs: { imageUrls: source ? [new URL(source.original.url, origin).href] : [] } },
+    };
+  }
+  if (engineId === klingImageIllustrations.modelSlug) {
+    const illustration = klingImageIllustrations.assets.find(item => item.id === exampleId);
+    if (!illustration) return null;
+    const core = { resolution: '2K', aspectRatio: '3:2', numImages: 1 };
+    const quoteInput: PublicModelQuoteInput = { modelId: engineId, mode: 't2i', durationSec: 1,
+      resolution: core.resolution, aspectRatio: core.aspectRatio, quantity: core.numImages, referenceImageCount: 0 };
+    return {
+      quoteInput,
+      // The prompt is a starting point for Kling Image. The illustration is never imported.
+      snapshot: { schemaVersion: 1, surface: 'image', engineId, inputMode: 't2i', prompt: illustration.prompt, core, refs: { imageUrls: [] as string[] } },
     };
   }
   if (engineId !== 'gpt-image-2-6-sunburst') return null;

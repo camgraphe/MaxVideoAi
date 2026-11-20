@@ -1,3 +1,6 @@
+import {
+  assertKlingImageV4OutputCount, assertKlingImageV4ReferenceCount, isKlingImageV4EngineId,
+} from '@/lib/image/kling-image-v4';
 import { NANO21_ENGINE_ID, normalizeNano21Settings, assertNano21Scenario, assertNano21UnsupportedFields } from '@/lib/nano-banana-2-1';
 import { isGptImage26EngineId, normalizeGptImage26Settings } from '@/lib/image/gptImage26';
 import { listFalEngines } from '@/config/falEngines';
@@ -17,6 +20,7 @@ import {
   clampRequestedImageCount,
   getImageInputField,
   resolveRequestedResolution,
+  resolveRequestedAspectRatio,
 } from '@/lib/image/inputSchema';
 import {
   parseGptImage2SizeKey,
@@ -60,7 +64,8 @@ export type ImageEstimateErrorCode =
   | 'engine_unavailable'
   | 'mode_unsupported'
   | 'resolution_invalid'
-  | 'image_size_invalid';
+  | 'image_size_invalid'
+  | 'invalid_parameter';
 
 export class ImageEstimateError extends Error {
   constructor(
@@ -125,8 +130,9 @@ async function estimateImageGenerationInternal(
 
   if (engineEntry.id === NANO21_ENGINE_ID && !engineEntry.surfaces.app.enabled) throw new ImageEstimateError('engine_unavailable',404);
   const engine = engineEntry.engine;
+  const isKlingImage = isKlingImageV4EngineId(engine.id);
   const isGpt26 = isGptImage26EngineId(engine.id);
-  if (isGpt26 && !engineEntry.surfaces.app.enabled) throw new ImageEstimateError('engine_unavailable', 404);
+  if ((isKlingImage || isGpt26) && !engineEntry.surfaces.app.enabled) throw new ImageEstimateError('engine_unavailable', 404);
   const numImages = clampRequestedImageCount(engine, mode, requestedImages);
   if (!engineEntry.modes.some((entry) => entry.mode === mode)) {
     throw new ImageEstimateError('mode_unsupported', 400);
@@ -168,6 +174,15 @@ async function estimateImageGenerationInternal(
       ? Math.max(0, Math.round(input.referenceImageCount))
       : 0;
   const referenceImageCount = explicitReferenceCount || submittedReferenceSizeCount;
+  if (isKlingImage) {
+    try {
+      assertKlingImageV4OutputCount(input.numImages === undefined ? 1 : input.numImages);
+      assertKlingImageV4ReferenceCount(mode, input.referenceImageCount ?? referenceImageCount);
+      if (!resolveRequestedAspectRatio(engine, mode, input.aspectRatio).ok) throw new Error('Unsupported Kling Image aspect ratio.');
+    } catch (error) {
+      throw new ImageEstimateError('invalid_parameter', 400, { detail: { message: (error as Error).message } });
+    }
+  }
   const pricedReferenceImageCount = isLumaAgentsImageEngineId(engine.id)
     ? mode === 'i2i'
       ? Math.max(0, referenceImageCount - 1)
@@ -190,7 +205,7 @@ async function estimateImageGenerationInternal(
     quality: typeof input.quality === 'string' ? input.quality : undefined,
     ...(gpt26 ? { complexity: gpt26.complexity } : {}),
     referenceImageCount: nano21 ? referenceImageCount : pricedReferenceImageCount,
-    ...(isSeedreamEngineId(engine.id) ? { inputImageCount: mode === 'i2i' ? referenceImageCount : 0 } : {}),
+    ...(isSeedreamEngineId(engine.id) || isKlingImage ? { inputImageCount: mode === 'i2i' ? referenceImageCount : 0 } : {}),
     membershipTier: input.membershipTier,
     currency: engine.pricing?.currency ?? 'USD',
     addons:

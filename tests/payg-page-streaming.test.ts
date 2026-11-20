@@ -10,6 +10,7 @@ import { JSDOM } from 'jsdom';
 const requireFrontend = createRequire(resolve('frontend/package.json'));
 const route = resolve('frontend/app/(localized)/[locale]/(marketing)/pay-as-you-go-ai-video-generator');
 const tick = () => new Promise<void>(done => setImmediate(done));
+const CURRENT_VIDEO_SCENARIO_COUNT = 126;
 
 // Keep the actual route, video quote queue, pure projections and sections. Only
 // canonical price I/O and the public showcase read are held at their boundaries.
@@ -120,10 +121,13 @@ test('PAYG emits its hero before held current prices, then preserves the settled
         h.release('showcase');
         for (;;) { const next = await reader.read(); if (next.done) break; tail += decoder.decode(next.value, { stream: true }); }
         assert.deepEqual(errors, []);
-        assert.equal(h.calls.length, 125, 'Hero and details consume one current video projection');
+        assert.equal(h.calls.length, CURRENT_VIDEO_SCENARIO_COUNT, 'Hero and details consume one current video projection');
         assert.ok(h.calls.every((input: { mode: string }) => input.mode !== 't2i'));
         assert.ok(h.calls.every((input: { modelId: string }) => input.modelId !== 'pika-text-to-video'), 'Archived Pika has no current PAYG quote');
         assert.equal(h.calls.filter((input: { modelId: string }) => input.modelId === 'kling-v4-flash').length, 2, 'Only two new Flash video scenarios are added');
+        assert.equal(h.calls.filter((input: { modelId: string; resolution?: string }) =>
+          input.modelId === 'kling-v4' && input.resolution?.toLowerCase() === '4k').length, 1,
+        'One current Kling 4.0 native 4K scenario joins the video projection');
         const final = new JSDOM(shell + tail, { runScripts: 'dangerously', pretendToBeVisual: true });
         await new Promise(done => setTimeout(done, 60));
         const expectedData = h.buildPayAsYouGoPageData({ locale, content, pricingHub: await h.buildCurrentVideoPricingData(locale) });
@@ -194,7 +198,7 @@ test('PAYG emits its hero before held current prices, then preserves the settled
       assert.ok(errors.length >= 1);
       assert.ok(errors.every(error => error === h.failure), 'Keep the original failed-read error for the server boundary');
       assert.equal(h.reads.length, 1);
-      assert.equal(h.calls.length, showcaseFailure ? 125 : 8);
+      assert.equal(h.calls.length, showcaseFailure ? CURRENT_VIDEO_SCENARIO_COUNT : 8);
       const doc = new JSDOM(html, { runScripts: 'dangerously', pretendToBeVisual: true });
       await new Promise(done => setTimeout(done, 60));
       assert.equal(doc.window.document.querySelector('h1')?.textContent, content.hero.title);
@@ -208,7 +212,7 @@ test('PAYG emits its hero before held current prices, then preserves the settled
       doc.window.close();
       h.configure(); h.release('prices'); h.release('showcase');
       const recovered = await h.buildCurrentVideoPricingData('fr');
-      assert.equal(h.calls.length, 125, 'A later request owns fresh current quotes after failure');
+      assert.equal(h.calls.length, CURRENT_VIDEO_SCENARIO_COUNT, 'A later request owns fresh current quotes after failure');
       assert.ok(recovered.video.rows.some((row: { quotes: Record<string, { amountCents?: number }> }) =>
         Object.values(row.quotes).some(quote => quote.amountCents === 1937)));
     });

@@ -34,7 +34,7 @@ const modeDetails = z.object({
   duration: z.object({ options: z.array(z.number()).nullable(), range: range.nullable() }).passthrough().nullable(),
   resolutions: strings, aspectRatios: strings, fps: z.array(z.number()),
   audio: z.enum(['unavailable', 'optional', 'always_generated']),
-  outputCount: range.extend({ default: z.number() }),
+  outputCount: range.extend({ default: z.number(), description: z.string().optional() }),
   settings: z.array(z.object({
     key: z.string(), type: z.enum(['boolean', 'number', 'text', 'enum', 'multi_prompt']), required: z.boolean(),
     values: z.array(z.union([z.string(), z.number(), z.boolean()])).nullable(),

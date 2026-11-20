@@ -13,10 +13,11 @@ const originals = [
   await readJson(path.join(root, 'config/model-cinematic-flash-hero.json')),
   ...(await readJson(path.join(root, 'config/seedream-editorial-images.json'))),
   ...(await readJson(path.join(root, 'config/model-cinematic-start-frames.json'))),
+  ...(await readJson(path.join(root, 'config/model-kling-image-4-illustrations.json'))).assets,
   ...(await readJson(path.join(root, 'config/model-cinematic-public-proofs.json'))),
 ];
 // This reviewed editorial profile is independent of the shared Next image optimizer.
-const profile = { version: 2, format: 'avif', quality: 40, effort: 6, desktopWidths: [960, 1600, 2560], mobile: { '55-above-the-clouds': { widths: [480, 720], aspect: .5, position: .45 }, 'midnight-run': { widths: [640, 1280], aspect: 16 / 9, position: 1 }, 'sd25-hero': { widths: [640, 1280], aspect: 16 / 9, position: 0.5 }, 'fluxmax-hero': { widths: [640, 1280], aspect: 20 / 11, position: 0.5 } } };
+const profile = { version: 2, format: 'avif', quality: 40, effort: 6, desktopWidths: [960, 1600, 2560], mobile: { '55-above-the-clouds': { widths: [480, 720], aspect: .5, position: .45 }, 'midnight-run': { widths: [640, 1280], aspect: 16 / 9, position: 1 }, 'sd25-hero': { widths: [640, 1280], aspect: 16 / 9, position: 0.5 }, 'fluxmax-hero': { widths: [640, 1280], aspect: 20 / 11, position: 0.5 }, 'kling-v4-hero': { widths: [640, 1280], aspect: 16 / 9, position: 0.5 }, 'kling-image-4-hero': { widths: [480, 720], aspect: 0.65, position: 0.94 } } };
 const requestedSources = Object.fromEntries(process.argv.filter(arg => arg.startsWith('--source=')).map(arg => {
   const value = arg.slice(9); const index = value.indexOf('=');
   assert.ok(index > 0, 'Use --source=asset-id=/absolute/original');

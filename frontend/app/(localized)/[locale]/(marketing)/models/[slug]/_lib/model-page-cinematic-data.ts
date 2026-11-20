@@ -34,7 +34,7 @@ const creationUi = {
   fr: { reuse: 'Utiliser ce prompt', refine: 'Affiner avec Milo', price: 'Prix de génération', priceLoading: 'Tarif en cours…', priceUnavailable: 'Prix dans Create', priceUnit: '/ image', priceNote: 'Hors taxes', framePrice: 'Prix de l’image de départ' },
   es: { reuse: 'Usar este prompt', refine: 'Refinar con Milo', price: 'Precio de generación', priceLoading: 'Consultando precio…', priceUnavailable: 'Precio en Create', priceUnit: '/ imagen', priceNote: 'Sin impuestos', framePrice: 'Precio del fotograma inicial' },
 };
-export type CinematicAsset = Pick<ModelEditorialImage, 'id' | 'title' | 'prompt' | 'original' | 'display' | 'metadataLabel' | 'source' | 'alphaVerified'> & {
+export type CinematicAsset = Pick<ModelEditorialImage, 'id' | 'title' | 'prompt' | 'original' | 'display' | 'metadataLabel' | 'source' | 'alphaVerified' | 'illustrative'> & {
   engineId?: string;
   watchHref?: string;
   video?: NonNullable<ReturnType<typeof cinematicProofVideo>>;
@@ -142,7 +142,7 @@ export function buildCinematicPresentation(content: ModelCinematicContent | null
   }
   for (const placement of ['prompting', 'details']) {
     const panels = examples.cinematic.panels.filter(panel => panel.placement === placement);
-    if (panels.length !== 1 || panels[0].assetIds.length !== 1) throw new Error(`Cinematic ${placement} needs one dedicated visual`);
+    if (panels.length > 1 || (panels[0] && panels[0].assetIds.length !== 1)) throw new Error(`Cinematic ${placement} allows one dedicated visual`);
   }
   const assistantEntry = new URL(miloEntryHref(locale), 'https://maxvideoai.com');
   assistantEntry.pathname = content.variant === 'image' ? '/app/image' : '/app';

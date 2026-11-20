@@ -26,6 +26,10 @@ export function ModelCinematicExamples({ presentation, viewModel, hasRenderedVid
     {hasRenderedVideos ? <ModelCinematicGallery title={viewModel.section.title}
       items={buildCinematicGalleryItems(viewModel.decision.items.filter(item => item.id !== excludedJobId && !presentation.media?.publicProofs?.some(proof => proof.jobId === item.id)), presentation.content.modelSlug, presentation.locale)} ui={ui}
       examplesHref={viewModel.decision.examplesLinkHref} examplesLabel={viewModel.decision.viewAllLabel} /> : null}
+    {examples.source ? <div className="cinema-wrap cinema-examples-source">
+      <p>{examples.provenance}</p>
+      <a href={examples.source.href} className="cinema-source-link" target="_blank" rel="noopener noreferrer">{examples.source.label}<CinematicArrow direction="external" /></a>
+    </div> : null}
     {proofPanels.map((panel, index) => {
       const selected = panel.assetIds.map(id => assets.find(asset => asset.id === id)!);
       const portrait = panel.layout === 'feature' && selected.length === 1 && selected[0].display.height > selected[0].display.width;

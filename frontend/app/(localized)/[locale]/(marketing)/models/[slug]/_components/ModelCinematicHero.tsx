@@ -29,7 +29,7 @@ export function ModelCinematicHero({ presentation, decision }: {
       <Image src={hero.display.url} width={hero.display.width} height={hero.display.height} alt={hero.title}
         loading="eager" fetchPriority="high" sizes="100vw" className="cinema-hero-image" />
     </picture></div>
-    {isVideo && hero.video ? <ModelCinematicHeroMotion key={hero.video.src} src={hero.video.src} title={hero.title} ui={presentation.ui} /> : null}
+    {isVideo && hero.video ? <ModelCinematicHeroMotion key={hero.video.src} src={hero.video.src} title={hero.title} ui={presentation.ui} autoplay={presentation.media?.heroAutoplay} /> : null}
     <div id="overview" className="cinema-wrap cinema-hero-content">
       <p className="cinema-byline">{content.byline}</p>
       <h1 id="cinema-model-title">{content.titleLines.map((line, index) => <span key={line}>{index ? ' ' : ''}{line}</span>)}</h1>
@@ -43,6 +43,7 @@ export function ModelCinematicHero({ presentation, decision }: {
       </div>
       {content.highlights ? <ModelCinematicHighlights items={content.highlights} /> : content.workflows ? <ModelCinematicWorkflowNav workflows={content.workflows} /> : overview ? <ModelCinematicBenefits overview={overview} /> : <dl className="cinema-hero-facts">{content.facts.map(fact => <div key={fact.label}><dt>{fact.label}</dt><dd>{fact.value}</dd></div>)}</dl>}
     </div>
+    {hero.illustrative ? <p className="cinema-hero-attribution">{content.caption}</p> : null}
     <ModelCinematicOverview presentation={presentation} />
   </section>;
 }

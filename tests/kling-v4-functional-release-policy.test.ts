@@ -39,6 +39,9 @@ test('functional publication exposes four qualified modes independently of marke
     assert.equal(details.generationEnabled, true);
     assert.equal(details.prelaunch, false);
     assert.deepEqual(details.modes.map(mode => mode.mode).sort(), ['i2v', 'ref2v', 't2v', 'v2v']);
+    for (const mode of details.modes) {
+      assert.deepEqual(mode.resolutions, ['720p', '1080p', '4k']);
+    }
     assert.equal(details.modes.find(mode => mode.mode === 'ref2v')?.subjects?.voiceBinding, 'unavailable');
     assert.ok(details.modes.find(mode => mode.mode === 'i2v')?.references.length);
     for (const mode of ['t2v', 'i2v', 'ref2v', 'v2v'] as const) {
@@ -54,6 +57,7 @@ test('functional publication exposes four qualified modes independently of marke
       ['t2v', '720p', '5', null, 118, null], ['t2v', '720p', '10', null, 236, null],
       ['t2v', '1080p', '5', null, 177, null], ['ref2v', '720p', '5', '10.2501', 216, 14.1],
       ['v2v', '1080p', '5', '10.2501', 323, 21.15],
+      ['t2v', '4k', '5', null, 412, null], ['ref2v', '4k', '5', '10.2501', 753, 49.35],
     ] as const) {
       const { scenario } = chooseCustomerTariffScenario(scenarios, { mode, resolution, durationSec,
         billingInputType: source ? 'video_input' : 'no_video_input', ...(source ? { inputVideoDurationSec: source } : {}) });

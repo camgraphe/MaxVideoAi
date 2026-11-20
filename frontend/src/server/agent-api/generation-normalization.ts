@@ -1,3 +1,4 @@
+import { KLING_IMAGE_V4_ID } from '@/lib/image/kling-image-v4';
 import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
 import { isGptImage26EngineId, normalizeGptImage26Settings } from '@/lib/image/gptImage26';
 import { KLING_V4_PROMPT_MAX_CHARS } from '@/config/fal-engines/kling-v4';
@@ -500,7 +501,7 @@ export function orderedGenerationReferenceRole(
   engineId: string,
   explicitReferenceOrder = false,
 ): CanonicalGenerationReference['role'] | null {
-  return ([NANO21_ENGINE_ID, 'seedream-5-5', 'seedream-5-0-flash'].includes(engineId) || explicitReferenceOrder) && mode === 'i2i' ? 'reference' : mode === 'extend'
+  return ([NANO21_ENGINE_ID, KLING_IMAGE_V4_ID, 'seedream-5-5', 'seedream-5-0-flash'].includes(engineId) || explicitReferenceOrder) && mode === 'i2i' ? 'reference' : mode === 'extend'
     ? 'source'
     : mode === 'r2v' || mode === 'v2v' || ((['flux-3-max','flux-3','flux-3-draft','kling-v4','kling-v4-flash','wan-3-prime'].includes(engineId) || explicitReferenceOrder) && mode === 'ref2v') || (engineId === 'luma-ray-3-2' && mode === 't2v')
       ? 'reference'

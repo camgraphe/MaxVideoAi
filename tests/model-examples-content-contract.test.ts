@@ -158,13 +158,13 @@ test('generic Examples UI copy is complete and model-neutral', () => {
   }
 });
 
-test('all 63 normal-template model documents expose strict Examples content in every locale', () => {
+test('all 64 normal-template model documents expose strict Examples content in every locale', () => {
   const expected = listModelPageTemplateSlugs().map((slug) => `${slug}.json`).sort();
   const completeInventory = [
     ...expected,
     ...listPrelaunchModelPageTemplateSlugs().map((slug) => `${slug}.json`),
   ].sort();
-  assert.equal(expected.length, 63);
+  assert.equal(expected.length, 64);
   for (const locale of LOCALES) {
     assert.deepEqual(files(locale), completeInventory);
     for (const fileName of expected) {
@@ -175,7 +175,7 @@ test('all 63 normal-template model documents expose strict Examples content in e
   }
 });
 
-test('all 189 normal-template model documents own an explicit empty-state visibility boolean', () => {
+test('all 192 normal-template model documents own an explicit empty-state visibility boolean', () => {
   const counts = { true: 0, false: 0 };
   for (const locale of LOCALES) {
     const localeCounts = { true: 0, false: 0 };
@@ -185,11 +185,11 @@ test('all 189 normal-template model documents own an explicit empty-state visibi
       counts[key] += 1;
       localeCounts[key] += 1;
     }
-    assert.deepEqual(localeCounts, { true: 34, false: 29 }, locale);
+    assert.deepEqual(localeCounts, { true: 34, false: 30 }, locale);
   }
-  assert.deepEqual(counts, { true: 102, false: 87 });
+  assert.deepEqual(counts, { true: 102, false: 90 });
 
-  for (const slug of ['nano-banana-lite', 'seedream-5-0-pro', 'seedream-5-0-flash', 'seedream-5-5']) {
+  for (const slug of ['kling-image-v4', 'nano-banana-lite', 'seedream-5-0-pro', 'seedream-5-0-flash', 'seedream-5-5']) {
     for (const locale of LOCALES) {
       assert.equal(
         parseModelExamplesContent(readDocument(locale, slug).examples, slug, locale).showWhenEmpty,

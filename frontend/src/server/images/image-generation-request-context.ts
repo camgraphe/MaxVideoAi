@@ -1,3 +1,4 @@
+import { assertKlingImageV4OutputCount, isKlingImageV4EngineId, KLING_IMAGE_V4_PROMPT_MAX_CHARS } from '@/lib/image/kling-image-v4';
 import { NANO21_ENGINE_ID, assertNano21UnsupportedFields } from '@/lib/nano-banana-2-1';
 import { isGptImage26EngineId, normalizeGptImage26Settings } from '@/lib/image/gptImage26';
 import { listFalEngines, type FalEngineEntry } from '@/config/falEngines';
@@ -83,6 +84,13 @@ export function resolveImageGenerationRequestContext(
       engineId: engineEntry.id,
       engineLabel: engineEntry.marketingName,
     });
+  }
+
+  if (isKlingImageV4EngineId(engine.id)) {
+    if (!engineEntry.surfaces.app.enabled) fail(mode, 'engine_unavailable', 'Image engine unavailable.', 503);
+    if (prompt.length > KLING_IMAGE_V4_PROMPT_MAX_CHARS) fail(mode, 'invalid_prompt', 'Prompt exceeds 50,000 characters.', 400);
+    try { assertKlingImageV4OutputCount(body.numImages === undefined ? 1 : body.numImages); }
+    catch (error) { fail(mode, 'invalid_parameter', (error as Error).message, 400); }
   }
 
   const requestedImages =

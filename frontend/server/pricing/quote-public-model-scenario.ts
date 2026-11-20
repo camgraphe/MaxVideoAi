@@ -1,3 +1,4 @@
+import { isKlingImageV4EngineId } from '@/lib/image/kling-image-v4';
 import { isNewSeedreamEngineId } from '@/lib/image/seedream-pricing';
 import { isSeedance25EngineId } from '@/lib/seedance-model-variants';
 import { createHash } from 'node:crypto';
@@ -132,6 +133,19 @@ export function resolvePublicModelScenario(input: PublicModelQuoteInput): Manual
         resolution: input.resolution, aspectRatio: input.aspectRatio ?? 'auto',
         inputImageCount: input.mode === 'i2i' ? 1 : 0, referenceImageCount: input.referenceImageCount ?? 0 },
       `${model.id}:${input.mode}:${input.resolution}`);
+    } catch { return null; }
+  }
+  if (isKlingImageV4EngineId(model.id)) {
+    const engine = getFalEngineById(model.id)?.engine;
+    const mode = input.mode;
+    if (!engine || (mode !== 't2i' && mode !== 'i2i') || input.audio || input.voiceControl || input.hdr || input.exrExport || input.hasVideoInput
+      || [input.quality, input.customImageSize, input.durationOption, input.inputVideoDurationSec, input.inputAudioDurationSec,
+        input.inheritedDurationSec, input.referenceTokenBudget].some(value => value !== undefined)) return null;
+    try {
+      return buildManualTariffCoverageScenario({
+        engine, mode, durationSec: input.durationSec, resolution: input.resolution, aspectRatio: input.aspectRatio,
+        inputImageCount: input.referenceImageCount ?? (mode === 'i2i' ? 1 : 0),
+      }, `${model.id}:${mode}:${input.resolution}`);
     } catch { return null; }
   }
   if (isGptImage26EngineId(model.id)) return resolveGpt26PublicScenario(input);

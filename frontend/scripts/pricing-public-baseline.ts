@@ -45,6 +45,12 @@ async function main(): Promise<void> {
           && (row.id.startsWith('image-estimate:') || row.id.startsWith('model-page:') || row.id.endsWith(':high')) ? 6 : 3)))) {
     throw new Error('Invalid Seedream fixed customer-price launch matrix.');
   }
+  const klingImageLaunch = JSON.parse(await readFile(
+    new URL('../../tests/fixtures/kling-image-v4-public-pricing-2026-11-20.json', import.meta.url), 'utf8',
+  )) as { rows: typeof rows };
+  if (klingImageLaunch.rows.length !== 9 || new Set(klingImageLaunch.rows.map(row => row.id)).size !== 9
+    || klingImageLaunch.rows.some(row => row.engineId !== 'kling-image-v4' || row.status !== 'unavailable'
+      || row.customerTotalCents !== undefined)) throw new Error('Kling Image launch cannot introduce an offline fallback price.');
   const novemberImageAdmission = JSON.parse(await readFile(
     new URL('../../tests/fixtures/nov05-functional-image-public-projections-2026-11-06.json', import.meta.url), 'utf8',
   )) as { rows: typeof rows };
@@ -227,7 +233,7 @@ async function main(): Promise<void> {
   }
   // Approved archive sunsets: remove purchasable surfaces and invalidate Product offers.
   // Keep the pre-archive fixtures intact as historical pricing evidence.
-  const expectedWithLaunch = [...expected, ...launchAdditions.rows, ...fluxMaxLaunch.rows, ...nano21Launch.rows, ...seedreamLaunch.rows, ...seedanceFlash.rows, ...novemberImageAdmission.rows, ...novemberMarketing.rows, ...klingPublicDiscovery.rows, ...klingPricingDiscovery.rows].map((row) => {
+  const expectedWithLaunch = [...expected, ...launchAdditions.rows, ...fluxMaxLaunch.rows, ...nano21Launch.rows, ...seedreamLaunch.rows, ...seedanceFlash.rows, ...novemberImageAdmission.rows, ...novemberMarketing.rows, ...klingPublicDiscovery.rows, ...klingPricingDiscovery.rows, ...klingImageLaunch.rows].map((row) => {
     const repair = customerOfferRepairs.get(row.id);
     if (!repair) return row;
     if (row.surface !== 'json-ld' || row.status !== 'exact' || row.customerTotalCents !== repair.previousCents) {

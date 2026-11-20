@@ -9,7 +9,7 @@ import { filterProviderComparisonRows } from '../frontend/app/(core)/admin/prici
 test('admin comparison includes published models and the closed launch tariff candidates once', () => {
   const expected = listRuntimeModels().filter((model) => model.publication.app.published);
   const rows = buildAllModelComparisonScenarios();
-  assert.equal(expected.length, 56);
+  assert.equal(expected.length, 57);
   assert.equal(rows.filter(({ entry }) => entry.id === 'seedance-2-5-flash').length, 1);
   assert.equal(rows.some(({entry})=>entry.id==='pika-text-to-video'),false,'Archived Pika is excluded from the active admin comparison.');
   const closedLaunchIds = ['kling-v4-flash', 'gpt-image-2-6-flare', 'gpt-image-2-6-sunburst']
@@ -41,6 +41,10 @@ test('admin comparison includes published models and the closed launch tariff ca
     assert.equal(v4.reason,'product_policy_not_authoritative');
     assert.match(v4.warning,/approved customer tariffs/);
   }
+  const [klingImage] = quoteCanonicalAdminScenarios({ databaseRules: [],
+    scenarios: [rows.find(({entry}) => entry.id === 'kling-image-v4')!.scenario] });
+  assert.equal(klingImage.status, 'unsupported');
+  if (klingImage.status === 'unsupported') assert.equal(klingImage.reason, 'product_policy_not_authoritative');
   assert.ok(rows.some(({ entry }) => entry.id === 'flux-3-max'));
   const [flash] = quoteCanonicalAdminScenarios({ databaseRules: [], scenarios: [rows.find(({ entry }) => entry.id === 'seedance-2-5-flash')!.scenario] });
   assert.equal(flash.status, 'unsupported', 'Flash must use its native admin tariff, not the legacy margin editor');

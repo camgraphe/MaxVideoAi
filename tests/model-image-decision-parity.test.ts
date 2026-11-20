@@ -12,7 +12,7 @@ const REGISTRY = JSON.parse(
 ) as { models: Array<{ slug: string; category: string }> };
 const LOCALES = ['en', 'fr', 'es'] as const;
 const CONTENT_ROOT = path.join(process.cwd(), 'content', 'models');
-const NEW_DECISION_SLUGS = ['nano-banana-lite', 'seedream-5-0-pro', 'seedream-5-0-flash', 'seedream-5-5'] as const;
+const NEW_DECISION_SLUGS = ['kling-image-v4', 'nano-banana-lite', 'seedream-5-0-pro', 'seedream-5-0-flash', 'seedream-5-5'] as const;
 const IMAGE_SLUGS = REGISTRY.models
   .filter((model) => model.category === 'image')
   .map((model) => model.slug)
@@ -25,8 +25,8 @@ function readDocument(locale: (typeof LOCALES)[number], slug: string) {
   };
 }
 
-test('all sixteen image models own localized decision content', () => {
-  assert.equal(IMAGE_SLUGS.length, 16);
+test('all seventeen image models own localized decision content', () => {
+  assert.equal(IMAGE_SLUGS.length, 17);
 
   for (const slug of IMAGE_SLUGS) {
     const engine = listFalEngines().find((candidate) => candidate.modelSlug === slug);
@@ -52,8 +52,9 @@ test('new image decision metadata exactly preserves current localized SEO', () =
       const document = readDocument(locale, slug);
       const decision = buildModelDecisionDataFromContent({ engine, locale });
       assert.ok(decision, `${slug}/${locale} decision data`);
-      assert.deepEqual(document.decision?.meta, document.seo, `${slug}/${locale} metadata`);
-      assert.deepEqual(decision.meta, document.seo, `${slug}/${locale} builder metadata`);
+      const metadata = { title: document.seo?.title, description: document.seo?.description };
+      assert.deepEqual(document.decision?.meta, metadata, `${slug}/${locale} metadata`);
+      assert.deepEqual(decision.meta, metadata, `${slug}/${locale} builder metadata`);
       assert.deepEqual(
         decision.pricing.scenarios.map((scenario) => scenario.id),
         template.pricing.presets.map((preset) => preset.id),

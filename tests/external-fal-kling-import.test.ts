@@ -55,6 +55,15 @@ test('Kling four-mode references preserve exact field identity, original order a
     providerInput: { prompt: 'Edit the owned film.', video_url: source.providerUrl }, references: [source] }).mode, 'v2v');
 });
 
+test('Kling import retains the accepted 4K SDR request in recreation settings', () => {
+  const input = klingImportFixture();
+  const providerInput = { ...input.providerInput, resolution: '4k' };
+  const accepted = parseKlingV4ExternalFalImport({ ...input, providerInput });
+  assert.deepEqual(accepted.providerInput, providerInput);
+  assert.equal(klingV4ImportSettings(accepted, []).core.resolution, '4k');
+  assert.throws(() => parseKlingV4ExternalFalImport({ ...input, providerInput: { ...providerInput, hdr: true } }));
+});
+
 test('Kling shot plans remain exact and require a matching whole-second total', () => {
   const base = klingImportFixture(); const { prompt: _prompt, ...settings } = base.providerInput;
   const input = { ...base, providerInput: { ...settings, multi_prompt: [{ prompt: 'First shot', duration: 2 }, { prompt: 'Last shot', duration: 3 }] } };

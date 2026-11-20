@@ -158,6 +158,7 @@ const IMAGE_MODELS = [
   'seedream-5-0-pro',
   'seedream-5-0-flash',
   'seedream-5-5',
+  'kling-image-v4',
 ] as const;
 
 const VIRTUAL_CERTIFICATIONS: WorkspaceModelCertification[] = [
