@@ -12,6 +12,7 @@ import finalMedia from '../frontend/config/model-cinematic-final-media.json';
 import startFrames from '../frontend/config/model-cinematic-start-frames.json';
 import publicProofs from '../frontend/config/model-cinematic-public-proofs.json';
 import heroDisplays from '../frontend/config/model-cinematic-hero-displays.json';
+import klingEditorialImages from '../frontend/config/model-kling-image-v4-editorial-images.json';
 import { parseSeedreamEditorialImages } from '../frontend/lib/seedream-editorial-images';
 import { mergeEngineLocalizedContent } from '../frontend/lib/models/i18n-normalization';
 import { getFalEngineById } from '../frontend/src/config/falEngines';
@@ -314,7 +315,7 @@ test('Flash replaces reviewed start frames with accurately attributed films and 
 });
 
 test('originals and displays retain measured geometry, immutable hashes and real alpha', async () => {
-  for (const image of parseSeedreamEditorialImages(seedreamRecords)) {
+  for (const image of [...parseSeedreamEditorialImages(seedreamRecords), ...klingEditorialImages]) {
     for (const file of [image.original, image.display]) {
       const bytes = readFileSync(filePath(file.url));
       const metadata = await sharp(bytes).metadata();
@@ -338,7 +339,7 @@ test('originals and displays retain measured geometry, immutable hashes and real
 });
 
 test('responsive cinematic hero displays retain their exact sources and immutable geometry', async () => {
-  const originals = [flashHero, ...parseSeedreamEditorialImages(seedreamRecords), ...startFrames, ...publicProofs];
+  const originals = [flashHero, ...parseSeedreamEditorialImages(seedreamRecords), ...startFrames, ...publicProofs, ...klingEditorialImages];
   for (const asset of heroDisplays.assets) {
     assert.equal(asset.originalSha256, originals.find(original => original.id === asset.id)?.original.sha256);
     assert.equal(asset.desktop.length, 3);

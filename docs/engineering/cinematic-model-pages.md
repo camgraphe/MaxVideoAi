@@ -210,12 +210,14 @@ App modes and the prepared observatory storyboard keep their source data.
   film, the exact prompt and its reference-mode reuse link. New proof images
   are lazy WebPs. The workflow and prompt guide use on-site examples and
   actions. Provider evidence belongs in the internal integration records.
-- Kling Image 4.0 examples require reviewed Kling Image 4.0 originals. Its
-  cinematic preview shows the image briefs and uses a compact opening while
-  the native media is pending. `frontend/config/model-kling-image-4-recipes.json`
-  owns the English prompts, exact model, modes, resolutions, ratios and
-  counts. The preview and Create reuse the same recipe. For the colour edit,
-  the user supplies the second reviewed series output as `@Image1`.
+- Kling Image 4.0 examples use reviewed Kling Image 4.0 originals registered
+  in `frontend/config/model-kling-image-v4-editorial-images.json`. Its framed
+  opening preserves the full macro image and links to the exact original and
+  prompt. Panels marked `showWhenReady` appear once every asset is reviewed.
+  Its three-image series comes from one request, and the edit compares against
+  the exact second output. That original is linked as the `@Image1` reference.
+  `frontend/config/model-kling-image-4-recipes.json` owns the English prompts,
+  modes, resolutions, ratios and counts. The page and Create share those recipes.
 - The public prices on both pages use the shared current quote and offer
   owners. Video scenarios specify three 5-second text-to-video settings.
   Image scenarios specify a single still at 2K, 4K or 8K. Image Set totals

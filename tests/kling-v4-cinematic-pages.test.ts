@@ -26,7 +26,7 @@ function localizedPage(slug: string, locale: typeof locales[number]) {
   const images = listModelEditorialImages(slug, locale, examples.editorialImages);
   const presentation = buildCinematicPresentation(content, examples, images, locale);
   assert.ok(presentation);
-  return { content, presentation, decision, prompting };
+  return { content, examples, presentation, decision, prompting };
 }
 
 test('Kling 4.0 video surfaces the full mode matrix alongside its own original 720p films', () => {
@@ -87,11 +87,27 @@ test('Kling 4.0 video surfaces the full mode matrix alongside its own original 7
   assert.deepEqual(template?.pricing.presets.map(preset => preset.resolution), ['720p', '1080p', '4k']);
 });
 
-test('Kling Image 4.0 publishes its prepared briefs without substituting example media', () => {
+test('Kling Image 4.0 keeps exact briefs for missing renders and shows the native poster', () => {
   for (const locale of locales) {
-    const { content, presentation, decision, prompting } = localizedPage('kling-image-v4', locale);
+    const { content, examples, presentation: ready, decision, prompting } = localizedPage('kling-image-v4', locale);
+    const presentation = buildCinematicPresentation(content, examples, [], locale);
+    assert.ok(presentation);
+    assert.equal(ready.hero?.id, 'kling-image-4-pixel-makeup');
+    assert.equal(ready.assets.length, 6);
+    assert.deepEqual(ready.examples.panels.map(panel => panel.id), ['image-series', 'sleeve-edit', 'street-poster']);
+    assert.deepEqual(ready.imageBriefs?.items, []);
+    const before = ready.assets.find(asset => asset.id === 'kling-image-4-pop-up-overhead');
+    const after = ready.assets.find(asset => asset.id === 'kling-image-4-sleeve-edit');
+    assert.ok(before && after);
+    assert.equal(after.source?.original.sha256, before.original.sha256);
+    const poster = ready.assets.find(asset => asset.id === 'kling-image-4-bus-shelter-poster');
+    assert.ok(poster);
+    assert.equal(poster.engineId, 'kling-image-v4');
+    assert.equal(poster.prompt, imageRecipes.recipes.find(recipe => recipe.id === poster.id)?.prompt);
+    assert.ok(!ready.imageBriefs?.items.some(brief => brief.recipeId === poster.id));
+    assert.ok(ready.examples.panels.some(panel => panel.id === 'street-poster' && panel.assetIds[0] === poster.id));
     assert.equal(content.variant, 'image');
-    assert.equal(content.heroAssetId, null);
+    assert.equal(content.heroAssetId, 'kling-image-4-pixel-makeup');
     assert.equal(presentation.hero, undefined);
     assert.equal(decision.hero.primaryCta.href, '/app/image?engine=kling-image-v4');
     assert.match(presentation.assistantHref, /^\/app\/image\?/);
@@ -133,16 +149,33 @@ test('a first native proof leaves the other Kling Image briefs available', () =>
   const [poster, ...remaining] = imageRecipes.recipes;
   const posterBrief = raw.examples.cinematic.imageBriefs.items[0];
   const media = { url: '/assets/model-examples/kling-image-v4/test-poster.webp', sha256: 'a'.repeat(64), width: 1360, height: 2040 };
-  raw.examples.cinematic.panels = [{
-    id: 'poster', layout: 'feature', eyebrow: 'Typographie', title: posterBrief.title,
-    body: posterBrief.body, note: 'Format 2:3.', assetIds: [poster.id],
-  }];
   const examples = parseModelExamplesContent(raw.examples, slug, 'fr');
   const presentation = buildCinematicPresentation(content, examples, [{
     id: poster.id, engineId: slug, title: posterBrief.title, prompt: poster.prompt,
     original: media, display: media, metadataLabel: 'Kling Image 4.0 · 2K · 2:3',
     workspaceHref: '/app/image?engine=kling-image-v4',
   }], 'fr');
+  assert.deepEqual(presentation?.examples.panels.map(panel => [panel.id, panel.layout]), [['street-poster', 'poster']]);
   assert.deepEqual(presentation?.imageBriefs?.items.map(brief => brief.recipeId), remaining.map(recipe => recipe.id));
   assert.equal(presentation?.assets[0]?.creation?.href, `/app/image?engine=${slug}&example=${poster.id}&lang=fr`);
+});
+
+test('Kling Image keeps the complete series together and compares the edit with its source', () => {
+  const slug = 'kling-image-v4';
+  const raw = JSON.parse(readFileSync(`content/models/fr/${slug}.json`, 'utf8'));
+  const content = parseModelCinematicContent(raw.cinematic, slug);
+  const examples = parseModelExamplesContent(raw.examples, slug, 'fr');
+  const series = examples.cinematic!.panels.find(panel => panel.layout === 'series')!;
+  const seriesRecipe = imageRecipes.recipes.find(recipe => recipe.id === series.recipe?.id)!;
+  const originals = series.assetIds.map((id, index) => {
+    const media = { url: `/assets/model-examples/kling-image-v4/${id}.webp`, sha256: String(index).repeat(64), width: 2496, height: 1664 };
+    return { id, engineId: slug, title: id, prompt: seriesRecipe.prompt, original: media, display: media, metadataLabel: '2K', workspaceHref: '/app/image?engine=kling-image-v4' };
+  });
+  assert.deepEqual(buildCinematicPresentation(content, examples, originals.slice(0, 2), 'fr')?.examples.panels, []);
+  const edit = imageRecipes.recipes.find(recipe => recipe.id === 'kling-image-4-sleeve-edit')!;
+  const edited = { ...originals[2], id: edit.id, prompt: edit.prompt, source: originals[1] };
+  const ready = buildCinematicPresentation(content, examples, [...originals, edited], 'fr');
+  assert.deepEqual(ready?.examples.panels.map(panel => panel.id), ['image-series', 'sleeve-edit']);
+  assert.deepEqual(ready?.imageBriefs?.items.map(brief => brief.recipeId), ['kling-image-4-bus-shelter-poster', 'kling-image-4-pixel-makeup']);
+  assert.throws(() => buildCinematicPresentation(content, examples, [...originals, { ...edited, source: originals[0] }], 'fr'), /exact successive references/);
 });
