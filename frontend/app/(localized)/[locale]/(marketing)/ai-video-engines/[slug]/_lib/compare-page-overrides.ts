@@ -54,6 +54,13 @@ const comparePageOverrideSchema: z.ZodType<ComparePageOverride> = z.object({
   meta: metaSchema.optional(),
   heroIntro: nonEmptyString.optional(),
   decisionSummary: nonEmptyString.max(240).optional(),
+  galleryEvidence: z.array(z.object({
+    modelSlug: nonEmptyString.regex(/^[a-z0-9-]+$/),
+    videoId: nonEmptyString,
+    href: nonEmptyString.regex(/^\/video\/[a-zA-Z0-9_-]+$/),
+    label: nonEmptyString,
+    observation: nonEmptyString,
+  }).strict()).max(2).optional(),
   decisionLinks: z.array(primaryLinkSchema).max(2).optional(),
   pricingCreditLink: primaryLinkSchema.extend({
     href: z.literal('/pay-as-you-go-ai-video-generator'),

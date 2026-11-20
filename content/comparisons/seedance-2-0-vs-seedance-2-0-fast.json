@@ -1,6 +1,10 @@
 {
   "slug": "seedance-2-0-vs-seedance-2-0-fast",
   "en": {
+    "decisionLinks": [
+      {"href": "/ai-video-engines/seedance-1-5-pro-vs-seedance-2-0", "label": "Seedance 1.5 Pro vs Seedance 2.0"},
+      {"href": "/ai-video-engines/seedance-2-0-vs-wan-2-5", "label": "Seedance 2.0 vs Wan 2.5"}
+    ],
     "pricingCreditLink": {
       "href": "/pay-as-you-go-ai-video-generator",
       "label": "How credits work"
@@ -62,6 +66,10 @@
     }
   },
   "fr": {
+    "decisionLinks": [
+      {"href": "/fr/comparatif/seedance-1-5-pro-vs-seedance-2-0", "label": "Seedance 1.5 Pro ou Seedance 2.0"},
+      {"href": "/fr/comparatif/seedance-2-0-vs-wan-2-5", "label": "Seedance 2.0 ou Wan 2.5"}
+    ],
     "pricingCreditLink": {
       "href": "/pay-as-you-go-ai-video-generator",
       "label": "Comment fonctionnent les crédits"
@@ -123,6 +131,10 @@
     }
   },
   "es": {
+    "decisionLinks": [
+      {"href": "/es/comparativa/seedance-1-5-pro-vs-seedance-2-0", "label": "Seedance 1.5 Pro o Seedance 2.0"},
+      {"href": "/es/comparativa/seedance-2-0-vs-wan-2-5", "label": "Seedance 2.0 o Wan 2.5"}
+    ],
     "pricingCreditLink": {
       "href": "/pay-as-you-go-ai-video-generator",
       "label": "Cómo funcionan los créditos"

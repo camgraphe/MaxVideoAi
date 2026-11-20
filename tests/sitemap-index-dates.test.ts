@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
+import { execFileSync } from 'node:child_process';
 import test from 'node:test';
 import { SITEMAP_MANUAL_TIMESTAMPS } from '../frontend/config/sitemap-timestamps.ts';
 
@@ -24,7 +25,10 @@ test('the sitemap index never reports a date older than its locale or model chil
     for (const locale of ['en', 'fr', 'es'] as const) {
       children[`sitemap-${locale}.xml`] = dates.getLatestEntryDate(await sitemap.getLocaleSitemapEntries(locale));
     }
-    children['sitemap-models.xml'] = dates.getModelsSitemapLastModified();
+    const modelXml = await sitemap.buildModelsSitemapXml();
+    const modelDates = [...modelXml.matchAll(/<lastmod>([^<]+)<\/lastmod>/g)].map(match => match[1]);
+    children['sitemap-models.xml'] = modelDates.sort().at(-1);
+    assert.ok((dates.getModelLastModified('flux-3-max') ?? '') >= '2026-11-17');
     for (const [file, childDate] of Object.entries(children)) {
       const block = xml.split('<sitemap>').find((entry) => entry.includes(`/${file}</loc>`));
       const indexDate = block?.match(/<lastmod>([^<]+)<\/lastmod>/)?.[1];
@@ -36,4 +40,15 @@ test('the sitemap index never reports a date older than its locale or model chil
     if (previousEnvironment === undefined) delete process.env.NODE_ENV;
     else process.env.NODE_ENV = previousEnvironment;
   }
+});
+
+test('a deployment archive can recover model dates without Git', () => {
+  const script = "console.log(JSON.stringify(require('./frontend/config/model-content-dates.cjs').readModelContentDates()))";
+  const result = execFileSync(process.execPath, ['-e', script], {
+    encoding: 'utf8',
+    env: { ...process.env, PATH: '' },
+  });
+  const dates = JSON.parse(result);
+  assert.equal(dates['flux-3-max'], '2026-11-17');
+  assert.equal(dates['seedance-2-5-flash'], '2026-11-19');
 });

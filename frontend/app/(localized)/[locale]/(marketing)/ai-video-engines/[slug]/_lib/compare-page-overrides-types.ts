@@ -6,6 +6,7 @@ export type ComparePageOverride = {
   };
   heroIntro?: string;
   decisionSummary?: string;
+  galleryEvidence?: Array<{ modelSlug: string; videoId: string; href: string; label: string; observation: string }>;
   decisionLinks?: Array<{ href: string; label: string }>;
   pricingCreditLink?: {
     href: '/pay-as-you-go-ai-video-generator';

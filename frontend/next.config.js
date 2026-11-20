@@ -90,7 +90,10 @@ const withNextIntl = require('next-intl/plugin')('./i18n/request.ts');
 const imageOptimizer = require('./config/image-optimizer.json');
 
 /** @type {import('next').NextConfig} */
+const { readModelContentDates } = require('./config/model-content-dates.cjs');
+
 const nextConfig = {
+  env: { SITEMAP_MODEL_CONTENT_DATES: JSON.stringify(readModelContentDates()) },
   reactStrictMode: true,
   // Keep loopback auth redirects on the browser's cookie origin in local dev.
   // Production retains Next.js URL normalization and its public routing policy.

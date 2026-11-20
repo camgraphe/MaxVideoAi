@@ -7,7 +7,7 @@ import {
   formatLastModified,
   getLatestEntryDate,
   getManualSitemapLastModified,
-  getModelsSitemapLastModified,
+  getManualRouteLastModified,
   getSitemapFileName,
   getVideoPagesSitemapLastModified,
   getVideoSitemapLastModified,
@@ -45,7 +45,10 @@ export async function getLocaleSitemapEntries(locale: AppLocale): Promise<Sitema
     seen.add(url);
     entries.push({
       url,
-      lastModified: formatLastModified(lastModified),
+      lastModified: getLatestEntryDate([
+        { lastModified: formatLastModified(lastModified) },
+        { lastModified: getManualRouteLastModified(localizedPath) },
+      ]),
       englishPath,
       locales: availableLocales,
       disableAlternates,
@@ -123,7 +126,7 @@ export async function buildSitemapIndexXml(): Promise<string> {
   const modelsFileName = getSitemapFileName(modelsPath);
   const modelsLastMod = getLatestEntryDate([
     { lastModified: getManualSitemapLastModified(modelsFileName) },
-    { lastModified: getModelsSitemapLastModified() },
+    { lastModified: getLatestEntryDate(buildModelRouteEntriesFromRoster(modelRoster)) },
   ]);
   entries.push({
     loc: buildAbsoluteUrl(modelsPath),

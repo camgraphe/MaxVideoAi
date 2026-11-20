@@ -25,6 +25,8 @@
 .marketing-site .compare-gallery-play{position:absolute;inset:0;display:grid;place-content:center;background:linear-gradient(transparent 60%,#0005)}
 .marketing-site .compare-gallery-play svg{filter:drop-shadow(0 1px 5px #000);width:24px;height:24px}
 .marketing-site .compare-gallery-duration{position:absolute;bottom:7px;right:8px;font-size:11px;text-shadow:0 1px 4px black}
+.marketing-site .compare-gallery-observation{margin-top:12px;font-size:14px;line-height:1.6;color:var(--compare-muted)}
+.marketing-site .compare-gallery-observation a{color:var(--compare-ink);text-decoration:underline;text-underline-offset:3px}
 .marketing-site .compare-gallery-link{display:inline-flex;gap:20px;align-items:center;min-height:44px;font-size:13px;font-weight:500}
 .marketing-site .compare-gallery-empty{min-height:110px;display:flex;align-items:center;font-size:14px;line-height:1.65;color:var(--compare-muted);border-block:1px solid var(--compare-rule)}
 .marketing-site .compare-editorial>.container-page>div>section{max-width:none}

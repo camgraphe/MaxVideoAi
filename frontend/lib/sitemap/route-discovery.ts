@@ -394,6 +394,7 @@ const DYNAMIC_ROUTE_GENERATORS: Record<string, DynamicRouteGenerator> = {
     Array.from(new Set(getHubComparisonSlugsForSitemap().map((slug) => canonicalizeCompareSlug(slug)))).map((slug) => ({
       englishPath: `/ai-video-engines/${slug}`,
       locales: getIndexableComparisonLocales(slug),
+      lastModified: getRouteLastModified(`/ai-video-engines/${slug}`),
     })),
   '/ai-video-engines/best-for/[usecase]': async () =>
     (compareConfig.bestForPages ?? []).map((entry: { slug: string }) => ({

@@ -154,8 +154,11 @@ const loadSeoWatchEditorialContext = cache(async () => {
   return { editorialMap, ids, duplicateVideoObjectNames };
 });
 
-const loadSeoWatchVideoRows = cache(async (): Promise<SeoWatchVideoRow[]> => {
-  const { editorialMap, ids, duplicateVideoObjectNames } = await loadSeoWatchEditorialContext();
+async function readSelectedWatchRows(requestedIds?: readonly string[]): Promise<SeoWatchVideoRow[]> {
+  const { editorialMap, ids: selectedIds, duplicateVideoObjectNames } = await loadSeoWatchEditorialContext();
+  const requested = requestedIds ? new Set(requestedIds) : null;
+  const ids = requested ? selectedIds.filter(id => requested.has(id)) : selectedIds;
+  if (!ids.length) return [];
   const videoMap = await getSeoVideosByIds(ids);
   const entries = ids.map((id) =>
     buildMetaFromEditorial({
@@ -165,7 +168,7 @@ const loadSeoWatchVideoRows = cache(async (): Promise<SeoWatchVideoRow[]> => {
       video: videoMap.get(id) ?? null,
     })
   );
-  const rows = entries.map((entry) => {
+  return entries.map((entry) => {
     const video = videoMap.get(entry.id) ?? null;
     const editorial = editorialMap.get(entry.id) ?? null;
     const signals = video
@@ -181,7 +184,18 @@ const loadSeoWatchVideoRows = cache(async (): Promise<SeoWatchVideoRow[]> => {
       isEligible,
     };
   });
+}
 
+export async function getSelectedWatchPaths(ids: readonly string[]): Promise<Map<string, string>> {
+  if (!ids.length) return new Map();
+  const rows = await readSelectedWatchRows(ids);
+  return new Map(rows.flatMap(row => row.isEligible && row.signals?.canonicalSlug
+    ? [[row.entry.id, new URL(row.signals.canonicalUrl).pathname] as const]
+    : []));
+}
+
+const loadSeoWatchVideoRows = cache(async (): Promise<SeoWatchVideoRow[]> => {
+  const rows = await readSelectedWatchRows();
   const candidateRows = rows.flatMap((row) => {
     if (!row.isEligible || !row.video || !row.signals) return [];
     return [toWatchPageRelatedCandidate({ entry: row.entry, video: row.video, signals: row.signals })];
