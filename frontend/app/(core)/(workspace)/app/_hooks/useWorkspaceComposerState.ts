@@ -1,3 +1,5 @@
+import { rememberCreatePreferences } from '../_lib/workspace-create-continuity';
+import { isVideoSourceWorkflow } from '@/lib/video-source-workflow';
 import { useCallback, useEffect, useMemo } from 'react';
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import type { MultiPromptScene } from '@/components/Composer';
@@ -81,6 +83,7 @@ type UseWorkspaceComposerStateResult = {
   activeManualMode: Mode | null;
   activeMode: Mode;
   allowsUnifiedVeoFirstLast: boolean;
+  usesCanonicalOpeningFrame: boolean;
   submissionMode: Mode;
   showSafetyCheckerControl: boolean;
   effectiveDurationSec: number;
@@ -101,7 +104,7 @@ type UseWorkspaceComposerStateResult = {
   handleSafetyCheckerChange: (value: boolean) => void;
   handleEngineChange: (engineId: string) => void;
   applyPreparedForm: (form: FormState) => void;
-  beforeApplyPreparedForm: (form: FormState) => boolean;
+  beforeApplyPreparedForm: (form: FormState, transferCreateDraft?: boolean) => boolean;
   handleModeChange: (mode: Mode) => void;
   handleComposerModeToggle: (mode: Mode | null) => void;
   handleDurationChange: (raw: number | string) => void;
@@ -161,6 +164,7 @@ export function useWorkspaceComposerState({
     activeManualMode,
     activeMode,
     allowsUnifiedVeoFirstLast,
+    usesCanonicalOpeningFrame,
     submissionMode,
     showSafetyCheckerControl,
     capability,
@@ -248,6 +252,7 @@ export function useWorkspaceComposerState({
     });
   }, [setForm, voiceControlEnabled]);
 
+  const changingCreateSettings = !isVideoSourceWorkflow(activeManualMode ?? undefined) && activeManualMode !== 'retake';
   const handleDurationChange = useCallback(
     (raw: number | string) => {
       if (multiPromptActive) return;
@@ -258,15 +263,11 @@ export function useWorkspaceComposerState({
         const durationSec = selectedEngine?.id === 'kling-v4' ? numeric : raw === 'auto' && isUnifiedSeedance && selectedEngine
           ? selectedEngine.maxDurationSec
           : Number.isFinite(numeric) ? Math.max(1, Math.round(numeric)) : current.durationSec;
-        return {
-          ...current,
-          durationSec,
-          durationOption: raw,
-          numFrames: null,
-        };
+        const duration = { durationSec, durationOption: raw, numFrames: null };
+        return changingCreateSettings ? rememberCreatePreferences({ ...current, ...duration }, duration) : { ...current, ...duration };
       });
     },
-    [multiPromptActive, setForm, isUnifiedSeedance, selectedEngine]
+    [multiPromptActive, setForm, isUnifiedSeedance, selectedEngine, changingCreateSettings]
   );
 
   const handleFramesChange = useCallback(
@@ -274,15 +275,11 @@ export function useWorkspaceComposerState({
       setForm((current) => {
         if (!current) return current;
         const safeFrames = Math.max(1, Math.round(value));
-        return {
-          ...current,
-          numFrames: safeFrames,
-          durationSec: framesToSeconds(safeFrames),
-          durationOption: safeFrames,
-        };
+        const duration = { numFrames: safeFrames, durationSec: framesToSeconds(safeFrames), durationOption: safeFrames };
+        return changingCreateSettings ? rememberCreatePreferences({ ...current, ...duration }, duration) : { ...current, ...duration };
       });
     },
-    [setForm]
+    [setForm, changingCreateSettings]
   );
 
   const handleResolutionChange = useCallback(
@@ -296,10 +293,10 @@ export function useWorkspaceComposerState({
           return fallback === current.resolution ? current : { ...current, resolution: fallback };
         }
         if (current.resolution === resolution) return current;
-        return { ...current, resolution };
+        return changingCreateSettings ? rememberCreatePreferences({ ...current, resolution }, { resolution }) : { ...current, resolution };
       });
     },
-    [capability, selectedEngine, setForm]
+    [capability, selectedEngine, setForm, changingCreateSettings]
   );
 
   const handleAspectRatioChange = useCallback(
@@ -318,10 +315,11 @@ export function useWorkspaceComposerState({
           return fallback === current.aspectRatio ? current : { ...current, aspectRatio: fallback };
         }
         if (current.aspectRatio === ratio) return current;
-        return { ...current, aspectRatio: ratio };
+        const next = { ...current, aspectRatio: ratio };
+        return changingCreateSettings ? rememberCreatePreferences(next, { aspectRatio: ratio }) : next;
       });
     },
-    [capability, selectedEngine, setForm]
+    [capability, selectedEngine, setForm, changingCreateSettings]
   );
 
   const handleFpsChange = useCallback(
@@ -419,6 +417,7 @@ export function useWorkspaceComposerState({
     activeManualMode,
     activeMode,
     allowsUnifiedVeoFirstLast,
+    usesCanonicalOpeningFrame,
     submissionMode,
     showSafetyCheckerControl,
     effectiveDurationSec,

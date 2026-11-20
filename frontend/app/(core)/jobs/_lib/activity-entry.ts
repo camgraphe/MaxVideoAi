@@ -78,3 +78,7 @@ export function resolveActivityDestination(group: GroupSummary): ActivityDestina
   }
   return destination;
 }
+
+export function resolveActivityOutputDestination(group: GroupSummary, outputId: string): ActivityDestination | null {
+  return destinationForJob(group.members.find(member => member.id === outputId)?.job);
+}

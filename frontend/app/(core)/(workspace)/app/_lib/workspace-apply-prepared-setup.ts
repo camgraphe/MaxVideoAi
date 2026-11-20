@@ -11,8 +11,13 @@ export function applyWorkspacePreparedSetup(
 ) {
   const committed = structuredClone(setup);
   setters.setInputAssets(committed.inputAssets);
+  setters.setParkedCreateReferences?.(committed.parkedCreateReferences);
   setters.setKlingElements(committed.klingElements);
-  setters.setPrompt(committed.prompt);
+  if (committed.automaticPrompt !== undefined && setters.setAutomaticPrompt) {
+    setters.setAutomaticPrompt(committed.automaticPrompt);
+  } else {
+    setters.setPrompt(committed.prompt);
+  }
   setters.setNegativePrompt(committed.negativePrompt);
   setters.setMultiPromptEnabled(committed.multiPromptEnabled);
   setters.setMultiPromptScenes(committed.multiPromptScenes);

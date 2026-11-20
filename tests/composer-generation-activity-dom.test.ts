@@ -7,6 +7,8 @@ import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { listFalEngines } from '../frontend/src/config/falEngines';
 import { buildCompletedGroup, buildPendingGroup } from '../frontend/app/(core)/(workspace)/app/image/_lib/image-workspace-history';
+import type { ComposerProps } from '../frontend/components/composer/composer-types';
+import { getWorkspaceReferenceUploadStatus } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-reference-fields';
 import type { GroupSummary } from '../frontend/types/groups';
 
 const require = createRequire(import.meta.url);
@@ -28,14 +30,14 @@ async function mount(image = false, density: 'workspace' | 'default' = 'workspac
   const { useImageWorkspaceDisplayState } = await import('../frontend/app/(core)/(workspace)/app/image/_hooks/useImageWorkspaceDisplayState');
   const engine = listFalEngines().find(entry => entry.id === 'seedance-2-0')!.engine;
   const root = createRoot(dom.window.document.getElementById('root')!);
-  let state = { isLoading: false, isPricing: false, price: 14.04 as number | null, error: undefined as string | undefined, pendingGenerations: pending, groups: [] as GroupSummary[] };
+  let state = { isLoading: false, isPricing: false, price: 14.04 as number | null, error: undefined as string | undefined, pendingGenerations: pending, groups: [] as GroupSummary[], assets: {} as ComposerProps['assets'], assetFields: [] as ComposerProps['assetFields'], referenceUploadStatus: undefined as ComposerProps['referenceUploadStatus'] };
   let submissions = 0;
   function Fixture() {
     const display = useImageWorkspaceDisplayState({ error: null, historyEntries: [], numImages: 4, pendingGroups: state.groups, pricingErrorMessage: null, pricingSnapshot: null, selectedEngine: undefined, selectedPreviewEntryId: null });
     return React.createElement(I18nProvider, { locale: 'fr', dictionary: {}, fallback: {}, children: React.createElement(Composer, {
-      density, engine, prompt: 'A night scene', onPromptChange() {}, price: state.price, error: state.error, currency: 'USD', promptRequired: true, assetFields: [], assets: {},
+      density, engine, prompt: 'A night scene', onPromptChange() {}, price: state.price, error: state.error, currency: 'USD', promptRequired: true, assetFields: state.assetFields, assets: state.assets,
       isLoading: state.isLoading, isPricing: state.isPricing, pendingGenerations: image ? display.pendingGenerations : state.pendingGenerations,
-      generateLabel: 'Générer', onGenerate() { submissions += 1; },
+      generateLabel: 'Générer', referenceUploadStatus: state.referenceUploadStatus, onGenerate() { submissions += 1; },
     }) });
   }
   async function render(patch: Partial<typeof state> = {}) {
@@ -159,4 +161,75 @@ test('default composer retains its existing price and refresh presentation', asy
     assert.equal(fixture.dom.window.document.querySelector('.app-quote-status'), null);
     assert.equal(fixture.button('Envoi'), undefined);
   } finally { await fixture.dispose(); }
+});
+
+test('a pending or failed optional reference blocks Generate until corrected', async () => {
+  const fixture = await mount();
+  try {
+    const field = { id: 'image_urls', type: 'image' as const, label: 'Images', maxCount: 4 };
+    const imported = { id: 'reference', name: 'portrait.jpg', kind: 'image' as const, size: 2048, type: 'image/jpeg', previewUrl: 'blob:preview' };
+    const action = () => fixture.dom.window.document.querySelector<HTMLButtonElement>('.app-generation-action')!;
+    await fixture.render({ assetFields: [{ field, required: false }], assets: { image_urls: [{ ...imported, status: 'uploading' }] } });
+    assert.equal(action().disabled, true);
+    assert.match(action().textContent!, /Import en cours/);
+    action().click();
+    assert.equal(fixture.submissions, 0);
+
+    await fixture.render({ assets: { image_urls: [{ ...imported, status: 'error', error: 'Failed to upload' }] } });
+    assert.equal(action().disabled, true);
+    assert.match(action().textContent!, /Référence à corriger/);
+
+    await fixture.render({ assets: { image_urls: [{ ...imported, status: 'ready', url: 'https://owned.test/portrait.jpg' }] } });
+    assert.equal(action().disabled, false);
+    assert.doesNotMatch(action().textContent!, /Import en cours|Référence à corriger/);
+
+    await fixture.render({ assets: {} });
+    await fixture.click('Générer');
+    assert.equal(fixture.submissions, 1);
+  } finally { await fixture.dispose(); }
+});
+
+test('advanced editor references report their upload state at Generate only while active', async () => {
+  const fixture = await mount();
+  try {
+    const fieldId = 'reference_image_urls';
+    const image = { id: 'keyframe', fieldId, name: 'frame.jpg', kind: 'image' as const, size: 4096, type: 'image/jpeg', previewUrl: 'blob:frame' };
+    const fx = listFalEngines().find(config => config.id === 'flux-3-max')!.engine;
+    const kling = listFalEngines().find(config => config.id === 'kling-v4')!.engine;
+    const action = () => fixture.dom.window.document.querySelector<HTMLButtonElement>('.app-generation-action')!;
+    for (const status of ['uploading', 'error'] as const) {
+      const expected = status === 'uploading' ? /Import en cours/ : /Référence à corriger/;
+      await fixture.render({ referenceUploadStatus: getWorkspaceReferenceUploadStatus({
+        engine: fx, mode: 'ref2v', inputAssets: { [fieldId]: [{ ...image, status }] }, klingElements: [], supportsKlingV3Controls: false,
+      }) });
+      assert.equal(action().disabled, true);
+      assert.match(action().textContent!, expected);
+    }
+    const failedSubject = { id: 'subject', frontal: null, references: [], video: { ...image, kind: 'video' as const, status: 'error' as const } };
+    await fixture.render({ referenceUploadStatus: getWorkspaceReferenceUploadStatus({
+      engine: kling, mode: 'ref2v', inputAssets: {}, klingElements: [failedSubject], supportsKlingV3Controls: false,
+    }) });
+    assert.match(action().textContent!, /Référence à corriger/);
+    await fixture.render({ referenceUploadStatus: getWorkspaceReferenceUploadStatus({
+      engine: kling, mode: 'i2v', inputAssets: { video_urls: [{ ...image, fieldId: 'video_urls', kind: 'video', status: 'uploading' }] },
+      klingElements: [failedSubject], supportsKlingV3Controls: false,
+    }) });
+    assert.equal(action().disabled, false);
+    await fixture.click('Générer');
+    assert.equal(fixture.submissions, 1);
+  } finally {
+    await fixture.dispose();
+  }
+});
+
+test('opening frames promoted from two-frame slots keep their upload feedback', () => {
+  for (const [engineId, fieldId] of [['veo-3-1', 'first_frame_url'], ['flux-3', 'start_image_url']]) {
+    const engine = listFalEngines().find(config => config.id === engineId)!.engine;
+    for (const status of ['uploading', 'error'] as const) {
+      const image = { id: 'opening', fieldId, name: 'shot.jpg', kind: 'image' as const, size: 4096, type: 'image/jpeg', previewUrl: 'blob:frame', status };
+      assert.equal(getWorkspaceReferenceUploadStatus({
+        engine, mode: 'i2v', inputAssets: { [fieldId]: [image] }, klingElements: [], supportsKlingV3Controls: false,
+      }), status);
+    }
+  }
 });

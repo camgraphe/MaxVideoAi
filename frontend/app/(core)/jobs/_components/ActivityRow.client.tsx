@@ -12,7 +12,7 @@ import { isPlaceholderMediaUrl } from '@/lib/media';
 import type { GroupSummary } from '@/types/groups';
 import type { GroupedJobAction } from '@/components/grouped-job-card-types';
 import { activityGroupStatus } from '../_lib/jobs-activity';
-import { resolveActivityDestination } from '../_lib/activity-entry';
+import { resolveActivityDestination, resolveActivityOutputDestination } from '../_lib/activity-entry';
 import { resolveClientJobSurface } from '../_lib/jobs-page-helpers';
 import type { JobsCopy } from '../_lib/jobs-copy';
 import styles from './jobs-activity.module.css';
@@ -90,6 +90,11 @@ export function ActivityRow({ group, copy, onOpen, onAction, allowRemove, saving
     {menuOpen ? <ActivityMenu menuRef={menuRef} menuVariant="activity" group={group} isImageGroup={isImageGroup}
       allowRemove={allowRemove} savingToLibrary={savingToLibrary} closeMenu={() => setMenuOpen(false)}
       handleAction={action} handleRemake={() => action('open')} onOpen={onOpen} openLabel={copy.actions.openDetails}
+      getOutputRecreateLink={outputId => {
+        const selected = resolveActivityOutputDestination(group, outputId);
+        return selected ? { href: selected.href, label: selected.resumesSettings
+          ? copy.actions.recreate : copy.activity.openIn.replace('{tool}', copy.activity.destinations[selected.target]) } : null;
+      }}
       recreateHref={destination?.href} recreateLabel={destination?.resumesSettings ? copy.actions.recreate : openInLabel} /> : null}
   </li>;
 }

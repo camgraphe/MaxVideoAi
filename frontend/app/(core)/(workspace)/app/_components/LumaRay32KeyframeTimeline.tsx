@@ -9,7 +9,7 @@ import type {
   PointerEvent as ReactPointerEvent,
 } from 'react';
 import { ImagePlus, Library, Lock, X } from 'lucide-react';
-import { formatFramecode, getTimelineLeft, type KeyframeSlot } from '../_lib/luma-ray32-keyframes';
+import { formatFramecode, getKeyframeCardLayout, getTimelinePercent, type KeyframeSlot } from '../_lib/luma-ray32-keyframes';
 import type { ReferenceAsset } from '../_lib/workspace-assets';
 
 type LumaRay32KeyframeTimelineProps = {
@@ -76,6 +76,7 @@ export function LumaRay32KeyframeTimeline({
     : uiLocale === 'es'
       ? { add: 'Añadir fotograma clave', select: 'Seleccionar fotograma clave', drag: 'Arrastrar para ajustar el momento', choose: 'Elegir o subir fotograma clave', media: 'Elegir en medios para fotograma clave', remove: 'Eliminar fotograma clave', uploading: 'Subiendo', failed: 'Error al subir' }
       : { add: 'Add keyframe', select: 'Select keyframe', drag: 'Drag to adjust timing', choose: 'Choose from Media or upload keyframe', media: 'Choose from Media for keyframe', remove: 'Remove keyframe', uploading: 'Uploading', failed: 'Upload failed' };
+  const { minWidth, centers } = getKeyframeCardLayout(keyframeSlots, maxFrameIndex, timelineWidth);
   return (
     <div className="rounded-[24px] bg-surface/80 p-4 dark:bg-black/10">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
@@ -107,7 +108,7 @@ export function LumaRay32KeyframeTimeline({
         <div
           ref={timelineRef}
           className="relative min-h-[250px] rounded-[22px] bg-surface-2 px-8 py-8 dark:bg-black/10"
-          style={{ minWidth: timelineWidth }}
+          style={{ minWidth }}
         >
           <div
             className="absolute left-8 right-8 top-[38px] h-10 rounded-full bg-border/45 shadow-inner dark:bg-white/[0.08]"
@@ -133,7 +134,7 @@ export function LumaRay32KeyframeTimeline({
           {selectedSlot ? (
             <div
               className="pointer-events-none absolute bottom-5 top-2 z-20 w-px bg-text-primary/35"
-              style={{ left: getTimelineLeft(selectedSlot.frameIndex, maxFrameIndex) }}
+              style={{ left: `${getTimelinePercent(selectedSlot.frameIndex, maxFrameIndex)}%` }}
             >
               <span className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1 rounded-full bg-surface px-2 py-0.5 text-[11px] font-semibold text-text-primary shadow-sm dark:bg-black/70">
                 {formatFramecode(selectedSlot.frameIndex, fps)}
@@ -142,23 +143,20 @@ export function LumaRay32KeyframeTimeline({
           ) : null}
 
           {keyframeSlots.map((slot, index) => {
-            const left = getTimelineLeft(slot.frameIndex, maxFrameIndex);
+            const marker = getTimelinePercent(slot.frameIndex, maxFrameIndex);
+            const center = centers.get(slot.assetSlot) ?? marker;
             const active = slot.assetSlot === selectedSlot?.assetSlot;
             const slotAsset = keyframeAssets[slot.assetSlot] ?? null;
             const locked = Boolean(keyframesUploadDisabledReason) && !slotAsset;
             return (
-              <div
-                ref={(element) => {
-                  keyframeSlotRefs.current[slot.assetSlot] = element;
-                }}
-                key={`timeline-slot-${slot.assetSlot}`}
-                className="absolute top-[34px] z-30 flex w-[100px] -translate-x-1/2 flex-col items-center"
-                style={{ left }}
-              >
+              <div key={slot.assetSlot}>
                 <button
                   type="button"
+                  data-keyframe-handle={slot.assetSlot}
+                  style={{ left: `${marker}%` }}
                   className={clsx(
-                    'relative z-10 flex h-7 w-7 touch-none cursor-grab items-center justify-center overflow-hidden rounded-[8px] border text-[10px] font-semibold shadow-sm transition active:cursor-grabbing',
+                    'absolute top-[34px] flex h-7 w-7 -translate-x-1/2 touch-none cursor-grab items-center justify-center overflow-hidden rounded-[8px] border text-[10px] font-semibold shadow-sm transition active:cursor-grabbing',
+                    active ? 'z-40' : 'z-30',
                     active
                       ? 'border-text-primary bg-text-primary text-surface'
                       : slotAsset
@@ -183,83 +181,98 @@ export function LumaRay32KeyframeTimeline({
                     index + 1
                   )}
                 </button>
-                <span className="h-[42px] w-px bg-border dark:bg-white/12" />
-                <button
-                  type="button"
-                  className={clsx(
-                    'group relative flex h-[86px] w-[82px] items-center justify-center overflow-hidden rounded-[14px] border text-text-muted shadow-sm transition',
-                    active
-                      ? 'border-text-primary/55 bg-surface'
-                      : 'border-border/70 bg-surface/85 hover:border-text-primary/35 hover:text-text-primary dark:border-white/[0.08] dark:bg-white/[0.045]',
-                    locked && 'cursor-not-allowed opacity-75'
-                  )}
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    onSelectSlot(index);
-                    if (keyframesUploadDisabledReason) {
-                      onUploadDisabled(keyframesUploadDisabledReason);
-                      return;
-                    }
-                    onOpenLibrary(slot);
-                  }}
-                  onDragOver={(event) => event.preventDefault()}
-                  onDrop={(event) => onDrop(event, slot)}
-                  aria-label={`${copy.choose} ${index + 1}`}
-                  title={keyframesUploadDisabledReason ?? (uiLocale === 'en' ? `Choose from Media or upload keyframe at ${formatFramecode(slot.frameIndex, fps)}` : `${copy.choose} · ${formatFramecode(slot.frameIndex, fps)}`)}
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute top-[62px] h-[32px] w-px bg-border dark:bg-white/12"
+                  style={{ left: `${marker}%` }}
+                />
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute top-[94px] h-px bg-border dark:bg-white/12"
+                  style={{ left: `${Math.min(marker, center)}%`, width: `${Math.abs(marker - center)}%` }}
+                />
+                <div
+                  ref={(element) => { keyframeSlotRefs.current[slot.assetSlot] = element; }}
+                  className="absolute top-[94px] z-30 flex w-[100px] -translate-x-1/2 flex-col items-center"
+                  style={{ left: `${center}%` }}
                 >
-                  {slotAsset?.kind === 'image' ? (
-                    <img src={slotAsset.previewUrl} alt={slotAsset.name} className="h-full w-full object-cover" />
-                  ) : (
-                    <span className="flex h-11 w-11 items-center justify-center rounded-full border border-border bg-surface text-text-muted transition group-hover:border-text-primary/30 group-hover:text-text-primary dark:border-white/12 dark:bg-white/[0.05]">
-                      {locked ? <Lock className="h-4 w-4" aria-hidden /> : <ImagePlus className="h-5 w-5" aria-hidden />}
-                    </span>
-                  )}
-                  {slotAsset?.status === 'uploading' ? (
-                    <span className="absolute inset-0 flex items-center justify-center bg-black/55 px-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-white">
-                      {copy.uploading}
-                    </span>
-                  ) : null}
-                  {slotAsset?.status === 'error' ? (
-                    <span className="absolute inset-0 flex items-center justify-center bg-black/65 px-2 text-center text-[10px] font-semibold text-white">
-                      {copy.failed}
-                    </span>
-                  ) : null}
-                </button>
-                <div className="mt-2 flex items-center justify-center gap-1.5">
                   <button
                     type="button"
-                    className="rounded-full bg-surface px-2 py-1 text-[10px] font-semibold text-text-muted transition hover:text-text-primary dark:bg-white/[0.06]"
+                    className={clsx(
+                      'group relative flex h-[86px] w-[82px] items-center justify-center overflow-hidden rounded-[14px] border text-text-muted shadow-sm transition',
+                      active
+                        ? 'border-text-primary/55 bg-surface'
+                        : 'border-border/70 bg-surface/85 hover:border-text-primary/35 hover:text-text-primary dark:border-white/[0.08] dark:bg-white/[0.045]',
+                      locked && 'cursor-not-allowed opacity-75'
+                    )}
                     onClick={(event) => {
                       event.stopPropagation();
                       onSelectSlot(index);
-                    }}
-                  >
-                    f{slot.frameIndex}
-                  </button>
-                  <button
-                    type="button"
-                    className="rounded-full bg-surface p-1.5 text-text-muted transition hover:text-text-primary disabled:cursor-not-allowed disabled:opacity-40 dark:bg-white/[0.06]"
-                    onClick={(event) => {
-                      event.stopPropagation();
+                      if (keyframesUploadDisabledReason) {
+                        onUploadDisabled(keyframesUploadDisabledReason);
+                        return;
+                      }
                       onOpenLibrary(slot);
                     }}
-                    disabled={Boolean(keyframesUploadDisabledReason)}
-                    aria-label={`${copy.media} ${index + 1}`}
+                    onDragOver={(event) => event.preventDefault()}
+                    onDrop={(event) => onDrop(event, slot)}
+                    aria-label={`${copy.choose} ${index + 1}`}
+                    title={keyframesUploadDisabledReason ?? (uiLocale === 'en' ? `Choose from Media or upload keyframe at ${formatFramecode(slot.frameIndex, fps)}` : `${copy.choose} · ${formatFramecode(slot.frameIndex, fps)}`)}
                   >
-                    <Library className="h-3.5 w-3.5" aria-hidden />
+                    {slotAsset?.kind === 'image' ? (
+                      <img src={slotAsset.previewUrl} alt={slotAsset.name} className="h-full w-full object-cover" />
+                    ) : (
+                      <span className="flex h-11 w-11 items-center justify-center rounded-full border border-border bg-surface text-text-muted transition group-hover:border-text-primary/30 group-hover:text-text-primary dark:border-white/12 dark:bg-white/[0.05]">
+                        {locked ? <Lock className="h-4 w-4" aria-hidden /> : <ImagePlus className="h-5 w-5" aria-hidden />}
+                      </span>
+                    )}
+                    {slotAsset?.status === 'uploading' ? (
+                      <span className="absolute inset-0 flex items-center justify-center bg-black/55 px-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-white">
+                        {copy.uploading}
+                      </span>
+                    ) : null}
+                    {slotAsset?.status === 'error' ? (
+                      <span className="absolute inset-0 flex items-center justify-center bg-black/65 px-2 text-center text-[10px] font-semibold text-white">
+                        {copy.failed}
+                      </span>
+                    ) : null}
                   </button>
-                  <button
-                    type="button"
-                    className="rounded-full bg-surface p-1.5 text-text-muted transition hover:text-text-primary disabled:cursor-not-allowed disabled:opacity-40 dark:bg-white/[0.06]"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      onRemoveKeyframe(index);
-                    }}
-                    disabled={!canRemoveKeyframe || Boolean(keyframesTimelineDisabledReason)}
-                    aria-label={`${copy.remove} ${index + 1}`}
-                  >
-                    <X className="h-3.5 w-3.5" aria-hidden />
-                  </button>
+                  <div className="mt-2 flex items-center justify-center gap-1.5">
+                    <button
+                      type="button"
+                      className="rounded-full bg-surface px-2 py-1 text-[10px] font-semibold text-text-muted transition hover:text-text-primary dark:bg-white/[0.06]"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        onSelectSlot(index);
+                      }}
+                    >
+                      f{slot.frameIndex}
+                    </button>
+                    <button
+                      type="button"
+                      className="rounded-full bg-surface p-1.5 text-text-muted transition hover:text-text-primary disabled:cursor-not-allowed disabled:opacity-40 dark:bg-white/[0.06]"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        onOpenLibrary(slot);
+                      }}
+                      disabled={Boolean(keyframesUploadDisabledReason)}
+                      aria-label={`${copy.media} ${index + 1}`}
+                    >
+                      <Library className="h-3.5 w-3.5" aria-hidden />
+                    </button>
+                    <button
+                      type="button"
+                      className="rounded-full bg-surface p-1.5 text-text-muted transition hover:text-text-primary disabled:cursor-not-allowed disabled:opacity-40 dark:bg-white/[0.06]"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        onRemoveKeyframe(index);
+                      }}
+                      disabled={!canRemoveKeyframe || Boolean(keyframesTimelineDisabledReason)}
+                      aria-label={`${copy.remove} ${index + 1}`}
+                    >
+                      <X className="h-3.5 w-3.5" aria-hidden />
+                    </button>
+                  </div>
                 </div>
               </div>
             );

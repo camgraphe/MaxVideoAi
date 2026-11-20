@@ -47,6 +47,7 @@ import {
   getModeCaps,
   isWorkspaceModeAvailable,
   supportsModeAudioControl,
+  WORKSPACE_CREATE_MODES,
 } from './workspace-engine-helpers';
 
 /** Pure live/candidate workflow facts. Null inputs retain the live hydration fallback. */
@@ -114,7 +115,7 @@ export function resolveWorkspaceWorkflow({ engine: selectedEngine, capabilityEng
   const mediaFields = getWorkspaceMediaFields(selectedEngine);
   const hasMultimodalReferences = hasMultimodalReferenceFields(mediaFields);
 
-  const hasPrimaryImageInput = hasInputAssetInSlots(inputAssets, [...PRIMARY_IMAGE_SLOT_IDS, 'start_image_url'], 'image');
+  const hasPrimaryImageInput = hasInputAssetInSlots(inputAssets, [...PRIMARY_IMAGE_SLOT_IDS, 'start_image_url', 'first_frame_url'], 'image');
 
   const hasLastFrameInput = hasInputAssetInSlots(inputAssets, ['last_frame_url', 'end_image_url'], 'image');
 
@@ -153,13 +154,19 @@ export function resolveWorkspaceWorkflow({ engine: selectedEngine, capabilityEng
       if (mode) return mode;
     }
     const modes = workspaceExecutableModes;
-    if (referenceInputStatus.hasAudio && modes.includes('a2v')) return 'a2v';
-    if (referenceInputStatus.hasVideo && modes.includes('v2v')) return 'v2v';
-    if (referenceInputStatus.hasVideo && modes.includes('r2v')) return 'r2v';
-    if (referenceInputStatus.hasVideo && modes.includes('reframe')) return 'reframe';
-    if (referenceInputStatus.hasImage && modes.includes('i2v')) return 'i2v';
-    if (modes.includes('t2v')) return 't2v';
-    return modes[0] ?? 't2v';
+    const byKind: Mode =
+      referenceInputStatus.hasAudio && modes.includes('a2v') ? 'a2v'
+        : referenceInputStatus.hasVideo && modes.includes('v2v') ? 'v2v'
+        : referenceInputStatus.hasVideo && modes.includes('r2v') ? 'r2v'
+        : referenceInputStatus.hasVideo && modes.includes('reframe') ? 'reframe'
+        : referenceInputStatus.hasImage && modes.includes('i2v') ? 'i2v'
+        : modes.includes('t2v') ? 't2v' : modes[0] ?? 't2v';
+    if ((byKind === 'i2v' && (hasPrimaryImageInput || (hasLastFrameInput && modes.includes('fl2v'))))
+      || workspaceAssetsSupportMode(mediaFields, inputAssets, byKind)) return byKind;
+    // An image in an exact reference slot does not imply an i2v start frame.
+    return WORKSPACE_CREATE_MODES.find(mode =>
+      modes.includes(mode) && workspaceAssetsSupportMode(mediaFields, inputAssets, mode),
+    ) ?? byKind;
   })();
 
   const audioToVideoSupported = Boolean(selectedEngine?.modes.includes('a2v'));
@@ -262,6 +269,8 @@ export function resolveWorkspaceWorkflow({ engine: selectedEngine, capabilityEng
     activeManualMode,
     activeMode,
     allowsUnifiedVeoFirstLast,
+    usesCanonicalOpeningFrame: hasUnifiedFirstFrameInput && unifiedFirstFrameField?.id === 'first_frame_url'
+      && !hasInputAssetInSlots(inputAssets, ['image_url'], 'image'),
     submissionMode,
     showSafetyCheckerControl,
     capability,

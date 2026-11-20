@@ -3806,7 +3806,7 @@
       "actions": {
         "addToLibrary": "Ajouter à Médias",
         "removeFromLibrary": "Retirer de Médias",
-        "recreate": "Générer avec les mêmes réglages",
+        "recreate": "Reprendre les réglages",
         "openDetails": "Voir détails",
         "actions": "Actions",
         "expandSection": "Afficher",

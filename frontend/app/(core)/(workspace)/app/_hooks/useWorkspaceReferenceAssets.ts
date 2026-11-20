@@ -127,7 +127,7 @@ export function useWorkspaceReferenceAssets({
   );
 
   const handleOpenAssetLibrary = useCallback(
-    (field: EngineInputField, slotIndex?: number) => {
+    (field: EngineInputField, slotIndex?: number, placement?: 'slot') => {
       if (!valid()) return;
       const blockedMessage = getSeedanceFieldBlockedMessage(field);
       if (blockedMessage) {
@@ -140,7 +140,7 @@ export function useWorkspaceReferenceAssets({
       }
       // An empty collection slot opens the same append intent as the group action.
       const maxCount = field.maxCount ?? 1;
-      const append = maxCount > 1 && slotIndex !== undefined
+      const append = placement !== 'slot' && maxCount > 1 && slotIndex !== undefined
         && Number.isInteger(slotIndex) && slotIndex >= 0 && slotIndex < maxCount
         && inputAssets[field.id]?.[slotIndex] == null;
       setAssetPickerTarget({ kind: 'field', field, slotIndex: append ? undefined : slotIndex });
@@ -164,9 +164,9 @@ export function useWorkspaceReferenceAssets({
     commit: commitInputAssetMutation, close: () => setAssetPickerTarget(null),
   });
 
-  const handleSelectLibraryAsset = async (field:EngineInputField,asset:UserAsset,slotIndex?:number) => {
+  const handleSelectLibraryAsset = async (field:EngineInputField,asset:UserAsset,slotIndex?:number, selectionIsCurrent?: () => boolean) => {
     const scope = importScope.current;
-    const isCurrent = () => valid() && importScope.current === scope;
+    const isCurrent = () => valid() && importScope.current === scope && (selectionIsCurrent?.() ?? true);
     if (!isCurrent()) return;
     const result=await handleSelectLibraryAssets(field,[asset],{ isCurrent },slotIndex);
     if (!isCurrent()) return;
@@ -396,11 +396,11 @@ export function useWorkspaceReferenceAssets({
   const handleAssetRemove = useCallback(
     (field: EngineInputField, index: number) => {
       if (!valid()) return;
-      setInputAssets((previous) => {
-        return removeReferenceAsset(previous, field, index, revokeAssetPreview);
-      });
+      commitInputAssetMutation(previous => ({
+        state: removeReferenceAsset(previous, field, index, revokeAssetPreview),
+      }), { fieldId: field.id, index });
     },
-    [valid, setInputAssets],
+    [valid, commitInputAssetMutation],
   );
 
   return {

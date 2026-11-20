@@ -73,6 +73,7 @@ type VideoSettingsRecall = {
 type VideoSettingsHydrationOptions = {
   promptSuffix?: string;
   publicExample?: boolean;
+  automaticStarter?: boolean;
   requireSnapshot?: boolean;
   publicSnapshot?: unknown;
   onSettled?: (applied: boolean) => void;
@@ -106,6 +107,7 @@ type UseWorkspaceVideoSettingsOptions = {
   writeScopedStorage: (base: string, value: string) => void;
   replaceRoute: (href: string) => void;
   setPrompt: Dispatch<SetStateAction<string>>;
+  setAutomaticPrompt?: (text: string) => void;
   setNegativePrompt: Dispatch<SetStateAction<string>>;
   setMemberTier: Dispatch<SetStateAction<MemberTier>>;
   setCfgScale: Dispatch<SetStateAction<number | null>>;
@@ -114,6 +116,7 @@ type UseWorkspaceVideoSettingsOptions = {
   setMultiPromptEnabled: Dispatch<SetStateAction<boolean>>;
   setMultiPromptScenes: Dispatch<SetStateAction<MultiPromptScene[]>>;
   setForm: Dispatch<SetStateAction<FormState | null>>;
+  setParkedCreateReferences?: () => void;
   setInputAssets: Dispatch<SetStateAction<Record<string, (ReferenceAsset | null)[]>>>;
   setKlingElements: Dispatch<SetStateAction<KlingElementState[]>>;
   setSelectedPreview: Dispatch<SetStateAction<SelectedVideoPreview | null>>;
@@ -152,6 +155,7 @@ export function useWorkspaceVideoSettings({
   writeScopedStorage,
   replaceRoute,
   setPrompt,
+  setAutomaticPrompt,
   setNegativePrompt,
   setMemberTier,
   setCfgScale,
@@ -160,6 +164,7 @@ export function useWorkspaceVideoSettings({
   setMultiPromptEnabled,
   setMultiPromptScenes,
   setForm,
+  setParkedCreateReferences,
   setInputAssets,
   setKlingElements,
   setSelectedPreview,
@@ -229,6 +234,7 @@ export function useWorkspaceVideoSettings({
   const sharedVideoImportRef = useRef<SharedVideoImport | null>(null);
   const [settledSharedImport, setSettledSharedImport] = useState<SharedVideoImport | null>(null);
   const [committingSharedImport, setCommittingSharedImport] = useState<SharedVideoImport | null>(null);
+  const [committingJobRecall, setCommittingJobRecall] = useState<{ jobId: string; search: string; generation: () => boolean } | null>(null);
   // Keep the composer closed until this explicit import commits or fails. Startup
   // schema/settings reconciliation can then run without being mistaken for a user edit.
   const sharedVideoImportPending = Boolean(fromVideoId && (
@@ -254,6 +260,18 @@ export function useWorkspaceVideoSettings({
     finishSharedVideoImport(committingSharedImport, true);
     setCommittingSharedImport(null);
   }, [committingSharedImport, finishSharedVideoImport]);
+  useLayoutEffect(() => {
+    if (!committingJobRecall) return;
+    setCommittingJobRecall(null);
+    if (!valid() || committingJobRecall.generation !== valid || committingJobRecall.jobId !== requestedJobId
+      || committingJobRecall.search !== searchString) return;
+    // The draft writer has committed the recalled settings. Reloading should now reopen that draft.
+    const params = new URLSearchParams(searchString);
+    params.delete('job');
+    params.delete('jobId');
+    const remaining = params.toString();
+    replaceRoute(remaining ? `/app?${remaining}` : '/app');
+  }, [committingJobRecall, replaceRoute, requestedJobId, searchString, valid]);
   useEffect(() => {
     if (!fromVideoId) setSettledSharedImport(null);
   }, [fromVideoId]);
@@ -268,7 +286,7 @@ export function useWorkspaceVideoSettings({
   }, [fromVideoId, searchString, valid]);
 
   const applyVideoSettingsSnapshot = useCallback(
-    (snapshot: unknown, promptSuffix = '', preparedReferences?: PublicRecipeReferences, application: { preserveParkedSources?: boolean } = {}) => {
+    (snapshot: unknown, promptSuffix = '', preparedReferences?: PublicRecipeReferences, application: { preserveParkedSources?: boolean; automaticStarter?: boolean } = {}) => {
       if (!valid()) return false;
       try {
         const resolved = resolveVideoSettingsSnapshot(snapshot, {
@@ -285,7 +303,8 @@ export function useWorkspaceVideoSettings({
         setPendingRecall(null);
         setFailedRecall(null);
         snapshotCommitPendingRef.current = true;
-        setPrompt(resolved.prompt + promptSuffix);
+        const writePrompt = application.automaticStarter && setAutomaticPrompt ? setAutomaticPrompt : setPrompt;
+        writePrompt(resolved.prompt + promptSuffix);
         setNegativePrompt(resolved.negativePrompt);
         if (resolved.memberTier) {
           setMemberTier(resolved.memberTier);
@@ -296,6 +315,7 @@ export function useWorkspaceVideoSettings({
         setMultiPromptEnabled(resolved.multiPrompt.enabled);
         setMultiPromptScenes(resolved.multiPrompt.scenes);
         setForm(buildVideoSettingsFormState(resolved));
+        if (!application.preserveParkedSources) setParkedCreateReferences?.();
 
         const nextInputAssets = preparedReferences ? preparedReferences.inputAssets : resolved.inputAssets;
         if (nextInputAssets) {
@@ -340,6 +360,7 @@ export function useWorkspaceVideoSettings({
       focusComposer,
       setCfgScale,
       setForm,
+      setParkedCreateReferences,
       setInputAssets,
       setKlingElements,
       setMemberTier,
@@ -348,6 +369,7 @@ export function useWorkspaceVideoSettings({
       setNegativePrompt,
       setNotice,
       setPrompt,
+      setAutomaticPrompt,
       setShotType,
       setVoiceIdsInput,
     ],
@@ -419,7 +441,9 @@ export function useWorkspaceVideoSettings({
               throw error;
             } finally { operation.finish(); }
           }
-          if (!isCurrent() || !applyVideoSettingsSnapshot(payload.settingsSnapshot, options?.promptSuffix, references)) return;
+          if (!isCurrent() || !applyVideoSettingsSnapshot(payload.settingsSnapshot, options?.promptSuffix, references, {
+            automaticStarter: options?.automaticStarter,
+          })) return;
           guestPublicRecallRef.current = null;
           options?.onSettled?.(true);
         }
@@ -573,6 +597,8 @@ export function useWorkspaceVideoSettings({
 
     try {
       const applied = buildWorkspaceStoryboardHandoffState(handoff, engines, null);
+      if (!writeParkedSources(storageScope, applied.form.engineId, new Map())) throw new Error(recallFailureMessage);
+      setParkedCreateReferences?.();
       setPrompt(applied.prompt);
       setNegativePrompt('');
       setVoiceIdsInput('');
@@ -617,6 +643,7 @@ export function useWorkspaceVideoSettings({
     engines,
     focusComposer,
     hydratedForScope,
+    recallFailureMessage,
     replaceRoute,
     searchString,
     setCompositeOverride,
@@ -624,6 +651,7 @@ export function useWorkspaceVideoSettings({
     setForm,
     setInputAssets,
     setKlingElements,
+    setParkedCreateReferences,
     setMultiPromptEnabled,
     setMultiPromptScenes,
     setNegativePrompt,
@@ -725,7 +753,9 @@ export function useWorkspaceVideoSettings({
           throw new Error(payload?.error ?? `Failed to load job (${response.status})`);
         }
         if (cancelled || !valid() || revisionRef.current !== revision) return;
-        applyVideoSettingsSnapshot(payload.settingsSnapshot);
+        if (applyVideoSettingsSnapshot(payload.settingsSnapshot)) {
+          setCommittingJobRecall({ jobId: requestedJobId, search: searchString, generation: valid });
+        }
 
         try {
           if (requestedJobId.startsWith('job_')) {
@@ -757,6 +787,7 @@ export function useWorkspaceVideoSettings({
     activeDraftReady,
     valid,
     requestedJobId,
+    searchString,
     setCompositeOverride,
     setCompositeOverrideSummary,
     setNotice,

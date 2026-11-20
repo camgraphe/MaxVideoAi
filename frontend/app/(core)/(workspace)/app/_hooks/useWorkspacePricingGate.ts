@@ -1,4 +1,6 @@
 import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
+import { getWorkspaceReferenceUploadStatus } from '../_lib/workspace-reference-fields';
+import type { ReferenceUploadStatus } from '@/components/composer/composer-types';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { ChangeEvent, Dispatch, FormEvent, SetStateAction } from 'react';
 import { useHostedWalletCheckout } from '@/hooks/useHostedWalletCheckout';
@@ -49,12 +51,14 @@ type UseWorkspacePricingGateOptions = {
   submissionMode: Mode;
   inputAssets: Record<string, (ReferenceAsset | null)[]>;
   klingElements?: KlingElementState[];
+  supportsKlingV3Controls?: boolean;
 };
 
 type UseWorkspacePricingGateResult = {
   preflight: PreflightResponse | null;
   preflightError: string | undefined;
   videoDurationBlocked: boolean;
+  referenceUploadStatus: ReferenceUploadStatus;
   isPricing: boolean;
   price: number | null;
   currency: string;
@@ -99,7 +103,11 @@ export function useWorkspacePricingGate({
   submissionMode,
   inputAssets,
   klingElements = [],
+  supportsKlingV3Controls = false,
 }: UseWorkspacePricingGateOptions): UseWorkspacePricingGateResult {
+  const referenceUploadStatus = getWorkspaceReferenceUploadStatus({
+    engine: selectedEngine, mode: submissionMode, inputAssets, klingElements, supportsKlingV3Controls,
+  });
   const elementValidation = selectedEngine && isKlingV4FalQueueEngineId(selectedEngine.id) ? buildKlingElementsPayload({
     selectedEngineId: selectedEngine.id, submissionMode, supportsKlingV3Controls: false, klingElements,
   }) : null;
@@ -115,7 +123,7 @@ export function useWorkspacePricingGate({
     engine: selectedEngine, mode: submissionMode, inputAssets, outputDurationSec: effectiveDurationSec, locale,
   });
   const { preflight, preflightError: quoteError, videoDurationBlocked: serverVideoDurationBlocked, setPreflightError, isPricing, price, currency } = useWorkspacePreflightQuote({
-    request: form && selectedEngine && !modeUnavailableMessage && !waitingForVideoSource && !waitingForExcerpt && !elementError && !videoDurationError ? buildWorkspacePreflightRequest({
+    request: form && selectedEngine && !referenceUploadStatus && !modeUnavailableMessage && !waitingForVideoSource && !waitingForExcerpt && !elementError && !videoDurationError ? buildWorkspacePreflightRequest({
       form, selectedEngine, memberTier, supportsAudioToggle,
       effectiveDurationSec, voiceControlEnabled, submissionMode, inputAssets, klingElements,
     }) : null,
@@ -246,6 +254,7 @@ export function useWorkspacePricingGate({
       preflight,
       preflightError,
       videoDurationBlocked,
+      referenceUploadStatus,
       isPricing,
       price,
       currency,
@@ -291,6 +300,7 @@ export function useWorkspacePricingGate({
       preflight,
       preflightError,
       videoDurationBlocked,
+      referenceUploadStatus,
       price,
       showComposerError,
       setPreflightError,

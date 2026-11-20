@@ -14,6 +14,7 @@ import {
 } from '../_lib/workspace-assets';
 import type { FormState } from '../_lib/workspace-form-state';
 import { summarizeWorkspaceInputSchema } from '../_lib/workspace-input-schema';
+import { FLUX_KEYFRAME_SLOTS_FIELD, hasFluxCreateKeyframes } from '../_lib/luma-ray32-keyframes';
 
 type UseWorkspaceInputSchemaStateOptions = {
   hydrationReady?: boolean;
@@ -21,6 +22,7 @@ type UseWorkspaceInputSchemaStateOptions = {
   activeMode: Mode;
   submissionMode: Mode;
   allowsUnifiedVeoFirstLast: boolean;
+  usesCanonicalOpeningFrame?: boolean;
   isUnifiedHappyHorse: boolean;
   isUnifiedSeedance: boolean;
   isUnifiedGeminiOmni: boolean;
@@ -39,6 +41,7 @@ export function useWorkspaceInputSchemaState({
   activeMode,
   submissionMode,
   allowsUnifiedVeoFirstLast,
+  usesCanonicalOpeningFrame,
   isUnifiedHappyHorse,
   isUnifiedSeedance,
   isUnifiedGeminiOmni,
@@ -56,6 +59,7 @@ export function useWorkspaceInputSchemaState({
         selectedEngine,
         activeMode,
         allowsUnifiedVeoFirstLast,
+        usesCanonicalOpeningFrame,
         isUnifiedHappyHorse,
         isUnifiedSeedance,
         isUnifiedGeminiOmni,
@@ -64,6 +68,7 @@ export function useWorkspaceInputSchemaState({
     [
       activeMode,
       allowsUnifiedVeoFirstLast,
+      usesCanonicalOpeningFrame,
       isUnifiedGeminiOmni,
       isUnifiedHappyHorse,
       isUnifiedSeedance,
@@ -82,6 +87,7 @@ export function useWorkspaceInputSchemaState({
     setForm((current) => {
       if (!current || current.engineId !== selectedEngine.id || selectedEngine.operationCaps || selectedEngine.id === 'luma-ray-3-2') return current;
       const allowedFieldIds = new Set(extraInputFields.map(({ field }) => field.id));
+      if (submissionMode === 'ref2v' && hasFluxCreateKeyframes(selectedEngine.inputSchema)) allowedFieldIds.add(FLUX_KEYFRAME_SLOTS_FIELD);
       const nextExtraInputValues = Object.entries(current.extraInputValues).reduce<
         Record<string, unknown>
       >((acc, [key, value]) => {
@@ -95,7 +101,7 @@ export function useWorkspaceInputSchemaState({
       }
       return { ...current, extraInputValues: nextExtraInputValues };
     });
-  }, [hydrationReady, selectedEngine, extraInputFields, setForm]);
+  }, [hydrationReady, selectedEngine, extraInputFields, setForm, submissionMode]);
 
   useEffect(() => {
     if (!hydrationReady || !selectedEngine || (selectedEngine.operationCaps || isKlingV4FalQueueEngineId(selectedEngine.id))) return;

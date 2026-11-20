@@ -39,7 +39,7 @@ export function applicationSettingChanges(before:ProposalApplicationContext,curr
 
 /** Only the video adapter's known scalar controls are reviewable; unknown/source controls fail closed. */
 export function videoPromptReviewKey(context:Record<string,unknown>&{form:object}):string {
-  const controls=new Set(['durationSec','durationOption','numFrames','resolution','aspectRatio','fps','iterations','seedLocked','loop','audio','seed','cameraFixed','safetyChecker']);
+  const controls=new Set(['durationSec','durationOption','numFrames','resolution','aspectRatio','fps','iterations','seedLocked','loop','audio','seed','cameraFixed','safetyChecker', 'createPreferences']);
   return applicationReviewKey({...context,
     form:Object.fromEntries(Object.entries(context.form).filter(([key])=>!controls.has(key))),
     cfgScale:undefined,shotType:undefined,seedValue:undefined,cameraFixedValue:undefined,safetyCheckerValue:undefined,

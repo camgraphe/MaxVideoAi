@@ -5,6 +5,38 @@ import {
   type WorkspaceSavedModelSetup,
   type WorkspaceModelSetupError,
 } from './workspace-model-setups';
+import { parkedCreateReferenceKey } from './workspace-create-continuity';
+import type { WorkspaceModelSetup } from './workspace-model-candidate';
+
+export function activeDraftReferenceSlotKey(fieldId: string, index: number, assetId: string) {
+  return JSON.stringify([fieldId, index, assetId]);
+}
+
+/** Keep the last complete setup while applying explicit removals from an incomplete edit. */
+export function applyActiveDraftReferenceRemovals(
+  stored: WorkspaceModelSetup,
+  current: WorkspaceModelSetup,
+  removals: ReadonlySet<string>,
+): WorkspaceModelSetup {
+  if (!removals.size || stored.form.engineId !== current.form.engineId) return stored;
+  let changed = false;
+  const inputAssets = Object.fromEntries(Object.entries(stored.inputAssets).map(([fieldId, assets]) => [
+    fieldId,
+    assets.map((asset, index) => {
+      if (!asset || !removals.has(activeDraftReferenceSlotKey(fieldId, index, asset.id))
+        || current.inputAssets[fieldId]?.[index]?.id === asset.id) return asset;
+      changed = true;
+      return null;
+    }),
+  ]));
+  const parkedCreateReferences = stored.parkedCreateReferences?.filter(reference => {
+    const key = parkedCreateReferenceKey(reference);
+    if (!removals.has(key) || current.parkedCreateReferences?.some(value => parkedCreateReferenceKey(value) === key)) return true;
+    changed = true;
+    return false;
+  });
+  return changed ? { ...stored, inputAssets, parkedCreateReferences } : stored;
+}
 
 export function workspaceActiveDraftKey(accountId: string) {
   return `maxvideoai:active-video-draft:v1:${encodeURIComponent(accountId)}`;

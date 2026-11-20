@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { consumeMediaHandoff, stageMediaHandoff, MEDIA_HANDOFF_KEY, supportsMediaDestination } from '../frontend/lib/media-handoff';
+import { consumeMediaHandoff, receiveMediaHandoff, stageMediaHandoff, stageVideoSourceHandoff, MEDIA_HANDOFF_KEY, supportsMediaDestination } from '../frontend/lib/media-handoff';
 import { groupJobsIntoSummaries } from '../frontend/lib/job-groups';
 import type { Job } from '../frontend/types/jobs';
 import { galleryMediaAssets } from '../frontend/components/library/gallery-media-assets';
@@ -39,6 +39,19 @@ test('the bounded pending request replaces its predecessor and image destination
   assert.equal(supportsMediaDestination({ kind: 'video' }, 'image'), false);
   assert.equal(supportsMediaDestination({ kind: 'audio' }, 'video'), true);
   assert.throws(() => stageMediaHandoff(store, 'account-a', { ...asset, kind: 'video' }, 'image', 'bad'));
+});
+
+test('a directed video action survives a reload and only the matching receipt can clear it', () => {
+  const store = storage();
+  const clip = { ...asset, kind: 'video' as const, url: 'https://private.example/clip.mp4' };
+  const videoSource = { engineId: 'wan-3-prime', mode: 'extend' as const };
+  assert.equal(stageVideoSourceHandoff(store, 'account-a', clip, videoSource, 'new', 100), '/app?media=new&engine=wan-3-prime&mode=extend');
+  assert.equal(consumeMediaHandoff(store, 'account-a', 'video', 'old', 102), null);
+  assert.equal(receiveMediaHandoff(store, 'account-b', 'video', 'new', 102), null);
+  assert.deepEqual(receiveMediaHandoff(store, 'account-a', 'video', 'new', 103), { asset: clip, videoSource });
+  assert.deepEqual(receiveMediaHandoff(store, 'account-a', 'video', 'new', 104), { asset: clip, videoSource });
+  assert.deepEqual(consumeMediaHandoff(store, 'account-a', 'video', 'new', 105), clip);
+  assert.equal(store.getItem(MEDIA_HANDOFF_KEY), null);
 });
 test('gallery continuation refuses thumbnail-only and pending outputs and keeps each proven image original', () => {
   const member = { id: 'job-image-1', thumbUrl: asset.thumbUrl, engineLabel: 'Engine', durationSec: 0, createdAt: '2026-09-07', source: 'job' as const };

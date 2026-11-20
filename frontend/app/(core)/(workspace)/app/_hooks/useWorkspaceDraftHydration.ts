@@ -28,6 +28,9 @@ type UseWorkspaceDraftHydrationOptions = {
   accessToken: string | null;
   locale: string;
   inputAssets: WorkspaceModelSetup['inputAssets'];
+  parkedCreateReferences?: WorkspaceModelSetup['parkedCreateReferences'];
+  removedReferenceKeys?: MutableRefObject<Set<string>>;
+  setParkedCreateReferences?: (references?: WorkspaceModelSetup['parkedCreateReferences']) => void;
   klingElements: WorkspaceModelSetup['klingElements'];
   cfgScale: WorkspaceModelSetup['cfgScale'];
   setInputAssets: Dispatch<SetStateAction<WorkspaceModelSetup['inputAssets']>>;
@@ -47,6 +50,7 @@ type UseWorkspaceDraftHydrationOptions = {
   writeStorage: (base: string, value: string | null) => void;
   form: FormState | null;
   prompt: string;
+  automaticPrompt?: string | null;
   negativePrompt: string;
   multiPromptEnabled: boolean;
   multiPromptScenes: MultiPromptScene[];
@@ -60,6 +64,7 @@ type UseWorkspaceDraftHydrationOptions = {
   hasStoredFormRef: MutableRefObject<boolean>;
   setForm: Dispatch<SetStateAction<FormState | null>>;
   setPrompt: Dispatch<SetStateAction<string>>;
+  setAutomaticPrompt?: (text: string | undefined) => void;
   setNegativePrompt: Dispatch<SetStateAction<string>>;
   setMultiPromptEnabled: Dispatch<SetStateAction<boolean>>;
   setMultiPromptScenes: Dispatch<SetStateAction<MultiPromptScene[]>>;
@@ -78,6 +83,9 @@ export function useWorkspaceDraftHydration({
   accessToken,
   locale,
   inputAssets,
+  parkedCreateReferences,
+  removedReferenceKeys,
+  setParkedCreateReferences,
   klingElements,
   cfgScale,
   setInputAssets,
@@ -97,6 +105,7 @@ export function useWorkspaceDraftHydration({
   writeStorage,
   form,
   prompt,
+  automaticPrompt,
   negativePrompt,
   multiPromptEnabled,
   multiPromptScenes,
@@ -110,6 +119,7 @@ export function useWorkspaceDraftHydration({
   hasStoredFormRef,
   setForm,
   setPrompt,
+  setAutomaticPrompt,
   setNegativePrompt,
   setMultiPromptEnabled,
   setMultiPromptScenes,
@@ -126,9 +136,11 @@ export function useWorkspaceDraftHydration({
         ? {
             form,
             inputAssets,
+            ...(parkedCreateReferences?.length ? { parkedCreateReferences } : {}),
             klingElements,
             cfgScale,
             prompt,
+            ...(automaticPrompt != null ? { automaticPrompt } : {}),
             negativePrompt,
             multiPromptEnabled,
             multiPromptScenes,
@@ -139,9 +151,11 @@ export function useWorkspaceDraftHydration({
     [
       form,
       inputAssets,
+      parkedCreateReferences,
       klingElements,
       cfgScale,
       prompt,
+      automaticPrompt,
       negativePrompt,
       multiPromptEnabled,
       multiPromptScenes,
@@ -156,11 +170,14 @@ export function useWorkspaceDraftHydration({
     locale,
     engines,
     current,
+    removedReferenceKeys,
+    setParkedCreateReferences,
     setForm,
     setInputAssets,
     setKlingElements,
     setCfgScale,
     setPrompt,
+    setAutomaticPrompt,
     setNegativePrompt,
     setMultiPromptEnabled,
     setMultiPromptScenes,
@@ -199,7 +216,11 @@ export function useWorkspaceDraftHydration({
 
     try {
       const promptValue = readStorage(STORAGE_KEYS.prompt);
-      setPrompt(promptValue ?? DEFAULT_PROMPT);
+      if (setAutomaticPrompt && (promptValue === null || promptValue === readStorage(STORAGE_KEYS.automaticPrompt))) {
+        setAutomaticPrompt(promptValue ?? DEFAULT_PROMPT);
+      } else {
+        setPrompt(promptValue ?? DEFAULT_PROMPT);
+      }
 
       const negativeValue = readStorage(STORAGE_KEYS.negativePrompt);
       setNegativePrompt(negativeValue ?? '');
@@ -299,6 +320,7 @@ export function useWorkspaceDraftHydration({
     hasStoredFormRef,
     setForm,
     setPrompt,
+    setAutomaticPrompt,
     setNegativePrompt,
     setMultiPromptEnabled,
     setMultiPromptScenes,
@@ -332,13 +354,17 @@ export function useWorkspaceDraftHydration({
     if (hydratedForScope !== storageScope) return;
     if (preserveStoredDraftRef.current) return;
     try {
-      writeStorage(STORAGE_KEYS.prompt, prompt);
+      // Store the same text beside the legacy prompt so an old or partial write
+      // cannot mark a different saved prompt as automatic.
+      writeStorage(STORAGE_KEYS.automaticPrompt, automaticPrompt ?? null);
+      writeStorage(STORAGE_KEYS.prompt, automaticPrompt ?? prompt);
     } catch {
       // noop
     }
   }, [
     activeDraft.ready,
     prompt,
+    automaticPrompt,
     hydratedForScope,
     storageScope,
     writeStorage,

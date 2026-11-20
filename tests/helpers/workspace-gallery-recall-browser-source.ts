@@ -1,5 +1,6 @@
 /** Synthetic gallery reads with the production draft/composer/schema/action hook chain. */
 export const galleryRecallBrowserSource = `
+import {useCallback,useState} from 'react';
 import {createRoot} from 'react-dom/client';
 import {useGalleryRecallHarness} from '../tests/helpers/workspace-gallery-recall-harness';
 import {groupJobsIntoSummaries} from './lib/job-groups';
@@ -9,7 +10,16 @@ import {CoreSettingsBar} from './components/CoreSettingsBar';
 import {WorkspaceComposerSurface} from './app/(core)/(workspace)/app/_components/WorkspaceComposerSurface';
 const surfaceNoop=()=>{};
 function Main() {
- const h=useGalleryRecallHarness(), c=h.composer, form=h.form;
+ const config=globalThis.fixtureConfig;
+ const [searchString,setSearchString]=useState(location.search.slice(1));
+ const params=new URLSearchParams(searchString);
+ const replaceRoute=useCallback(href=>{
+   history.replaceState(null,'',href);
+   setSearchString(location.search.slice(1));
+ },[]);
+ const h=useGalleryRecallHarness(config.guestJourney ? {
+   owner:'public', requestedEngineId:params.get('engine'), requestedMode:params.get('mode'), curatedJobs:config.jobs,
+ } : config.historyEntry ? {requestedJobId:params.get('job'),searchString,replaceRoute} : {}), c=h.composer, form=h.form;
  const groups=globalThis.fixtureConfig.jobs.map(job=>groupJobsIntoSummaries([job],{includeSinglesAsGroups:true}).groups[0]);
  const remove=(field,index)=>h.setInputAssets(previous=>({...previous,[field.id]:previous[field.id].map((asset,i)=>i===index?null:asset)}));
  return <I18nProvider locale="en" dictionary={{}} fallback={{}}><main style={{padding:20,maxWidth:1000,margin:'auto'}}>
@@ -37,5 +47,6 @@ function Main() {
  <output data-state hidden>{JSON.stringify({form,prompt:h.prompt,mode:c.submissionMode,assets:h.inputAssets,notice:h.notice,recallPending:h.settings.recallPending,recallBlocked:h.settings.recallBlocked,recallError:h.settings.recallError})}</output>
  </main></I18nProvider>;
 }
-createRoot(document.getElementById('root')).render(<Main/>);
+createRoot(document.getElementById('root')).render(globalThis.fixtureConfig.guestJourney && location.pathname === '/fr'
+  ? <a href="/app">Créer une vidéo</a> : <Main/>);
 `;
