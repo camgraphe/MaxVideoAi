@@ -445,12 +445,12 @@ function OwnedCompactLibraryBrowser({
             </dl>
           }
         >
-          {renderContinuation?.(selected)}
           {getAssetHref?.(selected) ? (
             <Link href={getAssetHref(selected)!} prefetch={false}>
               {getAssetHrefLabel?.(selected) ?? copy.sourceLink}
             </Link>
           ) : null}
+          {renderContinuation?.(selected)}
           <div className="app-media-management">
             {renderAssetActions(selected)}
             {isManaged(selected) ? (

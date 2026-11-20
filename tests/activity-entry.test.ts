@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { resolveActivityDestination } from '../frontend/app/(core)/jobs/_lib/activity-entry';
+import { resolveActivityDestination, resolveActivityOutputDestination } from '../frontend/app/(core)/jobs/_lib/activity-entry';
 import type { GroupMemberSummary, GroupSummary } from '../frontend/types/groups';
 import type { Job } from '../frontend/types/jobs';
 
@@ -40,6 +40,16 @@ test('Activity resumes supported workspaces with the exact encoded owned job ID'
       href, target, origin: null, resumesSettings: true,
     });
   }
+});
+
+test('Activity resumes the selected output of a batch even when it is not the main result', () => {
+  const first = job({ jobId: 'first' });
+  const second = job({ jobId: 'second+output' });
+  const batch = group(first, second);
+  assert.equal(resolveActivityDestination(batch)?.href, '/app?job=first');
+  assert.equal(resolveActivityOutputDestination(batch, second.jobId)?.href, '/app?job=second%2Boutput');
+  assert.equal(resolveActivityOutputDestination(batch, 'missing'), null);
+  assert.equal(resolveActivityOutputDestination(group({ ...second, curated: true }), second.jobId), null);
 });
 
 test('Activity opens tools without unsupported job hydration parameters', () => {

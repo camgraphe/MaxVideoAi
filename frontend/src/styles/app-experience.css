@@ -812,6 +812,15 @@
 .app-experience .app-library-reader[data-media-kind="audio"] { height: auto; min-height: 120px; display: grid; place-items: center; }
 .app-experience .app-library-reader audio { width: min(100%, 640px); }
 .app-experience .app-library-reader [role="alert"] { position: absolute; bottom: 0; background: var(--app-panel); padding: 8px; color: var(--app-ink); }
+@media (max-width: 760px) {
+  .app-experience .app-media-panel .app-media-detail-layout:has(> .app-media-panel-actions) .app-library-reader[data-media-kind="video"] {
+    height: clamp(144px, min(36dvh, calc(100dvh - 440px)), 300px);
+    min-height: 0;
+  }
+  .app-experience .app-media-panel-transport { flex-wrap: nowrap; gap: 6px; }
+  .app-experience .app-media-panel-transport > * { padding-inline: 8px; }
+  .app-experience .app-media-panel-transport > :last-child { flex: 0 0 44px; }
+}
 .app-experience .app-library-neighbors { display: flex; gap: 6px; align-items: center; overflow-x: auto; }
 .app-experience .app-library-neighbors button { flex: 0 0 48px; height: 48px; padding: 2px; }
 .app-experience .app-library-neighbors img { width: 100%; height: 100%; object-fit: contain; }

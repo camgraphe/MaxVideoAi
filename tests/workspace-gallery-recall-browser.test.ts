@@ -80,6 +80,34 @@ test('fresh mobile Modify suppresses automatic example text and keeps authored o
   }
 });
 
+test('an Activity job link restores the recipe once and reload opens the edited draft', { timeout: 90000 }, async () => {
+  const harnessSource = (await readFile('tests/helpers/workspace-gallery-recall-harness.ts', 'utf8')).replaceAll('../../frontend/', './');
+  const source = harnessSource + '\n' + galleryRecallBrowserSource.replace("import {useGalleryRecallHarness} from '../tests/helpers/workspace-gallery-recall-harness';", '');
+  const fixture = await startWorkspaceReferenceFixture({ source, config: { jobs, historyEntry: true },
+    hostModules: { '@/lib/authFetch': 'export const authFetch=(url,options)=>fetch(url,options);' },
+  });
+  const browser = await chromium.launch();
+  try {
+    const page = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+    let reads = 0;
+    const original = detail('extend', fixture.url);
+    await page.route('**/api/jobs/job_extend', async (route) => { reads += 1; await route.fulfill({ json: original }); });
+    await page.goto(`${fixture.url}/app?job=job_extend&keep=1`);
+    const prompt = page.getByRole('textbox', { name: 'Prompt', exact: true });
+    await expect(prompt).toHaveValue(original.settingsSnapshot.prompt);
+    await expect(page).toHaveURL(`${fixture.url}/app?keep=1`);
+    const readsAfterRecall = reads;
+    await prompt.fill('My new continuation after the recall');
+    await page.reload();
+    await expect(prompt).toHaveValue('My new continuation after the recall');
+    await expect(page.locator('[data-composer-mode="extend"]')).toHaveAttribute('aria-pressed', 'true');
+    assert.equal(reads, readsAfterRecall, 'reload does not replay the completed job request');
+  } finally {
+    await browser.close();
+    await fixture.close();
+  }
+});
+
 test('gallery recall renders Modify and Extend controls after delayed job detail without losing later edits', { timeout: 180000 }, async () => {
   const harnessSource = (await readFile('tests/helpers/workspace-gallery-recall-harness.ts', 'utf8')).replaceAll('../../frontend/', './');
   const source = harnessSource + '\n' + galleryRecallBrowserSource.replace("import {useGalleryRecallHarness} from '../tests/helpers/workspace-gallery-recall-harness';", '');

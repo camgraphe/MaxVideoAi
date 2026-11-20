@@ -164,9 +164,9 @@ export function useWorkspaceReferenceAssets({
     commit: commitInputAssetMutation, close: () => setAssetPickerTarget(null),
   });
 
-  const handleSelectLibraryAsset = async (field:EngineInputField,asset:UserAsset,slotIndex?:number) => {
+  const handleSelectLibraryAsset = async (field:EngineInputField,asset:UserAsset,slotIndex?:number, selectionIsCurrent?: () => boolean) => {
     const scope = importScope.current;
-    const isCurrent = () => valid() && importScope.current === scope;
+    const isCurrent = () => valid() && importScope.current === scope && (selectionIsCurrent?.() ?? true);
     if (!isCurrent()) return;
     const result=await handleSelectLibraryAssets(field,[asset],{ isCurrent },slotIndex);
     if (!isCurrent()) return;

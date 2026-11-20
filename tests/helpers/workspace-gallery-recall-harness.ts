@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { getBaseEnginesByCategory } from '../../frontend/src/lib/engines';
 import { useWorkspaceRouteFormState } from '../../frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceRouteFormState';
 import { useWorkspaceAssetState } from '../../frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceAssetState';
@@ -24,14 +24,14 @@ const workflowCopy = { generateVideo: 'Create video', removeAudioToUnlock: 'Remo
 /** AppClient's real recall, draft, composer and schema owners in their production order. */
 export function useGalleryRecallHarness({ owner = 'recall-owner' as string | null, catalogRevision = 0, activeRenderGroups = renderGroups,
   fromVideoId = null as string | null, searchString = '', replaceRoute = noop as (href: string) => void,
-  rememberedJobId = null as string | null, requestedEngineId = null as string | null, requestedMode = null as Mode | null,
+  rememberedJobId = null as string | null, requestedJobId = null as string | null, requestedEngineId = null as string | null, requestedMode = null as Mode | null,
   curatedJobs = jobs as Job[] } = {}) {
   const catalogRef = useRef({ revision: catalogRevision, engines: catalog });
   if (catalogRef.current.revision !== catalogRevision) {
     catalogRef.current = { revision: catalogRevision, engines: catalog.map(engine => ({ ...engine })) };
   }
   const engines = catalogRef.current.engines;
-  const engineMap = new Map(engines.map(engine => [engine.id, engine]));
+  const engineMap = useMemo(() => new Map(engines.map(engine => [engine.id, engine])), [engines]);
   const route = useWorkspaceRouteFormState(owner);
   const storageScope = owner && owner !== 'public' ? owner : 'anon';
   const readGuestStorage = useCallback((key: string) => owner === 'public' ? readWorkspaceStorage(key, storageScope) : null, [owner, storageScope]);
@@ -48,7 +48,7 @@ export function useGalleryRecallHarness({ owner = 'recall-owner' as string | nul
   const draft = useWorkspaceDraftHydration({ ...route, ...assets, engines,
     authStatus: owner === 'public' ? 'loggedOut' : owner ? 'authed' : 'loading',
     accountId: owner === 'public' ? null : owner, accessToken: owner && owner !== 'public' ? `fixture-${owner}` : null, locale: 'en',
-    requestedJobId: null, fromVideoId, effectiveRequestedEngineId: requestedEngineId,
+    requestedJobId, fromVideoId, effectiveRequestedEngineId: requestedEngineId,
     effectiveRequestedEngineToken: requestedEngineId ?? '', effectiveRequestedMode: requestedMode, storageScope,
     hydratedForScope, setHydratedForScope, readStorage: readGuestStorage, readScopedStorage: readStorage, writeStorage: writeGuestStorage,
     recentJobs: jobs, selectedPreview, rendersLength: 0, preserveStoredDraftRef, hasStoredFormRef,
@@ -57,7 +57,7 @@ export function useGalleryRecallHarness({ owner = 'recall-owner' as string | nul
   const settings = useWorkspaceVideoSettings({ ...route, ...assets, engines, engineMap,
     locale: 'en', accountScope: owner, activeDraftReady: draft.ready,
     hasActiveSetup: rememberedJobId ? false : draft.hasActiveSetup,
-    draftRevision: draft.revision, provider: 'fal', fromVideoId, requestedJobId: null, searchString,
+    draftRevision: draft.revision, provider: 'fal', fromVideoId, requestedJobId, searchString,
     authChecked: Boolean(owner), hydratedForScope, storageScope, effectiveRequestedEngineId: null,
     effectiveRequestedEngineToken: null, rendersLength: 0, readScopedStorage: readLegacyStorage,
     writeScopedStorage: noop, replaceRoute, setSelectedPreview, setNotice,

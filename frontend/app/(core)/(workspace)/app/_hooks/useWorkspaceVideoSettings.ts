@@ -234,6 +234,7 @@ export function useWorkspaceVideoSettings({
   const sharedVideoImportRef = useRef<SharedVideoImport | null>(null);
   const [settledSharedImport, setSettledSharedImport] = useState<SharedVideoImport | null>(null);
   const [committingSharedImport, setCommittingSharedImport] = useState<SharedVideoImport | null>(null);
+  const [committingJobRecall, setCommittingJobRecall] = useState<{ jobId: string; search: string; generation: () => boolean } | null>(null);
   // Keep the composer closed until this explicit import commits or fails. Startup
   // schema/settings reconciliation can then run without being mistaken for a user edit.
   const sharedVideoImportPending = Boolean(fromVideoId && (
@@ -259,6 +260,18 @@ export function useWorkspaceVideoSettings({
     finishSharedVideoImport(committingSharedImport, true);
     setCommittingSharedImport(null);
   }, [committingSharedImport, finishSharedVideoImport]);
+  useLayoutEffect(() => {
+    if (!committingJobRecall) return;
+    setCommittingJobRecall(null);
+    if (!valid() || committingJobRecall.generation !== valid || committingJobRecall.jobId !== requestedJobId
+      || committingJobRecall.search !== searchString) return;
+    // The draft writer has committed the recalled settings. Reloading should now reopen that draft.
+    const params = new URLSearchParams(searchString);
+    params.delete('job');
+    params.delete('jobId');
+    const remaining = params.toString();
+    replaceRoute(remaining ? `/app?${remaining}` : '/app');
+  }, [committingJobRecall, replaceRoute, requestedJobId, searchString, valid]);
   useEffect(() => {
     if (!fromVideoId) setSettledSharedImport(null);
   }, [fromVideoId]);
@@ -740,7 +753,9 @@ export function useWorkspaceVideoSettings({
           throw new Error(payload?.error ?? `Failed to load job (${response.status})`);
         }
         if (cancelled || !valid() || revisionRef.current !== revision) return;
-        applyVideoSettingsSnapshot(payload.settingsSnapshot);
+        if (applyVideoSettingsSnapshot(payload.settingsSnapshot)) {
+          setCommittingJobRecall({ jobId: requestedJobId, search: searchString, generation: valid });
+        }
 
         try {
           if (requestedJobId.startsWith('job_')) {
@@ -772,6 +787,7 @@ export function useWorkspaceVideoSettings({
     activeDraftReady,
     valid,
     requestedJobId,
+    searchString,
     setCompositeOverride,
     setCompositeOverrideSummary,
     setNotice,

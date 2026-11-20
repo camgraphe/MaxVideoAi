@@ -41,7 +41,8 @@ function useAccountField<T>(scope: string | null, initial: T | (() => T)) {
 export function useWorkspaceRouteFormState(accountScope: string | null = 'legacy') {
   const [form, setForm] = useAccountField<FormState | null>(accountScope, null);
   const [promptDraft, setPromptDraft] = useAccountField(accountScope, { text: DEFAULT_PROMPT, automatic: true });
-  const hideAutomaticPrompt = form?.mode === 'reframe' || (form?.mode === 'v2v' && form.operation !== 'kling-reference');
+  const hideAutomaticPrompt = form?.mode === 'extend' || form?.mode === 'reframe'
+    || (form?.mode === 'v2v' && form.operation !== 'kling-reference');
   const automaticPrompt = promptDraft.automatic ? promptDraft.text : null;
   const prompt = promptDraft.automatic && hideAutomaticPrompt ? '' : promptDraft.text;
   const setPrompt = useCallback<Dispatch<SetStateAction<string>>>((action) => {

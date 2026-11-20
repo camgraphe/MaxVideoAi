@@ -38,6 +38,9 @@ the explicit reference and the Storyboard job hint separately.
   another card can apply again without replaying incidental query changes.
 - Preserve complete personal snapshots through group-to-tile projection. Do not
   replace a saved Modify/Extend recipe with a text-to-video display summary.
+  The Activity and Media entry links apply the selected personal job once. The
+  route retires the job parameter after saving the recalled draft so refreshes
+  retain subsequent user edits.
 - Resolve operation capabilities before validating controls and binding typed
   references. Kling Reference/Edit and H3 Recast/Relight share a mode but differ
   in source fields and source-derived framing/timing.
@@ -51,7 +54,7 @@ the explicit reference and the Storyboard job hint separately.
 - Returning to a parked Create setup retains its available recorded mode before
   schema reconciliation. In particular, a recalled two-frame recipe may use
   canonical `first_frame_url`; inferring image-to-video would discard that input.
-- Modify and Reframe start with an empty prompt when only the automatic starter
+- Modify, Extend and Reframe start with an empty prompt when only the automatic starter
   text is available. Typed and explicitly recalled prompts retain their content
   through mode switches and reloads.
 - A model selected from the authenticated Create draft takes the latest prompt,

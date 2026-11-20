@@ -263,9 +263,9 @@ function OwnedLibraryPageClient({ user, authLoading }: { user: { id: string } | 
                 /> : undefined}
                 emptySearchLabel={copy.browser.emptySearch}
                 getAssetHref={(asset) => (asset.kind === 'audio' ? null : getAssetJobHref(asset))}
-                getAssetHrefLabel={() =>
-                  activeView === 'review' ? copy.review.openRender : copy.assets.openAssetButton
-                }
+                getAssetHrefLabel={(asset) => asset.kind === 'video' && getAssetJobHref(asset)?.startsWith('/app?job=')
+                  ? (locale.startsWith('fr') ? 'Reprendre les réglages' : locale.startsWith('es') ? 'Recuperar ajustes' : 'Reuse settings')
+                  : activeView === 'review' ? copy.review.openRender : copy.assets.openAssetButton}
                 hasMore={hasMore}
                 loadMoreLabel={copy.browser.loadMore}
                 isLoadingMore={isLoadingMore}

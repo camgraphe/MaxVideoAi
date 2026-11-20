@@ -441,7 +441,7 @@ test('library cards use icon actions and put source navigation on the visual', (
   assert.match(clientSource, /getAssetHref=\{\(asset\)\s*=>[\s\S]*getAssetJobHref\(asset\)/);
   assert.match(helpersSource, /export function\s+isMaxVideoGeneratedAsset/);
   assert.doesNotMatch(clientSource, /\?\?\s*asset\.url/);
-  assert.match(clientSource, /getAssetHrefLabel=\{\(\)\s*=>[\s\S]*copy\.assets\.openAssetButton/);
+  assert.match(clientSource, /getAssetHrefLabel=\{\(asset\)\s*=>[\s\S]*copy\.assets\.openAssetButton/);
   assert.doesNotMatch(clientSource, />\s*\{copy\.assets\.useSettingsButton\}\s*</);
   const panelSource = fs.readFileSync(path.join(process.cwd(), 'frontend/components/library/MediaActionPanel.client.tsx'), 'utf8');
   assert.match(browserSource, /<MediaActionPanel/);

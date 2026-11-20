@@ -6,7 +6,7 @@ import { FEATURES } from '@/content/feature-flags';
 import { useRouter } from 'next/navigation';
 import { authFetch } from '@/lib/authFetch';
 import { AppGlyph } from '@/components/app/AppGlyph';
-import { stageMediaHandoff, supportsMediaDestination, discoverableMediaToolDestinations, MEDIA_TOOL_DESTINATIONS, type MediaDestination } from '@/lib/media-handoff';
+import { stageMediaHandoff, stageVideoSourceHandoff, supportsMediaDestination, discoverableMediaToolDestinations, MEDIA_TOOL_DESTINATIONS, type MediaDestination } from '@/lib/media-handoff';
 import { creatorCopy } from '@/components/tools/creator/creator-copy';
 import { resolveMediaSourceRef } from '@/lib/media-identity';
 import { getVideoContinuationEngine, resolveMediaContinuationOriginal, type VideoContinuationMode } from '@/lib/video-continuation';
@@ -35,14 +35,18 @@ export function MediaDestinationActions({ asset, userId, locale, onNavigate, sou
     try {
       const original = await resolveMediaContinuationOriginal(asset, authFetch);
       if (!active.current || scopeRef.current !== scope) return;
-      let suffix = '';
+      const storage = window.sessionStorage;
+      const token = crypto.randomUUID();
+      let href: string;
       if (continuation) {
         const model = getVideoContinuationEngine(engines, original, continuation, sourceEngineId);
         if (!model) throw new Error('No continuation model available');
-        suffix = `&engine=${encodeURIComponent(model.id)}&mode=${continuation}`;
+        href = stageVideoSourceHandoff(storage, userId, original, { engineId: model.id, mode: continuation }, token);
+      } else {
+        href = stageMediaHandoff(storage, userId, original, destination, token);
       }
-      if (!active.current || scopeRef.current !== scope) return;
-      router.push(stageMediaHandoff(window.sessionStorage, userId, original, destination, crypto.randomUUID()) + suffix); onNavigate?.();
+      router.push(href);
+      onNavigate?.();
     } catch { if (active.current && scopeRef.current === scope) setAction({ scope, pending: false, error: true }); }
     finally { if (active.current && scopeRef.current === scope) setAction(current => current?.scope === scope ? { ...current, pending: false } : current); }
   };
@@ -67,9 +71,9 @@ export function MediaDestinationActions({ asset, userId, locale, onNavigate, sou
   const destinations = discoverableMediaToolDestinations(asset).filter(destination => destination !== 'upscale');
   const toolButton = (destination: typeof MEDIA_TOOL_DESTINATIONS[number]) => <button key={destination} type="button" disabled={pending} onClick={() => void open(destination)}><AppGlyph name="tools" /><span>{destination in creatorLabels ? creatorLabels[destination as keyof typeof creatorLabels] : toolLabels[MEDIA_TOOL_DESTINATIONS.indexOf(destination)]}</span></button>;
   const primaryTransforms = <>
-    <button type="button" disabled={pending} onClick={() => void open('video')}><AppGlyph name="video" /><span>{asset.kind === 'image' ? copy.animate : (fr ? 'Utiliser comme référence' : es ? 'Usar como referencia' : 'Use as reference')}</span></button>
-    {extendEngine ? <button type="button" disabled={pending} onClick={() => void open('video', 'extend')}><AppGlyph name="video" /><span>{extendLabel}</span></button> : null}
     {modifyEngine ? <button type="button" disabled={pending} onClick={() => void open('video', 'v2v')}><AppGlyph name="video" /><span>{modifyLabel}</span></button> : null}
+    {extendEngine ? <button type="button" disabled={pending} onClick={() => void open('video', 'extend')}><AppGlyph name="video" /><span>{extendLabel}</span></button> : null}
+    <button type="button" disabled={pending} onClick={() => void open('video')}><AppGlyph name="video" /><span>{asset.kind === 'image' ? copy.animate : (fr ? 'Utiliser comme référence' : es ? 'Usar como referencia' : 'Use as reference')}</span></button>
     {supportsMediaDestination(asset, 'image') ? <button type="button" disabled={pending} onClick={() => void open('image')}><AppGlyph name="image" /><span>{fr ? 'Créer à partir de cette image' : es ? 'Crear con esta imagen' : 'Create with this image'}</span></button> : null}
     {supportsMediaDestination(asset, 'upscale') ? toolButton('upscale') : null}
   </>;
