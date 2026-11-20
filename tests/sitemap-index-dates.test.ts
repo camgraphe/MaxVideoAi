@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import { execFileSync } from 'node:child_process';
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
 import test from 'node:test';
 import { SITEMAP_MANUAL_TIMESTAMPS } from '../frontend/config/sitemap-timestamps.ts';
 
@@ -49,6 +52,34 @@ test('a deployment archive can recover model dates without Git', () => {
     env: { ...process.env, PATH: '' },
   });
   const dates = JSON.parse(result);
-  assert.equal(dates['flux-3-max'], '2026-11-17');
+  assert.equal(dates['flux-3-max'], '2026-10-20');
+  assert.equal(dates['dreamina-seedance-2-0-mini'], '2026-11-16');
   assert.equal(dates['seedance-2-5-flash'], '2026-11-19');
+});
+
+test('published dates survive the migration and a subsequent model edit advances only that model', () => {
+  const { readModelContentDates } = frontendRequire('./config/model-content-dates.cjs');
+  const published = frontendRequire('./config/model-content-date-baseline.json');
+  const root = mkdtempSync(path.join(tmpdir(), 'sitemap-model-history-'));
+  try {
+    const directory = path.join(root, 'content/models/en');
+    mkdirSync(directory, { recursive: true });
+    const commit = (slug: string, day: string) => {
+      writeFileSync(path.join(directory, slug + '.json'), JSON.stringify({ day }));
+      execFileSync('git', ['add', 'content/models'], { cwd: root });
+      const timestamp = day + 'T12:00:00Z';
+      execFileSync('git', ['-c', 'user.email=test@example.invalid', '-c', 'user.name=Test',
+        '-c', 'commit.gpgsign=false', 'commit', '-qm', slug], {
+        cwd: root, env: { ...process.env, GIT_AUTHOR_DATE: timestamp, GIT_COMMITTER_DATE: timestamp },
+      });
+    };
+    execFileSync('git', ['init', '-q'], { cwd: root });
+    commit('dreamina-seedance-2-0-mini', '2026-10-02');
+    commit('flux-3', '2026-11-17');
+    assert.deepEqual(readModelContentDates(root), published);
+    commit('flux-3', '2026-11-20');
+    assert.deepEqual(readModelContentDates(root), { ...published, 'flux-3': '2026-11-20' });
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
 });

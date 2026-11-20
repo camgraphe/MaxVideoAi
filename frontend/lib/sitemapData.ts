@@ -7,7 +7,6 @@ import {
   formatLastModified,
   getLatestEntryDate,
   getManualSitemapLastModified,
-  getManualRouteLastModified,
   getSitemapFileName,
   getVideoPagesSitemapLastModified,
   getVideoSitemapLastModified,
@@ -45,10 +44,7 @@ export async function getLocaleSitemapEntries(locale: AppLocale): Promise<Sitema
     seen.add(url);
     entries.push({
       url,
-      lastModified: getLatestEntryDate([
-        { lastModified: formatLastModified(lastModified) },
-        { lastModified: getManualRouteLastModified(localizedPath) },
-      ]),
+      lastModified: formatLastModified(lastModified),
       englishPath,
       locales: availableLocales,
       disableAlternates,
