@@ -255,6 +255,7 @@ export function buildInitialWorkspaceFormState({
       const base = coerceFormState(engine, mode, null);
       const candidate: FormState = {
         ...base,
+        ...(storedFormRaw.createPreferences ? { createPreferences: storedFormRaw.createPreferences } : {}),
         engineId: engine.id,
         mode,
         ...(storedFormRaw.operation !== undefined ? { operation: storedFormRaw.operation } : {}),

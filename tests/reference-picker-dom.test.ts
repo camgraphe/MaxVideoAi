@@ -50,6 +50,12 @@ for (const example of [
           onImportFile: async file => { selected.push(file); } }) }));
       const input = h.doc.querySelector<HTMLInputElement>('input[type=file]')!;
       assert.equal(input.accept, `${example.kind}/*`);
+      const importButton = h.doc.querySelector<HTMLButtonElement>('.app-picker-search-row button[aria-label="Import"]');
+      assert.ok(importButton, 'single-slot import is visible before opening filters');
+      let opened = 0;
+      input.click = () => { opened += 1; };
+      await act(async () => importButton.click());
+      assert.equal(opened, 1);
       const choose = async (name: string, mime: string) => {
         const file = new h.dom.window.File(['source'], name, { type: mime }) as unknown as File;
         Object.defineProperty(input, 'files', { configurable: true, value: [file] });

@@ -142,7 +142,7 @@ test('model review owns account-scoped snapshots and atomic application outside 
   assert.match(controller, /prepareWorkspaceModelCandidate/);
   assert.match(controller, /buildWorkspacePreflightRequest/);
   assert.match(controller, /useWorkspacePreflightQuote/);
-  assert.match(controller, /serializeWorkspaceModelSetup\(source\)/);
+  assert.match(controller, /serializeWorkspaceModelSetup\(\{ \.\.\.source, parkedCreateReferences: undefined \}\)/);
   assert.match(controller, /applyWorkspacePreparedSetup\(committed,\s*\{\s*\.\.\.latest\.current\.options,\s*setForm: latest\.current\.options\.applyPreparedForm,?\s*\}\)/);
   assert.doesNotMatch(serializer, /\b(sessionStorage|localStorage|window|document)\./);
 });

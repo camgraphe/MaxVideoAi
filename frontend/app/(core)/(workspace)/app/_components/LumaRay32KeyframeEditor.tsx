@@ -12,6 +12,7 @@ import type { AssetFieldConfig, AssetUploadMeta } from '@/components/Composer';
 import type { EngineCaps, EngineInputField } from '@/types/engines';
 import {
   DEFAULT_VISIBLE_KEYFRAME_COUNT,
+  FLUX_KEYFRAME_SLOTS_FIELD,
   findBestNewFrameIndex,
   findFirstUnusedAssetSlot,
   formatIndexes,
@@ -20,7 +21,7 @@ import {
   getPayloadIndexes,
   getUniqueFrameIndexForSlot,
   normalizeKeyframeSlots,
-  parseKeyframeSlots,
+  parseEditorKeyframeSlots,
   type KeyframeSlot,
 } from '../_lib/luma-ray32-keyframes';
 import type { ReferenceAsset } from '../_lib/workspace-assets';
@@ -40,7 +41,7 @@ export type LumaRay32KeyframeEditorProps = {
   inputAssets: Record<string, (ReferenceAsset | null)[]>;
   onAssetAdd: (field: EngineInputField, file: File, slotIndex?: number, meta?: AssetUploadMeta) => void;
   onAssetRemove: (field: EngineInputField, index: number) => void;
-  onOpenLibrary: (field: EngineInputField, slotIndex: number) => void;
+  onOpenLibrary: (field: EngineInputField, slotIndex: number, placement: 'slot') => void;
   onNotice: (message: string) => void;
   disabledReason?: string | null;
   uiLocale?: string;
@@ -65,7 +66,7 @@ export function LumaRay32KeyframeEditor({
   uiLocale = 'en',
 }: LumaRay32KeyframeEditorProps) {
   const isFluxMax = engine.id.startsWith('flux-3');
-  const slotIndexesFieldId = isFluxMax ? 'keyframe_slot_indexes' : 'edit_keyframe_slot_indexes';
+  const slotIndexesFieldId = isFluxMax ? FLUX_KEYFRAME_SLOTS_FIELD : 'edit_keyframe_slot_indexes';
   const indexesFieldId = isFluxMax ? 'keyframe_indexes' : 'edit_keyframe_indexes';
   const imageFieldId = isFluxMax ? 'reference_image_urls' : 'edit_keyframe_urls';
   const keyframesLabel = uiLocale === 'fr' ? 'Images clés' : uiLocale === 'es' ? 'Fotogramas clave' : 'Keyframes';
@@ -99,11 +100,11 @@ export function LumaRay32KeyframeEditor({
     [inputAssets, keyframeEntry]
   );
   const hasGuideFrame = guideFrameAssets.some(Boolean);
-  const rawSlotIndexes =
-    form.extraInputValues[slotIndexesFieldId] ?? form.extraInputValues[indexesFieldId];
+  const rawSlotIndexes = form.extraInputValues[slotIndexesFieldId];
+  const rawPayloadIndexes = form.extraInputValues[indexesFieldId];
   const keyframeSlots = useMemo(
-    () => parseKeyframeSlots(rawSlotIndexes, keyframeAssets, maxKeyframeSlots, maxFrameIndex),
-    [keyframeAssets, maxFrameIndex, maxKeyframeSlots, rawSlotIndexes]
+    () => parseEditorKeyframeSlots(rawSlotIndexes, rawPayloadIndexes, keyframeAssets, maxKeyframeSlots, maxFrameIndex),
+    [keyframeAssets, maxFrameIndex, maxKeyframeSlots, rawSlotIndexes, rawPayloadIndexes]
   );
   const selectedSlot = keyframeSlots[Math.min(selectedSlotIndex, Math.max(0, keyframeSlots.length - 1))] ?? null;
   const canAddKeyframe = keyframeSlots.length < maxKeyframeSlots;
@@ -349,7 +350,7 @@ export function LumaRay32KeyframeEditor({
         onNotice(keyframesUploadDisabledReason);
         return;
       }
-      onOpenLibrary(keyframeEntry.field, slot.assetSlot);
+      onOpenLibrary(keyframeEntry.field, slot.assetSlot, 'slot');
     },
     [keyframeEntry, keyframesUploadDisabledReason, onNotice, onOpenLibrary]
   );

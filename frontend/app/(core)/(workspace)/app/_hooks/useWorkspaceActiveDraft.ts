@@ -13,6 +13,7 @@ import {
   type WorkspaceModelSetupError,
 } from '../_lib/workspace-model-setups';
 import {
+  applyActiveDraftReferenceRemovals,
   decodeWorkspaceActiveDraft,
   encodeWorkspaceActiveDraft,
   workspaceActiveDraftKey,
@@ -40,6 +41,7 @@ export type WorkspaceActiveDraftOptions = WorkspaceSetupSetters & {
   accountId: string | null;
   accessToken: string | null;
   current: WorkspaceModelSetup | null;
+  removedReferenceKeys?: { current: Set<string> };
   engines: EngineCaps[];
   locale: string;
   requestKey: string;
@@ -86,6 +88,7 @@ export function useWorkspaceActiveDraft(options: WorkspaceActiveDraftOptions) {
     account && store.account === account && phaseMatches && phase?.stage === 'ready',
   );
   const current = options.current;
+  const removedReferenceKeys = options.removedReferenceKeys;
   const signature = useMemo(() => workspaceModelSetupSignature(current), [current]);
   useEffect(() => {
     if (options.authStatus !== 'loggedOut') return;
@@ -249,6 +252,13 @@ export function useWorkspaceActiveDraft(options: WorkspaceActiveDraftOptions) {
     const stored = storeRef.current;
     const serialized = serializeWorkspaceModelSetup(current);
     if (!serialized.ok) {
+      if (stored.current && removedReferenceKeys?.current.size) {
+        const existing = stored.current;
+        const setup = applyActiveDraftReferenceRemovals(existing.setup, current, removedReferenceKeys.current);
+        if (setup === existing.setup || save({ ...stored, current: { ...existing, setup, updatedAt: Date.now() } })) {
+          removedReferenceKeys.current.clear();
+        }
+      }
       updateSaveError(serialized.error);
       return;
     }
@@ -264,8 +274,9 @@ export function useWorkspaceActiveDraft(options: WorkspaceActiveDraftOptions) {
     if (JSON.stringify(stored.current?.setup) !== JSON.stringify(serialized.setup)) {
       if (!save(next)) return;
     }
+    removedReferenceKeys?.current.clear();
     updateSaveError(storeRef.current.pendingSaveError ?? null);
-  }, [ready, valid, current, store.error, store.recovery, save, updateSaveError]);
+  }, [ready, valid, current, store.error, store.recovery, removedReferenceKeys, save, updateSaveError]);
   const removeRecovery = () => {
     if (!valid()) return;
     save({ ...storeRef.current, recovery: null });

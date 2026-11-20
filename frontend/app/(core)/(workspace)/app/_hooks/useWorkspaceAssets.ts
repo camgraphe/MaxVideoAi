@@ -3,11 +3,14 @@ import type { KlingElementState } from '@/components/KlingElementsBuilder';
 import { useWorkspaceVideoExcerpt } from './useWorkspaceVideoExcerpt';
 import type { EngineCaps, EngineInputSchema, Mode } from '@/types/engines';
 import { useWorkspaceAssetLibrary } from './useWorkspaceAssetLibrary';
-import type { CommitInputAssetMutation, WorkspaceInputAssetState } from './useWorkspaceAssetState';
+import type { CommitInputAssetMutation, WorkspaceInputAssetState, useWorkspaceAssetState } from './useWorkspaceAssetState';
 import { useWorkspaceKlingElementAssets } from './useWorkspaceKlingElementAssets';
 import { useWorkspaceReferenceAssets } from './useWorkspaceReferenceAssets';
 
-type UseWorkspaceAssetsOptions = {
+type CreateReferenceState = Pick<ReturnType<typeof useWorkspaceAssetState>,
+  'parkedCreateReferences' | 'setParkedCreateReferences' | 'removeParkedCreateReference'>;
+
+type UseWorkspaceAssetsOptions = Partial<CreateReferenceState> & {
   accountScope?: string | null;
   userId?: string | null;
   inputAssets: WorkspaceInputAssetState;
@@ -32,6 +35,9 @@ export function useWorkspaceAssets({
   accountScope,
   userId,
   inputAssets,
+  parkedCreateReferences,
+  setParkedCreateReferences,
+  removeParkedCreateReference,
   setInputAssets,
   commitInputAssetMutation,
   engineId,
@@ -114,6 +120,9 @@ export function useWorkspaceAssets({
 
   return {
     ...excerpts,
+    parkedCreateReferences,
+    setParkedCreateReferences,
+    removeParkedCreateReference,
     inputAssets,
     setInputAssets,
     assetPickerTarget,

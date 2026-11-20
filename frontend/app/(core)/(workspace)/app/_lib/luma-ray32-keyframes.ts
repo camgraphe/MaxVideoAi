@@ -1,5 +1,6 @@
 export const DEFAULT_VISIBLE_KEYFRAME_COUNT = 4;
 export const EMPTY_KEYFRAME_SLOT_VALUE = '__empty__';
+export const FLUX_KEYFRAME_SLOTS_FIELD = 'keyframe_slot_indexes';
 
 export type KeyframeSlot = {
   assetSlot: number;
@@ -160,6 +161,21 @@ export function parseKeyframeSlots(
 export function formatKeyframeSlots(slots: KeyframeSlot[]): string {
   if (!slots.length) return EMPTY_KEYFRAME_SLOT_VALUE;
   return slots.map((slot) => `${slot.assetSlot}:${slot.frameIndex}`).join(', ');
+}
+
+export function parseEditorKeyframeSlots(
+  slotValue: unknown, payloadValue: unknown, assets: readonly unknown[], maxSlots: number, maxFrameIndex: number,
+): KeyframeSlot[] {
+  // Older recipes only stored compact payload positions, in occupied slot order.
+  if (slotValue == null && typeof payloadValue === 'string' && /^\s*\d+(?:\s*,\s*\d+)*\s*$/.test(payloadValue)) {
+    const occupied = getOccupiedAssetSlots(assets, maxSlots);
+    const indexes = payloadValue.split(',').map(Number);
+    if (occupied.length === indexes.length) {
+      const value = formatKeyframeSlots(occupied.map((assetSlot, index) => ({ assetSlot, frameIndex: indexes[index]! })));
+      return parseKeyframeSlots(value, assets, maxSlots, maxFrameIndex).sort((first, second) => first.assetSlot - second.assetSlot);
+    }
+  }
+  return parseKeyframeSlots(slotValue ?? payloadValue, assets, maxSlots, maxFrameIndex);
 }
 
 export function getPayloadIndexes(slots: KeyframeSlot[], assets: readonly unknown[]): number[] {

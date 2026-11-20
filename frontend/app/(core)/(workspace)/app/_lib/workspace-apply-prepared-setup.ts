@@ -11,6 +11,7 @@ export function applyWorkspacePreparedSetup(
 ) {
   const committed = structuredClone(setup);
   setters.setInputAssets(committed.inputAssets);
+  setters.setParkedCreateReferences?.(committed.parkedCreateReferences);
   setters.setKlingElements(committed.klingElements);
   setters.setPrompt(committed.prompt);
   setters.setNegativePrompt(committed.negativePrompt);

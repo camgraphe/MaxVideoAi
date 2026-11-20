@@ -28,6 +28,9 @@ type UseWorkspaceDraftHydrationOptions = {
   accessToken: string | null;
   locale: string;
   inputAssets: WorkspaceModelSetup['inputAssets'];
+  parkedCreateReferences?: WorkspaceModelSetup['parkedCreateReferences'];
+  removedReferenceKeys?: MutableRefObject<Set<string>>;
+  setParkedCreateReferences?: (references?: WorkspaceModelSetup['parkedCreateReferences']) => void;
   klingElements: WorkspaceModelSetup['klingElements'];
   cfgScale: WorkspaceModelSetup['cfgScale'];
   setInputAssets: Dispatch<SetStateAction<WorkspaceModelSetup['inputAssets']>>;
@@ -78,6 +81,9 @@ export function useWorkspaceDraftHydration({
   accessToken,
   locale,
   inputAssets,
+  parkedCreateReferences,
+  removedReferenceKeys,
+  setParkedCreateReferences,
   klingElements,
   cfgScale,
   setInputAssets,
@@ -126,6 +132,7 @@ export function useWorkspaceDraftHydration({
         ? {
             form,
             inputAssets,
+            ...(parkedCreateReferences?.length ? { parkedCreateReferences } : {}),
             klingElements,
             cfgScale,
             prompt,
@@ -139,6 +146,7 @@ export function useWorkspaceDraftHydration({
     [
       form,
       inputAssets,
+      parkedCreateReferences,
       klingElements,
       cfgScale,
       prompt,
@@ -156,6 +164,8 @@ export function useWorkspaceDraftHydration({
     locale,
     engines,
     current,
+    removedReferenceKeys,
+    setParkedCreateReferences,
     setForm,
     setInputAssets,
     setKlingElements,

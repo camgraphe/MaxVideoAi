@@ -51,6 +51,20 @@ the explicit reference and the Storyboard job hint separately.
 - Returning to a parked Create setup retains its available recorded mode before
   schema reconciliation. In particular, a recalled two-frame recipe may use
   canonical `first_frame_url`; inferring image-to-video would discard that input.
+- A model selected from the authenticated Create draft takes the latest prompt,
+  preferred duration, resolution and aspect ratio with it. The target uses its
+  defaults where needed and keeps the preference for a later compatible model.
+  A Create model switch enables audio. An explicit audio choice for the selected
+  model can override it.
+- During that switch, compatible ready references stay in one supported Create
+  workflow. Compatibility includes the field role, media limits and the target
+  workflow's combined limits. Other references stay in the account's active
+  draft until they fit again or the user removes them. Timed images keep their
+  positions and Kling subjects keep their grouped inputs. Inactive references
+  are excluded from quotes, generation and Milo context. Explicit removal updates
+  the last complete draft even when an unrelated import is pending or failed.
+  Source workflows keep their own snapshots. A complete recall or Storyboard
+  handoff starts from its own inputs.
 - The visible workflow selection follows the model's offered buttons, separately
   from generation mode and schema. Create includes unlisted creation submodes;
   an offered Reference button remains distinct. Clicking the already selected

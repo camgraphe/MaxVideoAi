@@ -114,6 +114,7 @@ type UseWorkspaceVideoSettingsOptions = {
   setMultiPromptEnabled: Dispatch<SetStateAction<boolean>>;
   setMultiPromptScenes: Dispatch<SetStateAction<MultiPromptScene[]>>;
   setForm: Dispatch<SetStateAction<FormState | null>>;
+  setParkedCreateReferences?: () => void;
   setInputAssets: Dispatch<SetStateAction<Record<string, (ReferenceAsset | null)[]>>>;
   setKlingElements: Dispatch<SetStateAction<KlingElementState[]>>;
   setSelectedPreview: Dispatch<SetStateAction<SelectedVideoPreview | null>>;
@@ -160,6 +161,7 @@ export function useWorkspaceVideoSettings({
   setMultiPromptEnabled,
   setMultiPromptScenes,
   setForm,
+  setParkedCreateReferences,
   setInputAssets,
   setKlingElements,
   setSelectedPreview,
@@ -296,6 +298,7 @@ export function useWorkspaceVideoSettings({
         setMultiPromptEnabled(resolved.multiPrompt.enabled);
         setMultiPromptScenes(resolved.multiPrompt.scenes);
         setForm(buildVideoSettingsFormState(resolved));
+        if (!application.preserveParkedSources) setParkedCreateReferences?.();
 
         const nextInputAssets = preparedReferences ? preparedReferences.inputAssets : resolved.inputAssets;
         if (nextInputAssets) {
@@ -340,6 +343,7 @@ export function useWorkspaceVideoSettings({
       focusComposer,
       setCfgScale,
       setForm,
+      setParkedCreateReferences,
       setInputAssets,
       setKlingElements,
       setMemberTier,
@@ -573,6 +577,8 @@ export function useWorkspaceVideoSettings({
 
     try {
       const applied = buildWorkspaceStoryboardHandoffState(handoff, engines, null);
+      if (!writeParkedSources(storageScope, applied.form.engineId, new Map())) throw new Error(recallFailureMessage);
+      setParkedCreateReferences?.();
       setPrompt(applied.prompt);
       setNegativePrompt('');
       setVoiceIdsInput('');
@@ -617,6 +623,7 @@ export function useWorkspaceVideoSettings({
     engines,
     focusComposer,
     hydratedForScope,
+    recallFailureMessage,
     replaceRoute,
     searchString,
     setCompositeOverride,
@@ -624,6 +631,7 @@ export function useWorkspaceVideoSettings({
     setForm,
     setInputAssets,
     setKlingElements,
+    setParkedCreateReferences,
     setMultiPromptEnabled,
     setMultiPromptScenes,
     setNegativePrompt,

@@ -30,6 +30,7 @@ export type ReferencePickerSelection = {
   browseLibrary?: boolean;
   sourceProof?: 'audio-generated-video' | 'generated-video';
   importQueue?: LibraryImportQueueController;
+  directImport?: { label: string; open: () => void };
   busy?: boolean;
   onBusyChange?: (busy: boolean) => void;
   onConfirmMany?: (
@@ -343,6 +344,12 @@ function OwnedReferenceLibraryPicker(props: AssetLibraryBrowserProps & { selecti
                     {imports.files.length} · {copy.source}
                   </button>
                 ) : null}
+              </div>
+            ) : selection.directImport ? (
+              <div className="app-picker-import">
+                <button type="button" aria-label={selection.directImport.label} onClick={selection.directImport.open}>
+                  <Upload size={16} aria-hidden /><span className="app-picker-import-label">{selection.directImport.label}</span>
+                </button>
               </div>
             ) : null}
         </ReferencePickerToolbar>

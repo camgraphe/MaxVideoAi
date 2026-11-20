@@ -1,13 +1,43 @@
-import type { AssetFieldConfig } from '@/components/Composer';
+import type { AssetFieldConfig, ReferenceUploadStatus } from '@/components/composer/composer-types';
+import type { KlingElementState } from '@/components/KlingElementsBuilder';
+import type { EngineCaps, Mode } from '@/types/engines';
+import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
 import { getSeedanceFieldBlockKey } from '@/lib/seedance-workflow';
 import { getGeminiOmniAssetFieldDisabledReason, getGeminiOmniAssetState, hasGeminiOmniPreviousInteraction } from './gemini-omni-unified-workflow';
 import type { ReferenceAsset } from './workspace-assets';
-import { fieldAcceptsMode, hasMultimodalReferenceFields } from './workspace-multimodal-workflow';
+import { fieldAcceptsMode, getWorkspaceMediaFields, hasMultimodalReferenceFields } from './workspace-multimodal-workflow';
+import { workspaceKlingSubjectsActive } from './workspace-generation-inputs';
+import { getWorkspaceKlingV4ActiveAssets } from './workspace-kling-v4-media';
 import {
   isKlingO3FrameFieldId,
   KLING_O3_SOURCE_VIDEO_UNSUPPORTED_MESSAGE,
   KLING_O3_VIDEO_FRAME_IGNORED_MESSAGE,
+  shouldIgnoreKlingO3FrameAssets,
 } from './kling-o3-unified-workflow';
+
+/** Status follows generation slots, including references edited outside the compact panel. */
+export function getWorkspaceReferenceUploadStatus({
+  engine, mode, inputAssets, klingElements, supportsKlingV3Controls,
+}: {
+  engine: EngineCaps | null;
+  mode: Mode;
+  inputAssets: Record<string, (ReferenceAsset | null)[]>;
+  klingElements: KlingElementState[];
+  supportsKlingV3Controls: boolean;
+}): ReferenceUploadStatus {
+  if (!engine) return null;
+  const ignoreFrames = shouldIgnoreKlingO3FrameAssets(engine.id, mode);
+  const active = isKlingV4FalQueueEngineId(engine.id)
+    ? Object.values(getWorkspaceKlingV4ActiveAssets(mode, inputAssets, engine.id)).flat()
+    : getWorkspaceMediaFields(engine).filter(field => fieldAcceptsMode(field, mode)
+      && !(ignoreFrames && isKlingO3FrameFieldId(field.id))).flatMap(field => inputAssets[field.id] ?? []);
+  const subjects = workspaceKlingSubjectsActive({ selectedEngineId: engine.id, submissionMode: mode, supportsKlingV3Controls })
+    ? klingElements.flatMap(element => [element.frontal, ...element.references, element.video])
+    : [];
+  const assets = [...active, ...subjects];
+  if (assets.some(asset => asset?.status === 'error')) return 'error';
+  return assets.some(asset => asset?.status === 'uploading') ? 'uploading' : null;
+}
 
 export type WorkspaceReferenceAvailability = {
   inputAssets: Record<string, (ReferenceAsset | null)[]>;

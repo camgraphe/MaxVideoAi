@@ -1,5 +1,6 @@
 'use client';
 
+import { isVideoSourceWorkflow } from '@/lib/video-source-workflow';
 import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
 
 import {videoPromptReviewKey} from '@/lib/prompt-assistance/application-review';
@@ -13,8 +14,10 @@ import { getSeedanceAutomaticPricingNote } from '@/lib/seedance-modelark-options
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { ComponentProps, Dispatch, SetStateAction } from 'react';
 import dynamic from 'next/dynamic';
+import { parkedCreateReferenceKey, parkedCreateReferenceName, type WorkspaceParkedCreateReference } from '../_lib/workspace-create-continuity';
 import { WorkspaceOptionsButton } from '@/components/composer/WorkspaceOptionsButton.client';
 import { Composer, type MultiPromptScene } from '@/components/Composer';
+import type { ReferenceUploadStatus } from '@/components/composer/composer-types';
 import type { SeedanceDraftControls } from '@/lib/seedance-workflow-contract';
 import { SeedanceDraftSettingsNotice } from './SeedanceDraftSettingsNotice.client';
 import { getSeedanceDraftCopy } from '../_lib/seedance-draft-copy';
@@ -93,11 +96,14 @@ type WorkspaceComposerSurfaceProps = {
   isSubmitting: boolean;
   preflightError: ComposerProps['error'];
   videoDurationBlocked?: boolean;
+  referenceUploadStatus?: ReferenceUploadStatus;
   preflight: ComposerProps['preflight'];
   composerRef: ComposerProps['textareaRef'];
   startRender: ComposerProps['onGenerate'];
   inputSchemaSummary: WorkspaceInputSchemaSummary;
   inputAssets: Record<string, (ReferenceAsset | null)[]>;
+  parkedCreateReferences?: WorkspaceParkedCreateReference[];
+  onRemoveParkedCreateReference?: (reference: WorkspaceParkedCreateReference) => void;
   isUnifiedSeedance: boolean;
   isUnifiedKlingO3: boolean;
   klingO3UnsupportedVideoReason: string | null;
@@ -114,7 +120,7 @@ type WorkspaceComposerSurfaceProps = {
   handlePrepareVideoExcerpt: NonNullable<ComposerProps['onPrepareVideoExcerpt']>;
   handleVideoExcerptEditorChange: NonNullable<ComposerProps['onVideoExcerptEditorChange']>;
   handleAssetRemove: NonNullable<ComposerProps['onAssetRemove']>;
-  handleOpenAssetLibrary: NonNullable<ComposerProps['onOpenLibrary']>;
+  handleOpenAssetLibrary: (field: EngineInputField, slotIndex?: number, placement?: 'slot') => void;
   showNotice: (message: string) => void;
   supportsKlingV3Controls: boolean;
   supportsKlingV3VoiceControl: boolean;
@@ -220,11 +226,14 @@ export function WorkspaceComposerSurface({
   isSubmitting,
   preflightError,
   videoDurationBlocked = false,
+  referenceUploadStatus,
   preflight,
   composerRef,
   startRender,
   inputSchemaSummary,
   inputAssets,
+  parkedCreateReferences,
+  onRemoveParkedCreateReference,
   isUnifiedSeedance,
   isUnifiedKlingO3,
   klingO3UnsupportedVideoReason,
@@ -493,7 +502,7 @@ export function WorkspaceComposerSurface({
     [setForm, setViewMode]
   );
 
-  const assistanceContext={ form: { ...form, prompt: undefined }, klingElements, cfgScale, shotType, voiceIdsInput, voiceControlEnabled, multiPromptEnabled, seedValue, cameraFixedValue, safetyCheckerValue, draft: localDraftPreview && { selected: localDraftPreview.selected, phase: localDraftPreview.phase, live: localDraftPreview.live } };
+  const assistanceContext={ form: { ...form, prompt: undefined, createPreferences: undefined }, klingElements, cfgScale, shotType, voiceIdsInput, voiceControlEnabled, multiPromptEnabled, seedValue, cameraFixedValue, safetyCheckerValue, draft: localDraftPreview && { selected: localDraftPreview.selected, phase: localDraftPreview.phase, live: localDraftPreview.live } };
 
   return (
     <>
@@ -534,11 +543,15 @@ export function WorkspaceComposerSurface({
         workflowNotice={resolvedWorkflowNotice}
         promotedActions={composerPromotedActions}
         assetFields={composerAssetFields}
+        referenceUploadStatus={referenceUploadStatus}
         referenceAuthAction={referenceAuthAction}
         assets={composerAssets}
         onAssetAdd={handleAssetAdd}
         onPrepareVideoExcerpt={handlePrepareVideoExcerpt}
         onVideoExcerptEditorChange={handleVideoExcerptEditorChange}
+        parkedReferences={!isVideoSourceWorkflow(activeManualMode ?? undefined) && activeManualMode !== 'retake' && parkedCreateReferences?.length ? parkedCreateReferences.map(reference => ({
+          key: parkedCreateReferenceKey(reference), name: parkedCreateReferenceName(reference), remove: () => onRemoveParkedCreateReference?.(reference),
+        })) : undefined}
         onAssetRemove={handleAssetRemove}
         onNotice={showNotice}
         onOpenLibrary={handleOpenAssetLibrary}

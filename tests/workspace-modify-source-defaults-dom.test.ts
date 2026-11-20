@@ -224,6 +224,20 @@ test('Create settings are restored for their owning model after another model is
  }finally{await view.close();}
 });
 
+test('direct Create model selection re-enables audio even with a saved silent setup for that model', async () => {
+  const view = await mount('wan-3', 't2v');
+  try {
+    await view.w.fx.act(async () => view.w.probe.setForm({ ...view.w.probe.form, audio: false }));
+    await view.w.fx.act(async () => view.w.probe.composer.handleEngineChange('wan-3-prime'));
+    assert.equal(view.w.probe.form.audio, true);
+    await view.w.fx.act(async () => view.w.probe.setForm({ ...view.w.probe.form, audio: false }));
+    await view.w.fx.act(async () => view.w.probe.composer.handleEngineChange('wan-3'));
+    assert.equal(view.w.probe.form.audio, true);
+  } finally {
+    await view.close();
+  }
+});
+
 for(const action of ['handleModeChange','handleEngineChange'])test(`${action} cannot strand an uploading source`,async()=>{
  const view=await mount();try{
   await view.select(source(0,'pending','uploading'));
@@ -344,6 +358,31 @@ for(const [engineId,firstField,lastField] of framedCreateCases){
   }finally{await reload.close();}
  });
 }
+
+test('moving a Create draft to another model leaves no stale Create reference behind a raw Modify link', async () => {
+  const field = 'reference_image_urls';
+  const view = await mount('wan-3', 'ref2v', { [field]: [frameImage(field)] }, {}, 'owner', true);
+  const storage: Record<string, string> = {};
+  try {
+    assert.equal(view.w.probe.assets[field]?.[0]?.assetId, field);
+    const form = view.w.JSON.parse(JSON.stringify({ ...view.w.probe.form, engineId: 'wan-3-prime', mode: 't2v' }));
+    await view.w.fx.act(async () => assert.equal(view.w.probe.composer.beforeApplyPreparedForm(form, true), true));
+    for (let index = 0; index < view.w.sessionStorage.length; index += 1) {
+      const key = view.w.sessionStorage.key(index);
+      storage[key] = view.w.sessionStorage.getItem(key);
+    }
+  } finally {
+    await view.close();
+  }
+  const reload = await mount('wan-3', 'v2v', {}, storage, 'owner', true);
+  try {
+    await reload.w.fx.act(async () => reload.w.probe.composer.handleComposerModeToggle(null));
+    assert.equal(reload.w.probe.composer.submissionMode, 't2v');
+    assert.equal(reload.w.probe.assets[field], undefined);
+  } finally {
+    await reload.close();
+  }
+});
 
 for(const [engineId,firstField,lastField] of framedCreateCases){
  test(`${engineId}: two-frame Create keeps newer frame edits and removals across repeated Extend visits`,async()=>{

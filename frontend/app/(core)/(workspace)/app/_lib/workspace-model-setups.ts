@@ -1,4 +1,6 @@
 import type { WorkspaceModelSetup } from './workspace-model-candidate';
+import { parseWorkspaceCreatePreferences } from './workspace-form-state';
+import { isCreateReferenceRole } from './workspace-create-continuity';
 import { normalizeVideoOperation } from '@/lib/video-operation';
 import { toolAssetRefSchema } from '@/lib/toolbox/contract';
 
@@ -94,6 +96,18 @@ function asset(value: unknown, fieldId?: string, allowExcerpt = true): unknown {
   result.previewUrl = http(value.previewUrl) ? value.previewUrl : value.url;
   return result;
 }
+function klingElement(element: unknown) {
+  if (!object(element) || !text(element.id) || !Array.isArray(element.references)
+    || !('frontal' in element) || !('video' in element)) throw new Error('invalid');
+  if (element.voiceId !== undefined && !text(element.voiceId)) throw new Error('invalid');
+  return {
+    id: element.id,
+    frontal: asset(element.frontal),
+    video: asset(element.video),
+    references: element.references.map(entry => asset(entry)),
+    ...(element.voiceId !== undefined ? { voiceId: element.voiceId } : {}),
+  };
+}
 /** Reuse the private draft's ready-asset validation for parked workflow references. */
 export function serializeWorkspaceReferenceAsset(value: unknown, fieldId: string): { ok: true; asset: unknown } | { ok: false } {
   try { return { ok: true, asset: asset(value, fieldId) }; } catch { return { ok: false }; }
@@ -187,6 +201,8 @@ export function serializeWorkspaceModelSetup(
         .filter((key) => f[key] !== undefined)
         .map((key) => [key, f[key]]),
     );
+    const createPreferences = parseWorkspaceCreatePreferences(f.createPreferences);
+    if (createPreferences) form.createPreferences = createPreferences;
     if (f.operation !== undefined) form.operation = normalizeVideoOperation(f.engineId, f.mode, f.operation);
     const inputAssets = Object.fromEntries(
       Object.entries(value.inputAssets).map(([field, entries]) => {
@@ -194,25 +210,32 @@ export function serializeWorkspaceModelSetup(
         return [field, entries.map((entry) => asset(entry, field))];
       }),
     );
-    const klingElements = value.klingElements.map((element) => {
-      if (
-        !object(element) ||
-        !text(element.id) ||
-        !Array.isArray(element.references) ||
-        !('frontal' in element) ||
-        !('video' in element)
-      )
-        throw new Error('invalid');
-      if (element.voiceId !== undefined && !text(element.voiceId)) throw new Error('invalid');
-      return {
-        id: element.id,
-        frontal: asset(element.frontal),
-        video: asset(element.video),
-        references: element.references.map((entry) => asset(entry)),
-        ...(element.voiceId !== undefined ? { voiceId: element.voiceId } : {}),
-      };
-    });
+    const klingElements = value.klingElements.map(klingElement);
+    let parkedCreateReferences: unknown[] = [];
+    if (value.parkedCreateReferences !== undefined) {
+      if (!Array.isArray(value.parkedCreateReferences)) throw new Error('invalid');
+      parkedCreateReferences = value.parkedCreateReferences.map(reference => {
+        if (!object(reference)) throw new Error('invalid');
+        if (reference.role === 'subject') {
+          if (!text(reference.engineId) || !reference.engineId.trim()) throw new Error('invalid');
+          const element = klingElement(reference.element);
+          if (!element.frontal && !element.video && !element.references.some(Boolean)) throw new Error('invalid');
+          return { role: reference.role, engineId: reference.engineId, element };
+        }
+        if (!text(reference.fieldId) || !reference.fieldId.trim()
+          || !finite(reference.index) || !Number.isInteger(reference.index) || reference.index < 0 || reference.index > 100
+          || !isCreateReferenceRole(reference.role)
+          || !reference.asset) throw new Error('invalid');
+        if (reference.role === 'keyframe'
+          && (!finite(reference.frameIndex) || !Number.isInteger(reference.frameIndex) || reference.frameIndex < 0 || reference.frameIndex > 480)) throw new Error('invalid');
+        return {
+          fieldId: reference.fieldId, index: reference.index, role: reference.role, asset: asset(reference.asset, reference.fieldId),
+          ...(reference.role === 'keyframe' ? { frameIndex: reference.frameIndex } : {}),
+        };
+      });
+    }
     const setup = {
+      ...(parkedCreateReferences.length ? { parkedCreateReferences } : {}),
       form,
       inputAssets,
       klingElements,

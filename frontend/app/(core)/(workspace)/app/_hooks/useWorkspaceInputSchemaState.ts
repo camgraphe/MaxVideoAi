@@ -1,4 +1,5 @@
 import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
+import { isFlux3MaxEngineId } from '@/lib/flux-3-max';
 import { useEffect, useMemo } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import { resolveEngineReferenceBudget } from '@/lib/reference-budget';
@@ -14,6 +15,7 @@ import {
 } from '../_lib/workspace-assets';
 import type { FormState } from '../_lib/workspace-form-state';
 import { summarizeWorkspaceInputSchema } from '../_lib/workspace-input-schema';
+import { FLUX_KEYFRAME_SLOTS_FIELD } from '../_lib/luma-ray32-keyframes';
 
 type UseWorkspaceInputSchemaStateOptions = {
   hydrationReady?: boolean;
@@ -82,6 +84,7 @@ export function useWorkspaceInputSchemaState({
     setForm((current) => {
       if (!current || current.engineId !== selectedEngine.id || selectedEngine.operationCaps || selectedEngine.id === 'luma-ray-3-2') return current;
       const allowedFieldIds = new Set(extraInputFields.map(({ field }) => field.id));
+      if (isFlux3MaxEngineId(selectedEngine.id) && submissionMode === 'ref2v') allowedFieldIds.add(FLUX_KEYFRAME_SLOTS_FIELD);
       const nextExtraInputValues = Object.entries(current.extraInputValues).reduce<
         Record<string, unknown>
       >((acc, [key, value]) => {
@@ -95,7 +98,7 @@ export function useWorkspaceInputSchemaState({
       }
       return { ...current, extraInputValues: nextExtraInputValues };
     });
-  }, [hydrationReady, selectedEngine, extraInputFields, setForm]);
+  }, [hydrationReady, selectedEngine, extraInputFields, setForm, submissionMode]);
 
   useEffect(() => {
     if (!hydrationReady || !selectedEngine || (selectedEngine.operationCaps || isKlingV4FalQueueEngineId(selectedEngine.id))) return;
