@@ -4,11 +4,13 @@ import type { GalleryFeedState } from '@/components/GalleryRail';
 import type { GroupedJobAction } from '@/components/GroupedJobCard';
 import type { QuadPreviewTile, QuadTileAction } from '@/components/QuadPreviewPanel';
 import { normalizeGroupSummary } from '@/lib/normalize-group-summary';
+import { isVideoSourceWorkflow } from '@/lib/video-source-workflow';
 import { adaptGroupSummary } from '@/lib/video-group-adapter';
 import type { SelectedVideoPreview } from '@/lib/video-preview-group';
 import type { GroupSummary } from '@/types/groups';
 import type { ResultProvider, VideoGroup } from '@/types/video-groups';
 import type { Job } from '@/types/jobs';
+import type { Mode } from '@/types/engines';
 import { groupJobsIntoSummaries } from '@/lib/job-groups';
 import { normalizeGroupSummaries } from '@/lib/normalize-group-summary';
 import { orderGalleryGroups } from '@/components/gallery-rail-utils';
@@ -22,6 +24,7 @@ import { DEFAULT_PROMPT, emitClientMetric } from '../_lib/workspace-client-helpe
 import { STORAGE_KEYS } from '../_lib/workspace-storage';
 
 type ViewMode = 'single' | 'quad';
+type GalleryOpenOptions = { autoPlayPreview?: boolean; automaticStarter?: boolean };
 
 type GuidedNavigation = {
   currentIndex: number;
@@ -36,6 +39,8 @@ type UseWorkspaceGalleryActionsOptions = {
   guestStarterReady?: boolean;
   initialPreviewGroup?: VideoGroup | null;
   prompt?: string;
+  automaticPrompt?: string | null;
+  activeManualMode?: Mode | null;
   recentJobs?: Job[];
   provider: ResultProvider;
   renderGroups: Map<string, LocalRenderGroup>;
@@ -46,7 +51,7 @@ type UseWorkspaceGalleryActionsOptions = {
   selectedPreview: SelectedVideoPreview | null;
   compositeOverrideSummary: GroupSummary | null;
   applyVideoSettingsFromTile: (tile: QuadPreviewTile, options?: { promptSuffix?: string }) => boolean;
-  hydrateVideoSettingsFromJob: (jobId: string | null | undefined, options?: { promptSuffix?: string; publicExample?: boolean; requireSnapshot?: boolean }) => Promise<void>;
+  hydrateVideoSettingsFromJob: (jobId: string | null | undefined, options?: { promptSuffix?: string; publicExample?: boolean; requireSnapshot?: boolean; automaticStarter?: boolean }) => Promise<void>;
   focusComposer: () => void;
   showNotice: (message: string) => void;
   writeScopedStorage: (base: string, value: string | null) => void;
@@ -68,7 +73,7 @@ type UseWorkspaceGalleryActionsResult = {
   handleGalleryGroupAction: (
     group: GroupSummary,
     action: GroupedJobAction,
-    options?: { autoPlayPreview?: boolean }
+    options?: GalleryOpenOptions
   ) => void;
   handleGalleryFeedStateChange: (state: GalleryFeedState) => void;
   openGroupViaGallery: (group: GroupSummary) => void;
@@ -80,6 +85,8 @@ export function useWorkspaceGalleryActions({
   guestStarterReady = false,
   initialPreviewGroup,
   prompt = '',
+  automaticPrompt,
+  activeManualMode,
   recentJobs,
   provider,
   renderGroups,
@@ -207,7 +214,7 @@ export function useWorkspaceGalleryActions({
   }, [sharedPrompt, selectedPreview, showNotice]);
 
   const handleGalleryGroupAction = useCallback(
-    (group: GroupSummary, action: GroupedJobAction, options?: { autoPlayPreview?: boolean }) => {
+    (group: GroupSummary, action: GroupedJobAction, options?: GalleryOpenOptions) => {
       if (action === 'remove') {
         return;
       }
@@ -312,7 +319,9 @@ export function useWorkspaceGalleryActions({
         } catch {
           // ignore storage failures
         }
-        if (applyVideoSettingsFromTile(tile)) void hydrateVideoSettingsFromJob(heroJobId, { publicExample: tile.curated, requireSnapshot: tile.settingsSnapshot == null });
+        if (applyVideoSettingsFromTile(tile)) void hydrateVideoSettingsFromJob(heroJobId, {
+          publicExample: tile.curated, requireSnapshot: tile.settingsSnapshot == null, automaticStarter: options?.automaticStarter,
+        });
         return;
       }
 
@@ -354,6 +363,7 @@ export function useWorkspaceGalleryActions({
 
   useLayoutEffect(() => {
     if (!guestStarterReady || guestStarterApplied.current || !isGuidedSamplesActive) return;
+    if (automaticPrompt === null || isVideoSourceWorkflow(activeManualMode ?? undefined)) return;
     // Keep the playlist's editorial first item when the gallery sorts its feed by date.
     const initialStarter = initialPreviewGroup?.items.find(item => item.meta?.curated);
     const starterId = initialStarter?.jobId ?? initialStarter?.id;
@@ -368,8 +378,8 @@ export function useWorkspaceGalleryActions({
     const previewIsSample = selectedPreview && guidedSampleGroups.some(group =>
       group.members.some(member => member.id === selectedPreview.id || member.jobId === selectedPreview.id));
     if ((selectedPreview && !previewIsSample) || compositeOverrideSummary || (prompt.trim() && prompt !== DEFAULT_PROMPT)) return;
-    handleGalleryGroupAction(firstSample, 'open');
-  }, [guestStarterReady, initialPreviewGroup, isGuidedSamplesActive, guidedSampleGroups, prompt, selectedPreview, compositeOverrideSummary, handleGalleryGroupAction]);
+    handleGalleryGroupAction(firstSample, 'open', { automaticStarter: true });
+  }, [guestStarterReady, automaticPrompt, activeManualMode, initialPreviewGroup, isGuidedSamplesActive, guidedSampleGroups, prompt, selectedPreview, compositeOverrideSummary, handleGalleryGroupAction]);
 
   useEffect(() => {
     if (isGuidedSamplesActive) return;

@@ -40,7 +40,21 @@ function useAccountField<T>(scope: string | null, initial: T | (() => T)) {
 
 export function useWorkspaceRouteFormState(accountScope: string | null = 'legacy') {
   const [form, setForm] = useAccountField<FormState | null>(accountScope, null);
-  const [prompt, setPrompt] = useAccountField<string>(accountScope, DEFAULT_PROMPT);
+  const [promptDraft, setPromptDraft] = useAccountField(accountScope, { text: DEFAULT_PROMPT, automatic: true });
+  const hideAutomaticPrompt = form?.mode === 'reframe' || (form?.mode === 'v2v' && form.operation !== 'kling-reference');
+  const automaticPrompt = promptDraft.automatic ? promptDraft.text : null;
+  const prompt = promptDraft.automatic && hideAutomaticPrompt ? '' : promptDraft.text;
+  const setPrompt = useCallback<Dispatch<SetStateAction<string>>>((action) => {
+    setPromptDraft((current) => {
+      const visible = current.automatic && hideAutomaticPrompt ? '' : current.text;
+      const text = typeof action === 'function' ? action(visible) : action;
+      return !current.automatic && current.text === text ? current : { text, automatic: false };
+    });
+  }, [hideAutomaticPrompt, setPromptDraft]);
+  const setAutomaticPrompt = useCallback((text: string | undefined) => {
+    if (text !== undefined) setPromptDraft((current) =>
+      current.automatic && current.text === text ? current : { text, automatic: true });
+  }, [setPromptDraft]);
   const [negativePrompt, setNegativePrompt] = useAccountField<string>(accountScope, '');
   const [multiPromptEnabled, setMultiPromptEnabled] = useAccountField(accountScope, false);
   const [multiPromptScenes, setMultiPromptScenes] = useAccountField<MultiPromptScene[]>(
@@ -88,6 +102,8 @@ export function useWorkspaceRouteFormState(accountScope: string | null = 'legacy
     setForm,
     prompt,
     setPrompt,
+    automaticPrompt,
+    setAutomaticPrompt,
     negativePrompt,
     setNegativePrompt,
     multiPromptEnabled,

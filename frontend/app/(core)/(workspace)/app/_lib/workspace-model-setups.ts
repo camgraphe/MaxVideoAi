@@ -166,6 +166,7 @@ export function serializeWorkspaceModelSetup(
       throw new Error('invalid');
     for (const key of ['prompt', 'negativePrompt', 'voiceIdsInput'])
       if (!text(value[key])) throw new Error('invalid');
+    if (value.automaticPrompt !== undefined && !text(value.automaticPrompt)) throw new Error('invalid');
     if (
       typeof value.multiPromptEnabled !== 'boolean' ||
       !text(value.shotType) ||
@@ -240,6 +241,7 @@ export function serializeWorkspaceModelSetup(
       inputAssets,
       klingElements,
       prompt: value.prompt,
+      ...(value.automaticPrompt !== undefined ? { automaticPrompt: value.automaticPrompt } : {}),
       negativePrompt: value.negativePrompt,
       multiPromptEnabled: value.multiPromptEnabled,
       multiPromptScenes: value.multiPromptScenes.map((scene) => ({

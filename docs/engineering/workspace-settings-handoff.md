@@ -51,6 +51,9 @@ the explicit reference and the Storyboard job hint separately.
 - Returning to a parked Create setup retains its available recorded mode before
   schema reconciliation. In particular, a recalled two-frame recipe may use
   canonical `first_frame_url`; inferring image-to-video would discard that input.
+- Modify and Reframe start with an empty prompt when only the automatic starter
+  text is available. Typed and explicitly recalled prompts retain their content
+  through mode switches and reloads.
 - A model selected from the authenticated Create draft takes the latest prompt,
   preferred duration, resolution and aspect ratio with it. The target uses its
   defaults where needed and keeps the preference for a later compatible model.

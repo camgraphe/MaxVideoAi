@@ -1,5 +1,6 @@
 export const STORAGE_KEYS = {
   prompt: 'maxvideoai.generate.prompt.v1',
+  automaticPrompt: 'maxvideoai.generate.automaticPrompt.v1',
   negativePrompt: 'maxvideoai.generate.negativePrompt.v1',
   form: 'maxvideoai.generate.form.v1',
   memberTier: 'maxvideoai.generate.memberTier.v1',

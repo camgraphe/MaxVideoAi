@@ -268,6 +268,7 @@ export default function AppClientPage({
       !draft.effectiveRequestedEngineToken && !draft.effectiveRequestedMode && renderState.renders.length === 0 &&
       (!initialPreviewGroup || initialPreviewGroup.items.every(item => item.meta?.curated)),
     initialPreviewGroup, prompt: routeForm.prompt, provider: app.provider, recentJobs: app.recentJobs,
+    automaticPrompt: routeForm.automaticPrompt, activeManualMode: composer.activeManualMode,
     renderGroups: renderState.renderGroups,
     batchHeroes: renderState.batchHeroes,
     preflightCurrency: pricing.preflight?.currency,

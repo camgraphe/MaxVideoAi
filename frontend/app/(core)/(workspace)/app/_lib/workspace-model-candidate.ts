@@ -31,6 +31,7 @@ export type WorkspaceModelSetup = {
   inputAssets: Record<string, (ReferenceAsset | null)[]>;
   klingElements: KlingElementState[];
   prompt: string;
+  automaticPrompt?: string;
   negativePrompt: string;
   multiPromptEnabled: boolean;
   multiPromptScenes: MultiPromptScene[];

@@ -237,8 +237,10 @@ export function WorkspaceAppReadyView({
   } = gallery;
 
   const currentSetup = useMemo(
-    () => form ? { form, inputAssets, ...(parkedCreateReferences?.length ? { parkedCreateReferences } : {}), klingElements, prompt, negativePrompt, multiPromptEnabled, multiPromptScenes, shotType, voiceIdsInput, cfgScale } : null,
-    [form, inputAssets, parkedCreateReferences, klingElements, prompt, negativePrompt, multiPromptEnabled, multiPromptScenes, shotType, voiceIdsInput, cfgScale],
+    () => form ? { form, inputAssets, ...(parkedCreateReferences?.length ? { parkedCreateReferences } : {}), klingElements, prompt,
+      ...(routeForm.automaticPrompt != null ? { automaticPrompt: routeForm.automaticPrompt } : {}),
+      negativePrompt, multiPromptEnabled, multiPromptScenes, shotType, voiceIdsInput, cfgScale } : null,
+    [form, inputAssets, parkedCreateReferences, klingElements, prompt, routeForm.automaticPrompt, negativePrompt, multiPromptEnabled, multiPromptScenes, shotType, voiceIdsInput, cfgScale],
   );
   const modelReview = useWorkspaceModelReview({
     recoverySetup: activeDraft.recoverySetup,
@@ -254,6 +256,7 @@ export function WorkspaceAppReadyView({
     applyPreparedForm: composer.applyPreparedForm, setInputAssets: assets.setInputAssets,
     setParkedCreateReferences: assets.setParkedCreateReferences,
     setKlingElements: routeForm.setKlingElements, setPrompt, setNegativePrompt, setMultiPromptEnabled,
+    setAutomaticPrompt: routeForm.setAutomaticPrompt,
     setMultiPromptScenes: routeForm.setMultiPromptScenes, setShotType, setVoiceIdsInput, setCfgScale,
   });
   const modelPicker = useWorkspaceModelPicker({ applyScenario: modelReview.applyPickerScenario, current: currentSetup, engines, locale: uiLocale, memberTier: routeForm.memberTier,

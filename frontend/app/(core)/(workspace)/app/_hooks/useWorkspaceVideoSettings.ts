@@ -73,6 +73,7 @@ type VideoSettingsRecall = {
 type VideoSettingsHydrationOptions = {
   promptSuffix?: string;
   publicExample?: boolean;
+  automaticStarter?: boolean;
   requireSnapshot?: boolean;
   publicSnapshot?: unknown;
   onSettled?: (applied: boolean) => void;
@@ -106,6 +107,7 @@ type UseWorkspaceVideoSettingsOptions = {
   writeScopedStorage: (base: string, value: string) => void;
   replaceRoute: (href: string) => void;
   setPrompt: Dispatch<SetStateAction<string>>;
+  setAutomaticPrompt?: (text: string) => void;
   setNegativePrompt: Dispatch<SetStateAction<string>>;
   setMemberTier: Dispatch<SetStateAction<MemberTier>>;
   setCfgScale: Dispatch<SetStateAction<number | null>>;
@@ -153,6 +155,7 @@ export function useWorkspaceVideoSettings({
   writeScopedStorage,
   replaceRoute,
   setPrompt,
+  setAutomaticPrompt,
   setNegativePrompt,
   setMemberTier,
   setCfgScale,
@@ -270,7 +273,7 @@ export function useWorkspaceVideoSettings({
   }, [fromVideoId, searchString, valid]);
 
   const applyVideoSettingsSnapshot = useCallback(
-    (snapshot: unknown, promptSuffix = '', preparedReferences?: PublicRecipeReferences, application: { preserveParkedSources?: boolean } = {}) => {
+    (snapshot: unknown, promptSuffix = '', preparedReferences?: PublicRecipeReferences, application: { preserveParkedSources?: boolean; automaticStarter?: boolean } = {}) => {
       if (!valid()) return false;
       try {
         const resolved = resolveVideoSettingsSnapshot(snapshot, {
@@ -287,7 +290,8 @@ export function useWorkspaceVideoSettings({
         setPendingRecall(null);
         setFailedRecall(null);
         snapshotCommitPendingRef.current = true;
-        setPrompt(resolved.prompt + promptSuffix);
+        const writePrompt = application.automaticStarter && setAutomaticPrompt ? setAutomaticPrompt : setPrompt;
+        writePrompt(resolved.prompt + promptSuffix);
         setNegativePrompt(resolved.negativePrompt);
         if (resolved.memberTier) {
           setMemberTier(resolved.memberTier);
@@ -352,6 +356,7 @@ export function useWorkspaceVideoSettings({
       setNegativePrompt,
       setNotice,
       setPrompt,
+      setAutomaticPrompt,
       setShotType,
       setVoiceIdsInput,
     ],
@@ -423,7 +428,9 @@ export function useWorkspaceVideoSettings({
               throw error;
             } finally { operation.finish(); }
           }
-          if (!isCurrent() || !applyVideoSettingsSnapshot(payload.settingsSnapshot, options?.promptSuffix, references)) return;
+          if (!isCurrent() || !applyVideoSettingsSnapshot(payload.settingsSnapshot, options?.promptSuffix, references, {
+            automaticStarter: options?.automaticStarter,
+          })) return;
           guestPublicRecallRef.current = null;
           options?.onSettled?.(true);
         }

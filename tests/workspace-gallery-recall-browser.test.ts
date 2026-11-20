@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { mkdir, readFile } from 'node:fs/promises';
-import { chromium, webkit, expect, type Route } from '@playwright/test';
+import { chromium, devices, webkit, expect, type Route } from '@playwright/test';
 import { startWorkspaceReferenceFixture } from './helpers/workspace-reference-browser-fixture';
 import { galleryRecallBrowserSource } from './helpers/workspace-gallery-recall-browser-source';
 import { sanitizePublicRecreationSnapshot } from '../frontend/server/marketing-media/public-recreation';
@@ -20,6 +20,65 @@ function detail(mode: 'v2v' | 'extend', origin: string) {
       width: 1080, height: 1920, durationSec: 7.5, type: 'video/mp4', size: 4096 }] },
   } };
 }
+
+test('fresh mobile Modify suppresses automatic example text and keeps authored or explicitly recalled prompts', { timeout: 90000 }, async () => {
+  const engineId = 'wan-3-prime';
+  const samplePrompt = 'Automatic launch example. '.repeat(165);
+  const starter = {
+    jobId: 'job_starter', curated: true, engineId, engineLabel: 'Wan 3 Prime', durationSec: 5,
+    aspectRatio: '16:9', prompt: 'A short preview', createdAt: '2026-10-01T00:00:00Z', status: 'completed',
+    videoUrl: '/starter.mp4', thumbUrl: '/starter.svg',
+  };
+  const harnessSource = (await readFile('tests/helpers/workspace-gallery-recall-harness.ts', 'utf8')).replaceAll('../../frontend/', './');
+  const source = harnessSource + '\n' + galleryRecallBrowserSource.replace("import {useGalleryRecallHarness} from '../tests/helpers/workspace-gallery-recall-harness';", '');
+  const fixture = await startWorkspaceReferenceFixture({ source, config: { jobs: [starter], guestJourney: true, fullSurface: true },
+    hostModules: { '@/lib/authFetch': 'export const authFetch=(url,options)=>fetch(url,options);' },
+  });
+  const browser = await webkit.launch();
+  try {
+    const page = await browser.newPage({ ...devices['iPhone 13'], viewport: { width: 390, height: 664 } });
+    await page.route('**/api/videos/job_starter', route => route.fulfill({ json: {
+      ok: true, video: { ...starter, id: starter.jobId, recreationSnapshot: sanitizePublicRecreationSnapshot({
+        schemaVersion: 1, surface: 'video', engineId, inputMode: 't2v', prompt: samplePrompt,
+        core: { durationSec: 5, resolution: '720p', aspectRatio: '16:9' }, refs: { inputs: [] },
+      }) },
+    } }));
+    await page.goto(`${fixture.url}/fr`);
+    await page.getByRole('link', { name: 'Créer une vidéo' }).tap();
+    const prompt = page.getByRole('textbox', { name: 'Prompt', exact: true });
+    const modify = page.locator('[data-composer-mode="v2v"]');
+    await expect(prompt).toHaveValue(samplePrompt);
+    await modify.tap();
+    await expect(modify).toHaveAttribute('aria-pressed', 'true');
+    await expect(prompt).toHaveAttribute('placeholder', 'Describe the changes you want…');
+    await expect(prompt).toHaveValue('');
+    await page.reload();
+    await expect(prompt).toHaveValue('');
+
+    await page.locator('[data-composer-mode="create"]').tap();
+    await expect(prompt).toHaveValue(samplePrompt);
+    const writtenPrompt = 'Keep her motion and soften the background.';
+    await prompt.fill(writtenPrompt);
+    await modify.tap();
+    await expect(prompt).toHaveValue(writtenPrompt);
+    await page.reload();
+    await expect(prompt).toHaveValue(writtenPrompt);
+    await page.getByRole('button', { name: 'Open Wan 3 Prime' }).tap();
+    await expect(prompt).toHaveValue(samplePrompt);
+    await modify.tap();
+    await expect(prompt).toHaveValue(samplePrompt);
+    await page.reload();
+    await expect(prompt).toHaveValue(samplePrompt);
+
+    const direct = await browser.newPage({ ...devices['iPhone 13'] });
+    await direct.goto(`${fixture.url}/app?engine=${engineId}&mode=v2v`);
+    await expect(direct.locator('[data-composer-mode="v2v"]')).toHaveAttribute('aria-pressed', 'true');
+    await expect(direct.getByRole('textbox', { name: 'Prompt', exact: true })).toHaveValue('');
+  } finally {
+    await browser.close();
+    await fixture.close();
+  }
+});
 
 test('gallery recall renders Modify and Extend controls after delayed job detail without losing later edits', { timeout: 180000 }, async () => {
   const harnessSource = (await readFile('tests/helpers/workspace-gallery-recall-harness.ts', 'utf8')).replaceAll('../../frontend/', './');
