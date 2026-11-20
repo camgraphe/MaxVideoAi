@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react';
 import { ArrowDown, ArrowUpRight, AudioLines, Film, Image as ImageIcon, SlidersHorizontal, Volume2, VolumeX } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
+import Image from 'next/image';
+import NextLink from 'next/link';
 import type { AppLocale } from '@/i18n/locales';
 import type { OpeningRow } from '../_lib/pricing-opening';
 import { pricingOpeningCopy, pricingCitation } from '../_lib/pricing-opening-copy';
@@ -30,7 +32,7 @@ export function PricingHeroSection({ locale, hero, rows, quotedOn, children }: P
     <header className={styles.opening}>
       <div className={styles.inner}>
         <div className={styles.intro}>
-          <img src="/assets/pricing/sunburst-filmstrip.webp" width={566} height={285} alt="" className={styles.film} />
+          <Image unoptimized src="/assets/pricing/sunburst-filmstrip.webp" width={566} height={285} alt="" className={styles.film} />
           <div className={styles.lead}>
             <h1>{hero.title}</h1>
             <p>{hero.subtitle}</p>
@@ -85,7 +87,7 @@ export function PricingHeroSection({ locale, hero, rows, quotedOn, children }: P
       </div>
       {children}
       <div className={styles.terms}>
-        <ul>{hero.badges.map(badge => <li key={badge}>{badge === hero.badges.at(-1) ? <a href="/return-policy">{badge}</a> : badge}</li>)}</ul>
+        <ul>{hero.badges.map(badge => <li key={badge}>{badge === hero.badges.at(-1) ? <NextLink href="/return-policy" prefetch={false}>{badge}</NextLink> : badge}</li>)}</ul>
         <Link href="/app" prefetch={false}>{hero.primaryCta} <ArrowUpRight size={15} aria-hidden="true" /></Link>
       </div>
     </header>

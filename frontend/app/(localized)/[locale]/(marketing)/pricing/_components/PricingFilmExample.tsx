@@ -1,4 +1,6 @@
 import { ArrowUpRight } from 'lucide-react';
+import Image from 'next/image';
+import NextLink from 'next/link';
 import type { AppLocale } from '@/i18n/locales';
 import styles from './pricing-opening.module.css';
 
@@ -11,9 +13,9 @@ const copy = {
 export function PricingFilmExample({ locale }: { locale: AppLocale }) {
   const [title, description, link] = copy[locale];
   return (
-    <a href="/video/seedance-2-5-hard-bounce-ai-music-video" className={styles.proof}>
+    <NextLink prefetch={false} href="/video/seedance-2-5-hard-bounce-ai-music-video" className={styles.proof}>
       <div><h2>{title}</h2><p>{description}</p><span>{link} <ArrowUpRight size={15} aria-hidden="true" /></span></div>
-      <img src="/assets/marketing/payg/seedance-contact.webp" width={520} height={454} loading="lazy" alt="" />
-    </a>
+      <Image unoptimized src="/assets/marketing/payg/seedance-contact.webp" width={520} height={454} loading="lazy" alt="" />
+    </NextLink>
   );
 }
