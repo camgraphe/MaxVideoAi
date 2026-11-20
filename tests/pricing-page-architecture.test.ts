@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import test from 'node:test';
 
 type EngineCatalogEntry = {
@@ -309,9 +309,11 @@ test('popular checks and non-video pricing surfaces are compact matrices', () =>
   assert.match(hubCopySource, /Tarifs des images, de l’audio et des outils/);
   assert.match(hubCopySource, /Image generation pricing/);
   assert.match(hubCopySource, /Tarifs de génération d’images/);
-  assert.match(otherSurfacesSource, /id="image-pricing" className=\{`scroll-mt-24/);
-  assert.match(otherSurfacesSource, /id="audio-pricing" className=\{`scroll-mt-24/);
-  assert.match(otherSurfacesSource, /id="tool-pricing" className=\{`scroll-mt-24/);
+  for (const surface of ['image', 'audio', 'tool']) {
+    assert.ok(otherSurfacesSource.includes(`id="${surface}-pricing" className={styles.surfaceBody}`));
+  }
+  const catalogueStyles = readFileSync(join(dirname(otherSurfacesPath), 'pricing-catalog.module.css'), 'utf8');
+  assert.match(catalogueStyles, /\.surfaceBody\s*\{[^}]*scroll-margin-top:/, 'Bookmarked pricing tables clear the fixed header and retain their category title');
   assert.match(hubCopySource, /Audio pricing/);
   assert.match(hubCopySource, /Prix audio/);
   assert.match(hubCopySource, /Creative tools and upscaling prices/);
