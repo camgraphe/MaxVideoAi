@@ -32,7 +32,7 @@ export function PricingHeroSection({ locale, hero, rows, quotedOn, children }: P
     <header className={styles.opening}>
       <div className={styles.inner}>
         <div className={styles.intro}>
-          <Image unoptimized src="/assets/pricing/sunburst-filmstrip.webp" width={566} height={285} alt="" className={styles.film} />
+          <Image unoptimized src="/assets/pricing/sunburst-filmstrip.webp" width={566} height={285} alt="" aria-hidden="true" className={styles.film} />
           <div className={styles.lead}>
             <h1>{hero.title}</h1>
             <p>{hero.subtitle}</p>
