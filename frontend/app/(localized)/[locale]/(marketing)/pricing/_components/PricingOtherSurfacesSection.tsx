@@ -76,7 +76,7 @@ export function PricingOtherSurfacesSection({ data, locale }: { data: OtherSurfa
 
       <details id="image-pricing" className={`scroll-mt-24 sm:scroll-mt-28 ${styles.surface}`}>
         <summary className={styles.surfaceHead}>
-          <span className={styles.thumb}><Image src="/assets/model-examples/seedream-5-0-pro/campaign.webp" width={280} height={120} sizes="(max-width: 760px) 78px, 360px" alt="" loading="lazy" /></span>
+          <span className={styles.thumb}><Image src="/assets/model-examples/seedream-5-0-pro/campaign.webp" width={280} height={120} sizes="(max-width: 760px) 78px, 360px" alt="" aria-hidden="true" loading="lazy" /></span>
           <h3 id="image-pricing-title">{editorial.imageHead}</h3>
           <ChevronDown size={20} aria-hidden="true" />
         </summary>
@@ -116,7 +116,7 @@ export function PricingOtherSurfacesSection({ data, locale }: { data: OtherSurfa
 
       <details id="audio-pricing" className={`scroll-mt-24 sm:scroll-mt-28 ${styles.surface}`}>
         <summary className={styles.surfaceHead}>
-          <span className={styles.thumb}><Image src="/assets/pricing/opal-waveform.webp" width={280} height={120} sizes="(max-width: 760px) 78px, 360px" alt="" loading="lazy" /></span>
+          <span className={styles.thumb}><Image src="/assets/pricing/opal-waveform.webp" width={280} height={120} sizes="(max-width: 760px) 78px, 360px" alt="" aria-hidden="true" loading="lazy" /></span>
           <h3 id="audio-pricing-title">{editorial.audioHead}</h3>
           <ChevronDown size={20} aria-hidden="true" />
         </summary>
@@ -154,7 +154,7 @@ export function PricingOtherSurfacesSection({ data, locale }: { data: OtherSurfa
 
       <details id="tool-pricing" className={`scroll-mt-24 sm:scroll-mt-28 ${styles.surface}`}>
         <summary className={styles.surfaceHead}>
-          <span className={styles.thumb}><Image src="/assets/tools/angle-orbit-hero-dialogue-elevated.webp" width={280} height={120} sizes="(max-width: 760px) 78px, 360px" alt="" loading="lazy" /></span>
+          <span className={styles.thumb}><Image src="/assets/tools/angle-orbit-hero-dialogue-elevated.webp" width={280} height={120} sizes="(max-width: 760px) 78px, 360px" alt="" aria-hidden="true" loading="lazy" /></span>
           <h3 id="tool-pricing-title">{editorial.toolHead}</h3>
           <ChevronDown size={20} aria-hidden="true" />
         </summary>

@@ -56,7 +56,7 @@ export function PricingHeroSection({ locale, hero, rows, quotedOn, canonical }: 
       <section id="video-quote" aria-labelledby="video-quote-title" className={styles.comparison}>
         <div className={styles.compareTitle}><h2 id="video-quote-title">{alternatives.length === 2 ? copy.compare : copy.examples}</h2><p className={styles.conditions}>{copy.conditions}</p></div>
         <div className={styles.choices}>{alternatives.map(row => <div key={row.id} className={styles.choice}>
-          <Image className={styles.modelStill} src={row.id === 'kling-v4' ? '/assets/pricing/kling-4-concert.webp' : '/assets/model-examples/seedance-2-5/ca3df1e9a0bc552a6300c6097f2c6d97803b489f90b3a6050f3431725a81c3c3.webp'} alt="" width={420} height={154} sizes="(max-width: 720px) 46vw, 310px" loading="lazy" />
+          <Image className={styles.modelStill} src={row.id === 'kling-v4' ? '/assets/pricing/kling-4-concert.webp' : '/assets/model-examples/seedance-2-5/ca3df1e9a0bc552a6300c6097f2c6d97803b489f90b3a6050f3431725a81c3c3.webp'} alt={row.id === 'kling-v4' ? copy.klingStill : copy.seedanceStill} width={420} height={154} sizes="(max-width: 720px) 46vw, 310px" loading="lazy" />
           <a className={styles.model} href={'#' + row.anchor}>{row.name}</a><span>{copy.meta}</span><strong>{row.price ?? copy.check}</strong>
           <a href={row.href} data-estimate={row.id} aria-label={copy.quote + ' · ' + row.name}
             data-analytics-event="cta_click" data-analytics-cta-name="pricing_quote" data-analytics-cta-location="pricing_hero" data-analytics-target-family="workspace">{copy.quote} ↗</a>
