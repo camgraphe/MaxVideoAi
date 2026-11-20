@@ -8,6 +8,7 @@ import { ModelCinematicPrompt } from './ModelCinematicAsset';
 /** Keep the opening visual's original prompt attached to that visual. */
 export function ModelCinematicOverview({ presentation }: { presentation: CinematicPresentation }) {
   const { content, hero, ui, examples } = presentation;
+  if (!hero) return null;
   if (hero.videoCreation) return <div className="cinema-hero-evidence" title={ui.heroPrompt}><ModelCinematicVideoPrompt
     title={hero.title} prompt={hero.prompt} note={hero.metadataLabel} imageDetailsLabel={ui.sourcePrompt}
     ui={ui} triggerLabel={ui.heroPrompt} creation={hero.videoCreation}

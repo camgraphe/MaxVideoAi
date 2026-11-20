@@ -11,9 +11,9 @@ export function cinematicRecipeLinks(href: string | null | undefined, locale: Ap
   return { href: reuse, refineHref: entry.pathname + entry.search };
 }
 
-export function cinematicWorkflowHref(href: string, workflow: 'create' | 'modify' | 'extend') {
+export function cinematicWorkflowHref(href: string, workflow: 'create' | 'modify' | 'extend', createMode: 't2v' | 'i2v' | 'ref2v' = 't2v') {
   const entry = new URL(href, 'https://maxvideoai.com');
-  entry.searchParams.set('mode', { create: 't2v', modify: 'v2v', extend: 'extend' }[workflow]);
+  entry.searchParams.set('mode', { create: createMode, modify: 'v2v', extend: 'extend' }[workflow]);
   return entry.pathname + entry.search;
 }
 

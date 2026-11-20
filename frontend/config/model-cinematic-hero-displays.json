@@ -49,14 +49,6 @@
         ],
         "aspect": 1.7777777777777777,
         "position": 0.5
-      },
-      "kling-image-4-hero": {
-        "widths": [
-          480,
-          720
-        ],
-        "aspect": 0.65,
-        "position": 0.94
       }
     }
   },
@@ -156,55 +148,6 @@
           "width": 1280,
           "height": 704,
           "bytes": 13693
-        }
-      ]
-    },
-    {
-      "id": "kling-image-4-hero",
-      "originalSha256": "54bc7eb786ddd80a3b85efae5c114bd5326df265a0ff491007352479ff1b760f",
-      "crop": {
-        "left": 818,
-        "top": 0,
-        "width": 666,
-        "height": 1024
-      },
-      "desktop": [
-        {
-          "url": "/assets/model-examples/cinematic-heroes/926a4a4de71a16b69fb3b95034a296904c997b217a5d06c15faf3b60c5adadf8.avif",
-          "sha256": "926a4a4de71a16b69fb3b95034a296904c997b217a5d06c15faf3b60c5adadf8",
-          "width": 960,
-          "height": 640,
-          "bytes": 15499
-        },
-        {
-          "url": "/assets/model-examples/cinematic-heroes/b0cbe89d957fb1f229a7e20c160e75676bca111fdbdbd9583c9566389288a5cf.avif",
-          "sha256": "b0cbe89d957fb1f229a7e20c160e75676bca111fdbdbd9583c9566389288a5cf",
-          "width": 1536,
-          "height": 1024,
-          "bytes": 33707
-        },
-        {
-          "url": "/assets/model-examples/cinematic-heroes/b0cbe89d957fb1f229a7e20c160e75676bca111fdbdbd9583c9566389288a5cf.avif",
-          "sha256": "b0cbe89d957fb1f229a7e20c160e75676bca111fdbdbd9583c9566389288a5cf",
-          "width": 1536,
-          "height": 1024,
-          "bytes": 33707
-        }
-      ],
-      "mobile": [
-        {
-          "url": "/assets/model-examples/cinematic-heroes/7bd43b972d7090f9568d04551459587113fd6da63724d655dcae440263412e5b.avif",
-          "sha256": "7bd43b972d7090f9568d04551459587113fd6da63724d655dcae440263412e5b",
-          "width": 480,
-          "height": 738,
-          "bytes": 14754
-        },
-        {
-          "url": "/assets/model-examples/cinematic-heroes/3c8f3bcab8a97a1f0a72d9dec5cb083e51d35297b0090393abfd3f803082d8c5.avif",
-          "sha256": "3c8f3bcab8a97a1f0a72d9dec5cb083e51d35297b0090393abfd3f803082d8c5",
-          "width": 666,
-          "height": 1024,
-          "bytes": 25707
         }
       ]
     },

@@ -1,0 +1,56 @@
+{
+  "sourceProofId": "kling-v4-create",
+  "sourceUrl": "https://media.maxvideoai.com/marketing-media/74a2c6b5-5484-4885-9ab6-fbbf922504db/a3d2396eae4e1d8a32aeed3e1b42d98f791dab278fcf96f585d217885a87c9f2.mp4",
+  "sourceSha256": "a3d2396eae4e1d8a32aeed3e1b42d98f791dab278fcf96f585d217885a87c9f2",
+  "sourceResolution": {
+    "width": 1280,
+    "height": 720
+  },
+  "frames": [
+    {
+      "id": "platform",
+      "atSecond": 2.5,
+      "url": "/assets/model-examples/kling-v4/b0b5a1048cc80eac033927549fa926f756068423b178471904d08392d525fc47.webp",
+      "sha256": "b0b5a1048cc80eac033927549fa926f756068423b178471904d08392d525fc47",
+      "width": 512,
+      "height": 288,
+      "bytes": 13284
+    },
+    {
+      "id": "kitchen",
+      "atSecond": 8.3,
+      "url": "/assets/model-examples/kling-v4/e921b25742c985d2f958e16083807f1d919673b940f7f2a259a50bf4727415b8.webp",
+      "sha256": "e921b25742c985d2f958e16083807f1d919673b940f7f2a259a50bf4727415b8",
+      "width": 512,
+      "height": 288,
+      "bytes": 12768
+    },
+    {
+      "id": "dance",
+      "atSecond": 14.2,
+      "url": "/assets/model-examples/kling-v4/d9f7681e43bb86d7a728a2b1a51d3df2377dd7cc47acb9a2305c754390dd1e16.webp",
+      "sha256": "d9f7681e43bb86d7a728a2b1a51d3df2377dd7cc47acb9a2305c754390dd1e16",
+      "width": 512,
+      "height": 288,
+      "bytes": 10994
+    },
+    {
+      "id": "return",
+      "atSecond": 19.4,
+      "url": "/assets/model-examples/kling-v4/2842b31f54839ca6f98c04783aede4bf7ecd8c4f106037418ad97221c50b6c81.webp",
+      "sha256": "2842b31f54839ca6f98c04783aede4bf7ecd8c4f106037418ad97221c50b6c81",
+      "width": 512,
+      "height": 288,
+      "bytes": 14140
+    },
+    {
+      "id": "departure",
+      "atSecond": 25.5,
+      "url": "/assets/model-examples/kling-v4/10662d5ad554b32b16f40964507df6cd899a87b01d9f50f46cd840f1764e5dff.webp",
+      "sha256": "10662d5ad554b32b16f40964507df6cd899a87b01d9f50f46cd840f1764e5dff",
+      "width": 512,
+      "height": 288,
+      "bytes": 11900
+    }
+  ]
+}

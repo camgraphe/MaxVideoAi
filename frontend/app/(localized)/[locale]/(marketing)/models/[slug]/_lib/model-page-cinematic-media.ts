@@ -4,8 +4,11 @@ import createMedia from '@/config/model-cinematic-create-media.json';
 import finalMedia from '@/config/model-cinematic-final-media.json';
 import boards from '@/config/model-cinematic-workflow-boards.json';
 import publicProofs from '@/config/model-cinematic-public-proofs.json';
+import klingShotStills from '@/config/model-kling-v4-shot-stills.json';
+import klingWorkflowVisuals from '@/config/model-kling-v4-workflow-visuals.json';
 
 export type CinematicClip = Pick<typeof createMedia.create, 'src' | 'poster' | 'width' | 'height' | 'durationSeconds' | 'audio'> & { displayFormat?: string };
+export type CinematicShotStill = (typeof klingShotStills.frames)[number];
 export type CinematicMotionProof = {
   character: Pick<typeof createMedia.character, 'display' | 'width' | 'height'>;
   source: CinematicClip; result: CinematicClip;
@@ -17,6 +20,12 @@ export type CinematicVideoMedia = {
   heroAutoplay?: boolean;
   publicProofs?: readonly (typeof publicProofs)[number][];
   create: CinematicClip;
+  createStills?: readonly CinematicShotStill[];
+  promptingFrame?: {
+    id: string;
+    proofId: string;
+    image: { url: string; width: number; height: number; sha256: string };
+  };
   modify?: { source: CinematicClip; result: CinematicClip };
   focuses: Record<string, CinematicMotionProof>;
   boards: readonly Pick<typeof boards[number], 'id' | 'display'>[];
@@ -35,7 +44,14 @@ const videoMedia: Record<string, CinematicVideoMedia> = {
     const proofs = publicProofs.filter(proof => proof.modelSlug === model.modelSlug);
     const create = proofs.find(proof => proof.id.endsWith('-create'));
     if (!create) throw new Error(`Missing reviewed Create proof: ${model.modelSlug}`);
-    return [model.modelSlug, { ...model, frameSourceLabel: '', frames: [], publicProofs: proofs, create: create.clip,
+    const createStills = create.id === klingShotStills.sourceProofId && create.clip.src === klingShotStills.sourceUrl
+      ? klingShotStills.frames : undefined;
+    const promptingFrame = model.modelSlug === klingWorkflowVisuals.modelSlug && create.id === klingWorkflowVisuals.sourceProofId
+      && create.clip.src.endsWith(`${klingWorkflowVisuals.sourceSha256}.mp4`)
+      ? { id: klingWorkflowVisuals.promptGuide.id, proofId: create.id,
+        image: klingWorkflowVisuals.frames[klingWorkflowVisuals.promptGuide.frameId as keyof typeof klingWorkflowVisuals.frames] }
+      : undefined;
+    return [model.modelSlug, { ...model, frameSourceLabel: '', frames: [], publicProofs: proofs, create: create.clip, createStills, promptingFrame,
       focuses: {}, boards: [], examples: Object.fromEntries(proofs.map(proof => [proof.id, proof.clip])) }];
   })),
   [finalMedia.modelSlug]: {

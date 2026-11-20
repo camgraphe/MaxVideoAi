@@ -1,4 +1,3 @@
-import klingImageIllustrations from '../frontend/config/model-kling-image-4-illustrations.json';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
@@ -315,7 +314,7 @@ test('Flash replaces reviewed start frames with accurately attributed films and 
 });
 
 test('originals and displays retain measured geometry, immutable hashes and real alpha', async () => {
-  for (const image of [...parseSeedreamEditorialImages(seedreamRecords), ...klingImageIllustrations.assets]) {
+  for (const image of parseSeedreamEditorialImages(seedreamRecords)) {
     for (const file of [image.original, image.display]) {
       const bytes = readFileSync(filePath(file.url));
       const metadata = await sharp(bytes).metadata();
@@ -339,7 +338,7 @@ test('originals and displays retain measured geometry, immutable hashes and real
 });
 
 test('responsive cinematic hero displays retain their exact sources and immutable geometry', async () => {
-  const originals = [flashHero, ...parseSeedreamEditorialImages(seedreamRecords), ...startFrames, ...publicProofs, ...klingImageIllustrations.assets];
+  const originals = [flashHero, ...parseSeedreamEditorialImages(seedreamRecords), ...startFrames, ...publicProofs];
   for (const asset of heroDisplays.assets) {
     assert.equal(asset.originalSha256, originals.find(original => original.id === asset.id)?.original.sha256);
     assert.equal(asset.desktop.length, 3);
