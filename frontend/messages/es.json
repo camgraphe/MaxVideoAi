@@ -1757,9 +1757,9 @@
   "pricing": {
     "hero": {
       "eyebrow": "Precios de MaxVideoAI",
-      "title": "¿Cuánto cuesta generar un vídeo con IA?",
-      "subtitle": "Compara el precio en dólares por vídeo según el modelo, la duración, la resolución y el sonido. Consulta también las tarifas de imágenes, audio y herramientas.",
-      "supportingLine": "Paga por uso. Revisa el precio exacto en la app antes de generar. Las generaciones fallidas se reembolsan.",
+      "title": "Precios de MaxVideoAI",
+      "subtitle": "Paga por uso. Compara los precios de vídeo, imagen, audio y herramientas antes de crear.",
+      "supportingLine": "Si la generación falla por un problema técnico, los créditos vuelven a tu saldo.",
       "quickStartTitle": "Tres puntos de partida para tu próximo video",
       "quickStartNote": "Precio disponible más bajo entre los modelos actuales elegibles para cada ajuste mostrado, en USD por vídeo. Son ajustes distintos, no una clasificación de calidad. Abre la fila para ver los detalles y confirma el presupuesto antes de generar.",
       "primaryCta": "Consultar un precio en la app",
@@ -1768,7 +1768,7 @@
         "Sin suscripción",
         "Explora la app antes de registrarte",
         "Recarga saldo cuando lo necesites",
-        "Las generaciones fallidas se reembolsan"
+        "Créditos devueltos si hay un fallo técnico"
       ],
       "link": {
         "before": "Compara los precios entre motores en nuestra ",

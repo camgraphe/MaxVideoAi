@@ -1659,9 +1659,9 @@
   "pricing": {
     "hero": {
       "eyebrow": "MaxVideoAI Pricing",
-      "title": "How much does an AI video cost?",
-      "subtitle": "Compare prices in US dollars per video by model, duration, resolution and sound. You can also check prices for images, audio and tools.",
-      "supportingLine": "Pay as you go. Confirm the exact price in the app before generating. Failed generations are refunded.",
+      "title": "MaxVideoAI pricing",
+      "subtitle": "Pay as you go. Compare video, image, audio and tool prices before you create.",
+      "supportingLine": "Technically failed generations are recredited to your balance.",
       "quickStartTitle": "Three starting points for your next video",
       "quickStartNote": "Lowest available current-generation price for each shown preset, in USD per video. These are different settings, not a quality ranking. Open the row for details and confirm the quote before generating.",
       "primaryCta": "Check a price in the app",
@@ -1670,7 +1670,7 @@
         "No subscription",
         "Explore the app before signing up",
         "Add credit when you need it",
-        "Failed generations are refunded"
+        "Technical failures credited back to your balance"
       ],
       "link": {
         "before": "See how pricing compares across engines in our ",

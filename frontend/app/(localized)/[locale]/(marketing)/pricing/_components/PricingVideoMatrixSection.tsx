@@ -204,7 +204,7 @@ function MobileScenarioLeaderboard({ locale, video }: { locale: AppLocale; video
             >
               <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 px-3 text-sm font-semibold text-text-primary">
                 <span>
-                  {preset.label}
+                  {copy.video.presetLabels[preset.id] ?? preset.label}
                   <span className="ml-2 text-xs font-medium text-text-muted">
                     {copy.video.presetSubLabels[preset.id] ?? preset.subLabel}
                   </span>
@@ -433,7 +433,7 @@ export function PricingVideoMatrixSection({ locale, video }: { locale: AppLocale
               </th>
               {video.presets.map((preset) => (
                 <th key={preset.id} className="w-[118px] border-b border-hairline px-2 py-2.5 text-right">
-                  <span className="block text-text-primary">{preset.label}</span>
+                  <span className="block text-text-primary">{copy.video.presetLabels[preset.id] ?? preset.label}</span>
                   <span className="block font-medium">{copy.video.presetSubLabels[preset.id] ?? preset.subLabel}</span>
                 </th>
               ))}

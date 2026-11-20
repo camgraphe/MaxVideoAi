@@ -619,6 +619,7 @@ const CTA_NAMES = new Set([
   'milo_try', 'home_milo', 'studio_open', 'mcp_setup_guide', 'mcp_choose_integration',
   'reuse_example', 'view_example_details',
   'pricing_scenario',
+  'pricing_quote',
   'higgsfield_price_project', 'higgsfield_download_comparison',
   'openart_price_shot', 'project_cost_configure', 'platform_guide_configure', 'higgsfield_character_studio',
   'marketing_nav_login', 'marketing_nav_start_app', 'homepage_ai_video_plugin', 'all_comparisons',

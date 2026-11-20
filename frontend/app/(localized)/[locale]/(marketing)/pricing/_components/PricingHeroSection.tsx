@@ -1,69 +1,93 @@
-import { ArrowDown, ArrowUpRight } from 'lucide-react';
-import { Link } from '@/i18n/navigation';
 import type { ReactNode } from 'react';
+import { ArrowDown, ArrowUpRight, AudioLines, Film, Image as ImageIcon, SlidersHorizontal, Volume2, VolumeX } from 'lucide-react';
+import { Link } from '@/i18n/navigation';
+import type { AppLocale } from '@/i18n/locales';
+import type { OpeningRow } from '../_lib/pricing-opening';
+import { pricingOpeningCopy, pricingCitation } from '../_lib/pricing-opening-copy';
+import { getPricingHubCopy } from '../_lib/pricingHubCopy';
+import styles from './pricing-opening.module.css';
 
-type PricingHeroSectionProps = {
-  badges?: string[];
-  calculatorHref?: string;
-  calculatorLabel?: string;
-  compareHref?: string;
-  compareLabel?: string;
-  eyebrow?: string;
-  subtitle?: string;
-  supportingLine?: string;
-  title?: string;
-  children?: ReactNode;
+type Props = {
+  locale: AppLocale;
+  hero: { title: string; subtitle: string; primaryCta: string; badges: string[] };
+  rows: OpeningRow[];
+  quotedOn: string;
+  children: ReactNode;
 };
 
-const DEFAULT_BADGES = ['No subscription', 'Guest preview', 'Starter credits from $10', 'Refunds on failed generations'];
+export function PricingHeroSection({ locale, hero, rows, quotedOn, children }: Props) {
+  const copy = pricingOpeningCopy[locale];
+  const { tabs } = getPricingHubCopy(locale).video;
+  const surfaces = [
+    { href: '#video-pricing', label: tabs.video, icon: Film },
+    { href: '#image-pricing', label: tabs.image, icon: ImageIcon },
+    { href: '#audio-pricing', label: tabs.audio, icon: AudioLines },
+    { href: '#tool-pricing', label: copy.tools, icon: SlidersHorizontal },
+  ];
+  const date = new Intl.DateTimeFormat(locale, { dateStyle: 'long', timeZone: 'UTC' }).format(new Date(quotedOn));
 
-export function PricingHeroSection({
-  badges = DEFAULT_BADGES,
-  calculatorHref = '/app',
-  calculatorLabel = 'Open app for live pricing before you generate',
-  compareHref = '#video-pricing',
-  compareLabel = 'Compare prices below',
-  eyebrow = 'MaxVideoAI Pricing',
-  subtitle = 'Compare video, image, audio and tool costs before you generate.',
-  supportingLine = 'Pay as you go. See the exact live price in the app before launch. Failed generations are refunded.',
-  title = 'AI Video Pricing Comparison',
-  children,
-}: PricingHeroSectionProps) {
   return (
-    <header className="pricing-editorial-hero relative min-h-[260px] border-b border-hairline bg-bg">
-      <div className="container-page pricing-opening-grid">
-        <div className="max-w-[780px]">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-micro text-text-muted">{eyebrow}</p>
-          <h1 className="text-[32px] font-semibold leading-[1.08] tracking-normal text-text-primary sm:text-[40px]">
-            {title}
-          </h1>
-          <p className="mt-3 max-w-[680px] text-base leading-7 text-text-secondary sm:text-lg">{subtitle}</p>
-          <p className="mt-1 max-w-[740px] text-sm leading-6 text-text-muted">{supportingLine}</p>
-          <Link
-            href={compareHref}
-            className="mt-5 inline-flex min-h-10 items-center justify-center gap-2 text-sm font-semibold text-brand transition hover:underline"
-          >
-            {compareLabel}
-            <ArrowDown className="h-4 w-4" strokeWidth={1.8} />
-          </Link>
-
-
+    <header className={styles.opening}>
+      <div className={styles.inner}>
+        <div className={styles.intro}>
+          <img src="/assets/pricing/sunburst-filmstrip.webp" width={566} height={285} alt="" className={styles.film} />
+          <div className={styles.lead}>
+            <h1>{hero.title}</h1>
+            <p>{hero.subtitle}</p>
+          </div>
         </div>
-
-        <div className="pricing-payment-note">
-          <ol>{badges.map((badge,index)=><li key={badge}><span aria-hidden>{String(index+1).padStart(2,'0')}</span><p>{badge}</p></li>)}</ol>
-          <Link
-            href={calculatorHref}
-            prefetch={false}
-            className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[8px] bg-text-primary px-5 text-sm font-semibold text-bg shadow-card transition hover:bg-text-primary/90"
-          >
-            {calculatorLabel}
-            <ArrowUpRight className="h-4 w-4" strokeWidth={1.8} />
-          </Link>
-
-        </div>
+        <nav aria-label={copy.nav} className={styles.nav}>
+          {surfaces.map(({ href, label, icon: Icon }) => <Link href={href} key={href}><Icon size={16} aria-hidden="true" />{label}</Link>)}
+        </nav>
+        <section id="video-quote" aria-labelledby="video-quote-title" className={styles.compare}>
+          <div className={styles.heading}>
+            <h2 id="video-quote-title">{copy.question}</h2>
+            <p>{copy.format} <span aria-hidden="true">/</span> {copy.unit}</p>
+          </div>
+          {rows.length > 0 ? (
+            <table className={styles.table} aria-labelledby="video-quote-title">
+              <thead><tr>
+                <th scope="col">{copy.model}</th>
+                <th scope="col"><VolumeX aria-hidden="true" /> {copy.silent}</th>
+                <th scope="col"><Volume2 aria-hidden="true" /> {copy.audio}</th>
+              </tr></thead>
+              <tbody>{rows.map(row => (
+                <tr key={row.id}>
+                  <th scope="row"><Link href={`#${row.id}-pricing`}>{row.name}</Link></th>
+                  {row.prices.map((price, index) => <td key={index}>
+                    {price ? <Link href={price.href} prefetch={false}
+                      aria-label={`${copy.openQuote} · ${row.name} · 10 s · 1080p · ${index ? copy.audio : copy.silent} · ${price.display}`}
+                      data-analytics-event="cta_click" data-analytics-cta-name="pricing_quote"
+                      data-analytics-cta-location="pricing_hero" data-analytics-target-family="workspace">
+                      {price.display}<ArrowUpRight aria-hidden="true" />
+                    </Link> : <span aria-label={copy.fallback}>—</span>}
+                  </td>)}
+                </tr>
+              ))}</tbody>
+            </table>
+          ) : <p>{copy.fallback}</p>}
+          <div className={styles.sources}>
+            <a href="#video-pricing">{copy.full}<ArrowDown size={14} aria-hidden="true" /></a>
+            {rows.length > 0 && <small>MaxVideoAI · {copy.checked} <time dateTime={quotedOn}>{date}</time></small>}
+          </div>
+          {rows.some(row => row.prices.every(Boolean)) && (
+            <details className={styles.citations}>
+              <summary>{copy.cite}</summary>
+              {rows.map(row => {
+                const [silent, audio] = row.prices;
+                if (!silent || !audio) return null;
+                return <p key={row.id}>{pricingCitation[locale](row.name, silent.display, audio.display, date)}{' '}
+                  <a href={`#${row.id}-pricing`}>{copy.source}</a></p>;
+              })}
+            </details>
+          )}
+        </section>
       </div>
       {children}
+      <div className={styles.terms}>
+        <ul>{hero.badges.map(badge => <li key={badge}>{badge === hero.badges.at(-1) ? <a href="/return-policy">{badge}</a> : badge}</li>)}</ul>
+        <Link href="/app" prefetch={false}>{hero.primaryCta} <ArrowUpRight size={15} aria-hidden="true" /></Link>
+      </div>
     </header>
   );
 }

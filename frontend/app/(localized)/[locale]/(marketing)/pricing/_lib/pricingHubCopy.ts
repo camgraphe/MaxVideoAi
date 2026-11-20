@@ -60,6 +60,7 @@ type PricingHubCopy = {
       audio: string;
       tools: string;
     };
+    presetLabels: Record<string, string>;
     presetSubLabels: Record<string, string>;
     mobile: {
       title: string;
@@ -233,8 +234,9 @@ const en: PricingHubCopy = {
       'Compare preset MaxVideoAI total prices for common video scenarios. Unsupported combinations are marked clearly. Open the app for the exact live quote before generation.',
     currencyLabel: 'Prices shown in USD credits.',
     cheapestCurrentGen: 'Lowest quoted',
-    tableHeaders: { engine: 'Engine', caps: 'Caps', actions: 'Actions' },
+    tableHeaders: { engine: 'Engine', caps: 'Capabilities', actions: 'Actions' },
     tabs: { video: 'Video', image: 'Image', audio: 'Audio', tools: 'Tools & Upscale' },
+    presetLabels: {},
     presetSubLabels: {
       'entry-route': 'Native',
       '5s-720p': 'Draft',
@@ -454,8 +456,9 @@ const fr: PricingHubCopy = {
       'Comparez les prix totaux MaxVideoAI pour des scénarios vidéo courants. Les combinaisons non disponibles sont indiquées clairement. Ouvrez l’app pour le devis exact avant génération.',
     currencyLabel: 'Prix affichés en crédits USD.',
     cheapestCurrentGen: 'Prix le plus bas affiché',
-    tableHeaders: { engine: 'Moteur', caps: 'Caps', actions: 'Actions' },
+    tableHeaders: { engine: 'Moteur', caps: 'Capacités', actions: 'Actions' },
     tabs: { video: 'Vidéo', image: 'Image', audio: 'Audio', tools: 'Outils & upscale' },
+    presetLabels: {"entry-route": "Configuration de base", "4k-route": "Sortie 4K"},
     presetSubLabels: {
       'entry-route': 'Natif',
       '5s-720p': 'Brouillon',
@@ -675,8 +678,9 @@ const es: PricingHubCopy = {
       'Compara precios totales de MaxVideoAI para escenarios de video comunes. Las combinaciones no disponibles se marcan claramente. Abre la app para ver el precio exacto antes de generar.',
     currencyLabel: 'Precios mostrados en créditos USD.',
     cheapestCurrentGen: 'Menor precio cotizado',
-    tableHeaders: { engine: 'Motor', caps: 'Caps', actions: 'Acciones' },
+    tableHeaders: { engine: 'Motor', caps: 'Capacidades', actions: 'Acciones' },
     tabs: { video: 'Video', image: 'Imagen', audio: 'Audio', tools: 'Herramientas & upscale' },
+    presetLabels: {"entry-route": "Configuración inicial", "4k-route": "Salida 4K"},
     presetSubLabels: {
       'entry-route': 'Nativa',
       '5s-720p': 'Borrador',

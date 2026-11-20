@@ -671,14 +671,13 @@ Removing an unused quote dependency alone does not establish a latency or CWV ga
 
 ## Pricing route initial rendering
 
-The Pricing route starts `buildCurrentPricingHubData(locale)` once per render.
-Its static hero and existing SEO scripts render before the complete quote matrix
-settles. `PricingCurrentContent` consumes the same promise in two server Suspense
-boundaries: the hero's quick-start cards and the lower price sections. Keep current
-video, image, audio, tool and popular-check projections on that one complete hub;
-neither boundary owns another quote, persisted cache or commercial fallback.
-An early rejection is observed without changing the original promise: failures
-still reach the server boundaries rather than producing stale amounts.
+The Pricing route first reads the configured catalogue and four exact 10-second
+Kling quotes with one request-scoped policy. The English, French and Spanish
+openings serve the model, resolution, audio setting, price per video and UTC
+quote date in the initial HTML. Only exact eligible prices open a preset. A
+missing price stays unavailable. The complete hub reuses these same four reads
+and the same configured engines. Its three featured scenarios and the remaining
+catalogue stream through the existing two boundaries.
 
 `PricingPendingContent` reserves the quick-start grid with the same localized
 scenario labels and no guessed model, price or row destination. On mobile, both
@@ -688,7 +687,7 @@ reservation resets at the existing desktop breakpoint; larger amounts and longer
 names remain free to grow without truncation. The lower pending
 surface retains the hero's `#video-pricing` target and at least a viewport of space
 so the footer does not enter the initial viewport while prices are pending. The
-resolved components retain their existing markup and order. The large lower
+resolved catalogue retains its stable section and model anchors. The large lower
 matrices are not duplicated as loading tables. Validate reveal geometry and early
 anchor navigation in a browser, particularly French mobile and unavailable quote
 results; renderer tests cannot establish layout stability.

@@ -1758,9 +1758,9 @@
   "pricing": {
     "hero": {
       "eyebrow": "Tarifs MaxVideoAI",
-      "title": "Combien coûte une vidéo IA ?",
-      "subtitle": "Comparez les prix en dollars par vidéo selon le modèle, la durée, la résolution et le son. Retrouvez aussi les tarifs des images, de l’audio et des outils.",
-      "supportingLine": "Payez à l’usage. Vérifiez le prix exact dans l’app avant de générer. Les générations échouées sont remboursées.",
+      "title": "Tarifs MaxVideoAI",
+      "subtitle": "Payez à l’usage. Comparez les prix de la vidéo, de l’image, de l’audio et des outils avant de créer.",
+      "supportingLine": "En cas d’échec technique, les crédits sont reversés sur votre solde.",
       "quickStartTitle": "Trois repères pour votre prochaine vidéo",
       "quickStartNote": "Prix disponible le plus bas parmi les modèles actuels admissibles, pour chaque réglage indiqué, en USD par vidéo. Les réglages diffèrent : ce n’est pas un classement de qualité. Ouvrez la ligne pour les détails et confirmez le devis avant de générer.",
       "primaryCta": "Vérifier un prix dans l’app",
@@ -1769,7 +1769,7 @@
         "Sans abonnement",
         "Découvrez l’app avant de vous inscrire",
         "Rechargez votre solde selon vos besoins",
-        "Les générations échouées sont remboursées"
+        "Crédits restitués en cas d’échec technique"
       ],
       "link": {
         "before": "Comparez les tarifs des modèles dans notre ",

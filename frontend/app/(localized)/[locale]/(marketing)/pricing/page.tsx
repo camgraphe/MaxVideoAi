@@ -9,9 +9,10 @@ import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { PricingCurrentQuickStart, PricingCurrentSections } from './_components/PricingCurrentContent';
 import { PricingPendingQuickStart, PricingPendingSections } from './_components/PricingPendingContent';
 import { PricingAnchorRestore } from './_components/PricingAnchorRestore.client';
+import { PricingFilmExample } from './_components/PricingFilmExample';
 import { PricingHeroSection } from './_components/PricingHeroSection';
 import { PricingJsonLdScripts } from './_components/PricingJsonLdScripts';
-import { buildCurrentPricingHubData } from './_lib/currentPricingHubData';
+import { readPricingOpening } from './_lib/pricing-opening';
 import { PRICING_SLUG_MAP, buildPricingBreadcrumbJsonLd, buildPricingServiceJsonLd } from './_lib/pricing-jsonld';
 
 export const revalidate = 600;
@@ -36,7 +37,7 @@ export default async function PricingPage(props: { params: Promise<{ locale: App
   const locale = params.locale;
   const { dictionary } = await resolveDictionary({ locale });
   const content = dictionary.pricing;
-  const pricingHub = buildCurrentPricingHubData(locale);
+  const { pricingHub, rows, quotedOn } = await readPricingOpening(locale);
   // Observe an early rejection without converting it into a successful pricing fallback.
   void pricingHub.catch(() => undefined);
   const faq = content.faq;
@@ -49,15 +50,10 @@ export default async function PricingPage(props: { params: Promise<{ locale: App
     <div className="bg-bg">
       <PricingAnchorRestore />
       <PricingHeroSection
-        badges={content.hero.badges}
-        calculatorHref="/app"
-        calculatorLabel={content.hero.primaryCta}
-        compareHref="#video-pricing"
-        compareLabel={content.hero.secondaryCta}
-        eyebrow={content.hero.eyebrow}
-        subtitle={content.hero.subtitle}
-        supportingLine={content.hero.supportingLine}
-        title={content.hero.title}
+        locale={locale}
+        hero={content.hero}
+        rows={rows}
+        quotedOn={quotedOn}
       >
         <Suspense fallback={<PricingPendingQuickStart locale={locale} title={content.hero.quickStartTitle} note={content.hero.quickStartNote} />}>
           <PricingCurrentQuickStart pricingHub={pricingHub} title={content.hero.quickStartTitle} note={content.hero.quickStartNote} />
@@ -66,6 +62,7 @@ export default async function PricingPage(props: { params: Promise<{ locale: App
 
       <div className="container-page max-w-[1440px] py-8 sm:py-10">
         <div className="stack-gap-lg">
+          <PricingFilmExample locale={locale} />
           <Suspense fallback={<PricingPendingSections locale={locale} />}>
             <PricingCurrentSections pricingHub={pricingHub} locale={locale} faq={faq} faqEntries={faqEntries} />
           </Suspense>

@@ -95,7 +95,7 @@ test('pricing page delegates compact matrix sections and JSON-LD rendering', () 
   assert.match(pageSource, /from '\.\/_components\/PricingCurrentContent'/);
   assert.match(pageSource, /<PricingAnchorRestore \/>/);
   assert.match(currentContentSource, /data-pricing-content-ready/);
-  assert.match(pageSource, /const pricingHub = buildCurrentPricingHubData\(locale\)/);
+  assert.match(pageSource, /await readPricingOpening\(locale\)/);
   assert.doesNotMatch(pageSource, /await buildCurrentPricingHubData/);
   assert.doesNotMatch(currentContentSource, /buildCurrentPricingHubData|createScoped|quotePublic/);
   assert.match(pageSource, /export const revalidate = 600/);
@@ -106,7 +106,7 @@ test('pricing page delegates compact matrix sections and JSON-LD rendering', () 
   assert.match(currentContentSource, /from '\.\/PricingCreditsRefundsSection'/);
   assert.match(currentContentSource, /from '\.\/PricingRefundsFaqSection'/);
   assert.match(pageSource, /locale=\{locale\}/);
-  assert.match(pageSource, /from '\.\/_lib\/currentPricingHubData'/);
+  assert.match(pageSource, /from '\.\/_lib\/pricing-opening'/);
   assert.match(pageSource, /from '\.\/_lib\/pricing-jsonld'/);
   assert.match(pageSource, /export default async function PricingPage/);
   assert.match(jsonLdLibSource, /buildPricingBreadcrumbJsonLd/, 'pricing JSON-LD helper should own breadcrumb schema');
@@ -142,19 +142,14 @@ test('pricing page does not regain calculator-first or long model-section owners
   assert.ok(lineCount <= 260, `pricing page should stay compact after refactor, got ${lineCount} lines`);
 });
 
-test('hero is compact and uses the requested CTA copy', () => {
-  assert.match(heroSource, /export function PricingHeroSection/);
-  assert.match(heroSource, /MaxVideoAI Pricing/);
-  assert.match(heroSource, /AI Video Pricing Comparison/);
-  assert.match(heroSource, /eyebrow/);
-  assert.match(heroSource, /Open app for live pricing before you generate/);
-  assert.match(heroSource, /Compare prices below/);
-  assert.match(heroSource, /No subscription/);
-  assert.match(heroSource, /Guest preview/);
-  assert.match(heroSource, /Starter credits from \$10/);
-  assert.match(heroSource, /min-h-\[260px\]|min-h-\[300px\]|min-h-\[320px\]|min-h-\[340px\]/);
-  assert.doesNotMatch(heroSource, /min-h-\[520px\]/);
-  assert.doesNotMatch(heroSource, /MarketingHeroImage/);
+test('opening exposes localized navigation, exact preset links and the existing live app destination', () => {
+  assert.match(heroSource, /pricingOpeningCopy\[locale\]/);
+  assert.match(heroSource, /scope="row"/);
+  assert.match(heroSource, /price.href/);
+  assert.match(heroSource, /href="\/app"/);
+  for (const id of ['video', 'image', 'audio', 'tool']) assert.ok(heroSource.includes(`#${id}-pricing`));
+  assert.match(heroSource, /sunburst-filmstrip\.webp/);
+  assert.match(heroSource, /time dateTime=/);
 });
 
 test('pricing matrix data is generated from the catalog with scenario total presets', () => {
@@ -243,7 +238,8 @@ test('video matrix renders exact scenario columns and compact links', () => {
   assert.match(hubDataSource, /4K output/);
   assert.match(hubCopySource, /Prices shown in USD credits\./);
   assert.match(hubCopySource, /Prix affichés en crédits USD\./);
-  assert.match(hubCopySource, /Caps/);
+  assert.match(hubCopySource, /Capacités/);
+  assert.match(hubCopySource, /Capacidades/);
   assert.doesNotMatch(hubCopySource, /Limits/);
   assert.doesNotMatch(hubCopySource, /Limites/);
   assert.match(hubCopySource, /Actions/);
