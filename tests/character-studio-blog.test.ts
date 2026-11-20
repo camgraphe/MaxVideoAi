@@ -17,7 +17,7 @@ for (const canonicalSlug of ['ai-character-sheet-generator', 'how-to-create-cons
     assert.equal(post.canonicalSlug, canonicalSlug);
     assert.equal(post.canonical, expectedUrl);
     assert.equal(post.date, canonicalSlug === 'ai-character-sheet-generator' ? '2026-03-20' : '2026-03-22');
-    const expectedUpdate = canonicalSlug === 'ai-character-sheet-generator' && locale === 'es' ? '2026-11-20' : '2026-11-05';
+    const expectedUpdate = canonicalSlug === 'ai-character-sheet-generator' ? '2026-11-20' : '2026-11-05';
     assert.equal(post.updatedAt, expectedUpdate);
     assert.match(post.content, /Character Studio/);
     assert.match(post.content, /href="\/app\/tools\/character-builder"/);

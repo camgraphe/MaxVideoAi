@@ -21,9 +21,11 @@ export const SITEMAP_MANUAL_TIMESTAMPS: SitemapTimestampConfig = {
   routes: {
     '/studio': '2026-10-03',
     '/models': '2026-11-06',
-    '/pricing': '2026-11-06',
+    '/pricing': '2026-11-20',
     '/fr/tarifs': '2026-11-20',
     '/es/precios': '2026-11-20',
+    '/blog/ai-character-sheet-generator': '2026-11-20',
+    '/fr/blog/generateur-de-fiche-personnage-ia': '2026-11-20',
     '/es/blog/generador-de-fichas-de-personaje-con-ia': '2026-11-20',
     '/models/seedance-2-5-flash': '2026-11-20',
     '/ai-video-engines/seedance-2-0-vs-seedance-2-0-fast': '2026-11-20',
