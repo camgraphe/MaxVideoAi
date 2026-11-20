@@ -16,15 +16,18 @@ export function ModelCinematicPrompting({ viewModel: vm, presentation }: { viewM
   const asset = assets.find(item => item.id === panel?.assetIds[0]);
   const plan = examples.shotPlans?.find(item => item.assetId === asset?.id);
   const prompt = plan ? plan.prompt ?? vm.demo?.prompt ?? `${ui.animateFrame} ${plan.motion}\n${ui.sound}: ${plan.sound}` : asset?.prompt;
-  const videoDetails = asset && plan && prompt && content.workflows ? <ModelCinematicVideoPrompt title={asset.title} prompt={prompt} note={plan.proofNote ?? content.workflows.promptNote} imageDetailsLabel={content.workflows.imageDetailsLabel} ui={ui} asset={asset.video ? undefined : asset} creation={asset.videoCreation ?? cinematicVideoPromptLinks(assistantHref, asset.id)} /> : undefined;
+  const filmFrame = asset?.videoCreation && !asset.video;
+  const videoDetails = asset && (plan || filmFrame) && prompt && content.workflows ? <ModelCinematicVideoPrompt title={asset.title}
+    prompt={prompt} note={plan?.proofNote ?? content.workflows.promptNote} imageDetailsLabel={content.workflows.imageDetailsLabel}
+    ui={ui} asset={asset.video || filmFrame ? undefined : asset} creation={asset.videoCreation ?? cinematicVideoPromptLinks(assistantHref, asset.id)} /> : undefined;
   return <section id="prompting" className="cinema-prompting cinema-section"><div className="cinema-wrap">
     <header className="cinema-section-heading"><div><p className="cinema-eyebrow">{content.promptingLabel}</p><h2>{vm.section.title}</h2></div><p>{vm.section.intro}</p></header>
     <div className={asset ? 'cinema-prompt-lab' : undefined}>
       {asset && prompt ? <div className="cinema-prompt-proof"><ModelCinematicAsset asset={asset} ui={ui} plan={plan} compact details={videoDetails} />
-        {!plan ? <div className="cinema-prompt-reuse">
-          {!plan && asset.creation ? <NextLink href={asset.creation.href} prefetch={false} className="cinema-button" data-analytics-event="cta_click" data-analytics-cta-name="reuse_example" data-analytics-cta-location="model_prompt_guide" data-analytics-target-family="workspace">{ui.reuse}<CinematicArrow /></NextLink> : null}
-          <ModelDecisionCopyButton copyText={prompt} label={plan ? ui.copyVideo : ui.copy} copiedLabel={ui.copied} analyticsLocation="model_prompt_guide" />
-          {!plan && asset.creation ? <NextLink href={asset.creation.refineHref} prefetch={false} className="cinema-source-link" data-analytics-event="cta_click" data-analytics-cta-name="milo_try" data-analytics-cta-location="model_prompt_guide" data-analytics-target-family="workspace">{ui.refine}<CinematicArrow direction="external" /></NextLink> : null}
+        {!plan && !filmFrame ? <div className="cinema-prompt-reuse">
+          {asset.creation ? <NextLink href={asset.creation.href} prefetch={false} className="cinema-button" data-analytics-event="cta_click" data-analytics-cta-name="reuse_example" data-analytics-cta-location="model_prompt_guide" data-analytics-target-family="workspace">{ui.reuse}<CinematicArrow /></NextLink> : null}
+          <ModelDecisionCopyButton copyText={prompt} label={ui.copy} copiedLabel={ui.copied} analyticsLocation="model_prompt_guide" />
+          {asset.creation ? <NextLink href={asset.creation.refineHref} prefetch={false} className="cinema-source-link" data-analytics-event="cta_click" data-analytics-cta-name="milo_try" data-analytics-cta-location="model_prompt_guide" data-analytics-target-family="workspace">{ui.refine}<CinematicArrow direction="external" /></NextLink> : null}
         </div> : null}
         {plan && vm.recipe ? <p className="cinema-prompt-scene">{vm.recipe.excerpt}</p> : null}
       </div> : null}

@@ -1,4 +1,3 @@
-import klingImageIllustrations from '@/config/model-kling-image-4-illustrations.json';
 import type {AppLocale} from '@/i18n/locales';
 import {listNano21EditorialImages} from '@/lib/nano21-editorial-images';
 import {listGpt26EditorialImages,gpt26EditorialSources,type Gpt26EditorialImage} from '@/lib/gpt26-editorial-images';
@@ -36,14 +35,6 @@ export function toGpt26EditorialImages(images:readonly Gpt26EditorialImage[],loc
 }
 
 export function listModelEditorialImages(engineId:string,locale:AppLocale,titles?:ModelExamplesContent['editorialImages']):ModelEditorialImage[]{
- if(engineId===klingImageIllustrations.modelSlug){
-  const metadataLabel={en:'ImageGen illustration',fr:'Illustration ImageGen',es:'Ilustración de ImageGen'}[locale];
-  return klingImageIllustrations.assets.map(image=>{
-   const title=titles?.find(item=>item.id===image.id)?.title;
-   if(!title)throw new Error('Missing localized Kling Image illustration title');
-   return {...image,engineId,title,metadataLabel,illustrative:true,workspaceHref:`/app/image?engine=${engineId}`};
-  });
- }
  const seedream=listSeedreamEditorialImages(engineId);
  if(seedream.length)return seedream.map(image=>{
   const title=titles?.find(item=>item.id===image.id)?.title;

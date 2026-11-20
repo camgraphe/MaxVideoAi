@@ -126,7 +126,9 @@ Modify/Extend film to `workflows.items` just to document a supported workflow.
 `ModelCinematicCapabilities.client.tsx` renders every explanation in server HTML
 and selects one panel at a time, with tab/arrow/Home/End keyboard navigation.
 The block sits inside the Create proof section and replaces redundant specialty
-note cards. Without an authored illustration it keeps the text-only workflow guide.
+note cards. Give each tab in a new cinematic page a model-specific film, still
+sequence, or attributed illustration. Keep the text-only path for existing
+pages without registered media.
 
 The optional `capabilities.items[].proof` adds a visual explanation: two references
 and one scene, a full-frame reveal comparator, or an extendable filmstrip. Its copy
@@ -195,18 +197,25 @@ App modes and the prepared observatory storyboard keep their source data.
   AAC audio. The 4K SDR publishing settings describe app capabilities. The
   two filmed examples retain their recorded 720p settings and exact prompts.
   Opening motion is manually triggered for the concert. The tram film uses
-  the shared manual player with `preload="none"`.
-- The compact capability guide covers text, opening image, mixed references
-  and source-video edit. Optional Prompt Guide and Specifications visuals
-  may be omitted when the available reviewed clips already have a placement.
-  Prompt instructions and specifications still render as HTML.
-- Kling Image 4.0 uses its own five editorial ImageGen illustrations. The
-  source and display checksums and exact prompts are in
-  `frontend/config/model-kling-image-4-illustrations.json`. The page captions
-  identify the illustration source and link to fal's actual Kling Image 4.0
-  examples. Reuse opens a prompt-only 2K still recipe on the correct image
-  model with no image reference attached. The user can configure image
-  references and ordered Image Sets in Create.
+  the shared manual player with `preload="none"`. Its optional localized
+  `shotBreakdown` pairs five captions with immutable stills extracted from
+  the exact film, recorded in `model-kling-v4-shot-stills.json`. The Create
+  action reuses the public job in its reference-guided mode.
+- The four capability tabs use `model-kling-v4-workflow-visuals.json`.
+  Text uses an ImageGen storyboard. Image to video uses two stills from the
+  tram film to illustrate opening and target framing. References shows the
+  actual film across two settings. Edit uses the shared reveal slider with
+  the original still and an attributed ImageGen lighting study.
+- The prompt guide uses a separate still from the same original Kling 4.0
+  film, the exact prompt and its reference-mode reuse link. New proof images
+  are lazy WebPs. The workflow and prompt guide use on-site examples and
+  actions. Provider evidence belongs in the internal integration records.
+- Kling Image 4.0 examples require reviewed Kling Image 4.0 originals. Its
+  cinematic preview shows the image briefs and uses a compact opening while
+  the native media is pending. `frontend/config/model-kling-image-4-recipes.json`
+  owns the English prompts, exact model, modes, resolutions, ratios and
+  counts. The preview and Create reuse the same recipe. For the colour edit,
+  the user supplies the second reviewed series output as `@Image1`.
 - The public prices on both pages use the shared current quote and offer
   owners. Video scenarios specify three 5-second text-to-video settings.
   Image scenarios specify a single still at 2K, 4K or 8K. Image Set totals

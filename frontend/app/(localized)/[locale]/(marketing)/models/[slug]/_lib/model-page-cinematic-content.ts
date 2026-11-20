@@ -7,7 +7,7 @@ const id = z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
 const heroSchema = z.object({
   modelSlug: id,
   variant: z.enum(['image', 'video']),
-  heroAssetId: id,
+  heroAssetId: id.nullable(),
   titleLines: z.array(text).min(1).max(2),
   subtitle: text,
   primaryLabel: text,
@@ -52,11 +52,17 @@ const heroSchema = z.object({
   workflows: z.object({
     eyebrow: text, title: text, intro: text, note: text, action: text,
     conceptLabel: text, briefLabel: text, limitsLabel: text, inspectLabel: text, promptNote: text, imageDetailsLabel: text,
-    source: z.object({ label: text, href: z.string().url() }).strict(),
+    source: z.object({ label: text, href: z.string().url() }).strict().optional(),
     items: z.array(z.object({ id: z.enum(['create', 'extend', 'modify']), title: text, body: text,
       input: text, output: text, steps: z.array(text).length(3),
       action: text, prompt: text, inspect: text,
       compactFacts: text.optional(), promptLabel: text.optional(), promptSummary: text.optional(), proofLabel: text.optional(), proofNote: text.optional(),
+      createMode: z.enum(['t2v', 'i2v', 'ref2v']).optional(),
+      shotBreakdown: z.object({
+        title: text,
+        caption: text,
+        shots: z.array(z.object({ id, title: text, detail: text }).strict()).min(2).max(6),
+      }).strict().optional(),
       timeline: z.object({ label: text, source: text, continuation: text, note: text }).strict().optional(),
       focus: z.object({
         id, eyebrow: text, title: text, body: text, assetId: id,
@@ -80,18 +86,24 @@ export const cinematicExamplesSchema = z.object({
   assetTitles: z.array(z.object({ id, title: text }).strict()).optional(),
   provenance: text,
   source: z.object({ label: text, href: z.string().url() }).strict().optional(),
+  imageBriefs: z.object({
+    title: text,
+    intro: text,
+    items: z.array(z.object({ recipeId: id, use: text, title: text, body: text }).strict()).min(1).max(6),
+  }).strict().optional(),
   panels: z.array(z.object({
     id,
     placement: z.enum(['examples', 'prompting', 'details']).optional(),
-    layout: z.enum(['edit', 'feature', 'cutout', 'grid', 'shots']),
+    layout: z.enum(['edit', 'feature', 'cutout', 'grid', 'shots', 'series']),
     eyebrow: text,
     title: text,
     body: text,
     note: text,
     assetIds: z.array(id).min(1).max(6),
-  }).strict()).min(1).max(6),
+    recipe: z.object({ id, label: text }).strict().optional(),
+  }).strict()).max(6),
   shotPlans: z.array(z.object({ assetId: id, motion: text, sound: text, prompt: text.optional(), proofNote: text.optional() }).strict()).optional(),
-}).strict();
+}).strict().refine(copy => copy.panels.length > 0 || copy.imageBriefs, 'A cinematic examples section needs proofs or image briefs');
 
 export type ModelCinematicContent = z.infer<typeof heroSchema>;
 export type ModelCinematicExamplesContent = z.infer<typeof cinematicExamplesSchema>;

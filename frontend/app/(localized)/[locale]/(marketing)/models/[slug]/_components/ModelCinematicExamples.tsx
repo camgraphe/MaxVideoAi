@@ -1,18 +1,20 @@
 import type { CinematicPresentation } from '../_lib/model-page-cinematic-data';
 import Image from 'next/image';
 import { Link } from '@/i18n/navigation';
-import { CinematicArrow } from './ModelCinematicMarks';
+import { CinematicArrow, CinematicPlus } from './ModelCinematicMarks';
 import type { ModelExamplesViewModel } from '../_lib/model-page-examples-view-model';
 import { ModelCinematicAsset, ModelCinematicPrompt } from './ModelCinematicAsset';
 import { ModelCinematicCompare, ModelCinematicCutout } from './ModelCinematicCompare.client';
 import { ModelCinematicGallery } from './ModelCinematicGallery.client';
 import { buildCinematicGalleryItems } from '../_lib/model-page-cinematic-gallery';
 import { ModelCinematicDetailCrop } from './ModelCinematicZoom.client';
+import { imageEditorialPresetHref } from '@/lib/image/editorial-presets';
+import { ModelDecisionCopyButton } from './ModelDecisionCopyButton.client';
 
 export function ModelCinematicExamples({ presentation, viewModel, hasRenderedVideos, galleryOnly = false, excludedJobId }: {
   presentation: CinematicPresentation; viewModel: ModelExamplesViewModel; hasRenderedVideos: boolean; galleryOnly?: boolean; excludedJobId?: string;
 }) {
-  const { assets, examples, ui } = presentation;
+  const { assets, examples, imageBriefs, ui } = presentation;
   const preview = galleryOnly && !hasRenderedVideos && examples.gallery ? assets.find(asset => asset.id === examples.gallery!.previewAssetId) : null;
   const proofPanels = galleryOnly ? [] : examples.panels.filter(panel => !panel.placement || panel.placement === 'examples');
   return <section id={galleryOnly ? 'rendered-examples' : 'examples'} className="cinema-examples" aria-label={examples.title ?? viewModel.section.title}>
@@ -33,16 +35,40 @@ export function ModelCinematicExamples({ presentation, viewModel, hasRenderedVid
     {proofPanels.map((panel, index) => {
       const selected = panel.assetIds.map(id => assets.find(asset => asset.id === id)!);
       const portrait = panel.layout === 'feature' && selected.length === 1 && selected[0].display.height > selected[0].display.width;
+      const series = panel.layout === 'series';
+      const mediaClass = series ? 'cinema-media-grid cinema-media-grid--series' : selected.length > 1 ? 'cinema-media-grid' : undefined;
       return <article id={`proof-${panel.id}`} key={panel.id} className={`cinema-panel cinema-panel--${panel.layout}${index === 0 && !hasRenderedVideos ? ' cinema-panel--opening' : ''}${portrait ? ' cinema-panel--portrait' : ''}${index % 2 === 1 && panel.layout !== 'cutout' ? ' cinema-panel--quiet' : ''}`} aria-labelledby={`cinema-${panel.id}`}><div className="cinema-wrap cinema-panel-inner">
         <header className="cinema-panel-heading"><div><p className="cinema-eyebrow">{panel.eyebrow}</p><h2 id={`cinema-${panel.id}`}>{panel.title}</h2></div><p>{panel.body}</p></header>
         <div className="cinema-panel-media">
           {panel.layout === 'edit' ? <ModelCinematicCompare assets={selected} ui={ui} note={panel.note} />
             : panel.layout === 'cutout' ? <><ModelCinematicCutout asset={selected[0]} ui={ui} /><ModelCinematicPrompt asset={selected[0]} ui={ui} /></>
-            : <div className={selected.length > 1 ? 'cinema-media-grid' : undefined}>{selected.map(asset => <ModelCinematicAsset key={asset.id} asset={asset} ui={ui} compact={selected.length > 1 || portrait} inspect={portrait}
+            : <div className={mediaClass}>{selected.map(asset => <ModelCinematicAsset key={asset.id} asset={asset} ui={ui} compact={selected.length > 1 || portrait} inspect={portrait}
+              sizes={series ? '(min-width: 1440px) 420px, (min-width: 900px) 31vw, 90vw' : undefined}
               plan={examples.shotPlans?.find(plan => plan.assetId === asset.id)} />)}</div>}
         </div>
         {portrait ? <div className="cinema-portrait-inspection"><ModelCinematicDetailCrop asset={selected[0]} ui={ui} /><p className="cinema-panel-note">{panel.note}</p></div> : panel.layout !== 'edit' ? <p className="cinema-panel-note">{panel.note}</p> : null}
+        {panel.recipe ? <Link href={imageEditorialPresetHref(presentation.content.modelSlug, panel.recipe.id, presentation.locale)}
+          prefetch={false} className="cinema-button cinema-series-action" data-analytics-event="cta_click"
+          data-analytics-cta-name="open_workspace" data-analytics-cta-location="model_examples"
+          data-analytics-target-family="workspace">{panel.recipe.label}<CinematicArrow disc /></Link> : null}
       </div></article>;
     })}
+    {imageBriefs && imageBriefs.items.length > 0 && !galleryOnly ? <div className="cinema-wrap cinema-image-briefs">
+      <header className="cinema-section-heading"><h2>{imageBriefs.title}</h2><p>{imageBriefs.intro}</p></header>
+      <div className="cinema-image-brief-grid">{imageBriefs.items.map(brief => <article key={brief.recipeId} id={brief.recipeId} className="cinema-image-brief">
+        <p className="cinema-eyebrow">{brief.use}</p>
+        <h3>{brief.title}</h3>
+        <p>{brief.body}</p>
+        <p className="cinema-image-brief-settings">{brief.settings}</p>
+        <div className="cinema-image-brief-action">
+          <Link href={brief.href} prefetch={false} className="cinema-button" data-analytics-event="cta_click" data-analytics-cta-name="reuse_example"
+            data-analytics-cta-location="model_examples" data-analytics-target-family="workspace">{ui.reuse}<CinematicArrow disc /></Link>
+        </div>
+        <details className="cinema-disclosure"><summary>{ui.prompt}<CinematicPlus /></summary><div>
+          <pre className="cinema-image-brief-prompt" lang="en">{brief.prompt}</pre>
+          <ModelDecisionCopyButton copyText={brief.prompt} label={ui.copy} copiedLabel={ui.copied} analyticsLocation="model_examples" />
+        </div></details>
+      </article>)}</div>
+    </div> : null}
   </section>;
 }

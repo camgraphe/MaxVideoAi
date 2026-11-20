@@ -2,27 +2,26 @@
   "marketingName": "Kling Image 4.0",
   "versionLabel": "4.0",
   "seo": {
-    "title": "Kling Image 4.0, generador y editor de imágenes hasta 8K | MaxVideoAI",
-    "description": "Crea imágenes en 2K, 4K y 8K, edita con hasta diez referencias y genera series ordenadas con Kling Image 4.0 en MaxVideoAI.",
-    "image": "/assets/model-examples/kling-image-v4/b3321181f57796ad37df7ef6ddac2c126ba8414f01147385f61bafc235f148cb.webp"
+    "title": "Kling Image 4.0 — Generación, edición y series | MaxVideoAI",
+    "description": "Crea y edita imágenes con Kling Image 4.0. Prepara una serie con un solo brief, usa hasta diez referencias y elige una resolución de hasta 8K."
   },
   "hero": {
     "title": "Kling Image 4.0",
-    "intro": "Crea y edita imágenes en 2K, 4K u 8K. Usa hasta diez referencias ordenadas o crea una serie coherente de dos a diez imágenes a partir de un mismo prompt.",
+    "intro": "Crea un visual, retócalo con referencias o muestra al mismo sujeto desde varios ángulos. Elige 2K, 4K u 8K según el detalle que necesites.",
     "badge": "2K · 4K · 8K",
     "cta": {
       "label": "Crear con Kling Image 4.0",
       "href": "/app/image?engine=kling-image-v4"
     }
   },
-  "overview": "Crea y edita imágenes en 2K, 4K u 8K. Usa hasta diez referencias ordenadas o crea una serie coherente de dos a diez imágenes a partir de un mismo prompt.",
+  "overview": "Crea un visual, retócalo con referencias o muestra al mismo sujeto desde varios ángulos. Elige 2K, 4K u 8K según el detalle que necesites.",
   "bestUseCases": [
     "Fotografía de producto y series de campaña",
     "Fotogramas de concepto y storyboards",
     "Edición con referencias y diseños con textos breves"
   ],
   "pricingNotes": [
-    "Consulta el precio actual de una imagen a cada resolución. Create calcula el importe de toda la serie para la cantidad elegida.",
+    "El importe depende del modo, la resolución, el número de imágenes y las referencias. Create indica si hay un presupuesto para tus ajustes antes de confirmar.",
     "Revisa el presupuesto exacto de tus ajustes antes de generar."
   ],
   "faqs": [
@@ -40,11 +39,11 @@
     },
     {
       "q": "¿Qué es una serie de imágenes?",
-      "a": "Elige entre dos y diez imágenes para generar un grupo ordenado a partir de un mismo brief. Describe las vistas o planos en orden y comprueba qué detalles se mantienen en toda la serie."
+      "a": "En Create Image, solicita de dos a diez imágenes con el mismo sujeto. Describe cada encuadre en una línea distinta. MCP también admite series. En Studio, cada solicitud a Kling Image genera una sola imagen."
     },
     {
       "q": "¿Cuánto cuesta Kling Image 4.0?",
-      "a": "Create muestra el importe actual de tus ajustes antes de confirmar. Elige la resolución y el número de imágenes para ver el precio de una imagen o de la serie completa."
+      "a": "El importe depende del modo, la resolución, el número de imágenes y las referencias. Create indica si hay un presupuesto para tus ajustes antes de confirmar."
     },
     {
       "q": "¿Puedo utilizar una imagen como fotograma inicial de vídeo?",
@@ -61,11 +60,11 @@
     "hero": {
       "eyebrow": "Generador de imágenes con IA en MaxVideoAI",
       "title": "Kling Image 4.0",
-      "subtitle": "Crea una imagen o prepara toda una serie.",
+      "subtitle": "Una idea para toda una serie de imágenes.",
       "subtitleHighlights": [
         "8K"
       ],
-      "paragraph": "Crea y edita imágenes en 2K, 4K u 8K. Usa hasta diez referencias ordenadas o crea una serie coherente de dos a diez imágenes a partir de un mismo prompt.",
+      "paragraph": "Crea un visual, retócalo con referencias o muestra al mismo sujeto desde varios ángulos. Elige 2K, 4K u 8K según el detalle que necesites.",
       "primaryCta": {
         "label": "Crear con Kling Image 4.0",
         "href": "/app/image?engine=kling-image-v4"
@@ -86,13 +85,13 @@
       ]
     },
     "media": {
-      "caption": "Ilustración de ImageGen",
-      "description": "Ilustraciones editoriales creadas con ImageGen. La galería de fal muestra resultados de Kling Image 4.0.",
-      "renderLabel": "Ver ejemplos de Kling Image 4.0 en fal",
+      "caption": "Resultados de Kling Image 4.0",
+      "description": "Cartel de comedia, prueba de ropa urbana, un motivo en una manga y maquillaje gráfico en primer plano.",
+      "renderLabel": "Inspeccionar la imagen",
       "badges": [
-        "Ilustración de ImageGen"
+        "Kling Image 4.0"
       ],
-      "altContext": "Una mujer con chaqueta cobalto en una costa volcánica"
+      "altContext": "Kling Image 4.0"
     },
     "features": [
       {
@@ -151,57 +150,39 @@
       "ctaHref": "/es/precios#kling-image-v4-pricing"
     },
     "meta": {
-      "title": "Kling Image 4.0, generador y editor de imágenes hasta 8K | MaxVideoAI",
-      "description": "Crea imágenes en 2K, 4K y 8K, edita con hasta diez referencias y genera series ordenadas con Kling Image 4.0 en MaxVideoAI."
+      "title": "Kling Image 4.0 — Generación, edición y series | MaxVideoAI",
+      "description": "Crea y edita imágenes con Kling Image 4.0. Prepara una serie con un solo brief, usa hasta diez referencias y elige una resolución de hasta 8K."
     }
   },
   "prompting": {
     "modelSlug": "kling-image-v4",
     "section": {
       "title": "Cómo escribir un prompt para Kling Image 4.0",
-      "intro": "Describe una imagen, guía una edición con referencias ordenadas o planifica las tomas de una serie.",
+      "intro": "Para un anuncio en la calle, escribe el texto exacto e indica cómo encuadrar el panel para que se lea.",
       "tip": null,
-      "guide": {
-        "label": "Guía de Kling Image 4.0 en fal",
-        "href": "https://fal.ai/learn/tools/kling-image-4-prompting-guide"
-      },
+      "guide": null,
       "referencesTitle": "Guiar la imagen"
     },
-    "tabs": [
-      {
-        "id": "references",
-        "label": "Referencias ordenadas",
-        "title": "Asignar un papel a cada imagen",
-        "description": "Usa referencias que tengas permiso de utilizar.",
-        "copy": "Usa @Image1 para la forma y las proporciones exactas de la linterna. Usa @Image2 solo para la iluminación azul y el basalto oscuro. Coloca la linterna sobre basalto mojado y conserva los detalles del botón y la lente."
-      },
-      {
-        "id": "series",
-        "label": "Serie de imágenes",
-        "title": "Planificar tres imágenes conectadas",
-        "description": "Selecciona tres salidas en Create antes de generar.",
-        "copy": "Crea tres imágenes de un fotógrafo que cruza una bahía en plena tormenta. Conserva el mismo abrigo rojo, la cámara y la paleta. Imagen 1, plano general en la cubierta. Imagen 2, plano medio junto a la ventana mojada. Imagen 3, primer plano de una mano sujetando la correa de la cámara."
-      }
-    ],
+    "tabs": [],
     "recipe": {
-      "label": "Un brief para una imagen",
-      "excerpt": "Un fotógrafo con impermeable rojo observa la tormenta por la ventana de un ferry. El mar proyecta luz fría dentro de la cabina.",
-      "note": "Adapta este prompt de ilustración de ImageGen en Create.",
+      "label": "Texto del anuncio",
+      "excerpt": "\"I CAN WALK FROM HERE.\" / \"SHOE REPAIR\"",
+      "note": "Abre el brief de la marquesina para ver el prompt completo y sus ajustes.",
       "factors": [
         {
           "icon": "subject",
-          "title": "Sujeto y gesto",
-          "body": "Define la persona, su ropa y una acción fácil de leer."
+          "title": "Sitúa el cartel en la calle.",
+          "body": "Incluye el marco de la marquesina, la acera y a la persona que se aleja."
+        },
+        {
+          "icon": "text",
+          "title": "Da a cada línea su función.",
+          "body": "El titular ocupa dos líneas grandes. Debajo, SHOE REPAIR indica el servicio en un tamaño menor."
         },
         {
           "icon": "framing",
-          "title": "Encuadre",
-          "body": "Pide un plano medio y deja espacio para la ventana."
-        },
-        {
-          "icon": "light",
-          "title": "Luz y materiales",
-          "body": "Contrasta la luz fría del mar con la luz cálida interior. Describe el tejido mojado y sus reflejos."
+          "title": "Enfoca el texto.",
+          "body": "Encuadra el cartel casi de frente y mantén todas las letras legibles a través del cristal."
         }
       ]
     },
@@ -218,11 +199,32 @@
       "workspaceLabel": "Crear con Kling Image 4.0",
       "items": [
         {
-          "id": "kling-image-4-prompt",
-          "title": "Un fotógrafo en un ferry durante una tormenta",
-          "badge": "Ilustración de ImageGen",
+          "id": "kling-image-4-bus-shelter-poster",
+          "title": "I CAN WALK FROM HERE.",
+          "badge": "Marquesina · tipografía",
+          "kind": "typography",
+          "prompt": "Photograph a real-looking bus shelter on a dry neighbourhood street in late-morning side light. The subject is the printed advertisement mounted in the shelter's vertical panel. Use a 40 mm street-photography perspective from the pavement, only a few degrees off front-on. Frame all four edges of the panel and enough roof, bench, kerb and brickwork to make its location obvious. Let the panel take roughly two-thirds of the frame width, with the print in sharp focus. The dark metal frame is slightly scuffed at its base. The glass is clear over all lettering.\n\nThe ad is for a neighbourhood shoe repair shop. Lay it out on vivid chartreuse matte paper, using deep green ink and a bold, condensed sans-serif. Give the type wide margins and align both text groups left. Set the large headline once, following the exact line break and punctuation below.\n\n\"I CAN WALK\nFROM HERE.\"\n\nLeave a clear gap below the headline. Set \"SHOE REPAIR\" once at the bottom left in smaller capitals. Print the words and the final period without the quotation marks. The artwork consists only of these two text groups on the single flat colour. Keep the rest of the scene free of readable signs, logos and extra lettering.\n\nOn the narrow right side of the frame, a stylish adult in an ink-blue work jacket, wide slate trousers and worn leather sneakers steps away along the pavement, a burnt-orange shoulder bag swinging behind the hip. Catch a natural mid-stride, with clear dry shadows and a warm edge of sun on the jacket. Keep the person beside the panel with the entire headline and small line clear. Make the setting feel inhabited through the worn paving and the light on the brick, as in a candid photograph taken on an ordinary morning."
+        },
+        {
+          "id": "kling-image-4-pop-up-series",
+          "title": "Una prueba en el pop-up",
+          "badge": "Serie · continuidad visual",
           "kind": "image",
-          "prompt": "Cinematic editorial still photograph for a model prompt guide. Landscape 3:2. On a ferry in a storm, a middle-aged East Asian documentary photographer in a red waterproof coat stands at a dark window, seen in slightly imperfect side profile, holding a weathered film camera at chest height. Outside, cold cobalt sea and sea spray, a warm fluorescent ceiling practical gives pale amber rim light to wet fabric. Close medium shot, human and unposed, careful fine texture and layered reflections, no typography, brand or watermark."
+          "prompt": "Deliver exactly three separate 3:2 campaign images in the order below. They follow Inès, a 28-year-old designer, during an impromptu fitting at an independent streetwear pop-up. Inès has a short blunt black bob with one apricot-coloured strand over her left brow, a silver ear cuff on her right ear, freckles across her nose and a direct gaze. She wears the same original cobalt-blue cropped jacket in every shot: matte fabric, three broad horizontal quilt channels, a visibly off-centre silver zip and plain unmarked sleeves. Keep the face, ear cuff and jacket construction consistent across all views. The styling is deliberate and current, with wide charcoal trousers and boxy white shoes, no visible branding.\n\n1. Wide, low 24 mm shot outside the gallery. Inès steps off an orange shipping crate as if testing the jacket in motion. Photograph the full outfit in clear afternoon sun. A sharp cast shadow cuts across the pale concrete steps. Use strong geometric diagonals and plenty of room around the body.\n\n2. Steep overhead view from above the cutting table. Inès sits on an orange stool with both forearms on the matte orange tabletop, taking a folded paper pattern out of a sleeve cuff. Put her face and the plain outer panel of her left sleeve in the same frame. Use diffuse north-window light, soft shadows and clean, readable fabric seams. This is the source image for the later sleeve edit.\n\n3. Tight angle just below eye height at the entrance after dark. Inès glances back towards someone arriving, her face and asymmetric collar caught by direct white flash against a deep plum entrance. Keep the apricot strand, collar construction and silver cuff recognizable. Compose a confident diagonal running from the collar towards her eye.\n\nEach result is a single complete image. Clear faces, purposeful gestures, dry surfaces and contemporary editorial finish. Keep the scene free of writing, brand marks and extra outfits."
+        },
+        {
+          "id": "kling-image-4-sleeve-edit",
+          "title": "Seis cuadrados en una manga",
+          "badge": "Edición · motivo localizado",
+          "kind": "edit",
+          "prompt": "Edit @Image1 in place. Add one small graphic motif to the visible cobalt outer panel of Inès's left sleeve. The motif consists of six pale-ivory squares in two staggered rows of three. Treat it as a matte screen print sitting inside that panel. Allow the squares to follow the existing folds, and leave a clear cobalt border between the motif and the sleeve seams, cuff and elbow.\n\nMatch the reference framing and light. Preserve Inès's face, hands and hair, the other sleeve, every seam, the silver zip, the orange table, the paper and all background details. The output should look like the same shot immediately after this one screen print was added. Keep the squares free from text or additional symbols."
+        },
+        {
+          "id": "kling-image-4-pixel-makeup",
+          "title": "PIXEL CUT",
+          "badge": "Macro · detalle en 4K",
+          "kind": "quality",
+          "prompt": "Create a single 4:3 beauty editorial image in extreme close-up. An adult makeup creator applies the last of three small squared lilac decals underneath one eye before going live. Show one eye, the outer brow, the cheek, and one fingertip carefully seating the last matte square. The three squares follow the cheekbone like pixels that slipped out of a screen. A broad, precise warm-red shadow around the lash line echoes the common shape. Use an intentional off-centre composition: eye toward upper left, three crisp square edges crossing towards lower right.\n\nLight the real skin with one neutral-white strip light from the left. A matte coral bounce lifts the far edge of the face without flattening the skin. Use a short macro focus falloff, with the eyelashes, fine skin texture, powder grains and all three decals in clear focus. Show precise line work and tiny geometric edges. Dry matte surfaces, natural skin and bold colour separation. No glamour smoothing, watermark, text, overlays or branded cosmetics."
         }
       ]
     }
@@ -275,92 +277,57 @@
       }
     ],
     "fallbackItems": null,
-    "editorialImages": [
-      {
-        "id": "kling-image-4-hero",
-        "title": "Una mujer con chaqueta cobalto en una costa volcánica"
-      },
-      {
-        "id": "kling-image-4-product",
-        "title": "Una linterna índigo sobre basalto mojado"
-      },
-      {
-        "id": "kling-image-4-typography",
-        "title": "Cartel de una exposición titulado AFTER THE RAIN"
-      },
-      {
-        "id": "kling-image-4-prompt",
-        "title": "Un fotógrafo en un ferry durante una tormenta"
-      },
-      {
-        "id": "kling-image-4-specs",
-        "title": "Lluvia sobre una cremallera y tejido antidesgarro"
-      }
-    ],
     "cinematic": {
-      "title": "Ideas de imágenes para Kling Image 4.0",
-      "intro": "Explora retratos, fotografías de producto y composiciones, y adapta un brief en Create.",
-      "provenance": "Ilustraciones editoriales creadas con ImageGen. La galería de fal muestra resultados de Kling Image 4.0.",
-      "source": {
-        "label": "Ver ejemplos de Kling Image 4.0 en fal",
-        "href": "https://fal.ai/kling-image-4"
-      },
-      "panels": [
-        {
-          "id": "concepts",
-          "layout": "grid",
-          "eyebrow": "Ideas de imágenes",
-          "title": "Construye la imagen en torno a una idea.",
-          "body": "Describe el producto protagonista o el lugar de un texto breve dentro de la composición.",
-          "note": "Usa una referencia para orientar la forma de un producto. En un cartel, indica las palabras exactas, los saltos de línea y la superficie.",
-          "assetIds": [
-            "kling-image-4-product",
-            "kling-image-4-typography"
-          ]
-        },
-        {
-          "id": "image-brief",
-          "placement": "prompting",
-          "layout": "feature",
-          "eyebrow": "Guía de prompts",
-          "title": "Dirige el sujeto, la luz y el encuadre.",
-          "body": "Un brief sencillo puede definir el gesto, la silueta, los reflejos y la fuente de luz.",
-          "note": "Abre el prompt de la ilustración como punto de partida para una imagen 2K en Create.",
-          "assetIds": [
-            "kling-image-4-prompt"
-          ]
-        },
-        {
-          "id": "resolution",
-          "placement": "details",
-          "layout": "feature",
-          "eyebrow": "Opciones de salida",
-          "title": "Ajusta el tamaño al uso final.",
-          "body": "Elige 2K para explorar una idea o 4K u 8K cuando el proyecto necesite más píxeles.",
-          "note": "Selecciona la resolución y el encuadre en Create.",
-          "assetIds": [
-            "kling-image-4-specs"
-          ]
-        }
-      ]
+      "provenance": "Resultados de Kling Image 4.0",
+      "panels": [],
+      "imageBriefs": {
+        "title": "Cuatro escenas para probar.",
+        "intro": "Cada brief abre el prompt completo y sus ajustes en Create. La galería mostrará los resultados revisados de Kling Image 4.0.",
+        "items": [
+          {
+            "recipeId": "kling-image-4-bus-shelter-poster",
+            "use": "Marquesina · tipografía",
+            "title": "I CAN WALK FROM HERE.",
+            "body": "Una persona se aleja de la parada junto al cartel verde de un taller de reparación de calzado del barrio."
+          },
+          {
+            "recipeId": "kling-image-4-pop-up-series",
+            "use": "Serie · continuidad visual",
+            "title": "Una prueba en el pop-up",
+            "body": "Inès lleva la misma chaqueta cobalto en tres encuadres. Un contrapicado al sol, una vista cenital en el taller y un primer plano con flash."
+          },
+          {
+            "recipeId": "kling-image-4-sleeve-edit",
+            "use": "Edición · motivo localizado",
+            "title": "Seis cuadrados en una manga",
+            "body": "Añade la vista cenital del pop-up como @Image1. Pide un motivo marfil dentro de un panel de la manga. Comprueba su posición y cómo sigue los pliegues."
+          },
+          {
+            "recipeId": "kling-image-4-pixel-makeup",
+            "use": "Macro · detalle en 4K",
+            "title": "PIXEL CUT",
+            "body": "Una creadora coloca el último cuadrado lila de su maquillaje. La luz lateral define las pestañas, la textura de la piel y los bordes del motivo."
+          }
+        ]
+      }
     }
   },
   "cinematic": {
     "modelSlug": "kling-image-v4",
     "variant": "image",
-    "heroAssetId": "kling-image-4-hero",
+    "heroAssetId": null,
     "titleLines": [
       "Kling Image 4.0"
     ],
-    "subtitle": "Crea una imagen o prepara toda una serie.",
-    "byline": "Generador de imágenes con IA en MaxVideoAI",
-    "intro": "Crea y edita imágenes en 2K, 4K u 8K. Usa hasta diez referencias ordenadas o crea una serie coherente de dos a diez imágenes a partir de un mismo prompt.",
+    "subtitle": "Una idea para toda una serie de imágenes.",
+    "byline": "Generador y editor de imágenes con IA",
+    "intro": "Crea un visual, retócalo con referencias o muestra al mismo sujeto desde varios ángulos. Elige 2K, 4K u 8K según el detalle que necesites.",
     "primaryLabel": "Crear con Kling Image 4.0",
-    "caption": "Ilustración de ImageGen",
+    "caption": "Resultados de Kling Image 4.0",
     "proofLabel": "Explorar ideas",
     "overviewLabel": "Resumen",
     "detailsLabel": "Especificaciones",
-    "examplesLabel": "Explorar ideas",
+    "examplesLabel": "Ver los briefs",
     "promptingLabel": "Guía de prompts",
     "pricingLabel": "Precios",
     "specsReviewedAt": "2026-11-20",

@@ -15,12 +15,13 @@ export function ModelCinematicHero({ presentation, decision }: {
   presentation: CinematicPresentation; decision: ModelDecisionData;
 }) {
   const { content, hero } = presentation;
-  const display = resolveCinematicHeroDisplay(hero);
+  const display = hero ? resolveCinematicHeroDisplay(hero) : undefined;
   const isVideo = content.variant === 'video';
   const overview = content.overview;
   // The landscape Flash poster covers a tall mobile opening; choose its prepared 1280 px copy.
   const mobileSizes = isVideo ? '1200px' : '100vw';
-  return <section id="top" className={`cinema-hero cinema-hero--${content.variant} cinema-hero--with-overview`} aria-labelledby="cinema-model-title">
+  return <section id="top" className={`cinema-hero cinema-hero--${content.variant} cinema-hero--with-overview${display ? '' : ' cinema-hero--briefs'}`} aria-labelledby="cinema-model-title">
+    {hero && display ? <>
     <link rel="preload" as="image" type="image/avif" media="(max-width: 767px)" imageSrcSet={display.mobile} imageSizes={mobileSizes} fetchPriority="high" />
     <link rel="preload" as="image" type="image/avif" media="(min-width: 768px)" imageSrcSet={display.desktop} imageSizes="100vw" fetchPriority="high" />
     <div className="cinema-hero-art"><picture>
@@ -28,8 +29,8 @@ export function ModelCinematicHero({ presentation, decision }: {
       <source media="(min-width: 768px)" type="image/avif" srcSet={display.desktop} sizes="100vw" />
       <Image src={hero.display.url} width={hero.display.width} height={hero.display.height} alt={hero.title}
         loading="eager" fetchPriority="high" sizes="100vw" className="cinema-hero-image" />
-    </picture></div>
-    {isVideo && hero.video ? <ModelCinematicHeroMotion key={hero.video.src} src={hero.video.src} title={hero.title} ui={presentation.ui} autoplay={presentation.media?.heroAutoplay} /> : null}
+    </picture></div></> : null}
+    {isVideo && hero?.video ? <ModelCinematicHeroMotion key={hero.video.src} src={hero.video.src} title={hero.title} ui={presentation.ui} autoplay={presentation.media?.heroAutoplay} /> : null}
     <div id="overview" className="cinema-wrap cinema-hero-content">
       <p className="cinema-byline">{content.byline}</p>
       <h1 id="cinema-model-title">{content.titleLines.map((line, index) => <span key={line}>{index ? ' ' : ''}{line}</span>)}</h1>
@@ -43,7 +44,7 @@ export function ModelCinematicHero({ presentation, decision }: {
       </div>
       {content.highlights ? <ModelCinematicHighlights items={content.highlights} /> : content.workflows ? <ModelCinematicWorkflowNav workflows={content.workflows} /> : overview ? <ModelCinematicBenefits overview={overview} /> : <dl className="cinema-hero-facts">{content.facts.map(fact => <div key={fact.label}><dt>{fact.label}</dt><dd>{fact.value}</dd></div>)}</dl>}
     </div>
-    {hero.illustrative ? <p className="cinema-hero-attribution">{content.caption}</p> : null}
+    {hero?.illustrative ? <p className="cinema-hero-attribution">{content.caption}</p> : null}
     <ModelCinematicOverview presentation={presentation} />
   </section>;
 }
