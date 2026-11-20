@@ -579,6 +579,7 @@ export function coerceFormState(engine: EngineCaps, mode: Mode, previous: FormSt
   })();
 
   return {
+    ...(previous?.createPreferences ? { createPreferences: previous.createPreferences } : {}),
     engineId: engine.id,
     ...(previous?.engineId === engine.id && engine.operationCaps?.[previous.operation!]?.mode === mode ? { operation: previous.operation } : !isKlingO3EngineId(engine.id) && Object.values(engine.operationCaps ?? {}).find(op => op.mode === mode && op.defaultForMode) ? {operation:Object.values(engine.operationCaps!).find(op => op.mode === mode && op.defaultForMode)!.operation} : {}),
     mode,
@@ -610,6 +611,6 @@ export function coerceFormStateForEngineChange(
   return coerceFormState(engine, mode, {
     ...previous,
     mode,
-    audio: resolveAudioDefault(engine, mode),
+    audio: WORKSPACE_CREATE_MODES.includes(mode) ? true : resolveAudioDefault(engine, mode),
   });
 }

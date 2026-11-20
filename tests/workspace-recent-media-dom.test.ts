@@ -10,10 +10,10 @@ import { useWorkspaceRecentMetadata } from '../frontend/app/(core)/(workspace)/a
 import { WorkspaceRecentReferences } from '../frontend/app/(core)/(workspace)/app/_components/WorkspaceRecentReferences.client';
 import { RECENT_MEDIA_DRAG_TYPE } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-recent-media';
 import { WorkspaceRecentRoleDialog } from '../frontend/app/(core)/(workspace)/app/_components/WorkspaceRecentRoleDialog.client';
-import type { UserAsset } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-assets';
+import type { ReferenceAsset, UserAsset } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-assets';
 import type { AssetFieldConfig } from '../frontend/components/Composer';
 import { SearchParamsContext } from 'next/dist/shared/lib/hooks-client-context.shared-runtime';
-import { stageMediaHandoff } from '../frontend/lib/media-handoff';
+import { MEDIA_HANDOFF_KEY, stageMediaHandoff, stageVideoSourceHandoff } from '../frontend/lib/media-handoff';
 
 async function harness() {
   const dom = new JSDOM('<button id="opener">Recents</button><div id="root"></div>', { url: 'http://localhost', pretendToBeVisual: true });
@@ -28,6 +28,89 @@ async function harness() {
     close: async () => { await act(async () => root.unmount()); await session.restore(); dom.window.close(); for (const [key, descriptor] of saved) { if (descriptor) Object.defineProperty(globalThis, key, descriptor); else Reflect.deleteProperty(globalThis, key); } } };
 }
 const image: UserAsset = { id: 'out1', url: '/assets/source.png?signature=secret', kind: 'image', mime: 'image/png', size: 1000 };
+
+test('an explicit Modify action fills only the exact source after mode hydration and resumes interrupted preparation', async () => {
+  const h = await harness();
+  h.session.setUserId('owner-source');
+  const oldFetch = globalThis.fetch;
+  globalThis.fetch = async () => Response.json({ ok: true, outputs: [] });
+  const asset = { id: 'movie-original', kind: 'video' as const, url: 'https://media.example/movie.mp4',
+    mime: 'video/mp4', size: 4000, width: 720, height: 1280, durationSec: 4 };
+  const source = { id: 'video_url', type: 'video' as const, label: 'Source', maxCount: 1, modes: ['v2v' as const] };
+  const reference = { id: 'reference_video_urls', type: 'video' as const, label: 'Video reference', maxCount: 3 };
+  const fields = [{ field: source, required: true }, { field: reference, required: false }];
+  const schema = { required: [source], optional: [reference] };
+  const inserted: Array<{ field: string; id: string; slot?: number; isCurrent?: () => boolean }> = [];
+  let resolveInsert!: (value: unknown) => void;
+  const prepare = async (field: { id: string }, item: UserAsset, slot?: number, isCurrent?: () => boolean) => {
+    inserted.push({ field: field.id, id: item.id, slot, isCurrent });
+    return new Promise(resolve => { resolveInsert = resolve; });
+  };
+  const storage = h.dom.window.sessionStorage;
+  const cache = new Map();
+  function view(mode: 't2v' | 'v2v', key = 'first') {
+    return React.createElement(SWRConfig, { value: { provider: () => cache } },
+      React.createElement(SearchParamsContext.Provider, { value: new URLSearchParams('media=chosen&engine=wan-3-prime&mode=v2v') },
+        React.createElement(WorkspaceRecentReferences, {
+          key, userId: 'owner-source', locale: 'en', engineId: 'wan-3-prime', mode,
+          workflowIntent: mode === 'v2v' ? mode : null, fields, inputAssets: {}, inputSchema: schema,
+          availability: { inputAssets: {}, isUnifiedSeedance: false, isUnifiedKlingO3: false, klingO3VideoToVideoSupported: true,
+            hasAnyVideoInput: false, guestUploadLockedReason: null, workflowCopy: { clearReferencesToUseStartEnd: '', clearStartEndToUseReferences: '' } },
+          onInsert: prepare, children: () => null,
+        })));
+  }
+  try {
+    h.dom.window.history.replaceState(null, '', '/app?media=chosen&engine=wan-3-prime&mode=v2v&keep=1');
+    stageVideoSourceHandoff(storage, 'owner-source', asset, { engineId: 'wan-3-prime', mode: 'v2v' }, 'chosen');
+    await h.render(view('t2v'));
+    assert.equal(inserted.length, 0);
+    assert.equal(h.dom.window.document.querySelector('[role=dialog]'), null);
+    await h.render(view('v2v'));
+    assert.deepEqual(inserted.map(({field, id, slot}) => ({field, id, slot})), [{ field: 'video_url', id: asset.id, slot: undefined }]);
+    assert.ok(storage.getItem(MEDIA_HANDOFF_KEY), 'keep the explicit source until insertion finishes');
+    await h.render(view('v2v', 'after-reload'));
+    assert.equal(inserted.length, 2, 'a new receiver can resume the interrupted preparation');
+    assert.equal(inserted[0].isCurrent?.(), false);
+    assert.equal(inserted[1].isCurrent?.(), true);
+    await act(async () => resolveInsert(true));
+    assert.equal(storage.getItem(MEDIA_HANDOFF_KEY), null);
+    assert.equal(h.dom.window.location.search, '?keep=1');
+    assert.equal(h.dom.window.document.querySelector('[role=dialog]'), null);
+  } finally { globalThis.fetch = oldFetch; await h.close(); }
+});
+
+test('a directed source keeps the current clip until the user confirms replacement', async () => {
+  const h = await harness();
+  const asset = { id: 'new-video', kind: 'video' as const, url: 'https://media.example/new.mp4',
+    mime: 'video/mp4', size: 3000, width: 720, height: 1280, durationSec: 4 };
+  const field = { id: 'video_url', type: 'video' as const, label: 'Source video', modes: ['extend' as const], maxCount: 1 };
+  const original: ReferenceAsset = { id: 'previous', kind: 'video', fieldId: field.id, name: 'Existing clip',
+    type: 'video/mp4', url: 'https://media.example/old.mp4', previewUrl: 'https://media.example/old.mp4', status: 'ready', size: 2000 };
+  const inserts: Array<number | undefined> = [];
+  let closed = 0;
+  const render = (key: string) => h.render(React.createElement(WorkspaceRecentRoleDialog, {
+    key, asset, fields: [{ field, required: true }], inputAssets: { video_url: [original] },
+    inputSchema: { required: [field] }, mode: 'extend', workflowIntent: 'extend', sourceWorkflow: 'extend',
+    locale: 'en', onClose: () => { closed += 1; }, onInsert: async (_entry, slot) => { inserts.push(slot); return true; },
+  }));
+  try {
+    await render('cancel');
+    assert.deepEqual(inserts, []);
+    const dialog = h.dom.window.document.querySelector('[role=dialog]')!;
+    assert.match(dialog.textContent ?? '', /Video to extend/);
+    assert.match(dialog.textContent ?? '', /Existing clip/);
+    assert.equal(dialog.querySelector('fieldset,select'), null);
+    const close = dialog.querySelector<HTMLButtonElement>('button[aria-label="Close"]')!;
+    await act(async () => close.click());
+    assert.equal(closed, 1);
+    assert.deepEqual(inserts, []);
+    await render('replace');
+    const button = h.dom.window.document.querySelector<HTMLButtonElement>('.app-recent-insert')!;
+    assert.match(button.textContent ?? '', /Replace/);
+    await act(async () => button.click());
+    assert.deepEqual(inserts, [0]);
+  } finally { await h.close(); }
+});
 
 test('an incoming Modify video can enter the Luma source role while its custom editor remains enabled', async () => {
   const h = await harness();

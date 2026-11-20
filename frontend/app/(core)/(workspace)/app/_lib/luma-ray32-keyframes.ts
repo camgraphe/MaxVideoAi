@@ -1,5 +1,14 @@
+import type { EngineInputSchema } from '@/types/engines';
+
 export const DEFAULT_VISIBLE_KEYFRAME_COUNT = 4;
 export const EMPTY_KEYFRAME_SLOT_VALUE = '__empty__';
+export const FLUX_KEYFRAME_SLOTS_FIELD = 'keyframe_slot_indexes';
+
+export function hasFluxCreateKeyframes(schema: EngineInputSchema | null | undefined): boolean {
+  const fields = schema?.required?.filter(field => field.requiredInModes?.includes('ref2v'));
+  return Boolean(fields?.some(field => field.id === 'reference_image_urls' && field.type === 'image')
+    && fields?.some(field => field.id === 'keyframe_indexes' && field.type === 'text'));
+}
 
 export type KeyframeSlot = {
   assetSlot: number;
@@ -162,6 +171,21 @@ export function formatKeyframeSlots(slots: KeyframeSlot[]): string {
   return slots.map((slot) => `${slot.assetSlot}:${slot.frameIndex}`).join(', ');
 }
 
+export function parseEditorKeyframeSlots(
+  slotValue: unknown, payloadValue: unknown, assets: readonly unknown[], maxSlots: number, maxFrameIndex: number,
+): KeyframeSlot[] {
+  // Older recipes only stored compact payload positions, in occupied slot order.
+  if (slotValue == null && typeof payloadValue === 'string' && /^\s*\d+(?:\s*,\s*\d+)*\s*$/.test(payloadValue)) {
+    const occupied = getOccupiedAssetSlots(assets, maxSlots);
+    const indexes = payloadValue.split(',').map(Number);
+    if (occupied.length === indexes.length) {
+      const value = formatKeyframeSlots(occupied.map((assetSlot, index) => ({ assetSlot, frameIndex: indexes[index]! })));
+      return parseKeyframeSlots(value, assets, maxSlots, maxFrameIndex).sort((first, second) => first.assetSlot - second.assetSlot);
+    }
+  }
+  return parseKeyframeSlots(slotValue ?? payloadValue, assets, maxSlots, maxFrameIndex);
+}
+
 export function getPayloadIndexes(slots: KeyframeSlot[], assets: readonly unknown[]): number[] {
   const frameByAssetSlot = new Map(slots.map((slot) => [slot.assetSlot, slot.frameIndex]));
   return assets.reduce<number[]>((indexes, asset, assetSlot) => {
@@ -184,9 +208,25 @@ export function formatFramecode(frameIndex: number, fps: number): string {
   return `${seconds}:${String(frame).padStart(2, '0')}`;
 }
 
-export function getTimelineLeft(frameIndex: number, maxFrameIndex: number): string {
+export function getTimelinePercent(frameIndex: number, maxFrameIndex: number): number {
   const ratio = maxFrameIndex > 0 ? frameIndex / maxFrameIndex : 0;
-  return `${10 + ratio * 80}%`;
+  return 10 + ratio * 80;
+}
+
+export function getKeyframeCardLayout(slots: KeyframeSlot[], maxFrameIndex: number, timelineWidth = 0) {
+  const cardSpacing = 112;
+  const edge = 60;
+  const minWidth = Math.max(timelineWidth, 240, 2 * edge + (slots.length - 1) * cardSpacing);
+  const ordered = [...slots].sort((a, b) => a.frameIndex - b.frameIndex);
+  let earliestCenter = edge;
+  const centers = new Map(ordered.map((slot, index) => {
+    const frameCenter = getTimelinePercent(slot.frameIndex, maxFrameIndex) * minWidth / 100;
+    const latestCenter = minWidth - edge - (ordered.length - index - 1) * cardSpacing;
+    const center = Math.min(Math.max(frameCenter, earliestCenter), latestCenter);
+    earliestCenter = center + cardSpacing;
+    return [slot.assetSlot, 100 * center / minWidth] as const;
+  }));
+  return { minWidth, centers };
 }
 
 export function getFrameIndexFromClientX(clientX: number, rect: DOMRect, maxFrameIndex: number): number {
@@ -207,22 +247,19 @@ export function findFirstUnusedAssetSlot(slots: KeyframeSlot[], maxSlots: number
 export function findBestNewFrameIndex(slots: KeyframeSlot[], maxFrameIndex: number): number {
   if (!slots.length) return 0;
   const sortedFrames = Array.from(new Set(slots.map((slot) => slot.frameIndex))).sort((left, right) => left - right);
-  let bestStart = sortedFrames[0] >= maxFrameIndex / 2 ? 0 : sortedFrames[0];
-  let bestEnd = sortedFrames[0] >= maxFrameIndex / 2 ? sortedFrames[0] : maxFrameIndex;
-  let bestGap = Math.abs(bestEnd - bestStart);
-
-  for (let index = 0; index < sortedFrames.length - 1; index += 1) {
-    const start = sortedFrames[index] ?? 0;
-    const end = sortedFrames[index + 1] ?? maxFrameIndex;
+  const bounds = [0, ...sortedFrames, maxFrameIndex];
+  let bestGap = 0;
+  let midpoint = 0;
+  for (let index = 1; index < bounds.length; index += 1) {
+    const start = bounds[index - 1]!;
+    const end = bounds[index]!;
     const gap = end - start;
     if (gap > bestGap) {
       bestGap = gap;
-      bestStart = start;
-      bestEnd = end;
+      midpoint = Math.round((start + end) / 2);
     }
   }
 
-  const midpoint = Math.round((bestStart + bestEnd) / 2);
   if (!sortedFrames.includes(midpoint)) return clampFrameIndex(midpoint, maxFrameIndex);
   for (let offset = 1; offset <= maxFrameIndex; offset += 1) {
     const lower = clampFrameIndex(midpoint - offset, maxFrameIndex);

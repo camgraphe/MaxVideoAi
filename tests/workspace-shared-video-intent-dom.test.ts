@@ -8,6 +8,7 @@ import { getBaseEngines } from '../frontend/src/lib/engines';
 import { useWorkspaceRouteFormState } from '../frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceRouteFormState';
 import { useWorkspaceAssetState } from '../frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceAssetState';
 import { useWorkspaceVideoSettings } from '../frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceVideoSettings';
+import { readParkedSources, writeParkedSources } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-parked-source';
 
 const engines = getBaseEngines(), engineMap = new Map(engines.map((engine) => [engine.id, engine]));
 const noop = () => {};
@@ -29,7 +30,7 @@ async function mount(initialSearch: string, storage: Record<string, string> = {}
     previous.set(key, Object.getOwnPropertyDescriptor(globalThis, key));
     Object.defineProperty(globalThis, key, { configurable: true, writable: true, value });
   }
-  let searchString = initialSearch, current!: ReturnType<typeof useWorkspaceRouteFormState>;
+  let searchString = initialSearch, current!: ReturnType<typeof useWorkspaceRouteFormState> & ReturnType<typeof useWorkspaceAssetState>;
   const replacements: string[] = [];
   const replaceRoute = (href: string) => replacements.push(href);
   function Fixture() {
@@ -42,7 +43,7 @@ async function mount(initialSearch: string, storage: Record<string, string> = {}
       effectiveRequestedEngineToken: null, rendersLength: 0, readScopedStorage: () => null, writeScopedStorage: noop,
       replaceRoute, focusComposer: noop, setSelectedPreview: noop, setNotice: noop,
     });
-    current = route;
+    current = { ...route, ...assets };
     return null;
   }
   const root = createRoot(dom.window.document.getElementById('root')!);
@@ -54,7 +55,7 @@ async function mount(initialSearch: string, storage: Record<string, string> = {}
     request.resolve(new Response(JSON.stringify(body), { status: 200 }));
   };
   return {
-    get current() { return current; }, requests, replacements, change, resolve,
+    get current() { return current; }, requests, replacements, change, resolve, storage: dom.window.sessionStorage,
     async dispose() {
       await act(async () => root.unmount()); dom.window.close();
       for (const [key, descriptor] of previous) {
@@ -113,5 +114,24 @@ test('storyboard import ignores ownerless and foreign handoffs but applies its o
     const f=await mount('storyboard=1',{[key]:handoff});
     try{assert.equal(f.current.prompt.includes('Private board source'),key===base+':intent-tests');}
     finally{await f.dispose();}
+  }
+});
+
+test('a Storyboard handoff replaces the previous draft including references that were waiting for another model', async () => {
+  const { buildStoryboardGeneratorHandoff, STORYBOARD_GENERATOR_HANDOFF_STORAGE_KEY } = await import('../frontend/lib/storyboard-generator-handoff');
+  const view = await mount('');
+  try {
+    const handoff = buildStoryboardGeneratorHandoff({ targetModel: 'seedance', imageUrl: 'https://example.invalid/new-board.png', subject: 'A new project', durationSec: 10, frameCount: 6 });
+    const asset = { id: 'old', fieldId: 'video_urls', kind: 'video' as const, name: 'old clip', type: 'video/mp4', size: 1024, status: 'ready' as const,
+      url: 'https://example.invalid/old.mp4', previewUrl: 'https://example.invalid/old.mp4' };
+    await act(async () => view.current.setParkedCreateReferences([{ fieldId: asset.fieldId, index: 0, role: 'reference', asset }]));
+    assert.ok(writeParkedSources('intent-tests', handoff.engineId, new Map([['create', { assets: { video_urls: [asset] } }]])));
+    view.storage.setItem(`${STORYBOARD_GENERATOR_HANDOFF_STORAGE_KEY}:intent-tests`, JSON.stringify(handoff));
+    await act(async () => view.change('storyboard=1'));
+    assert.match(view.current.prompt, /A new project/);
+    assert.deepEqual(view.current.parkedCreateReferences, []);
+    assert.equal(readParkedSources('intent-tests', handoff.engineId)?.size, 0);
+  } finally {
+    await view.dispose();
   }
 });

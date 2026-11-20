@@ -29,6 +29,14 @@ test('unavailable modes, unsupported known sources and missing video roles are n
   assert.ok(getVideoContinuationEngine([engine('editor')], { ...video, durationSec: null, size: null, mime: null }, 'v2v'), 'unknown facts are qualified at destination, not invented');
 });
 
+test('an optional video reference cannot make an unsupported source eligible for Modify', () => {
+  const base = engine('editor');
+  const withReferences = { ...base, inputSchema: { ...base.inputSchema!, optional: [{
+    id: 'reference_video_urls', type: 'video' as const, label: 'Video reference', modes: ['v2v' as const],
+  }] } };
+  assert.equal(getVideoContinuationEngine([withReferences], { ...video, durationSec: 20 }, 'v2v'), null);
+});
+
 test('gallery continuation resolves the exact ready output and never substitutes its preview or a sibling', async () => {
   const selected = { ...video, source: 'gallery', jobId: 'job-a', previewUrl: 'https://media.example/preview.mp4' };
   let requested = '';

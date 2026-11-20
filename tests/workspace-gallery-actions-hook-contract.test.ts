@@ -47,7 +47,7 @@ test('guest starter boot and explicit guided selection use the gallery action ow
   assert.doesNotMatch(hookSource, /suppressGuidedSampleAutoApply/);
   assert.doesNotMatch(appSource, /suppressGuidedSampleAutoApply/);
   assert.match(hookSource, /handleGalleryGroupAction\(target, 'open', \{ autoPlayPreview: true \}\)/);
-  assert.match(hookSource, /handleGalleryGroupAction\(firstSample, 'open'\)/);
+  assert.match(hookSource, /handleGalleryGroupAction\(firstSample, 'open', \{ automaticStarter: true \}\)/);
   assert.match(appSource, /guestStarterReady: app.authStatus === 'loggedOut' && activeDraft.ready/);
   assert.match(appSource, /!draft.hasStoredFormRef.current && !draft.fromVideoId && !draft.requestedJobId/);
   assert.match(appSource, /!draft.effectiveRequestedEngineId/);

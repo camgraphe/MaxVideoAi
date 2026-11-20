@@ -66,7 +66,7 @@ export function Composer({
   negativePromptField,
   negativePromptRequired = false,
   assetFields,
-  referenceAuthAction, subjectReferences,
+  referenceAuthAction, subjectReferences, parkedReferences,
   assets,
   onAssetAdd,
   onPrepareVideoExcerpt,
@@ -94,6 +94,7 @@ export function Composer({
   generateLabel,
   generateLoadingLabel,
   pendingGenerations = [],
+  referenceUploadStatus,
 }: ComposerProps) {
   const { t, locale } = useI18n();
   const promptId = useId();
@@ -111,14 +112,21 @@ export function Composer({
   const [isButtonAnimating, setIsButtonAnimating] = useState(false);
   const [isPulseVisible, setIsPulseVisible] = useState(false);
   const animationTimeoutRef = useRef<number | null>(null);
+  const attachments = workspaceDensity && referenceUploadStatus === undefined
+    ? assetFields.flatMap(({ field }) => assets[field.id] ?? []) : [];
+  const uploadStatus = referenceUploadStatus === undefined
+    ? attachments.some(asset => asset?.status === 'error') ? 'error' : attachments.some(asset => asset?.status === 'uploading') ? 'uploading' : null
+    : referenceUploadStatus;
+  const referenceStatus = uploadStatus === 'error' ? workbenchCopy.referenceFailed
+    : uploadStatus === 'uploading' ? workbenchCopy.importing : undefined;
   const formattedPrice = useMemo(() => {
-    if (price == null || isPricing || excerptEditorOpen || excerptNeedsRange || (videoSourceWorkflow && extensionSourceState !== 'ready') || preflight?.ok === false) return null;
+    if (referenceStatus || price == null || isPricing || excerptEditorOpen || excerptNeedsRange || (videoSourceWorkflow && extensionSourceState !== 'ready') || preflight?.ok === false) return null;
     try {
       return new Intl.NumberFormat(CURRENCY_LOCALE, { style: 'currency', currency }).format(price);
     } catch {
       return `${currency} ${price.toFixed(2)}`;
     }
-  }, [price, currency, isPricing, preflight?.ok, videoSourceWorkflow, extensionSourceState, excerptEditorOpen, excerptNeedsRange]);
+  }, [price, currency, isPricing, referenceStatus, preflight?.ok, videoSourceWorkflow, extensionSourceState, excerptEditorOpen, excerptNeedsRange]);
   const promptLabel = promptField?.label ?? 'Prompt';
   // Length limits already appear in the prompt counter and validation feedback.
   const redundantLengthHint = /^Provider (?:prompt length|maximum):/i.test(promptField?.description ?? '');
@@ -133,7 +141,7 @@ export function Composer({
   const promptValueReady = multiPromptEnabled ? true : Boolean(prompt.trim());
   const missingRequiredAsset = hasMissingRequiredComposerAsset(assetFields, assets);
   const isGenerateDisabled =
-    Boolean(disableGenerate) ||
+    Boolean(disableGenerate || referenceStatus) ||
     referenceMentions.needsReview ||
     excerptEditorOpen || excerptNeedsRange ||
     isLoading ||
@@ -263,7 +271,7 @@ export function Composer({
                             onClick={generationGate.generate}
                           >
                             <span className="app-generation-label relative z-10 inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-micro">{isLoading && workspaceDensity ? <GenerationSpinner /> : null}{resolvedGenerateLabel}</span>
-                            <ComposerGenerationQuote workspace={workspaceDensity} hasPrice={Boolean(formattedPrice)} isPricing={isPricing} waitingLabel={extensionQuoteStatus}>{formattedPrice ? (
+                            <ComposerGenerationQuote workspace={workspaceDensity} hasPrice={Boolean(formattedPrice)} isPricing={isPricing} waitingLabel={referenceStatus ?? extensionQuoteStatus}>{formattedPrice ? (
                               <span
                                 className={clsx(
                                   'app-generation-price relative z-10 inline-flex items-center rounded-full py-1 text-sm font-semibold normal-case backdrop-blur',
@@ -293,12 +301,12 @@ export function Composer({
               </div>
             ) : null;
 
-  const renderReferences = (insert?: (token: string) => void, manager?:PromptReferenceManager) => workspaceDensity && (sourceControl || assetFields.length > 0 || subjectReferences) ? <>
+  const renderReferences = (insert?: (token: string) => void, manager?:PromptReferenceManager) => workspaceDensity && (sourceControl || assetFields.length > 0 || subjectReferences || parkedReferences?.length) ? <>
           {sourceControl}
-          {assetFields.length > 0 || subjectReferences ? <WorkspaceReferenceSection managementRef={manager} managementMode={assistance?.live?.mode as import('@/types/engines').Mode|undefined} compact={assistanceEnabled} engine={engine} caps={caps} assetFields={orderedAssetFields} assets={assets}
+          {assetFields.length > 0 || subjectReferences || parkedReferences?.length ? <WorkspaceReferenceSection managementRef={manager} managementMode={assistance?.live?.mode as import('@/types/engines').Mode|undefined} compact={assistanceEnabled} engine={engine} caps={caps} assetFields={orderedAssetFields} assets={assets}
             mentions={referenceMentions.mentions} onInsertMention={!multiPromptEnabled && (!engine.activeVideoOperation || promptField) ? insert ?? referenceMentions.insert : undefined}
             extensionWorkflow={extensionWorkflow} videoSourceWorkflow={videoSourceWorkflow}
-            referenceAuthAction={referenceAuthAction} subjectReferences={subjectReferences}
+            referenceAuthAction={referenceAuthAction} subjectReferences={subjectReferences} parkedReferences={parkedReferences}
             onPrepareVideoExcerpt={onPrepareVideoExcerpt} onVideoExcerptEditorChange={handleExcerptEditorChange}
             onAssetAdd={onAssetAdd} onAssetRemove={onAssetRemove} onNotice={onNotice}
             onOpenLibrary={onOpenLibrary} onAssetUrlSelect={onAssetUrlSelect} referenceWarning={composerCopy.assetSlots.referenceWarning} /> : null}

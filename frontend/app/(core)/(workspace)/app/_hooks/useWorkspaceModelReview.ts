@@ -1,5 +1,6 @@
 'use client';
 
+import { isParkableCreateReference, parkedCreateReferenceKey } from '../_lib/workspace-create-continuity';
 import { preparePickerScenario, type PickerScenario } from '../_lib/workspace-picker-scenario';
 import { applyWorkspacePreparedSetup } from '../_lib/workspace-apply-prepared-setup';
 import type { WorkspaceSavedModelSetup } from '../_lib/workspace-model-setups';
@@ -40,7 +41,7 @@ export type WorkspaceModelReviewOptions = Omit<Setters, 'setForm'> & {
   onModelSwitchNotice: (message: string) => void;
   current: WorkspaceModelSetup | null;
   applyPreparedForm: (form: WorkspaceModelSetup['form']) => void;
-  beforeApplyPreparedForm?: (form: WorkspaceModelSetup['form']) => boolean;
+  beforeApplyPreparedForm?: (form: WorkspaceModelSetup['form'], transferCreateDraft?: boolean) => boolean;
   engines: EngineCaps[];
   locale: string;
   /** Only a confirmed authenticated account. Never pass last-known draft storageScope. */
@@ -352,8 +353,10 @@ export function useWorkspaceModelReview(options: WorkspaceModelReviewOptions) {
   const commitPreparedSetup = (
     source: WorkspaceModelSetup,
     prepared: WorkspaceModelSetup,
+    transferCreateDraft = false,
   ) => {
-    const snapshot = serializeWorkspaceModelSetup(source);
+    // Compatibility parking belongs to the active draft. Per-model history stores only its active recipe.
+    const snapshot = serializeWorkspaceModelSetup({ ...source, parkedCreateReferences: undefined });
     if (!snapshot.ok) {
       setError(snapshot.error);
       return false;
@@ -370,7 +373,7 @@ export function useWorkspaceModelReview(options: WorkspaceModelReviewOptions) {
       })
     )
       return false;
-    if (latest.current.options.beforeApplyPreparedForm?.(prepared.form) === false) return false;
+    if (latest.current.options.beforeApplyPreparedForm?.(prepared.form, transferCreateDraft) === false) return false;
     // All owners receive the already prepared values in the same React event, before schema effects run.
     applyWorkspacePreparedSetup(committed, {
       ...latest.current.options,
@@ -433,13 +436,20 @@ export function useWorkspaceModelReview(options: WorkspaceModelReviewOptions) {
       );
       return false;
     }
-    if (!commitPreparedSetup(source, prepared.setup)) {
+    if (!commitPreparedSetup(source, prepared.setup, source.form.engineId !== engine.id)) {
       onModelSwitchNotice(workspaceModelReviewCopy(locale).incomplete);
       return false;
     }
-    if (prepared.removedReferences.length)
+    const inactive = prepared.setup.parkedCreateReferences ?? [];
+    const parked = new Set(inactive.map(parkedCreateReferenceKey));
+    const parkedSubjectIds = new Set(inactive.filter(reference => reference.role === 'subject').map(reference => reference.element.id));
+    const removed = prepared.removedReferences.filter(reference =>
+      reference.elementId ? !parkedSubjectIds.has(reference.elementId)
+        : !isParkableCreateReference(reference) || !parked.has(parkedCreateReferenceKey(reference)),
+    ).length;
+    if (removed)
       onModelSwitchNotice(
-        workspaceModelReviewCopy(locale).switchPreserved(prepared.removedReferences.length),
+        workspaceModelReviewCopy(locale).switchPreserved(removed),
       );
     return true;
   };

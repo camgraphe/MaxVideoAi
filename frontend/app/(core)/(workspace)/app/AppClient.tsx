@@ -170,6 +170,7 @@ export default function AppClientPage({
     activeMode: composer.activeMode,
     submissionMode: composer.submissionMode,
     allowsUnifiedVeoFirstLast: composer.allowsUnifiedVeoFirstLast,
+    usesCanonicalOpeningFrame: composer.usesCanonicalOpeningFrame,
     isUnifiedHappyHorse: composer.isUnifiedHappyHorse,
     isUnifiedSeedance: composer.isUnifiedSeedance,
     isUnifiedGeminiOmni: composer.isUnifiedGeminiOmni,
@@ -197,6 +198,7 @@ export default function AppClientPage({
     voiceControlEnabled: composer.voiceControlEnabled,
     submissionMode: composer.submissionMode,
     inputAssets: assets.inputAssets, klingElements: routeForm.klingElements,
+    supportsKlingV3Controls: composer.supportsKlingV3Controls,
   });
   const generation = useWorkspaceGenerationRunner({
     audioWorkflowUnsupported: composer.audioWorkflowUnsupported,
@@ -266,6 +268,7 @@ export default function AppClientPage({
       !draft.effectiveRequestedEngineToken && !draft.effectiveRequestedMode && renderState.renders.length === 0 &&
       (!initialPreviewGroup || initialPreviewGroup.items.every(item => item.meta?.curated)),
     initialPreviewGroup, prompt: routeForm.prompt, provider: app.provider, recentJobs: app.recentJobs,
+    automaticPrompt: routeForm.automaticPrompt, activeManualMode: composer.activeManualMode,
     renderGroups: renderState.renderGroups,
     batchHeroes: renderState.batchHeroes,
     preflightCurrency: pricing.preflight?.currency,

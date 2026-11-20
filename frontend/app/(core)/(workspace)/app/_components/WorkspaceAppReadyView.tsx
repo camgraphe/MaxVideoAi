@@ -109,6 +109,7 @@ export function WorkspaceAppReadyView({
     handleSelectLibraryAssets,
     handleImportLibraryFile,
     inputAssets,
+    parkedCreateReferences,
     isAssetLibraryLoading,
     isAssetLibraryLoadingMore,
     visibleAssetLibrary,
@@ -236,8 +237,10 @@ export function WorkspaceAppReadyView({
   } = gallery;
 
   const currentSetup = useMemo(
-    () => form ? { form, inputAssets, klingElements, prompt, negativePrompt, multiPromptEnabled, multiPromptScenes, shotType, voiceIdsInput, cfgScale } : null,
-    [form, inputAssets, klingElements, prompt, negativePrompt, multiPromptEnabled, multiPromptScenes, shotType, voiceIdsInput, cfgScale],
+    () => form ? { form, inputAssets, ...(parkedCreateReferences?.length ? { parkedCreateReferences } : {}), klingElements, prompt,
+      ...(routeForm.automaticPrompt != null ? { automaticPrompt: routeForm.automaticPrompt } : {}),
+      negativePrompt, multiPromptEnabled, multiPromptScenes, shotType, voiceIdsInput, cfgScale } : null,
+    [form, inputAssets, parkedCreateReferences, klingElements, prompt, routeForm.automaticPrompt, negativePrompt, multiPromptEnabled, multiPromptScenes, shotType, voiceIdsInput, cfgScale],
   );
   const modelReview = useWorkspaceModelReview({
     recoverySetup: activeDraft.recoverySetup,
@@ -251,7 +254,9 @@ export function WorkspaceAppReadyView({
     memberTier: routeForm.memberTier, disabledEngineReasons: klingO3DisabledEngineReasons, engineScores,
     beforeApplyPreparedForm: composer.beforeApplyPreparedForm,
     applyPreparedForm: composer.applyPreparedForm, setInputAssets: assets.setInputAssets,
+    setParkedCreateReferences: assets.setParkedCreateReferences,
     setKlingElements: routeForm.setKlingElements, setPrompt, setNegativePrompt, setMultiPromptEnabled,
+    setAutomaticPrompt: routeForm.setAutomaticPrompt,
     setMultiPromptScenes: routeForm.setMultiPromptScenes, setShotType, setVoiceIdsInput, setCfgScale,
   });
   const modelPicker = useWorkspaceModelPicker({ applyScenario: modelReview.applyPickerScenario, current: currentSetup, engines, locale: uiLocale, memberTier: routeForm.memberTier,
@@ -358,11 +363,14 @@ export function WorkspaceAppReadyView({
             isSubmitting={generation.isSubmitting || draftWorkflow.pending}
             preflightError={draftWorkflow.selected ? draftWorkflow.error ?? undefined : preflightError}
             videoDurationBlocked={!draftWorkflow.selected && pricing.videoDurationBlocked}
+            referenceUploadStatus={pricing.referenceUploadStatus}
             preflight={draftWorkflow.selected ? draftWorkflow.preflight : preflight}
             composerRef={composerRef}
             startRender={localSeedanceDraftPreview ? draftPreview.generate : draftWorkflow.selected ? draftWorkflow.generate : generation.startRender}
             inputSchemaSummary={inputSchemaSummary}
             inputAssets={inputAssets}
+            parkedCreateReferences={parkedCreateReferences}
+            onRemoveParkedCreateReference={assets.removeParkedCreateReference}
             isUnifiedSeedance={isUnifiedSeedance}
             isUnifiedKlingO3={isUnifiedKlingO3}
             klingO3UnsupportedVideoReason={klingO3UnsupportedVideoReason}

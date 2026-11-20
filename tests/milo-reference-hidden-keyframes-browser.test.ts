@@ -1,10 +1,55 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {chromium,expect} from '@playwright/test';
+import {chromium,expect,webkit} from '@playwright/test';
 import {getFalEngineById} from '../frontend/src/config/falEngines';
 import {startWorkspaceReferenceFixture} from './helpers/workspace-reference-browser-fixture';
 import {miloGenerationVideoSource} from './helpers/milo-generation-authorization-video-source';
 import {initialStatus} from './helpers/milo-status-fixture';
+
+test('two nearby FLUX images remain independently removable on a touch viewport', { timeout: 90000 }, async (t) => {
+  const engine = getFalEngineById('flux-3')!.engine;
+  const field = engine.inputSchema!.required.find(field => field.id === 'reference_image_urls')!;
+  const assets = ['first', 'second'].map((id) => ({
+    id, fieldId: field.id, kind: 'image', status: 'ready', name: `${id}.svg`,
+    url: `/${id}.svg`, previewUrl: `/${id}.svg`, type: 'image/svg+xml', size: 1024,
+  }));
+  const source = `
+    import {useState} from 'react';
+    import {createRoot} from 'react-dom/client';
+    import {LumaRay32KeyframeEditor} from './app/(core)/(workspace)/app/_components/LumaRay32KeyframeEditor';
+    const {engine, field, assets} = globalThis.fixtureConfig;
+    function Fixture() {
+      const [form, setForm] = useState({engineId: engine.id, mode: 'ref2v', durationSec: 20,
+        durationOption: '20', fps: 24, extraInputValues: {keyframe_slot_indexes: '0:239, 1:240'}});
+      const [references, setReferences] = useState(assets);
+      return <main style={{padding:12}}><LumaRay32KeyframeEditor engine={engine} form={form} setForm={setForm}
+        assetFields={[{ field }]} inputAssets={{[field.id]: references}}
+        onAssetRemove={(_, index) => setReferences(previous => previous.map((asset, slot) => slot === index ? null : asset))}
+        onAssetAdd={() => {}} onOpenLibrary={() => {}} onNotice={() => {}} /></main>;
+    }
+    createRoot(document.getElementById('root')).render(<Fixture />);
+  `;
+  const fixture = await startWorkspaceReferenceFixture({ source, config: { engine, field, assets } });
+  try {
+    for (const browserType of [chromium, webkit]) await t.test(browserType.name(), async () => {
+      const browser = await browserType.launch();
+      try {
+        const page = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+        await page.goto(fixture.url);
+        const editor = page.getByTestId('video-keyframe-editor');
+        await expect(editor.getByRole('img', { name: 'first.svg' })).toBeVisible();
+        await editor.getByRole('button', { name: 'Remove keyframe 1', exact: true }).tap({ timeout: 3000 });
+        await expect(editor.getByRole('img', { name: 'first.svg' })).toHaveCount(0);
+        await expect(editor.getByRole('img', { name: 'second.svg' })).toBeVisible();
+        await expect(editor.getByRole('button', { name: 'f240', exact: true })).toBeVisible();
+      } finally {
+        await browser.close();
+      }
+    });
+  } finally {
+    await fixture.close();
+  }
+});
 
 for(const engineId of ['flux-3','luma-ray-3-2'])test(`${engineId} missing keyframe identity opens its existing dedicated owner`,{timeout:90000},async()=>{
  const mode=engineId==='flux-3'?'ref2v':'v2v',fieldId=engineId==='flux-3'?'reference_image_urls':'edit_keyframe_urls';

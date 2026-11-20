@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import test from 'node:test';
 
 import {
+  findBestNewFrameIndex,
   formatKeyframeSlots,
   parseKeyframeSlots,
 } from '../frontend/app/(core)/(workspace)/app/_lib/luma-ray32-keyframes';
@@ -14,6 +15,7 @@ const timelinePath = join(
   'frontend/app/(core)/(workspace)/app/_components/LumaRay32KeyframeTimeline.tsx'
 );
 const assetLibraryModalPath = join(root, 'frontend/components/library/AssetLibraryModal.tsx');
+const referenceLibraryPickerPath = join(root, 'frontend/components/library/ReferenceLibraryPicker.client.tsx');
 
 test('Luma Ray 3.2 keyframe editor keeps user-deleted keyframe slots deleted', () => {
   assert.equal(parseKeyframeSlots('', [], 64, 119).length, 4);
@@ -25,6 +27,11 @@ test('Luma Ray 3.2 keyframe editor keeps user-deleted keyframe slots deleted', (
     { assetSlot: 0, frameIndex: 0 },
     { assetSlot: 1, frameIndex: 119 },
   ]);
+});
+
+test('new timeline slots use the largest unoccupied gap, including the end of the clip', () => {
+  assert.equal(findBestNewFrameIndex([{ assetSlot: 0, frameIndex: 0 }, { assetSlot: 2, frameIndex: 240 }], 480), 120);
+  assert.equal(findBestNewFrameIndex([{ assetSlot: 0, frameIndex: 0 }, { assetSlot: 2, frameIndex: 120 }], 480), 300);
 });
 
 test('Luma Ray 3.2 keyframe placeholders route through the Media import flow', () => {
@@ -48,7 +55,8 @@ test('Luma Ray 3.2 keyframe placeholders route through the Media import flow', (
   );
   assert.match(
     assetLibraryModalSource,
-    /onClick=\{\(\) => importInputRef\.current\?\.click\(\)\}/,
+    /directImport:[\s\S]*?open: \(\) => importInputRef\.current\?\.click\(\)/,
     'asset library should expose the upload/import action'
   );
+  assert.match(readFileSync(referenceLibraryPickerPath, 'utf8'), /onClick=\{selection\.directImport\.open\}/);
 });

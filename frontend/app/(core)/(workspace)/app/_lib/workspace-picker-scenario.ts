@@ -7,6 +7,7 @@ import { parseDurationOptionValue } from '@/components/settings-controls/setting
 import { coerceFormState, getModeCaps, getWorkspaceCreateMode, framesToSeconds, findInputFieldById } from './workspace-engine-helpers';
 import { prepareWorkspaceModelCandidate, type WorkspaceModelSetup } from './workspace-model-candidate';
 import { resolveWorkspaceWorkflow } from './workspace-workflow-projection';
+import { rememberCreatePreferences } from './workspace-create-continuity';
 
 export type PickerScenario = Partial<Pick<WorkspaceModelSetup['form'], 'resolution' | 'aspectRatio' | 'audio' | 'iterations'>> & { durationSec?: number | 'auto'; keepAudio?: boolean };
 function projected(engine: EngineCaps, current: WorkspaceModelSetup) {
@@ -30,17 +31,28 @@ export function pickerScenarioBasis(current: WorkspaceModelSetup, engine: Engine
 export function preparePickerScenario({ current, engine, currentEngine, locale, overrides = {} }: {
   current: WorkspaceModelSetup; engine: EngineCaps; currentEngine?: EngineCaps; locale: string; overrides?: PickerScenario;
 }) {
+  const changingModel = engine.id !== current.form.engineId;
   if (!Object.keys(overrides).length) return prepareWorkspaceModelCandidate({ current, engine, currentEngine, locale,
-    returnToCreate: true, restoreSetup: engine.id === current.form.engineId ? current : undefined });
+    returnToCreate: true, restoreSetup: changingModel ? undefined : current });
   const sourceEngine = currentEngine ? projected(currentEngine, current) : undefined;
-  const durationEditable = engine.id !== current.form.engineId || (sourceEngine && videoDurationPolicy(sourceEngine, resolveWorkspaceWorkflow({ engine: sourceEngine, ...current }).submissionMode) === 'requested' && !current.multiPromptEnabled);
+  const durationEditable = changingModel || (sourceEngine && videoDurationPolicy(sourceEngine, resolveWorkspaceWorkflow({ engine: sourceEngine, ...current }).submissionMode) === 'requested' && !current.multiPromptEnabled);
   const { durationSec, keepAudio, ...rest } = overrides;
-  const seed = { ...current, form: { ...current.form, ...rest,
-    ...(keepAudio !== undefined ? { extraInputValues: { ...current.form.extraInputValues, keep_audio: keepAudio } } : {}),
-    ...(durationEditable && durationSec !== undefined ? { durationSec: durationSec === 'auto' ? current.form.durationSec : durationSec, durationOption: durationSec, numFrames: null } : {}) } };
+  const timing = durationEditable && durationSec !== undefined
+    ? { durationSec: durationSec === 'auto' ? current.form.durationSec : durationSec, durationOption: durationSec, numFrames: null } : {};
+  const sourceMode = sourceEngine ? resolveWorkspaceWorkflow({ engine: sourceEngine, ...current }).activeManualMode ?? undefined : undefined;
+  const managesCreate = changingModel || (!isVideoSourceWorkflow(sourceMode) && sourceMode !== 'retake');
+  const preferences = managesCreate ? rememberCreatePreferences(current.form, {
+    ...(timing.durationSec !== undefined ? { durationSec: timing.durationSec, durationOption: timing.durationOption } : {}),
+    ...(rest.resolution !== undefined ? { resolution: rest.resolution } : {}),
+    ...(rest.aspectRatio !== undefined ? { aspectRatio: rest.aspectRatio } : {}),
+  }).createPreferences : current.form.createPreferences;
+  // Read source keyframe positions from their existing timeline before applying the target duration.
+  const seed = { ...current, form: { ...current.form, ...rest, ...(changingModel ? {} : timing), createPreferences: preferences,
+    ...(keepAudio !== undefined ? { extraInputValues: { ...current.form.extraInputValues, keep_audio: keepAudio } } : {}) } };
   const prepared = prepareWorkspaceModelCandidate({ current: seed, engine, currentEngine, locale,
-    returnToCreate: true, restoreSetup: engine.id === current.form.engineId ? seed : undefined });
-  // Engine switches normally reset audio to that model's default. An explicit comparison choice takes precedence.
+    returnToCreate: true, restoreSetup: changingModel ? undefined : seed,
+    requestedDurationSec: typeof timing.durationOption === 'number' ? timing.durationOption : undefined });
+  // A manual Create switch enables audio unless the user changed it for the chosen model here.
   if (overrides.audio !== undefined && prepared.supportsAudioToggle) prepared.setup.form.audio = overrides.audio;
   return prepareWorkspaceModelCandidate({ current, engine, currentEngine, locale, returnToCreate: true, restoreSetup: prepared.setup });
 }

@@ -55,7 +55,7 @@ export const DEFAULT_JOBS_COPY = {
     dismiss: 'Dismiss',
     addToLibrary: 'Add to Media',
     saving: 'Saving…',
-    recreate: 'Generate same settings',
+    recreate: 'Reuse settings',
     openDetails: 'View details',
     actions: 'Actions',
     expandSection: 'Show',

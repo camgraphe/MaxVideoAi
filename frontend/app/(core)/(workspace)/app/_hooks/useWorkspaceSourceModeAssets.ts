@@ -29,7 +29,7 @@ export function useWorkspaceSourceModeAssets({ engine, mode, scope, assets, form
     }
   }, [record]);
 
-  return useCallback((target: Mode | null, nextEngine?: EngineCaps, applyAssets = true): PreparedMode | null => {
+  return useCallback((target: Mode | null, nextEngine?: EngineCaps, applyAssets = true, transferCreateDraft = false): PreparedMode | null => {
     if (!engine || !setAssets) return { assets };
     const currentMode: ParkedSourceMode = isVideoSourceWorkflow(mode) || mode === 'retake' ? mode : 'create';
     const nextMode: ParkedSourceMode = target && (isVideoSourceWorkflow(target) || target === 'retake') ? target : 'create';
@@ -83,7 +83,12 @@ export function useWorkspaceSourceModeAssets({ engine, mode, scope, assets, form
       next.set(savedMode, { ...saved, assets: updated });
     }
     const snapshot = changingEngine ? initialSnapshot : next.get(nextMode);
-    if (form) next.set(currentMode, { assets: Object.fromEntries(Object.entries(assets).map(([id, entries]) => [id, entries.map(asset => asset?.status === 'ready' ? { ...asset, excerptEditing: false } : null)])), form });
+    if (changingEngine && currentMode === 'create' && transferCreateDraft) {
+      // The live draft now owns these references, including future removals.
+      next.delete('create');
+    } else if (form) {
+      next.set(currentMode, { assets: Object.fromEntries(Object.entries(assets).map(([id, entries]) => [id, entries.map(asset => asset?.status === 'ready' ? { ...asset, excerptEditing: false } : null)])), form });
+    }
     for (const [id, entries] of Object.entries(snapshot?.assets ?? {})) {
       if (!(id in remaining) && acceptsTarget(id)) remaining[id] = entries;
     }

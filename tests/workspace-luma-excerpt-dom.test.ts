@@ -13,6 +13,7 @@ import {getVideoExcerptLimits} from './lib/video-excerpt';
 import {getVideoWorkflowSourceState} from './lib/video-source-workflow';
 import {useWorkspaceAssetState} from './app/(core)/(workspace)/app/_hooks/useWorkspaceAssetState';
 import {useWorkspaceVideoExcerpt} from './app/(core)/(workspace)/app/_hooks/useWorkspaceVideoExcerpt';
+import {useWorkspaceReferenceAssets} from './app/(core)/(workspace)/app/_hooks/useWorkspaceReferenceAssets';
 import {summarizeWorkspaceInputSchema} from './app/(core)/(workspace)/app/_lib/workspace-input-schema';
 import {LumaRay32KeyframeEditor} from './app/(core)/(workspace)/app/_components/LumaRay32KeyframeEditor';
 import {WorkspaceReferenceSection} from './components/composer/WorkspaceReferenceSection.client';
@@ -20,11 +21,14 @@ import {getWorkspaceReferenceFields} from './app/(core)/(workspace)/app/_lib/wor
 function Main(){
   const engine=getBaseEngineIncludingHidden('luma-ray-3-2');
   const state=useWorkspaceAssetState('owner');
+  const [assetPickerTarget,setAssetPickerTarget]=useState(null);
   const [form,setForm]=useState({engineId:engine.id,mode:'v2v',durationSec:5,resolution:'720p',aspectRatio:'16:9',fps:24,iterations:1,audio:false,
     extraInputValues:{edit_keyframe_slot_indexes:'0:24',edit_keyframe_indexes:'24',modify_strength:0.7}});
   const actions=useWorkspaceVideoExcerpt({accountScope:'owner',engine,mode:'v2v',inputAssets:state.inputAssets,commitInputAssetMutation:state.commitInputAssetMutation});
+  const references=useWorkspaceReferenceAssets({...state,accountScope:'owner',engineId:engine.id,engine,inputSchema:engine.inputSchema,preferredMode:'v2v',assetPickerTarget,setAssetPickerTarget,
+    showNotice:message=>window.notices.push(message),assetLibrarySource:'all',resetAssetLibraryForSource:()=>{},setAssetLibrary:()=>{},workflowCopy:{clearReferencesToUseStartEnd:'clear refs',clearStartEndToUseReferences:'clear frames'}});
   const summary=summarizeWorkspaceInputSchema({selectedEngine:engine,activeMode:'v2v',uiLocale:'en',allowsUnifiedVeoFirstLast:false,isUnifiedHappyHorse:false,isUnifiedSeedance:false,isUnifiedGeminiOmni:false});
-  window.probe={...state,form,sourceState:getVideoWorkflowSourceState(engine.inputSchema,state.inputAssets,'v2v',getVideoExcerptLimits(engine,'v2v'))};
+  window.probe={...state,form,assetPickerTarget,sourceState:getVideoWorkflowSourceState(engine.inputSchema,state.inputAssets,'v2v',getVideoExcerptLimits(engine,'v2v'))};
   const fields=getWorkspaceReferenceFields(summary.assetFields,{inputAssets:state.inputAssets,isUnifiedSeedance:false,isUnifiedKlingO3:false,klingO3VideoToVideoSupported:true,hasAnyVideoInput:false,
     guestUploadLockedReason:null,workflowCopy:{clearReferencesToUseStartEnd:'clear references',clearStartEndToUseReferences:'clear frames'},showOmniStudioPanel:false,showLumaRay32KeyframeEditor:true});
   return <I18nProvider locale="en" dictionary={{}} fallback={{}}><WorkspaceReferenceSection
@@ -37,7 +41,7 @@ function Main(){
   /><LumaRay32KeyframeEditor
     engine={engine} form={form} setForm={setForm} assetFields={summary.assetFields} inputAssets={state.inputAssets}
     onAssetAdd={(field,file,index,meta)=>window.added.push({field:field.id,name:file.name,index,meta})}
-    onAssetRemove={()=>{}} onOpenLibrary={()=>{}} onNotice={message=>window.notices.push(message)}
+    onAssetRemove={()=>{}} onOpenLibrary={references.handleOpenAssetLibrary} onNotice={message=>window.notices.push(message)}
   /></I18nProvider>;
 }
 const root=createRoot(document.getElementById('root'));window.IS_REACT_ACT_ENVIRONMENT=true;
@@ -212,4 +216,21 @@ test('guide frame uses References and preserves the two-way keyframe exclusion',
     await f.w.fx.act(async () => f.w.document.querySelector('button[aria-label="Remove · Guide frame"]').click());
     assert.equal(f.button('Add keyframe')!.disabled, false);
   } finally { await f.dispose(); }
+});
+
+test('the keyframe picker preserves an explicitly chosen empty slot', async () => {
+  const fixture = await mount();
+  try {
+    await fixture.w.fx.act(async () => fixture.w.probe.setInputAssets({
+      video_url: [{ ...source, durationSec: 5 }], edit_keyframe_urls: [keyframe],
+    }));
+    const editor = fixture.w.document.querySelector('[data-testid="video-keyframe-editor"]');
+    await fixture.w.fx.act(async () => fixture.button('Add keyframe')!.click());
+    await fixture.w.fx.act(async () => fixture.button('Add keyframe')!.click());
+    await fixture.w.fx.act(async () => editor.querySelector('button[aria-label="Choose from Media or upload keyframe 3"]').click());
+    assert.equal(fixture.w.probe.assetPickerTarget?.field.id, 'edit_keyframe_urls');
+    assert.equal(fixture.w.probe.assetPickerTarget?.slotIndex, 2);
+  } finally {
+    await fixture.dispose();
+  }
 });

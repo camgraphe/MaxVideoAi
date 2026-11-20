@@ -1,11 +1,12 @@
 'use client';
 
-import { useRef, useState, type DragEvent, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type DragEvent, type ReactNode } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useMediaHandoff } from '@/components/library/useMediaHandoff';
 import { RecentMediaList } from '@/components/library/RecentMediaList.client';
 import { recentMediaCopy } from '@/components/library/recent-media-copy';
 import { getMediaInputEligibility } from '@/lib/media-input-eligibility';
+import { getVideoWorkflowSourceField } from '@/lib/video-source-workflow';
 import type { AssetFieldConfig } from '@/components/Composer';
 import type { EngineCaps, EngineInputField, EngineInputSchema, Mode } from '@/types/engines';
 import { useWorkspaceRecentMetadata } from '../_hooks/useWorkspaceRecentMetadata';
@@ -24,7 +25,7 @@ export function WorkspaceRecentReferences({ userId, locale, engineId, engine, fi
   userId?: string | null; locale: string; engineId: string; engine?: EngineCaps; fields: AssetFieldConfig[];
   availability: WorkspaceReferenceAvailability; inputSchema?: EngineInputSchema; mode: Mode; workflowIntent?: Mode | null;
   inputAssets: Record<string, (ReferenceAsset | null)[]>;
-  onInsert: (field: EngineInputField, asset: UserAsset, index?: number) => Promise<unknown>;
+  onInsert: (field: EngineInputField, asset: UserAsset, index?: number, isCurrent?: () => boolean) => Promise<unknown>;
   children: (surface: { recentMedia: ReactNode; recentDropProps: RecentReferenceDropProps; refreshRecentMedia: () => void }) => ReactNode;
 }) {
   const searchParams = useSearchParams();
@@ -32,17 +33,38 @@ export function WorkspaceRecentReferences({ userId, locale, engineId, engine, fi
   // Unified composers derive submissionMode from their inputs. Waiting for that
   // mode before offering the incoming source would prevent the source being added.
   const destinationReady = !incomingEngine || incomingEngine === engineId;
-  const handoff = useMediaHandoff(destinationReady ? userId : null, 'video');
+  const { asset: handoffAsset, videoSource, token: handoffToken, close: closeHandoff } = useMediaHandoff(
+    destinationReady ? userId : null, 'video',
+  );
+  const sourceWorkflow = videoSource && videoSource.engineId === engineId
+    && videoSource.engineId === incomingEngine && videoSource.mode === searchParams?.get('mode')
+    && videoSource.mode === workflowIntent ? videoSource.mode : undefined;
   const [kind, setKind] = useState<'image' | 'video' | 'audio'>('image');
   const feed = useWorkspaceRecentMedia(userId, kind);
   const [selection, setSelection] = useState<Selection | null>(null);
+  const [finishedSourceToken, setFinishedSourceToken] = useState<string | null>(null);
   const drag = useRef<{ selection: Selection; token: string } | null>(null);
   const copy = recentMediaCopy(locale);
-  const eligibleFields = getWorkspaceReferenceFields(fields, availability);
-  const selected = handoff.asset ?? (selection?.engineId === engineId ? resolveCurrentRecentAsset(selection, feed.scope, feed.assets) : null);
+  const availableFields = getWorkspaceReferenceFields(fields, availability);
+  const sourceField = sourceWorkflow ? getVideoWorkflowSourceField(inputSchema, sourceWorkflow) : undefined;
+  const eligibleFields = sourceWorkflow ? availableFields.filter(({ field }) => field.id === sourceField?.id) : availableFields;
+  const incomingAsset = !videoSource || sourceWorkflow ? handoffAsset : null;
+  const selected = incomingAsset ?? (selection?.engineId === engineId ? resolveCurrentRecentAsset(selection, feed.scope, feed.assets) : null);
   const metadataNeeded = Boolean(selected && eligibleFields.some((entry) => !entry.disabled && entry.field.type === selected.kind &&
     getMediaInputEligibility({ asset: selected, field: entry.field, engine, mode }).status === 'unverified'));
   const metadata = useWorkspaceRecentMetadata(selected, userId, metadataNeeded);
+  useEffect(() => {
+    if (!finishedSourceToken || finishedSourceToken !== handoffToken || !sourceWorkflow) return;
+    // The active draft is committed in the route's layout effect before retiring its incoming intent.
+    closeHandoff();
+    const url = new URL(window.location.href);
+    if (url.searchParams.get('media') === finishedSourceToken && url.searchParams.get('engine') === engineId
+      && url.searchParams.get('mode') === sourceWorkflow) {
+      for (const key of ['media', 'engine', 'mode']) url.searchParams.delete(key);
+      window.history.replaceState(null, '', url);
+    }
+    setFinishedSourceToken(null);
+  }, [engineId, finishedSourceToken, closeHandoff, handoffToken, sourceWorkflow]);
   const choose = (asset: UserAsset) => {
     if (feed.scope) setSelection({ scope: feed.scope, id: asset.id, url: asset.url, engineId });
   };
@@ -75,8 +97,13 @@ export function WorkspaceRecentReferences({ userId, locale, engineId, engine, fi
   </>;
   return <>
     {children({ recentMedia, recentDropProps, refreshRecentMedia: feed.retry })}
-    {selected ? <WorkspaceRecentRoleDialog key={`${userId}:${selection?.scope}:${engineId}:${selected.id}`} userId={userId} asset={metadata.asset ?? selected} fields={eligibleFields} inputAssets={inputAssets}
-      inputSchema={inputSchema} engine={engine} mode={mode} workflowIntent={workflowIntent} locale={locale} metadataLoading={metadata.loading} metadataError={metadata.error} onMetadataRetry={metadata.retry} onClose={() => { setSelection(null); handoff.close(); }}
-      onInsert={(entry, index) => onInsert(entry.field, metadata.asset ?? selected, index)} /> : null}
+    {selected ? <WorkspaceRecentRoleDialog key={`${userId}:${selection?.scope}:${engineId}:${selected.id}:${incomingAsset ? handoffToken : ''}`} userId={userId} asset={metadata.asset ?? selected} fields={eligibleFields} inputAssets={inputAssets}
+      inputSchema={inputSchema} engine={engine} mode={mode} workflowIntent={workflowIntent} sourceWorkflow={sourceWorkflow} locale={locale} metadataLoading={metadata.loading} metadataError={metadata.error} onMetadataRetry={metadata.retry}
+      onClose={() => {
+        setSelection(null);
+        if (sourceWorkflow && handoffToken) setFinishedSourceToken(handoffToken);
+        else closeHandoff();
+      }}
+      onInsert={(entry, index, isCurrent) => onInsert(entry.field, metadata.asset ?? selected, index, isCurrent)} /> : null}
   </>;
 }

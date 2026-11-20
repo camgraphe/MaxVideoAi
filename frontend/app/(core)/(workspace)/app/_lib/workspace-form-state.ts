@@ -1,7 +1,15 @@
 import { normalizeVideoOperation } from '@/lib/video-operation';
 import type { EngineInputField, Mode } from '@/types/engines';
 
+export type WorkspaceCreatePreferences = {
+  durationSec?: number;
+  durationOption?: number | string | null;
+  resolution?: string;
+  aspectRatio?: string;
+};
+
 export interface FormState {
+  createPreferences?: WorkspaceCreatePreferences;
   operation?: import('@/lib/video-operation').VideoOperation;
   engineId: string;
   mode: Mode;
@@ -19,6 +27,17 @@ export interface FormState {
   cameraFixed?: boolean;
   safetyChecker?: boolean;
   extraInputValues: Record<string, unknown>;
+}
+
+export function parseWorkspaceCreatePreferences(value: unknown): WorkspaceCreatePreferences | undefined {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return undefined;
+  const { durationSec, durationOption, resolution, aspectRatio } = value as WorkspaceCreatePreferences;
+  const preferences: WorkspaceCreatePreferences = {};
+  if (typeof durationSec === 'number' && Number.isFinite(durationSec) && durationSec > 0) preferences.durationSec = durationSec;
+  if (durationOption === 'auto') preferences.durationOption = durationOption;
+  if (typeof resolution === 'string' && resolution.trim() && resolution.length <= 32) preferences.resolution = resolution;
+  if (typeof aspectRatio === 'string' && aspectRatio.trim() && aspectRatio.length <= 32) preferences.aspectRatio = aspectRatio;
+  return Object.keys(preferences).length ? preferences : undefined;
 }
 
 export type StoredFormState = Partial<FormState> & { engineId: string; mode: Mode; updatedAt?: number };
@@ -106,6 +125,7 @@ export function parseStoredForm(value: string): StoredFormState | null {
     if (typeof engineId !== 'string' || typeof mode !== 'string') return null;
 
     return {
+      createPreferences: parseWorkspaceCreatePreferences(raw.createPreferences),
       engineId,
       ...(raw.operation !== undefined ? { operation: normalizeVideoOperation(engineId, mode, raw.operation) } : {}),
       mode: mode as Mode,

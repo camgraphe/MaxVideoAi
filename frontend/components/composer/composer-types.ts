@@ -35,6 +35,8 @@ export type ComposerPromotedAction = {
   disabled?: boolean;
 };
 
+export type ReferenceUploadStatus = 'uploading' | 'error' | null;
+
 export interface ComposerProps {
   density?: 'default' | 'workspace';
   compactPrompt?: boolean;
@@ -65,7 +67,9 @@ export interface ComposerProps {
   negativePromptField?: EngineInputField;
   negativePromptRequired?: boolean;
   assetFields: AssetFieldConfig[];
+  referenceUploadStatus?: ReferenceUploadStatus;
   referenceAuthAction?: { label: string; href: string };
+  parkedReferences?: { key: string; name: string; remove: () => void }[];
   subjectReferences?: { hasSubjects: boolean; content: ReactNode };
   assets: Record<string, (ComposerAttachment | null)[]>;
   onAssetAdd?: (field: EngineInputField, file: File, slotIndex?: number, meta?: AssetUploadMeta) => void;

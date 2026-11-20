@@ -3953,7 +3953,7 @@
       "actions": {
         "addToLibrary": "Add to Media",
         "removeFromLibrary": "Remove from Media",
-        "recreate": "Generate same settings",
+        "recreate": "Reuse settings",
         "openDetails": "View details",
         "actions": "Actions",
         "expandSection": "Show",

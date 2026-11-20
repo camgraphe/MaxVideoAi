@@ -127,21 +127,20 @@ function buildAttachmentPayload(
   };
 }
 
+type KlingElementsMode = Pick<PrepareGenerationInputsOptions, 'selectedEngineId' | 'supportsKlingV3Controls' | 'submissionMode'>;
+
+export function workspaceKlingSubjectsActive({ selectedEngineId, supportsKlingV3Controls, submissionMode }: KlingElementsMode) {
+  const referenceOrEdit = submissionMode === 'ref2v' || submissionMode === 'v2v';
+  if (isKlingV4FalQueueEngineId(selectedEngineId)) return referenceOrEdit;
+  if (!supportsKlingV3Controls) return false;
+  return selectedEngineId.startsWith('kling-o3-') ? referenceOrEdit : submissionMode === 'i2v' || submissionMode === 'ref2v';
+}
+
 export function buildKlingElementsPayload(
-  options: Pick<
-    PrepareGenerationInputsOptions,
-    'selectedEngineId' | 'supportsKlingV3Controls' | 'submissionMode' | 'klingElements'
-  >
+  options: KlingElementsMode & Pick<PrepareGenerationInputsOptions, 'klingElements'>,
 ): GenerationInputPreparationResult {
   const isKlingV4 = isKlingV4FalQueueEngineId(options.selectedEngineId);
-  const supportsKlingV4Elements = isKlingV4 && (options.submissionMode === 'ref2v' || options.submissionMode === 'v2v');
-  const supportsKlingO3Elements =
-    options.selectedEngineId.startsWith('kling-o3-') &&
-    (options.submissionMode === 'ref2v' || options.submissionMode === 'v2v');
-  const supportsKling3Elements =
-    !options.selectedEngineId.startsWith('kling-o3-') &&
-    (options.submissionMode === 'i2v' || options.submissionMode === 'ref2v');
-  if (!supportsKlingV4Elements && (!options.supportsKlingV3Controls || (!supportsKlingO3Elements && !supportsKling3Elements))) {
+  if (!workspaceKlingSubjectsActive(options)) {
     return {
       ok: true,
       primaryAttachment: null,

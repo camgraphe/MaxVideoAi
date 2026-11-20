@@ -38,6 +38,9 @@ the explicit reference and the Storyboard job hint separately.
   another card can apply again without replaying incidental query changes.
 - Preserve complete personal snapshots through group-to-tile projection. Do not
   replace a saved Modify/Extend recipe with a text-to-video display summary.
+  The Activity and Media entry links apply the selected personal job once. The
+  route retires the job parameter after saving the recalled draft so refreshes
+  retain subsequent user edits.
 - Resolve operation capabilities before validating controls and binding typed
   references. Kling Reference/Edit and H3 Recast/Relight share a mode but differ
   in source fields and source-derived framing/timing.
@@ -51,6 +54,28 @@ the explicit reference and the Storyboard job hint separately.
 - Returning to a parked Create setup retains its available recorded mode before
   schema reconciliation. In particular, a recalled two-frame recipe may use
   canonical `first_frame_url`; inferring image-to-video would discard that input.
+- Modify, Extend and Reframe start with an empty prompt when only the automatic starter
+  text is available. Typed and explicitly recalled prompts retain their content
+  through mode switches and reloads.
+- A model selected from the authenticated Create draft takes the latest prompt,
+  preferred duration, resolution and aspect ratio with it. The target uses its
+  defaults where needed and keeps the preference for a later compatible model.
+  When output settings have coupled limits, keep the duration if a compatible
+  resolution or frame rate is available.
+  A Create model switch enables audio. An explicit audio choice for the selected
+  model can override it.
+- During that switch, compatible ready references stay in one supported Create
+  workflow. Compatibility includes the field role, media limits and the target
+  workflow's combined limits. Other references stay in the account's active
+  draft until they fit again or the user removes them. Timed images keep their
+  positions across compatible FLUX variants. An automatic duration fallback
+  leaves room for the last keyframe. Timeline cards stay separately actionable
+  even when their frame markers are adjacent. Luma Create retains its own ordered
+  positions. Kling subjects keep their grouped inputs. Inactive references
+  are excluded from quotes, generation and Milo context. Explicit removal updates
+  the last complete draft even when an unrelated import is pending or failed.
+  Source workflows keep their own snapshots. A complete recall or Storyboard
+  handoff starts from its own inputs.
 - The visible workflow selection follows the model's offered buttons, separately
   from generation mode and schema. Create includes unlisted creation submodes;
   an offered Reference button remains distinct. Clicking the already selected

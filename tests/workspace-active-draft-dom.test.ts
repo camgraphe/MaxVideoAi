@@ -38,8 +38,9 @@ async function mount({
   initialAuth = 'authed',
   locale = 'en',
   galleryRenderGroups = new Map<string, LocalRenderGroup>(),
+  extraEngines = [] as typeof allEngines,
 } = {}) {
-  let engines = allEngines;
+  let engines = [...allEngines, ...extraEngines];
   let authStatus = initialAuth,
     accountId: string | null = 'a',
     accessToken: string | null = 'token-a';
@@ -1322,3 +1323,86 @@ for (const source of ['history', 'active'] as const) {
     }
   }
 }
+
+test('inactive Create references and core preferences survive remount within the owning account', async () => {
+  const view = await mount();
+  try {
+    await act(async () => {
+      view.current.setParkedCreateReferences([{
+        fieldId: 'video_urls', index: 0, role: 'reference',
+        asset: { id: 'parked-clip', fieldId: 'video_urls', kind: 'video', name: 'motion.mp4', status: 'ready',
+          type: 'video/mp4', size: 900, durationSec: 4, url: 'https://owned.test/motion.mp4', previewUrl: 'blob:temporary' },
+      }]);
+      view.current.setForm((form: any) => ({ ...form, createPreferences: { durationSec: 8, aspectRatio: '9:16' } }));
+    });
+    await view.remount();
+    assert.equal(view.current.inputAssets.video_urls, undefined);
+    assert.equal(view.current.parkedCreateReferences[0]?.asset.previewUrl, 'https://owned.test/motion.mp4');
+    assert.deepEqual(view.current.form.createPreferences, { durationSec: 8, aspectRatio: '9:16' });
+
+    await view.auth('authed', 'other-account');
+    assert.deepEqual(view.current.parkedCreateReferences, []);
+    assert.equal(view.current.form.createPreferences, undefined);
+    await view.auth('authed', 'a');
+    assert.equal(view.current.parkedCreateReferences[0]?.asset.id, 'parked-clip');
+    await act(async () => view.current.removeParkedCreateReference(view.current.parkedCreateReferences[0]));
+    await view.remount();
+    assert.deepEqual(view.current.parkedCreateReferences, []);
+  } finally {
+    await view.close();
+  }
+});
+
+for (const status of ['uploading', 'error'] as const) {
+  test(`explicit reference removals survive reload with another upload ${status}`, async () => {
+    const view = await mount();
+    try {
+      const seedance = allEngines.find(engine => engine.id === 'seedance-2-0')!;
+      const field = seedance.inputSchema!.optional!.find(value => value.id === 'image_urls')!;
+      const kept = media(field.id, 'image', 0);
+      const removed = media(field.id, 'image', 1);
+      const parked = { fieldId: 'video_urls', index: 0, role: 'reference', asset: media('video_urls', 'video') };
+      await act(async () => {
+        view.current.setForm(coerceFormState(seedance, 'ref2v', null));
+        view.current.setInputAssets({ [field.id]: [kept, removed] });
+        view.current.setParkedCreateReferences([parked]);
+      });
+      await act(async () => {
+        view.current.setInputAssets({ [field.id]: [kept, removed, {
+          ...media(field.id, 'image', 2), status, url: undefined, previewUrl: 'blob:incomplete',
+        }] });
+      });
+      assert.equal(view.current.hydration.error, 'incomplete');
+      await act(async () => {
+        view.current.referenceHandlers.handleAssetRemove(field, 1);
+        view.current.removeParkedCreateReference(view.current.parkedCreateReferences[0]);
+      });
+      await view.remount();
+      assert.deepEqual(view.current.inputAssets[field.id]?.map((asset: { id: string } | null) => asset?.id), [kept.id, undefined]);
+      assert.deepEqual(view.current.parkedCreateReferences, []);
+    } finally {
+      await view.close();
+    }
+  });
+}
+
+test('FLUX keyframe timing metadata survives the live schema pruner and remount', async () => {
+  const flux = listFalEngines().find(config => config.id === 'flux-3-max')!.engine;
+  const view = await mount({ extraEngines: [flux] });
+  try {
+    const fieldId = 'reference_image_urls';
+    await act(async () => {
+      view.current.setForm({
+        ...coerceFormState(flux, 'ref2v', null),
+        extraInputValues: { keyframe_indexes: '0, 59', keyframe_slot_indexes: '0:0, 1:60, 2:59' },
+      });
+      view.current.setInputAssets({ [fieldId]: [media(fieldId), null, media(fieldId, 'image', 2)] });
+    });
+    assert.equal(view.current.form.extraInputValues.keyframe_slot_indexes, '0:0, 1:60, 2:59');
+    await view.remount();
+    assert.equal(view.current.form.extraInputValues.keyframe_slot_indexes, '0:0, 1:60, 2:59');
+    assert.equal(view.current.inputAssets[fieldId][2].id, 'reference_image_urls-2');
+  } finally {
+    await view.close();
+  }
+});

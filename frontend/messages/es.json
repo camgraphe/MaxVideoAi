@@ -3798,7 +3798,7 @@
       "actions": {
         "addToLibrary": "Agregar a Medios",
         "removeFromLibrary": "Quitar de Medios",
-        "recreate": "Generar con la misma configuración",
+        "recreate": "Recuperar ajustes",
         "openDetails": "Ver detalles",
         "actions": "Acciones",
         "expandSection": "Mostrar",

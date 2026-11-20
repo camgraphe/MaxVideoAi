@@ -4,7 +4,7 @@
 
 - `frontend/components/library/MediaDialog.client.tsx`: accessible modal boundary, portal, focus return, Escape, backdrop.
 - `MediaActionPanel.client.tsx`: selected original, poster-to-manual-video player, image/audio reader, download and native/link sharing, progressive details. An asset change resets playback and share state. Video is mounted only on Play, audio uses preload none.
-- `GalleryMediaActionPanel.client.tsx`: grouped output selector and member details. Historic hero-only save/reuse callbacks are offered only for the main output. Other actions use the selected output.
+- `GalleryMediaActionPanel.client.tsx`: thumbnail navigation and member details. Activity resolves the settings destination of the selected output. Historic hero-only save and gallery callbacks still apply to the main output.
 - `frontend/components/MediaLightbox.tsx`: adapts ready results to the inspector and preserves pending/failed job controls. It mounts only the selected output.
 - `MediaDestinationActions.client.tsx`: compatible next actions. Gallery originals are resolved against the account-scoped recent output listing on action, never inferred from a thumbnail. A change of account/media invalidates async navigation.
 - `frontend/lib/media-handoff.ts`: bounded, account-scoped, expiring, single-consumption transport of exact original identity. The receivers own source validation and generation. No paid operation runs on navigation.
@@ -12,7 +12,7 @@
 
 Image offers animation, image generation, upscale and angle. Video offers reference, extension, upscale and compatible finishing tools. Audio offers video reference. Extension retains a compatible source model where known, otherwise selects a published current general clip extender. Veo is considered only for known Veo sources. Incoming engine hydration must finish before consuming the video handoff; do not wait on submissionMode, which unified composers derive from the very input being inserted.
 
-Reference roles remain owned by `WorkspaceRecentReferences` / `WorkspaceRecentRoleDialog` and existing field/budget validation. Opening or cancelling the inspector never inserts/replaces a reference.
+Reference roles remain owned by `WorkspaceRecentReferences` / `WorkspaceRecentRoleDialog` and existing field/budget validation. The generic reference action requires a role choice. Explicit Modify and Extend actions carry the selected workflow and original to its source field. A verified original fills an empty source after workflow hydration. An occupied field requires an explicit replacement. The transfer remains available across a reload during preparation and retires after the draft commits or the user dismisses it.
 
 ## Compare
 

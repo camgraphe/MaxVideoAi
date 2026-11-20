@@ -72,6 +72,7 @@ async function mount(withEngineNormalization = false) {
 test('unchanged route fields do not render the workspace consumer again', async (t) => {
   const view = await mount();
   try {
+    await act(async () => view.current.setPrompt('My written prompt'));
     const start = view.renders;
     const updates = [
       () => view.current.setPrompt(view.current.prompt),

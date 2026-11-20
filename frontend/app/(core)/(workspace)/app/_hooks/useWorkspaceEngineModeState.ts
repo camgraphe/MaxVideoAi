@@ -1,3 +1,4 @@
+import { projectCreatePreferences, rememberCreatePreferences } from '../_lib/workspace-create-continuity';
 import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
 import { isKlingO3EngineId } from '../_lib/kling-o3-unified-workflow';
 import { normalizeVideoOperation, resolveVideoOperationEngine } from '@/lib/video-operation';
@@ -88,6 +89,7 @@ type UseWorkspaceEngineModeStateResult = {
   activeManualMode: Mode | null;
   activeMode: Mode;
   allowsUnifiedVeoFirstLast: boolean;
+  usesCanonicalOpeningFrame: boolean;
   submissionMode: Mode;
   showSafetyCheckerControl: boolean;
   capability: EngineModeUiCaps | undefined;
@@ -98,7 +100,7 @@ type UseWorkspaceEngineModeStateResult = {
   composerWorkflowNotice: string | null;
   handleEngineChange: (engineId: string) => void;
   applyPreparedForm: (form: FormState) => void;
-  beforeApplyPreparedForm: (form: FormState) => boolean;
+  beforeApplyPreparedForm: (form: FormState, transferCreateDraft?: boolean) => boolean;
   handleModeChange: (mode: Mode) => void;
   handleComposerModeToggle: (mode: Mode | null) => void;
 };
@@ -180,6 +182,7 @@ export function useWorkspaceEngineModeState({
     activeManualMode,
     activeMode,
     allowsUnifiedVeoFirstLast,
+    usesCanonicalOpeningFrame,
     submissionMode,
     showSafetyCheckerControl,
     capability,
@@ -233,13 +236,13 @@ export function useWorkspaceEngineModeState({
     }
   }, [activeMode, setShotType, shotType, supportsKlingV3Controls]);
 
-  const beforeApplyPreparedForm = useCallback((prepared: FormState) => {
+  const beforeApplyPreparedForm = useCallback((prepared: FormState, transferCreateDraft = false) => {
     const nextEngine = engines.find(engine => engine.id === prepared.engineId);
     if (!nextEngine) return false;
     const target = resolveWorkspaceWorkflow({ engine: nextEngine, form: prepared, inputAssets: {}, klingElements: [] }).activeManualMode;
     // Model review applies all prepared fields together after this guard. Capture
     // the departing source without changing any current setter or its scenario.
-    return Boolean(prepareModeAssets(target, nextEngine, false));
+    return Boolean(prepareModeAssets(target, nextEngine, false, transferCreateDraft));
   }, [engines, prepareModeAssets]);
 
   const applyPreparedForm = useCallback((prepared: FormState) => {
@@ -269,7 +272,8 @@ export function useWorkspaceEngineModeState({
       preserveStoredDraftRef.current = false;
       setForm((current) => {
         const candidate = prepared.form ?? current ?? null;
-        return coerceFormStateForEngineChange(nextEngine, createMode, candidate ? { ...candidate, operation: undefined } : null);
+        const next = coerceFormStateForEngineChange(nextEngine, createMode, candidate ? rememberCreatePreferences({ ...candidate, operation: undefined }) : null);
+        return projectCreatePreferences({ ...next, audio: true }, nextEngine, createMode);
       });
     },
     [
@@ -464,6 +468,7 @@ export function useWorkspaceEngineModeState({
     activeManualMode,
     activeMode,
     allowsUnifiedVeoFirstLast,
+    usesCanonicalOpeningFrame,
     submissionMode,
     showSafetyCheckerControl,
     capability,
