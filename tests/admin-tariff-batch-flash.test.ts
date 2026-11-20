@@ -24,7 +24,7 @@ test('Flash has its own 72 canonical classes and supplier provenance', () => {
   assert.equal(facts.sourceDate, '2026-11-05');
   assert.match(facts.source, /kling\/v4\/flash\//);
   assert.deepEqual([...new Set(facts.classes.map(row => row.usage.centsPerSecond))].sort(), [6.3, 9.4]);
-  assert.equal(klingBatchClasses().length, 226);
+  assert.equal(klingBatchClasses().length, 339);
 });
 
 test('all Flash batch prices exactly match the 72 approved native previews', async () => {

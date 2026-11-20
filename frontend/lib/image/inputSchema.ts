@@ -1,3 +1,4 @@
+import { isKlingImageV4EngineId } from './kling-image-v4';
 import type { EngineCaps, EngineInputField } from '@/types/engines';
 import type { ImageGenerationMode } from '@/types/image-generation';
 
@@ -255,6 +256,7 @@ export function getReferenceConstraints(engine: EngineCaps, mode: ImageGeneratio
   max: number;
   requires: boolean;
 } {
+  if (mode === 't2i' && isKlingImageV4EngineId(engine?.id)) return { min: 0, max: 0, requires: false };
   const field = getImageInputField(engine, 'image_urls', mode);
   const requires = mode === 'i2i' || Boolean(field?.requiredInModes?.includes(mode));
   const minCount = requires ? Math.max(1, parseCount(field?.minCount) ?? 1) : 0;

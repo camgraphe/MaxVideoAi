@@ -79,6 +79,7 @@ export const cinematicExamplesSchema = z.object({
   }).strict().optional(),
   assetTitles: z.array(z.object({ id, title: text }).strict()).optional(),
   provenance: text,
+  source: z.object({ label: text, href: z.string().url() }).strict().optional(),
   panels: z.array(z.object({
     id,
     placement: z.enum(['examples', 'prompting', 'details']).optional(),

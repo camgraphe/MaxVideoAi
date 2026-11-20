@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { KLING_V4_RESOLUTIONS } from '@/config/fal-engines/kling-v4';
 import { getKlingV4ConstraintViolation, KLING_V4_ENDPOINTS } from '@/lib/kling-v4';
 import { getKlingV4FlashConstraintViolation, KLING_V4_FLASH_ENDPOINTS } from '@/lib/kling-v4-flash';
 
@@ -12,7 +13,7 @@ const durableUrl = url.refine(value => { const parsed = new URL(value); return p
 const element = z.object({ frontal_image_url: url.nullish(), reference_image_urls: z.array(url).nullish(),
   video_url: url.nullish(), voice_id: z.string().nullish() }).strict();
 const input = z.object({ prompt: z.string().nullish(), multi_prompt: z.array(z.object({ prompt: z.string(), duration: z.number().optional() }).strict()).nullish(),
-  duration: z.number().int().nullable().optional(), resolution: z.enum(['720p', '1080p']).optional(), aspect_ratio: z.string().optional(),
+  duration: z.number().int().nullable().optional(), resolution: z.enum(KLING_V4_RESOLUTIONS).optional(), aspect_ratio: z.string().optional(),
   start_image_url: url.nullish(), end_image_url: url.nullish(), image_urls: z.array(url).nullish(), video_urls: z.array(url).nullish(),
   video_url: url.optional(), elements: z.array(element).nullish() }).strict();
 const mediaRole = z.object({ url: durableUrl, sha256: sha }).strict();

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, type Dispatch, type SetStateAction } from 'react';
+import { isKlingImageV4EngineId } from '@/lib/image/kling-image-v4';
 import { formatAspectRatioLabel } from '@/lib/image/aspectRatios';
 import {
   formatSupportedImageFormatsLabel,
@@ -392,23 +393,23 @@ export function useImageSettingsFields({
 
   const imageCountOptions = useMemo(
     () => {
-      const options = Array.from(
-        new Set<number>([
-          ...QUICK_IMAGE_COUNT_OPTIONS.filter(
-            (option) => option >= imageCountConstraints.min && option <= imageCountConstraints.max
-          ),
-          imageCountConstraints.max,
-        ])
-      );
+      const { min, max } = imageCountConstraints;
+      const klingImage = isKlingImageV4EngineId(selectedEngineCaps?.id);
+      const options = klingImage
+        ? Array.from({ length: max - min + 1 }, (_, index) => min + index)
+        : [...new Set([...QUICK_IMAGE_COUNT_OPTIONS.filter(option => option >= min && option <= max), max])];
       return options.map((option) => ({
         value: option,
-        label: formatTemplate(resolvedCopy.composer.numImagesCount, {
-          count: option,
-          unit: option === 1 ? resolvedCopy.composer.numImagesUnit.singular : resolvedCopy.composer.numImagesUnit.plural,
-        }),
+        label: klingImage && option > 1
+          ? formatTemplate(resolvedCopy.composer.klingImageSetCount, { count: option })
+          : formatTemplate(resolvedCopy.composer.numImagesCount, {
+            count: option,
+            unit: option === 1 ? resolvedCopy.composer.numImagesUnit.singular : resolvedCopy.composer.numImagesUnit.plural,
+          }),
       }));
     },
-    [imageCountConstraints.max, imageCountConstraints.min, resolvedCopy.composer.numImagesCount, resolvedCopy.composer.numImagesUnit]
+    [imageCountConstraints, selectedEngineCaps?.id, resolvedCopy.composer.klingImageSetCount,
+      resolvedCopy.composer.numImagesCount, resolvedCopy.composer.numImagesUnit]
   );
   const aspectRatioSelectOptions = useMemo(
     () =>

@@ -2,18 +2,18 @@
   "marketingName": "Kling 4.0",
   "versionLabel": "4.0",
   "seo": {
-    "title": "Kling 4.0 — diriger la scène, les références et le son | MaxVideoAI",
-    "description": "Découvrez Kling 4.0 : vidéos de 3 à 30 secondes, 720p et 1080p, plans minutés, audio natif, références image et vidéo et modification vidéo."
+    "title": "Kling 4.0, générateur vidéo IA jusqu’en 4K | MaxVideoAI",
+    "description": "Créez et modifiez des vidéos de 3 à 30 secondes en 720p, 1080p ou 4K SDR. Dirigez la scène avec des références, des plans minutés et l’audio natif."
   },
-  "overview": "Kling 4.0 réunit direction de scène, génération guidée par des références et modification vidéo. Pensez ensemble l’action, le cadrage et le son, puis choisissez le mode adapté aux éléments dont vous disposez.",
+  "overview": "Créez des clips de 3 à 30 secondes en 720p, 1080p ou 4K SDR. Partez d’un prompt, d’une image ou de plusieurs références, ou modifiez un clip existant.",
   "pricingNotes": [
-    "Kling 4.0 est disponible dans l’App, Studio et via MCP. Le devis actuel dépend du mode et des éléments choisis.",
-    "Les tarifs du fournisseur ne constituent pas un prix client MaxVideoAI. Vérifiez le devis actuel et validez explicitement chaque génération."
+    "L’App, Studio et MCP affichent un devis à jour selon le mode, la résolution, la durée et les sources choisies.",
+    "Vérifiez le devis final dans Create et confirmez quand vous êtes prêt."
   ],
   "hero": {
     "title": "Kling 4.0 — diriger la scène, les références et le son",
-    "intro": "Kling 4.0 réunit direction de scène, génération guidée par des références et modification vidéo. Pensez ensemble l’action, le cadrage et le son, puis choisissez le mode adapté aux éléments dont vous disposez.",
-    "badge": "3–30 s · 720p / 1080p",
+    "intro": "Créez des clips de 3 à 30 secondes en 720p, 1080p ou 4K SDR. Partez d’un prompt, d’une image ou de plusieurs références, ou modifiez un clip existant.",
+    "badge": "3–30 s · 720p / 1080p / 4K SDR",
     "ctaPrimary": {
       "label": "Générer avec Kling 4.0",
       "href": "/app?engine=kling-v4"
@@ -40,8 +40,8 @@
       "a": "Oui. L’App, Studio et MCP proposent Kling 4.0 pour le texte, l’image, les références et la modification vidéo, sous réserve d’entrées compatibles et d’un devis actuel. Les contrôles fonctionnels ne certifient pas la qualité artistique d’un nouveau rendu."
     },
     {
-      "q": "Quelles durées et résolutions sont documentées ?",
-      "a": "Le schéma accepte des durées entières de 3 à 30 secondes et des sorties 720p ou 1080p. Les valeurs par défaut de génération sont 5 secondes et 1080p. La modification peut reprendre la durée source lorsqu’elle est omise."
+      "q": "Quelles durées et résolutions puis-je choisir ?",
+      "a": "Les quatre modes proposent 720p, 1080p et 4K SDR. Choisissez une durée entière de 3 à 30 secondes. Modifier peut reprendre la durée de la source."
     },
     {
       "q": "Le modèle génère-t-il du son ?",
@@ -68,8 +68,8 @@
       "a": "Elle exige une vidéo source et un prompt et accepte des images et éléments visuels facultatifs. Elle n’expose ni plans multiples, ni éléments vocaux, ni réglage de format. Les durées d’entrée et de sortie interviennent dans la facturation fournisseur."
     },
     {
-      "q": "Les anciens exemples Kling seront-ils remplacés ?",
-      "a": "Les pages et vidéos Kling existantes conservent leur identité, leurs prompts et leurs réglages. Une vidéo Kling 3 ou Omni ne devient pas un exemple Kling 4.0."
+      "q": "Quelle est la différence entre Kling 4.0 et Kling Image 4.0 ?",
+      "a": "Kling 4.0 génère et modifie des vidéos. Kling Image 4.0 crée des images et des séries ordonnées jusqu’en 8K. Enregistrez une image et utilisez-la comme première image d’une génération vidéo distincte."
     }
   ],
   "custom": {
@@ -81,11 +81,11 @@
       "Modifier une vidéo existante||Le mode de modification reçoit une vidéo source et un prompt, avec des images et éléments visuels facultatifs. Ses entrées diffèrent de celles de la génération par références."
     ],
     "specTitle": "Contrôles documentés de Kling 4.0",
-    "specNote": "Contrats fournisseur vérifiés le 25 octobre 2026. Les scènes publiques sélectionnées conservent leurs prompts et leurs références d’origine.",
+    "specNote": "Réglages de sortie de Kling 4.0 sur MaxVideoAI. Les deux films présentés conservent leur résolution et leurs références d’origine.",
     "specSections": [
       {
         "title": "Texte vers vidéo",
-        "intro": "Un prompt ou des plans minutés, de 3 à 30 secondes, en 720p ou 1080p, avec cadrage paysage, portrait, carré ou 21:9.",
+        "intro": "Un prompt continu ou des plans minutés, de 3 à 30 secondes, jusqu’en 4K SDR. Choisissez 16:9, 9:16, 1:1 ou 21:9.",
         "items": []
       },
       {
@@ -115,7 +115,7 @@
     "troubleshootingItems": [],
     "boundaries": [
       "Les clips générés durent de 3 à 30 secondes entières.",
-      "720p et 1080p sont documentés ; aucun palier 4K n’est déclaré ici.",
+      "Les quatre modes proposent 720p, 1080p et 4K SDR.",
       "Aucune graine, CFG, consigne négative, sélection de cadence ou liste d’images clés minutées n’est documentée.",
       "La génération par références et la modification ont des limites différentes."
     ],
@@ -126,11 +126,11 @@
     "hero": {
       "eyebrow": "KLING 4.0",
       "title": "Kling 4.0 — diriger la scène, les références et le son",
-      "subtitle": "Préparez des vidéos de 3 à 30 secondes à partir de texte, d’images ou de références vidéo, avec audio natif et un mode de modification vidéo distinct.",
+      "subtitle": "Créez des clips de 3 à 30 secondes en 720p, 1080p ou 4K SDR. Partez d’un prompt, d’une image ou de plusieurs références, ou modifiez un clip existant.",
       "subtitleHighlights": [
-        "3 à 30"
+        "4K SDR"
       ],
-      "paragraph": "Découvrez des scènes originales Kling 4.0 avec leurs prompts, puis dirigez votre vidéo dans App, Studio ou via MCP. Chaque génération passe par un devis actuel et votre confirmation.",
+      "paragraph": "L’App, Studio et MCP affichent un devis à jour selon le mode, la résolution, la durée et les sources choisies.",
       "primaryCta": {
         "label": "Générer avec Kling 4.0",
         "href": "/app?engine=kling-v4"
@@ -147,6 +147,10 @@
         {
           "label": "Lire les caractéristiques",
           "href": "#specs"
+        },
+        {
+          "label": "Découvrir Kling Image 4.0",
+          "href": "/fr/modeles/kling-image-v4"
         }
       ]
     },
@@ -201,18 +205,18 @@
         }
       },
       {
-        "title": "Besoin de 4K native ?",
-        "body": "Kling 4.0 produit du 720p ou du 1080p. Découvrez Kling 3.0 Omni 4K pour une sortie en 4K native et comparez les modes disponibles avant de choisir.",
+        "title": "Créer des images avec Kling Image 4.0",
+        "body": "Composez une image initiale, un visuel produit ou un storyboard dans le modèle image Kling.",
         "cta": {
-          "label": "Découvrir Kling 3.0 Omni 4K",
-          "href": "/fr/modeles/kling-o3-4k"
+          "label": "Découvrir Kling Image 4.0",
+          "href": "/fr/modeles/kling-image-v4"
         }
       }
     ],
     "referenceWorkflows": [
       {
         "title": "Texte vers vidéo",
-        "body": "Un prompt ou des plans minutés, de 3 à 30 secondes, en 720p ou 1080p, avec cadrage paysage, portrait, carré ou 21:9."
+        "body": "Un prompt continu ou des plans minutés, de 3 à 30 secondes, jusqu’en 4K SDR. Choisissez 16:9, 9:16, 1:1 ou 21:9."
       },
       {
         "title": "Image vers vidéo",
@@ -229,14 +233,14 @@
     ],
     "pricingCopy": {
       "title": "Prix de Kling 4.0",
-      "subtitle": "Kling 4.0 est disponible dans l’App, Studio et via MCP. Le devis actuel dépend du mode et des éléments choisis.",
-      "footnote": "Les tarifs du fournisseur ne constituent pas un prix client MaxVideoAI. Vérifiez le devis actuel et validez explicitement chaque génération.",
-      "ctaLabel": "Lire les caractéristiques",
-      "ctaHref": "#specs"
+      "subtitle": "L’App, Studio et MCP affichent un devis à jour selon le mode, la résolution, la durée et les sources choisies.",
+      "footnote": "Vérifiez le devis final dans Create et confirmez quand vous êtes prêt.",
+      "ctaLabel": "Voir les tarifs de Kling 4.0",
+      "ctaHref": "/fr/tarifs#kling-v4-pricing"
     },
     "meta": {
-      "title": "Kling 4.0 — diriger la scène, les références et le son | MaxVideoAI",
-      "description": "Découvrez Kling 4.0 : vidéos de 3 à 30 secondes, 720p et 1080p, plans minutés, audio natif, références image et vidéo et modification vidéo."
+      "title": "Kling 4.0, générateur vidéo IA jusqu’en 4K | MaxVideoAI",
+      "description": "Créez et modifiez des vidéos de 3 à 30 secondes en 720p, 1080p ou 4K SDR. Dirigez la scène avec des références, des plans minutés et l’audio natif."
     }
   },
   "prompting": {
@@ -246,8 +250,8 @@
       "intro": "Deux prompts de scènes Kling 4.0 filmées montrent un concert et un récit guidé par des références. Les onglets image et modification proposent des recettes à adapter.",
       "tip": "Précisez le sujet, l’action, la caméra et le son. Les plans minutés guident la séquence sans garantir des coupes exactes.",
       "guide": {
-        "label": "Lire la présentation du fournisseur",
-        "href": "https://fal.ai/kling-4"
+        "label": "Documentation technique Kling 4.0 sur fal",
+        "href": "https://fal.ai/models/kling/v4/text-to-video/api"
       },
       "referencesTitle": "Préparer des références cohérentes"
     },
@@ -310,7 +314,7 @@
       "Évaluez la vidéo et la bande sonore complètes avant de retenir un résultat."
     ],
     "engineWhy": [
-      "Un prompt ou des plans minutés, de 3 à 30 secondes, en 720p ou 1080p, avec cadrage paysage, portrait, carré ou 21:9.",
+      "Un prompt continu ou des plans minutés, de 3 à 30 secondes, jusqu’en 4K SDR. Choisissez 16:9, 9:16, 1:1 ou 21:9.",
       "Une image initiale est obligatoire. Une image finale est facultative. Les images déterminent le cadrage.",
       "Jusqu’à 10 images, image initiale facultative comprise, et 5 vidéos. Les vidéos de référence et les éléments vidéo partagent une limite de 30 secondes.",
       "Fournissez une vidéo source et un prompt. Des images et éléments visuels peuvent guider la modification ; ce mode ne propose ni plans minutés ni éléments vocaux."
@@ -388,6 +392,260 @@
         "body": "Évaluez la vidéo et la bande sonore complètes avant de retenir un résultat."
       }
     ],
-    "fallbackItems": null
+    "fallbackItems": null,
+    "cinematic": {
+      "provenance": "Exemples Kling 4.0 sélectionnés sur MaxVideoAI et générés à partir de références. Les deux originaux sont en 720p avec son natif.",
+      "assetTitles": [
+        {
+          "id": "kling-v4-hero",
+          "title": "Concert en noir et blanc — Kling 4.0"
+        },
+        {
+          "id": "kling-v4-create",
+          "title": "The Next One — Kling 4.0"
+        }
+      ],
+      "panels": [
+        {
+          "id": "create",
+          "layout": "feature",
+          "eyebrow": "CRÉER AVEC DES RÉFÉRENCES",
+          "title": "Deux références, cinq plans, une histoire.",
+          "body": "Deux images de référence guident les personnages d’une rencontre au tramway à deux futurs imaginés.",
+          "note": "Rendu Kling 4.0 sélectionné · 28 s · 720p · 16:9",
+          "assetIds": [
+            "kling-v4-create"
+          ]
+        }
+      ]
+    }
+  },
+  "cinematic": {
+    "modelSlug": "kling-v4",
+    "variant": "video",
+    "heroAssetId": "kling-v4-hero",
+    "titleLines": [
+      "Kling 4.0"
+    ],
+    "subtitle": "Dirigez la scène, du premier plan à la bande-son.",
+    "byline": "Générateur vidéo IA sur MaxVideoAI",
+    "intro": "Créez des clips de 3 à 30 secondes en 720p, 1080p ou 4K SDR. Partez d’un prompt, d’une image ou de plusieurs références, ou modifiez un clip existant.",
+    "primaryLabel": "Générer avec Kling 4.0",
+    "caption": "Exemples Kling 4.0 sélectionnés sur MaxVideoAI et générés à partir de références. Les deux originaux sont en 720p avec son natif.",
+    "proofLabel": "CRÉER AVEC DES RÉFÉRENCES",
+    "overviewLabel": "Vue d’ensemble",
+    "examplesLabel": "Voir les films",
+    "detailsLabel": "Caractéristiques",
+    "promptingLabel": "Guide de prompts",
+    "pricingLabel": "Prix et comparatifs",
+    "facts": [
+      {
+        "label": "Durée",
+        "value": "3 à 30 secondes"
+      },
+      {
+        "label": "Résolution",
+        "value": "720p · 1080p · 4K SDR"
+      },
+      {
+        "label": "Son",
+        "value": "Audio natif dirigé par le prompt"
+      }
+    ],
+    "highlights": [
+      {
+        "target": "capabilities",
+        "title": "Quatre façons de partir",
+        "body": "Créez à partir d’un texte, d’une image initiale ou de références. Le mode Modifier part d’une vidéo source."
+      },
+      {
+        "target": "specs",
+        "title": "Jusqu’en 4K SDR",
+        "body": "Choisissez 720p, 1080p ou 4K dans chacun des quatre modes."
+      },
+      {
+        "target": "prompting",
+        "title": "Plans minutés et son natif",
+        "body": "Décrivez l’action, la coupe et ce que le public entend."
+      }
+    ],
+    "specsReviewedAt": "2026-11-20",
+    "capabilities": {
+      "title": "Choisissez le point de départ de la scène.",
+      "intro": "Ouvrez dans Create le mode qui correspond à ce que vous avez déjà.",
+      "diagramLabel": "Parcours de création Kling 4.0",
+      "items": [
+        {
+          "id": "text",
+          "label": "Texte vers vidéo",
+          "title": "Partez de l’action.",
+          "body": "Écrivez un plan continu ou préparez plusieurs plans minutés avec leur son.",
+          "stages": [
+            "Décrivez la scène",
+            "Choisissez durée et cadrage",
+            "Générez le clip"
+          ],
+          "uses": [
+            "Dialogues",
+            "Courts métrages",
+            "Révélations produit"
+          ],
+          "note": "Paysage 16:9, portrait 9:16, carré 1:1 et large 21:9.",
+          "actions": [
+            {
+              "label": "Partir d’un texte",
+              "mode": "t2v"
+            }
+          ]
+        },
+        {
+          "id": "image",
+          "label": "Image vers vidéo",
+          "title": "Fixez le premier plan.",
+          "body": "Ajoutez une image initiale et, si utile, une image finale. Décrivez ce qui se passe entre les deux.",
+          "stages": [
+            "Ajoutez la première image",
+            "Dirigez le mouvement",
+            "Ajoutez une dernière image au besoin"
+          ],
+          "uses": [
+            "Animer une image",
+            "Transitions produit",
+            "Fins maîtrisées"
+          ],
+          "note": "Le cadrage suit l’image.",
+          "actions": [
+            {
+              "label": "Partir d’une image",
+              "mode": "i2v"
+            }
+          ]
+        },
+        {
+          "id": "references",
+          "label": "Références vers vidéo",
+          "title": "Guidez les personnages, le décor et le mouvement.",
+          "body": "Ajoutez jusqu’à dix images, image initiale comprise, cinq vidéos et sept éléments, dans les limites de la combinaison choisie.",
+          "stages": [
+            "Ajoutez les références dans l’ordre",
+            "Attribuez un rôle à chacune",
+            "Dirigez l’action et le son"
+          ],
+          "uses": [
+            "Personnages récurrents",
+            "Produits en situation",
+            "Mouvement de caméra guidé"
+          ],
+          "note": "Les vidéos de référence et les éléments vidéo partagent un budget de 30 secondes.",
+          "actions": [
+            {
+              "label": "Partir de références",
+              "mode": "ref2v"
+            }
+          ]
+        },
+        {
+          "id": "edit",
+          "label": "Modification vidéo",
+          "title": "Modifiez une scène existante.",
+          "body": "Importez une vidéo que vous êtes autorisé à utiliser et décrivez le changement. Ajoutez des images ou éléments visuels au besoin.",
+          "stages": [
+            "Choisissez la vidéo source",
+            "Décrivez la modification",
+            "Choisissez la qualité de sortie"
+          ],
+          "uses": [
+            "Changement de style",
+            "Variation d’un produit",
+            "Modification du décor"
+          ],
+          "note": "La modification suit le cadrage source. Le devis tient compte de la source et de la sortie choisie.",
+          "actions": [
+            {
+              "label": "Ouvrir Modifier",
+              "mode": "v2v"
+            }
+          ]
+        }
+      ],
+      "controls": {
+        "title": "Durée, résolution et son",
+        "body": "Choisissez de 3 à 30 secondes et une sortie jusqu’en 4K SDR. Indiquez les paroles, la musique ou l’ambiance sonore dans le prompt."
+      }
+    },
+    "alternatives": {
+      "title": "Comparez les options pour votre projet",
+      "models": [
+        {
+          "slug": "kling-v4-flash",
+          "reason": "Explorez le modèle Flash pour une itération en 720p."
+        },
+        {
+          "slug": "seedance-2-5",
+          "reason": "Commencez par un brouillon 480p, puis choisissez la résolution finale après vérification."
+        },
+        {
+          "slug": "wan-3-prime",
+          "reason": "Explorez les références mixtes et le mode Prolonger."
+        }
+      ]
+    },
+    "promptAssistant": {
+      "title": "Préparez le prochain plan avec Milo.",
+      "body": "Décrivez la scène à Milo dans l’éditeur de prompts. Relisez sa proposition et appliquez-la avant de demander un devis.",
+      "action": "Ouvrir Milo dans Create"
+    },
+    "workflows": {
+      "eyebrow": "CRÉER AVEC DES RÉFÉRENCES",
+      "title": "Kling 4.0",
+      "intro": "Créez des clips de 3 à 30 secondes en 720p, 1080p ou 4K SDR. Partez d’un prompt, d’une image ou de plusieurs références, ou modifiez un clip existant.",
+      "note": "Vérifiez le devis final dans Create et confirmez quand vous êtes prêt.",
+      "action": "Générer avec Kling 4.0",
+      "conceptLabel": "Source et sortie",
+      "briefLabel": "Lire le prompt envoyé",
+      "limitsLabel": "Réglages de l’exemple",
+      "inspectLabel": "Observez le retour au même geste devant la porte du tramway.",
+      "promptNote": "Exemples Kling 4.0 sélectionnés sur MaxVideoAI et générés à partir de références. Les deux originaux sont en 720p avec son natif.",
+      "imageDetailsLabel": "Source et sortie",
+      "source": {
+        "label": "Documentation technique Kling 4.0 sur fal",
+        "href": "https://fal.ai/models/kling/v4/text-to-video/api"
+      },
+      "items": [
+        {
+          "id": "create",
+          "title": "Deux références, cinq plans, une histoire.",
+          "body": "Deux images de référence guident les personnages d’une rencontre au tramway à deux futurs imaginés.",
+          "input": "Références",
+          "output": "Vidéo",
+          "steps": [
+            "Utiliser deux références",
+            "Préparer cinq plans",
+            "Diriger l’ambiance sonore"
+          ],
+          "action": "Générer avec Kling 4.0",
+          "prompt": "Create a 28-second romantic live-action scene in five shots: a brief encounter at a tram doorway, two imagined fragments of a shared future, then a return to the same unfinished gesture and a real choice. Use @Image1 only for Leon's identity, worn coat and blue pencil; use @Image2 only for Adele's identity, orange hair clip and dented insulated bag. They are character references, not first frames or locations. Both original adult characters keep the same face and age through all three settings. No narrator, dialogue, written titles or explanatory montage graphics.\n\nLeon is 37, a furniture restorer with untidy brown hair, thoughtful eyes, a worn charcoal coat and a blue carpenter's pencil behind his right ear. He rehearses sentences before daring to speak. Adele is 41, a nurse leaving a night shift, tired lively eyes, chestnut hair held with one orange clip, a practical olive coat and a dented small insulated lunch bag on her left shoulder. She has a quick smile despite her fatigue. At a quiet tram stop in cool early-morning light, Leon has just boarded; Adele remains on the platform. The tram is stationary, its doors fully open, floor level close to the platform. She holds one grey wool glove he has dropped. Keep the threshold, their hand positions and the single glove consistent on returning to the present. Avoid readable route labels or advertisements.\n\n0–6s: a medium two-shot from the platform at a three-quarter angle shows the open door and both bodies. Leon stands just inside, facing outward; Adele stands a safe step back on the platform. She extends the glove in her right hand toward him. He notices it, then meets her eyes and pauses. She is simply returning a glove, not inviting an imagined future. End close enough to read his hesitant expression, the glove still held between them.\n\n6–11s: a clean hard cut into his imagined future. In a tiny warm morning kitchen, the same two people, now in simple sweaters, stand close at a cramped counter. One piece of burnt toast is between them. Adele passes it to Leon; he accepts it, inspects the blackened edge and they laugh together. Show one clear transfer, with the toast ending in his hand. Their ease suggests intimacy without any explanatory wedding or age-change montage.\n\n11–17s: hard cut to a second imagined fragment. In a modest apartment being renovated, with covered furniture, plaster patches and one warm work lamp, they wear the same simple sweaters. A full-body two-shot holds their hands and feet in view. Adele places one foot lightly on top of Leon's planted foot to demonstrate a slow dance step. He looks down, understands, and shifts gently with her. The weight change is small and affectionate, not a spin or acrobatic move. Hold their shared smile. Keep the orange clip and the blue pencil as quiet identity anchors.\n\n17–22s: a sharp tram warning chime interrupts. Hard cut back to the exact cool platform composition and almost unchanged extended glove from the first shot. The imagined warmth ends instantly. Leon is still just inside the open doorway; Adele still stands outside. He takes the glove from her right hand. He hesitates for one beat, then deliberately steps completely out onto the platform, both feet clearing the threshold while the doors remain fully open. Show the entire step and its completion in one unobstructed view. The doors only begin to close after he is safely beside her. No squeezing through moving doors or dangerous last-second leap.\n\n22–28s: medium two-shot on the platform, the tram doors now closed behind them. The tram pulls away slowly, opening the space around the two strangers. Leon lifts his free hand toward the blue pencil behind his right ear with a small embarrassed half-smile, as if it could explain his distraction; the pencil stays there. Adele looks at him and smiles back. They remain side by side with the recovered glove in his hand. Hold the awkward, hopeful first real moment; do not show a kiss or assert that the imagined relationship comes true.\n\nPhotography: natural faces, tactile cloth and practical environments; restrained 35mm-like grain. Cool diffuse dawn on the platform contrasts with warm ordinary domestic light in the two imagined fragments. Clean cuts carry the time shifts, never dissolves, magic particles, mirrors or transformations. Keep the screen direction and body positions of the platform encounter stable.\n\nSound: gentle tram machinery and distant city air in the present; toast scraping and a spontaneous shared laugh in the kitchen; soft feet on the renovation floor during the dance. A sparse original instrumental piano motif may connect the two imagined fragments, stopping decisively at the tram chime. Final tram departure and human breathing remain audible. No speech, singing, voice-over or recognisable existing music.\n\nProduction language: English for any incidental language that is permitted; this scene contains no dialogue or readable text. Do not add French announcements, subtitles, captions, titles, logos or labels. Preserve the difference between an imagined future and a first real encounter.",
+          "inspect": "Observez le retour au même geste devant la porte du tramway.",
+          "compactFacts": "Rendu Kling 4.0 sélectionné · 28 s · 720p · 16:9",
+          "proofLabel": "The Next One",
+          "promptLabel": "Lire le prompt envoyé",
+          "proofNote": "Exemples Kling 4.0 sélectionnés sur MaxVideoAI et générés à partir de références. Les deux originaux sont en 720p avec son natif.",
+          "limits": [
+            {
+              "label": "Durée",
+              "value": "28 s"
+            },
+            {
+              "label": "Résolution",
+              "value": "720p · 16:9"
+            },
+            {
+              "label": "Références",
+              "value": "Utiliser deux références"
+            }
+          ]
+        }
+      ]
+    }
   }
 }

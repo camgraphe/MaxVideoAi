@@ -29,6 +29,7 @@ async function load() {
       export {isAllowedAssetHost} from './server/asset-url-policy';
       export const isStorageConfigured = () => true;
       export const recordUserAsset = async () => {};
+      export const getStorageObjectBuffer = async () => { throw new Error("unexpected original read"); };
       export const uploadImageToStorage = async input => {
         fixture.uploads.push(input.userId);
         return {url: '${base}/normalized-references/' + input.userId + '/copy.jpg', mime: input.mime};

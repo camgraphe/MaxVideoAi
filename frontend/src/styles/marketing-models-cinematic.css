@@ -1009,3 +1009,6 @@ html:has(.model-cinematic-page)::-webkit-scrollbar-thumb{background:#707b8880;bo
  .marketing-site .model-cinematic-page .cinema-hero:has(.cinema-hero-playback) .cinema-byline{max-width:calc(100% - 112px);min-height:36px}
 }
 @media(prefers-reduced-motion:reduce){.marketing-site .model-cinematic-page .cinema-hero-motion video{transition:none}}
+
+.marketing-site .model-cinematic-page .cinema-hero-attribution{position:absolute;right:var(--cinema-pad);bottom:12px;color:#edf1f5;font-size:11px;text-shadow:0 1px 4px #000}
+.marketing-site .model-cinematic-page .cinema-examples-source{display:flex;flex-wrap:wrap;column-gap:24px;align-items:baseline;padding-top:32px;color:var(--cinema-muted);font-size:13px}

@@ -13,6 +13,12 @@ export type RuntimeResolutionPolicy = Readonly<{
   pricingFallbackResolution: string;
 }>;
 
+export function getKlingV4Native4kAvailabilityError(engine: EngineCaps, resolution?: string): string | null {
+  return engine.id === 'kling-v4' && resolution === '4k' && !engine.resolutions.includes('4k')
+    ? 'Native 4K is currently unavailable for Kling 4.0.'
+    : null;
+}
+
 export function resolveRuntimeResolutionPolicy(
   engine: EngineCaps,
   mode: Mode,

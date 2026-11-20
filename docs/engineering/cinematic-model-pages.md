@@ -186,3 +186,28 @@ submitted image files alongside a manual player. Each result has its own
 poster, measured dimensions and submitted prompt. The model page applies its
 temporary timed-keyframe publication hold in `model-page-flux-release.ts`.
 App modes and the prepared observatory storyboard keep their source data.
+
+## Kling 4.0 and Kling Image 4.0
+
+- The video page uses the owned concert and tram films from the accepted
+  Kling V4 launch pack. The original watch pages and Range responses were
+  checked on 20 November 2026. Both originals are 1280 × 720 H.264 SDR with
+  AAC audio. The 4K SDR publishing settings describe app capabilities. The
+  two filmed examples retain their recorded 720p settings and exact prompts.
+  Opening motion is manually triggered for the concert. The tram film uses
+  the shared manual player with `preload="none"`.
+- The compact capability guide covers text, opening image, mixed references
+  and source-video edit. Optional Prompt Guide and Specifications visuals
+  may be omitted when the available reviewed clips already have a placement.
+  Prompt instructions and specifications still render as HTML.
+- Kling Image 4.0 uses its own five editorial ImageGen illustrations. The
+  source and display checksums and exact prompts are in
+  `frontend/config/model-kling-image-4-illustrations.json`. The page captions
+  identify the illustration source and link to fal's actual Kling Image 4.0
+  examples. Reuse opens a prompt-only 2K still recipe on the correct image
+  model with no image reference attached. The user can configure image
+  references and ordered Image Sets in Create.
+- The public prices on both pages use the shared current quote and offer
+  owners. Video scenarios specify three 5-second text-to-video settings.
+  Image scenarios specify a single still at 2K, 4K or 8K. Image Set totals
+  come from the actual count in Create.

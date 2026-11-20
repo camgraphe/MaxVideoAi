@@ -1,8 +1,8 @@
 import { z } from 'zod';
 import type { GeneratePayload } from '@/lib/fal-types';
-import { KLING_V4_ENDPOINTS, KLING_V4_PROMPT_MAX_CHARS } from '@/config/fal-engines/kling-v4';
+import { KLING_V4_ENDPOINTS, KLING_V4_PROMPT_MAX_CHARS, KLING_V4_RESOLUTIONS } from '@/config/fal-engines/kling-v4';
 
-// fal public OpenAPI, verified 2026-10-25. Account access is a separate release gate.
+// Omitting the optional HDR control selects SDR on all four fal endpoints.
 export { KLING_V4_ENDPOINTS };
 export type KlingV4Mode = keyof typeof KLING_V4_ENDPOINTS;
 export const isKlingV4EngineId = (id: string | null | undefined): boolean => id?.trim().toLowerCase() === 'kling-v4';
@@ -29,7 +29,7 @@ const common = {
   prompt: z.string().trim().min(1).max(KLING_V4_PROMPT_MAX_CHARS).optional(),
   multi_prompt: z.array(shot).min(1).optional(),
   duration,
-  resolution: z.enum(['720p', '1080p']).optional(),
+  resolution: z.enum(KLING_V4_RESOLUTIONS).optional(),
 };
 const schemas = {
   t2v: z.object({ ...common, aspect_ratio: z.enum(['16:9', '9:16', '1:1', '21:9']).optional() }).strict(),

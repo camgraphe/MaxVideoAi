@@ -1,0 +1,391 @@
+{
+  "marketingName": "Kling Image 4.0",
+  "versionLabel": "4.0",
+  "seo": {
+    "title": "Kling Image 4.0 AI Image Generator & Editor — Up to 8K | MaxVideoAI",
+    "description": "Create 2K, 4K and 8K images, edit with up to ten references, and generate ordered Image Sets with Kling Image 4.0 on MaxVideoAI.",
+    "image": "/assets/model-examples/kling-image-v4/b3321181f57796ad37df7ef6ddac2c126ba8414f01147385f61bafc235f148cb.webp"
+  },
+  "hero": {
+    "title": "Kling Image 4.0",
+    "intro": "Create and edit stills at 2K, 4K or 8K. Use up to ten ordered reference images, or create a coordinated Image Set of two to ten images from one brief.",
+    "badge": "2K · 4K · 8K",
+    "cta": {
+      "label": "Create with Kling Image 4.0",
+      "href": "/app/image?engine=kling-image-v4"
+    }
+  },
+  "overview": "Create and edit stills at 2K, 4K or 8K. Use up to ten ordered reference images, or create a coordinated Image Set of two to ten images from one brief.",
+  "bestUseCases": [
+    "Product stills and coordinated campaign imagery",
+    "Concept frames and storyboards",
+    "Reference-guided edits and layouts with short lettering"
+  ],
+  "pricingNotes": [
+    "See the current price for one still at each resolution. Create quotes the whole Image Set for your selected count.",
+    "Review the exact quote for the selected settings before generating."
+  ],
+  "faqs": [
+    {
+      "q": "What is Kling Image 4.0?",
+      "a": "Kling Image 4.0 is Kuaishou’s image-generation and editing model. It creates a single still or an ordered Image Set from a prompt, with optional reference images in Edit."
+    },
+    {
+      "q": "What output sizes and aspect ratios can I select?",
+      "a": "Create offers 2K, 4K and 8K in both modes. Available aspect ratios are Auto, 16:9, 9:16, 1:1, 4:3, 3:4, 3:2, 2:3 and 21:9."
+    },
+    {
+      "q": "How do image references work?",
+      "a": "Attach one to ten images in Edit and refer to them in the order attached, from @Image1 to @Image10. Tell the model which image defines the product, subject, composition or style."
+    },
+    {
+      "q": "What is an Image Set?",
+      "a": "Choose a count from two to ten to generate an ordered group of related images from one brief. Outline the views or shots in order and check which details carry across the set."
+    },
+    {
+      "q": "How much does Kling Image 4.0 cost?",
+      "a": "Create shows the current amount for your exact settings before confirmation. Choose your resolution and output count to see the quote for the still or full set."
+    },
+    {
+      "q": "Can I use a Kling Image still as a video starting frame?",
+      "a": "Save the still, then select it as the opening image of an image-to-video generation with Kling 4.0. The video has its own settings and quote."
+    }
+  ],
+  "custom": {
+    "specTitle": "Specifications",
+    "specNote": "Create offers 2K, 4K and 8K in both modes. Available aspect ratios are Auto, 16:9, 9:16, 1:1, 4:3, 3:4, 3:2, 2:3 and 21:9.",
+    "safetyNote": "Use references you have permission to use. Review faces, lettering and claims before publication."
+  },
+  "decision": {
+    "modelSlug": "kling-image-v4",
+    "hero": {
+      "eyebrow": "AI image generator on MaxVideoAI",
+      "title": "Kling Image 4.0",
+      "subtitle": "Create one image or plan a whole series.",
+      "subtitleHighlights": [
+        "8K"
+      ],
+      "paragraph": "Create and edit stills at 2K, 4K or 8K. Use up to ten ordered reference images, or create a coordinated Image Set of two to ten images from one brief.",
+      "primaryCta": {
+        "label": "Create with Kling Image 4.0",
+        "href": "/app/image?engine=kling-image-v4"
+      },
+      "secondaryCta": {
+        "label": "Specifications",
+        "href": "#specs"
+      },
+      "quickLinks": [
+        {
+          "label": "Prompt guide",
+          "href": "#prompting"
+        },
+        {
+          "label": "Specifications",
+          "href": "#specs"
+        }
+      ]
+    },
+    "media": {
+      "caption": "ImageGen illustration",
+      "description": "Editorial illustrations made with ImageGen. See Kling Image 4.0 outputs in fal’s gallery.",
+      "renderLabel": "View Kling Image 4.0 examples on fal",
+      "badges": [
+        "ImageGen illustration"
+      ],
+      "altContext": "A woman in a cobalt jacket on a volcanic coast"
+    },
+    "features": [
+      {
+        "title": "Direct a single image",
+        "body": "Describe a subject, position and light, then choose an aspect ratio that fits your layout.",
+        "tone": "quality"
+      },
+      {
+        "title": "Give each reference a role",
+        "body": "Add images in order. Use @Image1 for the product shape and @Image2 for the lighting. Describe what should stay and what should change.",
+        "tone": "reference"
+      },
+      {
+        "title": "Plan an Image Set",
+        "body": "Set a count from two to ten. Give the series one subject and art direction, then name each frame or view in order.",
+        "tone": "continuity"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Animate a finished still",
+        "body": "Save a still and use it as an opening frame in a separate Kling 4.0 video generation.",
+        "cta": {
+          "label": "Explore Kling 4.0 video",
+          "href": "/models/kling-v4"
+        }
+      },
+      {
+        "title": "Explore Seedream 5.5",
+        "body": "Choose Seedream for a native transparent PNG or a single image with reference-guided edits.",
+        "cta": {
+          "label": "See Seedream 5.5",
+          "href": "/models/seedream-5-5"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Direct a single image",
+        "body": "Describe a subject, position and light, then choose an aspect ratio that fits your layout."
+      },
+      {
+        "title": "Give each reference a role",
+        "body": "Add images in order. Use @Image1 for the product shape and @Image2 for the lighting. Describe what should stay and what should change."
+      },
+      {
+        "title": "Plan an Image Set",
+        "body": "Set a count from two to ten. Give the series one subject and art direction, then name each frame or view in order."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Kling Image 4.0 pricing",
+      "subtitle": "See the current price for one still at each resolution. Create quotes the whole Image Set for your selected count.",
+      "footnote": "Review the exact quote for the selected settings before generating.",
+      "ctaLabel": "View full image pricing",
+      "ctaHref": "/pricing#kling-image-v4-pricing"
+    },
+    "meta": {
+      "title": "Kling Image 4.0 AI Image Generator & Editor — Up to 8K | MaxVideoAI",
+      "description": "Create 2K, 4K and 8K images, edit with up to ten references, and generate ordered Image Sets with Kling Image 4.0 on MaxVideoAI."
+    }
+  },
+  "prompting": {
+    "modelSlug": "kling-image-v4",
+    "section": {
+      "title": "How to prompt Kling Image 4.0",
+      "intro": "Write a brief for one frame, guide an edit with ordered images, or describe the shots in an Image Set.",
+      "tip": null,
+      "guide": {
+        "label": "Kling Image 4.0 prompting guide on fal",
+        "href": "https://fal.ai/learn/tools/kling-image-4-prompting-guide"
+      },
+      "referencesTitle": "Guide the image"
+    },
+    "tabs": [
+      {
+        "id": "references",
+        "label": "Ordered references",
+        "title": "Give each reference one job",
+        "description": "Use references you have permission to use.",
+        "copy": "Use @Image1 for the exact shape and proportions of the flashlight. Use @Image2 only for the cool blue lighting and dark volcanic rock. Place the flashlight on wet basalt with the same button and lens details."
+      },
+      {
+        "id": "series",
+        "label": "Image Set",
+        "title": "Plan three connected frames",
+        "description": "Select three outputs in Create before generating.",
+        "copy": "Create a three-image story about a photographer crossing a stormy bay. Keep the same red coat, camera and colour palette. Open with a wide shot on the ferry deck. Follow with a medium shot at the rain-covered window. Finish on a close-up of a hand gripping the camera strap."
+      }
+    ],
+    "recipe": {
+      "label": "A brief for one frame",
+      "excerpt": "A photographer in a red waterproof coat watches a storm through the ferry window. The sea throws cold light into the cabin.",
+      "note": "Adapt this ImageGen illustration prompt in Create.",
+      "factors": [
+        {
+          "icon": "subject",
+          "title": "Subject and pose",
+          "body": "Name the person, clothing and one readable action."
+        },
+        {
+          "icon": "framing",
+          "title": "Framing",
+          "body": "Ask for a medium shot and leave space for the window."
+        },
+        {
+          "icon": "light",
+          "title": "Light and material",
+          "body": "Set the contrast between cold sea light and the warm light inside. Specify wet fabric and reflections."
+        }
+      ]
+    },
+    "tabNotes": [],
+    "globalPrinciples": [
+      "Write exact lettering in quotation marks and check it in the finished image.",
+      "Review each frame in an Image Set for visual continuity before exporting."
+    ],
+    "engineWhy": [],
+    "demo": null,
+    "imageExamples": {
+      "title": "How to prompt Kling Image 4.0",
+      "intro": "Write a brief for one frame, guide an edit with ordered images, or describe the shots in an Image Set.",
+      "workspaceLabel": "Create with Kling Image 4.0",
+      "items": [
+        {
+          "id": "kling-image-4-prompt",
+          "title": "A photographer on a ferry in a storm",
+          "badge": "ImageGen illustration",
+          "kind": "image",
+          "prompt": "Cinematic editorial still photograph for a model prompt guide. Landscape 3:2. On a ferry in a storm, a middle-aged East Asian documentary photographer in a red waterproof coat stands at a dark window, seen in slightly imperfect side profile, holding a weathered film camera at chest height. Outside, cold cobalt sea and sea spray, a warm fluorescent ceiling practical gives pale amber rim light to wet fabric. Close medium shot, human and unposed, careful fine texture and layered reflections, no typography, brand or watermark."
+        }
+      ]
+    }
+  },
+  "examples": {
+    "modelSlug": "kling-image-v4",
+    "showWhenEmpty": false,
+    "section": {
+      "title": "Image ideas for Kling Image 4.0",
+      "intro": "Explore portraits, product stills and layouts, then adapt a brief in Create.",
+      "defaultCtaLabel": null,
+      "recreateLabel": "Create with Kling Image 4.0"
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "All"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "image-proof-image",
+        "icon": "image",
+        "title": "Text to image",
+        "body": "Describe a single still."
+      },
+      {
+        "id": "image-proof-pen",
+        "icon": "pen",
+        "title": "Reference editing",
+        "body": "Use one to ten images in order."
+      },
+      {
+        "id": "image-proof-maximize",
+        "icon": "maximize",
+        "title": "Resolution",
+        "body": "Choose 2K, 4K or 8K."
+      },
+      {
+        "id": "image-proof-sparkles",
+        "icon": "sparkles",
+        "title": "Image Sets",
+        "body": "Request two to ten related images."
+      },
+      {
+        "id": "image-proof-shield",
+        "icon": "shield",
+        "title": "Current price",
+        "body": "Review your quote in Create."
+      }
+    ],
+    "fallbackItems": null,
+    "editorialImages": [
+      {
+        "id": "kling-image-4-hero",
+        "title": "A woman in a cobalt jacket on a volcanic coast"
+      },
+      {
+        "id": "kling-image-4-product",
+        "title": "An indigo flashlight on wet basalt"
+      },
+      {
+        "id": "kling-image-4-typography",
+        "title": "AFTER THE RAIN printed on a gallery poster"
+      },
+      {
+        "id": "kling-image-4-prompt",
+        "title": "A photographer on a ferry in a storm"
+      },
+      {
+        "id": "kling-image-4-specs",
+        "title": "Rain on a jacket zipper and ripstop fabric"
+      }
+    ],
+    "cinematic": {
+      "title": "Image ideas for Kling Image 4.0",
+      "intro": "Explore portraits, product stills and layouts, then adapt a brief in Create.",
+      "provenance": "Editorial illustrations made with ImageGen. See Kling Image 4.0 outputs in fal’s gallery.",
+      "source": {
+        "label": "View Kling Image 4.0 examples on fal",
+        "href": "https://fal.ai/kling-image-4"
+      },
+      "panels": [
+        {
+          "id": "concepts",
+          "layout": "grid",
+          "eyebrow": "Image ideas",
+          "title": "Build an image around one clear idea.",
+          "body": "Describe a hero product or put a short line of copy in a designed scene.",
+          "note": "Use a product reference to guide its shape or describe the exact letters, line breaks and surface for a text-based visual.",
+          "assetIds": [
+            "kling-image-4-product",
+            "kling-image-4-typography"
+          ]
+        },
+        {
+          "id": "image-brief",
+          "placement": "prompting",
+          "layout": "feature",
+          "eyebrow": "Prompt guide",
+          "title": "Direct subject, light and framing.",
+          "body": "A simple scene brief can specify the gesture, silhouette, reflections and light source.",
+          "note": "Open the illustration prompt as a 2K still to adapt in Create.",
+          "assetIds": [
+            "kling-image-4-prompt"
+          ]
+        },
+        {
+          "id": "resolution",
+          "placement": "details",
+          "layout": "feature",
+          "eyebrow": "Output choices",
+          "title": "Choose the size for the deliverable.",
+          "body": "Choose 2K for exploration, or 4K or 8K when the project needs more pixels.",
+          "note": "Set a resolution and an aspect ratio in Create.",
+          "assetIds": [
+            "kling-image-4-specs"
+          ]
+        }
+      ]
+    }
+  },
+  "cinematic": {
+    "modelSlug": "kling-image-v4",
+    "variant": "image",
+    "heroAssetId": "kling-image-4-hero",
+    "titleLines": [
+      "Kling Image 4.0"
+    ],
+    "subtitle": "Create one image or plan a whole series.",
+    "byline": "AI image generator on MaxVideoAI",
+    "intro": "Create and edit stills at 2K, 4K or 8K. Use up to ten ordered reference images, or create a coordinated Image Set of two to ten images from one brief.",
+    "primaryLabel": "Create with Kling Image 4.0",
+    "caption": "ImageGen illustration",
+    "proofLabel": "Explore image ideas",
+    "overviewLabel": "Overview",
+    "detailsLabel": "Specifications",
+    "examplesLabel": "Explore image ideas",
+    "promptingLabel": "Prompt guide",
+    "pricingLabel": "Pricing",
+    "specsReviewedAt": "2026-11-20",
+    "facts": [
+      {
+        "label": "Resolution",
+        "value": "2K · 4K · 8K"
+      },
+      {
+        "label": "References",
+        "value": "Up to 10 images"
+      },
+      {
+        "label": "Image Sets",
+        "value": "2–10 related images"
+      },
+      {
+        "label": "Framing",
+        "value": "9 options including Auto"
+      }
+    ],
+    "promptAssistant": {
+      "title": "Shape your brief with Milo.",
+      "body": "Describe the image to Milo. Review the proposed prompt in Create and apply it when it fits your idea.",
+      "action": "Open Milo in Create"
+    }
+  }
+}

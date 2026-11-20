@@ -31,6 +31,7 @@ export type AgentGenerationResult =
       surface: 'image';
       imageUrls: string[];
       thumbnailUrls: string[];
+      orderedSet?: true;
     }
   | {
       surface: 'audio';

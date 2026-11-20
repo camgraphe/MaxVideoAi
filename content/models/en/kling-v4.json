@@ -2,18 +2,18 @@
   "marketingName": "Kling 4.0",
   "versionLabel": "4.0",
   "seo": {
-    "title": "Kling 4.0 — direct the scene, references and sound | MaxVideoAI",
-    "description": "Explore Kling 4.0: 3–30-second video, 720p and 1080p, timed shots, native audio, image and video references, and video editing."
+    "title": "Kling 4.0 AI Video Generator — Up to 4K | MaxVideoAI",
+    "description": "Create and edit 3–30-second videos in 720p, 1080p or 4K SDR with Kling 4.0. Guide the scene with references, timed shots and native audio."
   },
-  "overview": "Kling 4.0 brings scene direction, reference-guided generation and video editing into one model family. Plan the action, framing and sound together; use the mode that matches the material you already have.",
+  "overview": "Create 3–30-second clips in 720p, 1080p or 4K SDR. Start from a prompt, an image or a set of references, or edit a clip you already have.",
   "pricingNotes": [
-    "Kling 4.0 is available through MaxVideoAI App, Studio and MCP. The current quote depends on the selected mode and inputs.",
-    "Published provider rates are not a MaxVideoAI customer price. Review the current quote and explicitly approve each generation."
+    "App, Studio and MCP show a current quote for the selected mode, resolution, duration and inputs.",
+    "Review the final quote in Create and confirm when ready."
   ],
   "hero": {
     "title": "Kling 4.0 — direct the scene, references and sound",
-    "intro": "Kling 4.0 brings scene direction, reference-guided generation and video editing into one model family. Plan the action, framing and sound together; use the mode that matches the material you already have.",
-    "badge": "3–30 s · 720p / 1080p",
+    "intro": "Create 3–30-second clips in 720p, 1080p or 4K SDR. Start from a prompt, an image or a set of references, or edit a clip you already have.",
+    "badge": "3–30 s · 720p / 1080p / 4K SDR",
     "ctaPrimary": {
       "label": "Generate with Kling 4.0",
       "href": "/app?engine=kling-v4"
@@ -40,8 +40,8 @@
       "a": "Yes. App, Studio and MCP offer Kling 4.0 for text, image, references and video editing, subject to compatible inputs and a current quote. The functional checks do not certify the artistic quality of a new render."
     },
     {
-      "q": "What durations and resolutions are documented?",
-      "a": "The schema accepts whole-second durations from 3 to 30 seconds and 720p or 1080p output. Five seconds and 1080p are the generation defaults. Editing can inherit source duration when duration is omitted."
+      "q": "What duration and resolution can I select?",
+      "a": "All four modes support 720p, 1080p and 4K SDR. Set a whole-second duration from 3 to 30 seconds. Modify can inherit the source duration."
     },
     {
       "q": "Does it generate audio?",
@@ -68,8 +68,8 @@
       "a": "Editing requires a source video and a prompt and accepts optional reference images and image elements. It does not expose multi-shot, voice elements or an aspect-ratio control. Its input and output duration both affect provider billing."
     },
     {
-      "q": "Will older Kling examples be replaced?",
-      "a": "Existing Kling model pages and videos keep their original identities, prompts and settings. A Kling 3 or Omni video does not become a Kling 4.0 example."
+      "q": "How does Kling 4.0 differ from Kling Image 4.0?",
+      "a": "Kling 4.0 generates and edits video. Kling Image 4.0 creates standalone stills and ordered Image Sets up to 8K. Save a still and use it as an opening frame in a separate video generation."
     }
   ],
   "custom": {
@@ -81,11 +81,11 @@
       "Edit an existing video||The editing mode takes a source video and a prompt, with optional reference images and image elements. It has a different input contract from reference generation."
     ],
     "specTitle": "Documented Kling 4.0 controls",
-    "specNote": "Provider documentation captured on 21 October 2026. The selected public scenes keep their original prompts and reference setups.",
+    "specNote": "Kling 4.0 output settings in MaxVideoAI. Both featured films retain their original resolution and reference settings.",
     "specSections": [
       {
         "title": "Text to video",
-        "intro": "A prompt or timed shots, 3–30 seconds, 720p or 1080p, with landscape, portrait, square or 21:9 framing.",
+        "intro": "A continuous prompt or timed shots, 3–30 seconds, up to 4K SDR. Choose 16:9, 9:16, 1:1 or 21:9.",
         "items": []
       },
       {
@@ -115,7 +115,7 @@
     "troubleshootingItems": [],
     "boundaries": [
       "Generated clips use whole-second durations from 3 to 30 seconds.",
-      "720p and 1080p are documented; no 4K tier is declared here.",
+      "720p, 1080p and 4K SDR are available in all four modes.",
       "No seed, CFG, negative prompt, FPS selector or timed keyframe array is documented.",
       "Reference generation and editing have different element and media limits."
     ],
@@ -126,11 +126,11 @@
     "hero": {
       "eyebrow": "KLING 4.0",
       "title": "Kling 4.0 — direct the scene, references and sound",
-      "subtitle": "Shape 3–30-second videos from text, images or video references, with native audio and a separate video-editing mode.",
+      "subtitle": "Create 3–30-second clips in 720p, 1080p or 4K SDR. Start from a prompt, an image or a set of references, or edit a clip you already have.",
       "subtitleHighlights": [
-        "3–30"
+        "4K SDR"
       ],
-      "paragraph": "Watch original Kling 4.0 scenes with their prompts, then direct your own video in App, Studio or MCP. Each generation uses a current quote and requires your confirmation.",
+      "paragraph": "App, Studio and MCP show a current quote for the selected mode, resolution, duration and inputs.",
       "primaryCta": {
         "label": "Generate with Kling 4.0",
         "href": "/app?engine=kling-v4"
@@ -147,6 +147,10 @@
         {
           "label": "Read the specifications",
           "href": "#specs"
+        },
+        {
+          "label": "Explore Kling Image 4.0",
+          "href": "/models/kling-image-v4"
         }
       ]
     },
@@ -201,18 +205,18 @@
         }
       },
       {
-        "title": "Need native 4K?",
-        "body": "Kling 4.0 outputs 720p or 1080p. Explore Kling 3.0 Omni 4K for native 4K and compare the available modes before choosing.",
+        "title": "Create stills with Kling Image 4.0",
+        "body": "Design a starting frame, a product image or a storyboard with the dedicated Kling image model.",
         "cta": {
-          "label": "Explore Kling 3.0 Omni 4K",
-          "href": "/models/kling-o3-4k"
+          "label": "Explore Kling Image 4.0",
+          "href": "/models/kling-image-v4"
         }
       }
     ],
     "referenceWorkflows": [
       {
         "title": "Text to video",
-        "body": "A prompt or timed shots, 3–30 seconds, 720p or 1080p, with landscape, portrait, square or 21:9 framing."
+        "body": "A continuous prompt or timed shots, 3–30 seconds, up to 4K SDR. Choose 16:9, 9:16, 1:1 or 21:9."
       },
       {
         "title": "Image to video",
@@ -229,14 +233,14 @@
     ],
     "pricingCopy": {
       "title": "Kling 4.0 pricing",
-      "subtitle": "Kling 4.0 is available through MaxVideoAI App, Studio and MCP. The current quote depends on the selected mode and inputs.",
-      "footnote": "Published provider rates are not a MaxVideoAI customer price. Review the current quote and explicitly approve each generation.",
-      "ctaLabel": "Read the specifications",
-      "ctaHref": "#specs"
+      "subtitle": "App, Studio and MCP show a current quote for the selected mode, resolution, duration and inputs.",
+      "footnote": "Review the final quote in Create and confirm when ready.",
+      "ctaLabel": "View full Kling 4.0 pricing",
+      "ctaHref": "/pricing#kling-v4-pricing"
     },
     "meta": {
-      "title": "Kling 4.0 — direct the scene, references and sound | MaxVideoAI",
-      "description": "Explore Kling 4.0: 3–30-second video, 720p and 1080p, timed shots, native audio, image and video references, and video editing."
+      "title": "Kling 4.0 AI Video Generator — Up to 4K | MaxVideoAI",
+      "description": "Create and edit 3–30-second videos in 720p, 1080p or 4K SDR with Kling 4.0. Guide the scene with references, timed shots and native audio."
     }
   },
   "prompting": {
@@ -246,8 +250,8 @@
       "intro": "Two prompts from selected filmed Kling 4.0 scenes show a concert performance and a reference-guided story. The image and editing tabs offer adaptable starter recipes.",
       "tip": "Make the subject, action, camera and sound unambiguous. Timed shots guide the sequence; they do not guarantee exact cuts.",
       "guide": {
-        "label": "Read the provider overview",
-        "href": "https://fal.ai/kling-4"
+        "label": "Kling 4.0 technical documentation on fal",
+        "href": "https://fal.ai/models/kling/v4/text-to-video/api"
       },
       "referencesTitle": "Prepare coherent reference material"
     },
@@ -310,7 +314,7 @@
       "Review the complete video and soundtrack before selecting a result."
     ],
     "engineWhy": [
-      "A prompt or timed shots, 3–30 seconds, 720p or 1080p, with landscape, portrait, square or 21:9 framing.",
+      "A continuous prompt or timed shots, 3–30 seconds, up to 4K SDR. Choose 16:9, 9:16, 1:1 or 21:9.",
       "An opening image is required. An ending image is optional. The images determine framing.",
       "Use up to 10 images, including an optional opening image, and up to 5 videos. Video references and video elements share a 30-second limit.",
       "Provide one source video and a prompt. Optional images and image elements guide the edit; timed shots and voice elements are not part of this mode."
@@ -388,6 +392,260 @@
         "body": "Review the complete video and soundtrack before selecting a result."
       }
     ],
-    "fallbackItems": null
+    "fallbackItems": null,
+    "cinematic": {
+      "provenance": "Reviewed Kling 4.0 reference-to-video examples from MaxVideoAI. Both originals are 720p with native sound.",
+      "assetTitles": [
+        {
+          "id": "kling-v4-hero",
+          "title": "Black-and-white concert — Kling 4.0"
+        },
+        {
+          "id": "kling-v4-create",
+          "title": "The Next One — Kling 4.0"
+        }
+      ],
+      "panels": [
+        {
+          "id": "create",
+          "layout": "feature",
+          "eyebrow": "CREATE WITH REFERENCES",
+          "title": "Two references, five shots, one story.",
+          "body": "Two image references hold the characters through a tram encounter and two imagined futures.",
+          "note": "Reviewed Kling 4.0 render · 28 s · 720p · 16:9",
+          "assetIds": [
+            "kling-v4-create"
+          ]
+        }
+      ]
+    }
+  },
+  "cinematic": {
+    "modelSlug": "kling-v4",
+    "variant": "video",
+    "heroAssetId": "kling-v4-hero",
+    "titleLines": [
+      "Kling 4.0"
+    ],
+    "subtitle": "Direct the scene, from the first shot to the sound.",
+    "byline": "AI video generator on MaxVideoAI",
+    "intro": "Create 3–30-second clips in 720p, 1080p or 4K SDR. Start from a prompt, an image or a set of references, or edit a clip you already have.",
+    "primaryLabel": "Generate with Kling 4.0",
+    "caption": "Reviewed Kling 4.0 reference-to-video examples from MaxVideoAI. Both originals are 720p with native sound.",
+    "proofLabel": "CREATE WITH REFERENCES",
+    "overviewLabel": "Overview",
+    "examplesLabel": "Watch the films",
+    "detailsLabel": "Specifications",
+    "promptingLabel": "Prompt guide",
+    "pricingLabel": "Price & compare",
+    "facts": [
+      {
+        "label": "Duration",
+        "value": "3–30 seconds"
+      },
+      {
+        "label": "Resolution",
+        "value": "720p · 1080p · 4K SDR"
+      },
+      {
+        "label": "Sound",
+        "value": "Prompt-directed native audio"
+      }
+    ],
+    "highlights": [
+      {
+        "target": "capabilities",
+        "title": "Four ways to start",
+        "body": "Direct a new scene from text, an opening frame or several references. Modify starts from a source clip."
+      },
+      {
+        "target": "specs",
+        "title": "Up to 4K SDR",
+        "body": "Choose 720p, 1080p or 4K in each of the four modes."
+      },
+      {
+        "target": "prompting",
+        "title": "Timed shots and native sound",
+        "body": "Describe the action, the cut and what the audience hears."
+      }
+    ],
+    "specsReviewedAt": "2026-11-20",
+    "capabilities": {
+      "title": "Pick the input that leads the scene.",
+      "intro": "Use the Create or Modify action that matches what you already have.",
+      "diagramLabel": "Kling 4.0 input workflows",
+      "items": [
+        {
+          "id": "text",
+          "label": "Text to video",
+          "title": "Start with the action.",
+          "body": "Write a continuous shot or plan several timed shots with native sound.",
+          "stages": [
+            "Describe the scene",
+            "Choose duration and framing",
+            "Generate the clip"
+          ],
+          "uses": [
+            "Dialogue",
+            "Short films",
+            "Product reveals"
+          ],
+          "note": "Landscape 16:9, portrait 9:16, square 1:1 and wide 21:9.",
+          "actions": [
+            {
+              "label": "Start from text",
+              "mode": "t2v"
+            }
+          ]
+        },
+        {
+          "id": "image",
+          "label": "Image to video",
+          "title": "Choose how the scene opens.",
+          "body": "Use an opening image and, if useful, an ending image. Describe what happens between them.",
+          "stages": [
+            "Add the first frame",
+            "Direct the motion",
+            "Add a final frame if needed"
+          ],
+          "uses": [
+            "Animate a still",
+            "Product transitions",
+            "Controlled endings"
+          ],
+          "note": "The image supplies the framing.",
+          "actions": [
+            {
+              "label": "Start from an image",
+              "mode": "i2v"
+            }
+          ]
+        },
+        {
+          "id": "references",
+          "label": "References to video",
+          "title": "Guide the people, setting and motion.",
+          "body": "Attach up to ten images including the optional opening image, up to five videos and up to seven elements, within the combined input limits.",
+          "stages": [
+            "Attach references in order",
+            "Name what each supplies",
+            "Direct action and sound"
+          ],
+          "uses": [
+            "Recurring characters",
+            "Products in context",
+            "Reference-guided camera motion"
+          ],
+          "note": "Video references and video elements share a 30-second allowance.",
+          "actions": [
+            {
+              "label": "Start from references",
+              "mode": "ref2v"
+            }
+          ]
+        },
+        {
+          "id": "edit",
+          "label": "Video editing",
+          "title": "Change something in a source clip.",
+          "body": "Upload a video you can use and describe the change. Add image references or visual elements when they help.",
+          "stages": [
+            "Select a source clip",
+            "Describe the edit",
+            "Choose the output quality"
+          ],
+          "uses": [
+            "Restyling",
+            "Product changes",
+            "Scene changes"
+          ],
+          "note": "Editing follows the source framing. Its quote includes the source and the chosen output.",
+          "actions": [
+            {
+              "label": "Open Modify",
+              "mode": "v2v"
+            }
+          ]
+        }
+      ],
+      "controls": {
+        "title": "Duration, resolution and sound",
+        "body": "Choose a duration from 3 to 30 seconds and a resolution up to 4K SDR. Write speech, music or ambience in the prompt."
+      }
+    },
+    "alternatives": {
+      "title": "Compare your next option",
+      "models": [
+        {
+          "slug": "kling-v4-flash",
+          "reason": "Explore the Flash model for a 720p iteration."
+        },
+        {
+          "slug": "seedance-2-5",
+          "reason": "Start with a 480p Draft and choose a final resolution after review."
+        },
+        {
+          "slug": "wan-3-prime",
+          "reason": "Explore mixed references and a separate Extend action."
+        }
+      ]
+    },
+    "promptAssistant": {
+      "title": "Build the next shot with Milo.",
+      "body": "Describe the scene to Milo in the prompt editor. Review the result and apply it to your own prompt before requesting a quote.",
+      "action": "Open Milo in Create"
+    },
+    "workflows": {
+      "eyebrow": "CREATE WITH REFERENCES",
+      "title": "Kling 4.0",
+      "intro": "Create 3–30-second clips in 720p, 1080p or 4K SDR. Start from a prompt, an image or a set of references, or edit a clip you already have.",
+      "note": "Review the final quote in Create and confirm when ready.",
+      "action": "Generate with Kling 4.0",
+      "conceptLabel": "Source and output",
+      "briefLabel": "Read the submitted prompt",
+      "limitsLabel": "Example settings",
+      "inspectLabel": "Watch how the film returns to the same gesture at the tram door.",
+      "promptNote": "Reviewed Kling 4.0 reference-to-video examples from MaxVideoAI. Both originals are 720p with native sound.",
+      "imageDetailsLabel": "Source and output",
+      "source": {
+        "label": "Kling 4.0 technical documentation on fal",
+        "href": "https://fal.ai/models/kling/v4/text-to-video/api"
+      },
+      "items": [
+        {
+          "id": "create",
+          "title": "Two references, five shots, one story.",
+          "body": "Two image references hold the characters through a tram encounter and two imagined futures.",
+          "input": "References",
+          "output": "Video",
+          "steps": [
+            "Use two references",
+            "Plan five shots",
+            "Direct ambience"
+          ],
+          "action": "Generate with Kling 4.0",
+          "prompt": "Create a 28-second romantic live-action scene in five shots: a brief encounter at a tram doorway, two imagined fragments of a shared future, then a return to the same unfinished gesture and a real choice. Use @Image1 only for Leon's identity, worn coat and blue pencil; use @Image2 only for Adele's identity, orange hair clip and dented insulated bag. They are character references, not first frames or locations. Both original adult characters keep the same face and age through all three settings. No narrator, dialogue, written titles or explanatory montage graphics.\n\nLeon is 37, a furniture restorer with untidy brown hair, thoughtful eyes, a worn charcoal coat and a blue carpenter's pencil behind his right ear. He rehearses sentences before daring to speak. Adele is 41, a nurse leaving a night shift, tired lively eyes, chestnut hair held with one orange clip, a practical olive coat and a dented small insulated lunch bag on her left shoulder. She has a quick smile despite her fatigue. At a quiet tram stop in cool early-morning light, Leon has just boarded; Adele remains on the platform. The tram is stationary, its doors fully open, floor level close to the platform. She holds one grey wool glove he has dropped. Keep the threshold, their hand positions and the single glove consistent on returning to the present. Avoid readable route labels or advertisements.\n\n0–6s: a medium two-shot from the platform at a three-quarter angle shows the open door and both bodies. Leon stands just inside, facing outward; Adele stands a safe step back on the platform. She extends the glove in her right hand toward him. He notices it, then meets her eyes and pauses. She is simply returning a glove, not inviting an imagined future. End close enough to read his hesitant expression, the glove still held between them.\n\n6–11s: a clean hard cut into his imagined future. In a tiny warm morning kitchen, the same two people, now in simple sweaters, stand close at a cramped counter. One piece of burnt toast is between them. Adele passes it to Leon; he accepts it, inspects the blackened edge and they laugh together. Show one clear transfer, with the toast ending in his hand. Their ease suggests intimacy without any explanatory wedding or age-change montage.\n\n11–17s: hard cut to a second imagined fragment. In a modest apartment being renovated, with covered furniture, plaster patches and one warm work lamp, they wear the same simple sweaters. A full-body two-shot holds their hands and feet in view. Adele places one foot lightly on top of Leon's planted foot to demonstrate a slow dance step. He looks down, understands, and shifts gently with her. The weight change is small and affectionate, not a spin or acrobatic move. Hold their shared smile. Keep the orange clip and the blue pencil as quiet identity anchors.\n\n17–22s: a sharp tram warning chime interrupts. Hard cut back to the exact cool platform composition and almost unchanged extended glove from the first shot. The imagined warmth ends instantly. Leon is still just inside the open doorway; Adele still stands outside. He takes the glove from her right hand. He hesitates for one beat, then deliberately steps completely out onto the platform, both feet clearing the threshold while the doors remain fully open. Show the entire step and its completion in one unobstructed view. The doors only begin to close after he is safely beside her. No squeezing through moving doors or dangerous last-second leap.\n\n22–28s: medium two-shot on the platform, the tram doors now closed behind them. The tram pulls away slowly, opening the space around the two strangers. Leon lifts his free hand toward the blue pencil behind his right ear with a small embarrassed half-smile, as if it could explain his distraction; the pencil stays there. Adele looks at him and smiles back. They remain side by side with the recovered glove in his hand. Hold the awkward, hopeful first real moment; do not show a kiss or assert that the imagined relationship comes true.\n\nPhotography: natural faces, tactile cloth and practical environments; restrained 35mm-like grain. Cool diffuse dawn on the platform contrasts with warm ordinary domestic light in the two imagined fragments. Clean cuts carry the time shifts, never dissolves, magic particles, mirrors or transformations. Keep the screen direction and body positions of the platform encounter stable.\n\nSound: gentle tram machinery and distant city air in the present; toast scraping and a spontaneous shared laugh in the kitchen; soft feet on the renovation floor during the dance. A sparse original instrumental piano motif may connect the two imagined fragments, stopping decisively at the tram chime. Final tram departure and human breathing remain audible. No speech, singing, voice-over or recognisable existing music.\n\nProduction language: English for any incidental language that is permitted; this scene contains no dialogue or readable text. Do not add French announcements, subtitles, captions, titles, logos or labels. Preserve the difference between an imagined future and a first real encounter.",
+          "inspect": "Watch how the film returns to the same gesture at the tram door.",
+          "compactFacts": "Reviewed Kling 4.0 render · 28 s · 720p · 16:9",
+          "proofLabel": "The Next One",
+          "promptLabel": "Read the submitted prompt",
+          "proofNote": "Reviewed Kling 4.0 reference-to-video examples from MaxVideoAI. Both originals are 720p with native sound.",
+          "limits": [
+            {
+              "label": "Duration",
+              "value": "28 s"
+            },
+            {
+              "label": "Resolution",
+              "value": "720p · 16:9"
+            },
+            {
+              "label": "References",
+              "value": "Use two references"
+            }
+          ]
+        }
+      ]
+    }
   }
 }

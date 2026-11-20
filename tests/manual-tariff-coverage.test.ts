@@ -100,10 +100,10 @@ test('legacy Luma loop selectors are covered without inventing loop for edit mod
   }
 });
 
-test('coverage follows all 56 app-published models in 14 families, including the November launch and pricing-hidden legacy variants', () => {
+test('coverage follows all 57 app-published models in 14 families, including the November launch and pricing-hidden legacy variants', () => {
   const coverage = collectSellableManualTariffCoverage();
   const published = listRuntimeModels().filter((model) => model.publication.app.published);
-  assert.equal(published.length, 56);
+  assert.equal(published.length, 57);
   for (const id of ['kling-v4-flash', 'gpt-image-2-6-flare', 'gpt-image-2-6-sunburst'])
     assert.ok(published.some(model => model.id === id));
   assert.ok(published.some(model => model.id === 'kling-v4'));
@@ -127,7 +127,7 @@ test('coverage follows all 56 app-published models in 14 families, including the
 test('published Kling4 coverage preserves every qualified source/output timing class', () => {
   const actual = collectSellableManualTariffCoverage({ modelId: 'kling-v4' });
   const qualified = klingV4TariffScenarios();
-  assert.equal(actual.scenarios.length, 280);
+  assert.equal(actual.scenarios.length, 420);
   assert.deepEqual(new Map(actual.scenarios.map(row => [row.id, row.quantities])),
     new Map(qualified.map(row => [row.id, row.quantities])));
   for (const mode of ['ref2v', 'v2v']) {

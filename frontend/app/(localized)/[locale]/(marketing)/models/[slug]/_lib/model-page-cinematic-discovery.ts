@@ -34,6 +34,8 @@ const alternativesPosters: Readonly<Record<string, string>> = {
   // Public FLUX 3 example 7a4db1b2-bfee-4279-a936-651a6c091995, an illustrated Andalusian courtyard.
   'flux-3': '/assets/model-examples/flux-3/be8b45a6256f9ded1ade7dfe52ab920ff1642b87bb2bf73e61420f42d8a0350f.webp',
   'wan-3': '/hero/showcase-wan-3-city-22s.webp',
+  // Accepted Wan 3 Prime example feccb90c-11ed-48ef-a96b-b7c80e5fe1c5.
+  'wan-3-prime': 'https://media.maxvideoai.com/mcp-render-staging/1a3c083f-bbda-4dc0-9e2a-75d46a6b5cbb/4a0e6028-7d74-4d74-bce3-0a31f0a3894e.jpg',
   'minimax-h3-max': '/hero/showcase-minimax-h3-max-12s.webp',
 };
 
