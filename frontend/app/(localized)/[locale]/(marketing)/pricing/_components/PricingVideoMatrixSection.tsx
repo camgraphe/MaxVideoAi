@@ -407,6 +407,12 @@ export function PricingVideoMatrixSection({ locale, video }: { locale: AppLocale
             <p className="mt-1 max-w-[780px] text-sm leading-6 text-text-secondary">
               {copy.video.intro}
             </p>
+            {video.createCatalogue && video.createCatalogue.total > 0 && (
+              <p id="video-catalogue-scope" className="mt-2 max-w-[780px] text-sm leading-6 text-text-primary">
+                {copy.video.catalogueScope(video.createCatalogue.total, video.createCatalogue.current)}{' '}
+                <Link href="/app" prefetch={false} className="font-medium underline underline-offset-4">{copy.video.openCreate}</Link>
+              </p>
+            )}
           </div>
           <div className="flex flex-wrap items-center gap-3 text-xs font-semibold text-text-muted">
             <span className="inline-flex items-center rounded-[8px] border border-hairline bg-bg px-3 py-1.5 text-text-primary">

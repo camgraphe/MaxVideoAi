@@ -44,6 +44,8 @@ type PricingHubCopy = {
     toolPricing: string;
   };
   video: {
+    catalogueScope: (total: number, current: number) => string;
+    openCreate: string;
     ariaTabs: string;
     title: string;
     intro: string;
@@ -85,8 +87,8 @@ type PricingHubCopy = {
       cheapestAudio: string;
       cheapest4k: string;
       dedicated4k: string;
-      currentGenCount: string;
-      currentGenValue: (count: number) => string;
+      tableScope: string;
+      tableCount: (count: number) => string;
     };
     globalNote: string;
   };
@@ -228,6 +230,8 @@ const en: PricingHubCopy = {
     toolPricing: 'Tool pricing',
   },
   video: {
+    catalogueScope: (total, current) => `Create lists ${total} video ${total === 1 ? 'option' : 'models and variants'}, including ${current} from the current generation.`,
+    openCreate: 'Open Create',
     ariaTabs: 'Pricing surfaces',
     title: 'AI video prices by engine',
     intro:
@@ -269,8 +273,8 @@ const en: PricingHubCopy = {
       cheapestAudio: 'Lowest quoted 10s 1080p + audio',
       cheapest4k: '4K entry price · durations vary',
       dedicated4k: 'Dedicated 4K engine',
-      currentGenCount: 'Current-gen engines available',
-      currentGenValue: (count) => `${count} engines`,
+      tableScope: 'In the video pricing table',
+      tableCount: (count) => `${count} ${count === 1 ? 'model' : 'models and variants'}`,
     },
     globalNote:
       'Prices are current MaxVideoAI display prices for preset scenarios. Open the app for the exact live price before each generation, including provider limits, duration rounding and job-level rounding.',
@@ -450,6 +454,8 @@ const fr: PricingHubCopy = {
   },
   video: {
     ...en.video,
+    catalogueScope: (total, current) => `Create propose ${total} ${total === 1 ? 'option vidéo' : 'modèles et variantes vidéo'}, dont ${current} de génération actuelle.`,
+    openCreate: 'Ouvrir Create',
     ariaTabs: 'Surfaces tarifaires',
     title: 'Prix vidéo IA par moteur',
     intro:
@@ -491,8 +497,8 @@ const fr: PricingHubCopy = {
       cheapestAudio: 'Prix le plus bas affiché 10 s 1080p + audio',
       cheapest4k: 'Prix d’entrée 4K · durées variables',
       dedicated4k: 'Moteur 4K dédié',
-      currentGenCount: 'Moteurs actuels disponibles',
-      currentGenValue: (count) => `${count} moteurs`,
+      tableScope: 'Dans le tableau des tarifs vidéo',
+      tableCount: (count) => `${count} ${count === 1 ? 'modèle' : 'modèles et variantes'}`,
     },
     globalNote:
       'Les prix sont les prix affichés MaxVideoAI pour ces scénarios prédéfinis. Ouvrez l’app pour le prix exact avant chaque génération, avec les limites provider, l’arrondi de durée et l’arrondi par job.',
@@ -672,6 +678,8 @@ const es: PricingHubCopy = {
   },
   video: {
     ...en.video,
+    catalogueScope: (total, current) => `Create ofrece ${total} ${total === 1 ? 'opción de video' : 'modelos y variantes de video'}, con ${current} de generación actual.`,
+    openCreate: 'Abrir Create',
     ariaTabs: 'Superficies de precios',
     title: 'Precios de video IA por motor',
     intro:
@@ -713,8 +721,8 @@ const es: PricingHubCopy = {
       cheapestAudio: 'Menor precio cotizado 10 s 1080p + audio',
       cheapest4k: 'Precio de entrada 4K · duraciones variables',
       dedicated4k: 'Motor 4K dedicado',
-      currentGenCount: 'Motores actuales disponibles',
-      currentGenValue: (count) => `${count} motores`,
+      tableScope: 'En la tabla de precios de video',
+      tableCount: (count) => `${count} ${count === 1 ? 'modelo' : 'modelos y variantes'}`,
     },
     globalNote:
       'Los precios son los precios mostrados por MaxVideoAI para escenarios predefinidos. Abre la app para ver el precio exacto antes de cada generación, incluyendo límites del proveedor, redondeo de duración y redondeo por job.',
