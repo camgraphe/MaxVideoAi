@@ -1,3 +1,4 @@
+import styles from './pricing-catalog.module.css';
 import {
   BadgeCheck,
   ExternalLink,
@@ -345,13 +346,13 @@ export function PricingVideoMatrixSection({ locale, video }: { locale: AppLocale
   return (
     <section id="video-pricing" className="scroll-mt-24 space-y-3 sm:scroll-mt-28">
       <div>
-        <div className="grid auto-rows-fr items-stretch gap-2 sm:grid-cols-2 lg:grid-cols-4">
+        <div className={styles.stats}>
           {video.highlights.map((highlight, index) => {
             if (highlight.featured) return null;
             const style = highlightStyles[index] ?? highlightStyles[0];
             const Icon = style.icon;
             const body = (
-              <div className="flex h-full min-h-[76px] items-center gap-3 rounded-[8px] border border-hairline bg-surface px-3 py-2.5 shadow-card">
+              <div className={styles.stat}>
                 <span className={`flex h-9 w-9 flex-none items-center justify-center rounded-full ${style.tone}`}>
                   <Icon className="h-4 w-4" strokeWidth={1.9} />
                 </span>
@@ -374,7 +375,7 @@ export function PricingVideoMatrixSection({ locale, video }: { locale: AppLocale
         </div>
       </div>
 
-      <div className="rounded-[8px] border border-hairline bg-surface shadow-card">
+      <div className={styles.videoShell}>
         <nav className="overflow-x-auto border-b border-hairline" aria-label={copy.video.ariaTabs}>
           <div className="flex min-w-max gap-1 px-4">
             {surfaceTabs.map((tab) => {

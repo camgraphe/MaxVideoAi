@@ -13,7 +13,7 @@ const copy = {
 export function PricingFilmExample({ locale }: { locale: AppLocale }) {
   const [title, description, link, alt] = copy[locale];
   return (
-    <NextLink prefetch={false} href="/video/seedance-2-5-hard-bounce-ai-music-video" className={styles.proof}>
+    <NextLink id="pricing-film-example" prefetch={false} href="/video/seedance-2-5-hard-bounce-ai-music-video" className={styles.proof}>
       <div><h2>{title}</h2><p>{description}</p><span>{link} <ArrowUpRight size={15} aria-hidden="true" /></span></div>
       <Image unoptimized src="/assets/marketing/payg/seedance-contact.webp" width={520} height={454} loading="lazy" alt={alt} />
     </NextLink>

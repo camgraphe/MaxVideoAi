@@ -279,8 +279,8 @@ const en: PricingHubCopy = {
     title: 'Popular price checks',
     columns: {
       priceCheck: 'Price check',
-      cheapestEngine: 'Lowest quoted option',
-      typicalPrice: 'Typical exact price',
+      cheapestEngine: 'Model or service',
+      typicalPrice: 'Quoted price',
       link: 'Link',
     },
     rows: {
@@ -295,10 +295,10 @@ const en: PricingHubCopy = {
   },
   otherSurfaces: {
     title: 'Image, audio and tool pricing',
-    intro: 'Compact MaxVideoAI price references for image generation, audio generation, character prep, angle tools and upscale.',
+    intro: 'Find the price for a single image, a voice-over, or a change to an existing asset.',
     imageTitle: 'Image generation pricing',
     audioTitle: 'Audio pricing',
-    toolTitle: 'Prep tools and upscale pricing',
+    toolTitle: 'Creative tools and upscaling prices',
     characterImageNote: 'Character Studio prices are per generated image: a character, a new look or a sheet. One sheet counts as one image, regardless of the number of views. Select 1K, 2K or 4K output.',
     recastPricingNote: 'The price depends on resolution, selected source-video seconds and generated seconds. Without a source video, only generated seconds count. Review the exact quote before launch.',
     recastExample: (output, source) => source ? `${output} s generated + ${source} s source` : `${output} s generated · no source video`,
@@ -498,11 +498,11 @@ const fr: PricingHubCopy = {
       'Les prix sont les prix affichés MaxVideoAI pour ces scénarios prédéfinis. Ouvrez l’app pour le prix exact avant chaque génération, avec les limites provider, l’arrondi de durée et l’arrondi par job.',
   },
   popularChecks: {
-    title: 'Vérifications de prix fréquentes',
+    title: 'Exemples de prix par usage',
     columns: {
       priceCheck: 'Scénario',
-      cheapestEngine: 'Option au prix le plus bas affiché',
-      typicalPrice: 'Prix exact typique',
+      cheapestEngine: 'Modèle ou service',
+      typicalPrice: 'Prix du devis',
       link: 'Lien',
     },
     rows: {
@@ -516,11 +516,11 @@ const fr: PricingHubCopy = {
     },
   },
   otherSurfaces: {
-    title: 'Prix image, audio et outils',
-    intro: 'Références compactes MaxVideoAI pour la génération d’images, l’audio, la préparation de personnages, les angles caméra et l’upscale.',
-    imageTitle: 'Prix génération d’images',
+    title: 'Tarifs des images, de l’audio et des outils',
+    intro: 'Consultez le coût d’une image, d’une voix off ou d’une opération sur un fichier existant.',
+    imageTitle: 'Tarifs de génération d’images',
     audioTitle: 'Prix audio',
-    toolTitle: 'Prix outils de préparation et upscale',
+    toolTitle: 'Tarifs des outils de création et d’agrandissement',
     characterImageNote: 'Les prix Character Studio sont par image générée : personnage, nouveau look ou fiche. Une fiche compte comme une image, quel que soit le nombre de vues. Choisissez une sortie 1K, 2K ou 4K.',
     recastPricingNote: 'Le prix dépend de la résolution, des secondes du passage vidéo source et des secondes générées. Sans vidéo source, seules les secondes générées comptent. Vérifiez le devis exact avant de lancer.',
     recastExample: (output, source) => source ? `${output} s générées + ${source} s source` : `${output} s générées · sans vidéo source`,
@@ -723,8 +723,8 @@ const es: PricingHubCopy = {
     title: 'Consultas de precio frecuentes',
     columns: {
       priceCheck: 'Escenario',
-      cheapestEngine: 'Opción con menor precio cotizado',
-      typicalPrice: 'Precio exacto típico',
+      cheapestEngine: 'Modelo o servicio',
+      typicalPrice: 'Precio cotizado',
       link: 'Enlace',
     },
     rows: {
@@ -739,10 +739,10 @@ const es: PricingHubCopy = {
   },
   otherSurfaces: {
     title: 'Precios de imagen, audio y herramientas',
-    intro: 'Referencias compactas de MaxVideoAI para generación de imágenes, audio, preparación de personajes, herramientas de ángulo y upscale.',
+    intro: 'Consulta el coste de una imagen, una locución o una operación sobre un archivo existente.',
     imageTitle: 'Precios de generación de imágenes',
     audioTitle: 'Precios de audio',
-    toolTitle: 'Precios de herramientas de prep y upscale',
+    toolTitle: 'Precios de las herramientas de creación y ampliación',
     characterImageNote: 'Los precios de Character Studio son por imagen generada: personaje, nuevo look o ficha. Una ficha cuenta como una imagen, independientemente del número de vistas. Elige una salida 1K, 2K o 4K.',
     recastPricingNote: 'El precio depende de la resolución, los segundos del fragmento de vídeo de origen y los segundos generados. Sin vídeo de origen, solo cuentan los segundos generados. Revisa el presupuesto exacto antes de generar.',
     recastExample: (output, source) => source ? `${output} s generados + ${source} s de origen` : `${output} s generados · sin vídeo de origen`,

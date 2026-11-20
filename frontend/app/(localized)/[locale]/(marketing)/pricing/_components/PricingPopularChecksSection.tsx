@@ -1,3 +1,4 @@
+import styles from './pricing-catalog.module.css';
 import type { AppLocale } from '@/i18n/locales';
 import type { PopularPriceCheckRow } from '../_lib/pricingHubData';
 import { getPricingHubCopy } from '../_lib/pricingHubCopy';
@@ -6,7 +7,7 @@ import { PricingTableScrollRegion } from './PricingTableScrollRegion';
 export function PricingPopularChecksSection({ checks, locale }: { checks: PopularPriceCheckRow[]; locale: AppLocale }) {
   const copy = getPricingHubCopy(locale);
   return (
-    <section className="rounded-[8px] border border-hairline bg-surface p-5 shadow-card sm:p-6">
+    <section className={styles.chapter}>
       <h2 id="popular-pricing-checks-title" className="text-xl font-semibold tracking-normal text-text-primary">
         {copy.popularChecks.title}
       </h2>

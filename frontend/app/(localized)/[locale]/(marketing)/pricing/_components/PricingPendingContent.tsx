@@ -1,3 +1,4 @@
+import styles from './pricing-opening.module.css';
 import type { AppLocale } from '@/i18n/locales';
 import { getPricingHubCopy } from '../_lib/pricingHubCopy';
 
@@ -9,12 +10,12 @@ function loadingLabel(locale: AppLocale) {
 export function PricingPendingQuickStart({ locale, title, note }: { locale: AppLocale; title: string; note: string }) {
   const { highlights } = getPricingHubCopy(locale).video;
   return (
-    <section aria-labelledby="pricing-quick-start-title" aria-busy="true" className="container-page max-w-[1220px] pb-6 sm:pb-8">
+    <section aria-labelledby="pricing-quick-start-title" aria-busy="true" className={styles.quick}>
       <h2 id="pricing-quick-start-title" className="text-sm font-semibold text-text-primary">{title}</h2>
       <span className="sr-only" role="status">{loadingLabel(locale)}</span>
-      <div className="mt-3 grid gap-2 sm:grid-cols-3 sm:gap-3" aria-hidden="true">
+      <div className={styles.quickList} aria-hidden="true">
         {[[highlights.bestDraft, highlights.draftIntent], [highlights.cheapest10s, highlights.detailIntent], [highlights.cheapestAudio, highlights.soundIntent]].map(([label, intent]) => (
-          <div key={label} className="flex items-center justify-between gap-4 rounded-xl border border-hairline bg-surface p-4 text-text-primary shadow-card sm:flex-col sm:items-start">
+          <div key={label} className={styles.quickItem}>
             <span className="min-w-0">
               <span className="block text-sm font-semibold leading-5">{intent}</span>
               <span className="mt-1 block text-xs leading-5 text-text-secondary">{label}</span>

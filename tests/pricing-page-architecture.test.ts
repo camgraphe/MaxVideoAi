@@ -148,7 +148,7 @@ test('opening exposes localized navigation, exact preset links and the existing 
   assert.match(heroSource, /price.href/);
   assert.match(heroSource, /href="\/app"/);
   for (const id of ['video', 'image', 'audio', 'tool']) assert.ok(heroSource.includes(`#${id}-pricing`));
-  assert.match(heroSource, /sunburst-filmstrip\.webp/);
+  assert.match(heroSource, /kling-night-run-portrait\.webp/);
   assert.match(heroSource, /time dateTime=/);
 });
 
@@ -284,7 +284,7 @@ test('popular checks and non-video pricing surfaces are compact matrices', () =>
   assert.match(popularChecksSource, /export function PricingPopularChecksSection/);
   assert.match(popularChecksSource, /getPricingHubCopy/);
   assert.match(hubCopySource, /Popular price checks/);
-  assert.match(hubCopySource, /Vérifications de prix fréquentes/);
+  assert.match(hubCopySource, /Exemples de prix par usage/);
   assert.match(hubCopySource, /5s 720p video/);
   assert.match(hubCopySource, /Vidéo 5 s 720p/);
   assert.match(hubCopySource, /8s 1080p premium video/);
@@ -306,16 +306,16 @@ test('popular checks and non-video pricing surfaces are compact matrices', () =>
   assert.match(otherSurfacesSource, /export function PricingOtherSurfacesSection/);
   assert.match(otherSurfacesSource, /getPricingHubCopy/);
   assert.match(hubCopySource, /Image, audio and tool pricing/);
-  assert.match(hubCopySource, /Prix image, audio et outils/);
+  assert.match(hubCopySource, /Tarifs des images, de l’audio et des outils/);
   assert.match(hubCopySource, /Image generation pricing/);
-  assert.match(hubCopySource, /Prix génération d’images/);
-  assert.match(otherSurfacesSource, /id="image-pricing" className="scroll-mt-24/);
-  assert.match(otherSurfacesSource, /id="audio-pricing" className="scroll-mt-24/);
-  assert.match(otherSurfacesSource, /id="tool-pricing" className="scroll-mt-24/);
+  assert.match(hubCopySource, /Tarifs de génération d’images/);
+  assert.match(otherSurfacesSource, /id="image-pricing" className=\{`scroll-mt-24/);
+  assert.match(otherSurfacesSource, /id="audio-pricing" className=\{`scroll-mt-24/);
+  assert.match(otherSurfacesSource, /id="tool-pricing" className=\{`scroll-mt-24/);
   assert.match(hubCopySource, /Audio pricing/);
   assert.match(hubCopySource, /Prix audio/);
-  assert.match(hubCopySource, /Prep tools and upscale pricing/);
-  assert.match(hubCopySource, /Prix outils de préparation et upscale/);
+  assert.match(hubCopySource, /Creative tools and upscaling prices/);
+  assert.match(hubCopySource, /Tarifs des outils de création et d’agrandissement/);
   assert.match(hubDataSource, /buildPublicPricingFacts/);
   assert.match(hubDataSource, /quotePublicPricing/);
   assert.doesNotMatch(hubDataSource, /resolveGptImage2PricingTier/);
@@ -378,9 +378,7 @@ test('pricing metadata and FAQ target comparison intent first', () => {
     'How often do prices change?',
   ]);
   assert.match(faqSource, /Pricing FAQ/);
-  assert.match(faqSource, /dark-section-neon/);
-  assert.match(faqSource, /mx-auto w-full max-w-\[900px\]/);
-  assert.match(faqSource, /group w-full rounded-card/);
+  assert.match(faqSource, /aria-labelledby="pricing-faq-title"/);
   assert.match(faqSource, /<details/);
   assert.match(faqSource, /<summary/);
   assert.match(faqSource, /summary className="flex w-full/);

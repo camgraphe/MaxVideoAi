@@ -22,6 +22,9 @@ async function bundle() {
       export function reject(error){fail(error);}
       export function record(){calls++;}
       export async function openingQuote(input){
+        if (input.modelId==='kling-3-standard' && input.durationSec===15 && input.audio && input.resolution==='1080p' && input.aspectRatio==='16:9' && input.mode==='t2v') {
+          return unavailable ? {status:'unavailable'} : {status:'exact',amountCents:246,currency:'USD',revision:'current',scenarioLabel:'Film'};
+        }
         if (!['kling-3-standard','kling-3-pro'].includes(input.modelId) || input.durationSec!==10 || input.resolution!=='1080p' || typeof input.audio!=='boolean') return quote(input);
         openingCalls++;
         return unavailable ? {status:'unavailable'} : {status:'exact',amountCents:input.audio?789:654,currency:'USD',revision:'current',scenarioLabel:'Opening'};
@@ -100,8 +103,11 @@ test('Pricing serves four verified opening quotes before the remaining current p
       assert.doesNotMatch(shell, /data-pricing-(?:content|quick-start)-ready/);
       assert.equal(fixture.openingCalls, 4);
       if (unavailable) {
-        assert.doesNotMatch(shell, /pricingPreset=|6[.,]54|7[.,]89/);
+        assert.doesNotMatch(shell, /pricingPreset=|2[.,]46|6[.,]54|7[.,]89|pricing-minute-budget/);
       } else {
+        assert.match(shell, /2[.,]46/);
+        assert.match(shell, /39[.,]24/);
+        assert.match(shell, /47[.,]34/);
         assert.match(shell, /6[.,]54/);
         assert.match(shell, /7[.,]89/);
         assert.equal((shell.match(/href="[^"]*pricingPreset=/g) ?? []).length, 4);

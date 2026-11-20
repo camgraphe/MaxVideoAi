@@ -37,7 +37,7 @@ export default async function PricingPage(props: { params: Promise<{ locale: App
   const locale = params.locale;
   const { dictionary } = await resolveDictionary({ locale });
   const content = dictionary.pricing;
-  const { pricingHub, rows, quotedOn } = await readPricingOpening(locale);
+  const { pricingHub, rows, quotedOn, filmPrice } = await readPricingOpening(locale);
   // Observe an early rejection without converting it into a successful pricing fallback.
   void pricingHub.catch(() => undefined);
   const faq = content.faq;
@@ -53,6 +53,7 @@ export default async function PricingPage(props: { params: Promise<{ locale: App
         locale={locale}
         hero={content.hero}
         rows={rows}
+        filmPrice={filmPrice}
         quotedOn={quotedOn}
       >
         <Suspense fallback={<PricingPendingQuickStart locale={locale} title={content.hero.quickStartTitle} note={content.hero.quickStartNote} />}>
