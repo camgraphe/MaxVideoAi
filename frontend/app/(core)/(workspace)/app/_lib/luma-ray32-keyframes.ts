@@ -1,6 +1,14 @@
+import type { EngineInputSchema } from '@/types/engines';
+
 export const DEFAULT_VISIBLE_KEYFRAME_COUNT = 4;
 export const EMPTY_KEYFRAME_SLOT_VALUE = '__empty__';
 export const FLUX_KEYFRAME_SLOTS_FIELD = 'keyframe_slot_indexes';
+
+export function hasFluxCreateKeyframes(schema: EngineInputSchema | null | undefined): boolean {
+  const fields = schema?.required?.filter(field => field.requiredInModes?.includes('ref2v'));
+  return Boolean(fields?.some(field => field.id === 'reference_image_urls' && field.type === 'image')
+    && fields?.some(field => field.id === 'keyframe_indexes' && field.type === 'text'));
+}
 
 export type KeyframeSlot = {
   assetSlot: number;

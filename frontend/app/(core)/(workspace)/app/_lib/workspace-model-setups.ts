@@ -226,11 +226,11 @@ export function serializeWorkspaceModelSetup(
           || !finite(reference.index) || !Number.isInteger(reference.index) || reference.index < 0 || reference.index > 100
           || !isCreateReferenceRole(reference.role)
           || !reference.asset) throw new Error('invalid');
-        if (reference.role === 'keyframe'
-          && (!finite(reference.frameIndex) || !Number.isInteger(reference.frameIndex) || reference.frameIndex < 0 || reference.frameIndex > 480)) throw new Error('invalid');
+        const frameIndex = reference.role === 'keyframe' ? reference.frameIndex : undefined;
+        if (frameIndex !== undefined && (!finite(frameIndex) || !Number.isSafeInteger(frameIndex) || frameIndex < 0)) throw new Error('invalid');
         return {
           fieldId: reference.fieldId, index: reference.index, role: reference.role, asset: asset(reference.asset, reference.fieldId),
-          ...(reference.role === 'keyframe' ? { frameIndex: reference.frameIndex } : {}),
+          ...(frameIndex !== undefined ? { frameIndex } : {}),
         };
       });
     }

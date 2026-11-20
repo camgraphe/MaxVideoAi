@@ -89,6 +89,7 @@ type UseWorkspaceEngineModeStateResult = {
   activeManualMode: Mode | null;
   activeMode: Mode;
   allowsUnifiedVeoFirstLast: boolean;
+  usesCanonicalOpeningFrame: boolean;
   submissionMode: Mode;
   showSafetyCheckerControl: boolean;
   capability: EngineModeUiCaps | undefined;
@@ -181,6 +182,7 @@ export function useWorkspaceEngineModeState({
     activeManualMode,
     activeMode,
     allowsUnifiedVeoFirstLast,
+    usesCanonicalOpeningFrame,
     submissionMode,
     showSafetyCheckerControl,
     capability,
@@ -466,6 +468,7 @@ export function useWorkspaceEngineModeState({
     activeManualMode,
     activeMode,
     allowsUnifiedVeoFirstLast,
+    usesCanonicalOpeningFrame,
     submissionMode,
     showSafetyCheckerControl,
     capability,

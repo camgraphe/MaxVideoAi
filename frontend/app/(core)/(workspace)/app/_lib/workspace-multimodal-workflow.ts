@@ -1,4 +1,5 @@
 import type { EngineCaps, EngineInputField, Mode } from '@/types/engines';
+import { resolveActiveVideoInputField, VIDEO_MEDIA_FIELD_CANDIDATES } from '@/lib/video-input-schema';
 import type { ReferenceAsset } from './workspace-assets';
 
 type InputAssets = Record<string, (ReferenceAsset | null)[]>;
@@ -14,6 +15,15 @@ export function getWorkspaceMediaFields(engine: EngineCaps | null): EngineInputF
 
 export function fieldAcceptsMode(field: EngineInputField, mode: Mode): boolean {
   return !field.modes?.length || field.modes.includes(mode);
+}
+
+/** The generation path can use a two-frame start slot as the i2v opening image. */
+export function getAlternateCreateOpeningFrame(engine: EngineCaps, mode: Mode) {
+  if (mode !== 'i2v' || !engine.modes.includes('fl2v')) return null;
+  const fields = { inputSchema: engine.inputSchema, candidateFieldIds: VIDEO_MEDIA_FIELD_CANDIDATES.firstFrame, type: 'image' as const };
+  const primary = resolveActiveVideoInputField({ ...fields, mode: 'i2v' });
+  const alternate = resolveActiveVideoInputField({ ...fields, mode: 'fl2v' });
+  return primary && alternate && primary.id !== alternate.id ? { primary, alternate } : null;
 }
 
 export function workspaceAssetsSupportMode(

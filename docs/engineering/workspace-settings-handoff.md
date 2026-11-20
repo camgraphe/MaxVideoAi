@@ -54,13 +54,16 @@ the explicit reference and the Storyboard job hint separately.
 - A model selected from the authenticated Create draft takes the latest prompt,
   preferred duration, resolution and aspect ratio with it. The target uses its
   defaults where needed and keeps the preference for a later compatible model.
+  When output settings have coupled limits, keep the duration if a compatible
+  resolution or frame rate is available.
   A Create model switch enables audio. An explicit audio choice for the selected
   model can override it.
 - During that switch, compatible ready references stay in one supported Create
   workflow. Compatibility includes the field role, media limits and the target
   workflow's combined limits. Other references stay in the account's active
   draft until they fit again or the user removes them. Timed images keep their
-  positions and Kling subjects keep their grouped inputs. Inactive references
+  positions across compatible FLUX variants and Luma Create retains its own
+  ordered positions. Kling subjects keep their grouped inputs. Inactive references
   are excluded from quotes, generation and Milo context. Explicit removal updates
   the last complete draft even when an unrelated import is pending or failed.
   Source workflows keep their own snapshots. A complete recall or Storyboard

@@ -5,7 +5,7 @@ import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
 import { getSeedanceFieldBlockKey } from '@/lib/seedance-workflow';
 import { getGeminiOmniAssetFieldDisabledReason, getGeminiOmniAssetState, hasGeminiOmniPreviousInteraction } from './gemini-omni-unified-workflow';
 import type { ReferenceAsset } from './workspace-assets';
-import { fieldAcceptsMode, getWorkspaceMediaFields, hasMultimodalReferenceFields } from './workspace-multimodal-workflow';
+import { fieldAcceptsMode, getAlternateCreateOpeningFrame, getWorkspaceMediaFields, hasMultimodalReferenceFields } from './workspace-multimodal-workflow';
 import { workspaceKlingSubjectsActive } from './workspace-generation-inputs';
 import { getWorkspaceKlingV4ActiveAssets } from './workspace-kling-v4-media';
 import {
@@ -27,9 +27,10 @@ export function getWorkspaceReferenceUploadStatus({
 }): ReferenceUploadStatus {
   if (!engine) return null;
   const ignoreFrames = shouldIgnoreKlingO3FrameAssets(engine.id, mode);
+  const alternateOpening = getAlternateCreateOpeningFrame(engine, mode)?.alternate;
   const active = isKlingV4FalQueueEngineId(engine.id)
     ? Object.values(getWorkspaceKlingV4ActiveAssets(mode, inputAssets, engine.id)).flat()
-    : getWorkspaceMediaFields(engine).filter(field => fieldAcceptsMode(field, mode)
+    : getWorkspaceMediaFields(engine).filter(field => (fieldAcceptsMode(field, mode) || field === alternateOpening)
       && !(ignoreFrames && isKlingO3FrameFieldId(field.id))).flatMap(field => inputAssets[field.id] ?? []);
   const subjects = workspaceKlingSubjectsActive({ selectedEngineId: engine.id, submissionMode: mode, supportsKlingV3Controls })
     ? klingElements.flatMap(element => [element.frontal, ...element.references, element.video])

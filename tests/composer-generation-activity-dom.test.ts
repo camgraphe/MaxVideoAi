@@ -221,3 +221,15 @@ test('advanced editor references report their upload state at Generate only whil
     await fixture.dispose();
   }
 });
+
+test('opening frames promoted from two-frame slots keep their upload feedback', () => {
+  for (const [engineId, fieldId] of [['veo-3-1', 'first_frame_url'], ['flux-3', 'start_image_url']]) {
+    const engine = listFalEngines().find(config => config.id === engineId)!.engine;
+    for (const status of ['uploading', 'error'] as const) {
+      const image = { id: 'opening', fieldId, name: 'shot.jpg', kind: 'image' as const, size: 4096, type: 'image/jpeg', previewUrl: 'blob:frame', status };
+      assert.equal(getWorkspaceReferenceUploadStatus({
+        engine, mode: 'i2v', inputAssets: { [fieldId]: [image] }, klingElements: [], supportsKlingV3Controls: false,
+      }), status);
+    }
+  }
+});

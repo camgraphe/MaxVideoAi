@@ -324,6 +324,18 @@ const framedCreateCases=[
 ] as const;
 const frameImage=(fieldId:string)=>({...source(0,fieldId),fieldId,kind:'image',type:'image/png'});
 
+test('attaching and removing the lone closing frame leaves Veo in text Create', async () => {
+  const view = await mount('veo-3-1', 't2v', {}, {}, 'owner', true);
+  try {
+    await view.w.fx.act(async () => view.w.probe.setAssets({ last_frame_url: [frameImage('last_frame_url')] }));
+    assert.equal(view.w.probe.composer.activeManualMode, null);
+    await view.w.fx.act(async () => view.w.probe.setAssets({}));
+    assert.equal(view.w.probe.composer.submissionMode, 't2v');
+  } finally {
+    await view.close();
+  }
+});
+
 for(const [engineId,firstField,lastField] of framedCreateCases){
  test(`${engineId}: two-frame Create survives Extend and the real schema pruner`,async()=>{
   const view=await mount(engineId,'t2v',{[firstField]:[frameImage(firstField)],[lastField]:[frameImage(lastField)]},{},'owner',true);

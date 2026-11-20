@@ -7,6 +7,7 @@ import type { FormState } from './workspace-form-state';
 import type { ReferenceAsset } from './workspace-assets';
 import { buildKlingElementsPayload, buildWorkspacePreflightInputs } from './workspace-generation-inputs';
 import { workspaceModeSupportsRequestField } from './workspace-mode-request-fields';
+import { getAlternateCreateOpeningFrame } from './workspace-multimodal-workflow';
 
 export type WorkspacePreflightRequestOptions = {
   form: FormState;
@@ -36,6 +37,13 @@ export function buildWorkspacePreflightRequest({
   const allowedMedia = new Set([...(selectedEngine.inputSchema?.required ?? []), ...(selectedEngine.inputSchema?.optional ?? [])]
     .filter(field => !field.modes?.length || field.modes.includes(submissionMode)).map(field => field.id));
   const quoteAssets = form.operation || selectedEngine.id === 'luma-ray-3-2' ? Object.fromEntries(Object.entries(activeAssets).filter(([field]) => allowedMedia.has(field))) : activeAssets;
+  // Max quotes need no media. URL-only public recipes still reach generation.
+  const quoteInputs = selectedEngine.id === 'flux-3-max' ? [] : buildWorkspacePreflightInputs(quoteAssets);
+  // Quote the same opening role that generation resolves for a lone canonical first frame.
+  const opening = getAlternateCreateOpeningFrame(selectedEngine, submissionMode);
+  const inputs = opening && !quoteAssets[opening.primary.id]?.some(Boolean)
+    ? quoteInputs.map(input => input.slotId === opening.alternate.id ? { ...input, slotId: opening.primary.id } : input)
+    : quoteInputs;
   const capability = selectedEngine.modeCaps?.[submissionMode];
   // Match generation: the editor's frame clock is not an unsupported provider control.
   const shouldSendFps = !capability
@@ -77,9 +85,7 @@ export function buildWorkspacePreflightRequest({
     ...(!isKlingV4 ? { seedLocked: Boolean(form.seedLocked), loop: form.loop } : {}),
     ...(supportsAudioToggle ? { audio: form.audio } : {}),
     ...(voiceControlEnabled ? { voiceControl: true } : {}),
-    // Max tariffs depend on mode, duration and resolution, not reference media.
-    // Keep URL-only public recipes in generation without inventing owned asset IDs for a quote.
-    inputs: selectedEngine.id === 'flux-3-max' ? [] : buildWorkspacePreflightInputs(quoteAssets),
+    inputs,
     ...(Object.keys(extraInputValues).length ? { extraInputValues } : {}),
     ...(elements?.ok && elements.klingElementsPayload ? { elements: elements.klingElementsPayload } : {}),
     user: { memberTier },

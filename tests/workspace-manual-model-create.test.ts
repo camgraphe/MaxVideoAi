@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { getBaseEnginesByCategory } from '../frontend/src/lib/engines';
+import { getVideoSchemaControlConstraintViolation } from '../frontend/src/lib/video-input-schema';
 import { coerceFormState, getWorkspaceCreateMode } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-engine-helpers';
 import { preparePickerScenario } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-picker-scenario';
 import { buildWorkspacePickerOptions } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-model-picker';
@@ -8,6 +9,7 @@ import { getVideoWorkflowSourceField } from '../frontend/lib/video-source-workfl
 import type { WorkspaceModelSetup } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-model-candidate';
 import { serializeWorkspaceModelSetup } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-model-setups';
 import { parseEditorKeyframeSlots } from '../frontend/app/(core)/(workspace)/app/_lib/luma-ray32-keyframes';
+import { buildLumaAgentsVideoPayload } from '../frontend/src/server/video-providers/luma-agents/payload';
 const engines = getBaseEnginesByCategory('video');
 const engine = (id: string) => engines.find(e => e.id === id)!;
 function setup(mode: 't2v'|'v2v'|'extend'): WorkspaceModelSetup {
@@ -223,7 +225,27 @@ test('a model switch retains equivalent 4K and 2160p resolution choices', () => 
   assert.equal(back.form.resolution.toLowerCase(), '4k');
 });
 
-test('when two Create roles cannot coexist on Wan, the draft still uses a Create mode', () => {
+test('long Create durations are quoted only with a compatible resolution and frame rate', () => {
+  const seedance = engine('seedance-2-5'), ltx = engine('ltx-2-5-fast');
+  const draft = createDraft();
+  draft.form = { ...draft.form, durationSec: 16, durationOption: 16, resolution: '4k' };
+  const onLtx = preparePickerScenario({ current: draft, engine: ltx, currentEngine: seedance, locale: 'fr' });
+  assert.equal(onLtx.setup.form.durationSec, 16);
+  assert.notEqual(onLtx.setup.form.resolution, '2160p');
+  const row = buildWorkspacePickerOptions({ current: draft, engines: [seedance, ltx], locale: 'fr', memberTier: 'Member' })[ltx.id];
+  assert.ok(row.request);
+  assert.equal(row.request.durationSec, 16);
+  assert.equal(row.request.resolution, onLtx.setup.form.resolution);
+  assert.equal(getVideoSchemaControlConstraintViolation({
+    inputSchema: ltx.inputSchema, duration: row.request.durationSec, resolution: row.request.resolution, fps: row.request.fps,
+  }), null);
+
+  const returned = preparePickerScenario({ current: onLtx.setup, engine: seedance, currentEngine: ltx, locale: 'fr' }).setup;
+  assert.equal(returned.form.durationSec, 16);
+  assert.equal(returned.form.resolution.toLowerCase(), '4k');
+});
+
+test('when two Create roles cannot coexist on Wan, it keeps the role with a usable Create mode', () => {
   const source = engine('minimax-h3-max'), wan = engine('wan-3-prime');
   const still = readyReference('end.jpg', 'end_image_url', 'image');
   const motion = readyReference('motion.mp4', 'reference_video_urls', 'video');
@@ -233,9 +255,48 @@ test('when two Create roles cannot coexist on Wan, the draft still uses a Create
   };
   const result = preparePickerScenario({ current, engine: wan, currentEngine: source, locale: 'en' });
   assert.ok(result.applicable);
-  assert.equal(result.workflow.submissionMode, 'i2v');
-  assert.equal(result.setup.inputAssets.end_image_url?.[0]?.id, 'end.jpg');
-  assert.equal(result.setup.parkedCreateReferences?.[0].asset.id, 'motion.mp4');
+  assert.equal(result.workflow.submissionMode, 'ref2v');
+  assert.equal(result.setup.inputAssets.reference_video_urls?.[0]?.id, 'motion.mp4');
+  assert.equal(result.setup.parkedCreateReferences?.[0].asset.id, 'end.jpg');
+  assert.deepEqual(result.blockingReasons, []);
+});
+
+test('a model requiring visual references sets standalone audio aside and restores it later', () => {
+  const source = engine('seedance-2-5'), target = engine('seedance-2-0');
+  const audio = readyReference('guide.wav', 'audio_urls', 'audio');
+  const current = { ...createDraft(), inputAssets: { audio_urls: [audio] } };
+  const adapted = preparePickerScenario({ current, engine: target, currentEngine: source, locale: 'fr' });
+  assert.equal(adapted.workflow.submissionMode, 't2v');
+  assert.equal(adapted.setup.inputAssets.audio_urls, undefined);
+  assert.equal(adapted.setup.parkedCreateReferences?.[0]?.asset.id, audio.id);
+
+  const returned = preparePickerScenario({ current: adapted.setup, engine: source, currentEngine: target, locale: 'fr' });
+  assert.equal(returned.workflow.submissionMode, 'ref2v');
+  assert.deepEqual(returned.setup.inputAssets.audio_urls, [audio]);
+  assert.equal(returned.setup.parkedCreateReferences?.length ?? 0, 0);
+
+  const still = readyReference('support.jpg', 'image_urls', 'image');
+  const withStill = preparePickerScenario({
+    current: { ...current, inputAssets: { audio_urls: [audio], image_urls: [still] } },
+    engine: target, currentEngine: source, locale: 'fr',
+  });
+  assert.equal(withStill.workflow.submissionMode, 'ref2v');
+  assert.deepEqual(withStill.setup.inputAssets.audio_urls, [audio]);
+});
+
+test('a canonical Veo opening frame can generate without an ending frame after a variant change', () => {
+  const source = engine('veo-3-1'), target = engine('veo-3-1-lite');
+  const still = readyReference('first.jpg', 'first_frame_url', 'image');
+  const current = { ...createDraft(), form: coerceFormState(source, 't2v', null), inputAssets: { first_frame_url: [still] } };
+  for (const variant of [source, target]) {
+    const result = preparePickerScenario({ current, engine: variant, currentEngine: source, locale: 'en' });
+    assert.ok(result.applicable, JSON.stringify(result.blockingReasons));
+    assert.equal(result.workflow.submissionMode, 'i2v');
+    assert.deepEqual(result.setup.inputAssets.first_frame_url, [still]);
+    assert.deepEqual(result.blockingReasons, []);
+  }
+  const targetRow = buildWorkspacePickerOptions({ current, engines: [source, target], locale: 'en', memberTier: 'Member' })[target.id];
+  assert.equal(targetRow.request?.inputs?.[0]?.slotId, 'image_url');
 });
 
 test('combined input duration keeps inputs within the target limit before quoting', () => {
@@ -263,8 +324,8 @@ test('combined input duration keeps inputs within the target limit before quotin
   assert.equal(repeated.setup.inputAssets.video_urls?.filter(Boolean).length, 2, 'server counts repeated URLs once for Seedance Create');
 });
 
-test('timed keyframes stay together through draft persistence and never become ordinary still references', () => {
-  const flux = engine('flux-3-max'), wan = engine('wan-3-prime');
+for (const fluxId of ['flux-3', 'flux-3-draft', 'flux-3-max']) test(`${fluxId} timed keyframes retain their role and position across models`, () => {
+  const flux = engine(fluxId), wan = engine('wan-3-prime');
   const field = 'reference_image_urls';
   const current = {
     ...createDraft(), form: coerceFormState(flux, 'ref2v', null),
@@ -288,6 +349,13 @@ test('timed keyframes stay together through draft persistence and never become o
     assert.equal(slots[3]?.frameIndex, 96);
   }
   assert.ok(!back.blockingReasons.length);
+
+  const compatible = engine(fluxId === 'flux-3-max' ? 'flux-3-draft' : 'flux-3-max');
+  const direct = preparePickerScenario({ current, currentEngine: flux, engine: compatible, locale: 'en' });
+  assert.equal(direct.workflow.submissionMode, 'ref2v');
+  assert.deepEqual(direct.setup.inputAssets[field], current.inputAssets[field]);
+  assert.equal(direct.setup.form.extraInputValues.keyframe_indexes, '0, 96');
+  assert.equal(direct.setup.parkedCreateReferences?.length ?? 0, 0);
 });
 
 test('a Kling 4 video subject can return to Create without driving Kling Omni into Modify', () => {
@@ -317,6 +385,29 @@ test('a Kling 4 video subject can return to Create without driving Kling Omni in
   const onFlash = preparePickerScenario({ current, currentEngine: kling4, engine: compatible, locale: 'en' });
   assert.equal(onFlash.workflow.submissionMode, 'ref2v');
   assert.equal(onFlash.setup.klingElements[0]?.video?.assetId, video.assetId);
+});
+
+test('Luma Create keyframes retain ordered indexes through a different model and persisted draft', () => {
+  const luma = engine('luma-ray-3-2'), wan = engine('wan-3-prime');
+  const fieldId = 'keyframe_urls';
+  const assets = [readyReference('first.jpg', fieldId, 'image'), readyReference('closing.jpg', fieldId, 'image')];
+  const current = {
+    ...createDraft(), form: coerceFormState(luma, 't2v', null),
+    inputAssets: { [fieldId]: [assets[0], null, assets[1]] },
+  };
+  current.form.extraInputValues = { keyframe_indexes: '0, 96' };
+  const away = preparePickerScenario({ current, currentEngine: luma, engine: wan, locale: 'en' });
+  assert.equal(away.setup.parkedCreateReferences?.length, 2);
+  const persisted = serializeWorkspaceModelSetup(away.setup);
+  assert.ok(persisted.ok);
+  const back = preparePickerScenario({ current: persisted.setup, currentEngine: wan, engine: luma, locale: 'en' });
+  assert.deepEqual(back.setup.inputAssets[fieldId], current.inputAssets[fieldId]);
+  const request = buildLumaAgentsVideoPayload({
+    engineId: luma.id, mode: back.workflow.submissionMode, prompt: back.setup.prompt, durationSec: 5, resolution: '720p',
+    keyframeUrls: back.setup.inputAssets[fieldId]?.flatMap(asset => asset?.url ? [asset.url] : []),
+    extraInputValues: back.setup.form.extraInputValues,
+  });
+  assert.deepEqual(request.video.keyframe_indexes, [0, 96]);
 });
 
 test('Create model switches enable audio through a model without a toggle, while an explicit choice still applies', () => {

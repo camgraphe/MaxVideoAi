@@ -1,5 +1,4 @@
 import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
-import { isFlux3MaxEngineId } from '@/lib/flux-3-max';
 import type { MultiPromptScene } from '@/components/Composer';
 import type { KlingElementAsset, KlingElementState } from '@/components/KlingElementsBuilder';
 import { resolveEngineReferenceBudget } from '@/lib/reference-budget';
@@ -17,7 +16,7 @@ import { workspaceModeSupportsRequestField } from './workspace-mode-request-fiel
 import { resolveAssetFieldRole, summarizeWorkspaceInputSchema, type WorkspaceInputSchemaSummary } from './workspace-input-schema';
 import { getWorkspaceMediaFields } from './workspace-multimodal-workflow';
 import { resolveWorkspaceComposerFacts, resolveWorkspaceWorkflow, type WorkspaceComposerFacts, type WorkspaceWorkflowProjection } from './workspace-workflow-projection';
-import { FLUX_KEYFRAME_SLOTS_FIELD } from './luma-ray32-keyframes';
+import { FLUX_KEYFRAME_SLOTS_FIELD, hasFluxCreateKeyframes } from './luma-ray32-keyframes';
 
 import {
   canCarryCreateReference, isParkableCreateReference, projectCreatePreferences, projectCreateReferences, projectCreateSubjects, readCreateKeyframePositions,
@@ -89,7 +88,7 @@ function referencesFor(setup: WorkspaceModelSetup, summary: WorkspaceInputSchema
   for (const [fieldId, assets] of Object.entries(setup.inputAssets)) {
     const schemaRole = summary.assetFields.find(({ field }) => field.id === fieldId)?.role;
     const role = schemaRole ? workspaceCreateReferenceRole(engine, fieldId, schemaRole) : 'unknown';
-    const positions = role === 'keyframe' ? readCreateKeyframePositions(setup.form, assets) : undefined;
+    const positions = role === 'keyframe' ? readCreateKeyframePositions(setup.form, fieldId, assets) : undefined;
     assets.forEach((asset, index) => {
       if (asset) references.push({ fieldId, index, role, asset, ...(positions?.has(index) ? { frameIndex: positions.get(index) } : {}) });
     });
@@ -140,7 +139,7 @@ function normalizedSetup(setup: WorkspaceModelSetup, engine: EngineCaps, workflo
     if (value !== undefined) extraInputValues[field.id] = value;
   }
   const keyframeSlots = setup.form.extraInputValues[FLUX_KEYFRAME_SLOTS_FIELD];
-  if (isFlux3MaxEngineId(engine.id) && workflow.submissionMode === 'ref2v' && typeof keyframeSlots === 'string') {
+  if (workflow.submissionMode === 'ref2v' && hasFluxCreateKeyframes(engine.inputSchema) && typeof keyframeSlots === 'string') {
     extraInputValues[FLUX_KEYFRAME_SLOTS_FIELD] = keyframeSlots;
   }
   const coerced = coerceFormState(engine, workflow.activeMode, { ...setup.form, mode: workflow.activeMode });

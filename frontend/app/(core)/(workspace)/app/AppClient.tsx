@@ -170,6 +170,7 @@ export default function AppClientPage({
     activeMode: composer.activeMode,
     submissionMode: composer.submissionMode,
     allowsUnifiedVeoFirstLast: composer.allowsUnifiedVeoFirstLast,
+    usesCanonicalOpeningFrame: composer.usesCanonicalOpeningFrame,
     isUnifiedHappyHorse: composer.isUnifiedHappyHorse,
     isUnifiedSeedance: composer.isUnifiedSeedance,
     isUnifiedGeminiOmni: composer.isUnifiedGeminiOmni,

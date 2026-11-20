@@ -83,6 +83,7 @@ type UseWorkspaceComposerStateResult = {
   activeManualMode: Mode | null;
   activeMode: Mode;
   allowsUnifiedVeoFirstLast: boolean;
+  usesCanonicalOpeningFrame: boolean;
   submissionMode: Mode;
   showSafetyCheckerControl: boolean;
   effectiveDurationSec: number;
@@ -163,6 +164,7 @@ export function useWorkspaceComposerState({
     activeManualMode,
     activeMode,
     allowsUnifiedVeoFirstLast,
+    usesCanonicalOpeningFrame,
     submissionMode,
     showSafetyCheckerControl,
     capability,
@@ -415,6 +417,7 @@ export function useWorkspaceComposerState({
     activeManualMode,
     activeMode,
     allowsUnifiedVeoFirstLast,
+    usesCanonicalOpeningFrame,
     submissionMode,
     showSafetyCheckerControl,
     effectiveDurationSec,

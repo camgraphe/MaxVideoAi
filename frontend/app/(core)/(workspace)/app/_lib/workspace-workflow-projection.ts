@@ -115,7 +115,7 @@ export function resolveWorkspaceWorkflow({ engine: selectedEngine, capabilityEng
   const mediaFields = getWorkspaceMediaFields(selectedEngine);
   const hasMultimodalReferences = hasMultimodalReferenceFields(mediaFields);
 
-  const hasPrimaryImageInput = hasInputAssetInSlots(inputAssets, [...PRIMARY_IMAGE_SLOT_IDS, 'start_image_url'], 'image');
+  const hasPrimaryImageInput = hasInputAssetInSlots(inputAssets, [...PRIMARY_IMAGE_SLOT_IDS, 'start_image_url', 'first_frame_url'], 'image');
 
   const hasLastFrameInput = hasInputAssetInSlots(inputAssets, ['last_frame_url', 'end_image_url'], 'image');
 
@@ -161,7 +161,8 @@ export function resolveWorkspaceWorkflow({ engine: selectedEngine, capabilityEng
         : referenceInputStatus.hasVideo && modes.includes('reframe') ? 'reframe'
         : referenceInputStatus.hasImage && modes.includes('i2v') ? 'i2v'
         : modes.includes('t2v') ? 't2v' : modes[0] ?? 't2v';
-    if ((byKind === 'i2v' && hasPrimaryImageInput) || workspaceAssetsSupportMode(mediaFields, inputAssets, byKind)) return byKind;
+    if ((byKind === 'i2v' && (hasPrimaryImageInput || (hasLastFrameInput && modes.includes('fl2v'))))
+      || workspaceAssetsSupportMode(mediaFields, inputAssets, byKind)) return byKind;
     // An image in an exact reference slot does not imply an i2v start frame.
     return WORKSPACE_CREATE_MODES.find(mode =>
       modes.includes(mode) && workspaceAssetsSupportMode(mediaFields, inputAssets, mode),
@@ -268,6 +269,8 @@ export function resolveWorkspaceWorkflow({ engine: selectedEngine, capabilityEng
     activeManualMode,
     activeMode,
     allowsUnifiedVeoFirstLast,
+    usesCanonicalOpeningFrame: hasUnifiedFirstFrameInput && unifiedFirstFrameField?.id === 'first_frame_url'
+      && !hasInputAssetInSlots(inputAssets, ['image_url'], 'image'),
     submissionMode,
     showSafetyCheckerControl,
     capability,
