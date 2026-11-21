@@ -100,7 +100,7 @@ export default async function CompareDetailPage(
   if (shouldSwapDisplayOrder) {
     [left, right] = [right, left];
   }
-  const { routeData, leftGallery, rightGallery } = await loadComparePageData({ activeLocale, left, right });
+  const { routeData, leftGallery, rightGallery, samePromptCases } = await loadComparePageData({ activeLocale, left, right, canonicalSlug });
   left = routeData.left;
   right = routeData.right;
   const {
@@ -209,6 +209,7 @@ export default async function CompareDetailPage(
       priceSnapshotAt={routeData.priceSnapshotAt}
       specSources={routeData.specSources}
       galleries={{ left: leftGallery, right: rightGallery }}
+      samePromptCases={samePromptCases}
       returnPath={`${localePrefix}/${compareBase}/${canonicalSlug}`}
       activeLocale={activeLocale}
       breadcrumbJsonLd={breadcrumbJsonLd}

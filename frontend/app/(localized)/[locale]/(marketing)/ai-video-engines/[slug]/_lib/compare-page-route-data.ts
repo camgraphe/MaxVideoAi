@@ -3,6 +3,7 @@ import { fetchPublicBenchmarkLatency } from '@/server/benchmark-lab-metrics';
 import { createScopedCurrentPublicSnapshot } from '@/server/pricing/quote-public';
 import { withPublicPageTiming, withoutPublicPageTiming, type MeasurePublicPagePhase } from '@/server/public-page-timing';
 import { loadCompareGallery } from './compare-gallery-loader';
+import { loadCompareSamePrompt } from './compare-same-prompt-loader';
 import { computeComparePricingPoints, getCompareReferenceDuration } from './compare-pricing-scenarios';
 import type { EngineCaps } from '@/types/engines';
 import { PRICING_ENGINES } from './compare-page-config';
@@ -95,16 +96,18 @@ export async function buildCompareRouteData({
 
 export async function loadComparePageData(input: {
   activeLocale: AppLocale;
+  canonicalSlug: string;
   left: EngineCatalogEntry;
   right: EngineCatalogEntry;
 }) {
   return withPublicPageTiming({ route: 'comparison', locale: input.activeLocale }, async measure => {
     // These reads only depend on the resolved engines; none needs another read's result.
-    const [routeData, leftGallery, rightGallery] = await Promise.all([
+    const [routeData, leftGallery, rightGallery, samePromptCases] = await Promise.all([
       buildCompareRouteData({ ...input, measure }),
       measure('left-gallery', () => loadCompareGallery(input.left, isPrelaunchAvailability(input.left))),
       measure('right-gallery', () => loadCompareGallery(input.right, isPrelaunchAvailability(input.right))),
+      measure('same-prompt', () => loadCompareSamePrompt(input.canonicalSlug, input.left, input.right)),
     ]);
-    return { routeData, leftGallery, rightGallery };
+    return { routeData, leftGallery, rightGallery, samePromptCases };
   });
 }

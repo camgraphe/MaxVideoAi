@@ -9,7 +9,7 @@ import { CATALOG_BY_SLUG } from '../frontend/app/(localized)/[locale]/(marketing
 import { makeComparePagePricingHarness } from './helpers/compare-page-pricing-harness';
 import type { PricingSnapshot } from '@maxvideoai/pricing';
 
-test('comparison starts independent benchmark, prices, files and galleries before waiting', async () => {
+test('comparison starts independent benchmark, prices, files, galleries and same-prompt examples before waiting', async () => {
   const directory = await mkdtemp(join(tmpdir(), 'compare-loading-'));
   try {
     const output = join(directory, 'route.cjs');
@@ -18,7 +18,7 @@ test('comparison starts independent benchmark, prices, files and galleries befor
       outfile: output, bundle: true, platform: 'node', format: 'cjs', tsconfig: 'frontend/tsconfig.json',
       define: { 'process.env.NODE_ENV': '"test"' },
       plugins: [{ name: 'read-boundaries', setup(builder) {
-        builder.onResolve({ filter: /^(probe|@\/server\/benchmark-lab-metrics|@\/server\/pricing\/quote-public|\.\/compare-page-helpers|\.\/compare-page-config|\.\/compare-gallery-loader)$/ }, args => ({ path: args.path, namespace: 'controlled' }));
+        builder.onResolve({ filter: /^(probe|@\/server\/benchmark-lab-metrics|@\/server\/pricing\/quote-public|\.\/compare-page-helpers|\.\/compare-page-config|\.\/compare-gallery-loader|\.\/compare-same-prompt-loader)$/ }, args => ({ path: args.path, namespace: 'controlled' }));
         builder.onLoad({ filter: /.*/, namespace: 'controlled' }, args => ({ loader: 'js', contents: args.path === 'probe' ? `
           export const calls=[];
           let releaseGate; const gate=new Promise(resolve=>releaseGate=resolve);
@@ -29,6 +29,7 @@ test('comparison starts independent benchmark, prices, files and galleries befor
         ` : args.path === '@/server/pricing/quote-public' ? `export const computeCurrentPublicSnapshot=()=>{throw new Error('unused')};export const createScopedCurrentPublicSnapshot=()=>computeCurrentPublicSnapshot;`
         : args.path === './compare-page-config' ? `export const PRICING_ENGINES=new Map();`
         : args.path === './compare-gallery-loader' ? `import {read} from 'probe';export const loadCompareGallery=(entry,prelaunch)=>prelaunch?Promise.resolve([]):read(entry.modelSlug+'-gallery',[entry.modelSlug]);`
+        : args.path === './compare-same-prompt-loader' ? `import {read} from 'probe';export const loadCompareSamePrompt=(slug)=>read('same-prompt',[slug]);`
         : `
           import {read} from 'probe';
           export const loadEngineScores=()=>read('scores',new Map());
@@ -40,14 +41,15 @@ test('comparison starts independent benchmark, prices, files and galleries befor
       } }],
     });
     const { loadComparePageData, calls, release } = createRequire(import.meta.url)(output);
-    const input = { activeLocale: 'en', left: { modelSlug: 'left', engineId: 'left' }, right: { modelSlug: 'right', engineId: 'right' } };
+    const input = { activeLocale: 'en', canonicalSlug: 'left-vs-right', left: { modelSlug: 'left', engineId: 'left' }, right: { modelSlug: 'right', engineId: 'right' } };
     const pending = loadComparePageData(input);
     // Every boundary is held open: start order is tested without wall-clock thresholds.
     await new Promise(resolve => setImmediate(resolve));
     const started = [...calls].sort();
     release();
     const result = await pending;
-    assert.deepEqual(started, ['benchmark', 'key-specs', 'left-gallery', 'left-pricing', 'right-gallery', 'right-pricing', 'scores']);
+    assert.deepEqual(started, ['benchmark', 'key-specs', 'left-gallery', 'left-pricing', 'right-gallery', 'right-pricing', 'same-prompt', 'scores']);
+    assert.deepEqual(result.samePromptCases, ['left-vs-right']);
     assert.deepEqual(result.leftGallery, ['left']);
     assert.deepEqual(result.rightGallery, ['right']);
     assert.deepEqual(result.routeData.leftPricingDisplay, { headline: 'left' });

@@ -592,7 +592,7 @@ test('comparison detail page delegates copy, data, schema, and media responsibil
   assert.ok(pageSource.includes("from './_lib/compare-page-schema'"));
   assert.ok(pageSource.includes("from './_lib/compare-page-scorecard'"));
   assert.ok(pageSource.includes("from './_lib/compare-page-spec-rows'"));
-  assert.match(pageSource, /await loadComparePageData\(\{ activeLocale, left, right \}\)/);
+  assert.match(pageSource, /await loadComparePageData\(\{ activeLocale, left, right, canonicalSlug \}\)/);
   assert.ok(routeDataSource.includes("from './compare-gallery-loader'"));
   assert.doesNotMatch(pageSource, /await loadCompareGallery/);
   assert.ok(pageSource.includes("from './_components/CompareDetailContent'"));
@@ -695,6 +695,7 @@ test('comparison detail split helpers own FAQ, scorecard, and generate card resp
   assert.match(detailContentSource, /CompareDetailHero/);
   assert.match(detailContentSource, /CompareEngineHeroCards/);
   assert.match(detailContentSource, /CompareScorecardSection/);
+  assert.match(detailContentSource, /<CompareScorecardSection[\s\S]*?<CompareSamePromptSection[\s\S]*?<ComparePricingQuickSection/);
   assert.match(detailContentSource, /CompareSpecsSection/);
   assert.match(detailContentSource, /CompareModelGalleries/);
   assert.match(detailContentSource, /CompareFaqSection/);
