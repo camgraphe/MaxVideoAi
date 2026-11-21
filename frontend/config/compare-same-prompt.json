@@ -1,0 +1,1233 @@
+{
+  "dreamina-seedance-2-0-mini-vs-seedance-2-0": [
+    {"promptHash": "7218d3fa42ad4f936a8c447099faf4962b3205e89a53c705eca109f40d2447cd", "videoIds": ["job_f2605150-0d2a-48ad-b1a9-bba8891d568b", "job_d12164ca-1c6f-46da-9136-2255a136f124"]}
+  ],
+  "dreamina-seedance-2-0-mini-vs-seedance-2-0-fast": [
+    {"promptHash": "7218d3fa42ad4f936a8c447099faf4962b3205e89a53c705eca109f40d2447cd", "videoIds": ["job_f2605150-0d2a-48ad-b1a9-bba8891d568b", "job_528fe01f-e2ea-4cc0-850c-e98190a17473"]},
+    {"promptHash": "c964783274b89f5e5706bca6ea0b7b004f403ce7293b7a05763521682aa9df6a", "videoIds": ["6aff6abb-c4c3-4ebe-8419-4bb02711a675", "64353973-40b2-47bf-89bc-c147189af63d"]},
+    {"promptHash": "fa150f20104d12fd17b2aaa3af96f8a6b7b4b66abc7605b38d0f55224faa5bc9", "videoIds": ["job_f9e077a0-2568-464e-a4e6-962537320dec", "job_5bf86ec5-b464-4516-8163-6b11131df5b4"]}
+  ],
+  "happy-horse-1-0-vs-kling-3-pro": [
+    {"promptHash": "4c8d063e0d414d12bbccf14ed72c97b410cbca78cf7ec96e5a0ba5a77120a7a3", "videoIds": ["job_b004db7d-15f7-458c-8923-9f748b1a2e0d", "job_d9f08cc4-1ba1-4b02-a88a-7d6944c8e7a3"]}
+  ],
+  "happy-horse-1-0-vs-seedance-2-0": [
+    {"promptHash": "4c8d063e0d414d12bbccf14ed72c97b410cbca78cf7ec96e5a0ba5a77120a7a3", "videoIds": ["job_b004db7d-15f7-458c-8923-9f748b1a2e0d", "job_0b9d1318-eadb-435b-954e-1a74658d6819"]}
+  ],
+  "kling-2-5-turbo-vs-kling-2-6-pro": [
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_ae3eb8d1-7e4e-4977-bd1f-cf797f189902", "job_1d118936-8d52-45ef-b9fa-8d1a76eacb28"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_5cb5517a-06c1-4b5e-8420-9fc43afb7943", "job_e52f6a9d-023b-4f51-9037-361939c00177"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_1dbd7203-3503-49e7-9a69-c51fe7224688", "job_488b21b1-766e-4760-9a24-cd6eb402a7e7"]}
+  ],
+  "kling-2-5-turbo-vs-kling-3-pro": [
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_ae3eb8d1-7e4e-4977-bd1f-cf797f189902", "job_82be9d73-885f-48ca-9ded-347cd069730c"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_5cb5517a-06c1-4b5e-8420-9fc43afb7943", "job_ae925c1a-935f-4511-ba1d-346ee2f15d8a"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_1dbd7203-3503-49e7-9a69-c51fe7224688", "job_0a9ee690-d91d-499d-817e-dccec23d8c9e"]}
+  ],
+  "kling-2-5-turbo-vs-kling-3-standard": [
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_ae3eb8d1-7e4e-4977-bd1f-cf797f189902", "job_56c0b733-193b-49c6-adc8-1f87bd8b93c9"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_5cb5517a-06c1-4b5e-8420-9fc43afb7943", "job_61bbdb63-4a12-4847-bd1a-20dfe868bfe6"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_1dbd7203-3503-49e7-9a69-c51fe7224688", "job_31530d04-db12-4a42-b593-dda7574f5338"]}
+  ],
+  "kling-2-5-turbo-vs-ltx-2": [
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_ae3eb8d1-7e4e-4977-bd1f-cf797f189902", "job_a8b82fc8-03af-49b8-99d4-186f497eb358"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_5cb5517a-06c1-4b5e-8420-9fc43afb7943", "job_15cd3e9d-67d6-4378-8d76-11e3734d3a43"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_1dbd7203-3503-49e7-9a69-c51fe7224688", "job_bd3c3bd3-00a1-4bf4-9047-73ca60d554e9"]}
+  ],
+  "kling-2-5-turbo-vs-ltx-2-3-fast": [
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_ae3eb8d1-7e4e-4977-bd1f-cf797f189902", "job_716ddb6f-c9d0-4339-b6c9-3a9160d291ce"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_5cb5517a-06c1-4b5e-8420-9fc43afb7943", "job_4ed60dee-1717-47a8-b858-53bd6e75f6fe"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_1dbd7203-3503-49e7-9a69-c51fe7224688", "job_a757f656-43b8-47bc-83d2-0bd6728b320b"]}
+  ],
+  "kling-2-5-turbo-vs-ltx-2-3-pro": [
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_ae3eb8d1-7e4e-4977-bd1f-cf797f189902", "job_5123dfd5-0392-4c8a-9e3c-2dd78e60ef22"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_5cb5517a-06c1-4b5e-8420-9fc43afb7943", "job_286942bf-41a9-4283-aeff-628746259477"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_1dbd7203-3503-49e7-9a69-c51fe7224688", "job_d2e0b731-ba85-498b-bf45-a1b17b468963"]}
+  ],
+  "kling-2-5-turbo-vs-ltx-2-fast": [
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_ae3eb8d1-7e4e-4977-bd1f-cf797f189902", "job_d52dee0e-5820-49a3-83b3-91a4f970b306"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_5cb5517a-06c1-4b5e-8420-9fc43afb7943", "job_1346a7bf-0e83-4192-8d75-bb68fb33e043"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_1dbd7203-3503-49e7-9a69-c51fe7224688", "job_274c43e0-b5c8-43b5-b27a-a62d46977852"]}
+  ],
+  "kling-2-5-turbo-vs-luma-ray-2": [
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_ae3eb8d1-7e4e-4977-bd1f-cf797f189902", "job_eb467daa-7bef-4053-a1dd-895e33f1bb38"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_1dbd7203-3503-49e7-9a69-c51fe7224688", "job_f3bae828-5908-4b78-800c-ff3abe10e1a4"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_5cb5517a-06c1-4b5e-8420-9fc43afb7943", "job_3c92babc-a3db-4c9f-bd45-31e469452855"]}
+  ],
+  "kling-2-5-turbo-vs-luma-ray-2-flash": [
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_1dbd7203-3503-49e7-9a69-c51fe7224688", "job_3d348765-4d97-45b8-8ede-5d3d17160f99"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_ae3eb8d1-7e4e-4977-bd1f-cf797f189902", "job_85e0aa16-4dc0-4967-ac17-0ed121bbcec9"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_5cb5517a-06c1-4b5e-8420-9fc43afb7943", "job_7a36c0e0-1bb9-4d6b-a2f3-a771aaacddc9"]}
+  ],
+  "kling-2-5-turbo-vs-minimax-hailuo-02-text": [
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_ae3eb8d1-7e4e-4977-bd1f-cf797f189902", "job_0ec5b210-47ff-4eed-9a43-4b0061e20dc7"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_5cb5517a-06c1-4b5e-8420-9fc43afb7943", "job_96c348e2-cce5-4d09-9340-25bbe74d9873"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_1dbd7203-3503-49e7-9a69-c51fe7224688", "job_be5bff74-eec5-4fb9-80c7-e6f28d317cb7"]}
+  ],
+  "kling-2-5-turbo-vs-pika-text-to-video": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_5cb5517a-06c1-4b5e-8420-9fc43afb7943", "job_fc1e363c-6b1d-42b2-ae15-1a151213120d"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_ae3eb8d1-7e4e-4977-bd1f-cf797f189902", "job_18bcd151-e747-4a60-8a67-42a028890ef2"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_1dbd7203-3503-49e7-9a69-c51fe7224688", "job_df68f2a6-4223-4721-811c-efb85de01c46"]}
+  ],
+  "kling-2-5-turbo-vs-seedance-1-5-pro": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_5cb5517a-06c1-4b5e-8420-9fc43afb7943", "job_d8f52d87-fea7-458e-898d-d6b6c8de5d0a"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_ae3eb8d1-7e4e-4977-bd1f-cf797f189902", "job_b7c5ce0f-45a3-44f1-971c-94989e6a1c0c"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_1dbd7203-3503-49e7-9a69-c51fe7224688", "job_f94d62e7-4b15-446e-b43a-319d8bfde3f3"]}
+  ],
+  "kling-2-5-turbo-vs-seedance-2-0": [
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_ae3eb8d1-7e4e-4977-bd1f-cf797f189902", "job_ed52beb9-3a48-44f2-a9b4-08a428f3a3e8"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_5cb5517a-06c1-4b5e-8420-9fc43afb7943", "job_763808a1-c7aa-4740-bc59-182955de5c19"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_1dbd7203-3503-49e7-9a69-c51fe7224688", "job_3570ff87-af76-4b80-99cf-c679205f6129"]}
+  ],
+  "kling-2-5-turbo-vs-seedance-2-0-fast": [
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_ae3eb8d1-7e4e-4977-bd1f-cf797f189902", "job_3d1b9752-72ef-4b98-a09e-e13012015e16"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_5cb5517a-06c1-4b5e-8420-9fc43afb7943", "job_910dccf8-cf91-4c3e-b5ca-c229d408e2ba"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_1dbd7203-3503-49e7-9a69-c51fe7224688", "job_bbbe1537-1fa7-4eb1-948c-59353a9fc728"]}
+  ],
+  "kling-2-5-turbo-vs-sora-2": [
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_1dbd7203-3503-49e7-9a69-c51fe7224688", "job_55c36d3f-8591-4e32-a6a3-dbf191706d18"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_5cb5517a-06c1-4b5e-8420-9fc43afb7943", "job_d1b582c3-bdaf-46ce-99ed-b9939de89a81"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_ae3eb8d1-7e4e-4977-bd1f-cf797f189902", "job_ad6b652f-8cb2-4b65-9bff-e88adbae6a1b"]},
+    {"promptHash": "3f714c6a3ecd574fee3edfa6376944199b1b7847f4f5208dc70ca335e05c610b", "videoIds": ["job_0d164ba8-c075-49ac-a522-55dac8b392d9", "job_43aee2b5-3b09-4cf4-af55-413b2fc2c698"]}
+  ],
+  "kling-2-5-turbo-vs-sora-2-pro": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_5cb5517a-06c1-4b5e-8420-9fc43afb7943", "job_3a371233-0b60-4785-bdb3-636e8f218a0b"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_1dbd7203-3503-49e7-9a69-c51fe7224688", "job_b6c95097-032d-4fcb-8b7a-c84f6942e6b2"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_ae3eb8d1-7e4e-4977-bd1f-cf797f189902", "job_20b54ee7-ec03-47d4-b1ca-2fef046093f8"]}
+  ],
+  "kling-2-5-turbo-vs-veo-3-1": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_5cb5517a-06c1-4b5e-8420-9fc43afb7943", "job_5981bbec-f5e9-4163-9c65-093df7e296f5"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_ae3eb8d1-7e4e-4977-bd1f-cf797f189902", "job_b3187535-7c87-4616-a8ec-2c635d44ff58"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_1dbd7203-3503-49e7-9a69-c51fe7224688", "job_b197fc68-0bb7-4a24-9720-0ff721642446"]},
+    {"promptHash": "150d9de05ad5ec8c1da12857df1cdb12ab7fb245aa611b07d242c840363dace1", "videoIds": ["job_41d12020-054d-48fe-8f09-9516f2dd5aa1", "job_1d076c9a-27bd-42e4-834c-e0eb04dc8301"]}
+  ],
+  "kling-2-5-turbo-vs-veo-3-1-fast": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_5cb5517a-06c1-4b5e-8420-9fc43afb7943", "job_b092ca2a-2442-4246-8f63-6854b057260f"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_1dbd7203-3503-49e7-9a69-c51fe7224688", "job_fa9f3068-9796-4f75-af35-e9fcdecf68a9"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_ae3eb8d1-7e4e-4977-bd1f-cf797f189902", "job_c80deef9-755b-4e52-86a9-a4499883cca9"]},
+    {"promptHash": "d097e9658feecd404ae15c70e0b6694a6b09ba9cd4f0ed7b59352e5454be6f45", "videoIds": ["job_35721f7b-8211-4f91-8e20-2cc7e830d86b", "job_10fb7679-8e5f-4016-b57e-936c6290b82c"]},
+    {"promptHash": "2a7fc0c52d102f129fccf6c31f614bc15b72e03795de5026f88496efff10f42c", "videoIds": ["job_e2cee5f4-54d9-4cda-a705-974e5500a404", "job_bd8a7d63-28e4-404b-ba4c-16bb546a020c"]}
+  ],
+  "kling-2-5-turbo-vs-veo-3-1-lite": [
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_ae3eb8d1-7e4e-4977-bd1f-cf797f189902", "job_107e286c-e52a-481b-9f58-2dd0e869f0e7"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_5cb5517a-06c1-4b5e-8420-9fc43afb7943", "job_931f3188-5c56-4001-8e5f-498396774cf7"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_1dbd7203-3503-49e7-9a69-c51fe7224688", "job_465613de-519e-452e-b009-3a78552f0884"]}
+  ],
+  "kling-2-5-turbo-vs-wan-2-5": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_5cb5517a-06c1-4b5e-8420-9fc43afb7943", "job_320e2771-443e-41a0-b1fb-9c688ccbf8d6"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_1dbd7203-3503-49e7-9a69-c51fe7224688", "job_3c25941b-cfab-42f4-912a-a47a040b9fe4"]},
+    {"promptHash": "67d1fcb6f5b752ca9c679777b4cd315bd16d0ca18b47f8492609af6f8d713dba", "videoIds": ["job_fe932f7b-f421-4e87-8122-9695c1d55a20", "job_0a8d2d72-0575-447d-afb8-3b035fec4c88"]}
+  ],
+  "kling-2-5-turbo-vs-wan-2-6": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_5cb5517a-06c1-4b5e-8420-9fc43afb7943", "job_2c795d5a-f8fb-4359-9d15-fbc65678327d"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_1dbd7203-3503-49e7-9a69-c51fe7224688", "job_7bfe7823-5794-4a41-9869-2bb4458a9bc7"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_ae3eb8d1-7e4e-4977-bd1f-cf797f189902", "job_110f0282-bf5e-4d58-ab34-8b117c94d4e4"]}
+  ],
+  "kling-2-6-pro-vs-kling-3-pro": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_e52f6a9d-023b-4f51-9037-361939c00177", "job_ae925c1a-935f-4511-ba1d-346ee2f15d8a"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_488b21b1-766e-4760-9a24-cd6eb402a7e7", "job_0a9ee690-d91d-499d-817e-dccec23d8c9e"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_1d118936-8d52-45ef-b9fa-8d1a76eacb28", "job_82be9d73-885f-48ca-9ded-347cd069730c"]}
+  ],
+  "kling-2-6-pro-vs-kling-3-standard": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_e52f6a9d-023b-4f51-9037-361939c00177", "job_61bbdb63-4a12-4847-bd1a-20dfe868bfe6"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_488b21b1-766e-4760-9a24-cd6eb402a7e7", "job_31530d04-db12-4a42-b593-dda7574f5338"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_1d118936-8d52-45ef-b9fa-8d1a76eacb28", "job_56c0b733-193b-49c6-adc8-1f87bd8b93c9"]}
+  ],
+  "kling-2-6-pro-vs-ltx-2": [
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_488b21b1-766e-4760-9a24-cd6eb402a7e7", "job_bd3c3bd3-00a1-4bf4-9047-73ca60d554e9"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_e52f6a9d-023b-4f51-9037-361939c00177", "job_15cd3e9d-67d6-4378-8d76-11e3734d3a43"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_1d118936-8d52-45ef-b9fa-8d1a76eacb28", "job_a8b82fc8-03af-49b8-99d4-186f497eb358"]}
+  ],
+  "kling-2-6-pro-vs-ltx-2-3-fast": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_e52f6a9d-023b-4f51-9037-361939c00177", "job_4ed60dee-1717-47a8-b858-53bd6e75f6fe"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_488b21b1-766e-4760-9a24-cd6eb402a7e7", "job_a757f656-43b8-47bc-83d2-0bd6728b320b"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_1d118936-8d52-45ef-b9fa-8d1a76eacb28", "job_716ddb6f-c9d0-4339-b6c9-3a9160d291ce"]}
+  ],
+  "kling-2-6-pro-vs-ltx-2-3-pro": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_e52f6a9d-023b-4f51-9037-361939c00177", "job_286942bf-41a9-4283-aeff-628746259477"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_488b21b1-766e-4760-9a24-cd6eb402a7e7", "job_d2e0b731-ba85-498b-bf45-a1b17b468963"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_1d118936-8d52-45ef-b9fa-8d1a76eacb28", "job_5123dfd5-0392-4c8a-9e3c-2dd78e60ef22"]}
+  ],
+  "kling-2-6-pro-vs-ltx-2-fast": [
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_488b21b1-766e-4760-9a24-cd6eb402a7e7", "job_274c43e0-b5c8-43b5-b27a-a62d46977852"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_e52f6a9d-023b-4f51-9037-361939c00177", "job_1346a7bf-0e83-4192-8d75-bb68fb33e043"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_1d118936-8d52-45ef-b9fa-8d1a76eacb28", "job_d52dee0e-5820-49a3-83b3-91a4f970b306"]},
+    {"promptHash": "1aea0f23ba15eb8c2ec9ff775b3be6dadc0b4ac286b6b4c85ddd0eff62f04958", "videoIds": ["job_a9b1839c-a9a8-4766-a703-b35527da50bc", "job_72676d74-bbfc-41b3-94ca-33326dabe517"]},
+    {"promptHash": "58fc965efa3105a066a6bb651a0ac8948eaa8d446258a07ad5bfeb2132f3b3e2", "videoIds": ["job_41dfcdc6-54d6-4a63-9b1a-211b5a7a7909", "job_0c331d36-9676-4a27-a148-39b50e667dce"]}
+  ],
+  "kling-2-6-pro-vs-luma-ray-2": [
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_1d118936-8d52-45ef-b9fa-8d1a76eacb28", "job_eb467daa-7bef-4053-a1dd-895e33f1bb38"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_e52f6a9d-023b-4f51-9037-361939c00177", "job_3c92babc-a3db-4c9f-bd45-31e469452855"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_488b21b1-766e-4760-9a24-cd6eb402a7e7", "job_f3bae828-5908-4b78-800c-ff3abe10e1a4"]}
+  ],
+  "kling-2-6-pro-vs-luma-ray-2-flash": [
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_1d118936-8d52-45ef-b9fa-8d1a76eacb28", "job_85e0aa16-4dc0-4967-ac17-0ed121bbcec9"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_e52f6a9d-023b-4f51-9037-361939c00177", "job_7a36c0e0-1bb9-4d6b-a2f3-a771aaacddc9"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_488b21b1-766e-4760-9a24-cd6eb402a7e7", "job_3d348765-4d97-45b8-8ede-5d3d17160f99"]}
+  ],
+  "kling-2-6-pro-vs-minimax-hailuo-02-text": [
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_1d118936-8d52-45ef-b9fa-8d1a76eacb28", "job_0ec5b210-47ff-4eed-9a43-4b0061e20dc7"]},
+    {"promptHash": "1aea0f23ba15eb8c2ec9ff775b3be6dadc0b4ac286b6b4c85ddd0eff62f04958", "videoIds": ["job_a9b1839c-a9a8-4766-a703-b35527da50bc", "job_8c1c610a-3af6-4178-83fe-2fa3e436cdc3"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_e52f6a9d-023b-4f51-9037-361939c00177", "job_96c348e2-cce5-4d09-9340-25bbe74d9873"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_488b21b1-766e-4760-9a24-cd6eb402a7e7", "job_be5bff74-eec5-4fb9-80c7-e6f28d317cb7"]}
+  ],
+  "kling-2-6-pro-vs-pika-text-to-video": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_e52f6a9d-023b-4f51-9037-361939c00177", "job_fc1e363c-6b1d-42b2-ae15-1a151213120d"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_1d118936-8d52-45ef-b9fa-8d1a76eacb28", "job_18bcd151-e747-4a60-8a67-42a028890ef2"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_488b21b1-766e-4760-9a24-cd6eb402a7e7", "job_df68f2a6-4223-4721-811c-efb85de01c46"]},
+    {"promptHash": "1aea0f23ba15eb8c2ec9ff775b3be6dadc0b4ac286b6b4c85ddd0eff62f04958", "videoIds": ["job_a9b1839c-a9a8-4766-a703-b35527da50bc", "job_27b9e640-3e33-4c39-b1f8-e7c561329743"]}
+  ],
+  "kling-2-6-pro-vs-seedance-1-5-pro": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_e52f6a9d-023b-4f51-9037-361939c00177", "job_d8f52d87-fea7-458e-898d-d6b6c8de5d0a"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_1d118936-8d52-45ef-b9fa-8d1a76eacb28", "job_b7c5ce0f-45a3-44f1-971c-94989e6a1c0c"]},
+    {"promptHash": "782df22577862e5cbace63dcf041d05fefcce2dab045a139bef8347e140df9ee", "videoIds": ["job_c9e36e6c-c689-4db8-b8ad-eda642396f1c", "job_a182cb23-8023-4e79-beed-dcd0fbe76eb1"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_488b21b1-766e-4760-9a24-cd6eb402a7e7", "job_f94d62e7-4b15-446e-b43a-319d8bfde3f3"]}
+  ],
+  "kling-2-6-pro-vs-seedance-2-0": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_e52f6a9d-023b-4f51-9037-361939c00177", "job_763808a1-c7aa-4740-bc59-182955de5c19"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_488b21b1-766e-4760-9a24-cd6eb402a7e7", "job_3570ff87-af76-4b80-99cf-c679205f6129"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_1d118936-8d52-45ef-b9fa-8d1a76eacb28", "job_ed52beb9-3a48-44f2-a9b4-08a428f3a3e8"]}
+  ],
+  "kling-2-6-pro-vs-seedance-2-0-fast": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_e52f6a9d-023b-4f51-9037-361939c00177", "job_910dccf8-cf91-4c3e-b5ca-c229d408e2ba"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_488b21b1-766e-4760-9a24-cd6eb402a7e7", "job_bbbe1537-1fa7-4eb1-948c-59353a9fc728"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_1d118936-8d52-45ef-b9fa-8d1a76eacb28", "job_3d1b9752-72ef-4b98-a09e-e13012015e16"]}
+  ],
+  "kling-2-6-pro-vs-sora-2": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_e52f6a9d-023b-4f51-9037-361939c00177", "job_d1b582c3-bdaf-46ce-99ed-b9939de89a81"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_488b21b1-766e-4760-9a24-cd6eb402a7e7", "job_55c36d3f-8591-4e32-a6a3-dbf191706d18"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_1d118936-8d52-45ef-b9fa-8d1a76eacb28", "job_ad6b652f-8cb2-4b65-9bff-e88adbae6a1b"]}
+  ],
+  "kling-2-6-pro-vs-sora-2-pro": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_e52f6a9d-023b-4f51-9037-361939c00177", "job_3a371233-0b60-4785-bdb3-636e8f218a0b"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_488b21b1-766e-4760-9a24-cd6eb402a7e7", "job_b6c95097-032d-4fcb-8b7a-c84f6942e6b2"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_1d118936-8d52-45ef-b9fa-8d1a76eacb28", "job_20b54ee7-ec03-47d4-b1ca-2fef046093f8"]}
+  ],
+  "kling-2-6-pro-vs-veo-3-1": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_e52f6a9d-023b-4f51-9037-361939c00177", "job_5981bbec-f5e9-4163-9c65-093df7e296f5"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_488b21b1-766e-4760-9a24-cd6eb402a7e7", "job_b197fc68-0bb7-4a24-9720-0ff721642446"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_1d118936-8d52-45ef-b9fa-8d1a76eacb28", "job_b3187535-7c87-4616-a8ec-2c635d44ff58"]}
+  ],
+  "kling-2-6-pro-vs-veo-3-1-fast": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_e52f6a9d-023b-4f51-9037-361939c00177", "job_b092ca2a-2442-4246-8f63-6854b057260f"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_488b21b1-766e-4760-9a24-cd6eb402a7e7", "job_fa9f3068-9796-4f75-af35-e9fcdecf68a9"]},
+    {"promptHash": "1aea0f23ba15eb8c2ec9ff775b3be6dadc0b4ac286b6b4c85ddd0eff62f04958", "videoIds": ["job_a9b1839c-a9a8-4766-a703-b35527da50bc", "job_50e477f8-c6a6-452c-9901-e3111921ef09"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_1d118936-8d52-45ef-b9fa-8d1a76eacb28", "job_c80deef9-755b-4e52-86a9-a4499883cca9"]}
+  ],
+  "kling-2-6-pro-vs-veo-3-1-lite": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_e52f6a9d-023b-4f51-9037-361939c00177", "job_931f3188-5c56-4001-8e5f-498396774cf7"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_488b21b1-766e-4760-9a24-cd6eb402a7e7", "job_465613de-519e-452e-b009-3a78552f0884"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_1d118936-8d52-45ef-b9fa-8d1a76eacb28", "job_107e286c-e52a-481b-9f58-2dd0e869f0e7"]}
+  ],
+  "kling-2-6-pro-vs-wan-2-5": [
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_488b21b1-766e-4760-9a24-cd6eb402a7e7", "job_3c25941b-cfab-42f4-912a-a47a040b9fe4"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_e52f6a9d-023b-4f51-9037-361939c00177", "job_320e2771-443e-41a0-b1fb-9c688ccbf8d6"]}
+  ],
+  "kling-2-6-pro-vs-wan-2-6": [
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_488b21b1-766e-4760-9a24-cd6eb402a7e7", "job_7bfe7823-5794-4a41-9869-2bb4458a9bc7"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_e52f6a9d-023b-4f51-9037-361939c00177", "job_2c795d5a-f8fb-4359-9d15-fbc65678327d"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_1d118936-8d52-45ef-b9fa-8d1a76eacb28", "job_110f0282-bf5e-4d58-ab34-8b117c94d4e4"]},
+    {"promptHash": "1aea0f23ba15eb8c2ec9ff775b3be6dadc0b4ac286b6b4c85ddd0eff62f04958", "videoIds": ["job_a9b1839c-a9a8-4766-a703-b35527da50bc", "job_4b435630-8224-498a-a9cd-d6a005e3578d"]}
+  ],
+  "kling-3-pro-vs-kling-3-standard": [
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_82be9d73-885f-48ca-9ded-347cd069730c", "job_56c0b733-193b-49c6-adc8-1f87bd8b93c9"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_ae925c1a-935f-4511-ba1d-346ee2f15d8a", "job_61bbdb63-4a12-4847-bd1a-20dfe868bfe6"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_0a9ee690-d91d-499d-817e-dccec23d8c9e", "job_31530d04-db12-4a42-b593-dda7574f5338"]}
+  ],
+  "kling-3-pro-vs-ltx-2": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_ae925c1a-935f-4511-ba1d-346ee2f15d8a", "job_15cd3e9d-67d6-4378-8d76-11e3734d3a43"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_0a9ee690-d91d-499d-817e-dccec23d8c9e", "job_bd3c3bd3-00a1-4bf4-9047-73ca60d554e9"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_82be9d73-885f-48ca-9ded-347cd069730c", "job_a8b82fc8-03af-49b8-99d4-186f497eb358"]}
+  ],
+  "kling-3-pro-vs-ltx-2-3-fast": [
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_0a9ee690-d91d-499d-817e-dccec23d8c9e", "job_a757f656-43b8-47bc-83d2-0bd6728b320b"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_ae925c1a-935f-4511-ba1d-346ee2f15d8a", "job_4ed60dee-1717-47a8-b858-53bd6e75f6fe"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_82be9d73-885f-48ca-9ded-347cd069730c", "job_716ddb6f-c9d0-4339-b6c9-3a9160d291ce"]}
+  ],
+  "kling-3-pro-vs-ltx-2-3-pro": [
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_0a9ee690-d91d-499d-817e-dccec23d8c9e", "job_d2e0b731-ba85-498b-bf45-a1b17b468963"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_ae925c1a-935f-4511-ba1d-346ee2f15d8a", "job_286942bf-41a9-4283-aeff-628746259477"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_82be9d73-885f-48ca-9ded-347cd069730c", "job_5123dfd5-0392-4c8a-9e3c-2dd78e60ef22"]}
+  ],
+  "kling-3-pro-vs-ltx-2-fast": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_ae925c1a-935f-4511-ba1d-346ee2f15d8a", "job_1346a7bf-0e83-4192-8d75-bb68fb33e043"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_0a9ee690-d91d-499d-817e-dccec23d8c9e", "job_274c43e0-b5c8-43b5-b27a-a62d46977852"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_82be9d73-885f-48ca-9ded-347cd069730c", "job_d52dee0e-5820-49a3-83b3-91a4f970b306"]}
+  ],
+  "kling-3-pro-vs-luma-ray-2": [
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_82be9d73-885f-48ca-9ded-347cd069730c", "job_eb467daa-7bef-4053-a1dd-895e33f1bb38"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_0a9ee690-d91d-499d-817e-dccec23d8c9e", "job_f3bae828-5908-4b78-800c-ff3abe10e1a4"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_ae925c1a-935f-4511-ba1d-346ee2f15d8a", "job_3c92babc-a3db-4c9f-bd45-31e469452855"]}
+  ],
+  "kling-3-pro-vs-luma-ray-2-flash": [
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_82be9d73-885f-48ca-9ded-347cd069730c", "job_85e0aa16-4dc0-4967-ac17-0ed121bbcec9"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_0a9ee690-d91d-499d-817e-dccec23d8c9e", "job_3d348765-4d97-45b8-8ede-5d3d17160f99"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_ae925c1a-935f-4511-ba1d-346ee2f15d8a", "job_7a36c0e0-1bb9-4d6b-a2f3-a771aaacddc9"]}
+  ],
+  "kling-3-pro-vs-minimax-hailuo-02-text": [
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_82be9d73-885f-48ca-9ded-347cd069730c", "job_0ec5b210-47ff-4eed-9a43-4b0061e20dc7"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_ae925c1a-935f-4511-ba1d-346ee2f15d8a", "job_96c348e2-cce5-4d09-9340-25bbe74d9873"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_0a9ee690-d91d-499d-817e-dccec23d8c9e", "job_be5bff74-eec5-4fb9-80c7-e6f28d317cb7"]}
+  ],
+  "kling-3-pro-vs-pika-text-to-video": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_ae925c1a-935f-4511-ba1d-346ee2f15d8a", "job_fc1e363c-6b1d-42b2-ae15-1a151213120d"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_82be9d73-885f-48ca-9ded-347cd069730c", "job_18bcd151-e747-4a60-8a67-42a028890ef2"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_0a9ee690-d91d-499d-817e-dccec23d8c9e", "job_df68f2a6-4223-4721-811c-efb85de01c46"]}
+  ],
+  "kling-3-pro-vs-seedance-1-5-pro": [
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_82be9d73-885f-48ca-9ded-347cd069730c", "job_b7c5ce0f-45a3-44f1-971c-94989e6a1c0c"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_ae925c1a-935f-4511-ba1d-346ee2f15d8a", "job_d8f52d87-fea7-458e-898d-d6b6c8de5d0a"]},
+    {"promptHash": "9e8da6d5556b0a948e0ec787b2a7c06e3a30fd3418555decced373606e04bdcb", "videoIds": ["job_59656d17-20ea-47b7-a851-4b99a1ddaf83", "job_6ac2c316-89a0-4124-9b03-2dc88bb976d0"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_0a9ee690-d91d-499d-817e-dccec23d8c9e", "job_f94d62e7-4b15-446e-b43a-319d8bfde3f3"]},
+    {"promptHash": "37666ee315393894742c1ab801c89dbd7144ec0a2a00963fdf70125fe574ebc1", "videoIds": ["job_31e54e36-d978-4055-a275-f963a6d8066c", "job_81d765fd-ef07-444e-a72e-64d077058e31"]}
+  ],
+  "kling-3-pro-vs-seedance-2-0": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_ae925c1a-935f-4511-ba1d-346ee2f15d8a", "job_763808a1-c7aa-4740-bc59-182955de5c19"]},
+    {"promptHash": "4c8d063e0d414d12bbccf14ed72c97b410cbca78cf7ec96e5a0ba5a77120a7a3", "videoIds": ["job_d9f08cc4-1ba1-4b02-a88a-7d6944c8e7a3", "job_0b9d1318-eadb-435b-954e-1a74658d6819"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_0a9ee690-d91d-499d-817e-dccec23d8c9e", "job_3570ff87-af76-4b80-99cf-c679205f6129"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_82be9d73-885f-48ca-9ded-347cd069730c", "job_ed52beb9-3a48-44f2-a9b4-08a428f3a3e8"]}
+  ],
+  "kling-3-pro-vs-seedance-2-0-fast": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_ae925c1a-935f-4511-ba1d-346ee2f15d8a", "job_910dccf8-cf91-4c3e-b5ca-c229d408e2ba"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_0a9ee690-d91d-499d-817e-dccec23d8c9e", "job_bbbe1537-1fa7-4eb1-948c-59353a9fc728"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_82be9d73-885f-48ca-9ded-347cd069730c", "job_3d1b9752-72ef-4b98-a09e-e13012015e16"]}
+  ],
+  "kling-3-pro-vs-sora-2": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_ae925c1a-935f-4511-ba1d-346ee2f15d8a", "job_d1b582c3-bdaf-46ce-99ed-b9939de89a81"]},
+    {"promptHash": "37666ee315393894742c1ab801c89dbd7144ec0a2a00963fdf70125fe574ebc1", "videoIds": ["job_8056b44e-5989-446c-8fef-b5a3c9aebb1b", "job_a68968b5-5577-424a-bd75-cc1675e14322"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_0a9ee690-d91d-499d-817e-dccec23d8c9e", "job_55c36d3f-8591-4e32-a6a3-dbf191706d18"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_82be9d73-885f-48ca-9ded-347cd069730c", "job_ad6b652f-8cb2-4b65-9bff-e88adbae6a1b"]}
+  ],
+  "kling-3-pro-vs-sora-2-pro": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_ae925c1a-935f-4511-ba1d-346ee2f15d8a", "job_3a371233-0b60-4785-bdb3-636e8f218a0b"]},
+    {"promptHash": "9e8da6d5556b0a948e0ec787b2a7c06e3a30fd3418555decced373606e04bdcb", "videoIds": ["job_59656d17-20ea-47b7-a851-4b99a1ddaf83", "job_e9fe50c4-448c-4043-aec8-5a26cad720af"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_82be9d73-885f-48ca-9ded-347cd069730c", "job_20b54ee7-ec03-47d4-b1ca-2fef046093f8"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_0a9ee690-d91d-499d-817e-dccec23d8c9e", "job_b6c95097-032d-4fcb-8b7a-c84f6942e6b2"]}
+  ],
+  "kling-3-pro-vs-veo-3-1": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_ae925c1a-935f-4511-ba1d-346ee2f15d8a", "job_5981bbec-f5e9-4163-9c65-093df7e296f5"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_82be9d73-885f-48ca-9ded-347cd069730c", "job_b3187535-7c87-4616-a8ec-2c635d44ff58"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_0a9ee690-d91d-499d-817e-dccec23d8c9e", "job_b197fc68-0bb7-4a24-9720-0ff721642446"]}
+  ],
+  "kling-3-pro-vs-veo-3-1-fast": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_ae925c1a-935f-4511-ba1d-346ee2f15d8a", "job_b092ca2a-2442-4246-8f63-6854b057260f"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_0a9ee690-d91d-499d-817e-dccec23d8c9e", "job_fa9f3068-9796-4f75-af35-e9fcdecf68a9"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_82be9d73-885f-48ca-9ded-347cd069730c", "job_c80deef9-755b-4e52-86a9-a4499883cca9"]}
+  ],
+  "kling-3-pro-vs-veo-3-1-lite": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_ae925c1a-935f-4511-ba1d-346ee2f15d8a", "job_931f3188-5c56-4001-8e5f-498396774cf7"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_0a9ee690-d91d-499d-817e-dccec23d8c9e", "job_465613de-519e-452e-b009-3a78552f0884"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_82be9d73-885f-48ca-9ded-347cd069730c", "job_107e286c-e52a-481b-9f58-2dd0e869f0e7"]}
+  ],
+  "kling-3-pro-vs-wan-2-5": [
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_0a9ee690-d91d-499d-817e-dccec23d8c9e", "job_3c25941b-cfab-42f4-912a-a47a040b9fe4"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_ae925c1a-935f-4511-ba1d-346ee2f15d8a", "job_320e2771-443e-41a0-b1fb-9c688ccbf8d6"]}
+  ],
+  "kling-3-pro-vs-wan-2-6": [
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_0a9ee690-d91d-499d-817e-dccec23d8c9e", "job_7bfe7823-5794-4a41-9869-2bb4458a9bc7"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_ae925c1a-935f-4511-ba1d-346ee2f15d8a", "job_2c795d5a-f8fb-4359-9d15-fbc65678327d"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_82be9d73-885f-48ca-9ded-347cd069730c", "job_110f0282-bf5e-4d58-ab34-8b117c94d4e4"]}
+  ],
+  "kling-3-standard-vs-ltx-2": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_61bbdb63-4a12-4847-bd1a-20dfe868bfe6", "job_15cd3e9d-67d6-4378-8d76-11e3734d3a43"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_31530d04-db12-4a42-b593-dda7574f5338", "job_bd3c3bd3-00a1-4bf4-9047-73ca60d554e9"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_56c0b733-193b-49c6-adc8-1f87bd8b93c9", "job_a8b82fc8-03af-49b8-99d4-186f497eb358"]}
+  ],
+  "kling-3-standard-vs-ltx-2-3-fast": [
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_31530d04-db12-4a42-b593-dda7574f5338", "job_a757f656-43b8-47bc-83d2-0bd6728b320b"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_61bbdb63-4a12-4847-bd1a-20dfe868bfe6", "job_4ed60dee-1717-47a8-b858-53bd6e75f6fe"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_56c0b733-193b-49c6-adc8-1f87bd8b93c9", "job_716ddb6f-c9d0-4339-b6c9-3a9160d291ce"]}
+  ],
+  "kling-3-standard-vs-ltx-2-3-pro": [
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_31530d04-db12-4a42-b593-dda7574f5338", "job_d2e0b731-ba85-498b-bf45-a1b17b468963"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_61bbdb63-4a12-4847-bd1a-20dfe868bfe6", "job_286942bf-41a9-4283-aeff-628746259477"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_56c0b733-193b-49c6-adc8-1f87bd8b93c9", "job_5123dfd5-0392-4c8a-9e3c-2dd78e60ef22"]},
+    {"promptHash": "be0bad03a48d3aa24b5c46c22d92047954c9dc2fdc6239346c80271eb9b14641", "videoIds": ["job_8d296ef9-6002-4ec1-848b-63e9b86910fd", "job_25d1ef0f-1d9b-4812-9582-a61688c59bc3"]}
+  ],
+  "kling-3-standard-vs-ltx-2-fast": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_61bbdb63-4a12-4847-bd1a-20dfe868bfe6", "job_1346a7bf-0e83-4192-8d75-bb68fb33e043"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_31530d04-db12-4a42-b593-dda7574f5338", "job_274c43e0-b5c8-43b5-b27a-a62d46977852"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_56c0b733-193b-49c6-adc8-1f87bd8b93c9", "job_d52dee0e-5820-49a3-83b3-91a4f970b306"]}
+  ],
+  "kling-3-standard-vs-luma-ray-2": [
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_56c0b733-193b-49c6-adc8-1f87bd8b93c9", "job_eb467daa-7bef-4053-a1dd-895e33f1bb38"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_31530d04-db12-4a42-b593-dda7574f5338", "job_f3bae828-5908-4b78-800c-ff3abe10e1a4"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_61bbdb63-4a12-4847-bd1a-20dfe868bfe6", "job_3c92babc-a3db-4c9f-bd45-31e469452855"]}
+  ],
+  "kling-3-standard-vs-luma-ray-2-flash": [
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_56c0b733-193b-49c6-adc8-1f87bd8b93c9", "job_85e0aa16-4dc0-4967-ac17-0ed121bbcec9"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_31530d04-db12-4a42-b593-dda7574f5338", "job_3d348765-4d97-45b8-8ede-5d3d17160f99"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_61bbdb63-4a12-4847-bd1a-20dfe868bfe6", "job_7a36c0e0-1bb9-4d6b-a2f3-a771aaacddc9"]}
+  ],
+  "kling-3-standard-vs-minimax-hailuo-02-text": [
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_56c0b733-193b-49c6-adc8-1f87bd8b93c9", "job_0ec5b210-47ff-4eed-9a43-4b0061e20dc7"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_61bbdb63-4a12-4847-bd1a-20dfe868bfe6", "job_96c348e2-cce5-4d09-9340-25bbe74d9873"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_31530d04-db12-4a42-b593-dda7574f5338", "job_be5bff74-eec5-4fb9-80c7-e6f28d317cb7"]}
+  ],
+  "kling-3-standard-vs-pika-text-to-video": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_61bbdb63-4a12-4847-bd1a-20dfe868bfe6", "job_fc1e363c-6b1d-42b2-ae15-1a151213120d"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_56c0b733-193b-49c6-adc8-1f87bd8b93c9", "job_18bcd151-e747-4a60-8a67-42a028890ef2"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_31530d04-db12-4a42-b593-dda7574f5338", "job_df68f2a6-4223-4721-811c-efb85de01c46"]}
+  ],
+  "kling-3-standard-vs-seedance-1-5-pro": [
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_56c0b733-193b-49c6-adc8-1f87bd8b93c9", "job_b7c5ce0f-45a3-44f1-971c-94989e6a1c0c"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_31530d04-db12-4a42-b593-dda7574f5338", "job_f94d62e7-4b15-446e-b43a-319d8bfde3f3"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_61bbdb63-4a12-4847-bd1a-20dfe868bfe6", "job_d8f52d87-fea7-458e-898d-d6b6c8de5d0a"]}
+  ],
+  "kling-3-standard-vs-seedance-2-0": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_61bbdb63-4a12-4847-bd1a-20dfe868bfe6", "job_763808a1-c7aa-4740-bc59-182955de5c19"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_31530d04-db12-4a42-b593-dda7574f5338", "job_3570ff87-af76-4b80-99cf-c679205f6129"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_56c0b733-193b-49c6-adc8-1f87bd8b93c9", "job_ed52beb9-3a48-44f2-a9b4-08a428f3a3e8"]}
+  ],
+  "kling-3-standard-vs-seedance-2-0-fast": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_61bbdb63-4a12-4847-bd1a-20dfe868bfe6", "job_910dccf8-cf91-4c3e-b5ca-c229d408e2ba"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_31530d04-db12-4a42-b593-dda7574f5338", "job_bbbe1537-1fa7-4eb1-948c-59353a9fc728"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_56c0b733-193b-49c6-adc8-1f87bd8b93c9", "job_3d1b9752-72ef-4b98-a09e-e13012015e16"]}
+  ],
+  "kling-3-standard-vs-sora-2": [
+    {"promptHash": "6ed2cb61b68e2a5c313434acfbf94b6e3bc615c9d809396404b77404291d7011", "videoIds": ["job_d45880bb-5455-4971-8d6e-a02114a48b1e", "job_a68f177b-871b-4abe-86ac-a8bf7c6a0d67"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_61bbdb63-4a12-4847-bd1a-20dfe868bfe6", "job_d1b582c3-bdaf-46ce-99ed-b9939de89a81"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_31530d04-db12-4a42-b593-dda7574f5338", "job_55c36d3f-8591-4e32-a6a3-dbf191706d18"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_56c0b733-193b-49c6-adc8-1f87bd8b93c9", "job_ad6b652f-8cb2-4b65-9bff-e88adbae6a1b"]}
+  ],
+  "kling-3-standard-vs-sora-2-pro": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_61bbdb63-4a12-4847-bd1a-20dfe868bfe6", "job_3a371233-0b60-4785-bdb3-636e8f218a0b"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_31530d04-db12-4a42-b593-dda7574f5338", "job_b6c95097-032d-4fcb-8b7a-c84f6942e6b2"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_56c0b733-193b-49c6-adc8-1f87bd8b93c9", "job_20b54ee7-ec03-47d4-b1ca-2fef046093f8"]}
+  ],
+  "kling-3-standard-vs-veo-3-1": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_61bbdb63-4a12-4847-bd1a-20dfe868bfe6", "job_5981bbec-f5e9-4163-9c65-093df7e296f5"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_31530d04-db12-4a42-b593-dda7574f5338", "job_b197fc68-0bb7-4a24-9720-0ff721642446"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_56c0b733-193b-49c6-adc8-1f87bd8b93c9", "job_b3187535-7c87-4616-a8ec-2c635d44ff58"]}
+  ],
+  "kling-3-standard-vs-veo-3-1-fast": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_61bbdb63-4a12-4847-bd1a-20dfe868bfe6", "job_b092ca2a-2442-4246-8f63-6854b057260f"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_31530d04-db12-4a42-b593-dda7574f5338", "job_fa9f3068-9796-4f75-af35-e9fcdecf68a9"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_56c0b733-193b-49c6-adc8-1f87bd8b93c9", "job_c80deef9-755b-4e52-86a9-a4499883cca9"]}
+  ],
+  "kling-3-standard-vs-veo-3-1-lite": [
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_31530d04-db12-4a42-b593-dda7574f5338", "job_465613de-519e-452e-b009-3a78552f0884"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_61bbdb63-4a12-4847-bd1a-20dfe868bfe6", "job_931f3188-5c56-4001-8e5f-498396774cf7"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_56c0b733-193b-49c6-adc8-1f87bd8b93c9", "job_107e286c-e52a-481b-9f58-2dd0e869f0e7"]}
+  ],
+  "kling-3-standard-vs-wan-2-5": [
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_31530d04-db12-4a42-b593-dda7574f5338", "job_3c25941b-cfab-42f4-912a-a47a040b9fe4"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_61bbdb63-4a12-4847-bd1a-20dfe868bfe6", "job_320e2771-443e-41a0-b1fb-9c688ccbf8d6"]}
+  ],
+  "kling-3-standard-vs-wan-2-6": [
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_31530d04-db12-4a42-b593-dda7574f5338", "job_7bfe7823-5794-4a41-9869-2bb4458a9bc7"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_61bbdb63-4a12-4847-bd1a-20dfe868bfe6", "job_2c795d5a-f8fb-4359-9d15-fbc65678327d"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_56c0b733-193b-49c6-adc8-1f87bd8b93c9", "job_110f0282-bf5e-4d58-ab34-8b117c94d4e4"]}
+  ],
+  "kling-o3-4k-vs-seedance-2-0": [
+    {"promptHash": "cdc3b141776401e88eef40e6cafd6f86b03bf32039ce9928cc4979f0b4fa177b", "videoIds": ["job_8af463de-b0e7-4b67-b791-b9687ca90a63", "job_c9c1989e-5e00-4fe2-81cd-3667743df61e"]}
+  ],
+  "kling-o3-pro-vs-seedance-2-0": [
+    {"promptHash": "cdc3b141776401e88eef40e6cafd6f86b03bf32039ce9928cc4979f0b4fa177b", "videoIds": ["job_4975d7d3-7b53-480e-8d48-b88c4ce6902c", "job_c9c1989e-5e00-4fe2-81cd-3667743df61e"]}
+  ],
+  "kling-o3-standard-vs-seedance-2-0": [
+    {"promptHash": "cdc3b141776401e88eef40e6cafd6f86b03bf32039ce9928cc4979f0b4fa177b", "videoIds": ["job_8836b967-bd47-49ed-8165-980611093802", "job_c9c1989e-5e00-4fe2-81cd-3667743df61e"]}
+  ],
+  "kling-v4-vs-seedance-2-5": [
+    {"promptHash": "11417419e1ca1658aaef7ef9b67f62951cea5c2c10df3625b3626995fe4fda69", "videoIds": ["job_8e28a23d-b8b5-405f-95cd-1557726410af", "job_85e2a105-108b-4328-9360-74a99c9d016c"]}
+  ],
+  "ltx-2-3-fast-vs-ltx-2-3-pro": [
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_a757f656-43b8-47bc-83d2-0bd6728b320b", "job_d2e0b731-ba85-498b-bf45-a1b17b468963"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_4ed60dee-1717-47a8-b858-53bd6e75f6fe", "job_286942bf-41a9-4283-aeff-628746259477"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_716ddb6f-c9d0-4339-b6c9-3a9160d291ce", "job_5123dfd5-0392-4c8a-9e3c-2dd78e60ef22"]}
+  ],
+  "ltx-2-3-fast-vs-ltx-2-fast": [
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_716ddb6f-c9d0-4339-b6c9-3a9160d291ce", "job_d52dee0e-5820-49a3-83b3-91a4f970b306"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_4ed60dee-1717-47a8-b858-53bd6e75f6fe", "job_1346a7bf-0e83-4192-8d75-bb68fb33e043"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_a757f656-43b8-47bc-83d2-0bd6728b320b", "job_274c43e0-b5c8-43b5-b27a-a62d46977852"]}
+  ],
+  "ltx-2-3-fast-vs-luma-ray-2": [
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_716ddb6f-c9d0-4339-b6c9-3a9160d291ce", "job_eb467daa-7bef-4053-a1dd-895e33f1bb38"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_4ed60dee-1717-47a8-b858-53bd6e75f6fe", "job_3c92babc-a3db-4c9f-bd45-31e469452855"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_a757f656-43b8-47bc-83d2-0bd6728b320b", "job_f3bae828-5908-4b78-800c-ff3abe10e1a4"]}
+  ],
+  "ltx-2-3-fast-vs-luma-ray-2-flash": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_4ed60dee-1717-47a8-b858-53bd6e75f6fe", "job_7a36c0e0-1bb9-4d6b-a2f3-a771aaacddc9"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_a757f656-43b8-47bc-83d2-0bd6728b320b", "job_3d348765-4d97-45b8-8ede-5d3d17160f99"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_716ddb6f-c9d0-4339-b6c9-3a9160d291ce", "job_85e0aa16-4dc0-4967-ac17-0ed121bbcec9"]}
+  ],
+  "ltx-2-3-fast-vs-minimax-hailuo-02-text": [
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_716ddb6f-c9d0-4339-b6c9-3a9160d291ce", "job_0ec5b210-47ff-4eed-9a43-4b0061e20dc7"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_4ed60dee-1717-47a8-b858-53bd6e75f6fe", "job_96c348e2-cce5-4d09-9340-25bbe74d9873"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_a757f656-43b8-47bc-83d2-0bd6728b320b", "job_be5bff74-eec5-4fb9-80c7-e6f28d317cb7"]}
+  ],
+  "ltx-2-3-fast-vs-pika-text-to-video": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_4ed60dee-1717-47a8-b858-53bd6e75f6fe", "job_fc1e363c-6b1d-42b2-ae15-1a151213120d"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_716ddb6f-c9d0-4339-b6c9-3a9160d291ce", "job_18bcd151-e747-4a60-8a67-42a028890ef2"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_a757f656-43b8-47bc-83d2-0bd6728b320b", "job_df68f2a6-4223-4721-811c-efb85de01c46"]}
+  ],
+  "ltx-2-3-fast-vs-seedance-1-5-pro": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_4ed60dee-1717-47a8-b858-53bd6e75f6fe", "job_d8f52d87-fea7-458e-898d-d6b6c8de5d0a"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_716ddb6f-c9d0-4339-b6c9-3a9160d291ce", "job_b7c5ce0f-45a3-44f1-971c-94989e6a1c0c"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_a757f656-43b8-47bc-83d2-0bd6728b320b", "job_f94d62e7-4b15-446e-b43a-319d8bfde3f3"]}
+  ],
+  "ltx-2-3-fast-vs-seedance-2-0": [
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_a757f656-43b8-47bc-83d2-0bd6728b320b", "job_3570ff87-af76-4b80-99cf-c679205f6129"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_4ed60dee-1717-47a8-b858-53bd6e75f6fe", "job_763808a1-c7aa-4740-bc59-182955de5c19"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_716ddb6f-c9d0-4339-b6c9-3a9160d291ce", "job_ed52beb9-3a48-44f2-a9b4-08a428f3a3e8"]}
+  ],
+  "ltx-2-3-fast-vs-seedance-2-0-fast": [
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_a757f656-43b8-47bc-83d2-0bd6728b320b", "job_bbbe1537-1fa7-4eb1-948c-59353a9fc728"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_4ed60dee-1717-47a8-b858-53bd6e75f6fe", "job_910dccf8-cf91-4c3e-b5ca-c229d408e2ba"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_716ddb6f-c9d0-4339-b6c9-3a9160d291ce", "job_3d1b9752-72ef-4b98-a09e-e13012015e16"]}
+  ],
+  "ltx-2-3-fast-vs-sora-2": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_4ed60dee-1717-47a8-b858-53bd6e75f6fe", "job_d1b582c3-bdaf-46ce-99ed-b9939de89a81"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_a757f656-43b8-47bc-83d2-0bd6728b320b", "job_55c36d3f-8591-4e32-a6a3-dbf191706d18"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_716ddb6f-c9d0-4339-b6c9-3a9160d291ce", "job_ad6b652f-8cb2-4b65-9bff-e88adbae6a1b"]},
+    {"promptHash": "5744ef9eed0da35a3d5d538e38c281434c1666025693cd2720a3bbce1754f1c9", "videoIds": ["job_603fa0fa-c010-4a54-ae2d-d5b2d8888f7a", "job_d77c7190-e94f-46ab-a273-19d8c14b62cb"]}
+  ],
+  "ltx-2-3-fast-vs-sora-2-pro": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_4ed60dee-1717-47a8-b858-53bd6e75f6fe", "job_3a371233-0b60-4785-bdb3-636e8f218a0b"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_716ddb6f-c9d0-4339-b6c9-3a9160d291ce", "job_20b54ee7-ec03-47d4-b1ca-2fef046093f8"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_a757f656-43b8-47bc-83d2-0bd6728b320b", "job_b6c95097-032d-4fcb-8b7a-c84f6942e6b2"]}
+  ],
+  "ltx-2-3-fast-vs-veo-3-1": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_4ed60dee-1717-47a8-b858-53bd6e75f6fe", "job_5981bbec-f5e9-4163-9c65-093df7e296f5"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_a757f656-43b8-47bc-83d2-0bd6728b320b", "job_b197fc68-0bb7-4a24-9720-0ff721642446"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_716ddb6f-c9d0-4339-b6c9-3a9160d291ce", "job_b3187535-7c87-4616-a8ec-2c635d44ff58"]}
+  ],
+  "ltx-2-3-fast-vs-veo-3-1-fast": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_4ed60dee-1717-47a8-b858-53bd6e75f6fe", "job_b092ca2a-2442-4246-8f63-6854b057260f"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_716ddb6f-c9d0-4339-b6c9-3a9160d291ce", "job_c80deef9-755b-4e52-86a9-a4499883cca9"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_a757f656-43b8-47bc-83d2-0bd6728b320b", "job_fa9f3068-9796-4f75-af35-e9fcdecf68a9"]}
+  ],
+  "ltx-2-3-fast-vs-veo-3-1-lite": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_4ed60dee-1717-47a8-b858-53bd6e75f6fe", "job_931f3188-5c56-4001-8e5f-498396774cf7"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_716ddb6f-c9d0-4339-b6c9-3a9160d291ce", "job_107e286c-e52a-481b-9f58-2dd0e869f0e7"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_a757f656-43b8-47bc-83d2-0bd6728b320b", "job_465613de-519e-452e-b009-3a78552f0884"]}
+  ],
+  "ltx-2-3-fast-vs-wan-2-5": [
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_a757f656-43b8-47bc-83d2-0bd6728b320b", "job_3c25941b-cfab-42f4-912a-a47a040b9fe4"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_4ed60dee-1717-47a8-b858-53bd6e75f6fe", "job_320e2771-443e-41a0-b1fb-9c688ccbf8d6"]}
+  ],
+  "ltx-2-3-fast-vs-wan-2-6": [
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_a757f656-43b8-47bc-83d2-0bd6728b320b", "job_7bfe7823-5794-4a41-9869-2bb4458a9bc7"]},
+    {"promptHash": "c05a361ec19e371dadc6d833e81d5740c27540240e9e35cd7bea9b7cd2286717", "videoIds": ["job_2ef2b408-18a6-4be9-980c-397d1acb739d", "job_a7f13c3d-db5e-4ede-acd0-1b28afad5f34"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_4ed60dee-1717-47a8-b858-53bd6e75f6fe", "job_2c795d5a-f8fb-4359-9d15-fbc65678327d"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_716ddb6f-c9d0-4339-b6c9-3a9160d291ce", "job_110f0282-bf5e-4d58-ab34-8b117c94d4e4"]}
+  ],
+  "ltx-2-3-pro-vs-ltx-2-fast": [
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_5123dfd5-0392-4c8a-9e3c-2dd78e60ef22", "job_d52dee0e-5820-49a3-83b3-91a4f970b306"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_286942bf-41a9-4283-aeff-628746259477", "job_1346a7bf-0e83-4192-8d75-bb68fb33e043"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_d2e0b731-ba85-498b-bf45-a1b17b468963", "job_274c43e0-b5c8-43b5-b27a-a62d46977852"]}
+  ],
+  "ltx-2-3-pro-vs-luma-ray-2": [
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_5123dfd5-0392-4c8a-9e3c-2dd78e60ef22", "job_eb467daa-7bef-4053-a1dd-895e33f1bb38"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_286942bf-41a9-4283-aeff-628746259477", "job_3c92babc-a3db-4c9f-bd45-31e469452855"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_d2e0b731-ba85-498b-bf45-a1b17b468963", "job_f3bae828-5908-4b78-800c-ff3abe10e1a4"]}
+  ],
+  "ltx-2-3-pro-vs-luma-ray-2-flash": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_286942bf-41a9-4283-aeff-628746259477", "job_7a36c0e0-1bb9-4d6b-a2f3-a771aaacddc9"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_5123dfd5-0392-4c8a-9e3c-2dd78e60ef22", "job_85e0aa16-4dc0-4967-ac17-0ed121bbcec9"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_d2e0b731-ba85-498b-bf45-a1b17b468963", "job_3d348765-4d97-45b8-8ede-5d3d17160f99"]}
+  ],
+  "ltx-2-3-pro-vs-minimax-hailuo-02-text": [
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_5123dfd5-0392-4c8a-9e3c-2dd78e60ef22", "job_0ec5b210-47ff-4eed-9a43-4b0061e20dc7"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_286942bf-41a9-4283-aeff-628746259477", "job_96c348e2-cce5-4d09-9340-25bbe74d9873"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_d2e0b731-ba85-498b-bf45-a1b17b468963", "job_be5bff74-eec5-4fb9-80c7-e6f28d317cb7"]}
+  ],
+  "ltx-2-3-pro-vs-pika-text-to-video": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_286942bf-41a9-4283-aeff-628746259477", "job_fc1e363c-6b1d-42b2-ae15-1a151213120d"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_5123dfd5-0392-4c8a-9e3c-2dd78e60ef22", "job_18bcd151-e747-4a60-8a67-42a028890ef2"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_d2e0b731-ba85-498b-bf45-a1b17b468963", "job_df68f2a6-4223-4721-811c-efb85de01c46"]}
+  ],
+  "ltx-2-3-pro-vs-seedance-1-5-pro": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_286942bf-41a9-4283-aeff-628746259477", "job_d8f52d87-fea7-458e-898d-d6b6c8de5d0a"]},
+    {"promptHash": "521d1e59c54506e32e0ed423e3250d302371654f4ce68ad32c4f73300b613bf2", "videoIds": ["job_9c60be83-0a6e-428a-b155-507481a6c3b0", "job_9d656659-304d-47d1-b66a-322dbff6139c"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_d2e0b731-ba85-498b-bf45-a1b17b468963", "job_f94d62e7-4b15-446e-b43a-319d8bfde3f3"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_5123dfd5-0392-4c8a-9e3c-2dd78e60ef22", "job_b7c5ce0f-45a3-44f1-971c-94989e6a1c0c"]}
+  ],
+  "ltx-2-3-pro-vs-seedance-2-0": [
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_5123dfd5-0392-4c8a-9e3c-2dd78e60ef22", "job_ed52beb9-3a48-44f2-a9b4-08a428f3a3e8"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_d2e0b731-ba85-498b-bf45-a1b17b468963", "job_3570ff87-af76-4b80-99cf-c679205f6129"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_286942bf-41a9-4283-aeff-628746259477", "job_763808a1-c7aa-4740-bc59-182955de5c19"]}
+  ],
+  "ltx-2-3-pro-vs-seedance-2-0-fast": [
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_5123dfd5-0392-4c8a-9e3c-2dd78e60ef22", "job_3d1b9752-72ef-4b98-a09e-e13012015e16"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_286942bf-41a9-4283-aeff-628746259477", "job_910dccf8-cf91-4c3e-b5ca-c229d408e2ba"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_d2e0b731-ba85-498b-bf45-a1b17b468963", "job_bbbe1537-1fa7-4eb1-948c-59353a9fc728"]}
+  ],
+  "ltx-2-3-pro-vs-sora-2": [
+    {"promptHash": "34bc9855e814d871d78eed43ffb79f25f04de661783bad4adce8d16c1c36acf3", "videoIds": ["job_d63163ac-06fb-4756-b789-021cddcbbf57", "job_14d68e7e-40a0-4339-adc7-bd8f52f9ed27"]},
+    {"promptHash": "67d114b3cf1cd8a65de1b06e8917d823a515b6b13a86e348ecfa51df1ab4a8ff", "videoIds": ["job_f8fc5f8f-385e-4712-acf6-73cc05dc8adb", "job_fc74756d-f1d8-4127-8cbf-1a0cca1d6e88"]},
+    {"promptHash": "b4a3238d0b62cc82a6c7e532096b770ca44f964d4dc238b57c5c3990d42232bc", "videoIds": ["job_7816ba7a-ffd0-444c-8521-51c6f9f76a70", "job_4713dc34-d5a7-450e-be7f-c44d500905df"]},
+    {"promptHash": "1db9ea10fe50131691a269cadc8b087e7c34ef6f5a6ca8a96972d929fa8efd62", "videoIds": ["job_1b6d3b04-72a9-4862-9127-ab1e89d59b1f", "job_4cd1205a-964a-4434-ac10-899c2a685620"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_286942bf-41a9-4283-aeff-628746259477", "job_d1b582c3-bdaf-46ce-99ed-b9939de89a81"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_d2e0b731-ba85-498b-bf45-a1b17b468963", "job_55c36d3f-8591-4e32-a6a3-dbf191706d18"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_5123dfd5-0392-4c8a-9e3c-2dd78e60ef22", "job_ad6b652f-8cb2-4b65-9bff-e88adbae6a1b"]}
+  ],
+  "ltx-2-3-pro-vs-sora-2-pro": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_286942bf-41a9-4283-aeff-628746259477", "job_3a371233-0b60-4785-bdb3-636e8f218a0b"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_5123dfd5-0392-4c8a-9e3c-2dd78e60ef22", "job_20b54ee7-ec03-47d4-b1ca-2fef046093f8"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_d2e0b731-ba85-498b-bf45-a1b17b468963", "job_b6c95097-032d-4fcb-8b7a-c84f6942e6b2"]}
+  ],
+  "ltx-2-3-pro-vs-veo-3-1": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_286942bf-41a9-4283-aeff-628746259477", "job_5981bbec-f5e9-4163-9c65-093df7e296f5"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_d2e0b731-ba85-498b-bf45-a1b17b468963", "job_b197fc68-0bb7-4a24-9720-0ff721642446"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_5123dfd5-0392-4c8a-9e3c-2dd78e60ef22", "job_b3187535-7c87-4616-a8ec-2c635d44ff58"]}
+  ],
+  "ltx-2-3-pro-vs-veo-3-1-fast": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_286942bf-41a9-4283-aeff-628746259477", "job_b092ca2a-2442-4246-8f63-6854b057260f"]},
+    {"promptHash": "67d114b3cf1cd8a65de1b06e8917d823a515b6b13a86e348ecfa51df1ab4a8ff", "videoIds": ["job_f8fc5f8f-385e-4712-acf6-73cc05dc8adb", "job_5c5182fa-0082-47c7-b515-fde1cb8d43f4"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_5123dfd5-0392-4c8a-9e3c-2dd78e60ef22", "job_c80deef9-755b-4e52-86a9-a4499883cca9"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_d2e0b731-ba85-498b-bf45-a1b17b468963", "job_fa9f3068-9796-4f75-af35-e9fcdecf68a9"]}
+  ],
+  "ltx-2-3-pro-vs-veo-3-1-lite": [
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_5123dfd5-0392-4c8a-9e3c-2dd78e60ef22", "job_107e286c-e52a-481b-9f58-2dd0e869f0e7"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_286942bf-41a9-4283-aeff-628746259477", "job_931f3188-5c56-4001-8e5f-498396774cf7"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_d2e0b731-ba85-498b-bf45-a1b17b468963", "job_465613de-519e-452e-b009-3a78552f0884"]}
+  ],
+  "ltx-2-3-pro-vs-wan-2-5": [
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_d2e0b731-ba85-498b-bf45-a1b17b468963", "job_3c25941b-cfab-42f4-912a-a47a040b9fe4"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_286942bf-41a9-4283-aeff-628746259477", "job_320e2771-443e-41a0-b1fb-9c688ccbf8d6"]}
+  ],
+  "ltx-2-3-pro-vs-wan-2-6": [
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_d2e0b731-ba85-498b-bf45-a1b17b468963", "job_7bfe7823-5794-4a41-9869-2bb4458a9bc7"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_286942bf-41a9-4283-aeff-628746259477", "job_2c795d5a-f8fb-4359-9d15-fbc65678327d"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_5123dfd5-0392-4c8a-9e3c-2dd78e60ef22", "job_110f0282-bf5e-4d58-ab34-8b117c94d4e4"]},
+    {"promptHash": "53bf2398ea7bf46351f871ba23221332a1d3533e5521d7eb7358c2b62f03e531", "videoIds": ["job_b71c1f3a-d3d2-4a7f-b341-9488d9b3852d", "job_36cfb06b-3df1-4dc6-8c4e-59d540b24514"]}
+  ],
+  "ltx-2-fast-vs-luma-ray-2": [
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_d52dee0e-5820-49a3-83b3-91a4f970b306", "job_eb467daa-7bef-4053-a1dd-895e33f1bb38"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_1346a7bf-0e83-4192-8d75-bb68fb33e043", "job_3c92babc-a3db-4c9f-bd45-31e469452855"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_274c43e0-b5c8-43b5-b27a-a62d46977852", "job_f3bae828-5908-4b78-800c-ff3abe10e1a4"]}
+  ],
+  "ltx-2-fast-vs-luma-ray-2-flash": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_1346a7bf-0e83-4192-8d75-bb68fb33e043", "job_7a36c0e0-1bb9-4d6b-a2f3-a771aaacddc9"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_d52dee0e-5820-49a3-83b3-91a4f970b306", "job_85e0aa16-4dc0-4967-ac17-0ed121bbcec9"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_274c43e0-b5c8-43b5-b27a-a62d46977852", "job_3d348765-4d97-45b8-8ede-5d3d17160f99"]}
+  ],
+  "ltx-2-fast-vs-minimax-hailuo-02-text": [
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_d52dee0e-5820-49a3-83b3-91a4f970b306", "job_0ec5b210-47ff-4eed-9a43-4b0061e20dc7"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_274c43e0-b5c8-43b5-b27a-a62d46977852", "job_be5bff74-eec5-4fb9-80c7-e6f28d317cb7"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_1346a7bf-0e83-4192-8d75-bb68fb33e043", "job_96c348e2-cce5-4d09-9340-25bbe74d9873"]},
+    {"promptHash": "1aea0f23ba15eb8c2ec9ff775b3be6dadc0b4ac286b6b4c85ddd0eff62f04958", "videoIds": ["job_72676d74-bbfc-41b3-94ca-33326dabe517", "job_8c1c610a-3af6-4178-83fe-2fa3e436cdc3"]}
+  ],
+  "ltx-2-fast-vs-pika-text-to-video": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_1346a7bf-0e83-4192-8d75-bb68fb33e043", "job_fc1e363c-6b1d-42b2-ae15-1a151213120d"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_d52dee0e-5820-49a3-83b3-91a4f970b306", "job_18bcd151-e747-4a60-8a67-42a028890ef2"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_274c43e0-b5c8-43b5-b27a-a62d46977852", "job_df68f2a6-4223-4721-811c-efb85de01c46"]},
+    {"promptHash": "1aea0f23ba15eb8c2ec9ff775b3be6dadc0b4ac286b6b4c85ddd0eff62f04958", "videoIds": ["job_72676d74-bbfc-41b3-94ca-33326dabe517", "job_27b9e640-3e33-4c39-b1f8-e7c561329743"]}
+  ],
+  "ltx-2-fast-vs-seedance-1-5-pro": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_1346a7bf-0e83-4192-8d75-bb68fb33e043", "job_d8f52d87-fea7-458e-898d-d6b6c8de5d0a"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_274c43e0-b5c8-43b5-b27a-a62d46977852", "job_68be16f9-4b8e-4914-8bfe-0ca423f2cda4"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_d52dee0e-5820-49a3-83b3-91a4f970b306", "job_b7c5ce0f-45a3-44f1-971c-94989e6a1c0c"]}
+  ],
+  "ltx-2-fast-vs-seedance-2-0": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_1346a7bf-0e83-4192-8d75-bb68fb33e043", "job_763808a1-c7aa-4740-bc59-182955de5c19"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_d52dee0e-5820-49a3-83b3-91a4f970b306", "job_ed52beb9-3a48-44f2-a9b4-08a428f3a3e8"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_274c43e0-b5c8-43b5-b27a-a62d46977852", "job_3570ff87-af76-4b80-99cf-c679205f6129"]}
+  ],
+  "ltx-2-fast-vs-seedance-2-0-fast": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_1346a7bf-0e83-4192-8d75-bb68fb33e043", "job_910dccf8-cf91-4c3e-b5ca-c229d408e2ba"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_d52dee0e-5820-49a3-83b3-91a4f970b306", "job_3d1b9752-72ef-4b98-a09e-e13012015e16"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_274c43e0-b5c8-43b5-b27a-a62d46977852", "job_bbbe1537-1fa7-4eb1-948c-59353a9fc728"]}
+  ],
+  "ltx-2-fast-vs-sora-2": [
+    {"promptHash": "6552895cb3319a476012c3da72a07586b9760cbfd2532dd5bb9df4ddf95d6dc8", "videoIds": ["job_735c1e7b-0fe6-40e9-a342-b89f87882828", "job_f08df1cb-549a-4185-8ac8-868654819c1e"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_1346a7bf-0e83-4192-8d75-bb68fb33e043", "job_d1b582c3-bdaf-46ce-99ed-b9939de89a81"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_d52dee0e-5820-49a3-83b3-91a4f970b306", "job_ad6b652f-8cb2-4b65-9bff-e88adbae6a1b"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_274c43e0-b5c8-43b5-b27a-a62d46977852", "job_55c36d3f-8591-4e32-a6a3-dbf191706d18"]}
+  ],
+  "ltx-2-fast-vs-sora-2-pro": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_1346a7bf-0e83-4192-8d75-bb68fb33e043", "job_3a371233-0b60-4785-bdb3-636e8f218a0b"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_d52dee0e-5820-49a3-83b3-91a4f970b306", "job_20b54ee7-ec03-47d4-b1ca-2fef046093f8"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_274c43e0-b5c8-43b5-b27a-a62d46977852", "job_b6c95097-032d-4fcb-8b7a-c84f6942e6b2"]}
+  ],
+  "ltx-2-fast-vs-veo-3-1": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_1346a7bf-0e83-4192-8d75-bb68fb33e043", "job_5981bbec-f5e9-4163-9c65-093df7e296f5"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_274c43e0-b5c8-43b5-b27a-a62d46977852", "job_b197fc68-0bb7-4a24-9720-0ff721642446"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_d52dee0e-5820-49a3-83b3-91a4f970b306", "job_b3187535-7c87-4616-a8ec-2c635d44ff58"]}
+  ],
+  "ltx-2-fast-vs-veo-3-1-fast": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_1346a7bf-0e83-4192-8d75-bb68fb33e043", "job_b092ca2a-2442-4246-8f63-6854b057260f"]},
+    {"promptHash": "1aea0f23ba15eb8c2ec9ff775b3be6dadc0b4ac286b6b4c85ddd0eff62f04958", "videoIds": ["job_72676d74-bbfc-41b3-94ca-33326dabe517", "job_50e477f8-c6a6-452c-9901-e3111921ef09"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_d52dee0e-5820-49a3-83b3-91a4f970b306", "job_c80deef9-755b-4e52-86a9-a4499883cca9"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_274c43e0-b5c8-43b5-b27a-a62d46977852", "job_fa9f3068-9796-4f75-af35-e9fcdecf68a9"]}
+  ],
+  "ltx-2-fast-vs-veo-3-1-lite": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_1346a7bf-0e83-4192-8d75-bb68fb33e043", "job_931f3188-5c56-4001-8e5f-498396774cf7"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_d52dee0e-5820-49a3-83b3-91a4f970b306", "job_107e286c-e52a-481b-9f58-2dd0e869f0e7"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_274c43e0-b5c8-43b5-b27a-a62d46977852", "job_465613de-519e-452e-b009-3a78552f0884"]}
+  ],
+  "ltx-2-fast-vs-wan-2-5": [
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_274c43e0-b5c8-43b5-b27a-a62d46977852", "job_3c25941b-cfab-42f4-912a-a47a040b9fe4"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_1346a7bf-0e83-4192-8d75-bb68fb33e043", "job_320e2771-443e-41a0-b1fb-9c688ccbf8d6"]}
+  ],
+  "ltx-2-fast-vs-wan-2-6": [
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_274c43e0-b5c8-43b5-b27a-a62d46977852", "job_7bfe7823-5794-4a41-9869-2bb4458a9bc7"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_d52dee0e-5820-49a3-83b3-91a4f970b306", "job_110f0282-bf5e-4d58-ab34-8b117c94d4e4"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_1346a7bf-0e83-4192-8d75-bb68fb33e043", "job_2c795d5a-f8fb-4359-9d15-fbc65678327d"]},
+    {"promptHash": "1aea0f23ba15eb8c2ec9ff775b3be6dadc0b4ac286b6b4c85ddd0eff62f04958", "videoIds": ["job_72676d74-bbfc-41b3-94ca-33326dabe517", "job_4b435630-8224-498a-a9cd-d6a005e3578d"]}
+  ],
+  "ltx-2-vs-ltx-2-3-fast": [
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_a8b82fc8-03af-49b8-99d4-186f497eb358", "job_716ddb6f-c9d0-4339-b6c9-3a9160d291ce"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_15cd3e9d-67d6-4378-8d76-11e3734d3a43", "job_4ed60dee-1717-47a8-b858-53bd6e75f6fe"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_bd3c3bd3-00a1-4bf4-9047-73ca60d554e9", "job_a757f656-43b8-47bc-83d2-0bd6728b320b"]}
+  ],
+  "ltx-2-vs-ltx-2-3-pro": [
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_a8b82fc8-03af-49b8-99d4-186f497eb358", "job_5123dfd5-0392-4c8a-9e3c-2dd78e60ef22"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_15cd3e9d-67d6-4378-8d76-11e3734d3a43", "job_286942bf-41a9-4283-aeff-628746259477"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_bd3c3bd3-00a1-4bf4-9047-73ca60d554e9", "job_d2e0b731-ba85-498b-bf45-a1b17b468963"]}
+  ],
+  "ltx-2-vs-ltx-2-fast": [
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_bd3c3bd3-00a1-4bf4-9047-73ca60d554e9", "job_274c43e0-b5c8-43b5-b27a-a62d46977852"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_15cd3e9d-67d6-4378-8d76-11e3734d3a43", "job_1346a7bf-0e83-4192-8d75-bb68fb33e043"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_a8b82fc8-03af-49b8-99d4-186f497eb358", "job_d52dee0e-5820-49a3-83b3-91a4f970b306"]}
+  ],
+  "ltx-2-vs-luma-ray-2": [
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_a8b82fc8-03af-49b8-99d4-186f497eb358", "job_eb467daa-7bef-4053-a1dd-895e33f1bb38"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_15cd3e9d-67d6-4378-8d76-11e3734d3a43", "job_3c92babc-a3db-4c9f-bd45-31e469452855"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_bd3c3bd3-00a1-4bf4-9047-73ca60d554e9", "job_f3bae828-5908-4b78-800c-ff3abe10e1a4"]}
+  ],
+  "ltx-2-vs-luma-ray-2-flash": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_15cd3e9d-67d6-4378-8d76-11e3734d3a43", "job_7a36c0e0-1bb9-4d6b-a2f3-a771aaacddc9"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_a8b82fc8-03af-49b8-99d4-186f497eb358", "job_85e0aa16-4dc0-4967-ac17-0ed121bbcec9"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_bd3c3bd3-00a1-4bf4-9047-73ca60d554e9", "job_3d348765-4d97-45b8-8ede-5d3d17160f99"]}
+  ],
+  "ltx-2-vs-minimax-hailuo-02-text": [
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_a8b82fc8-03af-49b8-99d4-186f497eb358", "job_0ec5b210-47ff-4eed-9a43-4b0061e20dc7"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_bd3c3bd3-00a1-4bf4-9047-73ca60d554e9", "job_be5bff74-eec5-4fb9-80c7-e6f28d317cb7"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_15cd3e9d-67d6-4378-8d76-11e3734d3a43", "job_96c348e2-cce5-4d09-9340-25bbe74d9873"]},
+    {"promptHash": "de747211dc30a7ab3c0ad683f3d4d64ec08ec74752da3fa200f2959b8a6409d7", "videoIds": ["job_6cf5a6a2-4e47-44bf-9368-d42b3633642b", "job_3eaf80ef-c0be-471c-a34b-5b781e5e3c39"]}
+  ],
+  "ltx-2-vs-pika-text-to-video": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_15cd3e9d-67d6-4378-8d76-11e3734d3a43", "job_fc1e363c-6b1d-42b2-ae15-1a151213120d"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_a8b82fc8-03af-49b8-99d4-186f497eb358", "job_18bcd151-e747-4a60-8a67-42a028890ef2"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_bd3c3bd3-00a1-4bf4-9047-73ca60d554e9", "job_df68f2a6-4223-4721-811c-efb85de01c46"]}
+  ],
+  "ltx-2-vs-seedance-1-5-pro": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_15cd3e9d-67d6-4378-8d76-11e3734d3a43", "job_d8f52d87-fea7-458e-898d-d6b6c8de5d0a"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_bd3c3bd3-00a1-4bf4-9047-73ca60d554e9", "job_68be16f9-4b8e-4914-8bfe-0ca423f2cda4"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_a8b82fc8-03af-49b8-99d4-186f497eb358", "job_b7c5ce0f-45a3-44f1-971c-94989e6a1c0c"]}
+  ],
+  "ltx-2-vs-seedance-2-0": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_15cd3e9d-67d6-4378-8d76-11e3734d3a43", "job_763808a1-c7aa-4740-bc59-182955de5c19"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_a8b82fc8-03af-49b8-99d4-186f497eb358", "job_ed52beb9-3a48-44f2-a9b4-08a428f3a3e8"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_bd3c3bd3-00a1-4bf4-9047-73ca60d554e9", "job_3570ff87-af76-4b80-99cf-c679205f6129"]}
+  ],
+  "ltx-2-vs-seedance-2-0-fast": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_15cd3e9d-67d6-4378-8d76-11e3734d3a43", "job_910dccf8-cf91-4c3e-b5ca-c229d408e2ba"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_a8b82fc8-03af-49b8-99d4-186f497eb358", "job_3d1b9752-72ef-4b98-a09e-e13012015e16"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_bd3c3bd3-00a1-4bf4-9047-73ca60d554e9", "job_bbbe1537-1fa7-4eb1-948c-59353a9fc728"]}
+  ],
+  "ltx-2-vs-sora-2": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_15cd3e9d-67d6-4378-8d76-11e3734d3a43", "job_d1b582c3-bdaf-46ce-99ed-b9939de89a81"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_a8b82fc8-03af-49b8-99d4-186f497eb358", "job_ad6b652f-8cb2-4b65-9bff-e88adbae6a1b"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_bd3c3bd3-00a1-4bf4-9047-73ca60d554e9", "job_55c36d3f-8591-4e32-a6a3-dbf191706d18"]}
+  ],
+  "ltx-2-vs-sora-2-pro": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_15cd3e9d-67d6-4378-8d76-11e3734d3a43", "job_3a371233-0b60-4785-bdb3-636e8f218a0b"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_a8b82fc8-03af-49b8-99d4-186f497eb358", "job_20b54ee7-ec03-47d4-b1ca-2fef046093f8"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_bd3c3bd3-00a1-4bf4-9047-73ca60d554e9", "job_b6c95097-032d-4fcb-8b7a-c84f6942e6b2"]}
+  ],
+  "ltx-2-vs-veo-3-1": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_15cd3e9d-67d6-4378-8d76-11e3734d3a43", "job_5981bbec-f5e9-4163-9c65-093df7e296f5"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_bd3c3bd3-00a1-4bf4-9047-73ca60d554e9", "job_b197fc68-0bb7-4a24-9720-0ff721642446"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_a8b82fc8-03af-49b8-99d4-186f497eb358", "job_b3187535-7c87-4616-a8ec-2c635d44ff58"]}
+  ],
+  "ltx-2-vs-veo-3-1-fast": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_15cd3e9d-67d6-4378-8d76-11e3734d3a43", "job_b092ca2a-2442-4246-8f63-6854b057260f"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_a8b82fc8-03af-49b8-99d4-186f497eb358", "job_c80deef9-755b-4e52-86a9-a4499883cca9"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_bd3c3bd3-00a1-4bf4-9047-73ca60d554e9", "job_fa9f3068-9796-4f75-af35-e9fcdecf68a9"]}
+  ],
+  "ltx-2-vs-veo-3-1-lite": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_15cd3e9d-67d6-4378-8d76-11e3734d3a43", "job_931f3188-5c56-4001-8e5f-498396774cf7"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_a8b82fc8-03af-49b8-99d4-186f497eb358", "job_107e286c-e52a-481b-9f58-2dd0e869f0e7"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_bd3c3bd3-00a1-4bf4-9047-73ca60d554e9", "job_465613de-519e-452e-b009-3a78552f0884"]}
+  ],
+  "ltx-2-vs-wan-2-5": [
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_bd3c3bd3-00a1-4bf4-9047-73ca60d554e9", "job_3c25941b-cfab-42f4-912a-a47a040b9fe4"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_15cd3e9d-67d6-4378-8d76-11e3734d3a43", "job_320e2771-443e-41a0-b1fb-9c688ccbf8d6"]}
+  ],
+  "ltx-2-vs-wan-2-6": [
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_bd3c3bd3-00a1-4bf4-9047-73ca60d554e9", "job_7bfe7823-5794-4a41-9869-2bb4458a9bc7"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_a8b82fc8-03af-49b8-99d4-186f497eb358", "job_110f0282-bf5e-4d58-ab34-8b117c94d4e4"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_15cd3e9d-67d6-4378-8d76-11e3734d3a43", "job_2c795d5a-f8fb-4359-9d15-fbc65678327d"]}
+  ],
+  "luma-ray-2-flash-vs-minimax-hailuo-02-text": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_7a36c0e0-1bb9-4d6b-a2f3-a771aaacddc9", "job_96c348e2-cce5-4d09-9340-25bbe74d9873"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_85e0aa16-4dc0-4967-ac17-0ed121bbcec9", "job_0ec5b210-47ff-4eed-9a43-4b0061e20dc7"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_3d348765-4d97-45b8-8ede-5d3d17160f99", "job_be5bff74-eec5-4fb9-80c7-e6f28d317cb7"]}
+  ],
+  "luma-ray-2-flash-vs-pika-text-to-video": [
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_3d348765-4d97-45b8-8ede-5d3d17160f99", "job_df68f2a6-4223-4721-811c-efb85de01c46"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_85e0aa16-4dc0-4967-ac17-0ed121bbcec9", "job_18bcd151-e747-4a60-8a67-42a028890ef2"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_7a36c0e0-1bb9-4d6b-a2f3-a771aaacddc9", "job_fc1e363c-6b1d-42b2-ae15-1a151213120d"]}
+  ],
+  "luma-ray-2-flash-vs-seedance-1-5-pro": [
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_3d348765-4d97-45b8-8ede-5d3d17160f99", "job_f94d62e7-4b15-446e-b43a-319d8bfde3f3"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_85e0aa16-4dc0-4967-ac17-0ed121bbcec9", "job_b7c5ce0f-45a3-44f1-971c-94989e6a1c0c"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_7a36c0e0-1bb9-4d6b-a2f3-a771aaacddc9", "job_d8f52d87-fea7-458e-898d-d6b6c8de5d0a"]}
+  ],
+  "luma-ray-2-flash-vs-seedance-2-0": [
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_04e2afaa-5759-45bd-b7ff-a42af1d89971", "job_3570ff87-af76-4b80-99cf-c679205f6129"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_85e0aa16-4dc0-4967-ac17-0ed121bbcec9", "job_ed52beb9-3a48-44f2-a9b4-08a428f3a3e8"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_7a36c0e0-1bb9-4d6b-a2f3-a771aaacddc9", "job_763808a1-c7aa-4740-bc59-182955de5c19"]}
+  ],
+  "luma-ray-2-flash-vs-seedance-2-0-fast": [
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_04e2afaa-5759-45bd-b7ff-a42af1d89971", "job_bbbe1537-1fa7-4eb1-948c-59353a9fc728"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_85e0aa16-4dc0-4967-ac17-0ed121bbcec9", "job_3d1b9752-72ef-4b98-a09e-e13012015e16"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_7a36c0e0-1bb9-4d6b-a2f3-a771aaacddc9", "job_910dccf8-cf91-4c3e-b5ca-c229d408e2ba"]}
+  ],
+  "luma-ray-2-flash-vs-sora-2": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_7a36c0e0-1bb9-4d6b-a2f3-a771aaacddc9", "job_d1b582c3-bdaf-46ce-99ed-b9939de89a81"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_3d348765-4d97-45b8-8ede-5d3d17160f99", "job_55c36d3f-8591-4e32-a6a3-dbf191706d18"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_85e0aa16-4dc0-4967-ac17-0ed121bbcec9", "job_ad6b652f-8cb2-4b65-9bff-e88adbae6a1b"]}
+  ],
+  "luma-ray-2-flash-vs-sora-2-pro": [
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_85e0aa16-4dc0-4967-ac17-0ed121bbcec9", "job_20b54ee7-ec03-47d4-b1ca-2fef046093f8"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_3d348765-4d97-45b8-8ede-5d3d17160f99", "job_b6c95097-032d-4fcb-8b7a-c84f6942e6b2"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_7a36c0e0-1bb9-4d6b-a2f3-a771aaacddc9", "job_3a371233-0b60-4785-bdb3-636e8f218a0b"]}
+  ],
+  "luma-ray-2-flash-vs-veo-3-1": [
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_85e0aa16-4dc0-4967-ac17-0ed121bbcec9", "job_b3187535-7c87-4616-a8ec-2c635d44ff58"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_3d348765-4d97-45b8-8ede-5d3d17160f99", "job_b197fc68-0bb7-4a24-9720-0ff721642446"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_7a36c0e0-1bb9-4d6b-a2f3-a771aaacddc9", "job_5981bbec-f5e9-4163-9c65-093df7e296f5"]}
+  ],
+  "luma-ray-2-flash-vs-veo-3-1-fast": [
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_3d348765-4d97-45b8-8ede-5d3d17160f99", "job_fa9f3068-9796-4f75-af35-e9fcdecf68a9"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_85e0aa16-4dc0-4967-ac17-0ed121bbcec9", "job_c80deef9-755b-4e52-86a9-a4499883cca9"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_7a36c0e0-1bb9-4d6b-a2f3-a771aaacddc9", "job_b092ca2a-2442-4246-8f63-6854b057260f"]}
+  ],
+  "luma-ray-2-flash-vs-veo-3-1-lite": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_7a36c0e0-1bb9-4d6b-a2f3-a771aaacddc9", "job_931f3188-5c56-4001-8e5f-498396774cf7"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_85e0aa16-4dc0-4967-ac17-0ed121bbcec9", "job_107e286c-e52a-481b-9f58-2dd0e869f0e7"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_3d348765-4d97-45b8-8ede-5d3d17160f99", "job_465613de-519e-452e-b009-3a78552f0884"]}
+  ],
+  "luma-ray-2-flash-vs-wan-2-5": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_7a36c0e0-1bb9-4d6b-a2f3-a771aaacddc9", "job_320e2771-443e-41a0-b1fb-9c688ccbf8d6"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_3d348765-4d97-45b8-8ede-5d3d17160f99", "job_3c25941b-cfab-42f4-912a-a47a040b9fe4"]}
+  ],
+  "luma-ray-2-flash-vs-wan-2-6": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_7a36c0e0-1bb9-4d6b-a2f3-a771aaacddc9", "job_2c795d5a-f8fb-4359-9d15-fbc65678327d"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_85e0aa16-4dc0-4967-ac17-0ed121bbcec9", "job_110f0282-bf5e-4d58-ab34-8b117c94d4e4"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_3d348765-4d97-45b8-8ede-5d3d17160f99", "job_7bfe7823-5794-4a41-9869-2bb4458a9bc7"]}
+  ],
+  "luma-ray-2-vs-luma-ray-2-flash": [
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_f3bae828-5908-4b78-800c-ff3abe10e1a4", "job_3d348765-4d97-45b8-8ede-5d3d17160f99"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_3c92babc-a3db-4c9f-bd45-31e469452855", "job_7a36c0e0-1bb9-4d6b-a2f3-a771aaacddc9"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_eb467daa-7bef-4053-a1dd-895e33f1bb38", "job_85e0aa16-4dc0-4967-ac17-0ed121bbcec9"]}
+  ],
+  "luma-ray-2-vs-minimax-hailuo-02-text": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_3c92babc-a3db-4c9f-bd45-31e469452855", "job_96c348e2-cce5-4d09-9340-25bbe74d9873"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_eb467daa-7bef-4053-a1dd-895e33f1bb38", "job_0ec5b210-47ff-4eed-9a43-4b0061e20dc7"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_f3bae828-5908-4b78-800c-ff3abe10e1a4", "job_be5bff74-eec5-4fb9-80c7-e6f28d317cb7"]}
+  ],
+  "luma-ray-2-vs-pika-text-to-video": [
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_f3bae828-5908-4b78-800c-ff3abe10e1a4", "job_df68f2a6-4223-4721-811c-efb85de01c46"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_3c92babc-a3db-4c9f-bd45-31e469452855", "job_fc1e363c-6b1d-42b2-ae15-1a151213120d"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_eb467daa-7bef-4053-a1dd-895e33f1bb38", "job_18bcd151-e747-4a60-8a67-42a028890ef2"]}
+  ],
+  "luma-ray-2-vs-seedance-1-5-pro": [
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_eb467daa-7bef-4053-a1dd-895e33f1bb38", "job_b7c5ce0f-45a3-44f1-971c-94989e6a1c0c"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_f3bae828-5908-4b78-800c-ff3abe10e1a4", "job_f94d62e7-4b15-446e-b43a-319d8bfde3f3"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_3c92babc-a3db-4c9f-bd45-31e469452855", "job_d8f52d87-fea7-458e-898d-d6b6c8de5d0a"]}
+  ],
+  "luma-ray-2-vs-seedance-2-0": [
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_f3bae828-5908-4b78-800c-ff3abe10e1a4", "job_3570ff87-af76-4b80-99cf-c679205f6129"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_3c92babc-a3db-4c9f-bd45-31e469452855", "job_763808a1-c7aa-4740-bc59-182955de5c19"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_eb467daa-7bef-4053-a1dd-895e33f1bb38", "job_ed52beb9-3a48-44f2-a9b4-08a428f3a3e8"]}
+  ],
+  "luma-ray-2-vs-seedance-2-0-fast": [
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_f3bae828-5908-4b78-800c-ff3abe10e1a4", "job_bbbe1537-1fa7-4eb1-948c-59353a9fc728"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_3c92babc-a3db-4c9f-bd45-31e469452855", "job_910dccf8-cf91-4c3e-b5ca-c229d408e2ba"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_eb467daa-7bef-4053-a1dd-895e33f1bb38", "job_3d1b9752-72ef-4b98-a09e-e13012015e16"]}
+  ],
+  "luma-ray-2-vs-sora-2": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_3c92babc-a3db-4c9f-bd45-31e469452855", "job_d1b582c3-bdaf-46ce-99ed-b9939de89a81"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_f3bae828-5908-4b78-800c-ff3abe10e1a4", "job_55c36d3f-8591-4e32-a6a3-dbf191706d18"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_eb467daa-7bef-4053-a1dd-895e33f1bb38", "job_ad6b652f-8cb2-4b65-9bff-e88adbae6a1b"]}
+  ],
+  "luma-ray-2-vs-sora-2-pro": [
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_f3bae828-5908-4b78-800c-ff3abe10e1a4", "job_b6c95097-032d-4fcb-8b7a-c84f6942e6b2"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_eb467daa-7bef-4053-a1dd-895e33f1bb38", "job_20b54ee7-ec03-47d4-b1ca-2fef046093f8"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_3c92babc-a3db-4c9f-bd45-31e469452855", "job_3a371233-0b60-4785-bdb3-636e8f218a0b"]}
+  ],
+  "luma-ray-2-vs-veo-3-1": [
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_f3bae828-5908-4b78-800c-ff3abe10e1a4", "job_b197fc68-0bb7-4a24-9720-0ff721642446"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_eb467daa-7bef-4053-a1dd-895e33f1bb38", "job_b3187535-7c87-4616-a8ec-2c635d44ff58"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_3c92babc-a3db-4c9f-bd45-31e469452855", "job_5981bbec-f5e9-4163-9c65-093df7e296f5"]}
+  ],
+  "luma-ray-2-vs-veo-3-1-fast": [
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_f3bae828-5908-4b78-800c-ff3abe10e1a4", "job_fa9f3068-9796-4f75-af35-e9fcdecf68a9"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_3c92babc-a3db-4c9f-bd45-31e469452855", "job_b092ca2a-2442-4246-8f63-6854b057260f"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_eb467daa-7bef-4053-a1dd-895e33f1bb38", "job_c80deef9-755b-4e52-86a9-a4499883cca9"]}
+  ],
+  "luma-ray-2-vs-veo-3-1-lite": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_3c92babc-a3db-4c9f-bd45-31e469452855", "job_931f3188-5c56-4001-8e5f-498396774cf7"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_f3bae828-5908-4b78-800c-ff3abe10e1a4", "job_465613de-519e-452e-b009-3a78552f0884"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_eb467daa-7bef-4053-a1dd-895e33f1bb38", "job_107e286c-e52a-481b-9f58-2dd0e869f0e7"]}
+  ],
+  "luma-ray-2-vs-wan-2-5": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_3c92babc-a3db-4c9f-bd45-31e469452855", "job_320e2771-443e-41a0-b1fb-9c688ccbf8d6"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_f3bae828-5908-4b78-800c-ff3abe10e1a4", "job_3c25941b-cfab-42f4-912a-a47a040b9fe4"]}
+  ],
+  "luma-ray-2-vs-wan-2-6": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_3c92babc-a3db-4c9f-bd45-31e469452855", "job_2c795d5a-f8fb-4359-9d15-fbc65678327d"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_f3bae828-5908-4b78-800c-ff3abe10e1a4", "job_7bfe7823-5794-4a41-9869-2bb4458a9bc7"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_eb467daa-7bef-4053-a1dd-895e33f1bb38", "job_110f0282-bf5e-4d58-ab34-8b117c94d4e4"]}
+  ],
+  "minimax-h3-vs-seedance-2-5": [
+    {"promptHash": "ebe55775881bff080d563469e562e1bf909c220f768a8c164eeac6de23dc9785", "videoIds": ["fbacd1bc-b6df-4bc6-92ca-8efe3d603269", "29f50b9a-1513-487b-99ec-1aff2af86e5e"]}
+  ],
+  "minimax-hailuo-02-text-vs-pika-text-to-video": [
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_0ec5b210-47ff-4eed-9a43-4b0061e20dc7", "job_18bcd151-e747-4a60-8a67-42a028890ef2"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_96c348e2-cce5-4d09-9340-25bbe74d9873", "job_fc1e363c-6b1d-42b2-ae15-1a151213120d"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_be5bff74-eec5-4fb9-80c7-e6f28d317cb7", "job_df68f2a6-4223-4721-811c-efb85de01c46"]},
+    {"promptHash": "1aea0f23ba15eb8c2ec9ff775b3be6dadc0b4ac286b6b4c85ddd0eff62f04958", "videoIds": ["job_8c1c610a-3af6-4178-83fe-2fa3e436cdc3", "job_27b9e640-3e33-4c39-b1f8-e7c561329743"]},
+    {"promptHash": "b2c3d0d964e14229e0df531eae45445378a75538734e6bdbebf375c8f4e66a09", "videoIds": ["job_8f66bbd5-5c5c-4fcd-b7a0-1643e4dcf506", "job_af07b71b-2be6-455f-9606-ddb4f2acbbc2"]},
+    {"promptHash": "16a75094b7c2e6ae88476df08fb8a64835b9285a0e15c198ebb71f79b0f80a99", "videoIds": ["job_1ffb0d21-2976-4bff-9628-bde39cc4dce2", "job_d7b95c58-404a-4c6f-9e2c-5e09d005250a"]}
+  ],
+  "minimax-hailuo-02-text-vs-seedance-1-5-pro": [
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_0ec5b210-47ff-4eed-9a43-4b0061e20dc7", "job_b7c5ce0f-45a3-44f1-971c-94989e6a1c0c"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_96c348e2-cce5-4d09-9340-25bbe74d9873", "job_d8f52d87-fea7-458e-898d-d6b6c8de5d0a"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_be5bff74-eec5-4fb9-80c7-e6f28d317cb7", "job_68be16f9-4b8e-4914-8bfe-0ca423f2cda4"]}
+  ],
+  "minimax-hailuo-02-text-vs-seedance-2-0": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_96c348e2-cce5-4d09-9340-25bbe74d9873", "job_763808a1-c7aa-4740-bc59-182955de5c19"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_0ec5b210-47ff-4eed-9a43-4b0061e20dc7", "job_ed52beb9-3a48-44f2-a9b4-08a428f3a3e8"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_be5bff74-eec5-4fb9-80c7-e6f28d317cb7", "job_3570ff87-af76-4b80-99cf-c679205f6129"]}
+  ],
+  "minimax-hailuo-02-text-vs-seedance-2-0-fast": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_96c348e2-cce5-4d09-9340-25bbe74d9873", "job_910dccf8-cf91-4c3e-b5ca-c229d408e2ba"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_0ec5b210-47ff-4eed-9a43-4b0061e20dc7", "job_3d1b9752-72ef-4b98-a09e-e13012015e16"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_be5bff74-eec5-4fb9-80c7-e6f28d317cb7", "job_bbbe1537-1fa7-4eb1-948c-59353a9fc728"]}
+  ],
+  "minimax-hailuo-02-text-vs-sora-2": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_96c348e2-cce5-4d09-9340-25bbe74d9873", "job_d1b582c3-bdaf-46ce-99ed-b9939de89a81"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_0ec5b210-47ff-4eed-9a43-4b0061e20dc7", "job_ad6b652f-8cb2-4b65-9bff-e88adbae6a1b"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_be5bff74-eec5-4fb9-80c7-e6f28d317cb7", "job_55c36d3f-8591-4e32-a6a3-dbf191706d18"]},
+    {"promptHash": "624ce4c4e594ef00bb072c1dbf18984d01785745596bf6d8422b7e7ef83b74a9", "videoIds": ["job_c2e303b9-b8a4-4318-ab54-52b61d65debd", "job_5b8154b1-9b1f-48f8-97e0-d4f675025d96"]}
+  ],
+  "minimax-hailuo-02-text-vs-sora-2-pro": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_96c348e2-cce5-4d09-9340-25bbe74d9873", "job_3a371233-0b60-4785-bdb3-636e8f218a0b"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_0ec5b210-47ff-4eed-9a43-4b0061e20dc7", "job_20b54ee7-ec03-47d4-b1ca-2fef046093f8"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_be5bff74-eec5-4fb9-80c7-e6f28d317cb7", "job_b6c95097-032d-4fcb-8b7a-c84f6942e6b2"]}
+  ],
+  "minimax-hailuo-02-text-vs-veo-3-1": [
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_0ec5b210-47ff-4eed-9a43-4b0061e20dc7", "job_b3187535-7c87-4616-a8ec-2c635d44ff58"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_96c348e2-cce5-4d09-9340-25bbe74d9873", "job_5981bbec-f5e9-4163-9c65-093df7e296f5"]},
+    {"promptHash": "fd9b3ef50cc4be170693b227717bf8dde45de8bb1660f046b2d7b9d89ca8c150", "videoIds": ["job_d514e878-d161-43dd-8221-c8cf48042b70", "job_af6ea869-e9dc-478b-bb71-19dd56c1d426"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_be5bff74-eec5-4fb9-80c7-e6f28d317cb7", "job_b197fc68-0bb7-4a24-9720-0ff721642446"]}
+  ],
+  "minimax-hailuo-02-text-vs-veo-3-1-fast": [
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_0ec5b210-47ff-4eed-9a43-4b0061e20dc7", "job_c80deef9-755b-4e52-86a9-a4499883cca9"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_96c348e2-cce5-4d09-9340-25bbe74d9873", "job_b092ca2a-2442-4246-8f63-6854b057260f"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_be5bff74-eec5-4fb9-80c7-e6f28d317cb7", "job_fa9f3068-9796-4f75-af35-e9fcdecf68a9"]},
+    {"promptHash": "1aea0f23ba15eb8c2ec9ff775b3be6dadc0b4ac286b6b4c85ddd0eff62f04958", "videoIds": ["job_8c1c610a-3af6-4178-83fe-2fa3e436cdc3", "job_50e477f8-c6a6-452c-9901-e3111921ef09"]}
+  ],
+  "minimax-hailuo-02-text-vs-veo-3-1-lite": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_96c348e2-cce5-4d09-9340-25bbe74d9873", "job_931f3188-5c56-4001-8e5f-498396774cf7"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_0ec5b210-47ff-4eed-9a43-4b0061e20dc7", "job_107e286c-e52a-481b-9f58-2dd0e869f0e7"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_be5bff74-eec5-4fb9-80c7-e6f28d317cb7", "job_465613de-519e-452e-b009-3a78552f0884"]}
+  ],
+  "minimax-hailuo-02-text-vs-wan-2-5": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_96c348e2-cce5-4d09-9340-25bbe74d9873", "job_320e2771-443e-41a0-b1fb-9c688ccbf8d6"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_be5bff74-eec5-4fb9-80c7-e6f28d317cb7", "job_3c25941b-cfab-42f4-912a-a47a040b9fe4"]}
+  ],
+  "minimax-hailuo-02-text-vs-wan-2-6": [
+    {"promptHash": "1aea0f23ba15eb8c2ec9ff775b3be6dadc0b4ac286b6b4c85ddd0eff62f04958", "videoIds": ["job_8c1c610a-3af6-4178-83fe-2fa3e436cdc3", "job_4b435630-8224-498a-a9cd-d6a005e3578d"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_0ec5b210-47ff-4eed-9a43-4b0061e20dc7", "job_110f0282-bf5e-4d58-ab34-8b117c94d4e4"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_96c348e2-cce5-4d09-9340-25bbe74d9873", "job_2c795d5a-f8fb-4359-9d15-fbc65678327d"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_be5bff74-eec5-4fb9-80c7-e6f28d317cb7", "job_7bfe7823-5794-4a41-9869-2bb4458a9bc7"]}
+  ],
+  "pika-text-to-video-vs-seedance-1-5-pro": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_fc1e363c-6b1d-42b2-ae15-1a151213120d", "job_d8f52d87-fea7-458e-898d-d6b6c8de5d0a"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_df68f2a6-4223-4721-811c-efb85de01c46", "job_68be16f9-4b8e-4914-8bfe-0ca423f2cda4"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_18bcd151-e747-4a60-8a67-42a028890ef2", "job_b7c5ce0f-45a3-44f1-971c-94989e6a1c0c"]}
+  ],
+  "pika-text-to-video-vs-seedance-2-0": [
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_18bcd151-e747-4a60-8a67-42a028890ef2", "job_ed52beb9-3a48-44f2-a9b4-08a428f3a3e8"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_fc1e363c-6b1d-42b2-ae15-1a151213120d", "job_763808a1-c7aa-4740-bc59-182955de5c19"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_df68f2a6-4223-4721-811c-efb85de01c46", "job_3570ff87-af76-4b80-99cf-c679205f6129"]}
+  ],
+  "pika-text-to-video-vs-seedance-2-0-fast": [
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_18bcd151-e747-4a60-8a67-42a028890ef2", "job_3d1b9752-72ef-4b98-a09e-e13012015e16"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_fc1e363c-6b1d-42b2-ae15-1a151213120d", "job_910dccf8-cf91-4c3e-b5ca-c229d408e2ba"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_df68f2a6-4223-4721-811c-efb85de01c46", "job_bbbe1537-1fa7-4eb1-948c-59353a9fc728"]}
+  ],
+  "pika-text-to-video-vs-sora-2": [
+    {"promptHash": "34fef57c5e999ee7cb25b72b5a5e2efc9a1ca10379e167725f6fc08467fb7116", "videoIds": ["job_af81f19f-08b5-48cf-8dab-715bb82df4ea", "job_9cd807f3-f2b3-42e2-b4ed-315dc1a3b537"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_18bcd151-e747-4a60-8a67-42a028890ef2", "job_ad6b652f-8cb2-4b65-9bff-e88adbae6a1b"]},
+    {"promptHash": "087842099ed1929190a34672f921730d301c0fe5e5a543d006bbcb7b6d1ebf88", "videoIds": ["job_eb038231-7222-496e-840b-f0595a9629ac", "job_880f7ecb-bfa4-42e6-8aec-a25b520c5a71"]},
+    {"promptHash": "ff17c65ea171a9ef6188da594eba8dc3ef28047efd1811d2ea316c8fcd376730", "videoIds": ["job_2b097c62-49ad-4b95-a470-a391eaa047e6", "job_d2dc722a-6d37-4923-99b1-e06612b0451d"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_df68f2a6-4223-4721-811c-efb85de01c46", "job_55c36d3f-8591-4e32-a6a3-dbf191706d18"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_fc1e363c-6b1d-42b2-ae15-1a151213120d", "job_d1b582c3-bdaf-46ce-99ed-b9939de89a81"]},
+    {"promptHash": "f584c068e93e1e5cb8b739cb914c40a09dcde89d32c1aaee1acb11bfba8645ff", "videoIds": ["job_0775869a-2386-40d4-9753-25083bf0f6b2", "job_9ebb8e1f-5ecf-4811-ac0f-c17aadacd8c4"]}
+  ],
+  "pika-text-to-video-vs-sora-2-pro": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_fc1e363c-6b1d-42b2-ae15-1a151213120d", "job_3a371233-0b60-4785-bdb3-636e8f218a0b"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_18bcd151-e747-4a60-8a67-42a028890ef2", "job_20b54ee7-ec03-47d4-b1ca-2fef046093f8"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_df68f2a6-4223-4721-811c-efb85de01c46", "job_b6c95097-032d-4fcb-8b7a-c84f6942e6b2"]}
+  ],
+  "pika-text-to-video-vs-veo-3-1": [
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_18bcd151-e747-4a60-8a67-42a028890ef2", "job_b3187535-7c87-4616-a8ec-2c635d44ff58"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_fc1e363c-6b1d-42b2-ae15-1a151213120d", "job_5981bbec-f5e9-4163-9c65-093df7e296f5"]},
+    {"promptHash": "ff17c65ea171a9ef6188da594eba8dc3ef28047efd1811d2ea316c8fcd376730", "videoIds": ["job_2b097c62-49ad-4b95-a470-a391eaa047e6", "job_ba47cbcf-b2ea-478e-9d8e-27ca6d1aaf0b"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_df68f2a6-4223-4721-811c-efb85de01c46", "job_b197fc68-0bb7-4a24-9720-0ff721642446"]}
+  ],
+  "pika-text-to-video-vs-veo-3-1-fast": [
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_18bcd151-e747-4a60-8a67-42a028890ef2", "job_c80deef9-755b-4e52-86a9-a4499883cca9"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_fc1e363c-6b1d-42b2-ae15-1a151213120d", "job_b092ca2a-2442-4246-8f63-6854b057260f"]},
+    {"promptHash": "087842099ed1929190a34672f921730d301c0fe5e5a543d006bbcb7b6d1ebf88", "videoIds": ["job_eb038231-7222-496e-840b-f0595a9629ac", "job_376036d9-09b9-47f8-a174-2dc59be2b3a0"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_df68f2a6-4223-4721-811c-efb85de01c46", "job_fa9f3068-9796-4f75-af35-e9fcdecf68a9"]},
+    {"promptHash": "1aea0f23ba15eb8c2ec9ff775b3be6dadc0b4ac286b6b4c85ddd0eff62f04958", "videoIds": ["job_27b9e640-3e33-4c39-b1f8-e7c561329743", "job_50e477f8-c6a6-452c-9901-e3111921ef09"]}
+  ],
+  "pika-text-to-video-vs-veo-3-1-lite": [
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_18bcd151-e747-4a60-8a67-42a028890ef2", "job_107e286c-e52a-481b-9f58-2dd0e869f0e7"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_fc1e363c-6b1d-42b2-ae15-1a151213120d", "job_931f3188-5c56-4001-8e5f-498396774cf7"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_df68f2a6-4223-4721-811c-efb85de01c46", "job_465613de-519e-452e-b009-3a78552f0884"]}
+  ],
+  "pika-text-to-video-vs-wan-2-5": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_fc1e363c-6b1d-42b2-ae15-1a151213120d", "job_320e2771-443e-41a0-b1fb-9c688ccbf8d6"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_df68f2a6-4223-4721-811c-efb85de01c46", "job_3c25941b-cfab-42f4-912a-a47a040b9fe4"]}
+  ],
+  "pika-text-to-video-vs-wan-2-6": [
+    {"promptHash": "1aea0f23ba15eb8c2ec9ff775b3be6dadc0b4ac286b6b4c85ddd0eff62f04958", "videoIds": ["job_27b9e640-3e33-4c39-b1f8-e7c561329743", "job_4b435630-8224-498a-a9cd-d6a005e3578d"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_18bcd151-e747-4a60-8a67-42a028890ef2", "job_110f0282-bf5e-4d58-ab34-8b117c94d4e4"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_fc1e363c-6b1d-42b2-ae15-1a151213120d", "job_2c795d5a-f8fb-4359-9d15-fbc65678327d"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_df68f2a6-4223-4721-811c-efb85de01c46", "job_7bfe7823-5794-4a41-9869-2bb4458a9bc7"]}
+  ],
+  "seedance-1-5-pro-vs-seedance-2-0": [
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_f94d62e7-4b15-446e-b43a-319d8bfde3f3", "job_3570ff87-af76-4b80-99cf-c679205f6129"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_d8f52d87-fea7-458e-898d-d6b6c8de5d0a", "job_763808a1-c7aa-4740-bc59-182955de5c19"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_b7c5ce0f-45a3-44f1-971c-94989e6a1c0c", "job_ed52beb9-3a48-44f2-a9b4-08a428f3a3e8"]}
+  ],
+  "seedance-1-5-pro-vs-seedance-2-0-fast": [
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_f94d62e7-4b15-446e-b43a-319d8bfde3f3", "job_bbbe1537-1fa7-4eb1-948c-59353a9fc728"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_d8f52d87-fea7-458e-898d-d6b6c8de5d0a", "job_910dccf8-cf91-4c3e-b5ca-c229d408e2ba"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_b7c5ce0f-45a3-44f1-971c-94989e6a1c0c", "job_3d1b9752-72ef-4b98-a09e-e13012015e16"]}
+  ],
+  "seedance-1-5-pro-vs-sora-2": [
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_f94d62e7-4b15-446e-b43a-319d8bfde3f3", "job_55c36d3f-8591-4e32-a6a3-dbf191706d18"]},
+    {"promptHash": "37666ee315393894742c1ab801c89dbd7144ec0a2a00963fdf70125fe574ebc1", "videoIds": ["job_81d765fd-ef07-444e-a72e-64d077058e31", "job_a68968b5-5577-424a-bd75-cc1675e14322"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_d8f52d87-fea7-458e-898d-d6b6c8de5d0a", "job_d1b582c3-bdaf-46ce-99ed-b9939de89a81"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_b7c5ce0f-45a3-44f1-971c-94989e6a1c0c", "job_ad6b652f-8cb2-4b65-9bff-e88adbae6a1b"]},
+    {"promptHash": "88db1eee1c35cc246fd4b120f5bf68850ce60f6bba73d7a4db19ff2148df3dfb", "videoIds": ["job_41319679-4449-46b4-b36e-7230be90aa5c", "job_56b1f4d9-9d90-4e41-9d51-29b6efb1f239"]}
+  ],
+  "seedance-1-5-pro-vs-sora-2-pro": [
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_f94d62e7-4b15-446e-b43a-319d8bfde3f3", "job_b6c95097-032d-4fcb-8b7a-c84f6942e6b2"]},
+    {"promptHash": "9e8da6d5556b0a948e0ec787b2a7c06e3a30fd3418555decced373606e04bdcb", "videoIds": ["job_6ac2c316-89a0-4124-9b03-2dc88bb976d0", "job_e9fe50c4-448c-4043-aec8-5a26cad720af"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_d8f52d87-fea7-458e-898d-d6b6c8de5d0a", "job_3a371233-0b60-4785-bdb3-636e8f218a0b"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_b7c5ce0f-45a3-44f1-971c-94989e6a1c0c", "job_20b54ee7-ec03-47d4-b1ca-2fef046093f8"]}
+  ],
+  "seedance-1-5-pro-vs-veo-3-1": [
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_f94d62e7-4b15-446e-b43a-319d8bfde3f3", "job_b197fc68-0bb7-4a24-9720-0ff721642446"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_d8f52d87-fea7-458e-898d-d6b6c8de5d0a", "job_5981bbec-f5e9-4163-9c65-093df7e296f5"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_b7c5ce0f-45a3-44f1-971c-94989e6a1c0c", "job_b3187535-7c87-4616-a8ec-2c635d44ff58"]}
+  ],
+  "seedance-1-5-pro-vs-veo-3-1-fast": [
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_f94d62e7-4b15-446e-b43a-319d8bfde3f3", "job_fa9f3068-9796-4f75-af35-e9fcdecf68a9"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_d8f52d87-fea7-458e-898d-d6b6c8de5d0a", "job_b092ca2a-2442-4246-8f63-6854b057260f"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_b7c5ce0f-45a3-44f1-971c-94989e6a1c0c", "job_c80deef9-755b-4e52-86a9-a4499883cca9"]}
+  ],
+  "seedance-1-5-pro-vs-veo-3-1-lite": [
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_f94d62e7-4b15-446e-b43a-319d8bfde3f3", "job_465613de-519e-452e-b009-3a78552f0884"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_d8f52d87-fea7-458e-898d-d6b6c8de5d0a", "job_931f3188-5c56-4001-8e5f-498396774cf7"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_b7c5ce0f-45a3-44f1-971c-94989e6a1c0c", "job_107e286c-e52a-481b-9f58-2dd0e869f0e7"]}
+  ],
+  "seedance-1-5-pro-vs-wan-2-5": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_d8f52d87-fea7-458e-898d-d6b6c8de5d0a", "job_320e2771-443e-41a0-b1fb-9c688ccbf8d6"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_f94d62e7-4b15-446e-b43a-319d8bfde3f3", "job_3c25941b-cfab-42f4-912a-a47a040b9fe4"]}
+  ],
+  "seedance-1-5-pro-vs-wan-2-6": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_d8f52d87-fea7-458e-898d-d6b6c8de5d0a", "job_2c795d5a-f8fb-4359-9d15-fbc65678327d"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_f94d62e7-4b15-446e-b43a-319d8bfde3f3", "job_7bfe7823-5794-4a41-9869-2bb4458a9bc7"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_b7c5ce0f-45a3-44f1-971c-94989e6a1c0c", "job_110f0282-bf5e-4d58-ab34-8b117c94d4e4"]}
+  ],
+  "seedance-2-0-fast-vs-sora-2": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_910dccf8-cf91-4c3e-b5ca-c229d408e2ba", "job_d1b582c3-bdaf-46ce-99ed-b9939de89a81"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_bbbe1537-1fa7-4eb1-948c-59353a9fc728", "job_55c36d3f-8591-4e32-a6a3-dbf191706d18"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_3d1b9752-72ef-4b98-a09e-e13012015e16", "job_ad6b652f-8cb2-4b65-9bff-e88adbae6a1b"]}
+  ],
+  "seedance-2-0-fast-vs-sora-2-pro": [
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_3d1b9752-72ef-4b98-a09e-e13012015e16", "job_20b54ee7-ec03-47d4-b1ca-2fef046093f8"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_910dccf8-cf91-4c3e-b5ca-c229d408e2ba", "job_3a371233-0b60-4785-bdb3-636e8f218a0b"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_bbbe1537-1fa7-4eb1-948c-59353a9fc728", "job_b6c95097-032d-4fcb-8b7a-c84f6942e6b2"]}
+  ],
+  "seedance-2-0-fast-vs-veo-3-1": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_910dccf8-cf91-4c3e-b5ca-c229d408e2ba", "job_5981bbec-f5e9-4163-9c65-093df7e296f5"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_bbbe1537-1fa7-4eb1-948c-59353a9fc728", "job_b197fc68-0bb7-4a24-9720-0ff721642446"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_3d1b9752-72ef-4b98-a09e-e13012015e16", "job_b3187535-7c87-4616-a8ec-2c635d44ff58"]}
+  ],
+  "seedance-2-0-fast-vs-veo-3-1-fast": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_910dccf8-cf91-4c3e-b5ca-c229d408e2ba", "job_b092ca2a-2442-4246-8f63-6854b057260f"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_bbbe1537-1fa7-4eb1-948c-59353a9fc728", "job_fa9f3068-9796-4f75-af35-e9fcdecf68a9"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_3d1b9752-72ef-4b98-a09e-e13012015e16", "job_c80deef9-755b-4e52-86a9-a4499883cca9"]}
+  ],
+  "seedance-2-0-fast-vs-veo-3-1-lite": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_910dccf8-cf91-4c3e-b5ca-c229d408e2ba", "job_931f3188-5c56-4001-8e5f-498396774cf7"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_bbbe1537-1fa7-4eb1-948c-59353a9fc728", "job_465613de-519e-452e-b009-3a78552f0884"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_3d1b9752-72ef-4b98-a09e-e13012015e16", "job_107e286c-e52a-481b-9f58-2dd0e869f0e7"]}
+  ],
+  "seedance-2-0-fast-vs-wan-2-5": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_910dccf8-cf91-4c3e-b5ca-c229d408e2ba", "job_320e2771-443e-41a0-b1fb-9c688ccbf8d6"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_bbbe1537-1fa7-4eb1-948c-59353a9fc728", "job_3c25941b-cfab-42f4-912a-a47a040b9fe4"]}
+  ],
+  "seedance-2-0-fast-vs-wan-2-6": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_910dccf8-cf91-4c3e-b5ca-c229d408e2ba", "job_2c795d5a-f8fb-4359-9d15-fbc65678327d"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_3d1b9752-72ef-4b98-a09e-e13012015e16", "job_110f0282-bf5e-4d58-ab34-8b117c94d4e4"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_bbbe1537-1fa7-4eb1-948c-59353a9fc728", "job_7bfe7823-5794-4a41-9869-2bb4458a9bc7"]}
+  ],
+  "seedance-2-0-vs-seedance-2-0-fast": [
+    {"promptHash": "7218d3fa42ad4f936a8c447099faf4962b3205e89a53c705eca109f40d2447cd", "videoIds": ["job_d12164ca-1c6f-46da-9136-2255a136f124", "job_528fe01f-e2ea-4cc0-850c-e98190a17473"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_ed52beb9-3a48-44f2-a9b4-08a428f3a3e8", "job_3d1b9752-72ef-4b98-a09e-e13012015e16"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_3570ff87-af76-4b80-99cf-c679205f6129", "job_bbbe1537-1fa7-4eb1-948c-59353a9fc728"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_763808a1-c7aa-4740-bc59-182955de5c19", "job_910dccf8-cf91-4c3e-b5ca-c229d408e2ba"]},
+    {"promptHash": "cdc3b141776401e88eef40e6cafd6f86b03bf32039ce9928cc4979f0b4fa177b", "videoIds": ["job_c9c1989e-5e00-4fe2-81cd-3667743df61e", "job_0d2b9b78-bd1b-459b-b183-eb9196fa8d92"]}
+  ],
+  "seedance-2-0-vs-sora-2": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_763808a1-c7aa-4740-bc59-182955de5c19", "job_d1b582c3-bdaf-46ce-99ed-b9939de89a81"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_3570ff87-af76-4b80-99cf-c679205f6129", "job_55c36d3f-8591-4e32-a6a3-dbf191706d18"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_ed52beb9-3a48-44f2-a9b4-08a428f3a3e8", "job_ad6b652f-8cb2-4b65-9bff-e88adbae6a1b"]}
+  ],
+  "seedance-2-0-vs-sora-2-pro": [
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_ed52beb9-3a48-44f2-a9b4-08a428f3a3e8", "job_20b54ee7-ec03-47d4-b1ca-2fef046093f8"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_763808a1-c7aa-4740-bc59-182955de5c19", "job_3a371233-0b60-4785-bdb3-636e8f218a0b"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_3570ff87-af76-4b80-99cf-c679205f6129", "job_b6c95097-032d-4fcb-8b7a-c84f6942e6b2"]}
+  ],
+  "seedance-2-0-vs-veo-3-1": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_763808a1-c7aa-4740-bc59-182955de5c19", "job_5981bbec-f5e9-4163-9c65-093df7e296f5"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_3570ff87-af76-4b80-99cf-c679205f6129", "job_b197fc68-0bb7-4a24-9720-0ff721642446"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_ed52beb9-3a48-44f2-a9b4-08a428f3a3e8", "job_b3187535-7c87-4616-a8ec-2c635d44ff58"]}
+  ],
+  "seedance-2-0-vs-veo-3-1-fast": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_763808a1-c7aa-4740-bc59-182955de5c19", "job_b092ca2a-2442-4246-8f63-6854b057260f"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_3570ff87-af76-4b80-99cf-c679205f6129", "job_fa9f3068-9796-4f75-af35-e9fcdecf68a9"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_ed52beb9-3a48-44f2-a9b4-08a428f3a3e8", "job_c80deef9-755b-4e52-86a9-a4499883cca9"]}
+  ],
+  "seedance-2-0-vs-veo-3-1-lite": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_763808a1-c7aa-4740-bc59-182955de5c19", "job_931f3188-5c56-4001-8e5f-498396774cf7"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_3570ff87-af76-4b80-99cf-c679205f6129", "job_465613de-519e-452e-b009-3a78552f0884"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_ed52beb9-3a48-44f2-a9b4-08a428f3a3e8", "job_107e286c-e52a-481b-9f58-2dd0e869f0e7"]}
+  ],
+  "seedance-2-0-vs-wan-2-5": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_763808a1-c7aa-4740-bc59-182955de5c19", "job_320e2771-443e-41a0-b1fb-9c688ccbf8d6"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_3570ff87-af76-4b80-99cf-c679205f6129", "job_3c25941b-cfab-42f4-912a-a47a040b9fe4"]}
+  ],
+  "seedance-2-0-vs-wan-2-6": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_763808a1-c7aa-4740-bc59-182955de5c19", "job_2c795d5a-f8fb-4359-9d15-fbc65678327d"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_ed52beb9-3a48-44f2-a9b4-08a428f3a3e8", "job_110f0282-bf5e-4d58-ab34-8b117c94d4e4"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_3570ff87-af76-4b80-99cf-c679205f6129", "job_7bfe7823-5794-4a41-9869-2bb4458a9bc7"]}
+  ],
+  "sora-2-pro-vs-veo-3-1": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_3a371233-0b60-4785-bdb3-636e8f218a0b", "job_5981bbec-f5e9-4163-9c65-093df7e296f5"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_b6c95097-032d-4fcb-8b7a-c84f6942e6b2", "job_b197fc68-0bb7-4a24-9720-0ff721642446"]},
+    {"promptHash": "7e7cbc99fbeb391955905f416ed6d363b227447a639834dee9030a4899489b2a", "videoIds": ["job_219351b4-4758-4972-be22-83fd28f11c01", "job_4eedb2c8-1116-4793-9a90-84aa5312c281"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_20b54ee7-ec03-47d4-b1ca-2fef046093f8", "job_b3187535-7c87-4616-a8ec-2c635d44ff58"]}
+  ],
+  "sora-2-pro-vs-veo-3-1-fast": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_3a371233-0b60-4785-bdb3-636e8f218a0b", "job_b092ca2a-2442-4246-8f63-6854b057260f"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_b6c95097-032d-4fcb-8b7a-c84f6942e6b2", "job_fa9f3068-9796-4f75-af35-e9fcdecf68a9"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_20b54ee7-ec03-47d4-b1ca-2fef046093f8", "job_c80deef9-755b-4e52-86a9-a4499883cca9"]}
+  ],
+  "sora-2-pro-vs-veo-3-1-lite": [
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_b6c95097-032d-4fcb-8b7a-c84f6942e6b2", "job_465613de-519e-452e-b009-3a78552f0884"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_20b54ee7-ec03-47d4-b1ca-2fef046093f8", "job_107e286c-e52a-481b-9f58-2dd0e869f0e7"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_3a371233-0b60-4785-bdb3-636e8f218a0b", "job_931f3188-5c56-4001-8e5f-498396774cf7"]}
+  ],
+  "sora-2-pro-vs-wan-2-5": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_3a371233-0b60-4785-bdb3-636e8f218a0b", "job_320e2771-443e-41a0-b1fb-9c688ccbf8d6"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_b6c95097-032d-4fcb-8b7a-c84f6942e6b2", "job_3c25941b-cfab-42f4-912a-a47a040b9fe4"]}
+  ],
+  "sora-2-pro-vs-wan-2-6": [
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_20b54ee7-ec03-47d4-b1ca-2fef046093f8", "job_110f0282-bf5e-4d58-ab34-8b117c94d4e4"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_3a371233-0b60-4785-bdb3-636e8f218a0b", "job_2c795d5a-f8fb-4359-9d15-fbc65678327d"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_b6c95097-032d-4fcb-8b7a-c84f6942e6b2", "job_7bfe7823-5794-4a41-9869-2bb4458a9bc7"]}
+  ],
+  "sora-2-vs-sora-2-pro": [
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_55c36d3f-8591-4e32-a6a3-dbf191706d18", "job_b6c95097-032d-4fcb-8b7a-c84f6942e6b2"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_ad6b652f-8cb2-4b65-9bff-e88adbae6a1b", "job_20b54ee7-ec03-47d4-b1ca-2fef046093f8"]},
+    {"promptHash": "2e7791be3cdf8066aa2bb21aad1741d4e0d6335148e37f8f5b39a5926e7b8670", "videoIds": ["job_226b4a8c-9ae9-4484-9afa-b6f74fde1d22", "job_ecf4294a-4d48-42e4-a16c-28c92a9dd240"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_d1b582c3-bdaf-46ce-99ed-b9939de89a81", "job_3a371233-0b60-4785-bdb3-636e8f218a0b"]},
+    {"promptHash": "241a293c078038f6ddea5a6e4eb72bc5af32c6f08c297aaf7cdc2cd290406794", "videoIds": ["job_d5fa00ca-cba7-4b40-bd97-c42d7a1f1717", "job_35fa88d0-54e6-4a2c-b033-bd87d2627323"]},
+    {"promptHash": "7e7cbc99fbeb391955905f416ed6d363b227447a639834dee9030a4899489b2a", "videoIds": ["job_cafa3f01-5394-4119-a902-fb2d8f36bc79", "job_219351b4-4758-4972-be22-83fd28f11c01"]}
+  ],
+  "sora-2-vs-veo-3-1": [
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_55c36d3f-8591-4e32-a6a3-dbf191706d18", "job_b197fc68-0bb7-4a24-9720-0ff721642446"]},
+    {"promptHash": "ff17c65ea171a9ef6188da594eba8dc3ef28047efd1811d2ea316c8fcd376730", "videoIds": ["job_d2dc722a-6d37-4923-99b1-e06612b0451d", "job_ba47cbcf-b2ea-478e-9d8e-27ca6d1aaf0b"]},
+    {"promptHash": "907ddf2531e82f841d4448fdc01e1ba0d74af8a7c383f78a144dab08249deb19", "videoIds": ["job_90bb1652-0dd1-47be-8029-4a5cad7958bd", "job_54897307-09e6-4946-92c2-af577d2dbe5b"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_d1b582c3-bdaf-46ce-99ed-b9939de89a81", "job_5981bbec-f5e9-4163-9c65-093df7e296f5"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_ad6b652f-8cb2-4b65-9bff-e88adbae6a1b", "job_b3187535-7c87-4616-a8ec-2c635d44ff58"]},
+    {"promptHash": "a63fc9625b08c6dbb324b254ecf7975c605114fd8f2bcbc9f8656fd8fcb3c302", "videoIds": ["job_d00d0d79-52d9-4971-92c6-9b3eacbdcc1c", "job_bdfc71ec-9c20-42cc-b68c-d6bcc16eb04f"]},
+    {"promptHash": "7e7cbc99fbeb391955905f416ed6d363b227447a639834dee9030a4899489b2a", "videoIds": ["job_cafa3f01-5394-4119-a902-fb2d8f36bc79", "job_4eedb2c8-1116-4793-9a90-84aa5312c281"]}
+  ],
+  "sora-2-vs-veo-3-1-fast": [
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_55c36d3f-8591-4e32-a6a3-dbf191706d18", "job_fa9f3068-9796-4f75-af35-e9fcdecf68a9"]},
+    {"promptHash": "b49ec1fce20546ce3de193ec4425b1d6cef95d1ee03ccd5a9b8221bc100c71a6", "videoIds": ["job_3741c505-ef56-48c8-bd9a-19717c78aed1", "job_bbdf9fe5-b16f-4ca9-ae86-4b90a70e4b01"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_ad6b652f-8cb2-4b65-9bff-e88adbae6a1b", "job_c80deef9-755b-4e52-86a9-a4499883cca9"]},
+    {"promptHash": "67d114b3cf1cd8a65de1b06e8917d823a515b6b13a86e348ecfa51df1ab4a8ff", "videoIds": ["job_5b038fad-459f-4221-9ccf-9f74f5bac017", "job_5c5182fa-0082-47c7-b515-fde1cb8d43f4"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_d1b582c3-bdaf-46ce-99ed-b9939de89a81", "job_b092ca2a-2442-4246-8f63-6854b057260f"]},
+    {"promptHash": "087842099ed1929190a34672f921730d301c0fe5e5a543d006bbcb7b6d1ebf88", "videoIds": ["job_880f7ecb-bfa4-42e6-8aec-a25b520c5a71", "job_376036d9-09b9-47f8-a174-2dc59be2b3a0"]},
+    {"promptHash": "e20311cb0b2bcb1857b15ab2eaa70642007e939393a6f4f99478297317c3878c", "videoIds": ["job_abcada68-5465-4fab-a702-a259cf3c1397", "job_19bc2180-5d30-458c-9034-610396cb9255"]}
+  ],
+  "sora-2-vs-veo-3-1-lite": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_d1b582c3-bdaf-46ce-99ed-b9939de89a81", "job_931f3188-5c56-4001-8e5f-498396774cf7"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_55c36d3f-8591-4e32-a6a3-dbf191706d18", "job_465613de-519e-452e-b009-3a78552f0884"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_ad6b652f-8cb2-4b65-9bff-e88adbae6a1b", "job_107e286c-e52a-481b-9f58-2dd0e869f0e7"]}
+  ],
+  "sora-2-vs-wan-2-5": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_d1b582c3-bdaf-46ce-99ed-b9939de89a81", "job_320e2771-443e-41a0-b1fb-9c688ccbf8d6"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_55c36d3f-8591-4e32-a6a3-dbf191706d18", "job_3c25941b-cfab-42f4-912a-a47a040b9fe4"]}
+  ],
+  "sora-2-vs-wan-2-6": [
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_ad6b652f-8cb2-4b65-9bff-e88adbae6a1b", "job_110f0282-bf5e-4d58-ab34-8b117c94d4e4"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_d1b582c3-bdaf-46ce-99ed-b9939de89a81", "job_2c795d5a-f8fb-4359-9d15-fbc65678327d"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_55c36d3f-8591-4e32-a6a3-dbf191706d18", "job_7bfe7823-5794-4a41-9869-2bb4458a9bc7"]}
+  ],
+  "veo-3-1-fast-vs-veo-3-1-lite": [
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_fa9f3068-9796-4f75-af35-e9fcdecf68a9", "job_465613de-519e-452e-b009-3a78552f0884"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_b092ca2a-2442-4246-8f63-6854b057260f", "job_931f3188-5c56-4001-8e5f-498396774cf7"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_c80deef9-755b-4e52-86a9-a4499883cca9", "job_107e286c-e52a-481b-9f58-2dd0e869f0e7"]}
+  ],
+  "veo-3-1-fast-vs-wan-2-5": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_b092ca2a-2442-4246-8f63-6854b057260f", "job_320e2771-443e-41a0-b1fb-9c688ccbf8d6"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_fa9f3068-9796-4f75-af35-e9fcdecf68a9", "job_3c25941b-cfab-42f4-912a-a47a040b9fe4"]}
+  ],
+  "veo-3-1-fast-vs-wan-2-6": [
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_c80deef9-755b-4e52-86a9-a4499883cca9", "job_110f0282-bf5e-4d58-ab34-8b117c94d4e4"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_b092ca2a-2442-4246-8f63-6854b057260f", "job_2c795d5a-f8fb-4359-9d15-fbc65678327d"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_fa9f3068-9796-4f75-af35-e9fcdecf68a9", "job_7bfe7823-5794-4a41-9869-2bb4458a9bc7"]},
+    {"promptHash": "1aea0f23ba15eb8c2ec9ff775b3be6dadc0b4ac286b6b4c85ddd0eff62f04958", "videoIds": ["job_50e477f8-c6a6-452c-9901-e3111921ef09", "job_4b435630-8224-498a-a9cd-d6a005e3578d"]}
+  ],
+  "veo-3-1-lite-vs-wan-2-5": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_931f3188-5c56-4001-8e5f-498396774cf7", "job_320e2771-443e-41a0-b1fb-9c688ccbf8d6"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_465613de-519e-452e-b009-3a78552f0884", "job_3c25941b-cfab-42f4-912a-a47a040b9fe4"]}
+  ],
+  "veo-3-1-lite-vs-wan-2-6": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_931f3188-5c56-4001-8e5f-498396774cf7", "job_2c795d5a-f8fb-4359-9d15-fbc65678327d"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_107e286c-e52a-481b-9f58-2dd0e869f0e7", "job_110f0282-bf5e-4d58-ab34-8b117c94d4e4"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_465613de-519e-452e-b009-3a78552f0884", "job_7bfe7823-5794-4a41-9869-2bb4458a9bc7"]}
+  ],
+  "veo-3-1-vs-veo-3-1-fast": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_5981bbec-f5e9-4163-9c65-093df7e296f5", "job_b092ca2a-2442-4246-8f63-6854b057260f"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_b197fc68-0bb7-4a24-9720-0ff721642446", "job_fa9f3068-9796-4f75-af35-e9fcdecf68a9"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_b3187535-7c87-4616-a8ec-2c635d44ff58", "job_c80deef9-755b-4e52-86a9-a4499883cca9"]},
+    {"promptHash": "e3048e1213b3b1a044738ca28ba8373ba55714a25ec5d552192a5f164483ced6", "videoIds": ["job_112f1042-22cf-494e-bf78-54876b24d509", "job_3ee52c57-e023-4e98-9b45-c3ec7b60edf5"]}
+  ],
+  "veo-3-1-vs-veo-3-1-lite": [
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_b197fc68-0bb7-4a24-9720-0ff721642446", "job_465613de-519e-452e-b009-3a78552f0884"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_5981bbec-f5e9-4163-9c65-093df7e296f5", "job_931f3188-5c56-4001-8e5f-498396774cf7"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_b3187535-7c87-4616-a8ec-2c635d44ff58", "job_107e286c-e52a-481b-9f58-2dd0e869f0e7"]}
+  ],
+  "veo-3-1-vs-wan-2-5": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_5981bbec-f5e9-4163-9c65-093df7e296f5", "job_320e2771-443e-41a0-b1fb-9c688ccbf8d6"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_b197fc68-0bb7-4a24-9720-0ff721642446", "job_3c25941b-cfab-42f4-912a-a47a040b9fe4"]}
+  ],
+  "veo-3-1-vs-wan-2-6": [
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_5981bbec-f5e9-4163-9c65-093df7e296f5", "job_2c795d5a-f8fb-4359-9d15-fbc65678327d"]},
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_b197fc68-0bb7-4a24-9720-0ff721642446", "job_7bfe7823-5794-4a41-9869-2bb4458a9bc7"]},
+    {"promptHash": "a26d7668e862e5f94065e0a94254bfc876562120b023f8acc6297c3fd646ab7e", "videoIds": ["job_b3187535-7c87-4616-a8ec-2c635d44ff58", "job_110f0282-bf5e-4d58-ab34-8b117c94d4e4"]}
+  ],
+  "wan-2-5-vs-wan-2-6": [
+    {"promptHash": "5746d7b3b3396a85f6251b110303aea5cb53adc37c1aa9b8457f5a66757ab121", "videoIds": ["job_3c25941b-cfab-42f4-912a-a47a040b9fe4", "job_7bfe7823-5794-4a41-9869-2bb4458a9bc7"]},
+    {"promptHash": "ee27b36acbf6dcf6d689d6b805776c3452f26f48ba127d4ac7f5e4b9f3d06a81", "videoIds": ["job_320e2771-443e-41a0-b1fb-9c688ccbf8d6", "job_2c795d5a-f8fb-4359-9d15-fbc65678327d"]}
+  ]
+}

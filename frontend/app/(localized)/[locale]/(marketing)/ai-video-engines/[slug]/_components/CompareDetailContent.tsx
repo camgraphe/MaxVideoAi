@@ -21,10 +21,13 @@ import { CompareRelatedSection } from './CompareRelatedSection';
 import { CompareScorecardSection } from './CompareScorecardSection';
 import { CompareModelGalleries } from './CompareModelGalleries';
 import type { CompareGalleryVideo } from '../_lib/compare-gallery-data';
+import type { SamePromptCase } from '../_lib/compare-same-prompt-data';
+import { CompareSamePromptSection } from './CompareSamePromptSection';
 import { CompareSpecsSection } from './CompareSpecsSection';
 
 type CompareDetailContentProps = {
   galleries: { left: CompareGalleryVideo[]; right: CompareGalleryVideo[] };
+  samePromptCases: SamePromptCase[];
   returnPath: string;
   priceSnapshotAt: string;
   specSources: Array<{ name: string; urls: string[] }>;
@@ -69,6 +72,7 @@ type CompareDetailContentProps = {
 
 export function CompareDetailContent({
   galleries, returnPath, priceSnapshotAt, specSources,
+  samePromptCases,
   activeLocale,
   breadcrumbJsonLd,
   compareCopy,
@@ -112,7 +116,8 @@ export function CompareDetailContent({
     scoreReviews: [{ name: formatEngineName(left), review: leftScoreReview }, { name: formatEngineName(right), review: rightScoreReview }],
     leftName: formatEngineName(left), rightName: formatEngineName(right), metrics: comparisonMetrics, specRows,
     leftUpdated: leftScoreUpdated, rightUpdated: rightScoreUpdated, leftPricing: leftPricingDisplay,
-    rightPricing: rightPricingDisplay, priceSnapshotAt, labels, sources: specSources, summary: pageOverride?.quickVerdict?.body });
+    rightPricing: rightPricingDisplay, priceSnapshotAt, labels,
+    sources: specSources, summary: pageOverride?.quickVerdict?.body, samePromptCase: samePromptCases[0] });
   return (
     <div id="comparison-detail" data-model-left={left.modelSlug} data-model-right={right.modelSlug} className="compare-editorial relative isolate">
       <CompareInteractionTracking locale={activeLocale} />
@@ -166,6 +171,7 @@ export function CompareDetailContent({
               scorecardCriteriaLabel={scorecardCriteriaLabel}
               scorecardProvisionalNote={scorecardProvisionalNote}
             />
+            <CompareSamePromptSection cases={samePromptCases} locale={activeLocale} />
             <ComparePricingQuickSection
               priceSnapshotAt={priceSnapshotAt}
               activeLocale={activeLocale}

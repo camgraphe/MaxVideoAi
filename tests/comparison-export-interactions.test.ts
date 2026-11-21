@@ -23,6 +23,31 @@ test('copy is self-contained and never leaks the preview origin or visit paramet
   assert.doesNotMatch(output, /localhost|utm_source|order=|\$999/);
   for (const fact of ['up to 10 reference images', 'Only in reference mode', 'Not supported', '720p', '8 s', '16:9', 'audio on', '$1.08', '$0.135/s', 'USD', '2026-09-01', '2026-10-18T12:00:00.000Z', 'https://fal.ai/models/example', 'date unavailable']) assert.ok(output.includes(fact), fact);
   assert.match(output, /Current quote unavailable/);
+  assert.doesNotMatch(output, /Same prompt, two renders/);
+});
+
+test('copy binds the first same-prompt example to a public anchor and the two original sources', () => {
+  const output = buildComparisonExport({
+    ...input,
+    locale: 'fr',
+    samePromptCase: {
+      promptHash: '42'.repeat(32),
+      prompt: 'A presenter opens the box.\nUse a slow push in.',
+      clips: [
+        { id: 'first', model: 'Model A', videoUrl: 'https://media.maxvideoai.com/first.mp4', durationSec: 8,
+          width: 1280, height: 720, hasAudio: true, createdAt: '2026-10-20T12:00:00Z' },
+        { id: 'second', model: 'Model B', videoUrl: 'https://media.maxvideoai.com/second.mp4', durationSec: 6,
+          requestedResolution: '480p', hasAudio: null, createdAt: null },
+      ],
+    },
+  });
+  for (const fact of [
+    'Même prompt, deux rendus', '2026-10-20', '1280 × 720 px', '480p demandé',
+    '> A presenter opens the box.\n> Use a slow push in.',
+    'https://maxvideoai.com/fr/comparatif/model-a-vs-model-b#same-prompt-424242424242',
+    'https://maxvideoai.com/video/first', 'https://maxvideoai.com/video/second',
+  ]) assert.ok(output.includes(fact), fact);
+  assert.doesNotMatch(output, /localhost|\.mp4|Sans audio/);
 });
 
 test('actual clipboard writes, success/failure events and consent/admin exclusions', async () => {

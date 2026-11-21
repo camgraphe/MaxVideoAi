@@ -33,6 +33,7 @@ export async function makeComparePagePricingHarness() {
     export const loadEngineScores=async()=>new Map();
     export const loadEngineKeySpecs=async()=>new Map();
     export const loadCompareGallery=async()=>[];
+    export const loadCompareSamePrompt=async()=>[];
   `;
   try {
     await build({
@@ -43,7 +44,7 @@ export async function makeComparePagePricingHarness() {
       tsconfig: 'frontend/tsconfig.json',
       define: { 'process.env.NODE_ENV': '"test"' },
       plugins: [{ name: 'comparison-pricing-io', setup(builder) {
-        builder.onResolve({ filter: /^(comparison-fixture|@\/server\/benchmark-lab-metrics|@\/server\/pricing\/quote-public|\.\/compare-gallery-loader)$/ },
+        builder.onResolve({ filter: /^(comparison-fixture|@\/server\/benchmark-lab-metrics|@\/server\/pricing\/quote-public|\.\/compare-gallery-loader|\.\/compare-same-prompt-loader)$/ },
           () => ({ path: 'fixture', namespace: 'controlled' }));
         builder.onResolve({ filter: /^\.\/compare-page-helpers$/ },
           () => ({ path: 'helpers', namespace: 'controlled' }));
