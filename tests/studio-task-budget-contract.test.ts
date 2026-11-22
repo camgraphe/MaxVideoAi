@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {randomUUID} from 'node:crypto';
-import {STUDIO_TASK_POLICY_VERSION,STUDIO_TASK_PROFILES,studioTaskSelectionSchema,studioTaskResumeSchema,studioTaskStatusSchema,studioTaskProfileForModel} from '../frontend/src/lib/studio/task-budget-contract';
+import {STUDIO_TASK_POLICY_VERSION,STUDIO_TASK_PROFILES,studioTaskSelectionSchema,studioTaskResumeSchema,studioTaskStatusSchema,studioTaskProfileForModel,studioTaskInputTarget} from '../frontend/src/lib/studio/task-budget-contract';
 import {imageTurnInputSchema,imageTurnRetryInput} from '../frontend/src/lib/studio/image-conversation-contract';
 
 test('client ceilings are exact, complex is explicit, and legacy messages stay valid',()=>{
@@ -17,6 +17,18 @@ test('client ceilings are exact, complex is explicit, and legacy messages stay v
   assert.deepEqual(imageTurnInputSchema.parse(input),input);
   assert.deepEqual(imageTurnInputSchema.parse({...input,taskBudget:standard}).taskBudget,standard);
   assert.deepEqual(imageTurnRetryInput({...input,taskBudget:standard} as never).taskBudget,standard);
+});
+test('new conversation tasks seal the same adaptive input bounds for Lite, Standard and Max',()=>{
+  const selection = studioTaskSelectionSchema.parse({profile:'standard',maxCredits:250,policyVersion:STUDIO_TASK_POLICY_VERSION});
+  for (const model of ['gpt-6-luna','gpt-6.1-terra','gpt-6.1-sol'] as const) {
+    const profile = studioTaskProfileForModel(selection, model);
+    const original = studioTaskProfileForModel(selection, model, 'original');
+    assert.equal(studioTaskInputTarget(profile), 64_000);
+    assert.deepEqual(profile, {...original, targetInputTokens:64_000, maxInputTokens:128_000});
+    assert.equal(studioTaskInputTarget(original), 24_000);
+  }
+  assert.equal(studioTaskSelectionSchema.safeParse({...selection,targetInputTokens:64_000}).success,false);
+  assert.equal(studioTaskSelectionSchema.safeParse({...selection,maxInputTokens:256_000}).success,false);
 });
 test('resumption confirms an owned identity and exact ceiling, never an implicit pack or model change',()=>{
   const value={requestId:randomUUID(),approvalId:randomUUID(),expectedRevision:0,action:'continue',maxCredits:250,policyVersion:STUDIO_TASK_POLICY_VERSION,confirmed:true};

@@ -13,7 +13,7 @@ import {StudioPreparationInputError} from './conversation-preparation-validation
 
 type AudioIntent=Exclude<StudioMediaIntent,{action:'video.prepare'}>;
 export type StudioAudioSourceDependencies={
-  readProjectMedia(actor:StudioGenerationActor):Promise<StudioProjectMedia>;
+  readProjectMedia(actor:StudioGenerationActor, outputIds?:readonly string[]):Promise<StudioProjectMedia>;
   resolveMedia?:typeof resolveStudioMedia;
 };
 
@@ -66,7 +66,8 @@ export async function validateStudioAudioRequest(actor:StudioGenerationActor,act
     if(selected.type==='asset'&&!input.attachments?.some(attached=>attached.type==='asset'&&attached.assetId===selected.assetId&&attached.kind===selected.kind))
       throw new StudioPreparationInputError('REFERENCE_INVALID','Attach this owned video or audio file before selecting it.');
   }
-  const outputs=request.references.some(reference=>reference.asset.type==='job-output')?await dependencies.readProjectMedia(actor):[];
+  const outputIds = request.references.flatMap(({asset}) => asset.type === 'job-output' ? [asset.outputId] : []);
+  const outputs = outputIds.length ? await dependencies.readProjectMedia(actor, outputIds) : [];
   for(const reference of request.references){
     const selected=reference.asset;
     if(selected.type==='job-output'&&!outputs.some(output=>output.ref.type==='job-output'&&output.ref.jobId===selected.jobId&&output.ref.outputId===selected.outputId&&output.ref.kind===selected.kind))

@@ -1,5 +1,42 @@
 # Studio task budgets and background execution
 
+## Current conversation input budget
+
+New Studio messages on the web and native apps use the Standard task profile
+for all three Milo levels. Each call targets 64,000 input tokens. At 75% of the
+target (48,000 tokens), the worker can shorten older conversation history and
+recount the resulting request. When the request still needs more than 64,000
+tokens, it can use up to 128,000. The ceiling covers the full model input,
+including instructions, tools and references. Only the actual final token count
+enters the reservation.
+
+Adaptive workers rebuild a bounded history from the owned project journal, up
+to the submitted turn. It includes up to five relevant historical excerpts and
+six chronological decision excerpts. The director can use exact ready output
+identities from an archived generation to prepare a fresh quote. Preparation
+rechecks the selected output against live project ownership and readiness even
+when the ordinary thirty-item media listing has moved on. The two newest turns,
+selected media and in-flight tool results are preserved during compaction.
+This extractive process runs on the server and incurs no model summarization call.
+
+The service seals `targetInputTokens` and `maxInputTokens` together in the
+immutable `studio_tasks.profile_json`. A v4 Standard task accepted before this
+change has no target field and retains its 24,000-token ceiling on retry or
+continuation. Earlier Quick offers retain 12,000. The existing SQL dispatch
+trigger checks the sealed maximum under the task lease. Deployment uses the
+existing schema. When rolling back, drain adaptive tasks or keep a worker that
+can validate their sealed profile.
+
+The Standard profile still authorizes four calls per segment and up to 250
+customer credits for the task. Lite stays sponsored with 32,000 output tokens.
+Standard and Max keep 6,000 output tokens and their existing tariffs. When the
+conservative next-call quote exceeds the available authorized credits, the
+existing completion policy can cap the customer's charge and reserve sponsorship
+for the remainder, subject to campaign availability. Funding, permissions,
+leases and deadlines are checked independently of input capacity.
+
+## Historical task profiles
+
 Implemented on the isolated Studio branch on 2026-10-06. This describes the
 candidate. The authorized paid-provider qualification and production activation
 procedure are recorded in `docs/operations/studio-media-tasks-activation-2026-10-06.md`.
@@ -210,3 +247,8 @@ bounded recovery and unknown holds. The browser fixture owns its committed Next
 snapshot, PostgreSQL 17 and test-only authentication; an injected offline worker
 checks zero-dispatch reads, Complex consent, mobile overflow, continuation and
 reload. These are functional checks, not production latency or Core Web Vitals claims.
+
+For an adaptive request whose final input exceeds its target, Studio consumes
+the Responses stream on the server. A terminal event supplies the complete tool
+arguments, response status and usage to the existing checkpoint. A stream that
+ends early uses the existing unknown-usage recovery path.

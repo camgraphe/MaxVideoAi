@@ -41,3 +41,16 @@ export function studioExplicitFilmDuration(message:string):number|null {
   const duration=Number(amount.replace(',','.'))*(/^min/i.test(unit)?60:1);
   return Number.isFinite(duration)&&duration>30&&duration<=1200?duration:null;
 }
+
+/** Long creative copy uses its output budget for the requested text. Mixed production tasks keep their normal effort. */
+export function studioLongPromptDraft(message: string): boolean {
+  const text = message.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
+  if (!/\bprompts?\b/.test(text)) return false;
+  const drafting = /\b(write|draft|rewrite|compose|redig\w*|ecri\w*|reecri\w*|redact\w*|escrib\w*|reescrib\w*)\b/.test(text);
+  const long = /\b(long\w*|detail\w*|detaill\w*|detall\w*|larg\w*|words?|mots?|palabras?)\b/.test(text);
+  const textOnly = /\b(text[- ]only|only text|texte seulement|texte uniquement|uniquement (?:du |le )?texte|solo texto|solamente texto)\b/.test(text);
+  // A direct writing request also implies a text deliverable. Keep mixed requests on the planning profile.
+  const direct = /^(?:(?:please|por favor|peux[- ]tu|puedes|could you|can you)\s+)?(?:write|draft|rewrite|compose|redig\w*|ecri\w*|reecri\w*|redact\w*|escrib\w*|reescrib\w*)\b[^.!?]{0,100}\bprompts?\b/.test(text.trim());
+  const mixed = /\b(analy[sz]\w*|analiz\w*|compar\w*|render|rendu|devis|quote|prix|pricing|generat\w*|generer?|genera\w*|lance\w*)\b/.test(text);
+  return drafting && long && (textOnly || (direct && !mixed));
+}

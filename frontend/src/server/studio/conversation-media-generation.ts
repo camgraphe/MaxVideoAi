@@ -45,7 +45,7 @@ export type StudioMediaFactories = {
 export const defaultStudioMediaFactories: StudioMediaFactories = {image: createStudioImageGenerationService, video: createStudioVideoGenerationService, audio: createStudioAudioGenerationService};
 
 /** Exact ready outputs of accepted session jobs. No bootstrap, promotion or provider polling in this read. */
-export async function readStudioProjectMedia(actor: StudioGenerationActor): Promise<StudioProjectMedia> {
+export async function readStudioProjectMedia(actor: StudioGenerationActor, outputIds?: readonly string[]): Promise<StudioProjectMedia> {
   const rows = await query<{id: string; job_id: string; kind: ToolAssetRef['kind']; duration_sec: number | null; metadata: Record<string,unknown> | null}>(`
     SELECT o.id,o.job_id,o.kind,o.duration_sec,o.metadata FROM job_outputs o
     JOIN app_jobs j ON j.job_id=o.job_id AND j.user_id=o.user_id
@@ -53,7 +53,8 @@ export async function readStudioProjectMedia(actor: StudioGenerationActor): Prom
     JOIN studio_projects p ON p.id=q.studio_project_id AND p.user_id=q.user_id
     WHERE o.user_id=$1 AND q.studio_project_id=$2 AND q.auth_origin='studio-session' AND q.state='accepted'
       AND p.deleted_at IS NULL AND j.status='completed' AND j.hidden IS NOT TRUE AND o.status='ready'
-      AND o.kind IN ('image','video','audio') ORDER BY o.created_at DESC LIMIT 30`, [actor.userId, actor.projectId]);
+      AND o.kind IN ('image','video','audio') AND ($3::text[] IS NULL OR o.id=ANY($3))
+      ORDER BY o.created_at DESC, o.id DESC LIMIT COALESCE(cardinality($3::text[]),30)`, [actor.userId, actor.projectId, outputIds ?? null]);
   return rows.map(row => ({ref: {type: 'job-output', jobId: row.job_id, outputId: row.id, kind: row.kind}, name: `${row.kind} output`,
     durationSec: row.kind === 'image' ? row.duration_sec : readMediaFacts(row.metadata?.mediaFacts)?.durationSec ?? null}));
 }
@@ -103,7 +104,7 @@ async function requireStudioMediaSource(actor: StudioGenerationActor, source: To
     const attached=source.kind==='image'?input.references.includes(source.assetId):input.attachments?.some(ref=>ref.type==='asset'&&ref.assetId===source.assetId&&ref.kind===source.kind);
     if (!attached) throw new AgentApiError('REFERENCE_INVALID', 'Attach this library media before using it.');
   } else {
-    const outputs = await (dependencies.readProjectMedia ?? readStudioProjectMedia)(actor);
+    const outputs = await (dependencies.readProjectMedia ?? readStudioProjectMedia)(actor, [source.outputId]);
     if (!outputs.some(item => item.ref.type === 'job-output' && item.ref.jobId === source.jobId && item.ref.outputId === source.outputId && item.ref.kind === source.kind))
       throw new AgentApiError('REFERENCE_INVALID', 'This media is not a ready output in this project.');
   }

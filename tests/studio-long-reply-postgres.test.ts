@@ -96,3 +96,105 @@ test('missing reply-envelope migration blocks admission and queued worker dispat
  assert.equal(await studioTaskReplyEnvelopeReady(),false,'a misleading marker name cannot authorize dispatch');
  await assert.rejects(f.pool.query(readFileSync('neon/migrations/94_studio_conversation_reply_envelope.sql','utf8')),/Unrecognized Studio reply constraint/);
 });
+
+test('each Milo level delivers a complete long prompt or records one localized output stop', async t => {
+  const f = await studioTaskFixture(t);
+  const english = 'At blue hour a firefly crosses a shallow crack in the ice. Track its amber reflection from the left edge of the frame. Hold focus until the reflection separates at the crack and joins again. Finish with a steady horizon and the soft wind from the previous shot.';
+  const french = 'À l’heure bleue, une luciole traverse une fissure dans la glace. Suivre son reflet ambré depuis le bord gauche du cadre. Garder la netteté jusqu’à ce que le reflet se sépare au passage de la fissure puis se reforme. Terminer sur un horizon stable avec le souffle du vent du plan précédent.';
+  const spanish = 'Al anochecer, una luciérnaga atraviesa una grieta en el hielo. Sigue su reflejo ámbar desde el borde izquierdo del encuadre. Mantén el enfoque hasta que el reflejo se divida al cruzar la grieta y vuelva a unirse. Termina con un horizonte estable y el suave viento del plano anterior.';
+
+  for (const [choice, model, effort, locale, direction, guidance] of [
+    ['select_luna', 'gpt-6-luna', 'high', 'fr', french, /plans 1 à 3/],
+    ['select_terra', 'gpt-6.1-terra', 'high', 'es', spanish, /planos 1 a 3/],
+    ['select_sol', 'gpt-6.1-sol', 'xhigh', 'en', english, /shots 1–3/],
+  ] as const) {
+    for (const outcome of ['completed', 'incomplete'] as const) {
+      await t.test(`${model} ${outcome}`, async () => {
+        const actor = await f.actor();
+        await chooseStudioAssistance(actor.userId, { action: choice, expectedRevision: 0 }, f.policy);
+        const service = createStudioTaskService(actor, { enabled: true, assistancePolicy: f.policy });
+        const message = { en: 'Write twelve independent prompts.', fr: 'Rédige douze prompts indépendants.', es: 'Redacta doce prompts independientes.' }[locale];
+        const input = { ...f.input('standard', message), locale };
+        const longReply = Array.from({ length: 12 }, (_, index) => `#${index + 1} — ${direction}`).join('\n\n');
+        assert.ok(longReply.length > 2400);
+        const bound = model === 'gpt-6-luna' ? 32000 : 6000;
+        await service.enqueue(input);
+        let creates = 0;
+        const worker = {
+          enabled: true,
+          assistancePolicy: f.policy,
+          scope: { ...actor, requestId: input.requestId },
+          serviceOptions: {
+            generationFactory,
+            countInputTokens: async () => 1000,
+            createActionResponse: async (params: Parameters<StudioResponseCreator>[0]): Promise<StudioDirectorResponse> => {
+              creates++;
+              assert.equal(params.model, model);
+              assert.equal(params.max_output_tokens, bound);
+              assert.deepEqual(params.reasoning, { effort });
+              const outputTokens = outcome === 'completed' ? 3000 : bound;
+              return {
+                ...response(longReply, model), status: outcome,
+                usage: { input_tokens: 1000, input_tokens_details: { cached_tokens: 0 }, output_tokens: outputTokens, output_tokens_details: { reasoning_tokens: outputTokens - 1000 }, total_tokens: 1000 + outputTokens },
+                ...(outcome === 'incomplete' && {
+                  incomplete_details: { reason: 'max_output_tokens' as const },
+                  output_text: '{"reply":"unfinished',
+                  output: [{ type: 'function_call' as const, name: 'project_remember', call_id: 'unfinished-memory', arguments: '{"revision":' }],
+                }),
+              };
+            },
+          },
+        };
+        await runStudioTaskWorkerOnce(worker);
+        const task = await service.read(input.requestId);
+        const conversation = createImageConversationService(actor, { enabled: true, actionsEnabled: true, assistancePolicy: f.policy, generationFactory });
+        const turn = (await conversation.read()).turns[0];
+        assert.equal(task.completedCalls, 1);
+        assert.equal(task.reservedCredits, 0);
+        assert.equal(task.state, outcome === 'completed' ? 'completed' : 'paused');
+        if (outcome === 'completed') {
+          assert.equal(turn.reply, longReply);
+          assert.equal(turn.continuation, undefined);
+        } else {
+          assert.equal(task.error, 'output');
+          assert.equal(turn.continuation?.reason, 'output_limit');
+          assert.equal(turn.continuation?.lastError?.code, 'TASK_OUTPUT');
+          assert.match(turn.reply!, guidance);
+          assert.doesNotMatch(turn.reply!, /unfinished/);
+          assert.equal(turn.retryable, false);
+        }
+        assert.equal(await runStudioTaskWorkerOnce(worker), false);
+        assert.equal(creates, 1);
+        assert.equal((await f.pool.query('SELECT count(*)::int AS n FROM studio_conversation_steps WHERE request_id=$1', [input.requestId])).rows[0].n, 0);
+      });
+    }
+  }
+});
+
+test('adaptive worker reads a terminal supplier stream above the 64k target and settles exactly once',async t=>{
+ const f=await studioTaskFixture(t),actor=await f.actor();
+ await chooseStudioAssistance(actor.userId,{action:'select_sol',expectedRevision:0},f.policy);
+ const service=createStudioTaskService(actor,{enabled:true,assistancePolicy:f.policy});
+ const input=f.input('standard','Write the next shot in this old film.');
+ await service.enqueue(input);
+ const previousKey=process.env.OPENAI_API_KEY;
+ process.env.OPENAI_API_KEY='offline-test-fixture';
+ t.after(()=>{if(previousKey===undefined)delete process.env.OPENAI_API_KEY;else process.env.OPENAI_API_KEY=previousKey;});
+ let calls=0;
+ t.mock.method(globalThis,'fetch',async(url:RequestInfo | URL,options?:RequestInit)=>{
+   assert.equal(String(url),'https://api.openai.com/v1/responses');
+   const body=JSON.parse(String(options?.body));
+   assert.equal(body.model,'gpt-6.1-sol');assert.equal(body.stream,true);
+   calls++;
+   const text=JSON.stringify({reply:'The old shot continues.'});
+   const terminal={...response('The old shot continues.'),output:[{type:'message',role:'assistant',content:[{type:'output_text',text}]}],
+     usage:{input_tokens:90_000,input_tokens_details:{cached_tokens:0,cache_write_tokens:0},output_tokens:250,output_tokens_details:{reasoning_tokens:100},total_tokens:90_250}};
+   return new Response('data: '+JSON.stringify({type:'response.completed',response:terminal})+'\n\n'+'data: [DONE]\n\n',{headers:{'content-type':'text/event-stream'}});
+ });
+ const worker={enabled:true,assistancePolicy:f.policy,scope:{...actor,requestId:input.requestId},serviceOptions:{generationFactory,countInputTokens:async()=>90_000}};
+ assert.equal(await runStudioTaskWorkerOnce(worker),true);
+ const saved=await service.read(input.requestId);
+ assert.equal(saved.state,'completed');assert.equal(saved.completedCalls,1);assert.equal(calls,1);
+ const conversation=createImageConversationService(actor,{enabled:true,actionsEnabled:true,assistancePolicy:f.policy,generationFactory});
+ assert.equal((await conversation.read()).turns.find(v=>v.requestId===input.requestId)?.reply,'The old shot continues.');
+});

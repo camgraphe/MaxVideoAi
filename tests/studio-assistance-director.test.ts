@@ -19,3 +19,23 @@ test('token preflight preserves every token-bearing request field without respon
  assert.equal(projected.input,params.input);assert.equal(projected.tools,params.tools);assert.equal(projected.text,params.text);assert.equal(projected.instructions,'Be useful');
  assert.equal(projected.model,'gpt-6.1-sol');assert.equal('max_output_tokens' in projected,false);assert.equal('store' in projected,false);assert.equal('service_tier' in projected,false);
 });
+
+test('adaptive Max assigns medium effort to explicit long text-only drafting while preserving analytical Max work and old offers',async()=>{
+  const {studioTaskProfileForModel,STUDIO_CONVERSATION_TASK_BUDGET}=await import('../frontend/src/lib/studio/task-budget-contract');
+  for(const [message,adaptive,expected] of [
+    ['Rédige huit prompts vidéo détaillés. Texte seulement.',true,'medium'],
+    ['Write eight long prompts, text only.',true,'medium'],
+    ['Redacta ocho prompts detallados, solo texto.',true,'medium'],
+    ['Écris huit prompts détaillés pour ma vidéo.',true,'medium'],
+    ['Write eight long prompts and then generate the movie.',true,'xhigh'],
+    ['Compare the long prompts and prepare the best video.',true,'xhigh'],
+    ['Write eight long prompts, text only.',false,'xhigh'],
+  ] as const){
+    const profile=studioTaskProfileForModel(STUDIO_CONVERSATION_TASK_BUDGET,'gpt-6.1-sol',adaptive?'adaptive':'original');
+    const director=createStudioConversationDirector({model:'gpt-6.1-sol',taskExecution:{profile,maxCalls:4} as never,createResponse:async params=>{
+      assert.equal(params.reasoning?.effort,expected);assert.equal(params.max_output_tokens,6000);
+      return {id:'fixture',model:'gpt-6.1-sol',status:'completed',service_tier:'default',usage:null,output:[],output_text:JSON.stringify({reply:'All requested prompts.'})};
+    }});
+    await director({message,references:[],history:[],project:{name:'Film',revision:0,memory:{revision:0,brief:'',decisions:[]},generations:[]},checkpoint:(_index,create)=>create(),execute:async()=>{throw new Error('Unexpected action')}});
+  }
+});
