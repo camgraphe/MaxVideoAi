@@ -7,6 +7,7 @@ import { hasAnalyticsConsentInBrowser } from '@/lib/analytics/consent-client';
 import { COMMERCIAL_ANALYTICS_RESOLVED_EVENT, isBrowserCommercialAnalyticsPending } from '@/lib/analytics/commercial-client';
 import { prepareBrowserAnalyticsEvents } from '@/lib/analytics/journey-browser';
 import { sendPreparedAnalyticsEvents } from '@/lib/analytics/ordered-events';
+import { getVideoAnalyticsMarker, PUBLIC_VIDEO_WATCH_READY_EVENT } from '@/lib/analytics/public-video';
 import {
   buildSafeAnalyticsLocation,
   getAnalyticsRouteContext,
@@ -21,19 +22,19 @@ declare global {
 
 function TrackerCore() {
   const pathname = usePathname();
-  const prevUrlRef = useRef<string>('');
-  const [consentRevision, setConsentRevision] = useState(0);
+  const lastViewRef = useRef<string | HTMLElement | null>(null);
+  const [trackingRevision, setTrackingRevision] = useState(0);
 
   useEffect(() => {
-    const handleConsentUpdated = () => {
-      setConsentRevision((value) => value + 1);
-    };
+    const refreshTracking = () => setTrackingRevision((value) => value + 1);
 
-    window.addEventListener('consent:updated', handleConsentUpdated);
-    window.addEventListener(COMMERCIAL_ANALYTICS_RESOLVED_EVENT, handleConsentUpdated);
+    window.addEventListener('consent:updated', refreshTracking);
+    window.addEventListener(COMMERCIAL_ANALYTICS_RESOLVED_EVENT, refreshTracking);
+    window.addEventListener(PUBLIC_VIDEO_WATCH_READY_EVENT, refreshTracking);
     return () => {
-      window.removeEventListener('consent:updated', handleConsentUpdated);
-      window.removeEventListener(COMMERCIAL_ANALYTICS_RESOLVED_EVENT, handleConsentUpdated);
+      window.removeEventListener('consent:updated', refreshTracking);
+      window.removeEventListener(COMMERCIAL_ANALYTICS_RESOLVED_EVENT, refreshTracking);
+      window.removeEventListener(PUBLIC_VIDEO_WATCH_READY_EVENT, refreshTracking);
     };
   }, []);
 
@@ -42,21 +43,29 @@ function TrackerCore() {
     const routeContext = getAnalyticsRouteContext(pathname);
     if (routeContext.excludedFromGa4) return;
     if (!hasAnalyticsConsentInBrowser()) return;
+    const isWatchRoute = routeContext.workspaceSection === 'video';
+    const reader = isWatchRoute && window.location.pathname === pathname
+      ? getVideoAnalyticsMarker(new URL(window.location.href))
+      : null;
+    if (isWatchRoute && !reader) return;
+    // Public watch readers follow the marketing consent rules and keep a masked page URL.
+    const routeFamily = reader ? 'marketing' : routeContext.family;
     const safePath = getSafeAnalyticsPath(pathname);
     const url = buildSafeAnalyticsLocation(window.location.origin, pathname);
-    if (prevUrlRef.current === url) return;
+    const view = reader ?? url;
+    if (lastViewRef.current === view) return;
     let preparedRouteEvents: Array<{ event: string; payload: Record<string, unknown> }> | null = null;
     let unsentIndex = 0;
 
     const sendPageView = () => {
       if (!hasAnalyticsConsentInBrowser()) return true;
-      if (['workspace', 'app_tools', 'billing'].includes(routeContext.family) && isBrowserCommercialAnalyticsPending()) return false;
+      if (reader && (!reader.isConnected || window.location.pathname !== pathname)) return true;
+      if (['workspace', 'app_tools', 'billing'].includes(routeFamily) && isBrowserCommercialAnalyticsPending()) return false;
       const gtag = window.gtag;
       if (typeof gtag !== 'function') return false;
       if (!preparedRouteEvents) {
-        const pageViewKey = `page_view:${routeContext.family}:${url}`;
-        if (!shouldDispatchRecentAnalyticsEvent(pageViewKey)) {
-          prevUrlRef.current = url;
+        if (!reader && !shouldDispatchRecentAnalyticsEvent(`page_view:${routeFamily}:${url}`)) {
+          lastViewRef.current = view;
           return true;
         }
 
@@ -64,10 +73,10 @@ function TrackerCore() {
           page_location: url,
           page_path: safePath,
           page_title: document.title,
-          route_family: routeContext.family,
+          route_family: routeFamily,
           tool_name: routeContext.toolName ?? undefined,
           tool_surface: routeContext.toolSurface ?? undefined,
-          workspace_section: routeContext.workspaceSection ?? undefined,
+          workspace_section: reader ? undefined : routeContext.workspaceSection ?? undefined,
         });
         if (preparedRouteEvents.length === 0) return true;
 
@@ -83,7 +92,7 @@ function TrackerCore() {
           }
         }
 
-        if (routeContext.family === 'workspace') {
+        if (routeFamily === 'workspace') {
           const appOpenKey = `app_open:${routeContext.family}:${url}`;
           if (shouldDispatchRecentAnalyticsEvent(appOpenKey)) {
             preparedRouteEvents.push(...prepareBrowserAnalyticsEvents('app_open', {
@@ -97,7 +106,7 @@ function TrackerCore() {
       unsentIndex = sendPreparedAnalyticsEvents(gtag, preparedRouteEvents, unsentIndex);
       if (unsentIndex < preparedRouteEvents.length) return false;
 
-      prevUrlRef.current = url;
+      lastViewRef.current = view;
       if (process.env.NODE_ENV !== 'production') {
         console.info('[ga4] page_view sent', { url });
       }
@@ -121,7 +130,7 @@ function TrackerCore() {
     return () => {
       window.clearInterval(retryTimer);
     };
-  }, [pathname, consentRevision]);
+  }, [pathname, trackingRevision]);
 
   return null;
 }
