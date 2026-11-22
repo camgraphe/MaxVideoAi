@@ -300,6 +300,7 @@ export async function runStudioImageActions(options: {
         ? {targetInputTokens: studioTaskInputTarget(profile), compact: checkpointOptions?.compactHistory} : undefined);
       if (!Number.isSafeInteger(inputTokens) || inputTokens < 0 || inputTokens > 272000) throw new AgentApiError('PARAMETER_INVALID','This Studio context exceeds the supported assistance limit.');
       if(options.taskExecution&&inputTokens>options.taskExecution.profile.maxInputTokens)throw new StudioTaskStop("context","The current context exceeds this task allowance.");
+      checkpointOptions?.setExtendedInput?.(profile?.targetInputTokens !== undefined && inputTokens > profile.targetInputTokens);
       const outputTokens=params.max_output_tokens??2200;
       if(currentModel!=='gpt-6-luna')solBounds={inputTokens,outputTokens,allowCreditCompletion:true};
       return {policy,inputTokens,outputTokens,lunaFallback};

@@ -170,3 +170,31 @@ test('each Milo level delivers a complete long prompt or records one localized o
     }
   }
 });
+
+test('adaptive worker reads a terminal supplier stream above the 64k target and settles exactly once',async t=>{
+ const f=await studioTaskFixture(t),actor=await f.actor();
+ await chooseStudioAssistance(actor.userId,{action:'select_sol',expectedRevision:0},f.policy);
+ const service=createStudioTaskService(actor,{enabled:true,assistancePolicy:f.policy});
+ const input=f.input('standard','Write the next shot in this old film.');
+ await service.enqueue(input);
+ const previousKey=process.env.OPENAI_API_KEY;
+ process.env.OPENAI_API_KEY='offline-test-fixture';
+ t.after(()=>{if(previousKey===undefined)delete process.env.OPENAI_API_KEY;else process.env.OPENAI_API_KEY=previousKey;});
+ let calls=0;
+ t.mock.method(globalThis,'fetch',async(url:RequestInfo | URL,options?:RequestInit)=>{
+   assert.equal(String(url),'https://api.openai.com/v1/responses');
+   const body=JSON.parse(String(options?.body));
+   assert.equal(body.model,'gpt-6.1-sol');assert.equal(body.stream,true);
+   calls++;
+   const text=JSON.stringify({reply:'The old shot continues.'});
+   const terminal={...response('The old shot continues.'),output:[{type:'message',role:'assistant',content:[{type:'output_text',text}]}],
+     usage:{input_tokens:90_000,input_tokens_details:{cached_tokens:0,cache_write_tokens:0},output_tokens:250,output_tokens_details:{reasoning_tokens:100},total_tokens:90_250}};
+   return new Response('data: '+JSON.stringify({type:'response.completed',response:terminal})+'\n\n'+'data: [DONE]\n\n',{headers:{'content-type':'text/event-stream'}});
+ });
+ const worker={enabled:true,assistancePolicy:f.policy,scope:{...actor,requestId:input.requestId},serviceOptions:{generationFactory,countInputTokens:async()=>90_000}};
+ assert.equal(await runStudioTaskWorkerOnce(worker),true);
+ const saved=await service.read(input.requestId);
+ assert.equal(saved.state,'completed');assert.equal(saved.completedCalls,1);assert.equal(calls,1);
+ const conversation=createImageConversationService(actor,{enabled:true,actionsEnabled:true,assistancePolicy:f.policy,generationFactory});
+ assert.equal((await conversation.read()).turns.find(v=>v.requestId===input.requestId)?.reply,'The old shot continues.');
+});

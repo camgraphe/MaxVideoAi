@@ -31,3 +31,19 @@ test('normal and frozen requests retain their counted payload and unhelpful comp
   assert.equal(await measureStudioRequest(params,async()=>params.input==='original'?48_000:48_001,{targetInputTokens:64_000,compact}),48_000);
   assert.equal(params.input,'original');
 });
+
+test('extended requests checkpoint only terminal stream snapshots, including output-limit usage', async () => {
+  const {receiveStudioResponse} = await import('../frontend/src/server/studio/conversation-response-transport');
+  for (const status of ['completed','incomplete','interrupted']) {
+    const reply = {status,usage:{output_tokens:3120},incomplete_details:status === 'incomplete'?{reason:'max_output_tokens'}:null,
+      output:[{type:'message',content:[{type:'output_text',text:'terminal answer'}]}]};
+    async function* events() {
+      yield {type:'response.output_text.delta',delta:'partial content'};
+      if (status !== 'interrupted') yield {type:'response.'+status,response:reply};
+    }
+    const client = {responses:{create:async (params:{stream?:boolean})=>{assert.equal(params.stream,true);return events();}}};
+    const receive=receiveStudioResponse(client as never,{model:'gpt-6.1-sol',input:'Test'},true,120_000);
+    if(status==='interrupted') await assert.rejects(receive,/before its final usage/);
+    else {const result=await receive;assert.equal(result.output_text,'terminal answer');assert.equal(result.usage?.output_tokens,3120);assert.equal(result.status,status);}
+  }
+});

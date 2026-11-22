@@ -12,6 +12,7 @@ import { actionFromTool, STUDIO_DIRECTOR_TOOLS, STUDIO_TASK_DIRECTOR_TOOLS, type
 import type { ResolvedReference } from '@/server/agent-api/reference-types';
 import { AgentApiError } from '@/server/agent-api/errors';
 import type { ImageDraft, ImageTurnInput, ImageConversationHistoryTurn,StudioConversationHistoryFacts } from '@/lib/studio/image-conversation-contract';
+import {receiveStudioResponse} from './conversation-response-transport';
 import {compactStudioRequestHistory,studioRecentHistoryInput} from './conversation-context-pressure';
 import {studioReferenceInputContent} from './conversation-reference-mentions';
 import {STUDIO_CHARACTER_DIRECTOR_TOOLS} from '@/lib/studio/conversation-character-contract';
@@ -42,7 +43,7 @@ export type StudioDirectorContext = {
   execute(callId: string, request: StudioActionRequest): Promise<StudioActionResult>;
   readCompletedAction?(callId: string, request: StudioActionRequest): Promise<StudioActionResult|null>;
   comparisonCatalogFingerprint?(request:Extract<StudioActionRequest,{action:'pricing.compare'}>):Promise<string|null>;
-  checkpoint(index: number, create: () => Promise<StudioDirectorResponse>, params?: ResponseCreateParamsNonStreaming, options?: {replayOnly?: boolean;prepareLunaInput?:()=>void;compactHistory?:()=>boolean;onCreditCompletion?:()=>void}): Promise<StudioDirectorResponse>;
+  checkpoint(index: number, create: () => Promise<StudioDirectorResponse>, params?: ResponseCreateParamsNonStreaming, options?: {replayOnly?: boolean;prepareLunaInput?:()=>void;compactHistory?:()=>boolean;setExtendedInput?:(extended:boolean)=>void;onCreditCompletion?:()=>void}): Promise<StudioDirectorResponse>;
 };
 const replyEnvelopeSchema=z.object({reply:z.string().min(1)}).strict();
 const replySchema=replyEnvelopeSchema.extend({reply:z.string().min(1).max(STUDIO_CONVERSATION_REPLY_MAX_CHARS).transform(projectStudioReply)});
@@ -117,7 +118,11 @@ export function createStudioConversationDirector(options: {clientSurface?: Image
     const filmDuration=options.mediaEnabled&&!explicitRecast&&!selectedFilmPlan&&!context.references.some(ref=>ref.mediaKind!=='image')?studioExplicitFilmDuration(context.message):null;
     if (!options.createResponse && !process.env.OPENAI_API_KEY)
       throw new AgentApiError('ENGINE_UNAVAILABLE', 'Studio conversation is not configured.');
-    const create = options.createResponse ?? ((params) => new OpenAI({apiKey: process.env.OPENAI_API_KEY, maxRetries: 0, timeout: options.taskExecution?Math.max(1000,Math.min(120000,options.taskExecution.deadlineAt.getTime()-Date.now()-5000)):65000}).responses.create(params));
+    const create = options.createResponse ?? ((params: ResponseCreateParamsNonStreaming, extended: boolean) => {
+      const timeout = options.taskExecution ? Math.max(1000, Math.min(120000, options.taskExecution.deadlineAt.getTime() - Date.now() - 5000)) : 65000;
+      const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY, maxRetries: 0, timeout });
+      return receiveStudioResponse(client, params, extended, timeout);
+    });
     const recentTurns = context.history.slice(-(options.taskExecution?.profile.historyTurns ?? 8));
     const recentInput = studioRecentHistoryInput(recentTurns);
     const input: ResponseInputItem[] = [
@@ -196,11 +201,12 @@ export function createStudioConversationDirector(options: {clientSurface?: Image
           parameters: {type: 'object', additionalProperties: false, properties: studioToolReferenceProperties(tool.name,tool.properties,context.references), required: Object.keys(tool.properties)}})),
         text: {format: {type: 'json_schema', name: 'studio_reply', strict: true, schema: {type: 'object', additionalProperties: false, required: ['reply'], properties: {reply: {type: 'string',description:`The complete conversational answer, within ${STUDIO_CONVERSATION_REPLY_MAX_CHARS} characters. Preparation tools retain their own prompt limits.`}}}}},
       };
+      let extendedInput = false;
       let freshResponse = false;
       let creditCompletion = false;
       let response: StudioDirectorResponse;
       try {
-        response = await context.checkpoint(index, async () => {freshResponse = true; return freezeStudioFilmResponse(await create(params),filmDuration??failedFilmComparison?.request.filmDurationSec??null);}, params, {replayOnly: correctionRejected||!!comparisonReplayOnly||failedFilmComparison?.replayOnly,prepareLunaInput:()=>{params.input=lunaInput();},compactHistory:()=>compactStudioRequestHistory(params,recentTurns,recentInput),onCreditCompletion:()=>{creditCompletion=true;}});
+        response = await context.checkpoint(index, async () => {freshResponse = true; return freezeStudioFilmResponse(await create(params, extendedInput),filmDuration??failedFilmComparison?.request.filmDurationSec??null);}, params, {replayOnly: correctionRejected||!!comparisonReplayOnly||failedFilmComparison?.replayOnly,prepareLunaInput:()=>{params.input=lunaInput();},compactHistory:()=>compactStudioRequestHistory(params,recentTurns,recentInput),setExtendedInput:extended=>{extendedInput=extended;},onCreditCompletion:()=>{creditCompletion=true;}});
       } catch (error) {
         if ((correctionRejected||comparisonReplayOnly||failedFilmComparison?.replayOnly) && error instanceof AgentApiError && (error.code === 'RATE_LIMITED'
           || (error.code === 'SPENDING_LIMIT_EXCEEDED' && error.nextAction?.type === 'studio_assistance' && error.nextAction.reason === 'call_limit'))) {

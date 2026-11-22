@@ -247,3 +247,8 @@ bounded recovery and unknown holds. The browser fixture owns its committed Next
 snapshot, PostgreSQL 17 and test-only authentication; an injected offline worker
 checks zero-dispatch reads, Complex consent, mobile overflow, continuation and
 reload. These are functional checks, not production latency or Core Web Vitals claims.
+
+For an adaptive request whose final input exceeds its target, Studio consumes
+the Responses stream on the server. A terminal event supplies the complete tool
+arguments, response status and usage to the existing checkpoint. A stream that
+ends early uses the existing unknown-usage recovery path.
