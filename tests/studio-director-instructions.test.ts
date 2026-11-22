@@ -14,6 +14,14 @@ test('legacy assistance explains its introductory allowance while export help fo
   assert.doesNotMatch(instructions, /export_prepare may prepare/);
 });
 
+test('mobile Studio guides people to the phone workspaces and identifies web Studio actions', () => {
+  const instructions = buildStudioDirectorInstructions({clientSurface:'mobile'});
+  assert.match(instructions, /Video, Image or Audio/);
+  assert.match(instructions, /Video > Modify uses a phone clip/);
+  assert.match(instructions, /approve Studio media actions, edit the timeline and export in web Studio/);
+  assert.doesNotMatch(instructions, /drag to Message Milo/);
+});
+
 // These are the request-envelope contracts, not a claim to test artistic judgment.
 test('director sends creative purpose, current help and live quote rules with its gated tools', async () => {
   for (const enabled of [false,true]) {
