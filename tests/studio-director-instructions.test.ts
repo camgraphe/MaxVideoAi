@@ -113,6 +113,8 @@ test('all Milo levels receive the scoped creative offer rule and the conversatio
         {message:offer.message, history:[]},
         {message:offer.message, history:[titles]},
         {message:'Yes, please.', history:[titles, offer]},
+        {message:'Yes, please.', history:[{message:'Help with the audio.', reply:'Shall I write a voiceover for the opening shot?'}]},
+        {message:'Yes, please.', history:[{message:'Change the mood.', reply:'Shall I explore a warmer version of the scene?'}]},
         {message:'No quote, thanks.', history:[offer]},
         {message:offer.message, history:[{message:'Keep this whole project text only.', reply:'Understood.'}]},
         {message:'Remind me of the direction for the quoted shot.', history:[offer], generations:[pendingQuote]},
@@ -121,10 +123,10 @@ test('all Milo levels receive the scoped creative offer rule and the conversatio
         const director = createStudioConversationDirector({model, clientSurface, mediaEnabled:true, createResponse:async params => {
           assert.equal(params.model, model);
           const rules = String(params.instructions);
-          assert.match(rules, /actionable creative direction.*project-specific next step in one closing question/);
-          assert.match(rules, /Skip for explicit deliverable-only requests, declined steps or matching quotes/);
-          assert.match(rules, /Keep standing preferences.*one-off titles-only ends that turn/);
-          assert.match(rules, /Yes to your quote offer: prepare the priced proposal in this project with agreed settings/);
+          assert.match(rules, /answer first, then ask one natural next-step question tied to this project/);
+          assert.match(rules, /explore, write, develop visuals or help produce/);
+          assert.match(rules, /Quote only when pricing or production fits the client's intent/);
+          assert.match(rules, /Respect text-only, refusals, closing remarks and existing quotes/);
           assert.match(rules, /Generation needs separate client confirmation/);
           assert.equal(params.text?.format?.type, 'json_schema');
           if (params.text?.format?.type === 'json_schema')
@@ -135,7 +137,10 @@ test('all Milo levels receive the scoped creative offer rule and the conversatio
           assert.deepEqual(JSON.parse(facts.content.slice(facts.content.indexOf('{'))).generations, generations);
           if (history.length) {
             assert.equal(input.at(-2)?.role, 'developer');
-            assert.match(String(input.at(-2)?.content), /Earlier .*text only.* instructions for particular ideas or titles are fulfilled/);
+            assert.match(String(input.at(-2)?.content), /Earlier text-only requests for particular deliverables are fulfilled/);
+            assert.match(String(input.at(-2)?.content), /give the new direction and ask a small creative follow-up/);
+            assert.match(String(input.at(-2)?.content), /write the offered text, explore the offered variation, or prepare the offered quote/);
+            assert.match(String(input.at(-2)?.content), /After delivering an accepted suggestion, let the result stand/);
           }
           const previousTurns = input.slice(0, -1).filter(item => item.role === 'user' || item.role === 'assistant');
           assert.deepEqual(previousTurns, history.flatMap(turn => [

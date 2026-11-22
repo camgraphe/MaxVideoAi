@@ -209,7 +209,7 @@ export function createStudioConversationDirector(options: {clientSurface?: Image
           type: 'object', additionalProperties: false, required: ['reply', 'nextStepOffer'],
           properties: {
             reply: {type: 'string', description: `Answer the latest request in full, within ${STUDIO_CONVERSATION_REPLY_MAX_CHARS} characters. Put any closing offer in nextStepOffer only.`},
-            nextStepOffer: {type: ['string', 'null'], description: 'For any new or revised creative direction, including a change of look to an earlier shot, ask one question offering the best specific next action. For a ready shot ask to PREPARE its quote, so a yes has a clear action. Use null for other answers or an explicit current or standing opt-out, declined action or matching quote.'},
+            nextStepOffer: {type: ['string', 'null'], description: 'One short question that helps this person continue the project from your answer. Follow their interest: another interpretation, a line of text, a visual treatment, a storyboard or a video. Choose a relevant step, or two paths only for a real choice. A shot or saved model settings alone do not imply interest in price. Offer to prepare a quote when they are considering production or cost. Use null if the reply already asks a necessary question, they requested just the artifact, they are done, you just fulfilled your own suggestion, or no useful continuation fits. Follow a change of topic. Never repeat an ignored or declined offer, an existing quote, or a generic menu.'},
           },
         }}},
       };
