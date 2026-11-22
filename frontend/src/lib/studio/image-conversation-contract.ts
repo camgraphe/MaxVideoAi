@@ -26,6 +26,7 @@ export const imageTurnInputSchema = z
   .object({
     requestId: z.string().uuid(),
     message: z.string().trim().min(1).max(4000),
+    clientSurface: z.literal('mobile').optional(),
     shotPlanRevision:studioShotPlanRevisionSchema.optional(),
     references: z.array(z.string().regex(/^ma_[a-f0-9]{32}$/)).max(STUDIO_CONVERSATION_MAX_ATTACHMENTS),
     attachments: z.array(toolAssetRefSchema.refine(ref => ref.type === 'asset' && ref.kind !== 'image')).max(STUDIO_CONVERSATION_MAX_ATTACHMENTS).optional(),

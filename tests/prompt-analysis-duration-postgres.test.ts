@@ -7,6 +7,8 @@ import {Readable} from 'node:stream';
 import dns from 'node:dns/promises';
 import https from 'node:https';
 import type {ClientRequest,IncomingMessage} from 'node:http';
+import { NextRequest } from '../frontend/node_modules/next/server';
+import sharp from '../frontend/node_modules/sharp';
 import {getDb} from '../frontend/src/lib/db';
 import {createPaidGenerationTestSchema,startDisposablePostgres} from './helpers/disposable-postgres';
 
@@ -74,6 +76,155 @@ test('Milo cost review verifies an older owned Wan Modify output without using r
     const audio=await preparePromptReferenceAnalysis(user,{...input,requestId:randomUUID(),modality:'audio'});
     assert.equal(audio.status.quote.endSec,6);assert.equal(audio.status.quote.profile,'audio-window-v1');assert.equal(downloads,1);
   });
+  await t.test(
+    'native bearer references reach the same owned pixels and bounded video excerpt as the site',
+    async (subtest) => {
+      const { handleMobileMilo, handleMobileMiloAnalysis } = await import('../frontend/src/server/mobile/milo');
+      const { preparePromptPerception } = await import('../frontend/src/server/prompt-assistance/perception');
+      const { buildPromptAssistanceContext } = await import('../frontend/src/server/prompt-assistance/context');
+      const { initialStatus } = await import('./helpers/milo-status-fixture');
+      const nativeSession = randomUUID();
+      const imageId = 'ma_' + '1'.repeat(32),
+        videoId = 'ma_' + '2'.repeat(32);
+      const photoUrl = 'https://fixture-media.test/native-photo.png';
+      await pg.pool.query(
+        `INSERT INTO media_assets(id,public_id,user_id,kind,url,mime_type,status,metadata)
+         VALUES('native-image',$1,$2,'image',$3,'image/png','ready','{}'),
+               ('native-video',$4,$2,'video',$5,'video/mp4','ready',$6)`,
+        [
+          imageId,
+          user,
+          photoUrl,
+          videoId,
+          url,
+          JSON.stringify({ mediaFacts: { source: 'probe', durationSec: 6, hasAudio: true } }),
+        ],
+      );
+      const post = (path: string, body: unknown) =>
+        new NextRequest('https://fixture.test/api/mobile/milo' + path, {
+          method: 'POST',
+          body: JSON.stringify(body),
+          headers: { 'x-maxvideoai-auth-mode': 'bearer', authorization: 'Bearer fixture' },
+        });
+      const deps = {
+        enabled: true,
+        user: async (_req: unknown, consent?: boolean) => {
+          assert.equal(consent, true);
+          return user;
+        },
+      };
+      const original = await sharp({ create: { width: 32, height: 16, channels: 3, background: '#ff0000' } })
+        .png()
+        .toBuffer();
+      let pixelReads = 0;
+      subtest.mock.method(globalThis, 'fetch', async (raw: unknown) => {
+        assert.equal(raw, photoUrl);
+        pixelReads++;
+        return new Response(new Uint8Array(original), { headers: { 'content-type': 'image/png' } });
+      });
+      const { readMobileModels } = await import('../frontend/src/server/mobile/catalog');
+      const catalog = await readMobileModels({ surface: 'video', mediaReferences: true });
+      const imageModel = catalog.find((model) =>
+        model.modes.some((mode) => mode.mode === 'i2v' && mode.referenceImageField),
+      );
+      const videoModel = catalog.find(
+        (model) =>
+          model.id === input.draft.engineId &&
+          model.modes.some((mode) => mode.mode === 'v2v' && mode.sourceVideo),
+      );
+      assert.ok(imageModel && videoModel, JSON.stringify(catalog.map((model) => model.id)));
+      const imageField = imageModel.modes.find((mode) => mode.mode === 'i2v')!.referenceImageField!;
+      const photoRequest = {
+        sessionId: randomUUID(),
+        requestId: randomUUID(),
+        locale: 'en',
+        message: 'Describe the attached photo.',
+        assistanceModel: initialStatus.selectedModel,
+        assistanceRevision: initialStatus.revision,
+        draftRevision: 1,
+        draft: {
+          ...input.draft,
+          engineId: imageModel.id,
+          workflow: 'create',
+          mode: 'i2v',
+          settings: {},
+          references: [
+            {
+              fieldId: imageField,
+              slot: 0,
+              label: 'Photo',
+              ref: { type: 'asset', kind: 'image', assetId: imageId },
+            },
+          ],
+        },
+      };
+      const chat = await handleMobileMilo(post('', { action: 'message', request: photoRequest }), {
+        ...deps,
+        send: async (owner, request) => {
+          const context = await buildPromptAssistanceContext(owner, request);
+          const perception = await preparePromptPerception(
+            owner,
+            request,
+            initialStatus.selectedModel,
+            context,
+          );
+          const pixels = perception.content.find((item) => item.type === 'input_image');
+          assert.ok(pixels?.image_url);
+          assert.ok(pixels.image_url.startsWith('data:image/jpeg;base64,'));
+          const decoded = await sharp(Buffer.from(pixels.image_url.split(',')[1], 'base64'))
+            .raw()
+            .toBuffer({ resolveWithObject: true });
+          assert.deepEqual([decoded.info.width, decoded.info.height], [32, 16]);
+          assert.ok(decoded.data[0] > 250 && decoded.data[1] < 5 && decoded.data[2] < 5);
+          return {
+            sessionId: request.sessionId,
+            requestId: request.requestId,
+            draftRevision: 1,
+            target: 'prompt',
+            message: request.message,
+            state: 'complete',
+            reply: { reply: 'Fixture result.', text: null },
+            assistance: initialStatus,
+          };
+        },
+      });
+      assert.equal(chat.status, 200, JSON.stringify(await chat.json()));
+      assert.equal(pixelReads, 1);
+      const prepared = await handleMobileMiloAnalysis(
+        post('/analyses', {
+          ...input,
+          sessionId: nativeSession,
+          requestId: randomUUID(),
+          startSec: 1,
+          endSec: 3,
+          draft: {
+            ...input.draft,
+            references: [
+              {
+                fieldId: 'video_url',
+                slot: 0,
+                label: 'Clip',
+                ref: { type: 'asset', kind: 'video', assetId: videoId },
+              },
+            ],
+          },
+        }),
+        deps,
+      );
+      const response = await prepared.json();
+      assert.equal(prepared.status, 200, JSON.stringify(response));
+      assert.equal(response.result.sessionId, nativeSession);
+      const video = response.result.status;
+      assert.equal(video.state, 'prepared');
+      assert.deepEqual(
+        [video.quote.ref.assetId, video.quote.startSec, video.quote.endSec, video.quote.confirmationRequired],
+        [videoId, 1, 3, true],
+      );
+      assert.ok(video.quote.maxCredits > 0);
+      assert.equal(downloads, 1, 'Saved duration requires no second download or paid analysis.');
+    },
+  );
+
   await t.test('an aborted qualification never creates a quote, selection, reservation or late measurement',async subtest=>{
     await pg.pool.query("UPDATE job_outputs SET metadata='{}' WHERE id=$1",[output]);
     const quotes=(await pg.pool.query('SELECT count(*)::int n FROM studio_media_analysis_runs')).rows[0].n;

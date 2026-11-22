@@ -67,6 +67,8 @@ test('automatic duration and native Draft distinguish actual generation from fin
   const context=await buildPromptAssistanceContext('owner',request({durationSec:30,durationOption:'auto',draft:true,resolution:'1080p',aspectRatio:'9:16',audio:true}),{catalog});
   assert.equal(context.settings.durationSec,null);assert.equal(context.settings.durationPolicy,'automatic');
   assert.equal(context.settings.resolution,'480p');assert.equal(context.settings.finalResolution,'1080p');
+  const mobileDraft=await buildPromptAssistanceContext('owner',request({draft:true,durationSec:5,aspectRatio:'16:9'}),{catalog});
+  assert.equal(mobileDraft.settings.resolution,'480p');assert.equal(mobileDraft.settings.finalResolution,null);
 });
 
 test('operation-specific capabilities describe Kling Edit and reject invented operations before dispatch',async()=>{
@@ -75,6 +77,9 @@ test('operation-specific capabilities describe Kling Edit and reject invented op
   assert.equal(context.operation,'kling-edit');assert.equal(context.settings.durationPolicy,'source_video');assert.equal(context.settings.durationSec,null);
   assert.equal((context.capabilities as any).durationPolicy,'source_video');
   assert.equal(context.settings.audioPolicy,'source');assert.equal(context.settings.keep_audio,true);
+  const mobileInput=request({operation:'kling-edit',keepAudio:false},'v2v','kling-o3-pro');
+  const mobileContext=await buildPromptAssistanceContext('owner',mobileInput,{catalog});
+  assert.equal(mobileContext.settings.keep_audio,false);assert.ok(!('keepAudio' in mobileContext.settings));
   await assert.rejects(buildPromptAssistanceContext('owner',{...input,draft:{...input.draft,settings:{operation:'invented'}}},{catalog}));
 });
 

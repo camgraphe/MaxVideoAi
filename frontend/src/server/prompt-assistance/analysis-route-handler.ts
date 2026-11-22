@@ -9,15 +9,16 @@ import {createComposerAnalysisService} from '@/server/studio/media-analysis/serv
 import {scheduleStudioWorker} from '@/server/studio/worker-host';
 import {composerScope} from './repository';
 import {preparePromptReferenceAnalysis,startRecommendedPromptAnalysis} from './reference-analysis';
-import {boundedPromptJson} from './route-handler';
+import {boundedPromptJson,type PromptBearerTransport} from './route-handler';
+import type {PromptAssistanceRequest} from '@/lib/prompt-assistance/contract';
 // Reference-analysis actions retain their original bound; long chat bodies use a separate envelope.
 const PROMPT_ANALYSIS_BODY_MAX_BYTES=64*1024;
-const json=(body:unknown,status=200)=>NextResponse.json(body,{status,headers:{'Cache-Control':'private, no-store','Vary':'Cookie'}});
-export async function handlePromptAnalysis(req:NextRequest,deps:{enabled?:boolean;access?:(req:NextRequest)=>Promise<StudioAccessDecision>}={}) {
+const json=(body:unknown,status=200)=>NextResponse.json(body,{status,headers:{'Cache-Control':'private, no-store','Vary':'Cookie, Authorization'}});
+export async function handlePromptAnalysis(req:NextRequest,deps:{enabled?:boolean;access?:(req:NextRequest)=>Promise<StudioAccessDecision>}={},bearer?:{authenticate:PromptBearerTransport['authenticate'];validateDraft:(draft:PromptAssistanceRequest['draft'])=>Promise<void>}) {
   if(!(deps.enabled??process.env.PROMPT_ASSISTANCE_ENABLED==='true'))return json({ok:false,error:'NOT_FOUND'},404);
-  const access=await(deps.access??(request=>resolveStudioApiAccess(request,{enabled:true,adminOnly:false})))(req);
+  const access=await(bearer?.authenticate??deps.access??(request=>resolveStudioApiAccess(request,{enabled:true,adminOnly:false})))(req);
   if(!access.ok)return json({ok:false,error:access.error},access.status);
-  if(req.method==='POST'&&(req.headers.get('origin')!==req.nextUrl.origin||req.headers.get('sec-fetch-site')==='cross-site'))return json({ok:false,error:'SAME_ORIGIN_REQUIRED'},403);
+  if(!bearer&&req.method==='POST'&&(req.headers.get('origin')!==req.nextUrl.origin||req.headers.get('sec-fetch-site')==='cross-site'))return json({ok:false,error:'SAME_ORIGIN_REQUIRED'},403);
   try {
     if(req.method==='GET'){
       const session=z.string().uuid().parse(req.nextUrl.searchParams.get('sessionId'));
@@ -29,6 +30,8 @@ export async function handlePromptAnalysis(req:NextRequest,deps:{enabled?:boolea
       return json({ok:true,result:{status,sessionId:session}});
     }
     const input=promptAnalysisActionSchema.parse(await boundedPromptJson(req,PROMPT_ANALYSIS_BODY_MAX_BYTES));
+    if(bearer&&input.action==='startRecommended')throw new SyntaxError('Choose the current reference and interval.');
+    if(input.action==='prepare')await bearer?.validateDraft(input.draft);
     if(input.action!=='confirm'){
       if(input.action==='prepare'&&studioAnalysisPilotEnabled()&&req.headers.get(STUDIO_ANALYSIS_PILOT_HEADER)!=='1'){
         return json({ok:false,error:'ANALYSIS_REFRESH_REQUIRED',message:'Refresh Milo to start an included analysis.'},409);

@@ -1,6 +1,9 @@
 import { SEEDANCE_WORKFLOW_ASPECT_RATIOS } from './seedance-workflow-contract';
 import type { AspectRatio } from '@/types/engines';
 
+export type SeedanceFinalResolution = '1080p' | '4k';
+export type SeedanceDraftEligibility = 'pending' | 'ready' | 'expired' | 'finalizing' | 'finalized' | 'failed' | 'unavailable';
+
 /** Scenario compatibility only. Server activation and account checks remain separate. */
 export function supportsSeedanceDraftSetup(setup: {
   engineId?: string; mode: string; iterations?: number; aspectRatio?: string;

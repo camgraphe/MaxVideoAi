@@ -5,6 +5,26 @@ import {createWorkspaceSequenceRecord} from '@/app/(core)/(workspace)/app/studio
 import {assertStudioConnectedSchemaReady} from './connected-schema';
 import {StudioConnectedPersistenceError} from './montage-command';
 
+/** Keep the journal, generated assets and billing records intact. Both clients list live projects only. */
+export async function removeStudioConversationProject(actor: {userId: string; projectId: string}) {
+  const scope = [actor.userId, actor.projectId];
+  return withDbTransaction(async tx => {
+    // Enqueue takes a share lock on the same project before it can start work.
+    const project = await tx.query(
+      `SELECT id FROM studio_projects WHERE user_id=$1 AND id=$2
+       AND persistence_mode='connected' AND deleted_at IS NULL FOR UPDATE`, scope);
+    if (!project.length) return 'missing';
+    const working = await tx.query(
+      `SELECT 1 FROM studio_tasks WHERE user_id=$1 AND project_id=$2 AND state IN ('queued','running','unknown')
+       UNION ALL SELECT 1 FROM studio_image_turns WHERE user_id=$1 AND project_id=$2
+       AND state='thinking' AND lease_expires_at > clock_timestamp()
+       LIMIT 1`, scope);
+    if (working.length) return 'busy';
+    await tx.query('UPDATE studio_projects SET deleted_at=NOW(), updated_at=NOW() WHERE user_id=$1 AND id=$2', scope);
+    return 'removed';
+  });
+}
+
 const inputSchema = z.object({name: z.string().trim().min(1).max(200),idempotencyKey: z.string().min(1).max(128)}).strict();
 type Result = {projectId: string;sequenceId: string;revision: number};
 type TransactionRunner = <T>(callback: (executor: QueryExecutor) => Promise<T>) => Promise<T>;
