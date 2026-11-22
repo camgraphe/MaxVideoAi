@@ -14,6 +14,12 @@ export const STUDIO_TASK_PROFILES={
   standard:{maxCredits:250,maxCalls:4,maxOutputTokens:2200,maxInputTokens:24000,deadlineSec:300,historyTurns:8,reasoning:'medium' as const},
   complex:{maxCredits:500,maxCalls:8,maxOutputTokens:6000,maxInputTokens:48000,deadlineSec:600,historyTurns:12,reasoning:'high' as const},
 } as const;
+export const STUDIO_CONVERSATION_TASK_BUDGET = {
+  profile: 'standard',
+  maxCredits: STUDIO_TASK_PROFILES.standard.maxCredits,
+  policyVersion: STUDIO_TASK_POLICY_VERSION,
+} as const;
+
 export const studioTaskProfileSchema=z.enum(['quick','standard','complex']);
 const credits=z.number().int().min(0).max(STUDIO_TASK_MAX_CREDITS).multipleOf(10);
 export const studioTaskSelectionSchema=z.object({profile:studioTaskProfileSchema,maxCredits:credits,policyVersion,confirmedComplex:z.literal(true).optional(),model:studioAssistantModelSchema.optional(),assistanceRevision:z.number().int().nonnegative().optional()}).strict().superRefine((value,ctx)=>{

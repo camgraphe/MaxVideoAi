@@ -5,6 +5,8 @@ import test from 'node:test';
 import { NextRequest } from 'next/server';
 import { ensureMediaLibrarySchema } from '../frontend/src/lib/schema/media-library-schema';
 import { getDb } from '../frontend/src/lib/db';
+import { chooseStudioAssistance } from '../frontend/src/server/studio/assistance-ledger';
+import { STUDIO_TASK_PROFILES } from '../frontend/src/lib/studio/task-budget-contract';
 import { handleMobileStudio } from '../frontend/src/server/mobile/studio';
 import { createPaidGenerationTestSchema, startDisposablePostgres } from './helpers/disposable-postgres';
 
@@ -129,6 +131,8 @@ test('Studio phone projects, journal and reviewed messages share website ownersh
   assert.ok(journal.allowance);
   const a = journal.allowance,
     requestId = randomUUID();
+  assert.equal(a.customerMaxCredits, STUDIO_TASK_PROFILES.standard.maxCredits);
+  assert.equal(a.maxCredits, STUDIO_TASK_PROFILES.standard.maxCredits);
   const kinds = ['audio', 'image', 'video'] as const;
   const media = kinds.map(kind => ({kind, assetId: 'ma_' + randomUUID().replaceAll('-', '')}));
   for (const ref of media) {
@@ -158,6 +162,7 @@ test('Studio phone projects, journal and reviewed messages share website ownersh
     { assistanceRevision: a.revision + 1 },
     { maxCredits: a.maxCredits + 100 },
     { customerMaxCredits: 999 },
+    { model: 'gpt-6.1-terra', customerMaxCredits: STUDIO_TASK_PROFILES.quick.maxCredits },
     { action: 'confirm' },
     { references: ['ma_foreign'] },
     { media: [media[1], media[1]] },
@@ -183,7 +188,9 @@ test('Studio phone projects, journal and reviewed messages share website ownersh
     [[requestId, command.message, 'thinking']],
   );
   assert.deepEqual(wake, [requestId, requestId]);
-  const { rows: [saved] } = await pg.pool.query('SELECT input_json FROM studio_tasks WHERE request_id=$1', [requestId]);
+  const { rows: [saved] } = await pg.pool.query('SELECT input_json, profile, profile_json FROM studio_tasks WHERE request_id=$1', [requestId]);
+  assert.equal(saved.profile, 'standard');
+  assert.equal(saved.profile_json.maxInputTokens, STUDIO_TASK_PROFILES.standard.maxInputTokens);
   assert.equal(saved.input_json.clientSurface, 'mobile');
   assert.equal(saved.input_json.message, command.message);
   assert.deepEqual(saved.input_json.references, [media[1].assetId]);
@@ -209,5 +216,22 @@ test('Studio phone projects, journal and reviewed messages share website ownersh
   assert.deepEqual((await (await route()).json()).projects.map((p: { id: string }) => p.id), [projectId]);
   assert.equal((await route(projectId)).status, 200);
   assert.equal((await pg.pool.query('SELECT deleted_at IS NOT NULL AS removed FROM studio_projects WHERE id=$1',[sibling.projectId])).rows[0].removed, true);
+  // A mobile retry using the original offer still replays under the exact quick budget.
+  const otherProject = await (await route(undefined, { ...create, idempotencyKey: randomUUID() }, foreign)).json();
+  await chooseStudioAssistance(foreign, {action: 'select_luna', expectedRevision: 0});
+  const lite = (await (await route(otherProject.projectId, undefined, foreign)).json()).allowance;
+  assert.equal(lite.customerMaxCredits, 0);
+  assert.equal(lite.maxCredits, a.maxCredits);
+  const legacy = { ...command, media: [], requestId: randomUUID(), model: lite.model,
+    assistanceRevision: lite.revision, customerMaxCredits: 0, maxCredits: STUDIO_TASK_PROFILES.quick.maxCredits };
+  const sendLegacy = () => handleMobileStudio(request(legacy), otherProject.projectId, {
+    access: async () => ({ ok: true, userId: foreign }),
+    consentBlocked: async () => false,
+    wake: () => {},
+  });
+  assert.equal((await sendLegacy()).status, 200);
+  assert.equal((await sendLegacy()).status, 200);
+  const old = (await pg.pool.query('SELECT profile, max_credits FROM studio_tasks WHERE request_id=$1', [legacy.requestId])).rows;
+  assert.deepEqual(old, [{profile: 'quick', max_credits: STUDIO_TASK_PROFILES.quick.maxCredits}]);
   assert.equal((await pg.pool.query('SELECT count(*)::int AS n FROM media_assets WHERE user_id=$1',[owner])).rows[0].n, 3);
 });

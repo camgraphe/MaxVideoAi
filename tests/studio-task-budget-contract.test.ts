@@ -57,5 +57,5 @@ test('the composer and assistance dialog keep work profiles internal',()=>{
   for(const file of ['StudioImageConversation.client.tsx','_components/StudioAssistance.client.tsx','_components/StudioAssistanceCredits.client.tsx']){
     assert.doesNotMatch(readFileSync(base+file,'utf8'),/TaskBudgetPicker/);
   }
-  assert.match(readFileSync(base+'StudioImageConversation.client.tsx','utf8'),/profile:'standard'/);
+  assert.match(readFileSync(base+'StudioImageConversation.client.tsx','utf8'),/taskBudget:\{\.\.\.STUDIO_CONVERSATION_TASK_BUDGET/);
 });

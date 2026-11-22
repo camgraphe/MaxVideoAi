@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { STUDIO_CONVERSATION_MAX_ATTACHMENTS } from '@/lib/studio/conversation-creation-contract';
 import type { NextRequest } from 'next/server';
 import { MILO_LEVELS, miloLevelForModel, studioAssistantModelSchema } from '@/lib/studio/assistance-contract';
-import { STUDIO_TASK_POLICY_VERSION, STUDIO_TASK_PROFILES } from '@/lib/studio/task-budget-contract';
+import { STUDIO_CONVERSATION_TASK_BUDGET, STUDIO_TASK_POLICY_VERSION, STUDIO_TASK_PROFILES } from '@/lib/studio/task-budget-contract';
 import { studioProjectNameSchema } from '@/lib/studio/conversation-project-title';
 import type { ImageConversationTurn } from '@/lib/studio/image-conversation-contract';
 import type { StudioAllowance, StudioJournal, StudioReference } from '@/lib/mobile-studio';
@@ -28,7 +28,7 @@ const nameInput = z.object({ name: studioProjectNameSchema, idempotencyKey: z.st
 const createInput = nameInput.extend({ action: z.literal('create') }).strict();
 const renameInput = nameInput.extend({ action: z.literal('rename') }).strict();
 const deleteInput = z.object({ action: z.literal('delete'), confirmed: z.literal(true) }).strict();
-const quick = STUDIO_TASK_PROFILES.quick;
+const legacyQuick = STUDIO_TASK_PROFILES.quick;
 const messageInput = z
   .object({
     action: z.literal('message'),
@@ -43,13 +43,13 @@ const messageInput = z
     model: studioAssistantModelSchema,
     assistanceRevision: z.number().int().nonnegative(),
     policyVersion: z.literal(STUDIO_TASK_POLICY_VERSION),
-    maxCredits: z.literal(quick.maxCredits),
+    maxCredits: z.union([z.literal(legacyQuick.maxCredits), z.literal(STUDIO_CONVERSATION_TASK_BUDGET.maxCredits)]),
     customerMaxCredits: z.number().int().nonnegative(),
   })
   .strict();
 const projectInput = z.discriminatedUnion('action', [renameInput, deleteInput, messageInput]);
-const customerCeiling = (model: StudioAllowance['model']) =>
-  miloLevelForModel(model) === 'lite' ? 0 : quick.maxCredits;
+const customerCeiling = (model: StudioAllowance['model'], maxCredits: number) =>
+  miloLevelForModel(model) === 'lite' ? 0 : maxCredits;
 
 function turnMedia(turn: Pick<ImageConversationTurn, 'references' | 'attachments' | 'referenceMentions'>): StudioReference[] {
   const media = new Map<string, StudioReference>();
@@ -94,9 +94,9 @@ async function readAllowance(userId: string): Promise<StudioAllowance | null> {
     label: MILO_LEVELS[level].label,
     revision: status.revision,
     mediaEnabled: process.env.STUDIO_CONVERSATION_MEDIA_ENABLED === 'true',
-    policyVersion: STUDIO_TASK_POLICY_VERSION,
-    maxCredits: quick.maxCredits,
-    customerMaxCredits: customerCeiling(status.selectedModel),
+    policyVersion: STUDIO_CONVERSATION_TASK_BUDGET.policyVersion,
+    maxCredits: STUDIO_CONVERSATION_TASK_BUDGET.maxCredits,
+    customerMaxCredits: customerCeiling(status.selectedModel, STUDIO_CONVERSATION_TASK_BUDGET.maxCredits),
   };
 }
 
@@ -189,7 +189,9 @@ export function handleMobileStudio(
     }
     if (input.action === 'rename')
       return deps.rename({ userId, projectId }, { name: input.name, idempotencyKey: input.idempotencyKey });
-    if (!deps.tasksEnabled() || input.customerMaxCredits !== customerCeiling(input.model))
+    // Replays of a previously reviewed quick offer must keep their original budget and request hash.
+    const profile = input.maxCredits === legacyQuick.maxCredits ? 'quick' : STUDIO_CONVERSATION_TASK_BUDGET.profile;
+    if (!deps.tasksEnabled() || input.customerMaxCredits !== customerCeiling(input.model, input.maxCredits))
       throw new MobileHttpError('REVIEW_REQUIRED', 409, 'Review the current assistance allowance.');
     const media = input.media ?? [];
     if (new Set(media.map(ref => ref.assetId)).size !== media.length)
@@ -210,7 +212,7 @@ export function handleMobileStudio(
         })),
       } : {}),
       taskBudget: {
-        profile: 'quick',
+        profile,
         maxCredits: input.maxCredits,
         policyVersion: input.policyVersion,
         model: input.model,

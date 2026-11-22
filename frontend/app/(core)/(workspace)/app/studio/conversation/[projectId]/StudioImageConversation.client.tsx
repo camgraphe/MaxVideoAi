@@ -12,7 +12,7 @@ import {useConversationExtensions} from './_hooks/useConversationExtensions';
 import {ConversationCreatorOperation} from './_components/ConversationCreatorOperation.client';
 import {ConversationExportQuote} from "./_components/ConversationExportQuote.client";
 import {ConversationTask} from './_components/ConversationTask.client';
-import {STUDIO_TASK_POLICY_VERSION,STUDIO_TASK_PROFILES} from '@/lib/studio/task-budget-contract';
+import {STUDIO_CONVERSATION_TASK_BUDGET,STUDIO_TASK_POLICY_VERSION} from '@/lib/studio/task-budget-contract';
 import {ConversationAnalysis} from './_components/ConversationAnalysis.client';
 import { ImageQuoteCard } from "./_components/ImageQuoteCard.client";
 import { ImageConversationComposer } from "./_components/ImageConversationComposer.client";
@@ -195,7 +195,7 @@ function StudioImageConversationWorkspace({
       message: text,
       ...(shotPlanRevision?{shotPlanRevision}:{}),
       locale:appLocale,
-      ...(tasksEnabled?{taskBudget:{profile:'standard',maxCredits:STUDIO_TASK_PROFILES.standard.maxCredits,policyVersion:STUDIO_TASK_POLICY_VERSION,model:status.selectedModel,assistanceRevision:status.revision}}:{}),
+      ...(tasksEnabled?{taskBudget:{...STUDIO_CONVERSATION_TASK_BUDGET,model:status.selectedModel,assistanceRevision:status.revision}}:{}),
       references: references.filter(ref => !ref.kind || ref.kind === 'image').map((ref) => ref.assetId),
       ...(references.length ? {referenceMentions:references.map(ref=>({assetId:ref.assetId,label:ref.label}))} : {}),
       ...(mediaEnabled ? {attachments: references.filter(ref => ref.kind === 'video' || ref.kind === 'audio').map(ref => ({type: 'asset' as const, assetId: ref.assetId, kind: ref.kind as 'video' | 'audio'}))} : {}),
