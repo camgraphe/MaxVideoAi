@@ -2,6 +2,14 @@
 
 The generator keeps one active chat per authenticated account, surface and visible workflow. Create, Modify, Extend, Reframe, Retake, Keyframes and References are distinct video scopes. Image Create/Edit and audio Voice/Music/Song/SFX/Ambience have their own scopes. Changing the generation model or implicit provider input mode within Create keeps that chat and invalidates an obsolete suggestion.
 
+## Native clients
+
+Ask Milo in Create uses `/api/mobile/milo`. The app sends the active engine, workflow, settings, prompt and selected reference slots. The native route validates these against the public model capabilities and delegates to the site's prompt assistance service, worker and credit policy. Its media and analyses subroutes verify the signed-in account and reference ownership. The app keeps the active conversation pointer per account and workflow on the device.
+
+Studio uses `/api/mobile/studio/projects` to list projects and read the available assistance allowance. A project URL returns the same account-owned journal as web Studio. Sending a reviewed message enqueues the existing Studio task with its request ID, chosen assistant, policy revision and credit ceiling. Project changes are visible to both clients. Reading a journal or opening Ask Milo does not submit a message or start a media generation.
+
+Both native transports require a current bearer session and consent. The web composer retains its same-origin checks. For release qualification, run the mobile Milo, Milo turn media and Studio PostgreSQL tests, then verify the account and a reviewed conversation on the physical device. A passing fixture test does not establish live provider availability.
+
 ## Ownership and restoration
 
 `prompt-assistance/session.ts` owns workflow validation and draft canonicalization. `server/prompt-assistance/sessions.ts` projects a bounded display snapshot through the authenticated, no-store session GET. It returns completed turns, the working suggestion/fingerprint and an unresolved request ID, never private reference URLs, raw provider input or billing context. Reads cannot renew sessions or charge credits. A first successful completion renews the existing 24-hour expiry; replay and failures do not. The existing 100-request cap remains.

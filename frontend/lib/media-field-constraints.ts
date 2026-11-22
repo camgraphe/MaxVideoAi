@@ -1,19 +1,32 @@
-import type { EngineCaps, EngineInputField, Mode } from '@/types/engines';
+export { validateMediaFileAgainstConstraint, type MediaFieldConstraint, type MediaFileConstraintValidation } from './media-file-constraint';
+import type { MediaFieldConstraint } from './media-file-constraint';
+
+export type MediaConstraintEngine = {
+  inputLimits?: { imageMaxMB?: number; videoMaxMB?: number; audioMaxMB?: number };
+  inputSchema?: { constraints?: {
+    supportedFormats?: readonly string[];
+    maxImageSizeMB?: number;
+    maxVideoSizeMB?: number;
+    maxAudioSizeMB?: number;
+  } };
+};
+type ConstraintField = {
+  type: string;
+  maxSizeMB?: number;
+  acceptedMimeTypes?: readonly string[];
+  acceptedFileExtensions?: readonly string[];
+};
 
 /** A reference slot may have stricter timing in an edit workflow than in Create. */
-export function resolveMediaFieldMinDuration(field: EngineInputField, mode?: Mode): number | undefined {
+export function resolveMediaFieldMinDuration(
+  field: { minDurationSecByMode?: Partial<Record<string, number>>; minDurationSec?: number },
+  mode?: string,
+): number | undefined {
   return (mode ? field.minDurationSecByMode?.[mode] : undefined) ?? field.minDurationSec;
 }
 
-export type MediaFieldConstraint = {
-  maxSizeMB?: number;
-  acceptedMimeTypes: string[];
-  acceptedFileExtensions: string[];
-  unmappedDeclaredFormats?: string[];
-};
-
 export function validateImageAspectRatio(
-  field: EngineInputField,
+  field: { type: string; imageAspectRatio?: { min: number; max: number } },
   width: number | null | undefined,
   height: number | null | undefined,
 ): 'valid' | 'unverified' | 'unsupported' {
@@ -25,15 +38,6 @@ export function validateImageAspectRatio(
   return ratio >= range.min && ratio <= range.max ? 'valid' : 'unsupported';
 }
 
-export type MediaFileConstraintValidation =
-  | { ok: true }
-  | {
-      ok: false;
-      reason: 'size' | 'format';
-      maxSizeMB?: number;
-      acceptedFileExtensions?: string[];
-    };
-
 function normalizeList(values: readonly string[] | undefined): string[] {
   return Array.from(
     new Set(
@@ -44,16 +48,16 @@ function normalizeList(values: readonly string[] | undefined): string[] {
   );
 }
 
-function fallbackMaxSizeMB(engine: EngineCaps, field: EngineInputField): number | undefined {
+function fallbackMaxSizeMB(engine: MediaConstraintEngine, field: ConstraintField): number | undefined {
   const constraints = engine.inputSchema?.constraints;
   if (field.type === 'image') {
-    return constraints?.maxImageSizeMB ?? engine.inputLimits.imageMaxMB;
+    return constraints?.maxImageSizeMB ?? engine.inputLimits?.imageMaxMB;
   }
   if (field.type === 'video') {
-    return constraints?.maxVideoSizeMB ?? engine.inputLimits.videoMaxMB;
+    return constraints?.maxVideoSizeMB ?? engine.inputLimits?.videoMaxMB;
   }
   if (field.type === 'audio') {
-    return constraints?.maxAudioSizeMB ?? engine.inputLimits.audioMaxMB;
+    return constraints?.maxAudioSizeMB ?? engine.inputLimits?.audioMaxMB;
   }
   return undefined;
 }
@@ -82,7 +86,7 @@ const FORMAT_MIME_TYPES: Readonly<Record<string, readonly string[]>> = Object.fr
   wav: ['audio/wav', 'audio/x-wav'],
 });
 
-function declaredFormats(engine: EngineCaps): string[] {
+function declaredFormats(engine: MediaConstraintEngine): string[] {
   return normalizeList(
     Array.isArray(engine.inputSchema?.constraints?.supportedFormats)
       ? engine.inputSchema.constraints.supportedFormats.filter((value): value is string => typeof value === 'string')
@@ -90,14 +94,14 @@ function declaredFormats(engine: EngineCaps): string[] {
   );
 }
 
-function formatsForField(engine: EngineCaps, field: EngineInputField): string[] {
+function formatsForField(engine: MediaConstraintEngine, field: ConstraintField): string[] {
   const formats = declaredFormats(engine);
   const mimePrefix = `${field.type}/`;
   return formats.filter((format) =>
     (FORMAT_MIME_TYPES[format] ?? []).some((mime) => mime.startsWith(mimePrefix)));
 }
 
-export function hasFieldSpecificMediaConstraint(field: EngineInputField): boolean {
+export function hasFieldSpecificMediaConstraint(field: ConstraintField): boolean {
   return (
     typeof field.maxSizeMB === 'number' ||
     Boolean(field.acceptedMimeTypes?.length) ||
@@ -109,8 +113,8 @@ export function resolveEngineMediaFieldConstraint({
   engine,
   field,
 }: {
-  engine: EngineCaps;
-  field: EngineInputField;
+  engine: MediaConstraintEngine;
+  field: ConstraintField;
 }): MediaFieldConstraint {
   const fallbackFormats = formatsForField(engine, field);
   const acceptedFileExtensions = normalizeList(field.acceptedFileExtensions);
@@ -129,57 +133,4 @@ export function resolveEngineMediaFieldConstraint({
       : fallbackFormats,
     ...(unmappedDeclaredFormats.length ? { unmappedDeclaredFormats } : {}),
   };
-}
-
-function fileExtension(name: string): string | null {
-  const withoutQuery = name.split(/[?#]/, 1)[0]?.trim().toLowerCase() ?? '';
-  const match = /\.([a-z0-9]+)$/.exec(withoutQuery);
-  return match?.[1] ?? null;
-}
-
-export function validateMediaFileAgainstConstraint({
-  name,
-  mimeType,
-  sizeBytes,
-  constraint,
-}: {
-  name: string;
-  mimeType: string;
-  sizeBytes: number;
-  constraint: MediaFieldConstraint;
-}): MediaFileConstraintValidation {
-  if (
-    typeof constraint.maxSizeMB === 'number' &&
-    Number.isFinite(constraint.maxSizeMB) &&
-    constraint.maxSizeMB > 0 &&
-    sizeBytes > constraint.maxSizeMB * 1024 * 1024
-  ) {
-    return { ok: false, reason: 'size', maxSizeMB: constraint.maxSizeMB };
-  }
-
-  if (constraint.unmappedDeclaredFormats?.length) {
-    return {
-      ok: false,
-      reason: 'format',
-      acceptedFileExtensions: constraint.acceptedFileExtensions,
-    };
-  }
-
-  const normalizedMime = mimeType.split(';', 1)[0]?.trim().toLowerCase() ?? '';
-  const extension = fileExtension(name);
-  const mimeRejected =
-    constraint.acceptedMimeTypes.length > 0 &&
-    !constraint.acceptedMimeTypes.includes(normalizedMime);
-  const extensionRejected =
-    constraint.acceptedFileExtensions.length > 0 &&
-    (extension === null || !constraint.acceptedFileExtensions.includes(extension));
-  if (mimeRejected || extensionRejected) {
-    return {
-      ok: false,
-      reason: 'format',
-      acceptedFileExtensions: constraint.acceptedFileExtensions,
-    };
-  }
-
-  return { ok: true };
 }

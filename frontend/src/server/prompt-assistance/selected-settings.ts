@@ -26,7 +26,10 @@ export function selectedPromptSettings(values:object,engine:EngineCaps|undefined
   const keepAudio=[...engine.inputSchema?.required??[],...engine.inputSchema?.optional??[]]
     .find(field=>field.id==='keep_audio'&&(!field.modes?.length||field.modes.includes(mode)));
   if(keepAudio) {
-    settings.audioPolicy='source';settings.keep_audio=settings.keep_audio??keepAudio.default??null;delete settings.audio;
+    settings.audioPolicy='source';
+    settings.keep_audio=settings.keep_audio??settings.keepAudio??keepAudio.default??null;
+    delete settings.keepAudio;
+    delete settings.audio;
   }else {
     settings.audioPolicy=capabilities.audio;
     if(capabilities.audio==='unavailable')settings.audio=false;

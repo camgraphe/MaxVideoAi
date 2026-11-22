@@ -8,7 +8,7 @@ import {PROMPT_ASSISTANCE_BODY_MAX_BYTES} from '@/lib/prompt-assistance/limits';
 import {AgentApiError} from '@/server/agent-api/errors';
 import {readPromptAssistance,sendPromptAssistance,recoverPromptAssistance} from './service';
 import {readPromptSession} from './sessions';
-import {promptSessionScopeSchema} from '@/lib/prompt-assistance/session';
+import {promptSessionScopeSchema,type PromptSessionSnapshot} from '@/lib/prompt-assistance/session';
 import {readPendingPromptRequestPointer} from './repository';
 import {schedulePromptAssistanceWorker} from './worker-host';
 import {PROMPT_INLINE_ANALYSIS_HEADER} from '@/lib/prompt-assistance/client-capability';
@@ -21,7 +21,15 @@ const bodySchema=z.discriminatedUnion('action',[
   z.object({action:z.literal('choose'),choice:studioAssistanceChoiceSchema}).strict(),
   z.object({action:z.literal('recover'),sessionId:z.string().uuid(),requestId:z.string().uuid()}).strict(),
 ]);
-const json=(body:unknown,status=200)=>NextResponse.json(body,{status,headers:{'Cache-Control':'private, no-store','Vary':`Cookie, ${PROMPT_INLINE_ANALYSIS_HEADER}`}});
+export type PromptCommand=z.infer<typeof bodySchema>;
+type AccessDecision=StudioAccessDecision|{ok:false;status:403|503;error:'LEGAL_CONSENT_REQUIRED'|'ASSISTANCE_UNAVAILABLE'};
+export type PromptBearerTransport={
+  authenticate:(request:NextRequest)=>Promise<AccessDecision>;
+  projectSession?:(userId:string,snapshot:PromptSessionSnapshot)=>Promise<PromptSessionSnapshot>;
+  validateQuery:(params:URLSearchParams)=>void;
+  validateCommand:(input:PromptCommand)=>Promise<void>;
+};
+const json=(body:unknown,status=200)=>NextResponse.json(body,{status,headers:{'Cache-Control':'private, no-store','Vary':`Authorization, Cookie, ${PROMPT_INLINE_ANALYSIS_HEADER}`}});
 export async function boundedPromptJson(req:NextRequest,maxBytes=PROMPT_ASSISTANCE_BODY_MAX_BYTES){
   if(!req.body)throw new SyntaxError('Missing body');
   const reader=req.body.getReader(),chunks:Uint8Array[]=[];let size=0;
@@ -29,23 +37,30 @@ export async function boundedPromptJson(req:NextRequest,maxBytes=PROMPT_ASSISTAN
   finally{reader.releaseLock();}
   return JSON.parse(Buffer.concat(chunks).toString('utf8'));
 }
-export async function handlePromptAssistance(req:NextRequest,overrides:{enabled?:boolean;access?:(req:NextRequest)=>Promise<StudioAccessDecision>;send?:typeof sendPromptAssistance;recover?:typeof recoverPromptAssistance;schedule?:typeof schedulePromptAssistanceWorker}={}){
+export type PromptHandlerDependencies={enabled?:boolean;access?:(req:NextRequest)=>Promise<StudioAccessDecision>;send?:typeof sendPromptAssistance;recover?:typeof recoverPromptAssistance;schedule?:typeof schedulePromptAssistanceWorker};
+export async function handlePromptAssistance(req:NextRequest,overrides:PromptHandlerDependencies={},bearer?:PromptBearerTransport){
   if(!(overrides.enabled??process.env.PROMPT_ASSISTANCE_ENABLED==='true'))return json({ok:false,error:'NOT_FOUND'},404);
-  // Shared cookie authentication only; this endpoint never authorizes a Studio project or generation actor.
-  const access=await(overrides.access??(request=>resolveStudioApiAccess(request,{enabled:true,adminOnly:false})))(req);
+  // Only the native route supplies a server-owned bearer transport. Web headers cannot select it.
+  const access=await(bearer?.authenticate??overrides.access??(request=>resolveStudioApiAccess(request,{enabled:true,adminOnly:false})))(req);
   if(!access.ok)return json({ok:false,error:access.error},access.status);
-  if(req.method==='POST'&&(req.headers.get('origin')!==req.nextUrl.origin||req.headers.get('sec-fetch-site')==='cross-site'))return json({ok:false,error:'SAME_ORIGIN_REQUIRED'},403);
+  if(!bearer&&req.method==='POST'&&(req.headers.get('origin')!==req.nextUrl.origin||req.headers.get('sec-fetch-site')==='cross-site'))return json({ok:false,error:'SAME_ORIGIN_REQUIRED'},403);
   try{
     const inlineAnalysis=req.headers.get(PROMPT_INLINE_ANALYSIS_HEADER)==='1';
     if(req.method==='GET'){
+      bearer?.validateQuery(req.nextUrl.searchParams);
       const session=req.nextUrl.searchParams.get('sessionId'),request=req.nextUrl.searchParams.get('requestId');
-      if(req.nextUrl.searchParams.has('scope'))return json({ok:true,result:publicPromptSession(await readPromptSession(access.userId,z.string().uuid().parse(session),promptSessionScopeSchema.parse(req.nextUrl.searchParams.get('scope'))),inlineAnalysis)});
+      if(req.nextUrl.searchParams.has('scope')){
+        const snapshot=publicPromptSession(await readPromptSession(access.userId,z.string().uuid().parse(session),promptSessionScopeSchema.parse(req.nextUrl.searchParams.get('scope'))),inlineAnalysis);
+        return json({ok:true,result:bearer?.projectSession?await bearer.projectSession(access.userId,snapshot):snapshot});
+      }
       if(session||request)return json({ok:true,result:publicPromptResult(await readPromptAssistance(access.userId,z.string().uuid().parse(session),z.string().uuid().parse(request)),inlineAnalysis)});
-      const analysisSponsored=inlineAnalysis&&process.env.PROMPT_ASSISTANCE_PERCEPTION_ENABLED==='true'
-        &&studioAnalysisPilotEnabled()&&!!studioAnalysisPolicy();
-      return json({ok:true,result:await readStudioAssistanceStatus(access.userId),pendingRequest:await readPendingPromptRequestPointer(access.userId),...(analysisSponsored?{analysisSponsored}:{})});
+      const analysisPolicy=inlineAnalysis&&process.env.PROMPT_ASSISTANCE_PERCEPTION_ENABLED==='true'?studioAnalysisPolicy():null;
+      const analysisSponsored=!!analysisPolicy&&studioAnalysisPilotEnabled();
+      const analysisAvailable=bearer&&analysisPolicy?{visual:!!analysisPolicy.video,audio:!!analysisPolicy.audio,sponsored:analysisSponsored}:undefined;
+      return json({ok:true,result:await readStudioAssistanceStatus(access.userId),pendingRequest:await readPendingPromptRequestPointer(access.userId),...(analysisSponsored?{analysisSponsored}:{}),...(analysisAvailable?{analysisAvailable}:{})});
     }
     const input=bodySchema.parse(await boundedPromptJson(req));
+    await bearer?.validateCommand(input);
     if(input.action==='choose')return json({ok:true,result:await chooseStudioAssistance(access.userId,input.choice)});
     const result=input.action==='recover'?await(overrides.recover??recoverPromptAssistance)(access.userId,input.sessionId,input.requestId):await(overrides.send??sendPromptAssistance)(access.userId,input.request);
     if(result.state==='pending'){
