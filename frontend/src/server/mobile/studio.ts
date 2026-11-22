@@ -1,3 +1,5 @@
+import { LIVE_PRICING_POLICY_REVISION, PRICING_POLICY_HEADER } from '@/lib/membership-policy';
+import { mobileStudioGeneration, mobileStudioQuote, reviewedStudioQuote, studioConfirmInput } from './studio-generation';
 import { z } from 'zod';
 import { STUDIO_CONVERSATION_MAX_ATTACHMENTS } from '@/lib/studio/conversation-creation-contract';
 import type { NextRequest } from 'next/server';
@@ -47,7 +49,7 @@ const messageInput = z
     customerMaxCredits: z.number().int().nonnegative(),
   })
   .strict();
-const projectInput = z.discriminatedUnion('action', [renameInput, deleteInput, messageInput]);
+const projectInput = z.discriminatedUnion('action', [renameInput, deleteInput, messageInput, studioConfirmInput]);
 const customerCeiling = (model: StudioAllowance['model'], maxCredits: number) =>
   miloLevelForModel(model) === 'lite' ? 0 : maxCredits;
 
@@ -65,8 +67,8 @@ function turnMedia(turn: Pick<ImageConversationTurn, 'references' | 'attachments
   return result.concat([...media.values()]);
 }
 
-async function readJournal(actor: StudioGenerationActor, origin: string) {
-  const service = createImageConversationService(actor, {
+function conversationService(actor: StudioGenerationActor, origin: string) {
+  return createImageConversationService(actor, {
     enabled: true,
     actionsEnabled: true,
     editingEnabled: true,
@@ -74,7 +76,9 @@ async function readJournal(actor: StudioGenerationActor, origin: string) {
     mediaEnabled: process.env.STUDIO_CONVERSATION_MEDIA_ENABLED === 'true',
     exportsEnabled: process.env.STUDIO_CONVERSATION_EXPORTS_ENABLED === 'true',
   });
-  return createStudioTaskConversationAdapter(actor, service).read();
+}
+async function readJournal(actor: StudioGenerationActor, origin: string) {
+  return createStudioTaskConversationAdapter(actor, conversationService(actor, origin)).read();
 }
 
 async function readAllowance(userId: string): Promise<StudioAllowance | null> {
@@ -113,6 +117,7 @@ const owners = {
   rename: renameStudioConversationProject,
   remove: removeStudioConversationProject,
   journal: readJournal,
+  conversationService,
   allowance: readAllowance,
   tasksEnabled: studioTasksEnabled,
   task: createStudioTaskService,
@@ -157,30 +162,42 @@ export function handleMobileStudio(
         deps.journal(actor, req.nextUrl.origin),
         deps.allowance(userId).catch(() => null),
       ]);
+      const reviewEnabled = req.nextUrl.searchParams.get('review') === '1';
+      const lang = req.nextUrl.searchParams.get('locale');
+      const locale = lang === 'fr' || lang === 'es' ? lang : 'en';
       return {
         projectId: journal.projectId,
         projectName: journal.projectName,
         allowance,
-        turns: journal.turns.map(({ requestId, message, references, attachments, referenceMentions, reply, state, task, quote }) => ({
-          requestId,
-          message,
-          media: turnMedia({ references, attachments, referenceMentions }),
-          reply,
-          state: task?.state === 'paused' ? 'paused' : state,
-          quote: quote
-            ? {
-                label: quote.modelLabel,
-                amountCents: quote.price.amountCents,
-                currency: quote.price.currency,
-                state: quote.state,
-              }
-            : null,
+        turns: journal.turns.map(turn => ({
+          requestId: turn.requestId,
+          message: turn.message,
+          media: turnMedia(turn),
+          reply: turn.reply,
+          state: turn.task?.state === 'paused' ? 'paused' : turn.state,
+          quote: turn.quote ? mobileStudioQuote(turn.quote, locale, reviewEnabled) : null,
+          ...(reviewEnabled && !turn.quote && (turn.exportQuote || turn.creatorQuote || turn.analysisQuote?.confirmationRequired)
+            ? { webReview: true as const }
+            : {}),
+          ...(reviewEnabled && turn.generation ? { generation: mobileStudioGeneration(turn.generation) } : {}),
         })),
       } satisfies StudioJournal;
     }
     const parsed = projectInput.safeParse(await readBoundedJsonBody(req, 32768));
     if (!parsed.success) throw new SyntaxError('Invalid project command.');
     const input = parsed.data;
+    if (input.action === 'confirm-generation') {
+      if (req.headers.get(PRICING_POLICY_HEADER) !== LIVE_PRICING_POLICY_REVISION)
+        throw new MobileHttpError('REVIEW_REQUIRED', 409, 'Review the current pricing policy.');
+      const journal = await deps.journal(actor, req.nextUrl.origin);
+      const saved = reviewedStudioQuote(journal.turns.find(turn => turn.requestId === input.requestId), input);
+      if (!saved) {
+        await deps.conversationService(actor, req.nextUrl.origin).confirm({
+          requestId: input.requestId, quoteId: input.quoteId, confirmed: true,
+        });
+      }
+      return { projectId, requestId: input.requestId, quoteId: input.quoteId };
+    }
     if (input.action === 'delete') {
       const result = await deps.remove({ userId, projectId });
       if (result === 'busy') throw new MobileHttpError('PROJECT_BUSY', 409, 'Wait for the current Studio task to finish.');
