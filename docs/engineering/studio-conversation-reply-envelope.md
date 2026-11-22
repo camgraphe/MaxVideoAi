@@ -16,7 +16,9 @@ Studio message limit remains a separate 4,000-character contract.
 
 The Responses output allowance includes reasoning, the visible answer and its JSON
 envelope. New tasks use 32,000 total output tokens for Lite, 6,000 for Standard
-and 6,000 for Max. A recorded supplier response with
+and 6,000 for Max. New adaptive Max tasks use medium effort for explicit requests
+whose deliverable is the text of long prompts. This drafting call shares the normal output
+and funding ceilings. Max uses its reviewed reasoning profile for other requests. A recorded supplier response with
 `incomplete_details.reason=max_output_tokens` cannot execute a partial tool.
 Ordinary tasks save an output pause and explain how to request a smaller section.
 The existing final-credit completion path may use a remaining authorized step.

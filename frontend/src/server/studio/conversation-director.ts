@@ -23,7 +23,7 @@ import {studioToolReferenceProperties} from './conversation-tool-reference-schem
 import {isStudioPreparationCorrection} from './conversation-preparation-validation';
 import {projectStudioReply,STUDIO_CONVERSATION_REPLY_MAX_CHARS} from '@/lib/studio/conversation-reply';
 import {studioCurrentComparisonReply} from './conversation-current-comparison-reply';
-import {studioGreetingReply,studioExplicitFilmDuration,studioSelectedFilmPlan} from './conversation-intent';
+import {studioGreetingReply,studioExplicitFilmDuration,studioLongPromptDraft,studioSelectedFilmPlan} from './conversation-intent';
 import {studioFilmComparisonReply} from './conversation-film-reply';
 import {studioConversationLanguage,studioOutputLimitMessage} from './conversation-language';
 import {studioFailedFilmComparisonReply} from './conversation-comparison-failure';
@@ -121,8 +121,9 @@ export function createStudioConversationDirector(options: {clientSurface?: Image
     const create = options.createResponse ?? ((params: ResponseCreateParamsNonStreaming, extended: boolean) => {
       const timeout = options.taskExecution ? Math.max(1000, Math.min(120000, options.taskExecution.deadlineAt.getTime() - Date.now() - 5000)) : 65000;
       const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY, maxRetries: 0, timeout });
-      return receiveStudioResponse(client, params, extended, timeout);
+      return receiveStudioResponse(client, params, extended || (writingLongPrompts && params.model === 'gpt-6.1-sol'), timeout);
     });
+    const writingLongPrompts = !!options.taskExecution?.profile.targetInputTokens && studioLongPromptDraft(context.message);
     const recentTurns = context.history.slice(-(options.taskExecution?.profile.historyTurns ?? 8));
     const recentInput = studioRecentHistoryInput(recentTurns);
     const input: ResponseInputItem[] = [
@@ -182,12 +183,13 @@ export function createStudioConversationDirector(options: {clientSurface?: Image
       const model=options.modelForNextCall?.()??options.model??'gpt-6.1-sol';
       const effort=options.taskExecution?.profile.explicitLiteChoice&&model==='gpt-6-luna'?'high':options.taskExecution?(model==='gpt-6.1-sol'&&options.taskExecution.profile.reasoning==='high'&&lastResult?.action==='catalog.read'?'medium':options.taskExecution.profile.reasoning):options.runtimePolicy?.reasoning??(model==='gpt-6-luna'?'high':'medium');
       const params: ResponseCreateParamsNonStreaming = {
-        model, service_tier: 'default', store: false, reasoning: studioReasoning(effort), max_output_tokens: options.taskExecution?.profile.maxOutputTokens??options.runtimePolicy?.maxOutputTokens??2200,
+        model, service_tier: 'default', store: false, reasoning: studioReasoning(writingLongPrompts && model === 'gpt-6.1-sol' && effort === 'xhigh' ? 'medium' : effort), max_output_tokens: options.taskExecution?.profile.maxOutputTokens??options.runtimePolicy?.maxOutputTokens??2200,
         include: ['reasoning.encrypted_content'],
         parallel_tool_calls: false,
         tool_choice: needsFilmComparison?{type:'function',name:'pricing_compare'}:'auto',
         instructions: buildStudioDirectorInstructions({...options,characterEnabled,taskEnabled:!!options.taskExecution})
           + `\n\nResponse ${index + 1} of ${maxResponses}: ${maxResponses - index} Responses remain, including this one. Open-model/alternative-price work starts with pricing_compare. Preserve selected models and reply-only planning; leave room to answer.`
+          + (writingLongPrompts?'\nFor this text-only drafting request, write the requested prompts directly. Distribute the available reply across all requested prompts and finish the last one.':'')
           + (selectedFilmPlan?'\n\nThe client selected the last offered film variant. Continue that choice; do not offer or compare the same menu again. Preserve its model, component durations and explicit settings. Inspect only missing capabilities, then prepare the first unfinished requested component as a fresh exact quote. Use the complete earlier brief and retain the remaining film plan; one component quote is not the whole film. If essential direction is missing, ask one question. Never treat the historical total as the new quote price or confirm a purchase.':'')
           + (filmDuration?`\n\nThe requested complete film is ${filmDuration} seconds. First compare with filmDurationSec=${filmDuration}, surface video and t2v/i2v/ref2v as appropriate. Preserve explicitly selected models via candidateModelIds and all requested settings/references. Omit durationSec from settings unless the client explicitly set a component length; do not guess one. This call returns several fully priced cut plans; do not prepare the opening clip before the client chooses.`:'' )
           + (index === maxResponses-1
