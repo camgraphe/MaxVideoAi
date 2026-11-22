@@ -6,26 +6,36 @@ import { JSDOM } from 'jsdom';
 import { PathnameContext } from 'next/dist/shared/lib/hooks-client-context.shared-runtime';
 import { GA4EventBridge } from '../frontend/components/analytics/GA4EventBridge';
 import { GA4RouteTracker } from '../frontend/components/analytics/GA4RouteTracker';
+import { PublicVideoAnalytics } from '../frontend/components/analytics/PublicVideoAnalytics.client';
 import { clearBrowserAnalyticsAuthContext, resolveBrowserCommercialAnalyticsAuthContext } from '../frontend/lib/analytics/commercial-client';
 import { persistPendingAnalyticsEvent } from '../frontend/lib/analytics-client';
 
-async function fixture() {
-  const dom = new JSDOM('<div id="root"></div>', { url: 'https://maxvideoai.com/app/studio' });
+async function fixture({ href = '/app/studio', analyticsConsent = true } = {}) {
+  const dom = new JSDOM('<div id="root"></div>', { url: new URL(href, 'https://maxvideoai.com').href });
   const saved = new Map<string, PropertyDescriptor | undefined>();
   for (const [key, value] of Object.entries({ React, window: dom.window, document: dom.window.document, navigator: dom.window.navigator, Element: dom.window.Element, CustomEvent: dom.window.CustomEvent, IS_REACT_ACT_ENVIRONMENT: true })) {
     saved.set(key, Object.getOwnPropertyDescriptor(globalThis, key));
     Object.defineProperty(globalThis, key, { configurable: true, value });
   }
   const fetchDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'fetch');
-  dom.window.localStorage.setItem('mv-consent-analytics', 'granted');
+  if (analyticsConsent) dom.window.localStorage.setItem('mv-consent-analytics', 'granted');
   clearBrowserAnalyticsAuthContext();
   const sent: Array<{ name: string; params: Record<string, unknown> }> = [];
   window.gtag = (_command, name, params) => { sent.push({ name: String(name), params: params as Record<string, unknown> }); };
   const root = createRoot(document.getElementById('root')!);
-  await React.act(async () => root.render(React.createElement(PathnameContext.Provider, { value: '/app/studio' },
-    React.createElement(React.Fragment, null, React.createElement(GA4EventBridge), React.createElement(GA4RouteTracker)))));
+  async function render(href: string, watchReaderReady = false) {
+    window.history.replaceState(null, '', href);
+    const pathname = window.location.pathname;
+    const watchReader = watchReaderReady
+      ? React.createElement(PublicVideoAnalytics, { key: pathname, watchPath: pathname })
+      : null;
+    await React.act(async () => root.render(React.createElement(PathnameContext.Provider, { value: pathname },
+      React.createElement(React.Fragment, null, React.createElement(GA4EventBridge), React.createElement(GA4RouteTracker), watchReader))));
+  }
+  await render(href);
   return {
     sent,
+    render,
     emit(type: string, detail: unknown) { window.dispatchEvent(new window.CustomEvent(type, { detail })); },
     async close() {
       await React.act(async () => root.unmount());
@@ -115,4 +125,51 @@ test('in-flight and unrecognized job statuses never emit failure before a succes
     view.emit('jobs:status', { status: 'failed', jobId: failedJob });
     assert.equal(view.sent.filter(event => event.name === 'generation_failed').length, 1, 'explicit failures remain tracked once');
   } finally { await view.close(); }
+});
+
+
+test('anonymous public watch views require Analytics consent and keep video URLs masked', async () => {
+  const first = '/video/first-example?token=private-fixture';
+  const view = await fixture({ href: first, analyticsConsent: false });
+  const pageViews = () => view.sent.filter(event => event.name === 'page_view');
+  try {
+    await view.render(first, true);
+    assert.equal(pageViews().length, 0);
+    await React.act(async () => {
+      window.localStorage.setItem('mv-consent-analytics', 'granted');
+      view.emit('consent:updated', { categories: { analytics: true } });
+    });
+    assert.equal(pageViews().length, 1, 'the consented watch view must send without resolving a user');
+    assert.equal(pageViews()[0].params.page_location, 'https://maxvideoai.com/video/:video');
+    assert.equal(pageViews()[0].params.page_path, '/video/:video');
+
+    await React.act(async () => view.emit('consent:updated', { categories: { analytics: true } }));
+    await view.render('/video/another-example', true);
+    assert.equal(pageViews().length, 2, 'a different reader gets a new view with the same sanitized path');
+    assert.equal(pageViews()[1].params.page_location, 'https://maxvideoai.com/video/:video');
+    await view.render(first, true);
+    assert.equal(pageViews().length, 3, 'reopening a reader records another view');
+    assert.equal(view.sent.some(event => event.name === 'app_open'), false);
+  } finally {
+    await view.close();
+  }
+});
+
+test('public watch measures the resolved reader and excludes known administrators', async () => {
+  const href = '/video/late-reader';
+  const view = await fixture({ href });
+  const pageViews = () => view.sent.filter(event => event.name === 'page_view');
+  try {
+    assert.equal(pageViews().length, 0, 'a watch route without a reader has no video view');
+    await view.render(href, true);
+    assert.equal(pageViews().length, 1, 'a reader that appears after the route is tracked');
+
+    await React.act(async () => {
+      await resolveBrowserCommercialAnalyticsAuthContext('admin-fixture', null, { role: 'admin' });
+    });
+    await view.render('/video/admin-watch', true);
+    assert.equal(pageViews().length, 1, 'admin traffic remains excluded on public video pages');
+  } finally {
+    await view.close();
+  }
 });

@@ -1,3 +1,5 @@
+export const PUBLIC_VIDEO_WATCH_READY_EVENT = 'mvai:public-video-watch-ready';
+
 /** A server-qualified public slug, never an arbitrary watch/job identifier. */
 export function projectPublicVideoAnalyticsPath(signals: {
   seoStatus: string | null;
