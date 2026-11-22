@@ -1,5 +1,11 @@
 type Locale='en'|'fr'|'es';
 
+export const studioOutputLimitMessage = {
+  en: 'Milo reached the output limit before it could deliver a complete reply. Ask for a shorter section in a new message, such as shots 1–3.',
+  fr: 'Milo a atteint la limite de longueur avant de pouvoir livrer une réponse complète. Demandez une partie plus courte dans un nouveau message, par exemple les plans 1 à 3.',
+  es: 'Milo alcanzó el límite de longitud antes de poder entregar una respuesta completa. Pide una sección más corta en un mensaje nuevo, por ejemplo los planos 1 a 3.',
+} as const;
+
 /** Resolve server-authored replies from authored client messages, never assistant/tool text. */
 export function studioConversationLanguage(message:string,history:readonly {message:string}[],fallback:Locale='en'):Locale {
   for(const value of [message,...history.slice(-12).reverse().map(turn=>turn.message)]) {

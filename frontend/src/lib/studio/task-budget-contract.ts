@@ -9,6 +9,11 @@ const policyVersion=z.enum([STUDIO_TASK_LEGACY_POLICY_VERSION,STUDIO_TASK_V2_POL
 export type StudioTaskPolicyVersion=z.infer<typeof policyVersion>;
 export const STUDIO_TASK_MAX_CALLS=24;
 export const STUDIO_TASK_MAX_CREDITS=2000;
+const STUDIO_TASK_ADAPTIVE_INPUT = {
+  targetInputTokens: 64_000,
+  maxInputTokens: 128_000,
+} as const;
+// Historical base bounds. Resolve new and sealed profiles with studioTaskProfileForModel.
 export const STUDIO_TASK_PROFILES={
   quick:{maxCredits:100,maxCalls:2,maxOutputTokens:2200,maxInputTokens:12000,deadlineSec:180,historyTurns:4,reasoning:'low' as const},
   standard:{maxCredits:250,maxCalls:4,maxOutputTokens:2200,maxInputTokens:24000,deadlineSec:300,historyTurns:8,reasoning:'medium' as const},
@@ -28,13 +33,14 @@ export const studioTaskSelectionSchema=z.object({profile:studioTaskProfileSchema
 });
 export type StudioTaskSelection=z.infer<typeof studioTaskSelectionSchema>;
 export type StudioTaskProfile=keyof typeof STUDIO_TASK_PROFILES;
-export function studioTaskProfileForModel(selection:StudioTaskSelection,model:StudioAssistantModel) {
+export function studioTaskProfileForModel(selection:StudioTaskSelection,model:StudioAssistantModel,inputPolicy: 'adaptive' | 'original' = 'adaptive') {
   const reviewed=studioTaskSelectionSchema.parse(selection);
   if(reviewed.profile==='complex'&&model!=='gpt-6.1-sol')throw new Error('Select Max before confirming a complex task.');
   const profile=STUDIO_TASK_PROFILES[reviewed.profile];
   if(reviewed.policyVersion===STUDIO_TASK_POLICY_VERSION){
     const runtime=studioMiloRuntime(model);
-    return {...profile,reasoning:runtime.reasoning,maxOutputTokens:runtime.maxOutputTokens};
+    const inputBounds = inputPolicy === 'adaptive' && reviewed.profile === 'standard' ? STUDIO_TASK_ADAPTIVE_INPUT : {};
+    return {...profile,...inputBounds,reasoning:runtime.reasoning,maxOutputTokens:runtime.maxOutputTokens};
   }
   if(reviewed.policyVersion===STUDIO_TASK_V3_POLICY_VERSION)return {...profile,reasoning:model==='gpt-6.1-sol'?'xhigh' as const:'high' as const,maxOutputTokens:6000 as const};
   if(model==='gpt-6.1-terra')throw new Error('Standard requires the current task policy.');
@@ -42,7 +48,11 @@ export function studioTaskProfileForModel(selection:StudioTaskSelection,model:St
     ? {...profile,reasoning:'high' as const,maxOutputTokens:6000 as const}
     : profile;
 }
-export type StudioTaskResourceProfile=ReturnType<typeof studioTaskProfileForModel>&{explicitLiteChoice?:boolean};
+export type StudioTaskResourceProfile=ReturnType<typeof studioTaskProfileForModel>&{targetInputTokens?:typeof STUDIO_TASK_ADAPTIVE_INPUT.targetInputTokens;explicitLiteChoice?:boolean};
+
+export function studioTaskInputTarget(profile: {maxInputTokens: number; targetInputTokens?: number}) {
+  return profile.targetInputTokens ?? profile.maxInputTokens;
+}
 export const studioTaskResumeSchema=z.object({requestId:z.string().uuid(),approvalId:z.string().uuid(),expectedRevision:z.number().int().nonnegative(),action:z.enum(['continue','extend','continue_lite']),maxCredits:credits,policyVersion,confirmed:z.literal(true)}).strict();
 export const studioTaskMaintenanceSchema=z.object({requestId:z.string().uuid(),expectedRevision:z.number().int().nonnegative(),action:z.enum(['recover','cancel']),policyVersion,confirmed:z.literal(true)}).strict();
 export type StudioTaskResume=z.infer<typeof studioTaskResumeSchema>;

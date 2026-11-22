@@ -1,10 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {randomUUID} from 'node:crypto';
+import {createHash,randomUUID} from 'node:crypto';
 import {studioTaskFixture} from './helpers/studio-task-fixture';
 import {createStudioTaskService} from '../frontend/src/server/studio/tasks/service';
 import {reserveStudioAssistanceCall,settleStudioAssistanceCall,readStudioAssistanceStatus,chooseStudioAssistance,openStudioAssistanceTurn} from '../frontend/src/server/studio/assistance-ledger';
 import {STUDIO_TASK_POLICY_VERSION} from '../frontend/src/lib/studio/task-budget-contract';
+import {stableJson} from '../frontend/src/server/agent-api/generation-normalization';
 
 test('task enqueue freezes authorization; exact budgets constrain the existing credit ledger',async t=>{
   const f=await studioTaskFixture(t),actor=await f.actor();
@@ -71,4 +72,67 @@ test('paid Sol has a raised hourly allowance but purchased-credit suspension rem
   assert.equal((await f.pool.query('SELECT count(*)::int n FROM studio_assistance_calls WHERE user_id=$1',[actor.userId])).rows[0].n,0);
   await f.pool.query("INSERT INTO user_account_restrictions(user_id,reason,active) VALUES($1,'controlled',true)",[actor.userId]);
   await assert.rejects(service.enqueue(f.input()),/restricted/);
+});
+
+test('adaptive input reservations stop at 128k under all three funding policies', async t => {
+  const f = await studioTaskFixture(t);
+  for (const [action, model, outputTokens] of [
+    ['select_luna', 'gpt-6-luna', 32_000],
+    ['select_terra', 'gpt-6.1-terra', 6_000],
+    ['select_sol', 'gpt-6.1-sol', 6_000],
+  ] as const) {
+    const actor = await f.actor();
+    await chooseStudioAssistance(actor.userId, {action, expectedRevision:0}, f.policy);
+    const service = createStudioTaskService(actor, {enabled:true, assistancePolicy:f.policy});
+    const task = await service.enqueue(f.input());
+    const leaseId = randomUUID();
+    await f.pool.query("UPDATE studio_tasks SET state='running',worker_id=$2,lease_expires_at=now()+interval '3 minutes',deadline_at=now()+interval '5 minutes' WHERE request_id=$1",[task.requestId,leaseId]);
+    const bounds = {...actor, requestId:task.requestId, leaseId, index:0, outputTokens, allowCreditCompletion:true};
+    await assert.rejects(reserveStudioAssistanceCall({...bounds, inputTokens:128_001}, f.policy), /context/);
+    const call = await reserveStudioAssistanceCall({...bounds, inputTokens:128_000}, f.policy);
+    assert.equal(call.model, model);
+    assert.equal(call.input_token_bound, 128_000);
+    assert.equal(call.output_token_bound, outputTokens);
+    await assert.rejects(f.pool.query(`INSERT INTO studio_assistance_calls
+      SELECT (jsonb_populate_record(NULL::studio_assistance_calls, to_jsonb(c)
+        || jsonb_build_object('id',$2::uuid,'response_index',1,'input_token_bound',128001))).*
+      FROM studio_assistance_calls c WHERE c.id=$1`,[call.id,randomUUID()]), /Task resource bound/);
+    const response = {id:randomUUID(),model,service_tier:'default',usage:{input_tokens:128_000,input_tokens_details:{cached_tokens:0},output_tokens:outputTokens}};
+    await settleStudioAssistanceCall(call.id, actor.userId, response);
+    await settleStudioAssistanceCall(call.id, actor.userId, response);
+    const settled = await service.read(task.requestId);
+    assert.equal(settled.completedCalls, 1);
+    assert.equal(settled.consumedCredits, model === 'gpt-6-luna' ? 0 : 250);
+    assert.equal(settled.reservedCredits, 0);
+    const saved = (await f.pool.query('SELECT campaign_id, pricing_snapshot, charged_cents FROM studio_assistance_calls WHERE id=$1',[call.id])).rows[0];
+    assert.ok(saved.campaign_id);
+    if (model !== 'gpt-6-luna') {
+      assert.equal(saved.pricing_snapshot.creditCompletion.customerCapCents, 25);
+      assert.ok(saved.pricing_snapshot.creditCompletion.giftCents > 0);
+    }
+    assert.equal((await f.pool.query("SELECT count(*)::int AS n FROM app_receipts WHERE user_id=$1 AND type='charge'",[actor.userId])).rows[0].n, 0);
+  }
+});
+
+test('replayed v4 tasks keep their 24k input ceiling across continuation segments', async t => {
+  const f = await studioTaskFixture(t);
+  for (const explicitLiteChoice of [true, undefined]) {
+    const actor = await f.actor();
+    const input = f.input();
+    const profile = {maxCredits:250, maxCalls:4, maxOutputTokens:6000, maxInputTokens:24_000, deadlineSec:300, historyTurns:8, reasoning:'xhigh', explicitLiteChoice};
+    const hash = (value:unknown) => createHash('sha256').update(stableJson(value)).digest('hex');
+    await openStudioAssistanceTurn(actor, input.requestId, f.policy);
+    await f.pool.query(`INSERT INTO studio_tasks(user_id,project_id,request_id,segment_request_id,input_hash,input_json,source_fingerprint,policy_version,profile,profile_json,model,max_credits,allowed_calls,state,phase,error)
+      VALUES($1,$2,$3,$3,$4,$5,$6,$7,'standard',$8,'gpt-6.1-sol',250,4,'paused','paused','steps')`,[actor.userId,actor.projectId,input.requestId,hash(input),input,hash([]),STUDIO_TASK_POLICY_VERSION,profile]);
+    await f.pool.query('INSERT INTO studio_task_segments(user_id,project_id,task_request_id,request_id,max_calls) VALUES($1,$2,$3,$3,4)',[actor.userId,actor.projectId,input.requestId]);
+    const service = createStudioTaskService(actor, {enabled:true, assistancePolicy:f.policy});
+    assert.equal((await service.enqueue(input)).state, 'paused');
+    const approvalId = randomUUID();
+    await service.resume({requestId:input.requestId,approvalId,expectedRevision:0,action:'continue',confirmed:true,maxCredits:250,policyVersion:STUDIO_TASK_POLICY_VERSION});
+    const leaseId = randomUUID();
+    await f.pool.query("UPDATE studio_tasks SET state='running',worker_id=$2,lease_expires_at=now()+interval '3 minutes',deadline_at=now()+interval '5 minutes' WHERE request_id=$1",[input.requestId,leaseId]);
+    const bounds = {...actor,requestId:approvalId,leaseId,index:0,outputTokens:100};
+    await assert.rejects(reserveStudioAssistanceCall({...bounds,inputTokens:24_001},f.policy), /context/);
+    assert.equal((await reserveStudioAssistanceCall({...bounds,inputTokens:24_000},f.policy)).input_token_bound, 24_000);
+  }
 });

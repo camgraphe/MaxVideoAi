@@ -190,7 +190,8 @@ test('Studio phone projects, journal and reviewed messages share website ownersh
   assert.deepEqual(wake, [requestId, requestId]);
   const { rows: [saved] } = await pg.pool.query('SELECT input_json, profile, profile_json FROM studio_tasks WHERE request_id=$1', [requestId]);
   assert.equal(saved.profile, 'standard');
-  assert.equal(saved.profile_json.maxInputTokens, STUDIO_TASK_PROFILES.standard.maxInputTokens);
+  assert.equal(saved.profile_json.targetInputTokens, 64_000);
+  assert.equal(saved.profile_json.maxInputTokens, 128_000);
   assert.equal(saved.input_json.clientSurface, 'mobile');
   assert.equal(saved.input_json.message, command.message);
   assert.deepEqual(saved.input_json.references, [media[1].assetId]);
@@ -231,7 +232,11 @@ test('Studio phone projects, journal and reviewed messages share website ownersh
   });
   assert.equal((await sendLegacy()).status, 200);
   assert.equal((await sendLegacy()).status, 200);
-  const old = (await pg.pool.query('SELECT profile, max_credits FROM studio_tasks WHERE request_id=$1', [legacy.requestId])).rows;
-  assert.deepEqual(old, [{profile: 'quick', max_credits: STUDIO_TASK_PROFILES.quick.maxCredits}]);
+  const old = (await pg.pool.query('SELECT profile, max_credits, profile_json FROM studio_tasks WHERE request_id=$1', [legacy.requestId])).rows;
+  assert.equal(old.length, 1);
+  assert.equal(old[0].profile, 'quick');
+  assert.equal(old[0].max_credits, STUDIO_TASK_PROFILES.quick.maxCredits);
+  assert.equal(old[0].profile_json.maxInputTokens, 12_000);
+  assert.equal(old[0].profile_json.targetInputTokens, undefined);
   assert.equal((await pg.pool.query('SELECT count(*)::int AS n FROM media_assets WHERE user_id=$1',[owner])).rows[0].n, 3);
 });

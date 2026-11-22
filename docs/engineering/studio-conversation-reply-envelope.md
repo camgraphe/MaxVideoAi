@@ -3,8 +3,8 @@
 Studio conversation replies share a 50,000-character envelope through the director
 decoder, public draft contract, JSONB journal and task `partial_reply` storage.
 `STUDIO_CONVERSATION_REPLY_MAX_CHARS` in `lib/studio/conversation-reply.ts` owns the
-application bound. Recent assistant replies are passed intact to both director
-adapters; the existing history-turn and counted input-token limits still apply.
+application bound. Recent assistant replies enter the request intact. Studio tasks
+may compact older context under input pressure. The saved reply stays complete.
 `projectStudioReply` retains its separate protocol-marker protection.
 
 This changes conversational text capacity, not generation prompt limits. Selected
@@ -13,6 +13,14 @@ reasoning, call caps, input-token bounds, deadlines, credit ceilings, rates and
 settlement policy are unchanged. An allowed text envelope does not promise that a
 model can produce its maximum length within a frozen token budget. The incoming
 Studio message limit remains a separate 4,000-character contract.
+
+The Responses output allowance includes reasoning, the visible answer and its JSON
+envelope. New tasks use 32,000 total output tokens for Lite, 6,000 for Standard
+and 6,000 for Max. A recorded supplier response with
+`incomplete_details.reason=max_output_tokens` cannot execute a partial tool.
+Ordinary tasks save an output pause and explain how to request a smaller section.
+The existing final-credit completion path may use a remaining authorized step.
+See [Studio task budgets](studio-task-budgets.md).
 
 A completed response with no function calls and exactly one nonempty string
 `reply` above 50,000 characters is a saved output-limit outcome. Studio retains

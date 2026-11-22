@@ -3,7 +3,7 @@ import {saveStudioConversationCharacter,prepareStudioConversationCharacterBuilde
 import {createCharacterBuilderAuthoringService} from '@/server/character-studio/authoring';
 import {createStudioCreatorToolsService,type StudioCreatorFactory} from './conversation-creator';
 import {isCreatorExecutionEnabled} from '@/server/tools/creator-execution-gates';
-import {STUDIO_TASK_POLICY_VERSION,STUDIO_TASK_V3_POLICY_VERSION} from '@/lib/studio/task-budget-contract';
+import {STUDIO_TASK_POLICY_VERSION,STUDIO_TASK_V3_POLICY_VERSION,studioTaskInputTarget} from '@/lib/studio/task-budget-contract';
 import {createCharacterStudioIntegration} from '@/server/character-studio/integration';
 import {prepareStudioConversationRecast,type StudioCharacterFactory} from './conversation-character';
 import {buildAssistantReviewContext} from '../assistant-review/context';
@@ -17,6 +17,7 @@ import {replayStudioTaskAction} from './tasks/action-replay';
 import {customerDisplayPrice} from '@/lib/customer-price-presentation';
 import OpenAI from 'openai';
 import type {ResponseCreateParamsNonStreaming} from 'openai/resources/responses/responses';
+import {measureStudioRequest} from './conversation-context-pressure';
 import {studioTokenCountInput} from './assistance-token-count';
 import {openStudioAssistanceTurn,type StudioLunaFallback} from './assistance-ledger';
 import {readStudioTaskUsage} from './tasks/repository';
@@ -292,7 +293,11 @@ export async function runStudioImageActions(options: {
         params.instructions=(params.instructions??'')+'\nMilo has continued this task in Lite (GPT-6 Luna) because the next credit-funded call could not be funded. Continue the remaining client request from the saved work. This assistance change does not authorize a different generation model, a credit purchase or a media confirmation.';
       }
       if (!options.countInputTokens && options.createResponse) throw new AgentApiError('ENGINE_UNAVAILABLE','Offline Studio metering requires an injected token counter.');
-      const inputTokens = options.countInputTokens ? await options.countInputTokens(params) : (await new OpenAI({apiKey: process.env.OPENAI_API_KEY,maxRetries: 0,timeout: 15000}).responses.inputTokens.count(studioTokenCountInput(params))).input_tokens;
+      const count = options.countInputTokens ?? (async (request:ResponseCreateParamsNonStreaming) =>
+        (await new OpenAI({apiKey:process.env.OPENAI_API_KEY,maxRetries:0,timeout:15000}).responses.inputTokens.count(studioTokenCountInput(request))).input_tokens);
+      const profile = options.taskExecution?.profile;
+      const inputTokens = await measureStudioRequest(params, count, profile?.targetInputTokens
+        ? {targetInputTokens: studioTaskInputTarget(profile), compact: checkpointOptions?.compactHistory} : undefined);
       if (!Number.isSafeInteger(inputTokens) || inputTokens < 0 || inputTokens > 272000) throw new AgentApiError('PARAMETER_INVALID','This Studio context exceeds the supported assistance limit.');
       if(options.taskExecution&&inputTokens>options.taskExecution.profile.maxInputTokens)throw new StudioTaskStop("context","The current context exceeds this task allowance.");
       const outputTokens=params.max_output_tokens??2200;

@@ -46,7 +46,7 @@ export function createStudioCreatorToolsService(actor: StudioGenerationActor, op
   async function assertSources(refs: readonly ToolAssetRef[]) {
     const attached = new Set((options.attachedRefs ?? []).map(refKey));
     if (refs.every(ref => attached.has(refKey(ref)))) return;
-    const project = await (options.readProjectMedia ?? readStudioProjectMedia)(actor);
+    const project = await (options.readProjectMedia ?? readStudioProjectMedia)(actor, refs.flatMap(ref => ref.type === 'job-output' ? [ref.outputId] : []));
     const known = new Set([...attached, ...project.map(value => refKey(value.ref))]);
     if (refs.some(ref => !known.has(refKey(ref)))) throw new AgentApiError('REFERENCE_INVALID', 'Attach this media or select an exact ready output from this project before preparing a creator tool.');
   }

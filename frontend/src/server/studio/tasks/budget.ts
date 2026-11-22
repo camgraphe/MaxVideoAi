@@ -19,8 +19,10 @@ export async function readStudioTaskBudget(db:QueryExecutor,scope:{userId:string
   if(!row.lease_valid)throw new StudioTaskStop('deadline','This task reached its current time allowance.');
   try{
     const selection=row.input_json.taskBudget;
+    // Accepted tasks keep their original input ceiling across retries and new segments.
+    const inputPolicy = row.profile_json.targetInputTokens === undefined ? 'original' : 'adaptive';
     if(!selection||selection.policyVersion!==row.policy_version||selection.profile!==row.profile
-      ||stableJson(row.profile_json)!==stableJson({...studioTaskProfileForModel(selection,row.model),...(row.profile_json.explicitLiteChoice===true?{explicitLiteChoice:true}:{})}))throw new Error('Resource policy changed');
+      ||stableJson(row.profile_json)!==stableJson({...studioTaskProfileForModel(selection,row.model,inputPolicy),...(row.profile_json.explicitLiteChoice===true?{explicitLiteChoice:true}:{})}))throw new Error('Resource policy changed');
   }catch{throw new StudioTaskStop('unavailable','This task resource policy is not available.');}
   try{
     const fingerprint=await studioTaskSourceFingerprint({userId:scope.userId,projectId:scope.projectId,authMethod:'studio-session',clientId:null},row.input_json,db,true);

@@ -62,6 +62,14 @@ export async function listImageTurns(
   );
 }
 
+/** Keep director history anchored at the submitted turn even during a retry of an older segment. */
+export async function listReadyImageHistory(actor: StudioGenerationActor, requestId: string): Promise<StoredImageTurn[]> {
+  return query(`SELECT ${IMAGE_TURN_COLUMNS} FROM studio_image_turns
+    WHERE user_id=$1 AND project_id=$2 AND state='ready' AND (created_at,request_id)<(
+      SELECT created_at,request_id FROM studio_image_turns WHERE user_id=$1 AND project_id=$2 AND request_id=$3
+    ) ORDER BY created_at DESC,request_id DESC LIMIT 30`, [actor.userId, actor.projectId, requestId]);
+}
+
 async function expirePreparedCreationQuotes(actor: StudioGenerationActor, executor: TransactionQueryExecutor) {
   await executor.query(
     "UPDATE mcp_generation_quotes SET state = 'expired', updated_at = clock_timestamp() WHERE user_id = $1 AND auth_origin = 'studio-session' AND studio_project_id = $2 AND state = 'prepared'",

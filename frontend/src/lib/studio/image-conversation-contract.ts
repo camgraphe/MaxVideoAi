@@ -10,7 +10,8 @@ import type { PreparedGeneration } from "@/server/agent-api/prepare-generation";
 import type { AgentGenerationStatus } from "@/server/generations/generation-status";
 import {studioRecastActionSchema,validateStudioRecast,type StudioRecastIntent} from '@/lib/studio/conversation-character-contract';
 import {studioMediaIntentSchema} from '@/lib/studio/conversation-media-contract';
-import {toolAssetRefSchema} from '@/lib/toolbox/contract';
+import {toolAssetRefSchema, type ToolAssetRef} from '@/lib/toolbox/contract';
+import type {StudioConversationQuoteSettings} from '@/lib/studio/conversation-action-contract';
 import type {PreparedAudioGeneration} from '@/server/agent-api/prepare-audio-generation';
 import {imageSelectionSchema,STUDIO_CONVERSATION_MAX_ATTACHMENTS} from '@/lib/studio/conversation-creation-contract';
 import {projectStudioReply,STUDIO_CONVERSATION_REPLY_MAX_CHARS} from './conversation-reply';
@@ -122,7 +123,30 @@ export type ImageConversation = {
   taskPolicyVersion?:string;
 };
 export type ImageConversationHistoryTurn = Pick<ImageConversationTurn, 'message' | 'reply' | 'referenceMentions'>;
+export type StudioConversationArchiveEntry = {
+  requestId: string;
+  createdAt: string;
+  selectedFor: 'exact_id' | 'first_render' | 'opening' | 'related' | 'recent';
+  message: string;
+  attachments?: {assetId: string; kind: ToolAssetRef['kind']; label?: string}[];
+  reply?: string;
+  render?: {
+    quoteId: string;
+    modelId: string;
+    surface: ToolAssetRef['kind'];
+    mode: string;
+    settings: StudioConversationQuoteSettings;
+    direction?: string;
+    references: {assetId: string; role: string; slot?: number}[];
+    referenceCount: number;
+    jobId: string | null;
+    status: string | null;
+    outputs: Extract<ToolAssetRef, {type: 'job-output'}>[];
+  };
+};
 export type StudioConversationHistoryFacts = {
+  archive?: StudioConversationArchiveEntry[];
+  decisions?: {requestId: string; createdAt: string; message: string}[];
   quoteDirections:({requestId:string;quoteId:string;truncated:boolean} & (
     {text:string} | {recast:Omit<StudioRecastIntent,'action'|'reply'>}
   ))[];

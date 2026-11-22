@@ -4,12 +4,14 @@ import {readFileSync} from 'node:fs';
 import {getDb} from '../frontend/src/lib/db';
 import {getFalEngineById} from '../frontend/src/config/falEngines';
 import {createStudioImageGenerationService,createStudioVideoGenerationService} from '../frontend/src/server/studio/image-generation-service';
+import {readStudioProjectMedia,validateStudioMediaRequest} from '../frontend/src/server/studio/conversation-media-generation';
+import {resolveStudioMedia} from '../frontend/src/server/studio/media-resolver';
 import {createStudioActionExecutor} from '../frontend/src/server/studio/conversation-actions';
 import {createStudioConversationDirector} from '../frontend/src/server/studio/conversation-director';
 import type {StudioActionRequest} from '../frontend/lib/studio/conversation-action-contract';
 import {createPaidGenerationTestSchema,startDisposablePostgres} from './helpers/disposable-postgres';
 
-test('a ready project output can be priced directly without saving or attaching another library copy',async t=>{
+test('old project outputs support exact pricing and a fresh extension quote after leaving the media list',async t=>{
   const pg=await startDisposablePostgres('studio-output-pricing');
   const previous=process.env.DATABASE_URL;process.env.DATABASE_URL=pg.databaseUrl;
   t.after(async()=>{await getDb().end();if(previous===undefined)delete process.env.DATABASE_URL;else process.env.DATABASE_URL=previous;await pg.cleanup();});
@@ -53,7 +55,22 @@ test('a ready project output can be priced directly without saving or attaching 
     UPDATE mcp_generation_quotes SET state='claimed',job_id='video-original',claimed_at=clock_timestamp(),updated_at=clock_timestamp() WHERE state='prepared';
     UPDATE mcp_generation_quotes SET state='accepted' WHERE state='claimed';`);
   const wan=getFalEngineById('wan-3')!;
-  const video=createStudioVideoGenerationService(actor,{enabled:true,prepareDependencies:{
+  // Put the original outside the ordinary media picker. Reuse must still verify its exact project, job and output.
+  await pg.pool.query(`INSERT INTO job_outputs(id,job_id,user_id,status,kind,url)
+    SELECT 'newer-'||i,'video-original','owner','ready','video','https://cdn.maxvideoai.com/newer.mp4'
+    FROM generate_series(1,31) i`);
+  assert.ok(!(await readStudioProjectMedia(actor)).some(item=>item.ref.type==='job-output' && item.ref.outputId==='video-output'));
+  const source={type:'job-output' as const,jobId:'video-original',outputId:'video-output',kind:'video' as const};
+  const savedId='ma_'+'e'.repeat(32);
+  const original=await resolveStudioMedia(actor.userId,source);
+  const video=createStudioVideoGenerationService(actor,{enabled:true,referenceDependencies:{
+    resolveOwnedReferenceAsset:async (_actor,id)=>{
+      assert.equal(id,savedId);
+      return {assetId:id,role:'source',mediaKind:'video',durationSec:5.104,storageUrl:original.url,mimeType:'video/mp4',sizeBytes:1024,width:1280,height:720,originalName:'original.mp4'};
+    },
+    resolveMedia:async (_user,ref)=>({...original,ref}),
+  },prepareDependencies:{
+    getWalletSummary:async()=>({balanceCents:1000,currency:'USD'}),
     listPublicEngines:async()=>[{engine:wan.engine,surface:'video',publicModes:['extend'],modeCaps:Object.fromEntries(wan.modes.map(mode=>[mode.mode,mode.ui]))}],
     resolveMembershipPricing:async()=>({tier:'member',source:'app_receipts_rolling_30d',spent30Cents:0,thresholdCents:0,discountPercent:0}),
     resolveRequestExecutability:()=>({executable:true,reason:'available'}),
@@ -73,6 +90,22 @@ test('a ready project output can be priced directly without saving or attaching 
   if(videoComparison.ok&&videoComparison.action==='pricing.compare')assert.equal(videoComparison.data.options[0]?.price.amountCents,65);
   assert.equal((await pg.pool.query('SELECT count(*)::int AS n FROM media_assets')).rows[0].n,0);
   assert.equal((await pg.pool.query('SELECT count(*)::int AS n FROM mcp_generation_quotes')).rows[0].n,2);
+  const factories={video:()=>video};
+  const action={...videoScenario,action:'video.prepare',modelId:'wan-3',reply:'Review the extension.',prompt:'Continue with a slow pan.',source:null,aspectRatio:'16:9'};
+  const selection=await validateStudioMediaRequest(actor,action as never,{requestId:'10000000-0000-4000-8000-000000000099',message:'Extend my original video.',references:[]},factories as never,true,{
+    saveOutput:async request=>{
+      assert.equal(request.outputId,source.outputId);
+      return {publicId:savedId,userId:actor.userId,kind:'video',sourceJobId:source.jobId,sourceOutputId:source.outputId,status:'ready',metadata:{originUrl:original.url}} as never;
+    },
+    resolveMedia:async (user,ref)=>ref.type==='job-output'?resolveStudioMedia(user,ref):({...original,ref}),
+  });
+  const newRequest=await selection.materialize();
+  const freshQuote=await video.prepare(newRequest);
+  assert.equal(freshQuote.price.amountCents,65);
+  const stored=await pg.pool.query('SELECT state,request_json FROM mcp_generation_quotes WHERE quote_id=$1',[freshQuote.quoteId]);
+  assert.equal(stored.rows[0].state,'prepared');
+  assert.equal(stored.rows[0].request_json.references[0].assetId,savedId);
+  assert.equal((await pg.pool.query("SELECT count(*)::int n FROM app_receipts WHERE type='charge'")).rows[0].n,0);
   await pg.pool.query("UPDATE app_jobs SET hidden=true WHERE job_id='video-original'");
   const hidden=await videoExecute({...videoScenario,action:'pricing.read',modelId:'wan-3'} as never);
   assert.equal(hidden.ok,false);if(!hidden.ok)assert.equal(hidden.error.code,'REFERENCE_INVALID');

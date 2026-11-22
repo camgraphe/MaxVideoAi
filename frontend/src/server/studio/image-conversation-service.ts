@@ -12,6 +12,7 @@ import type {StudioTaskExecution} from "./tasks/execution";
 import {customerDisplayPrice} from '@/lib/customer-price-presentation';
 import type {StudioExportDependencies} from './conversation-export-command';
 import {recordedStudioOutputDuration,recordedStudioSourceVideoOutput} from './conversation-quote-facts';
+import {readStudioArchiveDecisions, readStudioConversationArchive} from './conversation-archive';
 import {projectStudioQuoteDirections,readStudioHistoricalEstimates} from './conversation-history-facts';
 import { getBaseEngineIncludingHidden } from "@/lib/engines";
 import { z } from "zod";
@@ -42,6 +43,7 @@ import {
   attachImageQuote,
   failImageTurn,
   listImageTurns,
+  listReadyImageHistory,
   readImageConversationProject,
   type StoredImageTurn,
 } from "./image-conversation-repository";
@@ -247,15 +249,29 @@ export function createImageConversationService(
             "REFERENCE_INVALID",
             "The references changed. Send a new message so Studio can review them again.",
           );
-        const history = (await listImageTurns(actor))
-          .filter(
-            (saved) =>
-              saved.request_id !== turn.request_id && saved.state === "ready",
-          )
-          .reverse();
+        const adaptiveHistory = dependencies.taskExecution?.profile.targetInputTokens !== undefined;
+        let history: StoredImageTurn[] = [];
+        if (!turn.draft_json) {
+          // Preserve the historical selection for tasks sealed before adaptive context.
+          history = adaptiveHistory
+            ? await listReadyImageHistory(actor, turn.request_id)
+            : (await listImageTurns(actor)).filter(saved => saved.request_id !== turn.request_id && saved.state === 'ready');
+          history.reverse();
+        }
         const useActions = !turn.draft_json && dependencies.actionsEnabled === true;
-        const recentHistory=history.slice(-(dependencies.taskExecution?.profile.historyTurns??8));
-        const historyFacts=useActions?{quoteDirections:projectStudioQuoteDirections(recentHistory),estimates:await readStudioHistoricalEstimates(actor,recentHistory.map(saved=>saved.request_id))}:undefined;
+        const recentHistory = history.slice(-(dependencies.taskExecution?.profile.historyTurns ?? 8));
+        let historyFacts;
+        if (useActions) {
+          const archiveBefore = adaptiveHistory && history.length > recentHistory.length
+            ? recentHistory[0].request_id : undefined;
+          const [estimates, archive, decisions] = await Promise.all([
+            readStudioHistoricalEstimates(actor, recentHistory.map(saved => saved.request_id)),
+            archiveBefore ? readStudioConversationArchive(actor, archiveBefore, input.message) : [],
+            archiveBefore ? readStudioArchiveDecisions(actor, archiveBefore) : [],
+          ]);
+          historyFacts = {quoteDirections: projectStudioQuoteDirections(recentHistory), estimates,
+            ...(archive.length ? {archive} : {}), ...(decisions.length ? {decisions} : {})};
+        }
         if (!turn.draft_json && !useActions && !dependencies.director) throw new AgentApiError('ENGINE_UNAVAILABLE','Enable the metered Studio conversation before requesting assistance.');
         const draft =
           turn.draft_json ??
