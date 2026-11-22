@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import {STUDIO_CONVERSATION_REPLY_MAX_CHARS} from '../frontend/src/lib/studio/conversation-reply';
 import {MILO_LEVELS} from '../frontend/src/lib/studio/assistance-contract';
 import {createStudioConversationDirector} from '../frontend/src/server/studio/conversation-director';
 import {buildStudioDirectorInstructions} from '../frontend/src/server/studio/conversation-director-instructions';
@@ -120,15 +121,22 @@ test('all Milo levels receive the scoped creative offer rule and the conversatio
         const director = createStudioConversationDirector({model, clientSurface, mediaEnabled:true, createResponse:async params => {
           assert.equal(params.model, model);
           const rules = String(params.instructions);
-          assert.match(rules, /actionable creative direction.*project-specific next step in one closing sentence/);
-          assert.match(rules, /Skip the offer for text\/advice-only requests, declined steps or a matching quote/);
-          assert.match(rules, /Honor ongoing preferences.*one-off titles-only request ends with that turn/);
+          assert.match(rules, /actionable creative direction.*project-specific next step in one closing question/);
+          assert.match(rules, /Skip for explicit deliverable-only requests, declined steps or matching quotes/);
+          assert.match(rules, /Keep standing preferences.*one-off titles-only ends that turn/);
           assert.match(rules, /Yes to your quote offer: prepare the priced proposal in this project with agreed settings/);
           assert.match(rules, /Generation needs separate client confirmation/);
+          assert.equal(params.text?.format?.type, 'json_schema');
+          if (params.text?.format?.type === 'json_schema')
+            assert.deepEqual(params.text.format.schema.required, ['reply', 'nextStepOffer']);
           const input = params.input as Array<{role?:string;content?:unknown}>;
           const facts = input.find(item => item.role === 'developer' && typeof item.content === 'string' && item.content.startsWith('Current project facts'));
           assert.ok(facts && typeof facts.content === 'string');
           assert.deepEqual(JSON.parse(facts.content.slice(facts.content.indexOf('{'))).generations, generations);
+          if (history.length) {
+            assert.equal(input.at(-2)?.role, 'developer');
+            assert.match(String(input.at(-2)?.content), /Earlier .*text only.* instructions for particular ideas or titles are fulfilled/);
+          }
           const previousTurns = input.slice(0, -1).filter(item => item.role === 'user' || item.role === 'assistant');
           assert.deepEqual(previousTurns, history.flatMap(turn => [
             {role:'user', content:turn.message}, {role:'assistant', content:turn.reply},
@@ -145,5 +153,25 @@ test('all Milo levels receive the scoped creative offer rule and the conversatio
         assert.ok(checked);
       }
     }
+  }
+});
+
+test('Studio delivers the offer in conversation text, preserves legacy replies and keeps a complete answer at the limit', async () => {
+  const direction = 'Frame the opening shot at ice level.';
+  const question = 'Should I price that opening shot?';
+  const full = 'x'.repeat(STUDIO_CONVERSATION_REPLY_MAX_CHARS);
+  for (const [envelope, expected] of [
+    [{reply:direction, nextStepOffer:question}, direction + '\n\n' + question],
+    [{reply:direction, nextStepOffer:null}, direction],
+    [{reply:direction}, direction],
+    [{reply:full, nextStepOffer:question}, full],
+  ] as const) {
+    const director = createStudioConversationDirector({createResponse:async () => ({
+      id:'result', model:'gpt-6.1-sol', status:'completed', service_tier:'default', usage:null, output:[], output_text:JSON.stringify(envelope),
+    })});
+    const result = await director({message:'Give the opening shot a darker look.', history:[], references:[],
+      project:{name:'Ice', revision:1, memory:{revision:0, brief:'', decisions:[]}},
+      checkpoint:async (_, create) => create(), execute:async () => { throw Error('Unexpected action'); }});
+    assert.deepEqual(result, {reply:expected, image:null});
   }
 });

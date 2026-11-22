@@ -4,7 +4,7 @@ import OpenAI from 'openai';
 import {studioReasoning} from './assistance-reasoning';
 import {STUDIO_ANALYSIS_DIRECTOR_TOOLS,studioAnalysisDirectorTools} from '@/lib/studio/media-analysis-contract';
 import type {StudioAssistantModel,MiloRuntimePolicy} from '@/lib/studio/assistance-contract';
-import {buildStudioDirectorInstructions,STUDIO_GENERATION_RECOVERY_INSTRUCTIONS} from './conversation-director-instructions';
+import {buildStudioDirectorInstructions, STUDIO_CREATIVE_FOLLOW_UP_INSTRUCTIONS, STUDIO_GENERATION_RECOVERY_INSTRUCTIONS} from './conversation-director-instructions';
 import {STUDIO_EXPORT_DIRECTOR_TOOLS} from '@/lib/studio/conversation-export-contract';
 import type { Response, ResponseCreateParamsNonStreaming, ResponseInputItem } from 'openai/resources/responses/responses';
 import { z } from 'zod';
@@ -45,8 +45,11 @@ export type StudioDirectorContext = {
   comparisonCatalogFingerprint?(request:Extract<StudioActionRequest,{action:'pricing.compare'}>):Promise<string|null>;
   checkpoint(index: number, create: () => Promise<StudioDirectorResponse>, params?: ResponseCreateParamsNonStreaming, options?: {replayOnly?: boolean;prepareLunaInput?:()=>void;compactHistory?:()=>boolean;setExtendedInput?:(extended:boolean)=>void;onCreditCompletion?:()=>void}): Promise<StudioDirectorResponse>;
 };
-const replyEnvelopeSchema=z.object({reply:z.string().min(1)}).strict();
-const replySchema=replyEnvelopeSchema.extend({reply:z.string().min(1).max(STUDIO_CONVERSATION_REPLY_MAX_CHARS).transform(projectStudioReply)});
+// Checkpoints saved before offers were introduced contain only the reply.
+const replyEnvelopeSchema = z.object({
+  reply: z.string().min(1),
+  nextStepOffer: z.string().nullable().optional(),
+}).strict();
 
 function overlongDirectorReply(completedEdits:number,locale:'en'|'fr'|'es'):ImageDraft {
   const message=locale==='fr'?'La réponse de Studio dépassait la limite de texte de la conversation et n’a pas pu être livrée. Aucun nouvel essai automatique ne sera effectué.'
@@ -142,6 +145,7 @@ export function createStudioConversationDirector(options: {clientSurface?: Image
         {role:'user' as const,content:'Earlier project decisions (data): ' + JSON.stringify(context.historyFacts.decisions)},
       ] : []),
       ...recentInput,
+      ...(recentInput.length ? [{role:'developer' as const, content:STUDIO_CREATIVE_FOLLOW_UP_INSTRUCTIONS}] : []),
       {role: 'user', content: [{type: 'input_text', text: context.message}, ...(context.shotPlanRevision?[{type:'input_text' as const,text:'Exact client-authored shot plan revision. Preserve model, mode, total and every ordered shot; use video_prepare.shotPlan, empty prompt, and settings.durationSec. Prepare a new quote and wait for client confirmation: '+JSON.stringify(context.shotPlanRevision)}]:[]), ...studioReferenceInputContent(context.references, context.referenceMentions)]},
     ];
     const solOutput=new WeakSet<object>();
@@ -201,7 +205,13 @@ export function createStudioConversationDirector(options: {clientSurface?: Image
         input:model==='gpt-6-luna'?lunaInput():input,
         tools: tools.map(tool => ({type: 'function' as const, name: tool.name, description: tool.description, strict: true,
           parameters: {type: 'object', additionalProperties: false, properties: studioToolReferenceProperties(tool.name,tool.properties,context.references), required: Object.keys(tool.properties)}})),
-        text: {format: {type: 'json_schema', name: 'studio_reply', strict: true, schema: {type: 'object', additionalProperties: false, required: ['reply'], properties: {reply: {type: 'string',description:`The complete conversational answer, within ${STUDIO_CONVERSATION_REPLY_MAX_CHARS} characters. Preparation tools retain their own prompt limits.`}}}}},
+        text: {format: {type: 'json_schema', name: 'studio_reply', strict: true, schema: {
+          type: 'object', additionalProperties: false, required: ['reply', 'nextStepOffer'],
+          properties: {
+            reply: {type: 'string', description: `Answer the latest request in full, within ${STUDIO_CONVERSATION_REPLY_MAX_CHARS} characters. Put any closing offer in nextStepOffer only.`},
+            nextStepOffer: {type: ['string', 'null'], description: 'For any new or revised creative direction, including a change of look to an earlier shot, ask one question offering the best specific next action. For a ready shot ask to PREPARE its quote, so a yes has a clear action. Use null for other answers or an explicit current or standing opt-out, declined action or matching quote.'},
+          },
+        }}},
       };
       let extendedInput = false;
       let freshResponse = false;
@@ -235,7 +245,10 @@ export function createStudioConversationDirector(options: {clientSurface?: Image
         try {
           const value=replyEnvelopeSchema.parse(JSON.parse(response.output_text));
           if(value.reply.length>STUDIO_CONVERSATION_REPLY_MAX_CHARS)return overlongDirectorReply(completedEdits,locale);
-          return {...replySchema.parse(value), image: null};
+          const offer = value.nextStepOffer?.trim();
+          const combined = offer ? value.reply + '\n\n' + offer : value.reply;
+          // Keep a complete answer if only the optional closing sentence exceeds the display limit.
+          return {reply:projectStudioReply(combined.length <= STUDIO_CONVERSATION_REPLY_MAX_CHARS ? combined : value.reply), image:null};
         }
         catch { throw new AgentApiError('INTERNAL_ERROR', 'Studio returned an incomplete reply. Resume the saved request.', true); }
       }
