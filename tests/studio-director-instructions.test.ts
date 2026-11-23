@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import {STUDIO_CONVERSATION_REPLY_MAX_CHARS} from '../frontend/src/lib/studio/conversation-reply';
+import {MILO_LEVELS} from '../frontend/src/lib/studio/assistance-contract';
 import {createStudioConversationDirector} from '../frontend/src/server/studio/conversation-director';
 import {buildStudioDirectorInstructions} from '../frontend/src/server/studio/conversation-director-instructions';
 import {MILO_SCOPE_INSTRUCTIONS} from '../frontend/src/server/studio/milo-scope';
@@ -18,7 +20,9 @@ test('mobile Studio guides people to the phone workspaces and identifies web Stu
   const instructions = buildStudioDirectorInstructions({clientSurface:'mobile'});
   assert.match(instructions, /Video, Image or Audio/);
   assert.match(instructions, /Video > Modify uses a phone clip/);
-  assert.match(instructions, /approve Studio media actions, edit the timeline and export in web Studio/);
+  assert.match(instructions, /confirm the displayed price with the generation button if shown/);
+  assert.match(instructions, /otherwise open the same project in web Studio/);
+  assert.match(instructions, /Specialized recipes, timeline editing and export use web Studio/);
   assert.doesNotMatch(instructions, /drag to Message Milo/);
 });
 
@@ -96,4 +100,83 @@ test('the final response knows its remaining budget without losing executable to
     checkpoint:async(_,create)=>create(),execute:async()=>({ok:true,action:'project.read',data:project})});
   assert.equal(calls,4);
   assert.equal(result.reply,'Here is the price and a useful next step.');
+});
+
+test('all Milo levels receive the scoped creative offer rule and the conversation on web and mobile', async () => {
+  const titles = {message:'Give the three shots short titles text only', reply:'Cold Sparks · Blue Ice · First Light'};
+  const offer = {message:'Give the first shot a darker look', reply:'Keep the ice in shadow. Shall I prepare a quote for Cold Sparks?'};
+  const project = {name:'Fireflies', revision:1, memory:{revision:0, brief:'', decisions:[]}};
+  const pendingQuote = {quoteId:'first-firefly-quote', surface:'video', quoteState:'prepared', jobId:null, status:null};
+  for (const {model} of Object.values(MILO_LEVELS)) {
+    for (const clientSurface of [undefined, 'mobile'] as const) {
+      for (const {message, history, generations = []} of [
+        {message:offer.message, history:[]},
+        {message:offer.message, history:[titles]},
+        {message:'Yes, please.', history:[titles, offer]},
+        {message:'Yes, please.', history:[{message:'Help with the audio.', reply:'Shall I write a voiceover for the opening shot?'}]},
+        {message:'Yes, please.', history:[{message:'Change the mood.', reply:'Shall I explore a warmer version of the scene?'}]},
+        {message:'No quote, thanks.', history:[offer]},
+        {message:offer.message, history:[{message:'Keep this whole project text only.', reply:'Understood.'}]},
+        {message:'Remind me of the direction for the quoted shot.', history:[offer], generations:[pendingQuote]},
+      ]) {
+        let checked = false;
+        const director = createStudioConversationDirector({model, clientSurface, mediaEnabled:true, createResponse:async params => {
+          assert.equal(params.model, model);
+          const rules = String(params.instructions);
+          assert.match(rules, /answer first, then ask one natural next-step question tied to this project/);
+          assert.match(rules, /explore, write, develop visuals or help produce/);
+          assert.match(rules, /Quote only when pricing or production fits the client's intent/);
+          assert.match(rules, /Respect text-only, refusals, closing remarks and existing quotes/);
+          assert.match(rules, /Generation needs separate client confirmation/);
+          assert.equal(params.text?.format?.type, 'json_schema');
+          if (params.text?.format?.type === 'json_schema')
+            assert.deepEqual(params.text.format.schema.required, ['reply', 'nextStepOffer']);
+          const input = params.input as Array<{role?:string;content?:unknown}>;
+          const facts = input.find(item => item.role === 'developer' && typeof item.content === 'string' && item.content.startsWith('Current project facts'));
+          assert.ok(facts && typeof facts.content === 'string');
+          assert.deepEqual(JSON.parse(facts.content.slice(facts.content.indexOf('{'))).generations, generations);
+          if (history.length) {
+            assert.equal(input.at(-2)?.role, 'developer');
+            assert.match(String(input.at(-2)?.content), /Earlier text-only requests for particular deliverables are fulfilled/);
+            assert.match(String(input.at(-2)?.content), /give the new direction and ask a small creative follow-up/);
+            assert.match(String(input.at(-2)?.content), /write the offered text, explore the offered variation, or prepare the offered quote/);
+            assert.match(String(input.at(-2)?.content), /After delivering an accepted suggestion, let the result stand/);
+          }
+          const previousTurns = input.slice(0, -1).filter(item => item.role === 'user' || item.role === 'assistant');
+          assert.deepEqual(previousTurns, history.flatMap(turn => [
+            {role:'user', content:turn.message}, {role:'assistant', content:turn.reply},
+          ]));
+          assert.deepEqual(input.at(-1), {role:'user', content:[{type:'input_text', text:message}]});
+          const tools = params.tools?.flatMap(tool => tool.type === 'function' ? [tool.name] : []) ?? [];
+          assert.ok(tools.includes('video_prepare'));
+          assert.ok(!tools.some(name => /confirm|purchase/.test(name)));
+          checked = true;
+          return {id:'creative-turn', model, status:'completed', service_tier:'default', usage:null, output:[], output_text:'{"reply":"Fixture reply."}'};
+        }});
+        await director({message, history, project:{...project, generations}, references:[], checkpoint:async (_, create) => create(),
+          execute:async () => { throw new Error('No tool call in this envelope fixture.'); }});
+        assert.ok(checked);
+      }
+    }
+  }
+});
+
+test('Studio delivers the offer in conversation text, preserves legacy replies and keeps a complete answer at the limit', async () => {
+  const direction = 'Frame the opening shot at ice level.';
+  const question = 'Should I price that opening shot?';
+  const full = 'x'.repeat(STUDIO_CONVERSATION_REPLY_MAX_CHARS);
+  for (const [envelope, expected] of [
+    [{reply:direction, nextStepOffer:question}, direction + '\n\n' + question],
+    [{reply:direction, nextStepOffer:null}, direction],
+    [{reply:direction}, direction],
+    [{reply:full, nextStepOffer:question}, full],
+  ] as const) {
+    const director = createStudioConversationDirector({createResponse:async () => ({
+      id:'result', model:'gpt-6.1-sol', status:'completed', service_tier:'default', usage:null, output:[], output_text:JSON.stringify(envelope),
+    })});
+    const result = await director({message:'Give the opening shot a darker look.', history:[], references:[],
+      project:{name:'Ice', revision:1, memory:{revision:0, brief:'', decisions:[]}},
+      checkpoint:async (_, create) => create(), execute:async () => { throw Error('Unexpected action'); }});
+    assert.deepEqual(result, {reply:expected, image:null});
+  }
 });
