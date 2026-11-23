@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     const { userId } = await getRouteAuthContext(request);
     if (!userId) return new NextResponse(null, { status: 401, headers });
     if (!await reserveDictationSession(userId)) return new NextResponse(null, { status: 429, headers });
-    const key = await issueDictationKey(apiKey, process.env.SONIOX_REGION?.trim(),
+    const key = await issueDictationKey(apiKey, process.env.SONIOX_REGION?.trim(), userId,
       AbortSignal.any([request.signal, AbortSignal.timeout(6000)]));
     return NextResponse.json(key, { headers });
   } catch {

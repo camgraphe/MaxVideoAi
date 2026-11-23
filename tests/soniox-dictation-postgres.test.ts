@@ -23,14 +23,28 @@ test('Soniox grants one bounded STT stream and only returns the short-lived key'
   const fetchMock = t.mock.method(globalThis, 'fetch', async (_url: string, _init: RequestInit) =>
     Response.json({ api_key: 'temporary', expires_at: 'later' }, { status: 201 }));
   const signal = new AbortController().signal;
-  assert.deepEqual(await issueDictationKey('server-key', 'eu', signal), { api_key: 'temporary', region: 'eu' });
+  const account = randomUUID();
+  assert.deepEqual(
+    await issueDictationKey('server-key', 'eu', account, signal),
+    { api_key: 'temporary', region: 'eu' },
+  );
+  await issueDictationKey('rotated-server-key', 'eu', account, signal);
+  await issueDictationKey('server-key', 'eu', randomUUID(), signal);
   const [url, options] = fetchMock.mock.calls[0].arguments as unknown as [string, RequestInit];
   assert.equal(url, 'https://api.eu.soniox.com/v1/auth/temporary-api-key');
   assert.equal(new Headers(options.headers).get('authorization'), 'Bearer server-key');
-  assert.deepEqual(JSON.parse(String(options.body)), {
+  const body = JSON.parse(String(options.body));
+  assert.match(body.client_reference_id, /^maxvideoai-dictation:[a-f0-9]{64}$/);
+  assert.ok(!body.client_reference_id.includes(account));
+  assert.deepEqual(body, {
     usage_type: 'transcribe_websocket', expires_in_seconds: 60, single_use: true, max_session_duration_seconds: 300,
+    client_reference_id: body.client_reference_id,
   });
+  const secondBody = JSON.parse(String(fetchMock.mock.calls[1].arguments[1].body));
+  const thirdBody = JSON.parse(String(fetchMock.mock.calls[2].arguments[1].body));
+  assert.equal(secondBody.client_reference_id, body.client_reference_id);
+  assert.notEqual(thirdBody.client_reference_id, body.client_reference_id);
   fetchMock.mock.mockImplementation(async () => Response.json({ api_key: 'server-key' }));
-  await assert.rejects(issueDictationKey('server-key', 'us', signal));
-  await assert.rejects(issueDictationKey('server-key', 'invalid-region', signal));
+  await assert.rejects(issueDictationKey('server-key', 'us', account, signal));
+  await assert.rejects(issueDictationKey('server-key', 'invalid-region', account, signal));
 });

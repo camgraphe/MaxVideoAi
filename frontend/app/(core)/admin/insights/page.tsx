@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import { fetchAdminMetrics, fetchAdminMetricsComparison } from '@/server/admin-metrics';
 import { AdminPageHeader } from '@/components/admin-system/shell/AdminPageHeader';
@@ -36,6 +37,7 @@ import {
 } from './_components/InsightsPanels';
 import { ComparisonChart } from './_components/InsightsChartSurfaces';
 import { InsightsTrendSummary } from './_components/InsightsTrendSummary';
+import { SonioxDictationUsagePanel } from './_components/SonioxDictationUsagePanel';
 
 export default async function AdminInsightsPage(props: PageProps) {
   const searchParams = await props.searchParams;
@@ -134,6 +136,12 @@ export default async function AdminInsightsPage(props: PageProps) {
           <PrioritySignalPanel signals={prioritySignals} humanRange={humanRange} />
         </div>
       </AdminSection>
+
+      <div id="soniox-usage" className="scroll-mt-6">
+        <Suspense fallback={<p role="status" className="text-sm text-text-muted">Loading Soniox usage…</p>}>
+          <SonioxDictationUsagePanel />
+        </Suspense>
+      </div>
 
       <details className="group border-t border-hairline pt-4">
         <summary className="cursor-pointer text-base font-semibold text-text-primary">More revenue and activation detail</summary>
