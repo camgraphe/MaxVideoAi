@@ -24,8 +24,48 @@ test('mobile Studio guides people to the phone workspaces and identifies web Stu
   assert.match(instructions, /Video > Modify uses a phone clip/);
   assert.match(instructions, /confirm the displayed price with the generation button if shown/);
   assert.match(instructions, /otherwise open the same project in web Studio/);
-  assert.match(instructions, /Specialized recipes, timeline editing and export use web Studio/);
+  assert.match(instructions, /Specialized recipes use web Studio/);
   assert.doesNotMatch(instructions, /drag to Message Milo/);
+});
+
+test('Studio extension guidance follows this project’s timeline and export tools on web and phone', async () => {
+  for (const clientSurface of [undefined, 'mobile'] as const) {
+    for (const editingEnabled of [false, true]) {
+      for (const exportsEnabled of [false, true]) {
+        const director = createStudioConversationDirector({
+          clientSurface, mediaEnabled: true, editingEnabled, exportsEnabled, assistanceCreditsEnabled: true,
+          createResponse: async params => {
+            const rules = String(params.instructions);
+            const tools = params.tools?.flatMap(tool => tool.type === 'function' ? [tool.name] : []) ?? [];
+            assert.ok(rules.replace(MILO_SCOPE_INSTRUCTIONS, '').length < 8500, 'Keep extension help within the existing director budget.');
+            assert.match(rules, /model_details.*extend mode, extensionOutput=continuation returns only the new clip.*absent means unverified/);
+            assert.equal(tools.includes('timeline_read'), editingEnabled);
+            assert.equal(tools.includes('timeline_edit'), editingEnabled);
+            assert.equal(tools.includes('export_prepare'), exportsEnabled);
+            assert.equal(rules.includes('check the same project’s web timeline'), editingEnabled);
+            assert.equal(rules.includes('already be placed. Add only missing clips in order'), editingEnabled);
+            assert.equal(rules.includes('Do not suggest assembling clips'), !editingEnabled);
+            assert.equal(rules.includes('offer a web export once the saved sequence contains the requested clips'), exportsEnabled);
+            assert.equal(rules.includes('Do not offer a sequence export'), !exportsEnabled);
+            if (clientSurface === 'mobile') {
+              assert.match(rules, /Save the new clip from Library/);
+              assert.match(rules, /phone app has no join or sequence export control/);
+            }
+            return {id: 'extension-help', model: 'gpt-6-luna', status: 'completed', service_tier: 'default',
+              usage: null, output: [], output_text: '{"reply":"Fixture reply."}'};
+          },
+          model: 'gpt-6-luna',
+        });
+        const result = await director({
+          message: '¿Cómo guardo un solo vídeo con el original y la continuación de Wan 3?',
+          project: {name: 'Wan 3', revision: 1, memory: {revision: 0, brief: '', decisions: []}},
+          history: [], references: [], checkpoint: async (_, create) => create(),
+          execute: async () => { throw new Error('This guidance fixture cannot change the project.'); },
+        });
+        assert.equal(result.reply, 'Fixture reply.');
+      }
+    }
+  }
 });
 
 // These are the request-envelope contracts, not a claim to test artistic judgment.
