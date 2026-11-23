@@ -26,7 +26,7 @@ export function appendDictation(value: string, transcript: string, maxLength = I
 }
 
 export type DictationPhase = 'starting' | 'listening' | 'stopping';
-type Handlers = {
+export type DictationHandlers = {
   phase(value: DictationPhase): void;
   transcript(finalText: string, interimText: string): void;
   end(error?: string): void;
@@ -35,7 +35,7 @@ type Handlers = {
 // A second field takes ownership immediately. Late events cannot mutate the first draft.
 let cancelActive: (() => void) | undefined;
 
-export function startBrowserDictation(locale: string, handlers: Handlers) {
+export function startBrowserDictation(locale: string, handlers: DictationHandlers) {
   cancelActive?.();
   const browser = window as SpeechWindow;
   const Engine = browser.SpeechRecognition ?? browser.webkitSpeechRecognition;

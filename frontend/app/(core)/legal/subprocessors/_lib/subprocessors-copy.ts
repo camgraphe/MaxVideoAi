@@ -22,7 +22,7 @@ export const PAGE_COPY = {
   "en": {
     "title": "Service providers",
     "intro": "The services below receive data needed for the features you use. AI providers depend on the selected model and route, including any fallback; they do not all receive every request.",
-    "lastUpdated": "Information updated: 19 October 2026",
+    "lastUpdated": "Information updated: 23 November 2026",
     "columns": {
       "provider": "Provider",
       "service": "Purpose",
@@ -33,7 +33,7 @@ export const PAGE_COPY = {
   "fr": {
     "title": "Prestataires",
     "intro": "Les services ci-dessous reçoivent les données nécessaires aux fonctionnalités utilisées. Les fournisseurs IA dépendent du modèle et du parcours, y compris un éventuel secours ; tous ne reçoivent pas chaque demande.",
-    "lastUpdated": "Informations mises à jour : 19 octobre 2026",
+    "lastUpdated": "Informations mises à jour : 23 novembre 2026",
     "columns": {
       "provider": "Prestataire",
       "service": "Finalité",
@@ -44,7 +44,7 @@ export const PAGE_COPY = {
   "es": {
     "title": "Proveedores",
     "intro": "Los servicios siguientes reciben los datos necesarios para las funciones utilizadas. Los proveedores de IA dependen del modelo y de la ruta, incluido un posible servicio de respaldo; no todos reciben cada solicitud.",
-    "lastUpdated": "Información actualizada: 19 de octubre de 2026",
+    "lastUpdated": "Información actualizada: 23 de noviembre de 2026",
     "columns": {
       "provider": "Proveedor",
       "service": "Finalidad",
@@ -90,6 +90,11 @@ export const SUBPROCESSORS = {
       "provider": "Cloudflare",
       "service": "DNS and anti-abuse checks",
       "data": "Connection data, IP addresses and browser signals for protected forms."
+    },
+    {
+      "provider": "Soniox",
+      "service": "Live dictation in Create and Studio",
+      "data": "Microphone audio while dictating, language hints and a short vocabulary of product names. The transcript is returned to the active draft."
     },
     {
       "provider": "OpenAI",
@@ -149,6 +154,11 @@ export const SUBPROCESSORS = {
       "data": "Données de connexion, adresses IP et signaux du navigateur pour les formulaires protégés."
     },
     {
+      "provider": "Soniox",
+      "service": "Dictée en direct dans Create et Studio",
+      "data": "Son du micro pendant la dictée, langues suggérées et vocabulaire des noms de produits. Le texte est renvoyé dans le brouillon actif."
+    },
+    {
       "provider": "OpenAI",
       "service": "Assistance Milo dans les générateurs et Studio ; analyse de médias",
       "data": "Messages, modèles et réglages choisis, contexte du brouillon ou du projet, historique utile et références sélectionnées ; images extraites ou extraits audio pour les analyses demandées."
@@ -204,6 +214,11 @@ export const SUBPROCESSORS = {
       "provider": "Cloudflare",
       "service": "DNS y controles contra abusos",
       "data": "Datos de conexión, direcciones IP y señales del navegador para formularios protegidos."
+    },
+    {
+      "provider": "Soniox",
+      "service": "Dictado en directo en Create y Studio",
+      "data": "Audio del micrófono durante el dictado, idiomas sugeridos y vocabulario de nombres de productos. El texto vuelve al borrador activo."
     },
     {
       "provider": "OpenAI",

@@ -2,7 +2,8 @@
 
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { Mic, Square } from 'lucide-react';
-import { appendDictation, startBrowserDictation, type DictationPhase } from '@/lib/browser-dictation';
+import { appendDictation, type DictationPhase } from '@/lib/browser-dictation';
+import { startDictation } from '@/lib/dictation';
 import styles from './dictation.module.css';
 
 const regionalLanguage = { en: 'en-US', fr: 'fr-FR', es: 'es-ES' };
@@ -68,7 +69,7 @@ export function DictationButton({ locale, value, onChange, getTextField, maxLeng
   const [error, setError] = useState('');
   const control = useRef<HTMLSpanElement>(null);
   const notice = useRef<HTMLSpanElement>(null);
-  const session = useRef<ReturnType<typeof startBrowserDictation>>(null);
+  const session = useRef<ReturnType<typeof startDictation>>(null);
   const interimBase = useRef<string | null>(null);
   const draft = useRef({ value, onChange, maxLength });
   const revealedValue = useRef<string | null>(null);
@@ -134,7 +135,7 @@ export function DictationButton({ locale, value, onChange, getTextField, maxLeng
     }
     setError('');
     const lang = navigator.languages.find(item => item.split('-')[0] === language) ?? regionalLanguage[language];
-    session.current = startBrowserDictation(lang, {
+    session.current = startDictation(lang, {
       phase: setPhase,
       transcript(finalText, interimText) {
         const current = draft.current;
