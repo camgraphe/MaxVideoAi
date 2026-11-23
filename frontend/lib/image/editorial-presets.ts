@@ -1,3 +1,4 @@
+import klingImageRecipes from '../../config/model-kling-image-4-recipes.json';
 import startFrames from '../../config/model-cinematic-start-frames.json';
 import { listSeedreamEditorialImages } from '../seedream-editorial-images';
 import type { PublicModelQuoteInput } from '../pricing-public-model-contract';
@@ -14,6 +15,19 @@ export function getImageEditorialPreset(engineId: string, exampleId: string, ori
       quoteInput,
       snapshot: { schemaVersion: 1, surface: 'image', engineId, inputMode: image.settings.mode, prompt: image.prompt,
         core: { ...image.settings }, refs: { imageUrls: source ? [new URL(source.original.url, origin).href] : [] } },
+    };
+  }
+  if (engineId === klingImageRecipes.modelSlug) {
+    const recipe = klingImageRecipes.recipes.find(item => item.id === exampleId);
+    if (!recipe) return null;
+    const { mode, prompt, resolution, aspectRatio, numImages } = recipe;
+    if (mode !== 't2i' && mode !== 'i2i') return null;
+    const quoteInput: PublicModelQuoteInput = { modelId: engineId, mode, durationSec: 1,
+      resolution, aspectRatio, quantity: numImages, referenceImageCount: 0 };
+    return {
+      quoteInput,
+      snapshot: { schemaVersion: 1, surface: 'image', engineId, inputMode: mode, prompt,
+        core: { resolution, aspectRatio, numImages }, refs: { imageUrls: [] as string[] } },
     };
   }
   if (engineId !== 'gpt-image-2-6-sunburst') return null;

@@ -1,3 +1,4 @@
+import { isKlingImageV4EngineId } from '@/lib/image/kling-image-v4';
 import { resolveFalJobQueue } from '@/server/fal-job-queue';
 import { captureCompletedFalDraftCache } from './fal-webhook-draft-cache';
 import { isExternalFalImport } from './app-job-origin';
@@ -35,7 +36,6 @@ import { persistFalWebhookImageOutputs } from './fal-webhook-image-output';
 import {
   extractFalErrorMessage,
   extractIdentifiersFromPayload,
-  extractImageUrlsFromPayload,
   extractMediaUrls,
   fallbackThumbnail,
   formatAspectRatioLabel,
@@ -44,7 +44,6 @@ import {
   isCompletedFalStatus,
   isFailedFalStatus,
   normalizeFalQueueLogStatus,
-  normalizeRenderIdList,
   normalizeStatus,
   type FalWebhookPayload,
 } from './fal-webhook-mapping';
@@ -155,10 +154,8 @@ export async function updateJobFromFalWebhook(rawPayload: unknown, copiedVideoFa
     (job.engine_id && job.engine_id !== 'fal-unknown' ? getFalEngineById(job.engine_id) : null);
   const upscaleToolMediaType = effectiveEngineId ? getUpscaleToolMediaType(effectiveEngineId) : null;
   const isImageEngine = inferredEngine?.category === 'image' || upscaleToolMediaType === 'image';
-  const existingImageUrls = normalizeRenderIdList(job.render_ids);
-  const existingHeroImage = job.hero_render_id
-    ? normalizeMediaUrl(job.hero_render_id) ?? job.hero_render_id
-    : null;
+  const isKlingImage = isKlingImageV4EngineId(effectiveEngineId);
+  if (isKlingImage && ['completed', 'failed'].includes(job.status)) return;
 
   let finalPayload = payload.payload ?? payload.result ?? payload.response ?? payload.data ?? null;
   let resultFailureContext: unknown = null;
@@ -202,36 +199,14 @@ export async function updateJobFromFalWebhook(rawPayload: unknown, copiedVideoFa
   let nextVideoUrl = media.videoUrl ? normalizeMediaUrl(media.videoUrl) : null;
   let nextThumbUrl = media.thumbUrl ? normalizeMediaUrl(media.thumbUrl) : null;
 
-  const imageUrlSet = new Set<string>();
-  existingImageUrls.forEach((url) => {
-    if (url) imageUrlSet.add(url);
-  });
-  if (existingHeroImage && !imageUrlSet.has(existingHeroImage)) {
-    imageUrlSet.add(existingHeroImage);
-  }
-  if (isImageEngine) {
-    const ingest = (source: unknown) => {
-      extractImageUrlsFromPayload(source).forEach((url) => {
-        if (url) {
-          imageUrlSet.add(url);
-        }
-      });
-    };
-    ingest(payload);
-    ingest(payload.result);
-    ingest(payload.response);
-    ingest(payload.data);
-    ingest(finalPayload);
-  }
-  let imageUrls = isImageEngine ? Array.from(imageUrlSet) : [];
-  const heroImageIndex = existingHeroImage ? imageUrls.indexOf(existingHeroImage) : -1;
-  if (imageUrls.length) imageUrls = await persistFalWebhookImageOutputs({ imageUrls, jobId: job.job_id, userId: job.user_id });
-  let heroImageUrl: string | null = null;
-  if (isImageEngine && imageUrls.length) heroImageUrl = imageUrls[heroImageIndex >= 0 ? heroImageIndex : 0] ?? null;
-  if (isImageEngine && heroImageUrl && !nextThumbUrl) {
-    nextThumbUrl = heroImageUrl;
-  }
-  const hasImageMedia = isImageEngine && imageUrls.length > 0;
+  const imageOutput = isImageEngine
+    ? await persistFalWebhookImageOutputs({ job, engineId: effectiveEngineId, status: nextStatus, payload, finalPayload })
+    : null;
+  const imageUrls = imageOutput?.urls ?? [];
+  const incompleteImageSet = imageOutput?.incomplete === true;
+  const heroImageUrl = imageOutput?.hero ?? null;
+  if (heroImageUrl) nextThumbUrl = imageOutput?.thumb ?? nextThumbUrl ?? heroImageUrl;
+  const hasImageMedia = imageUrls.length > 0;
   let videoMediaFacts = copiedVideoFacts, providerVideoCopyFailed = false;
   let providerVideoCopyDeferred = false;
   let providerVideoCopyStateJson: string | null = null;
@@ -291,6 +266,7 @@ export async function updateJobFromFalWebhook(rawPayload: unknown, copiedVideoFa
   if (nextMessage && /^video_[A-Za-z0-9_-]+$/i.test(nextMessage)) {
     nextMessage = null;
   }
+  if (incompleteImageSet) nextMessage = 'Kling Image did not return all requested images.';
   if (providerVideoCopyDeferred && !nextMessage) {
     nextMessage = PROVIDER_VIDEO_COPY_RETRY_MESSAGE;
   }
@@ -382,7 +358,7 @@ export async function updateJobFromFalWebhook(rawPayload: unknown, copiedVideoFa
   const finalThumbUrl = resolvedThumbUrl ?? fallbackThumbnail(job.aspect_ratio);
   const finalPreviewFrame = finalThumbUrl ?? job.preview_frame;
   const isMediaMissing = !finalVideoUrl && !hasImageMedia;
-  const renderIdsJson = hasImageMedia ? JSON.stringify(imageUrls) : null;
+  const renderIdsJson = hasImageMedia ? JSON.stringify(imageOutput?.renders ?? imageUrls) : null;
   const heroRenderId = hasImageMedia
     ? heroImageUrl ?? imageUrls[0] ?? job.hero_render_id ?? null
     : job.hero_render_id ?? null;
@@ -493,7 +469,7 @@ export async function updateJobFromFalWebhook(rawPayload: unknown, copiedVideoFa
     null;
   const shouldAutoRefundFailure =
     nextStatus === 'failed'
-      ? providerVideoCopyFailed
+      ? providerVideoCopyFailed || incompleteImageSet
         ? true
         : explicitAutoRefundEligibility === true
         ? true
@@ -544,6 +520,7 @@ export async function updateJobFromFalWebhook(rawPayload: unknown, copiedVideoFa
          END,
          updated_at = NOW()
      WHERE job_id = $1
+       ${isKlingImage ? "AND status NOT IN ('completed','failed') AND (provider_job_id IS NULL OR provider_job_id = $8)" : ''}
        AND NOT (status = 'completed' AND $2 <> 'completed')
        AND NOT (status = 'failed' AND $2 IN ('pending','queued','running','processing'))
      RETURNING job_id`,

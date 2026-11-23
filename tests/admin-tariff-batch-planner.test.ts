@@ -11,18 +11,22 @@ const state = { status: 'loaded' as const, active: true, revision: 7, databaseCe
 const selector = { engineId: 'kling-v4', mode: 't2v', resolution: '720p', durationSec: '5', billingInputType: 'no_video_input' };
 const proposal = (selectors = [selector]): TariffBatchProposal => ({ schemaVersion: 1, modelId: 'kling-v4', intent: 'create_missing',
   reason: 'Reviewed launch prices', pricing: { kind: 'list_multiplier', multiplier: '1.50' }, selections: selectors.map(selector => ({ selector })) });
+const legacyKlingBatchClasses = () => klingBatchClasses().filter(row => row.selector.resolution !== '4k');
 
-test('Kling batch inventory deduplicates Modify into 226 canonical classes without publishing the model', () => {
+test('Kling batch inventory contains 113 classes per resolution with one continuous Edit class each', () => {
   const classes = klingBatchClasses();
-  assert.equal(classes.length, 226);
-  assert.equal(classes.filter(c => c.selector.billingInputType === 'no_video_input').length, 168);
-  assert.equal(classes.filter(c => c.selector.mode === 'ref2v' && c.selector.billingInputType === 'video_input').length, 56);
-  assert.equal(classes.filter(c => c.selector.mode === 'v2v').length, 2);
-  assert.equal(new Set(classes.map(c => c.key)).size, 226);
+  assert.equal(classes.length, 339);
+  assert.equal(new Set(classes.map(c => c.key)).size, 339);
+  for (const resolution of ['720p', '1080p', '4k']) {
+    const selected = classes.filter(c => c.selector.resolution === resolution);
+    assert.equal(selected.filter(c => c.selector.billingInputType === 'no_video_input').length, 84);
+    assert.equal(selected.filter(c => c.selector.mode === 'ref2v' && c.selector.billingInputType === 'video_input').length, 28);
+    assert.equal(selected.filter(c => c.selector.mode === 'v2v').length, 1);
+  }
 });
 
-test('the full canonical batch quotes unchanged approved fixed and continuous prices', async () => {
-  const plan = await buildTariffBatchPlan({ proposal: proposal(klingBatchClasses().map(c => c.selector)), state, policy });
+test('the legacy canonical classes quote unchanged approved fixed and continuous prices', async () => {
+  const plan = await buildTariffBatchPlan({ proposal: proposal(legacyKlingBatchClasses().map(c => c.selector)), state, policy });
   assert.deepEqual(plan.counts, { create: 226, update: 0, unchanged: 0, conflict: 0 });
   const find = (mode: string, resolution: string, seconds: string, input = 'no_video_input') => plan.rows.find(r =>
     r.selector.mode === mode && r.selector.resolution === resolution && r.selector.durationSec === seconds && r.selector.billingInputType === input)!;
@@ -33,6 +37,24 @@ test('the full canonical batch quotes unchanged approved fixed and continuous pr
     { kind: 'unit_terms', rounding: 'up', terms: [{ unit: 'billable_seconds', centsPerUnit: 14.1 }] });
   assert.equal(find('v2v', '1080p', 'continuous', 'video_input').proposedCents, 127);
   assert.deepEqual(state.databaseCells, []);
+});
+
+test('the 4K batch freezes output prices and aggregate-video unit terms in one bounded review', async () => {
+  const classes = klingBatchClasses().filter(row => row.selector.resolution === '4k');
+  const input = parseTariffBatchProposal(proposal(classes.map(row => row.selector)));
+  const plan = await buildTariffBatchPlan({ proposal: input, state, policy });
+  assert.deepEqual(plan.counts, { create: 113, update: 0, unchanged: 0, conflict: 0 });
+  const find = (mode: string, seconds: string, input = 'no_video_input') => plan.rows.find(row =>
+    row.selector.mode === mode && row.selector.durationSec === seconds && row.selector.billingInputType === input)!;
+  assert.equal(find('t2v', '3').proposedCents, 248);
+  assert.equal(find('i2v', '5').proposedCents, 412);
+  assert.equal(find('ref2v', '30').proposedCents, 2471);
+  assert.equal(find('ref2v', '5', 'video_input').proposedCents, 494);
+  assert.equal(find('v2v', 'continuous', 'video_input').proposedCents, 297);
+  for (const row of plan.rows.filter(row => row.selector.billingInputType === 'video_input')) {
+    assert.deepEqual(row.proposedCell?.price, { kind: 'unit_terms', rounding: 'up', terms: [{ unit: 'billable_seconds', centsPerUnit: 49.35 }] });
+    assert.ok(row.domain?.checkedBoundaries);
+  }
 });
 
 test('resume keeps arbitrary existing IDs and history; changing a selected price needs explicit replacement', async () => {
@@ -80,7 +102,7 @@ test('proposal parsing rejects unknown fields, duplicate selectors, currency, in
 });
 
 test('unsupported classes and below-reference explicit prices are blocked by real canonical owners', async () => {
-  await assert.rejects(buildTariffBatchPlan({ proposal: proposal([{ ...selector, resolution: '4k' }]), state, policy }), /unsupported/i);
+  await assert.rejects(buildTariffBatchPlan({ proposal: proposal([{ ...selector, resolution: '1440p' }]), state, policy }), /unsupported/i);
   const low: TariffBatchProposal = { ...proposal(), pricing: { kind: 'explicit' }, selections: [{ selector, price: { kind: 'fixed', customerCents: 1 } }] };
   const plan = await buildTariffBatchPlan({ proposal: low, state, policy });
   assert.equal(plan.rows[0].action, 'conflict');
@@ -90,7 +112,7 @@ test('unsupported classes and below-reference explicit prices are blocked by rea
 test('compiled continuous rates retain approved fractional totals and upward cent rounding across the domain', async () => {
   const { evaluateManualTariffPrice } = await import('../packages/pricing/src/manual-tariff-price');
   const { compileKlingBatchPrice } = await import('../frontend/server/pricing-admin/tariff-batches/kling');
-  for (const [resolution, rateHundredths, example] of [['720p', 1410, 216], ['1080p', 2115, 323]] as const) {
+  for (const [resolution, rateHundredths, example] of [['720p', 1410, 216], ['1080p', 2115, 323], ['4k', 4935, 753]] as const) {
     const row = klingBatchClasses().find(c => c.selector.mode === 'ref2v' && c.selector.resolution === resolution && c.selector.billingInputType === 'video_input')!;
     const price = compileKlingBatchPrice(row, '1.50');
     assert.equal(evaluateManualTariffPrice(price, { billable_seconds: 15.25 }).customerTotalCents, example);
@@ -113,8 +135,8 @@ test('scheduled prices and future exact exceptions require review before an imme
   assert.equal(c.counts.conflict, 1);
 });
 
-test('full-model replacement remains bounded after fifty historical versions per selected class', async () => {
-  const initial = await buildTariffBatchPlan({ proposal: proposal(klingBatchClasses().map(c => c.selector)), state, policy });
+test('a full-sized replacement remains bounded after fifty historical versions per selected class', async () => {
+  const initial = await buildTariffBatchPlan({ proposal: proposal(legacyKlingBatchClasses().map(c => c.selector)), state, policy });
   const current = initial.rows.map((r, i) => ({ ...r.proposedCell!, version: i + 1 }));
   const history = current.flatMap(cell => Array.from({ length: 50 }, (_, i) => ({ ...cell,
     version: 1000 + i, effectiveFrom: new Date(Date.UTC(2026, 0, i + 1)).toISOString(),

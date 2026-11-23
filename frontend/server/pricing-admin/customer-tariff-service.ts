@@ -1,3 +1,4 @@
+import { isKlingImageV4EngineId } from '@/lib/image/kling-image-v4';
 import {CustomerTariffUnavailableError} from '@/server/pricing/resolve-customer-tariff';
 import { isGptImage26EngineId } from '@/lib/image/gptImage26';
 import {klingV4FamilyTariffScenarios,withKlingV4TariffInput,resolveKlingV4TariffScenarioId} from '@/lib/pricing-audit/kling-v4-tariff-scenario';
@@ -318,7 +319,7 @@ async function buildPreview(
   let currentCents:number|null;
   try { currentCents=await quoteCurrent(scenario,policy,state); }
   catch(error) {
-    if((['kling-v4', 'kling-v4-flash'].includes(scenario.modelId) || isGptImage26EngineId(scenario.modelId))&&((!state.active&&error instanceof CustomerTariffUnavailableError)
+    if((['kling-v4', 'kling-v4-flash'].includes(scenario.modelId) || isGptImage26EngineId(scenario.modelId) || isKlingImageV4EngineId(scenario.modelId))&&((!state.active&&error instanceof CustomerTariffUnavailableError)
       ||(error instanceof ManualTariffError&&error.code==='missing_cell')))currentCents=null;
     else throw error;
   }
@@ -383,7 +384,7 @@ async function buildPreview(
     currency: 'USD', effectiveFrom: previousCell?.effectiveFrom ?? '2026-09-29T00:00:00.000Z',
     price: { kind: 'fixed', customerCents: proposedCents },
   };
-  if ((state.active || ['kling-v4', 'kling-v4-flash'].includes(scenario.modelId) || isGptImage26EngineId(scenario.modelId)) && proposedCell) {
+  if ((state.active || ['kling-v4', 'kling-v4-flash'].includes(scenario.modelId) || isGptImage26EngineId(scenario.modelId) || isKlingImageV4EngineId(scenario.modelId)) && proposedCell) {
     await quoteCurrent(scenario, policy, { ...state, active:true,
       databaseCells: [...state.databaseCells.filter((cell) => cell.id !== id), proposedCell] });
   }

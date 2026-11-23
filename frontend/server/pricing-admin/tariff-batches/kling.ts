@@ -1,7 +1,7 @@
 import type { ManualTariffSelector } from '@maxvideoai/pricing';
 import { klingV4TariffScenarios } from '@/lib/pricing-audit/kling-v4-tariff-scenario';
 import { continuousInputTariffSelector } from '@/lib/pricing-manual-scenario';
-import { klingV4PricingUsage, KLING_V4_PRICING_SOURCE } from '@/lib/kling-v4-pricing';
+import { klingV4PricingUsage, KLING_V4_PRICING_SOURCE, KLING_V4_4K_PRICING_CHECKED_AT } from '@/lib/kling-v4-pricing';
 import { klingV4FlashPricingUsage, KLING_V4_FLASH_PRICING_SOURCE } from '@/lib/kling-v4-flash-pricing';
 import { customerTariffCellId } from '@/server/pricing/customer-tariff-seed';
 import { continuousInputTariffIdentity } from '../continuous-input-tariff';
@@ -42,6 +42,6 @@ export function compileKlingBatchPrice(row: KlingBatchClass, multiplier: string)
 export function klingBatchSourceFacts(modelId: KlingTariffBatchModelId = 'kling-v4') {
   const flash = modelId === 'kling-v4-flash';
   return { source: flash ? KLING_V4_FLASH_PRICING_SOURCE : KLING_V4_PRICING_SOURCE,
-    sourceDate: flash ? '2026-11-05' : '2026-10-25', costKind: 'supplier_list',
+    sourceDate: flash ? '2026-11-05' : KLING_V4_4K_PRICING_CHECKED_AT, costKind: 'supplier_list',
     classes: klingBatchClasses(modelId).map(row => ({ selector: row.selector, usage: klingBatchUsage(row) })) };
 }

@@ -3,12 +3,14 @@ import {z} from 'zod';
 import {toolAssetRefSchema} from '@/lib/toolbox/contract';
 import {NANO21_ENGINE_ID} from '@/lib/nano-banana-2-1';
 import {isGptImage26EngineId} from '@/lib/image/gptImage26';
+import {isKlingImageV4EngineId, KLING_IMAGE_V4_MAX_REFERENCES} from '@/lib/image/kling-image-v4';
 import {isSeedreamSingleImageEngineId} from '@/lib/image/seedream';
 
 export const STUDIO_CONVERSATION_MAX_REFERENCES=8;
 /** The attachment pool precedes model selection; generation keeps its own mode limit. */
 export const STUDIO_CONVERSATION_MAX_ATTACHMENTS=MAX_GENERATION_REFERENCES;
 export function studioImageReferenceLimit(modelId?: string | null): number {
+  if (isKlingImageV4EngineId(modelId)) return KLING_IMAGE_V4_MAX_REFERENCES;
   return modelId === NANO21_ENGINE_ID ? 14 : isGptImage26EngineId(modelId) ? 16
     : modelId && isSeedreamSingleImageEngineId(modelId) ? 10 : STUDIO_CONVERSATION_MAX_REFERENCES;
 }

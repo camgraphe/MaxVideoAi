@@ -1,3 +1,4 @@
+import { isKlingImageV4EngineId } from '@/lib/image/kling-image-v4';
 import { isNewSeedreamEngineId } from '@/lib/image/seedream-pricing';
 import { isGptImage26EngineId } from '@/lib/image/gptImage26';
 import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
@@ -32,6 +33,7 @@ export function collectCanonicalPricingOutputs(
   // supplier-cost/percentage-margin baseline that never existed.
   const scenarios = buildPricingAuditScenarios({ scope: 'historical' }).filter(
     (scenario) => scenario.engineId !== 'seedance-2-5-flash' && !isNewSeedreamEngineId(scenario.engineId) && scenario.engineId !== NANO21_ENGINE_ID && !isKlingV4FalQueueEngineId(scenario.engineId) && !isGptImage26EngineId(scenario.engineId)
+      && !isKlingImageV4EngineId(scenario.engineId)
   );
   const baselineById = new Map(baselineRows.map((row) => [row.scenarioId, row]));
   const canonicalById = new Map(

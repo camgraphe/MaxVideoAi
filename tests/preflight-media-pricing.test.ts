@@ -358,6 +358,9 @@ test('every catalog resolution is representable at the preflight request boundar
       assert.equal(parsed.ok, true, `${engine.id}: ${resolution} must pass bounded request parsing`);
     }
   }
+  for (const [engineId, mode] of [['kling-v4', 't2v'], ['kling-image-v4', 't2v']] as const) {
+    assert.equal(parsePreflightRequestPayload({ ...requestFor(engineFor(engineId), mode), resolution: '8K' }).ok, false);
+  }
 });
 
 test('archived Sora preflight rejects before reading configuration or quoting', async () => {

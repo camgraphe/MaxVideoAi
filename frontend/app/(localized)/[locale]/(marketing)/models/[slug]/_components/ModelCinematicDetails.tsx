@@ -41,11 +41,11 @@ export async function ModelCinematicDetails({ pricing, commercial, schema, decis
   const [current, { pricingEngine, scenarios, publicOffer }] = await Promise.all([pricing, commercial]);
   const l = labels[locale];
   const offer = publicOffer ? formatModelPublicOffer(publicOffer, locale) : null;
-  const panel = presentation.examples.panels.find(item => item.placement === 'details')!;
-  const asset = presentation.assets.find(item => item.id === panel.assetIds[0])!;
-  const plan = presentation.examples.shotPlans?.find(item => item.assetId === asset.id);
+  const panel = presentation.examples.panels.find(item => item.placement === 'details');
+  const asset = presentation.assets.find(item => item.id === panel?.assetIds[0]);
+  const plan = presentation.examples.shotPlans?.find(item => item.assetId === asset?.id);
   const workflows = presentation.content.workflows;
-  const videoDetails = plan && workflows ? <ModelCinematicVideoPrompt title={asset.title}
+  const videoDetails = asset && plan && workflows ? <ModelCinematicVideoPrompt title={asset.title}
     prompt={plan.prompt ?? `${presentation.ui.animateFrame} ${plan.motion}\n${presentation.ui.sound}: ${plan.sound}`}
     note={plan.proofNote ?? workflows.promptNote} imageDetailsLabel={workflows.imageDetailsLabel} ui={presentation.ui} asset={asset.video ? undefined : asset} creation={asset.videoCreation ?? cinematicVideoPromptLinks(presentation.assistantHref, asset.id)} /> : undefined;
   const rows = buildCinematicSpecRows(current.keySpecRows, pricingEngine, locale, presentation.content.variant === 'image');
@@ -70,8 +70,8 @@ export async function ModelCinematicDetails({ pricing, commercial, schema, decis
       <header className="cinema-section-heading cinema-spec-heading"><div><h2>{tableTitle}</h2><p>{specNote}</p></div>
         <ModelCinematicSpecActions title={tableTitle} rows={rows} source={source} locale={locale} slug={presentation.content.modelSlug} reviewedAt={presentation.content.specsReviewedAt} />
       </header>
-      <div className="cinema-specs-layout"><div className="cinema-settings-proof"><ModelCinematicAsset asset={asset} ui={presentation.ui} compact details={videoDetails} />
-      </div><div className="cinema-settings-data">
+      <div className={asset ? 'cinema-specs-layout' : undefined}>{asset ? <div className="cinema-settings-proof"><ModelCinematicAsset asset={asset} ui={presentation.ui} compact details={videoDetails} />
+      </div> : null}<div className="cinema-settings-data">
       <ModelCinematicSpecTable rows={primaryRows} title={tableTitle} locale={locale} />
       {secondaryRows.length || detailedSections.length ? <details className="cinema-disclosure"><summary>{moreSpecs[locale]}<CinematicPlus /></summary><div>
         {secondaryRows.length ? <ModelCinematicSpecTable rows={secondaryRows} title={tableTitle} locale={locale} /> : null}

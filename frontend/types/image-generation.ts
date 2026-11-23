@@ -77,6 +77,7 @@ export interface ImageGenerationResponse {
   ok: boolean;
   mode: ImageGenerationMode;
   images: GeneratedImage[];
+  pending?: boolean;
   description?: string | null;
   jobId?: string;
   requestId?: string;

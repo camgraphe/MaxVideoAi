@@ -1,3 +1,4 @@
+import { isKlingImageV4EngineId } from '@/lib/image/kling-image-v4';
 import { isNewSeedreamEngineId } from '@/lib/image/seedream-pricing';
 import { isGptImage26EngineId } from '@/lib/image/gptImage26';
 import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
@@ -91,7 +92,8 @@ export async function computeCanonicalBillingSnapshot(
       { ...context, aspectRatio: highest.meta?.billed_aspect_ratio as string }, 'highest_current_tariff') } };
   }
   assertSeedanceWorkflowPricing(context);
-  const pricingDetails = context.engine.pricingDetails ?? (isKlingV4FalQueueEngineId(context.engine.id) || isGptImage26EngineId(context.engine.id) ? undefined : await getPricingDetails(context.engine.id));
+  const requiresKlingImageV4Tariff = isKlingImageV4EngineId(context.engine.id);
+  const pricingDetails = context.engine.pricingDetails ?? (requiresKlingImageV4Tariff || isKlingV4FalQueueEngineId(context.engine.id) || isGptImage26EngineId(context.engine.id) ? undefined : await getPricingDetails(context.engine.id));
   const { policy, vendorAccountId } = await resolveServerBillingPolicy(
     {
       engineId: context.engine.id,
@@ -117,7 +119,7 @@ export async function computeCanonicalBillingSnapshot(
   const requiresNano21Tariff = context.engine.id === NANO21_ENGINE_ID;
   const requiresGpt26Tariff = isGptImage26EngineId(context.engine.id);
   const requiresNewSeedreamTariff = isNewSeedreamEngineId(context.engine.id);
-  if (requiresSeedance4kTariff || requiresSeedanceFlashTariff || requiresNewSeedreamTariff || requiresGpt26Tariff || requiresKlingV4Tariff || requiresNano21Tariff || requiresOperationTariff || requiresEditTariff || context.workflowStep || dependencies.loadCustomerTariffState || dependencies.loadCustomerTariffQuoteState || customerTariffsEnabledByCode()) {
+  if (requiresKlingImageV4Tariff || requiresSeedance4kTariff || requiresSeedanceFlashTariff || requiresNewSeedreamTariff || requiresGpt26Tariff || requiresKlingV4Tariff || requiresNano21Tariff || requiresOperationTariff || requiresEditTariff || context.workflowStep || dependencies.loadCustomerTariffState || dependencies.loadCustomerTariffQuoteState || customerTariffsEnabledByCode()) {
     const selector = buildManualTariffScenario(context, billingFacts.facts).selector;
     const tariffState = await (dependencies.loadCustomerTariffState
       ? dependencies.loadCustomerTariffState()
@@ -155,6 +157,7 @@ export async function computeCanonicalBillingSnapshot(
       });
     }
   }
+  if (requiresKlingImageV4Tariff) throw new CustomerTariffUnavailableError('An active reviewed Kling Image 4.0 customer tariff is required.');
   if (requiresNewSeedreamTariff) throw new CustomerTariffUnavailableError('An active reviewed Seedream customer tariff is required.');
   if (requiresSeedanceFlashTariff) throw new CustomerTariffUnavailableError('An active reviewed Seedance 2.5 Flash tariff is required.');
   if (requiresSeedance4kTariff) throw new CustomerTariffUnavailableError('An active reviewed Seedance 2.5 4K tariff is required.');

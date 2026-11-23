@@ -11618,7 +11618,8 @@
       "maxDurationSec": 30,
       "resolutions": [
         "720p",
-        "1080p"
+        "1080p",
+        "4k"
       ],
       "aspectRatios": [
         "16:9",
@@ -11813,7 +11814,8 @@
             ],
             "values": [
               "720p",
-              "1080p"
+              "1080p",
+              "4k"
             ],
             "default": "1080p"
           },
@@ -11880,7 +11882,7 @@
           ]
         }
       },
-      "updatedAt": "2026-10-25T20:58:10Z",
+      "updatedAt": "2026-11-19T00:00:00Z",
       "ttlSec": 600,
       "providerMeta": {
         "provider": "kling",
@@ -11927,7 +11929,8 @@
           },
           "resolution": [
             "720p",
-            "1080p"
+            "1080p",
+            "4k"
           ],
           "aspectRatio": [
             "16:9",
@@ -11977,7 +11980,8 @@
           },
           "resolution": [
             "720p",
-            "1080p"
+            "1080p",
+            "4k"
           ],
           "aspectRatio": [],
           "audioToggle": false,
@@ -12022,7 +12026,8 @@
           },
           "resolution": [
             "720p",
-            "1080p"
+            "1080p",
+            "4k"
           ],
           "aspectRatio": [
             "auto",
@@ -12073,7 +12078,8 @@
           },
           "resolution": [
             "720p",
-            "1080p"
+            "1080p",
+            "4k"
           ],
           "aspectRatio": [],
           "audioToggle": false,
@@ -12124,7 +12130,8 @@
           },
           "resolution": [
             "720p",
-            "1080p"
+            "1080p",
+            "4k"
           ],
           "aspectRatio": [
             "16:9",
@@ -12178,7 +12185,8 @@
           },
           "resolution": [
             "720p",
-            "1080p"
+            "1080p",
+            "4k"
           ],
           "aspectRatio": [],
           "audioToggle": false,
@@ -12227,7 +12235,8 @@
           },
           "resolution": [
             "720p",
-            "1080p"
+            "1080p",
+            "4k"
           ],
           "aspectRatio": [
             "auto",
@@ -12282,7 +12291,8 @@
           },
           "resolution": [
             "720p",
-            "1080p"
+            "1080p",
+            "4k"
           ],
           "aspectRatio": [],
           "audioToggle": false,
@@ -28065,6 +28075,285 @@
           ],
           "maxUploadMB": 10,
           "notes": "Edit with up to 10 references for controlled professional visual production."
+        }
+      }
+    ],
+    "features": {
+      "audio": {
+        "value": false
+      },
+      "motionControls": {
+        "value": false
+      },
+      "keyframes": {
+        "value": false
+      },
+      "extend": {
+        "value": false
+      }
+    }
+  },
+  {
+    "engineId": "kling-image-v4",
+    "modelSlug": "kling-image-v4",
+    "marketingName": "Kling Image 4.0",
+    "provider": "Kling by Kuaishou",
+    "brandId": "kling",
+    "family": "kling",
+    "familyExamplesPage": {
+      "stage": "indexed",
+      "showInNav": true,
+      "publishedModelSlugs": [
+        "kling-v4",
+        "kling-v4-flash",
+        "kling-3-turbo-pro",
+        "kling-3-turbo-standard",
+        "kling-o3-pro",
+        "kling-o3-standard",
+        "kling-o3-4k",
+        "kling-3-pro",
+        "kling-3-standard",
+        "kling-3-4k",
+        "kling-2-6-pro",
+        "kling-2-5-turbo"
+      ],
+      "currentModelSlugs": [
+        "kling-v4",
+        "kling-v4-flash",
+        "kling-3-turbo-pro",
+        "kling-3-turbo-standard",
+        "kling-o3-pro",
+        "kling-o3-standard",
+        "kling-o3-4k",
+        "kling-3-pro",
+        "kling-3-standard",
+        "kling-3-4k"
+      ]
+    },
+    "versionLabel": "4.0",
+    "availability": "available",
+    "logoPolicy": "logoAllowed",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      },
+      "examples": {
+        "includeInFamilyResolver": false,
+        "includeInFamilyCopy": false
+      },
+      "compare": {
+        "suggestOpponents": [],
+        "publishedPairs": [],
+        "includeInHub": false
+      },
+      "app": {
+        "enabled": true,
+        "discoveryRank": 8,
+        "launchBadge": "new"
+      },
+      "pricing": {
+        "includeInEstimator": true,
+        "featuredScenario": "high-resolution stills and ordered image sets"
+      }
+    },
+    "surfacesSource": "registry",
+    "engine": {
+      "id": "kling-image-v4",
+      "label": "Kling Image 4.0",
+      "provider": "Kling by Kuaishou",
+      "version": "4.0",
+      "status": "live",
+      "availability": "available",
+      "latencyTier": "standard",
+      "queueDepth": 0,
+      "region": "global",
+      "modes": [
+        "t2i",
+        "i2i"
+      ],
+      "maxDurationSec": 0,
+      "resolutions": [
+        "2K",
+        "4K",
+        "8K"
+      ],
+      "aspectRatios": [
+        "auto",
+        "16:9",
+        "9:16",
+        "1:1",
+        "4:3",
+        "3:4",
+        "3:2",
+        "2:3",
+        "21:9"
+      ],
+      "fps": [],
+      "audio": false,
+      "upscale4k": false,
+      "extend": false,
+      "motionControls": false,
+      "keyframes": false,
+      "params": {},
+      "inputLimits": {
+        "imageMaxMB": 30,
+        "promptMaxChars": 50000,
+        "promptMaxCharsSource": "official"
+      },
+      "inputSchema": {
+        "required": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt"
+          }
+        ],
+        "optional": [
+          {
+            "id": "image_urls",
+            "type": "image",
+            "label": "Reference images",
+            "modes": [
+              "i2i"
+            ],
+            "requiredInModes": [
+              "i2i"
+            ],
+            "source": "either",
+            "minCount": 1,
+            "maxCount": 10,
+            "maxSizeMB": 30,
+            "imageAspectRatio": {
+              "min": 0.4,
+              "max": 2.5
+            },
+            "acceptedMimeTypes": [
+              "image/jpeg",
+              "image/png",
+              "image/webp"
+            ],
+            "acceptedFileExtensions": [
+              "jpg",
+              "jpeg",
+              "png",
+              "webp"
+            ],
+            "description": "Attach library images in order and refer to them as @Image1, @Image2, and so on."
+          },
+          {
+            "id": "num_images",
+            "type": "number",
+            "label": "Images",
+            "min": 1,
+            "max": 10,
+            "step": 1,
+            "default": 1,
+            "description": "Choose one still or 2–10 related images in one ordered Image Set."
+          },
+          {
+            "id": "resolution",
+            "type": "enum",
+            "label": "Resolution",
+            "values": [
+              "2K",
+              "4K",
+              "8K"
+            ],
+            "default": "2K"
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Aspect ratio",
+            "values": [
+              "auto",
+              "16:9",
+              "9:16",
+              "1:1",
+              "4:3",
+              "3:4",
+              "3:2",
+              "2:3",
+              "21:9"
+            ],
+            "default": "auto"
+          }
+        ],
+        "constraints": {
+          "ownedAssetModes": [
+            "i2i"
+          ],
+          "minImageSidePx": 300,
+          "maxImageSizeMB": 30,
+          "supportedFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ]
+        }
+      },
+      "updatedAt": "2026-11-20T00:00:00Z",
+      "ttlSec": 600,
+      "providerMeta": {
+        "provider": "fal",
+        "modelSlug": "kling/v4/text-to-image"
+      },
+      "brandId": "kling"
+    },
+    "modes": [
+      {
+        "mode": "t2i",
+        "falModelId": "kling/v4/text-to-image",
+        "ui": {
+          "modes": [
+            "t2i"
+          ],
+          "resolution": [
+            "2K",
+            "4K",
+            "8K"
+          ],
+          "aspectRatio": [
+            "auto",
+            "16:9",
+            "9:16",
+            "1:1",
+            "4:3",
+            "3:4",
+            "3:2",
+            "2:3",
+            "21:9"
+          ]
+        }
+      },
+      {
+        "mode": "i2i",
+        "falModelId": "kling/v4/image-to-image",
+        "ui": {
+          "modes": [
+            "i2i"
+          ],
+          "resolution": [
+            "2K",
+            "4K",
+            "8K"
+          ],
+          "aspectRatio": [
+            "auto",
+            "16:9",
+            "9:16",
+            "1:1",
+            "4:3",
+            "3:4",
+            "3:2",
+            "2:3",
+            "21:9"
+          ]
         }
       }
     ],

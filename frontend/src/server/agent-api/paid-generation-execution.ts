@@ -112,6 +112,7 @@ export type PaidVideoExecutionResponse = {
 
 export type PaidImageExecutionResponse = {
   ok: boolean;
+  pending?: boolean;
   paymentStatus?: string;
 };
 
@@ -525,7 +526,7 @@ export async function submitReservedPaidGeneration(
       if (refunded(result)) {
         return rejectedOutcome(execution, dependencies, true, { code: null, message: null, status: null });
       }
-      return { kind: 'completed' };
+      return result.pending ? { kind: 'accepted' } : { kind: 'completed' };
     }
     return refunded(result)
       ? rejectedOutcome(execution, dependencies, true, { code: null, message: null, status: null })

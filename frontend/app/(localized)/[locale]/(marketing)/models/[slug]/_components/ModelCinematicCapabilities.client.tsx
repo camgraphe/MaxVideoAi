@@ -7,7 +7,7 @@ import { Film, Image as ImageIcon, Layers, SlidersHorizontal, Type } from 'lucid
 import type { CinematicCapabilities } from '../_lib/model-page-capabilities';
 import { CinematicArrow, CinematicPlus } from './ModelCinematicMarks';
 import type { CinematicPresentation } from '../_lib/model-page-cinematic-data';
-import { ModelCinematicCapabilityProof } from './ModelCinematicCapabilityProof.client';
+import { ModelCinematicCapabilityProof, ModelCinematicCapabilityReveal } from './ModelCinematicCapabilityProof.client';
 import { ModelCinematicKeyframeBoard } from './ModelCinematicKeyframeBoard.client';
 import { ModelCinematicVideoPrompt } from './ModelCinematicVideoPrompt.client';
 
@@ -55,7 +55,9 @@ export function ModelCinematicCapabilities({ copy, ui }: { copy: CinematicCapabi
           ui={ui} triggerLabel={ui.prompt} creation={item.videoRecipe.creation} /> : null}
       </div>
       {item.proof ? <ModelCinematicCapabilityProof proof={item.proof} compare={ui?.compare ?? item.proof.labels.join(' / ')} /> : item.visual ? <figure className={`cinema-mode-visual cinema-mode-visual--${item.id}`}>
-        {item.visual.storyboard && item.visual.seconds ? <ModelCinematicKeyframeBoard {...item.visual.storyboard} images={item.visual.images}
+        {item.visual.reveal ? <ModelCinematicCapabilityReveal {...item.visual.reveal}
+          labels={[item.visual.labels[0], item.visual.labels[1]]} compare={ui?.compare ?? item.label} />
+          : item.visual.storyboard && item.visual.seconds ? <ModelCinematicKeyframeBoard {...item.visual.storyboard} images={item.visual.images}
           seconds={item.visual.seconds} labels={item.visual.labels} /> : item.visual.resultLabel && item.visual.video && item.visual.poster && ui ? <div className="cinema-mode-comparison">
           <div className="cinema-mode-inputs">{item.visual.images.map((url, index) => <figure key={url}>
             <Image src={url} width={480} height={270} loading="lazy" sizes="(min-width: 768px) 130px, 25vw" alt={item.visual!.labels[index]} />
@@ -67,10 +69,14 @@ export function ModelCinematicCapabilities({ copy, ui }: { copy: CinematicCapabi
           </figure>
         </div> : item.visual.video && ui ? <ModelCinematicFilm video={item.visual.video} poster={item.visual.images[0]} title={item.visual.labels[0]} ui={ui} mask="frame" />
           : <div className="cinema-mode-stills">{item.visual.images.map((url, index) => <figure key={url}>
-            <Image src={url} width={840} height={462} loading="lazy" sizes="(min-width: 800px) 44vw, 88vw" alt={item.visual!.labels[index]} />
+            <Image src={url} alt={item.visual!.labels[index]}
+              width={item.visual!.stillSize?.width ?? 840} height={item.visual!.stillSize?.height ?? 462}
+              loading="lazy" sizes={item.visual!.images.length > 1 ? '(min-width: 800px) 22vw, 42vw' : '(min-width: 800px) 44vw, 88vw'} />
             <figcaption>{item.visual!.labels[index]}</figcaption>
           </figure>)}</div>}
-        <figcaption>{item.visual.caption} {item.visual.storyboard ? <a className="cinema-source-link" href="#model-workflow">{item.visual.storyboard.workflowLink}<CinematicArrow direction="down" /></a> : null}</figcaption>
+        <figcaption>{item.visual.caption} {item.visual.storyboard ? <a className="cinema-source-link" href="#model-workflow">{item.visual.storyboard.workflowLink}<CinematicArrow direction="down" /></a> : null}
+          {item.visual.filmLinkLabel ? <a className="cinema-source-link" href="#proof-create">{item.visual.filmLinkLabel}<CinematicArrow /></a> : null}
+        </figcaption>
       </figure> : <div className="cinema-capability-guide"><p className="cinema-eyebrow">{copy.diagramLabel}</p>
         <ol className={`cinema-capability-stages cinema-capability-stages--${item.id}`}>{item.stages.map((stage, index) => <li key={stage}><span>{stage}</span>{index < 2 ? <CinematicArrow /> : null}</li>)}</ol>
         <ul className="cinema-capability-uses">{item.uses.map(use => <li key={use}>{use}</li>)}</ul><p className="cinema-capability-limit">{item.note}</p>

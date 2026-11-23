@@ -1,3 +1,4 @@
+import { isKlingImageV4EngineId } from '@/lib/image/kling-image-v4';
 import { LIVE_MEMBERSHIP_POLICY } from '@/lib/membership-policy';
 import { isGptImage26EngineId } from '@/lib/image/gptImage26';
 import {
@@ -57,6 +58,9 @@ export function quotePublicPricing(input: QuotePublicPricingInput): CanonicalPri
   // Flash prices come from approved native tariffs, never a percentage fallback.
   if (input.scenario.engineId === 'seedance-2-5-flash') {
     throw new Error('An active reviewed Seedance 2.5 Flash customer tariff is required.');
+  }
+  if (isKlingImageV4EngineId(input.scenario.engineId)) {
+    throw new Error('An active reviewed Kling Image 4.0 customer tariff is required.');
   }
   // Partial output-only supplier facts cannot define the approved customer grid.
   if (isGptImage26EngineId(input.scenario.engineId)) {

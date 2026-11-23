@@ -1,0 +1,195 @@
+[
+  {
+    "id": "kling-image-4-bus-shelter-poster",
+    "recipeId": "kling-image-4-bus-shelter-poster",
+    "engineId": "kling-image-v4",
+    "settings": {
+      "mode": "t2i",
+      "resolution": "2K",
+      "aspectRatio": "2:3",
+      "quantity": 1
+    },
+    "promptSha256": "21cc72f4a8acd423e87f995ad39743976f143230dbe672ad7a8410dab0192074",
+    "requestSha256": "480b2446ac905efdbe8e0cb7da2ae9e79c99749435df46492aa553f979c4fd5e",
+    "receiptSha256": "7016c83037e0d70d6aff9dc35f0a0816004b1b16ac5198562515af882d4cfa5d",
+    "original": {
+      "url": "/assets/model-examples/kling-image-v4/fee1ceb4cf20de3685ff6cb267104ae6877da7ceda6fef908a57585b14ef9ceb.png",
+      "sha256": "fee1ceb4cf20de3685ff6cb267104ae6877da7ceda6fef908a57585b14ef9ceb",
+      "width": 1664,
+      "height": 2496
+    },
+    "display": {
+      "url": "/assets/model-examples/kling-image-v4/2d9a53072001df198540e76edfecb529555291877dff4c0fbfb88808de92c6ca.webp",
+      "sha256": "2d9a53072001df198540e76edfecb529555291877dff4c0fbfb88808de92c6ca",
+      "width": 960,
+      "height": 1440,
+      "sourceSha256": "fee1ceb4cf20de3685ff6cb267104ae6877da7ceda6fef908a57585b14ef9ceb"
+    }
+  },
+  {
+    "id": "kling-image-4-pixel-makeup",
+    "recipeId": "kling-image-4-pixel-makeup",
+    "engineId": "kling-image-v4",
+    "settings": {
+      "mode": "t2i",
+      "resolution": "4K",
+      "aspectRatio": "4:3",
+      "quantity": 1
+    },
+    "promptSha256": "f85ae796cd827c3791c8a35b04b19bb1d9635d0dbb9dddcbdf9ab57c71df96dc",
+    "requestSha256": "cf4b89595307278416015c301cf1e8ff4afb27102736f06f9145c434368e8d6d",
+    "receiptSha256": "dd41ab8d0c5e37215a489f7d1dc26e34c47e628ea1f7f5ca404ec0daee8d84d6",
+    "original": {
+      "url": "/assets/model-examples/kling-image-v4/e3cc0acc765fcc72725161a6125aa3f140a94b7ebb54a9f3132ba4eef8e36756.png",
+      "width": 4672,
+      "height": 3520,
+      "sha256": "e3cc0acc765fcc72725161a6125aa3f140a94b7ebb54a9f3132ba4eef8e36756"
+    },
+    "display": {
+      "url": "/assets/model-examples/kling-image-v4/5c2e9af4a36e37e898118765148d9b74afc886e7c50fb44da41ce77c058ef8fc.webp",
+      "width": 1100,
+      "height": 829,
+      "sha256": "5c2e9af4a36e37e898118765148d9b74afc886e7c50fb44da41ce77c058ef8fc",
+      "sourceSha256": "e3cc0acc765fcc72725161a6125aa3f140a94b7ebb54a9f3132ba4eef8e36756"
+    }
+  },
+  {
+    "id": "kling-image-4-pop-up-wide",
+    "recipeId": "kling-image-4-pop-up-series",
+    "engineId": "kling-image-v4",
+    "settings": {
+      "mode": "t2i",
+      "resolution": "2K",
+      "aspectRatio": "3:2",
+      "quantity": 3
+    },
+    "promptSha256": "0e0f0eef8363007b93e262690013e8fe14ce691b4a2fca9f443dc72fbb612963",
+    "requestSha256": "4f8fcc8743f2961fc642c8136f5c005dfb649a19e8aace9a9fce937d67ae6d57",
+    "receiptSha256": "81073aa10ae00778db0585df2caa19ee7271da7042d9318fc9537daba9175b2f",
+    "original": {
+      "url": "/assets/model-examples/kling-image-v4/24f15bebe4d324002a2b5164d7e0500e7af1b213677360776e1f837b178c9aad.png",
+      "width": 2496,
+      "height": 1664,
+      "sha256": "24f15bebe4d324002a2b5164d7e0500e7af1b213677360776e1f837b178c9aad"
+    },
+    "display": {
+      "url": "/assets/model-examples/kling-image-v4/403365925fd18ad6ddc2845a093368be163eeeaec5e0058b66d097d84aa34671.webp",
+      "width": 1100,
+      "height": 733,
+      "sha256": "403365925fd18ad6ddc2845a093368be163eeeaec5e0058b66d097d84aa34671",
+      "sourceSha256": "24f15bebe4d324002a2b5164d7e0500e7af1b213677360776e1f837b178c9aad"
+    }
+  },
+  {
+    "id": "kling-image-4-pop-up-overhead",
+    "recipeId": "kling-image-4-pop-up-series",
+    "engineId": "kling-image-v4",
+    "settings": {
+      "mode": "t2i",
+      "resolution": "2K",
+      "aspectRatio": "3:2",
+      "quantity": 3
+    },
+    "promptSha256": "0e0f0eef8363007b93e262690013e8fe14ce691b4a2fca9f443dc72fbb612963",
+    "requestSha256": "4f8fcc8743f2961fc642c8136f5c005dfb649a19e8aace9a9fce937d67ae6d57",
+    "receiptSha256": "81073aa10ae00778db0585df2caa19ee7271da7042d9318fc9537daba9175b2f",
+    "original": {
+      "url": "/assets/model-examples/kling-image-v4/df165e81c243e015fe9994ad802a67d38080110a07efcba2c107a20f383f5d62.png",
+      "width": 2496,
+      "height": 1664,
+      "sha256": "df165e81c243e015fe9994ad802a67d38080110a07efcba2c107a20f383f5d62"
+    },
+    "display": {
+      "url": "/assets/model-examples/kling-image-v4/c467a9e3ab9b277be6fb329ff634341ec602473bab5462248fd7f4d37f9dfb95.webp",
+      "width": 1100,
+      "height": 733,
+      "sha256": "c467a9e3ab9b277be6fb329ff634341ec602473bab5462248fd7f4d37f9dfb95",
+      "sourceSha256": "df165e81c243e015fe9994ad802a67d38080110a07efcba2c107a20f383f5d62"
+    }
+  },
+  {
+    "id": "kling-image-4-pop-up-flash",
+    "recipeId": "kling-image-4-pop-up-series",
+    "engineId": "kling-image-v4",
+    "settings": {
+      "mode": "t2i",
+      "resolution": "2K",
+      "aspectRatio": "3:2",
+      "quantity": 3
+    },
+    "promptSha256": "0e0f0eef8363007b93e262690013e8fe14ce691b4a2fca9f443dc72fbb612963",
+    "requestSha256": "4f8fcc8743f2961fc642c8136f5c005dfb649a19e8aace9a9fce937d67ae6d57",
+    "receiptSha256": "81073aa10ae00778db0585df2caa19ee7271da7042d9318fc9537daba9175b2f",
+    "original": {
+      "url": "/assets/model-examples/kling-image-v4/15029f35dbccbf059448086fc2048969ffa0cdf8181fc5caa7411eaf396a8a9c.png",
+      "width": 2496,
+      "height": 1664,
+      "sha256": "15029f35dbccbf059448086fc2048969ffa0cdf8181fc5caa7411eaf396a8a9c"
+    },
+    "display": {
+      "url": "/assets/model-examples/kling-image-v4/ff63d8e6227ed575e5af67d1684466c45ceca788f2280247f75d9c73c3ab8834.webp",
+      "width": 1100,
+      "height": 733,
+      "sha256": "ff63d8e6227ed575e5af67d1684466c45ceca788f2280247f75d9c73c3ab8834",
+      "sourceSha256": "15029f35dbccbf059448086fc2048969ffa0cdf8181fc5caa7411eaf396a8a9c"
+    }
+  },
+  {
+    "id": "kling-image-4-jacket-back-mark",
+    "recipeId": "kling-image-4-jacket-back-mark",
+    "engineId": "kling-image-v4",
+    "settings": {
+      "mode": "i2i",
+      "resolution": "2K",
+      "aspectRatio": "3:2",
+      "quantity": 1
+    },
+    "promptSha256": "7748bf6dc64a93c969396434fc9fda57041867575170b067aeb8fd73cbea1eea",
+    "requestSha256": "f7fb50fd539c0a27859eec37163fca09c3efdb818c9128cfd868469f56cd8d6c",
+    "receiptSha256": "acf4081e1c38e1f2b5f02bd670fb5d82dbd1e09e22bd68f4d25abd6888112e09",
+    "sourceImageId": "kling-image-4-pop-up-overhead",
+    "sourceOriginalSha256": "df165e81c243e015fe9994ad802a67d38080110a07efcba2c107a20f383f5d62",
+    "original": {
+      "url": "/assets/model-examples/kling-image-v4/e352aebf8d07fabbefaf6433ccd26be92c5d515bd0740b38a6f552b369b8cb6b.png",
+      "sha256": "e352aebf8d07fabbefaf6433ccd26be92c5d515bd0740b38a6f552b369b8cb6b",
+      "width": 2496,
+      "height": 1664
+    },
+    "display": {
+      "url": "/assets/model-examples/kling-image-v4/3425715a559f68ccad046ee0456e5cd19dee0280d4d3dab98ffcdecbc54342f3.webp",
+      "sha256": "3425715a559f68ccad046ee0456e5cd19dee0280d4d3dab98ffcdecbc54342f3",
+      "width": 1140,
+      "height": 760,
+      "sourceSha256": "e352aebf8d07fabbefaf6433ccd26be92c5d515bd0740b38a6f552b369b8cb6b"
+    }
+  },
+  {
+    "id": "kling-image-4-bus-shelter-sole-print",
+    "recipeId": "kling-image-4-bus-shelter-sole-print",
+    "engineId": "kling-image-v4",
+    "settings": {
+      "mode": "i2i",
+      "resolution": "2K",
+      "aspectRatio": "2:3",
+      "quantity": 1
+    },
+    "promptSha256": "406ca90267dade2c7e0d50e06d051ef35ad6b653abadd8df02c9f63ddf9cb92e",
+    "requestSha256": "e11d0af42716903a9ebe834b56dc12b72e277c3cbd615dfe0b98ce52b1016122",
+    "receiptSha256": "e56b28ea9c2140d9e555d12ff5dcbaaae333865d1eebfc92bdf15dab418b5d7a",
+    "sourceImageId": "kling-image-4-bus-shelter-poster",
+    "sourceOriginalSha256": "fee1ceb4cf20de3685ff6cb267104ae6877da7ceda6fef908a57585b14ef9ceb",
+    "original": {
+      "url": "/assets/model-examples/kling-image-v4/dba85abcaef6e7f7a31ae063af22015b4442bc0ab9fadd5429b2aca6b01e9111.png",
+      "sha256": "dba85abcaef6e7f7a31ae063af22015b4442bc0ab9fadd5429b2aca6b01e9111",
+      "width": 1664,
+      "height": 2496
+    },
+    "display": {
+      "url": "/assets/model-examples/kling-image-v4/b46d470bd4a57f3b59a6648d8ba64624672f66ba6f0378904d585cdec43c3ba2.webp",
+      "sha256": "b46d470bd4a57f3b59a6648d8ba64624672f66ba6f0378904d585cdec43c3ba2",
+      "width": 960,
+      "height": 1440,
+      "sourceSha256": "dba85abcaef6e7f7a31ae063af22015b4442bc0ab9fadd5429b2aca6b01e9111"
+    }
+  }
+]
