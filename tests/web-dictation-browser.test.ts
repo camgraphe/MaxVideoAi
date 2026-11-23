@@ -58,6 +58,16 @@ for (const engine of [chromium, webkit]) {
         await page.evaluate(() => (window as any).speech.onerror({error:'not-allowed'}));
         await expect(page.getByRole('status')).toContainText(/denied|refusé|denegado/);
         await expect(page.getByRole('status')).toBeInViewport({ratio:1});
+        for (const [error, notice] of [
+          ['service-not-allowed', /Chrome.*Safari/],
+          ['network', /connection|connexion|conexión/],
+          ['audio-capture', /selected input|micro sélectionné|entrada seleccionada/],
+        ] as const) {
+          await mic.click();
+          await page.evaluate(code => (window as any).speech.onerror({error:code}),error);
+          await expect(page.getByRole('status')).toContainText(notice);
+          await expect(message).toHaveValue('@Image1 '+words);
+        }
         await message.fill('Reviewed @Image1');
         await page.evaluate(() => {
           Object.defineProperty(window,'SpeechRecognition',{value:undefined,configurable:true});

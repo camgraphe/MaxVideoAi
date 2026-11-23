@@ -16,7 +16,10 @@ const copy = {
     starting: 'Starting dictation…',
     stopping: 'Finishing dictation…',
     denied: 'Microphone or speech recognition access was denied. Check the site permissions or use keyboard dictation.',
-    unavailable: 'Voice dictation is unavailable here. You can type or use keyboard dictation.',
+    unavailable: 'Voice dictation is unavailable here. Try Chrome, Safari or keyboard dictation.',
+    service: 'This browser can’t start speech recognition. Open the page in Chrome or Safari, or use keyboard dictation.',
+    network: 'Can’t reach the speech service. Check your connection and try again.',
+    microphone: 'Can’t hear the microphone. Check the selected input in your device settings and try again.',
     silent: 'No speech detected. Try dictating again.',
   },
   fr: {
@@ -27,7 +30,10 @@ const copy = {
     starting: 'Démarrage de la dictée…',
     stopping: 'Fin de la dictée…',
     denied: 'L’accès au micro ou à la reconnaissance vocale a été refusé. Vérifiez les autorisations du site ou utilisez la dictée du clavier.',
-    unavailable: 'La dictée vocale est indisponible ici. Vous pouvez écrire ou utiliser la dictée du clavier.',
+    unavailable: 'La dictée vocale est indisponible ici. Essayez Chrome, Safari ou la dictée du clavier.',
+    service: 'Ce navigateur ne peut pas démarrer la dictée. Ouvrez la page dans Chrome ou Safari, ou utilisez la dictée du clavier.',
+    network: 'Le service de dictée est injoignable. Vérifiez votre connexion et réessayez.',
+    microphone: 'Impossible de capter le son du micro. Vérifiez le micro sélectionné dans les réglages de votre appareil.',
     silent: 'Aucune parole détectée. Réessayez de dicter.',
   },
   es: {
@@ -38,7 +44,10 @@ const copy = {
     starting: 'Iniciando el dictado…',
     stopping: 'Finalizando el dictado…',
     denied: 'Se ha denegado el acceso al micrófono o al reconocimiento de voz. Revisa los permisos del sitio o usa el dictado del teclado.',
-    unavailable: 'El dictado por voz no está disponible aquí. Puedes escribir o usar el dictado del teclado.',
+    unavailable: 'El dictado por voz no está disponible aquí. Prueba Chrome, Safari o el dictado del teclado.',
+    service: 'Este navegador no puede iniciar el dictado. Abre la página en Chrome o Safari, o usa el dictado del teclado.',
+    network: 'No se puede conectar con el servicio de dictado. Comprueba tu conexión y vuelve a intentarlo.',
+    microphone: 'No se puede captar el sonido del micrófono. Comprueba la entrada seleccionada en los ajustes del dispositivo.',
     silent: 'No se ha detectado voz. Inténtalo de nuevo.',
   },
 };
@@ -125,9 +134,14 @@ export function DictationButton({ locale, value, onChange, maxLength, disabled =
       end(reason) {
         session.current = null;
         setPhase(null);
-        if (reason === 'not-allowed') setError(words.denied);
-        else if (reason === 'no-speech') setError(words.silent);
-        else setError(reason ? words.unavailable : '');
+        const feedback: Record<string, string> = {
+          'not-allowed': words.denied,
+          'service-not-allowed': words.service,
+          'network': words.network,
+          'audio-capture': words.microphone,
+          'no-speech': words.silent,
+        };
+        setError(reason ? (feedback[reason] ?? words.unavailable) : '');
       },
     });
   }
