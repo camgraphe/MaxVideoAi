@@ -1,5 +1,5 @@
 import { isKlingImageV4EngineId, KLING_IMAGE_V4_ENDPOINTS } from '@/lib/image/kling-image-v4';
-import { KLING_IMAGE_V4_FAL_UNIT_USD, klingImageV4PricingUsage, klingImageV4SupplierCost } from '@/lib/image/kling-image-v4-pricing';
+import { KLING_IMAGE_V4_LIST_CHECKED_AT, klingImageV4PricingUsage, klingImageV4SupplierCost } from '@/lib/image/kling-image-v4-pricing';
 import { isNewSeedreamEngineId, seedreamNewModelPricingUsage } from '@/lib/image/seedream-pricing';
 import { klingV4FlashPricingUsage, KLING_V4_FLASH_PRICING_SOURCE } from './kling-v4-flash-pricing';
 import { isGptImage26EngineId } from '@/lib/image/gptImage26';
@@ -117,17 +117,15 @@ function buildBillingPricingFactsInternal(
     if (currency !== 'USD') throw new Error('Kling Image supplier pricing is stated in USD.');
     const usage = klingImageV4PricingUsage(context);
     const { mode, inputImages, outputImages } = usage;
-    const supplierUsd = klingImageV4SupplierCost(usage);
-    const costCents = (supplierUsd ?? 0) * 100;
+    const supplier = klingImageV4SupplierCost(usage);
     return resultFromFacts({
-      engineId: engine.id, currency, vendorSubtotalExactCents: costCents,
-      base: { seconds: outputImages, rate: (supplierUsd ?? 0) / outputImages, unit: 'image', amountCents: costCents },
+      engineId: engine.id, currency, vendorSubtotalExactCents: supplier.exactCents,
+      base: { seconds: outputImages, rate: supplier.amountUsd / outputImages, unit: 'image', amountCents: supplier.exactCents },
       meta: {
         pricing_model: 'kling_image_v4_fal_usage',
-        provider_cost_quantity_unverified: supplierUsd === null,
         provider_cost_source: `https://fal.ai/models/${KLING_IMAGE_V4_ENDPOINTS[mode]}`,
-        provider_cost_checked_at: '2026-11-20', provider_cost_published_unit_usd: KLING_IMAGE_V4_FAL_UNIT_USD,
-        ...(supplierUsd !== null ? { providerCostKind: 'published_list_estimate', providerCostListUsd: supplierUsd } : {}),
+        provider_cost_checked_at: KLING_IMAGE_V4_LIST_CHECKED_AT, provider_cost_published_output_usd: supplier.outputRateUsd,
+        providerCostKind: 'published_list_estimate', providerCostListUsd: supplier.amountUsd,
         effective_supplier_charge_verified: false, input_image_count: inputImages, output_image_count: outputImages,
         image_result_type: outputImages === 1 ? 'single' : 'series',
       },

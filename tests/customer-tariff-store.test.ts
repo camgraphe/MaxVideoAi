@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import versionedTariffs from '../frontend/config/customer-tariffs.json';
+import klingLaunchTariffs from '../frontend/config/kling-v4-customer-tariffs.json';
 
 import {
   loadEffectiveCustomerTariffState,
@@ -33,9 +34,10 @@ test('inactive store loads versioned and database cells with one revision', asyn
   assert.equal(state.revision, 7);
   assert.equal(state.databaseCells.length, 1);
   assert.deepEqual(state.databaseCells[0]?.selector, base.selector);
-  assert.equal(state.versionedCells.length, versionedTariffs.cells.length);
+  const authoredTariffs = [...versionedTariffs.cells, ...klingLaunchTariffs];
+  assert.equal(state.versionedCells.length, authoredTariffs.length);
   assert.deepEqual(state.versionedCells.map(({ id, selector, price }) => ({ id, selector, price })),
-    versionedTariffs.cells.map(({ id, selector, price }) => ({ id, selector, price })));
+    authoredTariffs.map(({ id, selector, price }) => ({ id, selector, price })));
   assert.equal(calls.length, 2);
 });
 

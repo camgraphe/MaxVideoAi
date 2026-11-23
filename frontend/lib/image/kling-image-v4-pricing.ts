@@ -5,8 +5,12 @@ import {
   KLING_IMAGE_V4_ID, KLING_IMAGE_V4_RESOLUTIONS,
 } from './kling-image-v4';
 
-// Fal's endpoint price is per billing unit. The quantity schedule is not published.
-export const KLING_IMAGE_V4_FAL_UNIT_USD = 0.063;
+export const KLING_IMAGE_V4_LIST_CHECKED_AT = '2026-11-23';
+
+const outputListMilliUsd: Record<(typeof KLING_IMAGE_V4_RESOLUTIONS)[number], number> = {
+  '2K': 63, '4K': 94, '8K': 157,
+};
+const referenceListMilliUsd = 3;
 
 export function klingImageV4PricingUsage(context: Pick<PricingContext,
   'mode' | 'resolution' | 'durationSec' | 'inputImageCount' | 'aspectRatio'>) {
@@ -24,24 +28,10 @@ export function klingImageV4PricingUsage(context: Pick<PricingContext,
   return { mode, resolution, inputImages, outputImages };
 }
 
-type FalBillingSchedule = {
-  t2i: Record<(typeof KLING_IMAGE_V4_RESOLUTIONS)[number], number>;
-  i2i: Record<(typeof KLING_IMAGE_V4_RESOLUTIONS)[number], number>;
-  editReferenceUnits: number;
-};
-
-/** An observed quantity schedule is required for every live customer quote. */
-export function klingImageV4SupplierCost(usage: ReturnType<typeof klingImageV4PricingUsage>): number | null {
-  const raw = process.env.KLING_IMAGE_V4_FAL_BILLING_UNITS;
-  if (!raw) return null;
-  const rates = JSON.parse(raw) as FalBillingSchedule | null;
-  const outputUnits = rates?.[usage.mode]?.[usage.resolution];
-  const referenceUnits = rates?.editReferenceUnits;
-  if (typeof outputUnits !== 'number' || !Number.isFinite(outputUnits) || outputUnits <= 0
-    || typeof referenceUnits !== 'number' || !Number.isFinite(referenceUnits) || referenceUnits < 0) {
-    throw new Error('Invalid Kling Image supplier billing schedule.');
-  }
-  return Number(((usage.outputImages * outputUnits + usage.inputImages * referenceUnits) * KLING_IMAGE_V4_FAL_UNIT_USD).toFixed(8));
+export function klingImageV4SupplierCost(usage: ReturnType<typeof klingImageV4PricingUsage>) {
+  const outputRate = outputListMilliUsd[usage.resolution];
+  const cost = usage.outputImages * outputRate + usage.inputImages * referenceListMilliUsd;
+  return { amountUsd: cost / 1000, exactCents: cost / 10, outputRateUsd: outputRate / 1000 };
 }
 
 export function klingImageV4ManualTariffScenario(context: PricingContext) {

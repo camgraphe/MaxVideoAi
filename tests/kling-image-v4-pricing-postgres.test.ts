@@ -26,8 +26,7 @@ test('Kling Image prices count the same outputs and owned references in all read
   assert.equal(classes.size, 6);
 
   const db = await startDisposablePostgres('kimgv4');
-  const original = {DATABASE_URL: process.env.DATABASE_URL, NODE_ENV: process.env.NODE_ENV, PRICING_SANDBOX: process.env.PRICING_SANDBOX,
-    KLING_IMAGE_V4_FAL_BILLING_UNITS: process.env.KLING_IMAGE_V4_FAL_BILLING_UNITS};
+  const original = {DATABASE_URL: process.env.DATABASE_URL, NODE_ENV: process.env.NODE_ENV, PRICING_SANDBOX: process.env.PRICING_SANDBOX};
   Object.assign(process.env, {DATABASE_URL: db.databaseUrl, NODE_ENV: 'development', PRICING_SANDBOX: '1'});
   try {
     await createPaidGenerationTestSchema(db.pool);
@@ -35,30 +34,14 @@ test('Kling Image prices count the same outputs and owned references in all read
       await db.pool.query(readFileSync(`neon/migrations/${migration}`, 'utf8'));
     }
     await db.pool.query('UPDATE app_customer_tariff_state SET active = TRUE, revision = 1');
-    assert.equal((await quotePublicModelScenario({modelId: engine.id, mode: 't2i', resolution: '8K', durationSec: 1})).status, 'unavailable');
-
-    // Disposable proof of the adapter. These are invented supplier and retail terms.
-    process.env.KLING_IMAGE_V4_FAL_BILLING_UNITS = JSON.stringify({
-      t2i: {'2K': 1, '4K': 1.5, '8K': 2.5}, i2i: {'2K': 1, '4K': 1.5, '8K': 2.5}, editReferenceUnits: 0.05,
-    });
-    for (const [key, selector] of classes) {
-      const outputRate = { '2K': 11.5, '4K': 19, '8K': 27.25 }[selector.resolution]!;
-      const price = {kind: 'unit_terms', rounding: 'up', terms: [
-        {unit: 'output_units', centsPerUnit: outputRate},
-        ...(selector.mode === 'i2i' ? [{unit: 'input_images', centsPerUnit: 1.25}] : []),
-      ]};
-      await db.pool.query(`INSERT INTO app_customer_tariff_cells
-        (id, selector_key, selector_json, price_json, currency, effective_from, revision, updated_by)
-        VALUES ($1,$2,$3,$4,'USD',NOW() - INTERVAL '1 day',1,'10000000-0000-4000-8000-000000000001')`,
-        [`test:${selector.mode}:${selector.resolution}`, key, JSON.stringify(selector), JSON.stringify(price)]);
-    }
 
     for (const [index, resolution] of KLING_IMAGE_V4_RESOLUTIONS.entries()) {
-      const outputRate = [11.5, 19, 27.25][index]!;
+      const outputListMilliUsd = [63, 94, 157][index]!;
       for (const mode of ['t2i', 'i2i'] as const) {
-        for (const outputCount of [1, 2, 10]) {
-          const inputCount = mode === 'i2i' ? outputCount : 0;
-          const expected = Math.ceil(outputRate * outputCount + 1.25 * inputCount);
+        for (const [outputCount, references] of [[1, 1], [3, 1], [1, 10], [10, 10]] as const) {
+          const inputCount = mode === 'i2i' ? references : 0;
+          const listMilliUsd = outputListMilliUsd * outputCount + 3 * inputCount;
+          const expected = Math.ceil(listMilliUsd * 3 / 20);
           const estimated = await estimateImageGeneration({
             engineId: engine.id, mode, resolution, aspectRatio: '21:9', numImages: outputCount,
             referenceImageCount: inputCount,
@@ -89,18 +72,15 @@ test('Kling Image prices count the same outputs and owned references in all read
             assert.equal(snapshot.meta?.input_image_count, inputCount);
             assert.equal(snapshot.meta?.output_image_count, outputCount);
             assert.equal(snapshot.meta?.image_result_type, outputCount === 1 ? 'single' : 'series');
-            assert.equal(snapshot.meta?.provider_cost_quantity_unverified, false);
-            assert.equal(snapshot.meta?.providerCostListUsd, Number((0.063 * ([1, 1.5, 2.5][index]! * outputCount + 0.05 * inputCount)).toFixed(8)));
+            assert.equal(snapshot.meta?.providerCostListUsd, listMilliUsd / 1000);
+            assert.equal(snapshot.meta?.providerCostKind, 'published_list_estimate');
+            assert.equal(snapshot.meta?.effective_supplier_charge_verified, false);
           }
         }
       }
     }
     const invalid = {modelId: engine.id, mode: 'i2i', resolution: '8K', durationSec: 1};
     assert.equal(resolvePublicModelScenario({...invalid, referenceImageCount: 11}), null);
-    const schedule = process.env.KLING_IMAGE_V4_FAL_BILLING_UNITS;
-    delete process.env.KLING_IMAGE_V4_FAL_BILLING_UNITS;
-    await assert.rejects(estimateImageGeneration({engineId: engine.id, mode: 'i2i', resolution: '8K', referenceImageCount: 1}), /verified.*schedule/iu);
-    process.env.KLING_IMAGE_V4_FAL_BILLING_UNITS = schedule;
     assert.equal(resolvePublicModelScenario({...invalid, durationSec: 11}), null);
     assert.equal(resolvePublicModelScenario({...invalid, resolution: '1080p'}), null);
     await assert.rejects(estimateImageGeneration({engineId: engine.id, mode: 't2i', resolution: '8K', numImages: 2.5}), /invalid_parameter/iu);

@@ -188,7 +188,7 @@ test('all 226 classes commit atomically within the bounded transaction and resum
   assert.equal((await confirm(await previewTariffBatch(proposal(226), actor))).receipt?.changes.length, 0);
 }));
 
-test('a missing-only Kling 4K batch activates 113 rows without changing legacy prices or paid snapshots', async () => fixture(async ({ db }) => {
+test('113 versioned Kling 4K prices match the approved recipe without changing legacy prices or paid snapshots', async () => fixture(async ({ db }) => {
   const legacy = await confirm(await previewTariffBatch(proposal(226), actor));
   assert.equal(legacy.status, 'committed');
   const readLegacy = async () => (await db.pool.query("SELECT * FROM app_customer_tariff_cells WHERE selector_json->>'resolution' <> '4k' ORDER BY id")).rows;
@@ -198,29 +198,24 @@ test('a missing-only Kling 4K batch activates 113 rows without changing legacy p
   const readPaid = async () => (await db.pool.query("SELECT * FROM app_jobs WHERE job_id = 'kling-prior-paid'")).rows;
   const paid = await readPaid();
   const text4k = { modelId: 'kling-v4', mode: 't2v', resolution: '4k', durationSec: 5 };
-  assert.deepEqual(await quotePublicModelScenario(text4k), { status: 'unavailable' });
   const edit4k = { engine: KLING_V4_ENGINE, mode: 'v2v' as const, resolution: '4k', durationSec: 5.25, inheritedDurationSec: 5.25,
     hasVideoInput: true, inputVideoDurationSec: 5.25 };
-  await assert.rejects(computeCanonicalBillingSnapshot(edit4k), /missing|tariff/i);
   const fourK: TariffBatchProposal = { schemaVersion: 1, modelId: 'kling-v4', intent: 'create_missing',
     reason: 'Synthetic native 4K qualification', pricing: { kind: 'list_multiplier', multiplier: '1.50' },
     selections: klingBatchClasses().filter(row => row.selector.resolution === '4k').map(row => ({ selector: row.selector })) };
   const preview = await previewTariffBatch(fourK, actor);
-  assert.deepEqual(preview.plan.counts, { create: 113, update: 0, unchanged: 0, conflict: 0 });
+  assert.deepEqual(preview.plan.counts, { create: 0, update: 0, unchanged: 113, conflict: 0 });
   assert.equal((await counts(db)).revision, '226');
   const done = await confirm(preview);
   assert.equal(done.status, 'committed');
   assert.equal(done.receipt?.revisionBefore, 226);
-  assert.equal(done.receipt?.revisionAfter, 339);
-  assert.equal(done.receipt?.changes.length, 113);
+  assert.equal(done.receipt?.revisionAfter, 226);
+  assert.equal(done.receipt?.changes.length, 0);
   const quoted = await quotePublicModelScenario(text4k);
   assert.equal(quoted.status, 'exact');
   if (quoted.status === 'exact') assert.equal(quoted.amountCents, 412);
   assert.deepEqual(await quotePublicModelScenario({ ...text4k, hdr: true }), { status: 'unavailable' });
   assert.equal((await computeCanonicalBillingSnapshot(edit4k)).totalCents, 519);
-  const resumed = await previewTariffBatch(fourK, actor);
-  assert.equal(resumed.plan.counts.unchanged, 113);
-  assert.equal((await confirm(resumed)).receipt?.changes.length, 0);
   assert.deepEqual(await readLegacy(), previous);
   assert.deepEqual(await readPaid(), paid);
 }));

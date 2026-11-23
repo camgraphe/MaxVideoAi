@@ -108,9 +108,6 @@ export async function computeCanonicalBillingSnapshot(
   const memberTierDiscounts = LIVE_MEMBERSHIP_DISCOUNTS;
 
   const billingFacts = buildBillingPricingFacts(context, pricingDetails, currency);
-  if (requiresKlingImageV4Tariff && billingFacts.meta.provider_cost_quantity_unverified === true) {
-    throw new CustomerTariffUnavailableError('A verified Kling Image supplier billing schedule is required.');
-  }
   const operationBinding = videoOperationTariffIdentity(context.engine.id, context.mode ?? 't2v', context.operation);
   const requiresOperationTariff = Boolean(operationBinding) || (context.engine.id === 'veo-3-1'
     && context.mode === 'i2v' && [4,6].includes(context.durationSec));

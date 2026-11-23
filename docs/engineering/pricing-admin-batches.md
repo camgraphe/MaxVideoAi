@@ -142,14 +142,14 @@ from the canonical options; do not enumerate sampled input durations.
 
 ### Kling 4.0 native 4K
 
-For a missing-only release, select **Kling 4**, resolution **4k**, and **Select visible classes**.
-Review that the preview contains only the 113 native SDR 4K classes. There are 84 fixed
-output-only cells, 28 reference-video cells with a fixed output duration and one
-continuous Edit cell. The existing Kling 4.0 ×1.50 recipe proposes 82.35¢ per
-output second or 49.35¢ per billable second. The reference-video and Edit meter
-uses `max(input + output, 2 × output)` on measured source durations. The recipe
-rounds the total up once to USD cents. A separate Admin Pricing confirmation
-on the reviewed deployment activates the literal rows.
+The initial ×1.50 tariffs are versioned with the 4K release. In Admin Pricing,
+select **Kling 4**, resolution **4k**, and **Select visible classes** to review
+the same 113 native SDR 4K classes. There are 84 fixed output-only cells,
+28 reference-video cells with a fixed output duration and one continuous Edit
+cell. The recipe uses 82.35¢ per output second or 49.35¢ per billable second.
+The reference-video and Edit meter uses `max(input + output, 2 × output)` on
+measured source durations. The recipe rounds the total up once to USD cents.
+A missing-only batch with the launch rates reports all 113 cells as unchanged.
 
 GPT Image 2.6 raster proposals instead use three literal terms: 0.0045 cents per
 output-image token, 1.5 cents per output and 3 cents per reference per output.
