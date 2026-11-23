@@ -20,7 +20,8 @@ export function validateStudioImageReferences(value: {modelId?: string | null; r
     type: 'array', maximum, inclusive: true, path: ['references'], message: `Choose at most ${maximum} references for this image model.`});
 }
 
-export const conversationAspectRatioSchema = z.string().regex(/^(?:[1-9]\d{0,2}:[1-9]\d{0,2}|auto)$/);
+export const conversationAspectRatioPattern = /^(?:[1-9]\d{0,2}:[1-9]\d{0,2}|auto)$/;
+export const conversationAspectRatioSchema = z.string().regex(conversationAspectRatioPattern);
 const settingValue = z.union([z.string().max(4096), z.number().finite(), z.boolean(), z.null()]);
 export const conversationSettingsSchema = z.array(z.object({name: z.string().regex(/^[A-Za-z][A-Za-z0-9._-]{0,63}$/), value: settingValue}).strict()).max(32)
   .refine(values => new Set(values.map(value => value.name)).size === values.length, 'Choose each setting once.');
