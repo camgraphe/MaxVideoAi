@@ -18,6 +18,8 @@ test('legacy assistance explains its introductory allowance while export help fo
 
 test('mobile Studio guides people to the phone workspaces and identifies web Studio actions', () => {
   const instructions = buildStudioDirectorInstructions({clientSurface:'mobile'});
+  assert.match(instructions, /Add references.*Choose a photo or Library.*send/);
+  assert.doesNotMatch(instructions, /Add to conversation/);
   assert.match(instructions, /Video, Image or Audio/);
   assert.match(instructions, /Video > Modify uses a phone clip/);
   assert.match(instructions, /confirm the displayed price with the generation button if shown/);
@@ -53,7 +55,8 @@ test('director sends creative purpose, current help and live quote rules with it
       assert.match(instructions,/Studio help/);
       assert.match(instructions,/account.*billing.*wallet transfer/i);
       assert.match(instructions,/\[Support\]\(https:\/\/maxvideoai\.com\/contact\)/);
-      assert.match(instructions,/Open library/);
+      assert.match(instructions,/Open library.*Import.*Add to conversation and send/);
+      assert.doesNotMatch(instructions,/Choose a photo or Library/);
       assert.ok(instructions.replace(MILO_SCOPE_INSTRUCTIONS,'').length<8500,`Keep creative guidance within its existing budget; received ${instructions.replace(MILO_SCOPE_INSTRUCTIONS,'').length} characters, exact model facts belong in tools.`);
       assert.ok(MILO_SCOPE_INSTRUCTIONS.length<800,'The shared product boundary has its own bounded budget.');
       assert.ok(instructions.length<9300,'Keep the combined permanent guidance bounded.');

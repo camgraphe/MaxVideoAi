@@ -88,11 +88,11 @@ export async function finishRecorded(row:PromptRequestRow,policy:StudioAssistanc
     return saved;
   }).then(saved=>projectPromptResult(saved,policy));
 }
-export async function sendPromptAssistance(userId:string,raw:PromptAssistanceRequest,deps:{policy?:StudioAssistancePolicy;workersEnabled?:boolean;executionOwner?:string}={}) {
+export async function sendPromptAssistance(userId:string,raw:PromptAssistanceRequest,deps:{policy?:StudioAssistancePolicy;workersEnabled?:boolean;executionOwner?:string;clientSurface?:'mobile'}={}) {
   const input=promptAssistanceRequestSchema.parse(raw),policy=deps.policy??studioAssistancePolicy();
   if(!policy.enabled)throw new Error('ASSISTANCE_DISABLED');
   // A disabled/unmigrated new worker must not mutate financial closeouts.
   if((deps.workersEnabled??promptWorkersEnabled())&&await promptWorkersReady())await closeExpiredPromptRequests(userId);
-  const {row}=await claimPromptRequest(userId,input,policy,{enabled:deps.workersEnabled,executionOwner:deps.executionOwner});
+  const {row}=await claimPromptRequest(userId,input,policy,{enabled:deps.workersEnabled,executionOwner:deps.executionOwner,clientSurface:deps.clientSurface});
   return row.response_json?finishRecorded(row,policy):projectPromptResult(row,policy);
 }

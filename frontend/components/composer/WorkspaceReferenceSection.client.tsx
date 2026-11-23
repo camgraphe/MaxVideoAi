@@ -14,12 +14,12 @@ import { useI18n } from '@/lib/i18n/I18nProvider';
 import { getLocalizedAssetDropzoneCopy, normalizeUiLocale } from '@/lib/ltx-localization';
 import type { ComposerProps } from './composer-types';
 import { getReferenceCommandAvailability } from './workspace-reference-availability';
-import { getWorkspaceFrameCommand } from './workspace-reference-commands';
+import { getWorkspaceFrameCommand, showCompactPickerField } from './workspace-reference-commands';
 import { WorkspaceReferenceInventory } from './WorkspaceReferenceInventory.client';
 import { WorkspaceReferencePopup } from './WorkspaceReferencePopup.client';
 import { resolveWorkspaceReferenceFieldTitle, workspaceReferenceCopy } from './workspace-reference-copy';
 import { videoExtensionCopy } from '@/lib/video-extension';
-import { getVideoWorkflowSourceField, isVideoSourceWorkflow, videoModifyCopy, type VideoSourceWorkflow } from '@/lib/video-source-workflow';
+import { getVideoWorkflowSourceField, videoModifyCopy, type VideoSourceWorkflow } from '@/lib/video-source-workflow';
 import type {PromptReferenceManager} from './PromptAssistanceComposer.client';
 import {composerAssistanceReferenceField} from '@/lib/prompt-assistance/client-context';
 import type {Mode} from '@/types/engines';
@@ -79,8 +79,7 @@ export function WorkspaceReferenceSection({ managementRef, managementMode, compa
   const activeFrame = frames.find((entry) => entry.field.id === activeCommand);
   const activeSource = sourceEntry?.field.id === activeCommand ? sourceEntry : null;
   const popupFields = (activeCommand === 'all' ? assetFields : activeSource ? [activeSource] : activeCommand === 'collections' ? collections : activeFrame ? [activeFrame] : [])
-    .filter(({ field }) => !compact || Boolean(sourceMode) || field.type !== 'video'
-      || !field.modes?.length || !field.modes.every(isVideoSourceWorkflow));
+    .filter(({ field }) => !compact || showCompactPickerField(field, sourceMode));
   const popupTitle = activeSource ? sourceLabel : activeFrame ? copy[getWorkspaceFrameCommand(activeFrame, engine)!] : sourceMode && !collectionRequired.length ? extensionCopy.references : copy.title;
   const close = () => setActiveCommand(null);
   const open = useCallback((command: string, trigger: HTMLButtonElement, target?: { fieldId: string; slotIndex: number }) => {

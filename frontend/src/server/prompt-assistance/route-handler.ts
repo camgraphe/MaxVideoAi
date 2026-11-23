@@ -62,7 +62,7 @@ export async function handlePromptAssistance(req:NextRequest,overrides:PromptHan
     const input=bodySchema.parse(await boundedPromptJson(req));
     await bearer?.validateCommand(input);
     if(input.action==='choose')return json({ok:true,result:await chooseStudioAssistance(access.userId,input.choice)});
-    const result=input.action==='recover'?await(overrides.recover??recoverPromptAssistance)(access.userId,input.sessionId,input.requestId):await(overrides.send??sendPromptAssistance)(access.userId,input.request);
+    const result=input.action==='recover'?await(overrides.recover??recoverPromptAssistance)(access.userId,input.sessionId,input.requestId):await(overrides.send??sendPromptAssistance)(access.userId,input.request,bearer ? {clientSurface:'mobile'} : undefined);
     if(result.state==='pending'){
       try{(overrides.schedule??schedulePromptAssistanceWorker)({userId:access.userId,sessionId:result.sessionId,requestId:result.requestId});}
       catch{console.warn('[prompt-assistance] wakeup_deferred',{requestId:result.requestId});}
