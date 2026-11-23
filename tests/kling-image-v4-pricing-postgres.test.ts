@@ -13,6 +13,7 @@ import { estimateImageGeneration } from '@/server/images/estimate-image-generati
 import { resolveImageGenerationPricingSnapshot } from '@/server/images/image-generation-pricing';
 import { priceCanonicalGenerationInExecutor } from '@/server/agent-api/generation-pricing';
 import { quotePublicModelScenario, resolvePublicModelScenario } from '@/server/pricing/quote-public-model-scenario';
+import { resolveMediaAwarePreflight } from '../frontend/app/api/preflight/_lib/media-aware-preflight';
 import { createPaidGenerationTestSchema, startDisposablePostgres } from './helpers/disposable-postgres';
 
 test('Kling Image prices count the same outputs and owned references in all readers', async () => {
@@ -79,6 +80,12 @@ test('Kling Image prices count the same outputs and owned references in all read
         }
       }
     }
+    const preflight = await resolveMediaAwarePreflight({
+      request: { engine: engine.id, mode: 't2i', resolution: '8K', durationSec: 1, aspectRatio: '16:9' },
+    }, { getConfiguredEngineFn: async () => engine });
+    assert.equal(preflight.ok, true);
+    assert.equal(preflight.total, 24);
+
     const invalid = {modelId: engine.id, mode: 'i2i', resolution: '8K', durationSec: 1};
     assert.equal(resolvePublicModelScenario({...invalid, referenceImageCount: 11}), null);
     assert.equal(resolvePublicModelScenario({...invalid, durationSec: 11}), null);

@@ -63,8 +63,9 @@ test('native batch UI applies one real transaction and recovers a lost response 
     await selectVisible.click();
     await page.getByLabel('Reason for change').fill('Review native 4K only');
     await page.getByRole('button', { name: 'Preview batch', exact: true }).click();
-    await page.getByText('113 create · 0 update · 0 unchanged · 0 conflict', { exact: true }).waitFor();
+    await page.getByText('0 create · 0 update · 113 unchanged · 0 conflict', { exact: true }).waitFor();
     assert.equal(await page.locator('[data-batch-review-row]').count(), 113);
+    assert.equal((await db.pool.query('SELECT count(*) FROM app_pricing_change_events')).rows[0].count, '0');
     await page.getByRole('button', { name: 'Clear selection', exact: true }).click();
     await batchResolution.selectOption('720p');
     await selectVisible.click();
