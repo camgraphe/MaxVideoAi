@@ -68,11 +68,15 @@ export function DictationButton({ locale, value, onChange, maxLength, disabled =
   const control = useRef<HTMLSpanElement>(null);
   const notice = useRef<HTMLSpanElement>(null);
   const session = useRef<ReturnType<typeof startBrowserDictation>>(null);
+  const interimBase = useRef<string | null>(null);
   const draft = useRef({ value, onChange, maxLength });
   const noticeId = useId();
 
   useLayoutEffect(() => {
-    if (draft.current.value && !value) session.current?.cancel();
+    if (draft.current.value !== value && (interimBase.current !== null || !value)) {
+      // An edit to the displayed hypothesis takes ownership of the draft.
+      session.current?.cancel();
+    }
     draft.current = { value, onChange, maxLength };
   }, [value, onChange, maxLength]);
   useLayoutEffect(() => {
@@ -123,15 +127,18 @@ export function DictationButton({ locale, value, onChange, maxLength, disabled =
     const lang = navigator.languages.find(item => item.split('-')[0] === language) ?? regionalLanguage[language];
     session.current = startBrowserDictation(lang, {
       phase: setPhase,
-      append(transcript) {
+      transcript(finalText, interimText) {
         const current = draft.current;
-        const next = appendDictation(current.value, transcript, current.maxLength);
+        const committed = appendDictation(interimBase.current ?? current.value, finalText, current.maxLength);
+        const next = appendDictation(committed, interimText, current.maxLength);
+        interimBase.current = interimText ? committed : null;
         if (next !== current.value) {
           current.value = next;
           current.onChange(next);
         }
       },
       end(reason) {
+        interimBase.current = null;
         session.current = null;
         setPhase(null);
         const feedback: Record<string, string> = {

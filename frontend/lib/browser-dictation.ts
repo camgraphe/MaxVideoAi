@@ -28,7 +28,7 @@ export function appendDictation(value: string, transcript: string, maxLength = I
 export type DictationPhase = 'starting' | 'listening' | 'stopping';
 type Handlers = {
   phase(value: DictationPhase): void;
-  append(text: string): void;
+  transcript(finalText: string, interimText: string): void;
   end(error?: string): void;
 };
 
@@ -49,8 +49,9 @@ export function startBrowserDictation(locale: string, handlers: Handlers) {
   catch { handlers.end('unavailable'); return null; }
   let closed = false;
   let stopping = false;
-  let received = false;
-  let nextResult = 0;
+  let hasFinalText = false;
+  let hasInterimText = false;
+  let nextFinal = 0;
   let timer: ReturnType<typeof setTimeout>;
 
   function finish(error?: string, abort = false) {
@@ -67,29 +68,39 @@ export function startBrowserDictation(locale: string, handlers: Handlers) {
   function cancel() { finish(undefined, true); }
   function deadline(ms: number) {
     clearTimeout(timer);
-    timer = setTimeout(() => finish(received ? undefined : 'timeout', true), ms);
+    timer = setTimeout(() => finish(hasFinalText || hasInterimText ? undefined : 'timeout', true), ms);
   }
 
   cancelActive = cancel;
   recognizer.lang = locale;
   recognizer.continuous = false;
-  recognizer.interimResults = false;
+  recognizer.interimResults = true;
   recognizer.onstart = () => {
     if (closed || stopping) return;
     handlers.phase('listening');
     deadline(90_000);
   };
-  recognizer.onresult = ({ resultIndex, results }) => {
+  recognizer.onresult = ({ results }) => {
     if (closed || document.hidden) return;
-    for (let i = Math.max(nextResult, resultIndex); i < results.length; i++) {
-      if (!results[i].isFinal) break;
-      nextResult = i + 1;
-      const text = results[i][0]?.transcript.trim();
-      if (text) { received = true; handlers.append(text); }
+    // Final entries are immutable; the browser can replace or withdraw the whole interim tail.
+    const finals: string[] = [];
+    const interims: string[] = [];
+    for (let i = nextFinal; i < results.length; i++) {
+      const result = results[i];
+      const text = result[0]?.transcript.trim();
+      if (result.isFinal) {
+        nextFinal = i + 1;
+        if (text) finals.push(text);
+      } else if (text) {
+        interims.push(text);
+      }
     }
+    if (finals.length) hasFinalText = true;
+    hasInterimText = interims.length > 0;
+    handlers.transcript(finals.join(' '), interims.join(' '));
   };
   recognizer.onerror = ({ error }) => finish(error, true);
-  recognizer.onend = () => finish(received ? undefined : 'no-speech');
+  recognizer.onend = () => finish(hasFinalText || hasInterimText ? undefined : 'no-speech');
   handlers.phase('starting');
   deadline(45_000);
   try { recognizer.start(); }

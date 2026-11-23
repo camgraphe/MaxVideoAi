@@ -25,3 +25,10 @@ export function finalWords(page: Page, words: string) {
     speech.onend?.();
   }, words);
 }
+
+export function speechResults(page: Page, results: [string, boolean][], resultIndex = 0) {
+  return page.evaluate(({results, resultIndex}) => {
+    const speech = (window as any).speech;
+    speech.onresult?.({resultIndex, results: results.map(([transcript, isFinal]) => ({isFinal, 0:{transcript}}))});
+  }, {results, resultIndex});
+}

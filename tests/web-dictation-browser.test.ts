@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { chromium, webkit, expect } from '@playwright/test';
-import { finalWords, installSpeechFixture } from './helpers/browser-speech-recognition';
+import { finalWords, installSpeechFixture, speechResults } from './helpers/browser-speech-recognition';
 import { appendDictation } from '../frontend/lib/browser-dictation';
 import { startWorkspaceReferenceFixture } from './helpers/workspace-reference-browser-fixture';
 import { dictationFixtureOptions } from './helpers/dictation-browser-fixture';
@@ -30,6 +30,14 @@ for (const engine of [chromium, webkit]) {
         await mic.click();
         assert.equal((await page.evaluate(() => (window as any).speech.lang)).split('-')[0], lang);
         await prompt.fill('Edited @Image1');
+        assert.equal(await page.evaluate(() => (window as any).speech.interimResults), true);
+        await speechResults(page, [['one',false],['two',false]]);
+        await expect(prompt).toHaveValue('Edited @Image1 one two');
+        await speechResults(page, [['one',false]],1);
+        await expect(prompt).toHaveValue('Edited @Image1 one');
+        await speechResults(page, []);
+        await expect(prompt).toHaveValue('Edited @Image1');
+        await speechResults(page, [[words.slice(0,2),false]]);
         await finalWords(page, words);
         await expect(prompt).toHaveValue('Edited @Image1 '+words);
         assert.equal(await selected.innerText(), before);
@@ -40,7 +48,16 @@ for (const engine of [chromium, webkit]) {
         const ask = page.locator('[data-assistance-message]');
         await ask.fill('Ask @Image1');
         await mic.click();
+        await speechResults(page, [['lights',false]]);
+        await expect(ask).toHaveValue('Ask @Image1 lights');
+        await ask.fill('Edited lights @Image1');
+        await finalWords(page, 'stale transcription');
+        await expect(ask).toHaveValue('Edited lights @Image1');
+        await ask.fill('Ask @Image1');
+        await mic.click();
         await page.getByRole('button',{name:/^(Stop dictation|Arrêter la dictée|Detener el dictado)$/}).click();
+        await speechResults(page, [[words.slice(0,2),false]]);
+        await expect(ask).toHaveValue('Ask @Image1 '+words.slice(0,2));
         await finalWords(page, words);
         await expect(ask).toHaveValue('Ask @Image1 '+words);
         await ask.fill('Reviewed');
@@ -52,8 +69,12 @@ for (const engine of [chromium, webkit]) {
         await page.goto(fixture.url+'/studio?lang='+lang);
         const message = page.getByRole('textbox');
         await mic.click();
-        await finalWords(page, words);
-        await expect(message).toHaveValue('@Image1 '+words);
+        await speechResults(page, [['first',true],['draft',false]]);
+        await expect(message).toHaveValue('@Image1 first draft');
+        await speechResults(page, [['first',true],[words,true]],1);
+        await speechResults(page, [['first',true],[words,true]],1);
+        await page.evaluate(() => (window as any).speech.onend());
+        await expect(message).toHaveValue('@Image1 first '+words);
         await mic.click();
         await page.evaluate(() => (window as any).speech.onerror({error:'not-allowed'}));
         await expect(page.getByRole('status')).toContainText(/denied|refusé|denegado/);
@@ -66,7 +87,7 @@ for (const engine of [chromium, webkit]) {
           await mic.click();
           await page.evaluate(code => (window as any).speech.onerror({error:code}),error);
           await expect(page.getByRole('status')).toContainText(notice);
-          await expect(message).toHaveValue('@Image1 '+words);
+          await expect(message).toHaveValue('@Image1 first '+words);
         }
         await message.fill('Reviewed @Image1');
         await page.evaluate(() => {
