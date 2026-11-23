@@ -214,6 +214,22 @@ test('113 versioned Kling 4K prices match the approved recipe without changing l
   const quoted = await quotePublicModelScenario(text4k);
   assert.equal(quoted.status, 'exact');
   if (quoted.status === 'exact') assert.equal(quoted.amountCents, 412);
+  for (const [input, expected] of [
+    [{ ...text4k, mode: 'ref2v', hasVideoInput: false }, 412],
+    [{ ...text4k, mode: 'ref2v', hasVideoInput: true, inputVideoDurationSec: 12.5 }, 864],
+    [{ ...text4k, mode: 'v2v', inputVideoDurationSec: 5.25 }, 506],
+  ] as const) {
+    const result = await quotePublicModelScenario(input);
+    assert.equal(result.status, 'exact', JSON.stringify(input));
+    if (result.status === 'exact') assert.equal(result.amountCents, expected);
+  }
+  for (const invalid of [
+    { ...text4k, mode: 'ref2v' },
+    { ...text4k, mode: 'ref2v', hasVideoInput: true },
+    { ...text4k, mode: 'ref2v', hasVideoInput: false, inputVideoDurationSec: 3 },
+    { ...text4k, mode: 'ref2v', hasVideoInput: true, inputVideoDurationSec: 31 },
+    { ...text4k, mode: 'v2v', hasVideoInput: false, inputVideoDurationSec: 3 },
+  ]) assert.deepEqual(await quotePublicModelScenario(invalid), { status: 'unavailable' });
   assert.deepEqual(await quotePublicModelScenario({ ...text4k, hdr: true }), { status: 'unavailable' });
   assert.equal((await computeCanonicalBillingSnapshot(edit4k)).totalCents, 519);
   assert.deepEqual(await readLegacy(), previous);
