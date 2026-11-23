@@ -1,6 +1,8 @@
 import { query } from '@/lib/db';
 import {
   MILO_MEDIA_PAGE_SIZE,
+  addedAttachmentIndexes,
+  miloAttachmentKeys,
   miloAttachments,
   type MobileMiloSession,
   type MiloMediaRead,
@@ -28,10 +30,14 @@ export async function withMobileMiloAttachments(
      WHERE user_id=$1 AND session_id=$2 AND request_id=ANY($3::uuid[])`,
     [userId, session.sessionId, ids],
   );
-  const markers = new Map(rows.map((row) => [row.request_id, miloAttachments(row.refs ?? [])]));
+  const references = new Map(rows.map((row) => [row.request_id, row.refs ?? []]));
+  let previous: string[] = [];
   const attach = <T extends { requestId: string }>(turn: T) => {
-    const attachments = markers.get(turn.requestId);
-    return attachments?.length ? { ...turn, attachments } : turn;
+    const refs = references.get(turn.requestId) ?? [];
+    const keys = miloAttachmentKeys(refs);
+    const added = addedAttachmentIndexes(previous, keys);
+    previous = keys;
+    return keys.length ? { ...turn, attachments: miloAttachments(refs), addedAttachmentIndexes: added } : turn;
   };
   return {
     ...session,
