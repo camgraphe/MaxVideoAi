@@ -13,16 +13,36 @@ for (const engine of [chromium, webkit]) {
       const page = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true });
       await installSpeechFixture(page);
       await page.addInitScript(() => {
-        const tracks: MediaStreamTrack[] = [];
+        // Supply deterministic capture events. Headless WebKit on Linux and Safari
+        // on macOS do not ship the same audio devices and system encoders.
+        class TestTrack extends EventTarget {
+          readyState = 'live';
+          stop() { this.readyState = 'ended'; }
+        }
+        class TestRecorder extends EventTarget {
+          state = 'inactive';
+          start() {
+            this.state = 'recording';
+            const event = Object.assign(new Event('dataavailable'), {
+              data: new Blob([new Uint8Array([1, 2, 3])]),
+            });
+            this.dispatchEvent(event);
+          }
+          stop() {
+            this.state = 'inactive';
+            this.dispatchEvent(new Event('stop'));
+          }
+        }
+        const tracks: TestTrack[] = [];
         Object.assign(window, { dictationTracks: tracks });
+        Object.defineProperty(window, 'MediaRecorder', { configurable: true, value: TestRecorder });
         Object.defineProperty(navigator, 'mediaDevices', {
           configurable: true,
           value: {
             async getUserMedia() {
-              const ctx = new AudioContext();
-              const stream = ctx.createMediaStreamDestination().stream;
-              tracks.push(...stream.getAudioTracks());
-              return stream;
+              const track = new TestTrack();
+              tracks.push(track);
+              return { getAudioTracks: () => [track], getTracks: () => [track] };
             },
           },
         });
@@ -31,11 +51,13 @@ for (const engine of [chromium, webkit]) {
       await page.route('**/api/dictation/session', route => route.fulfill({
         status: guest ? 401 : 200, json: guest ? {} : { api_key: 'synthetic-once' },
       }));
+      const audio: number[][] = [];
       const sockets: WebSocketRoute[] = [];
       const configs: Record<string, unknown>[] = [];
       await page.routeWebSocket('wss://stt-rt.soniox.com/**', socket => {
         sockets.push(socket);
         socket.onMessage(data => {
+          if (Buffer.isBuffer(data) && data.length) audio.push(Array.from(data));
           if (typeof data === 'string' && data.startsWith('{')) {
             const config = JSON.parse(data);
             if (config.model) configs.push(config);
@@ -52,6 +74,7 @@ for (const engine of [chromium, webkit]) {
       const attachment = await reference.innerText();
       await mic.click();
       await expect.poll(() => configs.length).toBe(1);
+      await expect.poll(() => audio).toEqual([[1, 2, 3]]);
       assert.deepEqual(configs[0].language_hints, ['fr', 'en', 'es']);
       assert.equal(configs[0].model, 'stt-rt-v6');
       assert.equal(configs[0].translation, undefined);
