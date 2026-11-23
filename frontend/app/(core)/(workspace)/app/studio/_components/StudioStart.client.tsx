@@ -41,7 +41,7 @@ export function StudioStart({accountKey,unavailable=false,starter,exampleId,cont
     <header className={styles.header}><div><h1>Studio<span className={styles.headerDot}>.</span></h1></div></header>
     <div className={styles.canvas}><div className={styles.conversation} data-empty="true">
       <div className={styles.log}><ConversationWelcome locale={locale==='fr'?'fr':'en'} hasDraft onDraft={()=>{}}/></div>
-      <ImageConversationComposer text="" onTextChange={()=>{}} onSend={()=>{}} blocked readOnly libraryTrigger={libraryTrigger} onOpenLibrary={()=>{}} locale={locale==='fr'?'fr':'en'}/>
+      <ImageConversationComposer text="" onTextChange={()=>{}} onSend={()=>{}} blocked readOnly libraryTrigger={libraryTrigger} onOpenLibrary={()=>{}} locale={locale}/>
       {unavailable||creation.error?<div className={styles.error} role="alert"><p>{unavailable?copy.unavailable:copy[creation.error!]}</p><button onClick={()=>unavailable?router.refresh():open()}>{copy.retry}</button></div>:<p className={styles.footnote} role="status">{copy.opening}</p>}
     </div></div>
   </section>;

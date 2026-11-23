@@ -229,6 +229,12 @@ Sanitized diagnostics retain failure kind, elapsed milliseconds, HTTP status and
 
 No periodic automatic billable retry or new recovery worker is introduced. Explicit video/audio analysis reuses the existing Studio analysis worker and its durable recovery; it has a separate confirmation and credit ceiling. Failed pending checks may require support, including when supplier evidence was never received. Keep endpoint and support availability in the rollout checklist.
 
+## Web dictation in Create and Studio
+
+The Prompt, Ask Milo and Studio message fields share `DictationButton`. A microphone tap starts transcription into the current draft. Partial words are replaced as recognition improves. Users can edit and submit the result with the existing controls. Reference attachments stay on the composer.
+
+Apply migration 102 before enabling `SONIOX_API_KEY` for a deployment. In Soniox, grant the project key only **Speech-to-text, real-time** and **Temporary API keys**. Set the key server-side and rebuild the frontend to enable the hosted path. Set `SONIOX_REGION` to match the Soniox project when it is outside the default US region. The authenticated same-origin endpoint issues a single-use streaming key valid for 60 seconds. Each session lasts up to five minutes, and each account can start 30 sessions per clock hour. Audio goes directly to Soniox. The application database holds only the account ID, hourly window and session count for this feature. Guests and deployments without a configured key use browser recognition where available.
+
 ## Verification
 
 `prompt-assistance-context`, `live-client`, `live-postgres`, `route` and `live-browser` tests cover model/target rejection, metadata-only owned references, audio variants, exact payloads, clarification without a proposal, shared balances, concurrent sends, recovery, late replies and account changes. Provider/HTTP behavior is injected or intercepted; financial assertions use disposable PostgreSQL 17 with the actual ledger and migrations. Existing composer layout/keyboard/IME/mobile tests and Studio accounting/recovery suites remain part of validation. No claim of live provider quality follows from those fixtures. `prompt-assistance-timeout-postgres` covers timeout closeout, account isolation, active/expired leases, late settlement, cross-chat recovery, purchased-credit exposure bounds and deadline rollback. `prompt-assistance-provider-budget` uses only a loopback server to verify that a stalled body aborts without retry.

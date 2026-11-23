@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode, type MutableRefObject } from 'react';
+import { DictationButton } from '@/components/composer/DictationButton.client';
 import { PromptAssistancePanel } from './PromptAssistancePanel.client';
 import { usePromptAssistancePreview, type PromptAssistanceContext } from './usePromptAssistancePreview';
 import { promptAssistanceCopy } from './prompt-assistance-copy';
@@ -127,12 +128,14 @@ export function PromptAssistanceComposer({ context, locale, modelLabel, draftTex
         <div ref={manualWriting}>{children}</div>
         <div className={styles.manualReferences}><div className={styles.sendRow}>
           <div className={styles.inputReferences}>{!milo ? controls?.modelControl : null}{manualReferences}</div>
-          <span className={styles.sendPlaceholder} aria-hidden />
+          <span className={styles.sendPlaceholder}>{!milo && !disabledReason && <DictationButton
+            key={JSON.stringify([context.scopeKey, context.accountKey, modelLabel, target])}
+            getTextField={() => manualWriting.current?.querySelector('textarea')} locale={locale} value={draftText} onChange={onApplyText} maxLength={maxLength} disabled={blocked} />}</span>
         </div></div>
       </div>
     </div>
     <div id={`${id}-milo`} role="tabpanel" aria-labelledby={`${id}-milo-tab`} hidden={!milo}>
-      {milo ? <PromptAssistancePanel key={context.scopeKey} modelControl={controls?.modelControl} locale={locale} modelLabel={modelLabel} inputReadOnly={controller.transport.loading || controller.transport.loadError} sendBlocked={!!controller.transport.exhausted} showConversationControl={!!controller.transport.exhausted || controller.transport.recovery || !!controller.transport.error || controller.transport.previousAvailable || controller.transport.loading} messages={state.messages} proposal={state.proposal ? { text: state.proposal.text, target, stale: state.proposal.revision !== state.revision } : null}
+      {milo ? <PromptAssistancePanel dictationKey={JSON.stringify([context.accountKey, controller.transport.chatKey, modelLabel])} key={context.scopeKey} modelControl={controls?.modelControl} locale={locale} modelLabel={modelLabel} inputReadOnly={controller.transport.loading || controller.transport.loadError} sendBlocked={!!controller.transport.exhausted} showConversationControl={!!controller.transport.exhausted || controller.transport.recovery || !!controller.transport.error || controller.transport.previousAvailable || controller.transport.loading} messages={state.messages} proposal={state.proposal ? { text: state.proposal.text, target, stale: state.proposal.revision !== state.revision } : null}
         reasoningControl={<button type="button" ref={creditsTrigger} className={styles.miloTrigger} aria-label="Milo settings and credits" aria-haspopup="dialog" aria-expanded={creditsOpen} onClick={() => { setCreditsOpen(true); void credits.refresh(); }}><Sparkles size={15} aria-hidden/><strong>Milo</strong><span className={styles.miloLevel} data-assistance-level data-verified={levelVerified} aria-busy={Boolean(loadingStatus)} title={levelVerified?undefined:loadingStatus??'Milo availability is unverified.'}><span>{levelLabel??'…'}</span></span><ChevronDown size={12} aria-hidden/></button>}
         identityStatus={loadingStatus}
         entryWelcome={refineEntry && draftText.trim() && state.messages.length === 0 && !state.proposal ? miloRefineWelcome(locale) : undefined}
