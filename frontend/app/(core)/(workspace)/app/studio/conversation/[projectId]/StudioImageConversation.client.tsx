@@ -399,7 +399,7 @@ function StudioImageConversationWorkspace({
           <div ref={composerRegion} className={styles.composerRegion}
             onDragOver={event=>{if(event.dataTransfer.types.includes(MEDIA_SHELF_DRAG_TYPE)){event.preventDefault();event.dataTransfer.dropEffect='copy';}}}
             onDrop={event=>{const item=readShelfDrag(event.dataTransfer,shelf.items);if(item){event.preventDefault();event.stopPropagation();mention(item);}}}>
-          <ImageConversationComposer
+          <ImageConversationComposer key={JSON.stringify([accountKey, projectId])}
             compact={mobile}
             text={text}
             onTextChange={setText}

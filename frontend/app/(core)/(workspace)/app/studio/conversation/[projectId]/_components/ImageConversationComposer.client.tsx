@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, type Ref } from "react";
+import { DictationButton } from '@/components/composer/DictationButton.client';
 import { ArrowUp, Plus } from "lucide-react";
 import styles from "../image-conversation.module.css";
 import type {ConversationLocale} from '@/lib/studio/conversation-quote-presentation';
@@ -95,6 +96,7 @@ export function ImageConversationComposer({
           }
         }}
       />
+      <DictationButton locale={locale} value={text} onChange={onTextChange} maxLength={4000} disabled={readOnly || blocked} />
       <button
         className={styles.send}
         type="submit"

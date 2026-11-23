@@ -1,6 +1,7 @@
 'use client';
 /* eslint-disable @next/next/no-img-element */
 
+import { DictationButton } from '@/components/composer/DictationButton.client';
 import clsx from 'clsx';
 import { useMemo, useCallback, useRef, useEffect, useState, useId } from 'react';
 import { Card } from '@/components/ui/Card';
@@ -327,6 +328,8 @@ export function Composer({
               workspaceDensity ? 'flex-wrap gap-2 pb-2 pt-3' : 'flex-wrap gap-3 pb-2 pt-4'
             )}>
               <ComposerPromptHeader promptId={promptId} promptLabel={promptLabel} hideLabel={assistanceEnabled} prompt={prompt} onPromptChange={onPromptChange}
+                dictation={!assistanceEnabled && !multiPromptEnabled && (!engine.activeVideoOperation || promptField)
+                  ? <DictationButton key={JSON.stringify([assistance?.scopeKey, engine.id, activeManualMode])} locale={locale} value={prompt} onChange={onPromptChange} maxLength={promptMaxChars} disabled={isLoading} /> : undefined}
                 promptMaxChars={promptMaxChars} promptTooLong={promptTooLong} multiPromptEnabled={multiPromptEnabled} locale={locale}
                 multiPromptAction={multiPrompt ? <Button type="button" size="sm" variant={multiPromptEnabled ? 'primary' : 'ghost'}
                   aria-label={multiPromptEnabled ? 'Multi-prompt on' : 'Multi-prompt'} aria-pressed={multiPromptEnabled}
@@ -361,7 +364,7 @@ export function Composer({
               </div> : null}
             </div>
             {multiPromptEnabled && multiPrompt ? (
-              <ComposerMultiPromptEditor multiPrompt={multiPrompt} labelledBy={`${promptId}-heading`} />
+              <ComposerMultiPromptEditor key={JSON.stringify([assistance?.scopeKey, engine.id, activeManualMode])} locale={locale} disabled={isLoading} multiPrompt={multiPrompt} labelledBy={`${promptId}-heading`} />
             ) : (
               <textarea
                 id={promptId}
