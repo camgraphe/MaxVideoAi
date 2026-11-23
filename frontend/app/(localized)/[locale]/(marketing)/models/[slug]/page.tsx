@@ -1,3 +1,4 @@
+import { getSelectedWatchPaths } from '@/server/video-seo';
 import { modelExamplePlaylistKeys, projectModelPageGallery } from '@/server/model-gallery-projection';
 import '@/styles/marketing-models.css';
 import '@/styles/marketing-models-cinematic.css';
@@ -213,7 +214,7 @@ async function renderMarketingModelPage({
       } catch (error) {
         console.warn('[models/sora-2] failed to load examples', error);
       }
-      return projectModelPageGallery({
+      const gallery = await projectModelPageGallery({
         engine, examples, managed: managedCuration,
         preferred: PREFERRED_MEDIA[engine.modelSlug] ?? {hero:null,demo:null},
         featuredIds: FEATURED_EXAMPLE_MEDIA[engine.modelSlug] ?? [],
@@ -224,6 +225,15 @@ async function renderMarketingModelPage({
           engine.modelSlug, engine.id, backPath, appPath, undefined, locale,
         )),
       });
+      if (engine.modelSlug === 'seedance-2-5-flash') {
+        try {
+          const paths = await getSelectedWatchPaths(gallery.galleryVideos.map(card => card.id));
+          gallery.galleryVideos = gallery.galleryVideos.map(card => ({ ...card, href: paths.get(card.id) ?? card.href }));
+        } catch (error) {
+          console.warn('[models] Failed to resolve editorial watch links', error);
+        }
+      }
+      return gallery;
     },
     async (overrides) => {
       const pricingEngine = applyEnginePricingOverride(engine.engine, overrides[engine.engine.id]);

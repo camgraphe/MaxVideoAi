@@ -1,11 +1,14 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
-import modelRoster from '@/config/model-roster.json';
+import modelDateBaseline from '@/config/model-content-date-baseline.json';
 import { SITEMAP_MANUAL_TIMESTAMPS } from '@/config/sitemap-timestamps';
 import { listEligibleSeoWatchVideos } from '@/server/video-seo';
 import { resolveVideoSitemapDates } from '@/server/sitemaps/video-dates';
-import { MODEL_CONTENT_ROOT } from './model-locales';
+
+const MODEL_CONTENT_DATES: Record<string, string> = process.env.SITEMAP_MODEL_CONTENT_DATES
+  ? JSON.parse(process.env.SITEMAP_MODEL_CONTENT_DATES)
+  : modelDateBaseline;
 
 const MANUAL_ROUTE_DATES = new Map<string, string>(Object.entries(SITEMAP_MANUAL_TIMESTAMPS.routes ?? {}));
 const MANUAL_SITEMAP_DATES = new Map<string, string>(Object.entries(SITEMAP_MANUAL_TIMESTAMPS.sitemaps ?? {}));
@@ -49,12 +52,24 @@ export function getGitLastModified(sourceFile?: string): string | undefined {
   if (cached !== undefined) {
     return cached ?? undefined;
   }
-  const relative = path.relative(process.cwd(), sourceFile);
-  const result = spawnSync('git', ['log', '-1', '--pretty=format:%cs', '--', relative], {
-    encoding: 'utf8',
+  const cwd = path.dirname(sourceFile);
+  const result = spawnSync('git', ['log', '-1', '--format=%cs %H %P', '--', path.basename(sourceFile)], {
+    cwd, encoding: 'utf8',
   });
   if (!result.error && result.status === 0) {
-    const formatted = formatLastModified(result.stdout.trim());
+    const [day, commit, parent] = result.stdout.trim().split(' ');
+    let formatted = formatLastModified(day);
+    // At a shallow boundary, Git presents every inherited file as newly added.
+    // A genuine root commit can still establish a file's publication date.
+    if (formatted && !parent) {
+      const location = spawnSync('git', ['rev-parse', '--git-path', 'shallow'], { cwd, encoding: 'utf8' });
+      if (location.status === 0) {
+        const shallowFile = path.resolve(cwd, location.stdout.trim());
+        if (fs.existsSync(shallowFile) && fs.readFileSync(shallowFile, 'utf8').split('\n').includes(commit)) {
+          formatted = undefined;
+        }
+      }
+    }
     GIT_LASTMOD_CACHE.set(sourceFile, formatted ?? null);
     return formatted;
   }
@@ -85,13 +100,10 @@ export function getModelLastModified(slug: string): string | undefined {
   if (!slug) {
     return undefined;
   }
-  const englishPath = `/models/${slug}`;
-  const manual = getManualRouteLastModified(englishPath);
-  if (manual) {
-    return manual;
-  }
-  const candidate = path.join(MODEL_CONTENT_ROOT, 'en', `${slug}.json`);
-  return getGitLastModified(candidate);
+  return getLatestEntryDate([
+    { lastModified: getManualRouteLastModified(`/models/${slug}`) },
+    { lastModified: formatLastModified(MODEL_CONTENT_DATES[slug]) },
+  ]);
 }
 
 export function getLatestEntryDate(entries: { lastModified?: string }[]): string | undefined {
@@ -127,21 +139,4 @@ async function getVideoWatchSitemapLastModified(sitemapPath: string): Promise<st
       lastModified: resolveVideoSitemapDates(entry, video).lastModified ?? undefined,
     }))
   );
-}
-
-export function getModelsSitemapLastModified(): string | undefined {
-  let latest: string | undefined;
-  modelRoster.forEach((model) => {
-    if (!model?.modelSlug || model?.surfaces?.modelPage?.includeInSitemap === false) {
-      return;
-    }
-    const lastModified = getModelLastModified(model.modelSlug);
-    if (!lastModified) {
-      return;
-    }
-    if (!latest || lastModified > latest) {
-      latest = lastModified;
-    }
-  });
-  return latest;
 }

@@ -5,7 +5,7 @@ import { consumeAnchorHistoryArrival } from '@/lib/anchor-history-arrival';
 
 const CANCEL_EVENTS = ['wheel', 'touchstart', 'pointerdown', 'keydown', 'pagehide'] as const;
 const MAX_WAIT_MS = 30_000;
-const FIXED_ANCHORS = new Set(['video-pricing', 'image-pricing', 'audio-pricing', 'tool-pricing', 'full-video-pricing-table', 'pricing-faq']);
+const FIXED_ANCHORS = new Set(['video-pricing', 'image-pricing', 'audio-pricing', 'tool-pricing', 'full-video-pricing-table', 'pricing-faq', 'pricing-credits', 'pricing-film-example', 'video-quote', 'pricing-minute-budget', 'popular-pricing-checks-title', 'other-pricing-title']);
 type AnchorIntent = { href: string; fromHref: string; id: string; x: number; y: number; explicit: boolean };
 
 /** Restore Pricing destinations missed during streaming, without overriding later navigation intent. */
@@ -23,7 +23,7 @@ export function PricingAnchorRestore() {
     let deadline: number | null = null;
     const observer = new window.MutationObserver(restore);
     const anchorId = (url: URL) => {
-      try { const id = decodeURIComponent(url.hash.slice(1)); return FIXED_ANCHORS.has(id) || /^[a-z0-9][a-z0-9-]*-pricing$/.test(id) ? id : null; }
+      try { const id = decodeURIComponent(url.hash.slice(1)); return FIXED_ANCHORS.has(id) || id.startsWith('quote-') || /^[a-z0-9][a-z0-9-]*-pricing$/.test(id) ? id : null; }
       catch { return null; }
     };
     function cancel() {
@@ -42,6 +42,15 @@ export function PricingAnchorRestore() {
       // getElementById may find the pending duplicate or a hidden React transport segment.
       return Array.from(scope!.querySelectorAll<HTMLElement>('[id]'))
         .find(node => node.id === id && !node.closest('[hidden], [aria-busy="true"]'));
+    }
+    function openDestination(target: HTMLElement) {
+      if (target.id === 'video-pricing') {
+        const catalogue = target.querySelector('details');
+        if (catalogue) catalogue.open = true;
+      }
+      for (let parent: HTMLElement | null = target; parent; parent = parent.parentElement) {
+        if (parent.tagName === 'DETAILS') (parent as HTMLDetailsElement).open = true;
+      }
     }
     function restore() {
       const intent = pending;
@@ -64,6 +73,7 @@ export function PricingAnchorRestore() {
         frame = null;
         if (pending !== intent || window.location.href !== intent.href || window.scrollX !== intent.x || window.scrollY !== intent.y || targetFor(intent.id) !== target || !ready()) { cancel(); return; }
         cancel();
+        openDestination(target);
         target.scrollIntoView({ block: 'start', behavior: 'instant' });
       });
     }
@@ -80,7 +90,9 @@ export function PricingAnchorRestore() {
       if (!link || !scope?.contains(link) || link.hasAttribute('download') || (link.target && link.target.toLowerCase() !== '_self')) return;
       const url = new URL(link.href), current = new URL(window.location.href);
       const id = anchorId(url);
-      if (!id || url.origin !== current.origin || url.pathname !== current.pathname || url.search !== current.search || (ready() && targetFor(id))) return;
+      if (!id || url.origin !== current.origin || url.pathname !== current.pathname || url.search !== current.search) return;
+      const target = ready() && targetFor(id);
+      if (target) { openDestination(target); return; }
       begin(url, id, true);
       window.queueMicrotask(restore);
     }

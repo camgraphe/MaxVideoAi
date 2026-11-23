@@ -54,7 +54,7 @@ export function listenForGuestCreationLogin(surface: CreationSurface, getPayload
       const token = crypto.randomUUID();
       if (!stageGuestCreation(sessionStorage, surface, payload, token)) return;
       // The staged form already includes these settings; rehydrating a job would overwrite edits.
-      for (const key of ['job', 'from', 'engine', 'engineId', 'mode', 'reuse', 'example', 'videoPrompt']) next.searchParams.delete(key);
+      for (const key of ['job', 'from', 'engine', 'engineId', 'mode', 'reuse', 'example', 'videoPrompt', 'pricingPreset']) next.searchParams.delete(key);
       next.searchParams.set('continueDraft', token);
       login.searchParams.set('next', `${next.pathname}${next.search}${next.hash}`);
       event.preventDefault();

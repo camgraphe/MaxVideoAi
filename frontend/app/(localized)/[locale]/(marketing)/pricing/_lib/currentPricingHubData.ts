@@ -124,7 +124,19 @@ async function buildCurrentPricingData(
       exactRank * 1_000_000 + amount * 100 + index;
   });
   const currentRows = markCheapestQuotes(orderPricingRows(rows));
-  const video = { ...base.video, rows: currentRows, highlights: buildVideoHighlights(currentRows, locale) };
+  // Create counts public, enabled video IDs before the pricing-surface filter.
+  const createVideoEntries = [...entries.values()].filter(
+    (entry) => entry.surfaces.app.enabled && (entry.category ?? 'video') === 'video',
+  );
+  const video = {
+    ...base.video,
+    rows: currentRows,
+    highlights: buildVideoHighlights(currentRows, locale),
+    createCatalogue: {
+      total: createVideoEntries.length,
+      current: createVideoEntries.filter((entry) => entry.lifecycle === 'current').length,
+    },
+  };
   if (!otherSurfaces) return { video };
   return { ...base, video,
     popularChecks: buildPopularChecks(locale, currentRows, imageRows,

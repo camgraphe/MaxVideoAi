@@ -44,8 +44,8 @@ test('P0 model and family pages receive the launch timestamp without pre-bumping
   ]) {
     assert.equal(SITEMAP_MANUAL_TIMESTAMPS.routes?.[route], '2026-09-02', route);
   }
+  assert.equal(SITEMAP_MANUAL_TIMESTAMPS.routes?.['/models/flux-3-max'], '2026-11-17');
   for (const route of [
-    '/models/flux-3-max',
     '/models/flux-3',
     '/examples/flux',
     '/ai-video-engines/flux-3-vs-flux-3-max',

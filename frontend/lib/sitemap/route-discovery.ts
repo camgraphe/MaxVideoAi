@@ -1,3 +1,4 @@
+import { SITEMAP_DYNAMIC_EDITORIAL_DATES } from '@/config/sitemap-timestamps';
 import { isCreatorPublicPathAvailable } from '@/lib/toolbox/creator-availability';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -17,7 +18,7 @@ import compareConfig from '@/config/compare-config.json';
 import { getHubComparisonSlugsForSitemap } from '@/lib/compare-hub/data';
 import { getIndexableComparisonLocales } from '@/lib/compare-hub/indexation';
 import { canonicalizeCompareSlug, comparePaths, normalizeCompareEnglishPath } from './compare-paths';
-import { formatLastModified, getGitLastModified, getRouteLastModified } from './lastmod';
+import { formatLastModified, getGitLastModified, getLatestEntryDate, getRouteLastModified } from './lastmod';
 import { hasBlogLocale } from './model-locales';
 import { buildModelRouteEntriesFromRoster } from './model-routes';
 import {
@@ -111,7 +112,14 @@ async function resolveCanonicalPathEntries(): Promise<CanonicalPathEntry[]> {
         return;
       }
       seen.add(normalizedPath);
-      entries.push({ ...entry, englishPath: normalizedPath, ...(entry.locales ? { locales: entry.locales } : {}) });
+      entries.push({
+        ...entry,
+        englishPath: normalizedPath,
+        lastModified: getLatestEntryDate([
+          { lastModified: entry.lastModified },
+          { lastModified: SITEMAP_DYNAMIC_EDITORIAL_DATES[normalizedPath] },
+        ]),
+      });
     });
   }
 

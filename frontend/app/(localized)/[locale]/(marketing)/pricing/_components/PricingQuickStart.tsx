@@ -1,3 +1,4 @@
+import styles from './pricing-opening.module.css';
 import { ArrowDownRight } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 import type { VideoPricingHighlight } from '../_lib/pricingHubData';
@@ -16,15 +17,15 @@ export function PricingQuickStart({
   if (!featured.length) return null;
 
   return (
-    <section aria-labelledby="pricing-quick-start-title" className="container-page max-w-[1220px] pb-6 sm:pb-8">
+    <section aria-labelledby="pricing-quick-start-title" className={styles.quick}>
       <h2 id="pricing-quick-start-title" className="text-sm font-semibold text-text-primary">{title}</h2>
-      <div className="mt-3 grid gap-2 sm:grid-cols-3 sm:gap-3">
+      <div className={styles.quickList}>
         {featured.map((highlight) => (
           <Link
             key={highlight.label}
             href={highlight.href!}
             prefetch={false}
-            className="group flex items-center justify-between gap-4 rounded-xl border border-hairline bg-surface p-4 text-text-primary shadow-card transition hover:border-border-hover hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:flex-col sm:items-start"
+            className={styles.quickItem}
             data-analytics-event="cta_click"
             data-analytics-cta-name="pricing_scenario"
             data-analytics-cta-location="pricing_hero"

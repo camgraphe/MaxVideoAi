@@ -5,10 +5,18 @@ export type SitemapTimestampConfig = {
    */
   sitemaps?: Record<string, string>;
   /**
-   * Manual timestamps for specific canonical routes (english paths such as "/pricing").
+   * Manual timestamps for canonical routes, including localized paths for language-specific edits.
    * Values must be ISO `YYYY-MM-DD` strings.
    */
   routes?: Record<string, string>;
+};
+
+// Localized editorial pages whose content was revised across all published languages.
+export const SITEMAP_DYNAMIC_EDITORIAL_DATES: Readonly<Record<string, string>> = {
+  '/blog/ai-character-sheet-generator': '2026-11-20',
+  '/ai-video-engines/seedance-2-0-vs-seedance-2-0-fast': '2026-11-20',
+  '/ai-video-engines/gemini-omni-flash-vs-veo-3-1': '2026-11-20',
+  '/ai-video-engines/ltx-2-3-fast-vs-ltx-2-5-fast': '2026-11-20',
 };
 
 export const SITEMAP_MANUAL_TIMESTAMPS: SitemapTimestampConfig = {
@@ -19,9 +27,11 @@ export const SITEMAP_MANUAL_TIMESTAMPS: SitemapTimestampConfig = {
     'sitemap-models.xml': '2026-11-06',
   },
   routes: {
+    ...SITEMAP_DYNAMIC_EDITORIAL_DATES,
     '/studio': '2026-10-03',
     '/models': '2026-11-06',
-    '/pricing': '2026-11-06',
+    '/pricing': '2026-11-20',
+    '/models/seedance-2-5-flash': '2026-11-20',
     '/pay-as-you-go-ai-video-generator': '2026-11-06',
     '/ai-video-engines': '2026-11-06',
     '/models/kling-v4-flash': '2026-11-06',
@@ -41,14 +51,13 @@ export const SITEMAP_MANUAL_TIMESTAMPS: SitemapTimestampConfig = {
     '/ai-video-engines/kling-3-turbo-pro-vs-kling-3-turbo-standard': '2026-09-03',
     '/ai-video-engines/kling-3-pro-vs-kling-3-turbo-pro': '2026-09-03',
     '/ai-video-engines/gemini-omni-flash-vs-kling-3-turbo-pro': '2026-11-05',
-    '/ai-video-engines/gemini-omni-flash-vs-veo-3-1': '2026-11-05',
     '/ai-video-engines/gemini-omni-flash-vs-veo-3-1-fast': '2026-11-05',
     '/models/wan-3': '2026-09-02',
     '/models/wan-3-prime': '2026-09-02',
     '/models/ltx-2-5-fast': '2026-09-02',
     '/models/ltx-2-5-pro': '2026-09-02',
     '/models/grok-imagine-video-1-5': '2026-09-02',
-    '/models/flux-3-max': '2026-10-20',
+    '/models/flux-3-max': '2026-11-17',
     '/models/flux-3': '2026-10-20',
     '/ai-video-engines/flux-3-vs-flux-3-max': '2026-10-20',
     '/models/flux-3-draft': '2026-09-02',
@@ -57,7 +66,6 @@ export const SITEMAP_MANUAL_TIMESTAMPS: SitemapTimestampConfig = {
     '/examples/grok': '2026-09-02',
     '/examples/flux': '2026-10-20',
     '/ai-video-engines/ltx-2-3-pro-vs-ltx-2-5-pro': '2026-09-02',
-    '/ai-video-engines/ltx-2-3-fast-vs-ltx-2-5-fast': '2026-09-02',
     '/ai-video-engines/ltx-2-5-fast-vs-ltx-2-5-pro': '2026-09-02',
     '/ai-video-engines/wan-2-6-vs-wan-3': '2026-09-02',
     '/ai-video-engines/wan-3-vs-wan-3-prime': '2026-09-02',

@@ -362,3 +362,15 @@ test('all comparison-content links use supported public route families without c
     }
   }
 });
+
+test('the LTX and Seedance related duels link directly to each localized comparison route', () => {
+  const prefixes = { en: '/ai-video-engines/', fr: '/fr/comparatif/', es: '/es/comparativa/' };
+  for (const slug of ['ltx-2-3-fast-vs-ltx-2-5-fast', 'seedance-2-0-vs-seedance-2-0-fast']) {
+    const doc = JSON.parse(readFileSync(path.join(CONTENT_DIR, slug + '.json'), 'utf8')) as ComparePageContentDocument;
+    for (const locale of LOCALES) {
+      const links = doc[locale].decisionLinks ?? [];
+      assert.ok(links.length > 0);
+      for (const link of links) assert.ok(link.href.startsWith(prefixes[locale]), link.href);
+    }
+  }
+});

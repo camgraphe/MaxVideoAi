@@ -32,6 +32,14 @@ test('disabled models never enter current pricing rows, requests or cheapest hig
   assert.doesNotMatch(JSON.stringify(data.video.highlights), /pika/i);
 });
 
+test('Create counts include video choices outside the price table and exclude image IDs', async () => {
+  const inputs = ['kling-v4', 'lumaRay2', 'gpt-image-2', 'kling-v4'].map(id => getFalEngineById(id)!.engine);
+  const data = await buildCurrentVideoPricingData('en', async () => ({ status: 'unavailable' }), async () => inputs);
+  assert.deepEqual(data.video.createCatalogue, { total: 2, current: 1 });
+  assert.deepEqual(data.video.rows.map(row => row.id), ['kling-v4']);
+  assert.ok(data.video.highlights.some(item => item.label === 'In the video pricing table' && item.value === '1 model'));
+});
+
 test('missing current quotes and failed catalog reads cannot invent a cheapest model', async () => {
   const data = await buildCurrentVideoPricingData('en', async () => ({ status: 'unavailable' }));
   assert.ok(data.video.highlights.every(item => !item.featured));

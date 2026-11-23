@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import test from 'node:test';
 
 type EngineCatalogEntry = {
@@ -72,7 +72,7 @@ test('pricing tables use labelled keyboard-focusable scroll regions', () => {
   assert.match(source, /tabIndex=\{0\}/);
   assert.match(source, /aria-labelledby=\{labelledBy\}/);
   assert.match(source, /focus-visible:ring-2/);
-  assert.match(videoMatrixSource, /labelledBy="video-pricing-table-title"/);
+  assert.match(videoMatrixSource, /labelledBy=\{'family-' \+ key\}/);
   assert.match(popularChecksSource, /labelledBy="popular-pricing-checks-title"/);
   assert.match(otherSurfacesSource, /labelledBy="image-pricing-title"/);
   assert.match(otherSurfacesSource, /labelledBy="audio-pricing-title"/);
@@ -95,7 +95,7 @@ test('pricing page delegates compact matrix sections and JSON-LD rendering', () 
   assert.match(pageSource, /from '\.\/_components\/PricingCurrentContent'/);
   assert.match(pageSource, /<PricingAnchorRestore \/>/);
   assert.match(currentContentSource, /data-pricing-content-ready/);
-  assert.match(pageSource, /const pricingHub = buildCurrentPricingHubData\(locale\)/);
+  assert.match(pageSource, /await readPricingOpening\(locale\)/);
   assert.doesNotMatch(pageSource, /await buildCurrentPricingHubData/);
   assert.doesNotMatch(currentContentSource, /buildCurrentPricingHubData|createScoped|quotePublic/);
   assert.match(pageSource, /export const revalidate = 600/);
@@ -106,7 +106,7 @@ test('pricing page delegates compact matrix sections and JSON-LD rendering', () 
   assert.match(currentContentSource, /from '\.\/PricingCreditsRefundsSection'/);
   assert.match(currentContentSource, /from '\.\/PricingRefundsFaqSection'/);
   assert.match(pageSource, /locale=\{locale\}/);
-  assert.match(pageSource, /from '\.\/_lib\/currentPricingHubData'/);
+  assert.match(pageSource, /from '\.\/_lib\/pricing-opening'/);
   assert.match(pageSource, /from '\.\/_lib\/pricing-jsonld'/);
   assert.match(pageSource, /export default async function PricingPage/);
   assert.match(jsonLdLibSource, /buildPricingBreadcrumbJsonLd/, 'pricing JSON-LD helper should own breadcrumb schema');
@@ -142,19 +142,14 @@ test('pricing page does not regain calculator-first or long model-section owners
   assert.ok(lineCount <= 260, `pricing page should stay compact after refactor, got ${lineCount} lines`);
 });
 
-test('hero is compact and uses the requested CTA copy', () => {
-  assert.match(heroSource, /export function PricingHeroSection/);
-  assert.match(heroSource, /MaxVideoAI Pricing/);
-  assert.match(heroSource, /AI Video Pricing Comparison/);
-  assert.match(heroSource, /eyebrow/);
-  assert.match(heroSource, /Open app for live pricing before you generate/);
-  assert.match(heroSource, /Compare prices below/);
-  assert.match(heroSource, /No subscription/);
-  assert.match(heroSource, /Guest preview/);
-  assert.match(heroSource, /Starter credits from \$10/);
-  assert.match(heroSource, /min-h-\[260px\]|min-h-\[300px\]|min-h-\[320px\]|min-h-\[340px\]/);
-  assert.doesNotMatch(heroSource, /min-h-\[520px\]/);
-  assert.doesNotMatch(heroSource, /MarketingHeroImage/);
+test('opening exposes localized navigation, exact preset links and the existing live app destination', () => {
+  assert.match(heroSource, /pricingOpeningCopy\[locale\]/);
+  assert.match(heroSource, /data-estimate=/);
+  assert.match(heroSource, /row.href/);
+  assert.match(heroSource, /\/app\?mode=t2v\&lang=/);
+  for (const id of ['video', 'image', 'audio', 'tool']) assert.ok(heroSource.includes(`#${id}-pricing`));
+  assert.match(heroSource, /seedance-mini-metro\.webp/);
+  assert.match(heroSource, /time dateTime=/);
 });
 
 test('pricing matrix data is generated from the catalog with scenario total presets', () => {
@@ -243,7 +238,8 @@ test('video matrix renders exact scenario columns and compact links', () => {
   assert.match(hubDataSource, /4K output/);
   assert.match(hubCopySource, /Prices shown in USD credits\./);
   assert.match(hubCopySource, /Prix affichés en crédits USD\./);
-  assert.match(hubCopySource, /Caps/);
+  assert.match(hubCopySource, /Capacités/);
+  assert.match(hubCopySource, /Capacidades/);
   assert.doesNotMatch(hubCopySource, /Limits/);
   assert.doesNotMatch(hubCopySource, /Limites/);
   assert.match(hubCopySource, /Actions/);
@@ -256,8 +252,8 @@ test('video matrix renders exact scenario columns and compact links', () => {
   assert.doesNotMatch(hubCopySource, /Best-value current-gen 5s 720p/);
   assert.match(hubCopySource, /Prix le plus bas affiché/);
   assert.match(videoMatrixSource, /tabular-nums/);
-  assert.match(videoMatrixSource, /sticky left-0/);
-  assert.match(videoMatrixSource, /scope="colgroup"/);
+  assert.match(videoMatrixSource, /data-preset=/);
+  assert.match(videoMatrixSource, /scope="row"/);
   assert.match(videoMatrixSource, /<tbody>/);
   assert.match(hubCopySource, /Live price/);
   assert.match(hubCopySource, /More/);
@@ -288,7 +284,7 @@ test('popular checks and non-video pricing surfaces are compact matrices', () =>
   assert.match(popularChecksSource, /export function PricingPopularChecksSection/);
   assert.match(popularChecksSource, /getPricingHubCopy/);
   assert.match(hubCopySource, /Popular price checks/);
-  assert.match(hubCopySource, /Vérifications de prix fréquentes/);
+  assert.match(hubCopySource, /Exemples de prix par usage/);
   assert.match(hubCopySource, /5s 720p video/);
   assert.match(hubCopySource, /Vidéo 5 s 720p/);
   assert.match(hubCopySource, /8s 1080p premium video/);
@@ -310,16 +306,18 @@ test('popular checks and non-video pricing surfaces are compact matrices', () =>
   assert.match(otherSurfacesSource, /export function PricingOtherSurfacesSection/);
   assert.match(otherSurfacesSource, /getPricingHubCopy/);
   assert.match(hubCopySource, /Image, audio and tool pricing/);
-  assert.match(hubCopySource, /Prix image, audio et outils/);
+  assert.match(hubCopySource, /Tarifs des images, de l’audio et des outils/);
   assert.match(hubCopySource, /Image generation pricing/);
-  assert.match(hubCopySource, /Prix génération d’images/);
-  assert.match(otherSurfacesSource, /id="image-pricing" className="scroll-mt-24/);
-  assert.match(otherSurfacesSource, /id="audio-pricing" className="scroll-mt-24/);
-  assert.match(otherSurfacesSource, /id="tool-pricing" className="scroll-mt-24/);
+  assert.match(hubCopySource, /Tarifs de génération d’images/);
+  for (const surface of ['image', 'audio', 'tool']) {
+    assert.ok(otherSurfacesSource.includes(`id="${surface}-pricing" className={styles.surfaceBody}`));
+  }
+  const catalogueStyles = readFileSync(join(dirname(otherSurfacesPath), 'pricing-catalog.module.css'), 'utf8');
+  assert.match(catalogueStyles, /\.surfaceBody\s*\{[^}]*scroll-margin-top:/, 'Bookmarked pricing tables clear the fixed header and retain their category title');
   assert.match(hubCopySource, /Audio pricing/);
   assert.match(hubCopySource, /Prix audio/);
-  assert.match(hubCopySource, /Prep tools and upscale pricing/);
-  assert.match(hubCopySource, /Prix outils de préparation et upscale/);
+  assert.match(hubCopySource, /Creative tools and upscaling prices/);
+  assert.match(hubCopySource, /Tarifs des outils de création et d’agrandissement/);
   assert.match(hubDataSource, /buildPublicPricingFacts/);
   assert.match(hubDataSource, /quotePublicPricing/);
   assert.doesNotMatch(hubDataSource, /resolveGptImage2PricingTier/);
@@ -382,9 +380,7 @@ test('pricing metadata and FAQ target comparison intent first', () => {
     'How often do prices change?',
   ]);
   assert.match(faqSource, /Pricing FAQ/);
-  assert.match(faqSource, /dark-section-neon/);
-  assert.match(faqSource, /mx-auto w-full max-w-\[900px\]/);
-  assert.match(faqSource, /group w-full rounded-card/);
+  assert.match(faqSource, /aria-labelledby="pricing-faq-title"/);
   assert.match(faqSource, /<details/);
   assert.match(faqSource, /<summary/);
   assert.match(faqSource, /summary className="flex w-full/);

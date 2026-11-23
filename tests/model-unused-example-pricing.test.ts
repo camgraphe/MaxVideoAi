@@ -44,6 +44,23 @@ async function fixture(modelId: string, locale: typeof locales[number]) {
     publicVideos: [landscape, portrait], expectedVideos: [portrait, landscape] };
 }
 
+test('Flash cards link to selected editorial readers and keep the generation source ID', async () => {
+  const { harness, dispose } = await makeModelPagePricingHarness({executeGallery:true});
+  try {
+    const input = await fixture('seedance-2-5-flash', 'fr');
+    const [selected, other] = input.expectedVideos;
+    const state = { ...input, watchPaths: { [selected.id]: '/video/editorial-film' } };
+    harness.configure(state);
+    const { props } = await harness.render(state);
+    const [first, second] = props.galleryVideos;
+    assert.equal(first.href, '/video/editorial-film');
+    assert.equal(new URL(first.recreateHref, 'https://maxvideoai.com').searchParams.get('from'), selected.id);
+    assert.ok(second.href.startsWith(`/video/${other.id}?from=`));
+  } finally {
+    await dispose();
+  }
+});
+
 async function layoutProjection(h: any, props: any) {
   const elements = findModelLayoutElements(await h.layout(props));
   const section = elements.find(element => ['ModelPageContentSections', 'ModelCinematicExamples'].includes(element.name));
