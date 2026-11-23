@@ -139,6 +139,6 @@ export function DictationButton({ locale, value, onChange, maxLength, disabled =
       onBlur={() => setError('')} onClick={press}>
       {phase ? <Square size={16} fill="currentColor" aria-hidden /> : <Mic size={18} aria-hidden />}
     </button>
-    <span ref={notice} id={noticeId} role="status" className={error ? styles.notice : 'sr-only'}>{error || (phase && words[phase])}</span>
+    <span ref={notice} id={noticeId} aria-live="polite" role={phase || error ? 'status' : undefined} className={error ? styles.notice : 'sr-only'}>{error || (phase && words[phase])}</span>
   </span>;
 }
