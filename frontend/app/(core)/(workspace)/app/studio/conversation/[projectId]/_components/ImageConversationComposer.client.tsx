@@ -67,7 +67,7 @@ export function ImageConversationComposer({
         type="button"
         disabled={blocked}
         ref={libraryTrigger}
-        aria-label={libraryLabel??t('Open library', 'Ouvrir la bibliothèque')}
+        aria-label={libraryLabel??t('Open library', 'Ouvrir la bibliothèque', 'Abrir la biblioteca')}
         onClick={event => onOpenLibrary(event.currentTarget)}
       >
         <Plus size={21} />

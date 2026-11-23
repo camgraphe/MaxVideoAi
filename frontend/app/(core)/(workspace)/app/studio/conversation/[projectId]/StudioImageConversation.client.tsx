@@ -408,7 +408,7 @@ function StudioImageConversationWorkspace({
             blocked={studio.loading || studio.busy || !!studio.pending || shelf.uploading || unavailableReferences}
             libraryTrigger={libraryTrigger}
             onOpenLibrary={openReferences}
-            locale={locale}
+            locale={appLocale}
           />
           </div>
           <div className={styles.composerTools}>
