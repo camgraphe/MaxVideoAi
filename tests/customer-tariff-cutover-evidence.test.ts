@@ -8,6 +8,7 @@ import { withArchivedPikaPricingCatalogue } from './helpers/historical-customer-
 
 test('cutover derives all ordinary, workflow and real input duration checkpoints with unique identities', async () => withArchivedPikaPricingCatalogue(() => {
   const cases = collectCustomerTariffCutoverCheckpoints();
+  assert.ok(cases.every(row => row.scenario.modelId !== 'kling-image-v4'));
   const fourK = cases.filter(row => row.scenario.modelId === 'seedance-2-5' && row.scenario.context.resolution === '4k');
   assert.equal(fourK.filter(row => row.kind === 'ordinary').length, 810);
   assert.equal(fourK.filter(row => row.kind === 'local_workflow').length, 162);

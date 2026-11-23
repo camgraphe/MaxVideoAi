@@ -34,9 +34,10 @@ const typesSource = readFileSync(typesPath, 'utf8');
 test('Fal webhook persists image outputs before marking them completed', () => {
   assert.ok(existsSync(imageOutputPath), 'webhook image persistence should live in a focused helper');
   assert.match(handlerSource, /persistFalWebhookImageOutputs/);
-  assert.match(handlerSource, /let imageUrls/);
-  assert.match(handlerSource, /imageUrls = await persistFalWebhookImageOutputs/);
-  assert.match(handlerSource, /heroImageIndex >= 0 \? heroImageIndex : 0/);
+  assert.match(handlerSource, /await persistFalWebhookImageOutputs/);
+  const imageOutputSource = readFileSync(imageOutputPath, 'utf8');
+  assert.match(imageOutputSource, /copy = copyGeneratedImagesToStorage/);
+  assert.match(imageOutputSource, /stored\[Math\.max\(0, heroIndex\)\]/);
 });
 
 test('Fal webhook handler delegates mapping, payload extraction, provisional job, and refund helpers', () => {

@@ -6,16 +6,18 @@ import { ModelCinematicPrompt } from './ModelCinematicAsset';
 import type { CinematicAsset, CinematicPresentation } from '../_lib/model-page-cinematic-data';
 
 export function ModelCinematicCompare({ assets, ui, note }: { assets: CinematicAsset[]; ui: CinematicPresentation['ui']; note?: string }) {
+  const isPair = assets.length === 2;
   const [step, setStep] = useState(1);
-  const [reveal, setReveal] = useState(50);
+  const [reveal, setReveal] = useState(isPair ? 30 : 50);
   const sliderId = useId();
   const before = assets[Math.max(0, step - 1)];
   const after = assets[step];
+  const comparisonAspectRatio = isPair ? before.display.width / before.display.height : undefined;
   return <div className="cinema-comparison">
-    <div className="cinema-segmented" role="group" aria-label={ui.compare}>
+    {assets.length > 2 ? <div className="cinema-segmented" role="group" aria-label={ui.compare}>
       {assets.map((asset, index) => <button key={asset.id} type="button" aria-pressed={step === index} onClick={() => { setStep(index); setReveal(50); }}><Image src={asset.display.url} width={160} height={90} alt="" aria-hidden="true" sizes="160px" loading="lazy" /><span>{String(index + 1).padStart(2, '0')} / {asset.title}</span></button>)}
-    </div>
-    <div className="cinema-compare-images">
+    </div> : null}
+    <div className="cinema-compare-images" style={{ aspectRatio: comparisonAspectRatio }}>
       <Image src={before.display.url} width={before.display.width} height={before.display.height} alt={before.title} sizes="(min-width: 1600px) 1432px, 91vw" loading="lazy" />
       {step > 0 ? <div className="cinema-compare-after" style={{ clipPath: `inset(0 0 0 ${reveal}%)` }}>
         <Image src={after.display.url} width={after.display.width} height={after.display.height} alt={after.title} sizes="(min-width: 1600px) 1432px, 91vw" loading="lazy" />

@@ -4,8 +4,11 @@ import createMedia from '@/config/model-cinematic-create-media.json';
 import finalMedia from '@/config/model-cinematic-final-media.json';
 import boards from '@/config/model-cinematic-workflow-boards.json';
 import publicProofs from '@/config/model-cinematic-public-proofs.json';
+import klingShotStills from '@/config/model-kling-v4-shot-stills.json';
+import klingWorkflowVisuals from '@/config/model-kling-v4-workflow-visuals.json';
 
 export type CinematicClip = Pick<typeof createMedia.create, 'src' | 'poster' | 'width' | 'height' | 'durationSeconds' | 'audio'> & { displayFormat?: string };
+export type CinematicShotStill = (typeof klingShotStills.frames)[number];
 export type CinematicMotionProof = {
   character: Pick<typeof createMedia.character, 'display' | 'width' | 'height'>;
   source: CinematicClip; result: CinematicClip;
@@ -14,8 +17,15 @@ export type CinematicVideoMedia = {
   modelSlug: string; modelLabel: string; frameSourceLabel: string;
   openingRecipe?: Pick<typeof flashHero, 'id' | 'mode' | 'prompt' | 'original'>;
   frames: readonly unknown[];
+  heroAutoplay?: boolean;
   publicProofs?: readonly (typeof publicProofs)[number][];
   create: CinematicClip;
+  createStills?: readonly CinematicShotStill[];
+  promptingFrame?: {
+    id: string;
+    proofId: string;
+    image: { url: string; width: number; height: number; sha256: string };
+  };
   modify?: { source: CinematicClip; result: CinematicClip };
   focuses: Record<string, CinematicMotionProof>;
   boards: readonly Pick<typeof boards[number], 'id' | 'display'>[];
@@ -26,12 +36,22 @@ export type CinematicVideoMedia = {
  * New video models register their own bundle here; renderers never inherit Flash media.
  */
 const videoMedia: Record<string, CinematicVideoMedia> = {
-  ...Object.fromEntries(['seedance-2-5', 'flux-3-max'].map(modelSlug => {
-    const proofs = publicProofs.filter(proof => proof.modelSlug === modelSlug);
+  ...Object.fromEntries([
+    { modelSlug: 'seedance-2-5', modelLabel: 'Seedance 2.5' },
+    { modelSlug: 'flux-3-max', modelLabel: 'FLUX 3 Max' },
+    { modelSlug: 'kling-v4', modelLabel: 'Kling 4.0', heroAutoplay: false },
+  ].map(model => {
+    const proofs = publicProofs.filter(proof => proof.modelSlug === model.modelSlug);
     const create = proofs.find(proof => proof.id.endsWith('-create'));
-    if (!create) throw new Error(`Missing reviewed Create proof: ${modelSlug}`);
-    return [modelSlug, { modelSlug, modelLabel: modelSlug === 'seedance-2-5' ? 'Seedance 2.5' : 'FLUX 3 Max',
-      frameSourceLabel: '', frames: [], publicProofs: proofs, create: create.clip,
+    if (!create) throw new Error(`Missing reviewed Create proof: ${model.modelSlug}`);
+    const createStills = create.id === klingShotStills.sourceProofId && create.clip.src === klingShotStills.sourceUrl
+      ? klingShotStills.frames : undefined;
+    const promptingFrame = model.modelSlug === klingWorkflowVisuals.modelSlug && create.id === klingWorkflowVisuals.sourceProofId
+      && create.clip.src.endsWith(`${klingWorkflowVisuals.sourceSha256}.mp4`)
+      ? { id: klingWorkflowVisuals.promptGuide.id, proofId: create.id,
+        image: klingWorkflowVisuals.frames[klingWorkflowVisuals.promptGuide.frameId as keyof typeof klingWorkflowVisuals.frames] }
+      : undefined;
+    return [model.modelSlug, { ...model, frameSourceLabel: '', frames: [], publicProofs: proofs, create: create.clip, createStills, promptingFrame,
       focuses: {}, boards: [], examples: Object.fromEntries(proofs.map(proof => [proof.id, proof.clip])) }];
   })),
   [finalMedia.modelSlug]: {

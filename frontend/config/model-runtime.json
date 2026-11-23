@@ -2353,6 +2353,48 @@
       "successorSlug": null
     },
     {
+      "id": "kling-image-v4",
+      "slug": "kling-image-v4",
+      "family": "kling",
+      "category": "image",
+      "aliases": {
+        "internal": [],
+        "publicSlugs": []
+      },
+      "publication": {
+        "model": {
+          "published": true,
+          "indexable": true
+        },
+        "examples": {
+          "published": false,
+          "includeInFamilyCopy": false,
+          "current": false
+        },
+        "compare": {
+          "published": false,
+          "indexed": false,
+          "suggestedOpponentIds": [],
+          "publishedPairIds": []
+        },
+        "app": {
+          "published": true,
+          "discoveryRank": 8,
+          "launchBadge": "new"
+        },
+        "pricing": {
+          "published": true,
+          "featuredScenario": "high-resolution stills and ordered image sets"
+        },
+        "sitemap": {
+          "published": true
+        }
+      },
+      "lifecycle": "current",
+      "successorId": null,
+      "successorSlug": null
+    },
+    {
       "id": "seedream-5-5",
       "slug": "seedream-5-5",
       "family": "seedream",

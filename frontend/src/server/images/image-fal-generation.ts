@@ -1,3 +1,7 @@
+import {
+  assertKlingImageV4OutputCount, assertKlingImageV4ReferenceCount,
+  KLING_IMAGE_V4_ASPECT_RATIOS, KLING_IMAGE_V4_ENDPOINTS, KLING_IMAGE_V4_RESOLUTIONS,
+} from '@/lib/image/kling-image-v4';
 import { getFalClient } from '@/lib/fal-client';
 import { createSignedDownloadUrl, extractStorageKeyFromUrl, isStorageConfigured } from '@/server/storage';
 import type { GptImage2ImageSize } from '@/lib/image/gptImage2';
@@ -32,6 +36,24 @@ export function buildFalImageGenerationInput(params: {
   thinkingLevel: string | null;
   limitGenerations: boolean;
 }): Record<string, unknown> {
+  if (Object.values(KLING_IMAGE_V4_ENDPOINTS).some(endpoint => endpoint === params.falModelId)) {
+    if (params.falModelId !== KLING_IMAGE_V4_ENDPOINTS[params.mode]) throw new Error('Kling Image endpoint does not match the requested mode.');
+    assertKlingImageV4OutputCount(params.numImages);
+    assertKlingImageV4ReferenceCount(params.mode, params.resolvedReferenceUrls.length);
+    const resolution = KLING_IMAGE_V4_RESOLUTIONS.find(option => option === params.providerImageSize);
+    if (!resolution) throw new Error('Unsupported Kling Image resolution.');
+    const aspectRatio = KLING_IMAGE_V4_ASPECT_RATIOS.find(option => option === (params.falAspectRatio ?? 'auto'));
+    if (!aspectRatio) throw new Error('Unsupported Kling Image aspect ratio.');
+    return {
+      prompt: params.effectivePrompt,
+      resolution,
+      aspect_ratio: aspectRatio,
+      ...(params.numImages === 1
+        ? { result_type: 'single', num_images: 1 }
+        : { result_type: 'series', series_amount: params.numImages }),
+      ...(params.mode === 'i2i' ? { image_urls: params.resolvedReferenceUrls } : {}),
+    };
+  }
   const isLumaUniT2I = params.mode === 't2i' && isLumaUniTextToImageFalModel(params.falModelId);
   const isLumaUniEdit = params.mode === 'i2i' && isLumaUniEditFalModel(params.falModelId);
   const [sourceImageUrl, ...editReferenceUrls] = params.resolvedReferenceUrls;
@@ -64,39 +86,29 @@ export function buildFalImageGenerationInput(params: {
   };
 }
 
-export async function runFalImageGeneration(params: {
-  falModelId: string;
-  effectivePrompt: string;
-  numImages: number;
-  mode: ImageGenerationMode;
+type FalImageGenerationInput = Omit<Parameters<typeof buildFalImageGenerationInput>[0], 'resolvedReferenceUrls'> & {
   combinedImageUrls: string[];
-  falAspectRatio: string | null;
-  providerImageSize: string | GptImage2ImageSize | null;
-  resolutionEngineParam: string | null | undefined;
-  normalizedSeed: number | null;
-  outputFormat: string | null;
-  quality: string | null;
-  background?: string | null;
-  style?: string | null;
-  maskUrl: string | null;
-  enableWebSearch: boolean;
-  thinkingLevel: string | null;
-  limitGenerations: boolean;
   onProviderJobId?: (providerJobId: string) => void;
-}): Promise<{ result: { data?: unknown; requestId?: string | null }; providerJobId: string | null }> {
-  let providerJobId: string | undefined;
+};
+
+export async function prepareFalImageInput(params: FalImageGenerationInput): Promise<Record<string, unknown>> {
+  const requiresSignedReferences = params.falModelId === KLING_IMAGE_V4_ENDPOINTS.i2i;
   const shouldResolveReferenceUrls = params.mode === 'i2i' || isLumaUniTextToImageFalModel(params.falModelId);
   const resolvedReferenceUrls =
     shouldResolveReferenceUrls
       ? await Promise.all(
           params.combinedImageUrls.map(async (url) => {
             const key = extractStorageKeyFromUrl(url);
-            if (!key || !isStorageConfigured()) return url;
+            if (!key || !isStorageConfigured()) {
+              if (requiresSignedReferences) throw new Error('Kling Image references require owned image storage.');
+              return url;
+            }
             try {
               return await createSignedDownloadUrl(key, {
                 expiresInSeconds: SIGNED_REFERENCE_URL_TTL_SECONDS,
               });
             } catch (signError) {
+              if (requiresSignedReferences) throw signError;
               console.warn('[images] failed to sign reference image URL', signError);
               return url;
             }
@@ -104,26 +116,14 @@ export async function runFalImageGeneration(params: {
         )
       : [];
 
+  return buildFalImageGenerationInput({ ...params, resolvedReferenceUrls });
+}
+
+export async function runFalImageGeneration(params: FalImageGenerationInput):
+Promise<{ result: { data?: unknown; requestId?: string | null }; providerJobId: string | null }> {
+  let providerJobId: string | undefined;
   const result = await getFalClient().subscribe(params.falModelId, {
-    input: buildFalImageGenerationInput({
-      falModelId: params.falModelId,
-      effectivePrompt: params.effectivePrompt,
-      numImages: params.numImages,
-      mode: params.mode,
-      resolvedReferenceUrls,
-      falAspectRatio: params.falAspectRatio,
-      providerImageSize: params.providerImageSize,
-      resolutionEngineParam: params.resolutionEngineParam,
-      normalizedSeed: params.normalizedSeed,
-      outputFormat: params.outputFormat,
-      quality: params.quality,
-      background: params.background,
-      style: params.style,
-      maskUrl: params.maskUrl,
-      enableWebSearch: params.enableWebSearch,
-      thinkingLevel: params.thinkingLevel,
-      limitGenerations: params.limitGenerations,
-    }),
+    input: await prepareFalImageInput(params),
     mode: 'polling',
     onEnqueue(requestId) {
       providerJobId = requestId;

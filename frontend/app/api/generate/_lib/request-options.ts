@@ -27,7 +27,7 @@ import {
 } from './request-option-normalizers';
 import { buildSoraRequestOptions } from './request-options-sora';
 import { deriveRuntimeSchemaCaps, getRuntimeDurationDefault, getRuntimeSchemaEnumDefault } from './runtime-schema-options';
-import { resolveRuntimeResolutionPolicy } from '@/server/video-generation/runtime-resolution';
+import { getKlingV4Native4kAvailabilityError, resolveRuntimeResolutionPolicy } from '@/server/video-generation/runtime-resolution';
 export type { GenerationElement, MultiPromptEntry } from './request-option-normalizers';
 export type VideoMode = Extract<
   Mode,
@@ -241,6 +241,10 @@ export function buildGenerateRequestOptions(params: {
     typeof body.resolution === 'string' && body.resolution.trim().length
       ? body.resolution.trim()
       : resolutionPolicy.defaultResolution ?? resolutionPolicy.pricingFallbackResolution;
+  const resolutionError = getKlingV4Native4kAvailabilityError(engine, requestedResolution);
+  if (resolutionError) {
+    return { ok: false, status: 400, body: { ok: false, error: 'ENGINE_CONSTRAINT', message: resolutionError } };
+  }
   let pricingResolution =
     requestedResolution === 'auto'
       ? engine.resolutions.find((value) => value !== 'auto') ?? engine.resolutions[0] ?? '1080p'

@@ -33,6 +33,7 @@ export interface ImageWorkspaceCopy {
     presetsHint: string;
     numImagesLabel: string;
     numImagesCount: string;
+    klingImageSetCount: string;
     numImagesUnit: {
       singular: string;
       plural: string;
@@ -207,6 +208,7 @@ export const DEFAULT_COPY: ImageWorkspaceCopy = {
     presetsHint: 'Tap a preset or start from scratch.',
     numImagesLabel: 'Number of images',
     numImagesCount: '{count} {unit}',
+    klingImageSetCount: 'Set of {count} images',
     numImagesUnit: {
       singular: 'image',
       plural: 'images',

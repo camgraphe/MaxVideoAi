@@ -1,5 +1,6 @@
 import { VIDEO_OPERATIONS } from '@/lib/video-operation';
 import { GPT_IMAGE_26_PRESET_SIZES } from '@/lib/image/gptImage26Dimensions';
+import { isKlingImageV4EngineId, KLING_IMAGE_V4_RESOLUTIONS } from '@/lib/image/kling-image-v4';
 import { z } from 'zod';
 
 import type { PreflightRequest, PreflightResponse } from '@/types/engines';
@@ -24,7 +25,8 @@ const modes = [
 
 const resolutions = [
   ...GPT_IMAGE_26_PRESET_SIZES,
-  '0.5k', '360p', '540p', '480p', '720p', '1080p', '1080P', '1440p', '4k', '1k', '1K', '1.5K', '2k', '2K', '3K', '4K',
+  ...KLING_IMAGE_V4_RESOLUTIONS,
+  '0.5k', '360p', '540p', '480p', '720p', '1080p', '1080P', '1440p', '4k', '1k', '1K', '1.5K', '2k', '3K',
   '1024x1024', '1536x1024', '1024x1536', '2048x2048', '1920x1080', '1080x1920', '2304x1728', '1728x2304', '2848x1600',
   '1600x2848', '2496x1664', '1664x2496', '3136x1344', '3072x3072', '3456x2592',
   '2592x3456', '4096x2304', '2304x4096', '2496x3744', '3744x2496', '4704x2016',
@@ -100,6 +102,9 @@ const preflightRequestSchema = z.object({
   extraInputValues: extraInputValuesSchema.optional(),
   user: z.object({ memberTier: z.string().trim().min(1).max(32).optional() }).strict().optional(),
  }).strict().superRefine((request, context) => {
+  if (request.resolution === '8K' && (!isKlingImageV4EngineId(request.engine) || !['t2i', 'i2i'].includes(request.mode))) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ['resolution'], message: '8K is available for Kling Image generation and editing.' });
+  }
   if (request.durationSec === undefined
     && (request.engine !== 'kling-v4' || request.mode !== 'v2v' || request.durationOption !== undefined)) {
     context.addIssue({code:z.ZodIssueCode.custom,path:['durationSec'],message:'An explicit duration is required for this model and mode.'});

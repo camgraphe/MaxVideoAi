@@ -1,3 +1,4 @@
+import { isKlingImageV4EngineId } from '@/lib/image/kling-image-v4';
 import { isNewSeedreamEngineId } from '@/lib/image/seedream-pricing';
 import { isSeedance25EngineId } from '@/lib/seedance-model-variants';
 import { createHash } from 'node:crypto';
@@ -27,6 +28,7 @@ import { buildBillingPricingFacts } from '@/lib/pricing-billing-facts';
 import { openTariffQuantityKey, withOpenTariffQuantity } from '@/lib/pricing-audit/open-quantity-tariff-scenario';
 import { seedanceInputTariffMaximum, supportsSeedanceInputTariff } from '@/lib/seedance-input-tariff';
 import { withSeedanceTariffInputDuration } from '@/lib/pricing-audit/seedance-input-tariff-scenario';
+import { withKlingV4TariffInput } from '@/lib/pricing-audit/kling-v4-tariff-scenario';
 import { getBytePlusSeedanceModeResolutions } from '@/lib/byteplus-mode-capabilities';
 import { resolveSeedance25ModeAvailability } from '@/server/engine-mode-availability';
 import { resolveBytePlusTransport } from '@/server/video-providers/byteplus-modelark-transport';
@@ -134,6 +136,19 @@ export function resolvePublicModelScenario(input: PublicModelQuoteInput): Manual
       `${model.id}:${input.mode}:${input.resolution}`);
     } catch { return null; }
   }
+  if (isKlingImageV4EngineId(model.id)) {
+    const engine = getFalEngineById(model.id)?.engine;
+    const mode = input.mode;
+    if (!engine || (mode !== 't2i' && mode !== 'i2i') || input.audio || input.voiceControl || input.hdr || input.exrExport || input.hasVideoInput
+      || [input.quality, input.customImageSize, input.durationOption, input.inputVideoDurationSec, input.inputAudioDurationSec,
+        input.inheritedDurationSec, input.referenceTokenBudget].some(value => value !== undefined)) return null;
+    try {
+      return buildManualTariffCoverageScenario({
+        engine, mode, durationSec: input.durationSec, resolution: input.resolution, aspectRatio: input.aspectRatio,
+        inputImageCount: input.referenceImageCount ?? (mode === 'i2i' ? 1 : 0),
+      }, `${model.id}:${mode}:${input.resolution}`);
+    } catch { return null; }
+  }
   if (isGptImage26EngineId(model.id)) return resolveGpt26PublicScenario(input);
   const defaultReferences = isLumaAgentsImageEngineId(model.id) || model.id === 'seedream-5-0-pro' ? 0 : 1;
   const gptImage = isGptImageFamilyEngineId(model.id);
@@ -179,6 +194,14 @@ export function resolvePublicModelScenario(input: PublicModelQuoteInput): Manual
     && !(references.values.includes(undefined) && input.referenceImageCount === 1)) return null;
   if (input.hasVideoInput !== undefined && typeof input.hasVideoInput !== 'boolean') return null;
   const hasVideoInput = input.hasVideoInput ?? (['v2v', 'extend'].includes(input.mode) || (input.inputVideoDurationSec ?? 0) > 0);
+  const klingV4 = model.id === 'kling-v4';
+  const klingVideoSource = klingV4 && hasVideoInput;
+  if (klingV4) {
+    if (input.inheritedDurationSec !== undefined || (input.mode === 'v2v' && !hasVideoInput)) return null;
+    if (klingVideoSource && (!['ref2v', 'v2v'].includes(input.mode) || input.inputVideoDurationSec === undefined)) return null;
+    if (!hasVideoInput && (input.inputVideoDurationSec !== undefined
+      || (input.mode === 'ref2v' && input.hasVideoInput !== false))) return null;
+  }
   const videoAllowed = [...(entry!.engine.inputSchema?.required ?? []), ...(entry!.engine.inputSchema?.optional ?? [])]
     .some(field => field.type === 'video' && (!field.modes || field.modes.includes(mode.mode)));
   if (tokenPricing && hasVideoInput && !videoAllowed && !['v2v', 'extend'].includes(input.mode)) return null;
@@ -227,7 +250,7 @@ export function resolvePublicModelScenario(input: PublicModelQuoteInput): Manual
       ? scenario.selector.inputImageCount === undefined || input.mode !== 'ref2v'
         || scenario.selector.inputImageCount === String(input.referenceImageCount ?? defaultReferences)
       : scenario.selector.referenceImageCount === String(input.referenceImageCount ?? defaultReferences)) &&
-    (!tokenPricing || scenario.selector.billingInputType === (hasVideoInput ? 'video_input' : 'no_video_input')) &&
+    (!(tokenPricing || klingV4) || scenario.selector.billingInputType === (hasVideoInput ? 'video_input' : 'no_video_input')) &&
     !scenario.context.loop &&
     (audio === undefined || scenario.selector.audio === undefined || scenario.selector.audio === String(audio)) &&
     (scenario.selector.voiceControl === 'true') === Boolean(input.voiceControl) &&
@@ -235,7 +258,7 @@ export function resolvePublicModelScenario(input: PublicModelQuoteInput): Manual
     (scenario.selector.exrExport === 'true') === Boolean(input.exrExport) &&
     (gptImage || scenario.selector.aspectRatio === undefined || input.aspectRatio === undefined || scenario.selector.aspectRatio === requestedAspect) &&
     (input.quality === undefined || scenario.selector.quality === input.quality) &&
-    (wanInputDuration || omniMedia || tokenPricing || input.inputVideoDurationSec === undefined || scenario.selector.inputVideoDurationSec === String(input.inputVideoDurationSec)) &&
+    (wanInputDuration || omniMedia || tokenPricing || klingVideoSource || input.inputVideoDurationSec === undefined || scenario.selector.inputVideoDurationSec === String(input.inputVideoDurationSec)) &&
     (ltxAudioDuration || input.inputAudioDurationSec === undefined || scenario.selector.inputAudioDurationSec === String(input.inputAudioDurationSec)) &&
     (openKey === 'referenceTokenBudget' || input.referenceTokenBudget === undefined || scenario.selector.referenceTokenBudget === String(input.referenceTokenBudget))
   );
@@ -272,6 +295,10 @@ export function resolvePublicModelScenario(input: PublicModelQuoteInput): Manual
   }
   if (selected && seedanceInput) {
     try { return withSeedanceTariffInputDuration(selected, input.inputVideoDurationSec!); }
+    catch { return null; }
+  }
+  if (selected && klingVideoSource) {
+    try { return withKlingV4TariffInput(selected, input.inputVideoDurationSec!); }
     catch { return null; }
   }
   if (selected && openKey) {
@@ -321,7 +348,8 @@ export async function quotePublicModelScenario(
       ? `${seconds} image${seconds === 1 ? '' : 's'}` : inheritsEditSource
         ? `${scenario.context.inputVideoDurationSec}s source · ${seconds}s price bracket · source format`
         : `${seconds}s${ltx25AudioTariffBounds(input.modelId, input.mode) ? ' source audio' : ''}`;
-    const sourceLabel = !inheritsEditSource && (supportsWan3TariffInputDuration(scenario.modelId, scenario.selector.mode)
+    const sourceLabel = !inheritsEditSource && ((scenario.modelId === 'kling-v4' && scenario.context.hasVideoInput)
+      || supportsWan3TariffInputDuration(scenario.modelId, scenario.selector.mode)
       || supportsSeedanceInputTariff(scenario.modelId, scenario.selector.mode, scenario.selector.billingInputType))
       ? ` output + ${scenario.context.inputVideoDurationSec}s input` : '';
     const outputEstimateLabel = snapshot.meta?.providerCostKind === 'conservative-list-output-bound'

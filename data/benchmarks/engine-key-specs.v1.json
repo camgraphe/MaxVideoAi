@@ -1958,12 +1958,14 @@
     {
       "modelSlug": "kling-v4",
       "sources": [
+        "https://fal.ai/models/kling/v4/text-to-video/api",
         "https://fal.ai/models/kling/v4/reference-to-video/api",
-        "https://fal.ai/models/kling/v4/image-to-video/api"
+        "https://fal.ai/models/kling/v4/image-to-video/api",
+        "https://fal.ai/models/kling/v4/video-to-video/edit/api"
       ],
       "provenance": {
-        "basis": "maxvideoai-production-route-contract",
-        "note": "MaxVideoAI route contract at 5f91109bd; provider documentation already reviewed on 27 October 2026. Capability descriptions do not certify output quality."
+        "basis": "fal-and-maxvideoai-route-contract",
+        "note": "SDR resolutions in the fal contracts and MaxVideoAI candidate 679b08a8b, reviewed on 20 November 2026. The 4K option depends on a current quote. The gallery films remain 720p."
       },
       "keySpecs": {
         "textToVideo": "Supported",
@@ -1972,7 +1974,7 @@
         "firstLastFrame": "Supported (start + end image in i2v)",
         "referenceImageStyle": "Up to 10 images total, including the opening image",
         "referenceVideo": "Up to 5 reference videos; 30s combined with video elements",
-        "maxResolution": "720p / 1080p",
+        "maxResolution": "720p / 1080p / 4K SDR",
         "maxDuration": "3–30s",
         "aspectRatios": [
           "16:9",

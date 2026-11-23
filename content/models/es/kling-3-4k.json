@@ -305,8 +305,8 @@
         }
       },
       {
-        "title": "¿Una escena más larga en 1080p?",
-        "body": "Kling 4.0 permite generar de 3 a 30 s con planos temporizados, en 720p o 1080p. Conserva esta versión Kling 4K si necesitas una salida en 4K nativo.",
+        "title": "¿Una escena de hasta 30 segundos?",
+        "body": "Kling 4.0 genera de 3 a 30 segundos con planos temporizados, en 720p, 1080p o 4K SDR.",
         "cta": {
           "label": "Descubrir Kling 4.0",
           "href": "/es/modelos/kling-v4"

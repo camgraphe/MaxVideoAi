@@ -10,6 +10,7 @@ import { summarizeWorkspaceInputSchema } from '../frontend/app/(core)/(workspace
 import { resolveWorkspaceWorkflow } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-workflow-projection';
 import { prepareGenerationInputs } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-generation-inputs';
 import { buildWorkspaceGeneratePayload } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-generation-payload';
+import { buildWorkspacePreflightRequest } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-preflight-request';
 import { buildAssetFieldIdSet, type ReferenceAsset } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-assets';
 
 function ownedAsset(fieldId: string, assetId: string, kind: 'image' | 'video'): ReferenceAsset {
@@ -25,7 +26,8 @@ function ownedAsset(fieldId: string, assetId: string, kind: 'image' | 'video'): 
 for (const mode of ['ref2v', 'v2v'] as const) {
   test(`V4 ${mode} carries repeated ordered images through the real workspace and server fal request builders`, () => {
     const engine = KLING_V4_ENGINE;
-    const form = coerceFormState(engine, mode, null);
+    const defaultForm = coerceFormState(engine, mode, null);
+    const form = coerceFormState(engine, mode, { ...defaultForm, resolution: mode === 'ref2v' ? '1080p' : '4k' });
     const images = ['z-look', 'z-look', 'a-look'].map(id => ownedAsset('image_urls', id, 'image'));
     const inputAssets = {
       image_urls: images,
@@ -33,6 +35,12 @@ for (const mode of ['ref2v', 'v2v'] as const) {
     };
     const workflow = resolveWorkspaceWorkflow({ engine, form, inputAssets, klingElements: [] });
     const schema = summarizeWorkspaceInputSchema({ selectedEngine: engine, ...workflow, uiLocale: 'en' });
+    const expectedResolution = mode === 'ref2v' ? '1080p' : '4k';
+    const preflight = buildWorkspacePreflightRequest({
+      form, selectedEngine: engine, submissionMode: mode, effectiveDurationSec: 5,
+      supportsAudioToggle: false, voiceControlEnabled: false, inputAssets, memberTier: 'Member',
+    });
+    assert.equal(preflight.resolution, expectedResolution);
     const prepared = prepareGenerationInputs({
       selectedEngineId: engine.id, activeMode: mode, submissionMode: mode, form,
       inputSchema: engine.inputSchema, inputSchemaSummary: schema,
@@ -76,6 +84,7 @@ for (const mode of ['ref2v', 'v2v'] as const) {
       extraInputValues: body.extraInputValues ?? {}, fps: body.fps, cfgScale: body.cfgScale,
     });
     const provider = buildKlingV4FalRequest(falPayload);
+    assert.equal(provider.requestBody.resolution, expectedResolution);
     const expected = images.map(image => image.url);
     assert.deepEqual(provider.requestBody.image_urls, expected, 'Repeated @Image2 must not move behind @Image3 during the two-projection merge.');
     assert.deepEqual(prepared.referenceImageUrls, expected);

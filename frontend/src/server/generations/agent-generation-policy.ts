@@ -1,3 +1,4 @@
+import { isKlingImageV4EngineId } from '@/lib/image/kling-image-v4';
 import { audioDispatchObservation } from '@/lib/audio-dispatch-observation';
 import { getKnownGenerationFailureMessage } from '@/lib/generation-failure-messages';
 import { appendConfirmedWalletRefund } from '@/lib/seedance-failure-messages';
@@ -293,7 +294,10 @@ function buildAgentResult(
   ]
     .map((url) => stableMediaUrl(url))
     .filter((url): url is string => Boolean(url));
-  return { surface, imageUrls, thumbnailUrls: Array.from(new Set(thumbnailUrls)) };
+  return {
+    surface, imageUrls, thumbnailUrls: Array.from(new Set(thumbnailUrls)),
+    ...(isKlingImageV4EngineId(record.engine_id) && imageUrls.length > 1 ? { orderedSet: true as const } : {}),
+  };
 }
 
 function buildAgentMessage(

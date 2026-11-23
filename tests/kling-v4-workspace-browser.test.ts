@@ -91,6 +91,10 @@ test('offline V4 workspace edits thirty-second shots, preserves modes and subjec
     assert.doesNotMatch(await page.locator('body').innerText(),/Generation accepts a prompt or multi-shot scenes|Video editing requires a prompt/,'the unified workspace omits redundant native-mode catalogue instructions');
     assert.equal(await page.locator('[data-composer-mode]').count(),2);
     assert.equal(await page.locator('[data-composer-mode="t2v"], [data-composer-mode="i2v"], [data-composer-mode="ref2v"]').count(),0);
+    await page.getByRole('button', { name: /^Resolution: 720p/ }).click();
+    await page.getByRole('option', { name: /^Resolution: 4K/ }).click();
+    await page.locator('.app-generation-action').click();
+    assert.equal(JSON.parse(await page.locator('[data-captured]').innerText()).resolution, '4k');
     await page.getByRole('button',{name:'Multi-prompt',exact:true}).click();
     assert.match(await page.locator('body').innerText(),/Total: 30s.*Max 30s/);
     const durations=page.locator('input[type="number"]');

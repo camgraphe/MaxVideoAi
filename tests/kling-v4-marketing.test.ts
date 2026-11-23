@@ -32,7 +32,7 @@ test('Kling v4 publishes its model, two comparisons and additive current family 
   const template = getModelPageTemplateConfig('kling-v4');
   assert.ok(template);
   assert.equal(template.intent, 'production');
-  assert.equal(template.pricing.enabled, false);
+  assert.equal(template.pricing.enabled, true);
   assert.equal(template.sections.compare, true);
   assert.equal(template.comparisonLimit, 2);
 });
@@ -42,7 +42,7 @@ test('Kling v4 factual raw schema separates generation, frame and editing contro
   assert.ok(entry, 'Kling v4 raw contract must exist');
   assert.deepEqual(entry.engine.modes, ['t2v', 'i2v', 'ref2v', 'v2v']);
   assert.equal(entry.engine.maxDurationSec, 30);
-  assert.deepEqual(entry.engine.resolutions, ['720p', '1080p']);
+  assert.deepEqual(entry.engine.resolutions, ['720p', '1080p', '4k']);
   assert.deepEqual(entry.engine.fps, []);
   assert.equal(entry.engine.keyframes, false);
   assert.equal(entry.media, undefined);
@@ -81,12 +81,14 @@ test('Kling v4 localized normal-page content uses the selected filmed prompts wi
     const links = [decision.hero.primaryCta, decision.hero.secondaryCta, ...decision.hero.quickLinks,
       ...decision.decisionCards.map(card => card.cta), { href: decision.pricingCopy.ctaHref }];
     assert.equal(decision.hero.primaryCta.href, '/app?engine=kling-v4');
-    const native4KHref = { en: '/models/kling-o3-4k', fr: '/fr/modeles/kling-o3-4k', es: '/es/modelos/kling-o3-4k' }[locale];
-    assert.equal(decision.decisionCards.filter(card => card.cta.href === native4KHref).length, 1);
+    const imageHref = { en: '/models/kling-image-v4', fr: '/fr/modeles/kling-image-v4', es: '/es/modelos/kling-image-v4' }[locale];
+    const pricingHref = { en: '/pricing', fr: '/fr/tarifs', es: '/es/precios' }[locale] + '#kling-v4-pricing';
+    assert.equal(decision.decisionCards.filter(card => card.cta.href === imageHref).length, 1);
+    assert.equal(decision.pricingCopy.ctaHref, pricingHref);
     for (const link of links) {
-      if (link.href !== native4KHref) assert.match(link.href, /^(?:#(?:prompting|specs)|\/app\?engine=kling-v4)$/);
+      if (![imageHref, pricingHref].includes(link.href)) assert.match(link.href, /^(?:#(?:prompting|specs)|\/app\?engine=kling-v4)$/);
     }
-    assert.doesNotMatch(JSON.stringify(content), /media\.maxvideoai\.com|job_external_|\.mp4|\/pricing#kling-v4/);
+    assert.doesNotMatch(JSON.stringify(content), /media\.maxvideoai\.com|job_external_|\.mp4/);
     assert.ok(prompting.tabs.length >= 3);
     assert.ok(content.faqs.length >= 6);
   }
@@ -97,9 +99,11 @@ test('Kling V4 public copy reflects live quoted access in every locale without i
   for (const locale of ['en', 'fr', 'es'] as const) {
     const content = JSON.parse(readFileSync(`content/models/${locale}/kling-v4.json`, 'utf8'));
     assert.doesNotMatch(JSON.stringify(content), obsolete, locale);
-    assert.match(content.pricingNotes[0], /App.*Studio.*MCP|MCP.*Studio.*App/i, locale);
-    assert.match(content.pricingNotes[1], /quote|devis|presupuesto/i, locale);
-    assert.match(content.decision.hero.paragraph, /App.*Studio.*MCP|MCP.*Studio.*App/i, locale);
+    for (const description of [content.pricingNotes[0], content.decision.hero.paragraph]) {
+      assert.match(description, /720p.*1080p.*4K SDR/i, locale);
+      assert.match(description, /Create.*(?:quote|devis|presupuesto)/i, locale);
+    }
+    assert.match(content.pricingNotes[1], /(?:quote|devis|presupuesto).*Create/i, locale);
     assert.doesNotMatch(JSON.stringify(content), /\$\d+\.\d{2}/, 'No invented fixed customer price');
   }
 });
@@ -119,7 +123,8 @@ test('Kling v4 rendered prompt recipes display without invented media URLs or pl
     defaultDemoPresentation: { audioBadgeLabel: 'Audio on', altContext: 'Kling 4.0' }, referenceWorkflows: [],
   });
   const markup = renderToStaticMarkup(React.createElement(ModelDecisionPromptingSection, { viewModel }));
-  assert.match(markup, /filmed Kling 4\.0 scenes/);
+  assert.match(markup, /Write the gesture that ties the shots together/);
+  assert.match(markup, /outstretched glove at a tram door/);
   assert.match(markup, /Black-and-White Concert/);
   assert.match(markup, /black-and-white live concert sequence/);
   assert.doesNotMatch(markup, /Ignition/);

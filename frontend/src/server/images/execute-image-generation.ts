@@ -1,3 +1,4 @@
+import { isKlingImageV4EngineId } from '@/lib/image/kling-image-v4';
 import { NANO21_ENGINE_ID, normalizeNano21Settings, assertNano21UnsupportedFields, assertNano21Scenario } from '@/lib/nano-banana-2-1';
 import { isGptImage26EngineId, normalizeGptImage26Settings } from '@/lib/image/gptImage26';
 import { assertOpenAIImageAvailable } from './openai-image-execution';
@@ -47,7 +48,9 @@ import {
 } from './storyboard-image-billing';
 import { executeAfterInitialJobReservation } from '@/server/generations/initial-job-reservation';
 import type { ExecuteImageGenerationOptions } from './image-generation-execution-contract';
-import { markImageProviderOutcomeAmbiguous, shouldKeepImageProviderOutcomePending } from './image-provider-failure-policy';
+import { enqueueKlingImageV4 } from './kling-image-v4-queue';
+import { prepareFalImageInput } from './image-fal-generation';
+import { isAmbiguousImageProviderFailure, markImageProviderOutcomeAmbiguous, shouldKeepImageProviderOutcomePending } from './image-provider-failure-policy';
 import { resolveImageGenerationPricingSnapshot } from './image-generation-pricing';
 import { prepareImageGenerationAccounting } from './image-generation-accounting';
 
@@ -400,6 +403,7 @@ export async function executeImageGeneration({
     submitProvider: async () => {
       let providerMode: string = getResultProviderMode();
       let providerJobId: string | undefined;
+      let klingQueueSubmissionStarted = false;
 
       const directProviderResponse = await executeDirectImageProviderIfAvailable({
         ...(nano21 ?? {}),
@@ -441,6 +445,23 @@ export async function executeImageGeneration({
       }
 
       try {
+        if (isKlingImageV4EngineId(engine.id)) {
+          const input = await prepareFalImageInput({
+            falModelId: modeConfig.falModelId, effectivePrompt, numImages, mode, combinedImageUrls,
+            falAspectRatio, providerImageSize, resolutionEngineParam, normalizedSeed, outputFormat, quality,
+            background, maskUrl, enableWebSearch, thinkingLevel, limitGenerations,
+          });
+          klingQueueSubmissionStarted = true;
+          providerMode = 'fal';
+          await enqueueKlingImageV4({
+            jobId, userId, endpoint: modeConfig.falModelId, input,
+            onRequestId(requestId) { providerJobId = requestId; },
+          });
+          return {
+            ok: true, pending: true, jobId, mode, images: [], providerJobId, pricing, paymentStatus: imagePaymentStatus,
+            engineId: billingEngineId, engineLabel: billingEngineLabel, aspectRatio: resolvedAspectRatio, resolution,
+          } satisfies ImageGenerationResponse;
+        }
         const { result, providerJobId: completedProviderJobId, providerMode: completedProviderMode } =
           await executeImageProviderWithLumaAgentsDirectFallback({
           falModelId: modeConfig.falModelId, effectivePrompt, numImages, mode, combinedImageUrls, falAspectRatio,
@@ -534,6 +555,13 @@ export async function executeImageGeneration({
         } satisfies ImageGenerationResponse;
       } catch (error) {
         console.error('[images] Fal generation failed', error);
+        if (klingQueueSubmissionStarted && isAmbiguousImageProviderFailure(error, providerJobId)) {
+          await markImageProviderOutcomeAmbiguous(jobId, providerJobId, { providerMode: 'fal', userId });
+          return {
+            ok: true, pending: true, jobId, mode, images: [], providerJobId, pricing, paymentStatus: imagePaymentStatus,
+            engineId: billingEngineId, engineLabel: billingEngineLabel, aspectRatio: resolvedAspectRatio, resolution,
+          } satisfies ImageGenerationResponse;
+        }
         if (shouldKeepImageProviderOutcomePending({
           walletReservation, hasTrustedQuotedBilling: Boolean(trustedQuotedBilling),
           error, providerJobId,

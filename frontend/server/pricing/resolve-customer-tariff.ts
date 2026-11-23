@@ -1,3 +1,5 @@
+import { isKlingImageV4EngineId } from '@/lib/image/kling-image-v4';
+import { assertKlingImageV4QuantityPrice } from '@/lib/image/kling-image-v4-pricing';
 import {
   ManualTariffError,
   quoteCanonicalManualTariff,
@@ -52,7 +54,10 @@ export function resolveCustomerTariffQuote(input: {
     if (!continuous) throw error;
     selector = continuous;
     cell = resolve(selector);
-    if (isGptImage26EngineId(selector.engineId)) {
+    if (isKlingImageV4EngineId(selector.engineId)) {
+      try { assertKlingImageV4QuantityPrice(selector, cell.price); }
+      catch (error) { throw new ManualTariffError('invalid_cell', (error as Error).message); }
+    } else if (isGptImage26EngineId(selector.engineId)) {
       try { assertGptImage26RasterTariffPrice(selector, cell.price); }
       catch (error) { throw new ManualTariffError('invalid_cell', (error as Error).message); }
     } else {

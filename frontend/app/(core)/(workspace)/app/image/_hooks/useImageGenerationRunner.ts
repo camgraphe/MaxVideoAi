@@ -228,6 +228,11 @@ export function useImageGenerationRunner({
           limitGenerations: hasLimitGenerationsField ? limitGenerations : undefined,
           watermark: hasWatermarkField ? watermark : undefined,
         }, pricingSnapshot, { accessToken: data.session.access_token });
+        if (response.pending) {
+          keepActiveGroup = true;
+          void mutateJobs();
+          return;
+        }
         const entry: HistoryEntry = {
           id: response.jobId ?? response.requestId ?? crypto.randomUUID(),
           jobId: response.jobId ?? response.requestId ?? null,

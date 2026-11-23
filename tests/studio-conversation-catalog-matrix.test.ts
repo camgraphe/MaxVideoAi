@@ -24,7 +24,7 @@ const sourceDeps:AgentModelCatalogDeps={
   isEngineExecutable:()=>true,isModeExecutable:()=>true,
 };
 const currentCertified=[
-  'gpt-image-2-6-flare','gpt-image-2-6-sunburst','kling-v4-flash',
+  'gpt-image-2-6-flare','gpt-image-2-6-sunburst','kling-v4-flash','kling-image-v4',
   'gemini-omni-flash','gpt-image-2-5-flare','gpt-image-2-5-sunburst','happy-horse-1-1',
   'kling-3-4k','kling-3-pro','kling-3-standard','kling-o3-4k','kling-o3-pro','kling-o3-standard','kling-v4',
   'luma-ray-3-2','luma-uni-1','luma-uni-1-max','minimax-h3','minimax-hailuo-02-text',

@@ -1,3 +1,6 @@
+import {
+  isKlingImageV4EngineId, KLING_IMAGE_V4_MAX_OUTPUTS, KLING_IMAGE_V4_MAX_REFERENCES, KLING_IMAGE_V4_RESOLUTIONS,
+} from '@/lib/image/kling-image-v4';
 import { isNewSeedreamEngineId } from '@/lib/image/seedream-pricing';
 import { isGptImage26EngineId } from '@/lib/image/gptImage26';
 import { gptImage26TariffContexts } from './gpt-image-26-tariff-contexts';
@@ -132,6 +135,20 @@ export function collectSellableManualTariffCoverage(scope: { modelId?: string; m
     for (const modeConfig of entry.modes) {
       const mode = modeConfig.mode;
       if (scope.mode !== undefined && mode !== scope.mode) continue;
+      if (isKlingImageV4EngineId(entry.id)) {
+        if (mode !== 't2i' && mode !== 'i2i') continue;
+        const count = mode === 't2i' ? 1 : KLING_IMAGE_V4_MAX_REFERENCES;
+        for (const resolution of KLING_IMAGE_V4_RESOLUTIONS) {
+          for (let outputs = 1; outputs <= KLING_IMAGE_V4_MAX_OUTPUTS; outputs += 1) {
+            for (let index = 0; index < count; index += 1) {
+              const inputImageCount = mode === 't2i' ? 0 : index + 1;
+              const context: PricingContext = { engine: entry.engine, mode, resolution, durationSec: outputs, inputImageCount };
+              scenarios.push(buildManualTariffCoverageScenario(context, `${entry.id}:${mode}:${resolution}`));
+            }
+          }
+        }
+        continue;
+      }
       if (isNewSeedreamEngineId(entry.id)) {
         if (mode !== 't2i' && mode !== 'i2i') continue;
         const sourceCounts = mode === 't2i' ? [0] : entry.id === 'seedream-5-5'

@@ -4,7 +4,7 @@ import { canonicalRequest, destination, generationState, mediaKind, preparedQuot
 export const prepareGenerationOutputSchema = z.object({ ...preparedQuoteFields, summary: canonicalRequest, fundingMode: z.enum(['wallet', 'trial']) }).passthrough();
 const generationResult = z.discriminatedUnion('surface', [
   z.object({ surface: z.literal('video'), videoUrl: z.string(), previewUrl: z.string().nullable(), thumbnailUrl: z.string().nullable(), audioUrl: z.string().nullable() }).passthrough(),
-  z.object({ surface: z.literal('image'), imageUrls: strings, thumbnailUrls: strings }).passthrough(),
+  z.object({ surface: z.literal('image'), imageUrls: strings, thumbnailUrls: strings, orderedSet: z.literal(true).optional() }).passthrough(),
   z.object({ surface: z.literal('audio'), audioUrl: z.string().nullable(), videoUrl: z.string().nullable(), thumbnailUrl: z.string().nullable(), mimeType: z.string(), durationSec: z.number().nullable() }).passthrough(),
 ]);
 export const generationStatusFields = {

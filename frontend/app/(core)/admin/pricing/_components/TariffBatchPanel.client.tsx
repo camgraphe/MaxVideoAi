@@ -5,7 +5,7 @@ import { AdminNotice } from '@/components/admin-system/feedback/AdminNotice';
 import { AdminActionButton } from '@/components/admin-system/shell/AdminActionLink';
 import { useTariffBatch } from '../_hooks/useTariffBatch';
 import { TariffBatchReview } from './TariffBatchReview.client';
-import type { KlingTariffBatchModelId } from '@/server/pricing-admin/tariff-batches/contract';
+import { TARIFF_BATCH_MAX_CLASSES, type KlingTariffBatchModelId } from '@/server/pricing-admin/tariff-batches/contract';
 
 const field = 'rounded-lg border border-border bg-surface p-2 text-sm text-text-primary';
 export function TariffBatchPanel() {
@@ -19,6 +19,7 @@ export function TariffBatchPanel() {
   const { operation, options, busy, pending } = controller;
   const modelClasses = options.classes.filter(row => row.selector.engineId === modelId);
   const visible = modelClasses.filter(row => (mode === 'all' || row.selector.mode === mode) && (resolution === 'all' || row.selector.resolution === resolution));
+  const visibleSelection = [...new Set([...selected, ...visible.map(row => row.key)])];
   const locked = busy || pending;
   const edit = (action: () => void) => { if (locked) return; controller.reset(); setParseError(null); action(); };
   if (!options.enabled && !controller.recoveryId && !controller.error) return null;
@@ -64,11 +65,26 @@ export function TariffBatchPanel() {
             <label className="block text-sm">Reason for change<input className={`${field} mt-1 w-full`} value={reason} maxLength={500} onChange={e => edit(() => setReason(e.target.value))} /></label>
             <div className="flex flex-wrap gap-2"><label className="text-sm">Mode<select aria-label="Mode" className={`${field} ml-2`} value={mode} onChange={e => edit(() => setMode(e.target.value))}>{['all', ...new Set(modelClasses.map(row => row.selector.mode))].map(value => <option key={value}>{value}</option>)}</select></label>
               <label className="text-sm">Resolution<select aria-label="Resolution" className={`${field} ml-2`} value={resolution} onChange={e => edit(() => setResolution(e.target.value))}>{['all', ...new Set(modelClasses.map(row => row.selector.resolution))].map(value => <option key={value}>{value}</option>)}</select></label></div>
-            <div className="flex flex-wrap gap-2"><AdminActionButton onClick={() => edit(() => setSelected(modelClasses.map(c => c.key)))}>Select all {modelClasses.length} classes</AdminActionButton>
-              <AdminActionButton onClick={() => edit(() => setSelected([...new Set([...selected, ...visible.map(c => c.key)])]))}>Select visible classes</AdminActionButton>
-              <AdminActionButton onClick={() => edit(() => setSelected([]))}>Clear selection</AdminActionButton><span className="self-center text-sm">{selected.length} selected</span></div>
-            <div className="grid max-h-56 gap-1 overflow-y-auto rounded-lg border border-border p-2 sm:grid-cols-2 xl:grid-cols-3">{visible.map(row => <label key={row.key} className="flex items-start gap-2 rounded p-1 text-xs"><input type="checkbox" checked={selected.includes(row.key)} onChange={e => edit(() => setSelected(e.target.checked ? [...selected, row.key] : selected.filter(key => key !== row.key)))} />
-              {row.selector.mode} · {row.selector.resolution} · {row.selector.durationSec}s · {row.selector.billingInputType === 'video_input' ? 'video input' : 'no video'}</label>)}</div>
+            <div className="flex flex-wrap gap-2">
+              <AdminActionButton disabled={!modelClasses.length || modelClasses.length > TARIFF_BATCH_MAX_CLASSES}
+                onClick={() => edit(() => setSelected(modelClasses.map(row => row.key)))}>
+                Select all {modelClasses.length} classes
+              </AdminActionButton>
+              <AdminActionButton disabled={!visible.length || visibleSelection.length > TARIFF_BATCH_MAX_CLASSES}
+                onClick={() => edit(() => setSelected(visibleSelection))}>Select visible classes</AdminActionButton>
+              <AdminActionButton onClick={() => edit(() => setSelected([]))}>Clear selection</AdminActionButton>
+              <span className="self-center text-sm">{selected.length} selected · up to {TARIFF_BATCH_MAX_CLASSES} per batch</span>
+            </div>
+            <div className="grid max-h-56 gap-1 overflow-y-auto rounded-lg border border-border p-2 sm:grid-cols-2 xl:grid-cols-3">
+              {visible.map(row => {
+                const checked = selected.includes(row.key);
+                return <label key={row.key} className="flex items-start gap-2 rounded p-1 text-xs">
+                  <input type="checkbox" checked={checked} disabled={!checked && selected.length >= TARIFF_BATCH_MAX_CLASSES}
+                    onChange={event => edit(() => setSelected(event.target.checked ? [...selected, row.key] : selected.filter(key => key !== row.key)))} />
+                  {row.selector.mode} · {row.selector.resolution} · {row.selector.durationSec}s · {row.selector.billingInputType === 'video_input' ? 'video input' : 'no video'}
+                </label>;
+              })}
+            </div>
           </>}
           <AdminActionButton disabled={locked || (input === 'recipe' ? !selected.length || reason.trim().length < 3 : !importText.trim())} onClick={preview}>Preview batch</AdminActionButton>
         </fieldset>}

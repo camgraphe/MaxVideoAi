@@ -1,3 +1,4 @@
+import { isKlingImageV4EngineId } from '@/lib/image/kling-image-v4';
 import {canonicalKlingV4PricingFacts} from './generation-kling-v4-pricing-facts';
 import { NANO21_ENGINE_ID, NANO21_DEFAULT_MAX_OUTPUT_TOKENS } from '@/lib/nano-banana-2-1';
 import { isGptImage26EngineId } from '@/lib/image/gptImage26';
@@ -528,7 +529,7 @@ export async function priceCanonicalGenerationWithBilling(
         ? { enable_web_search: true }
         : undefined,
       referenceImageCount,
-      ...(isSeedreamEngineId(engine.id) ? { inputImageCount: request.mode === 'i2i' ? imageReferences.length : 0 } : {}),
+      ...(isSeedreamEngineId(engine.id) || isKlingImageV4EngineId(engine.id) ? { inputImageCount: request.mode === 'i2i' ? imageReferences.length : 0 } : {}),
       membershipTier,
       currency: engine.pricing?.currency ?? 'USD',
     });

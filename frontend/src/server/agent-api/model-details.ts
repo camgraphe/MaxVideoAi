@@ -1,3 +1,4 @@
+import { isKlingImageV4EngineId } from '@/lib/image/kling-image-v4';
 import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
 import { resolveMediaFieldMinDuration } from '@/lib/media-field-constraints';
 import { isWan3EngineId } from '@/lib/wan3-pricing';
@@ -464,6 +465,8 @@ export function projectAgentModelModeDetails(
       min: outputCount.min,
       max: outputCount.max,
       default: outputCount.defaultValue,
+      ...(isKlingImageV4EngineId(candidate.engine.id)
+        ? { description: 'One output makes a single image. Choose 2–10 for one related Image Set returned in order.' } : {}),
     }),
     settings: Object.freeze([...projectBaseSettings(baseControls).filter(setting=>!(videoInheritsSourceFraming(candidate.engine,mode as import('@/types/engines').Mode) && setting.key==='aspectRatio')), ...projectSettings(candidate.engine, mode),
       ...(candidate.engine.id.startsWith('seedance-2-') && caps.duration && 'options' in caps.duration && caps.duration.options.includes('auto')

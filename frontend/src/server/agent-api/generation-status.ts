@@ -1,3 +1,4 @@
+import { KLING_IMAGE_V4_MAX_OUTPUTS } from '@/lib/image/kling-image-v4';
 import { buildOwnedGenerationMediaAccess } from '@/server/generations/generation-media-access';
 import {createMcpMediaLink,primaryGenerationMediaUrl} from '@/server/mcp/media-link';
 import {
@@ -178,12 +179,13 @@ function boundedResult(result: AgentGenerationResult | null): AgentGenerationRes
   if (!result) return null;
   const seen = new Set<string>();
   if (result.surface === 'image') {
-    const imageUrls = boundedUris(result.imageUrls, MAX_PRIMARY_OUTPUTS, seen);
+    const imageUrls = boundedUris(result.imageUrls, result.orderedSet ? KLING_IMAGE_V4_MAX_OUTPUTS : MAX_PRIMARY_OUTPUTS, seen);
     if (!imageUrls.length) return null;
     return {
       surface: 'image',
       imageUrls,
       thumbnailUrls: boundedUris(result.thumbnailUrls, MAX_THUMBNAILS, seen),
+      ...(result.orderedSet ? { orderedSet: true } : {}),
     };
   }
   if (result.surface === 'audio') {

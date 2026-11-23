@@ -217,8 +217,8 @@ test('retired lifecycle and replacement retirement remain one canonical contract
 
 test('canonical registry validates the committed document', () => {
   const document = validateModelRegistryDocument(valid);
-  assert.equal(document.models.length, 64);
-  for (const id of ['seedream-5-0-flash', 'seedream-5-5']) {
+  assert.equal(document.models.length, 65);
+  for (const id of ['kling-image-v4', 'seedream-5-0-flash', 'seedream-5-5']) {
     const model = document.models.find((candidate) => candidate.id === id);
     assert.ok(model, `${id} keeps an authored canonical identity`);
     assert.equal(model.slug, id);

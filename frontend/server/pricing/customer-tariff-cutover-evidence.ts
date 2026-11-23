@@ -1,3 +1,4 @@
+import { isKlingImageV4EngineId } from '@/lib/image/kling-image-v4';
 import { createHash } from 'node:crypto';
 import type { ManualTariffCell } from '@maxvideoai/pricing';
 import { buildManualTariffCoverageScenario, collectSellableManualTariffCoverage } from '@/lib/pricing-audit/manual-tariff-coverage';
@@ -19,7 +20,10 @@ export function cutoverDigest(value: unknown): string {
   return createHash('sha256').update(canonical(value)).digest('hex');
 }
 export function collectCustomerTariffCutoverCheckpoints() {
-  const current = collectSellableManualTariffCoverage().scenarios;
+  // New Kling Image and native Kling 4K offers have dedicated launch tariffs.
+  const current = collectSellableManualTariffCoverage().scenarios.filter(scenario =>
+    !isKlingImageV4EngineId(scenario.modelId)
+    && !(scenario.modelId === 'kling-v4' && scenario.selector.resolution === '4k'));
   // Preserve every original financial identity as a negative current quote check.
   const archived = current.filter(s => isSeedance25LasInputPricing(s.modelId, s.selector.mode) && s.context.resolution === '720p')
     .map(s => buildManualTariffCoverageScenario({ ...s.context, resolution: '1080p' }, 'seedance-2-5:v2v:1080p'));

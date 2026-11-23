@@ -18,7 +18,7 @@
       "items": [
         {
           "question": "Which workflow fits my scene?",
-          "answer": "Kling 4.0 creates 3–30-second clips at 720p or 1080p, with audio always generated. Wan 3 Prime offers 2–30-second creation, optional audio, 480p output and a separate video-extension mode. Both support image and video references. Editing and extension have their own source-duration limits; check these before choosing a mode."
+          "answer": "Kling 4.0 creates 3–30-second clips at 720p, 1080p or 4K SDR, with native audio. Wan 3 Prime offers 2–30-second creation, optional audio, 480p output and a separate video-extension mode. Both support image and video references. Editing and extension have their own source-duration limits; check these before choosing a mode."
         },
         {
           "question": "How should I compare the examples?",
@@ -45,7 +45,7 @@
       "items": [
         {
           "question": "Quel parcours convient à ma scène ?",
-          "answer": "Kling 4.0 crée des clips de 3 à 30 secondes en 720p ou 1080p, avec un audio toujours généré. Wan 3 Prime propose une création de 2 à 30 secondes, un audio facultatif, une sortie 480p et un mode de prolongation vidéo. Les deux acceptent des références image et vidéo. L’édition et la prolongation ont leurs propres limites de durée des sources, à vérifier avant de choisir le mode."
+          "answer": "Kling 4.0 crée des clips de 3 à 30 secondes en 720p, 1080p ou 4K SDR, avec audio natif. Wan 3 Prime propose une création de 2 à 30 secondes, un audio facultatif, une sortie 480p et un mode de prolongation vidéo. Les deux acceptent des références image et vidéo. L’édition et la prolongation ont leurs propres limites de durée des sources, à vérifier avant de choisir le mode."
         },
         {
           "question": "Comment comparer les exemples ?",
@@ -72,7 +72,7 @@
       "items": [
         {
           "question": "¿Qué flujo encaja con mi escena?",
-          "answer": "Kling 4.0 crea clips de 3 a 30 segundos en 720p o 1080p, siempre con audio generado. Wan 3 Prime ofrece creación de 2 a 30 segundos, audio opcional, salida en 480p y un modo para extender videos. Ambos admiten referencias de imagen y video. La edición y la extensión tienen límites propios de duración del material de origen; revísalos antes de elegir el modo."
+          "answer": "Kling 4.0 crea clips de 3 a 30 segundos en 720p, 1080p o 4K SDR, con audio nativo. Wan 3 Prime ofrece creación de 2 a 30 segundos, audio opcional, salida en 480p y un modo para extender videos. Ambos admiten referencias de imagen y video. La edición y la extensión tienen límites propios de duración del material de origen; revísalos antes de elegir el modo."
         },
         {
           "question": "¿Cómo comparo los ejemplos?",

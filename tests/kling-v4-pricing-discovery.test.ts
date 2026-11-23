@@ -10,7 +10,7 @@ test('publishing Kling 4 pricing does not invent a historical percentage-policy 
     .flatMap((name) => JSON.parse(readFileSync(`tests/fixtures/${name}`, 'utf8')).rows);
   const rows = collectCanonicalPricingOutputs(baseline);
   assert.ok(rows.length > 0);
-  assert.ok(rows.every((row) => row.engineId !== 'kling-v4'));
+  assert.ok(rows.every((row) => !['kling-v4', 'kling-image-v4'].includes(row.engineId)));
   const historicalPika = baseline.filter(row => row.scenarioId.includes(':pika-text-to-video:'));
   assert.equal(historicalPika.length, 14, 'every frozen Pika billing and public checkpoint stays covered');
   const byId = new Map(rows.map(row => [row.scenarioId, row]));

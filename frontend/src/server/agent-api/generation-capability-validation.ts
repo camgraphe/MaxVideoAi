@@ -1,3 +1,4 @@
+import { isKlingImageV4EngineId, klingImageV4ReferenceFailure } from '@/lib/image/kling-image-v4';
 import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
 import { resolveMediaFieldMinDuration } from '@/lib/media-field-constraints';
 import { isWan3EngineId } from '@/lib/wan3-pricing';
@@ -915,7 +916,7 @@ function validateReferences(
   candidate: AgentPublicGenerationEngine,
   options: GenerationCapabilityValidationOptions,
 ): void {
-  if ((isKlingV4FalQueueEngineId(request.engineId) || isGptImage26EngineId(request.engineId)) && request.references.some(reference=>reference.kind!=='asset')) fail('references','reference_invalid');
+  if ((isKlingV4FalQueueEngineId(request.engineId) || isKlingImageV4EngineId(request.engineId) || isGptImage26EngineId(request.engineId)) && request.references.some(reference=>reference.kind!=='asset')) fail('references','reference_invalid');
   if (candidate.surface === 'image') {
     const constraints = getReferenceConstraints(candidate.engine, request.mode as ImageGenerationMode);
     const generationReferences = request.references.filter((reference) => reference.role !== 'mask');
@@ -930,6 +931,10 @@ function validateReferences(
   if (options.resolvedReferences) {
     const resolvedKeys = new Set<string>();
     for (const resolved of options.resolvedReferences) {
+      if (isKlingImageV4EngineId(request.engineId)) {
+        const failure = klingImageV4ReferenceFailure(resolved);
+        if (resolved.mediaKind !== 'image' || failure) fail('references', 'reference_invalid', failure ?? 'format_unsupported');
+      }
       if (isGptImage26EngineId(request.engineId)) {
         const failure = gptImage26ReferenceFailure(resolved);
         if (resolved.mediaKind !== 'image' || failure) fail('references', 'reference_invalid', failure ?? 'format_unsupported');

@@ -11,6 +11,7 @@ import { parseFalQueueReceipt } from '../frontend/src/lib/fal-queue-receipt';
 import { normalizeGenerationRequest } from '../frontend/src/server/agent-api/generation-normalization';
 import { mapRecentGenerationRecordToWeb } from '../frontend/src/server/generations/recent-generations';
 import { createProviderJobTracker } from '../frontend/app/api/generate/_lib/provider-job-tracker';
+import { buildKlingV4FalRequest } from '../frontend/src/lib/kling-v4';
 
 const endpoint = 'kling/v4/video-to-video/edit';
 const requestId = 'offline-receipt-id';
@@ -31,8 +32,13 @@ test('accepted V4 receipt is durably associated with its actual provider job bef
     const queryFn = async(sql:string,params?:unknown[]) => (await db.pool.query(sql,params)).rows;
     const tracker = createProviderJobTracker({jobId:'owned-job',providerKey:'fal',engineId:'kling-v4',prompt:'Offline',inputSummary,queryFn});
     let posts = 0;
-    const transport = async () => { posts++; return new Response(JSON.stringify(receipt),{status:202}); };
-    await submitFalQueueOnce(endpoint,{prompt:'Offline'},'owned-job',transport,
+    const transport: typeof fetch = async (_url, init) => {
+      posts++;
+      assert.equal(JSON.parse(String(init?.body)).resolution, '4k');
+      return new Response(JSON.stringify(receipt), { status: 202 });
+    };
+    const request = buildKlingV4FalRequest({ engineId: 'kling-v4', mode: 'v2v', prompt: 'Offline', resolution: '4k', videoUrl: 'https://media.example/source.mp4' });
+    await submitFalQueueOnce(request.model,request.requestBody,'owned-job',transport,
       async(id,identity) => tracker.persistProviderJobId(id,undefined,identity));
     const job = (await db.pool.query('SELECT * FROM app_jobs')).rows[0];
     assert.equal(job.provider_job_id,requestId);
@@ -54,17 +60,18 @@ test('accepted V4 receipt is durably associated with its actual provider job bef
     assert.equal(reads,1,'actual stale recovery follows the stored receipt');
     assert.equal(legacyReads,0,'new receipt never reconstructs an SDK path');
     // Fresh reader has no submit closure or in-memory identity: process-restart seam.
+    const providerVideo = { url: 'https://fal.media/offline-4k.mp4', width: 3840, height: 2160, content_type: 'video/mp4' };
     const restarted = await resolveFalJobQueue({jobId:'owned-job',engineId:'kling-v4',requestId,legacyModel:'kling/v4/text-to-video'}, {
       fetchFn:async(url,init)=>{
         assert.equal(init?.redirect,'error'); assert.equal(init?.method,'GET');
         reads++;
         if(String(url)===receipt.status_url) return new Response(JSON.stringify({request_id:requestId,status:'COMPLETED'}));
         assert.equal(String(url),receipt.response_url);
-        return new Response(JSON.stringify({video:{url:'https://fal.media/offline.mp4'}}));
+        return new Response(JSON.stringify({ video: providerVideo }));
       },
     });
     assert.equal((await restarted.status()).status,'COMPLETED');
-    assert.equal((await restarted.result()).data.video.url,'https://fal.media/offline.mp4');
+    assert.deepEqual((await restarted.result()).data.video, providerVideo);
     assert.equal(posts,1); assert.equal(reads,3); assert.equal(legacyReads,0);
     const persisted = (await db.pool.query('SELECT payload FROM fal_queue_log')).rows[0].payload;
     assert.equal(persisted.falQueueReceipt.cancelUrl,receipt.cancel_url);
