@@ -7,6 +7,19 @@ test('common browse filters owned identities before limit and retains totals, ve
     const pg = await startDisposablePostgres('library-browse');
     const previous = process.env.DATABASE_URL;
     process.env.DATABASE_URL = pg.databaseUrl;
+    const base = 'https://library-browse-fixture.s3.us-east-1.amazonaws.com';
+    const signingEnvironment = {
+        S3_BUCKET: 'library-browse-fixture', S3_REGION: 'us-east-1', S3_ACCESS_KEY_ID: 'fixture-key',
+        S3_SECRET_ACCESS_KEY: 'fixture-secret', S3_PUBLIC_BASE_URL: base,
+    };
+    const previousSigningEnvironment = Object.fromEntries(Object.keys(signingEnvironment).map(key => [key, process.env[key]]));
+    Object.assign(process.env, signingEnvironment);
+    t.after(() => {
+        for (const [key, value] of Object.entries(previousSigningEnvironment)) {
+            if (value === undefined) delete process.env[key];
+            else process.env[key] = value;
+        }
+    });
     const db = await import('../frontend/src/lib/db');
     t.after(async () => { await db.getDb().end(); process.env.DATABASE_URL = previous; await pg.cleanup(); });
     const schema = await import('../frontend/src/lib/schema');
@@ -122,4 +135,62 @@ test('common browse filters owned identities before limit and retains totals, ve
       ('name-beta','ma_name_b','names','image','https://test/n2','upload','{"label":"Beta"}'),
       ('name-zed','ma_name_z','names','image','https://test/n3','upload','{"label":"  Zed  "}')`);
     assert.deepEqual((await browseLibrary({ userId: 'names', scope: { ...scope, sort: 'name' } })).assets.map(x => x.name), ['Alpha', 'Beta', 'Zed']);
+
+    const owner = 'private-creator';
+    const image = base + '/renders/images/' + owner + '/result.png';
+    const thumb = base + '/renders/thumbs/' + owner + '/result.webp';
+    const preview = base + '/renders/previews/' + owner + '/result.webp';
+    const audio = base + '/media-assets/' + owner + '/voice.mp3';
+    const upload = base + '/user-assets/' + owner + '/upload.png';
+    const foreign = base + '/renders/images/other/result.png';
+    await pg.pool.query(
+        `INSERT INTO app_jobs(job_id,user_id,surface) VALUES('private-image',$1,'image'),('private-audio',$1,'audio')`, [owner]);
+    await pg.pool.query(
+        `INSERT INTO job_outputs(id,job_id,user_id,kind,url,storage_url,thumb_url,preview_url)
+         VALUES('private-image-output','private-image',$1,'image','https://provider.test/image',$2,$3,$4)`, [owner, image, thumb, preview]);
+    await pg.pool.query(
+        `INSERT INTO media_assets(id,public_id,user_id,kind,url,source,source_job_id,metadata) VALUES
+         ('saved-voice',$2,$1,'audio',$3,'import','private-audio','{"durationSec":4}'),
+         ('private-upload',$4,$1,'image',$5,'upload',NULL,'{}'),
+         ('wrong-object-owner',$6,$1,'image',$7,'saved_job_output',NULL,'{}')`,
+        [owner, 'ma_' + 'a'.repeat(32), audio, 'ma_' + 'b'.repeat(32), upload, 'ma_' + 'c'.repeat(32), foreign]);
+    await pg.pool.query(`UPDATE media_assets SET thumb_url=$1 WHERE id='saved-voice'`, [foreign]);
+
+    const { validateLibraryPickerCandidates } = await import('../frontend/server/media-library/picker-validation');
+    const { renewLibraryMediaReadAccess } = await import('../frontend/server/media-library/exact-read-access');
+    const privateAssets = (await browseLibrary({ userId: owner, scope })).assets;
+    const wrongOwner = privateAssets.find(asset => asset.url === foreign)!;
+    assert.ok(wrongOwner);
+    assert.equal(wrongOwner.accessUrl, undefined);
+    for (const [canonicalUrl, kind] of [[image, 'image'], [audio, 'audio'], [upload, 'image']] as const) {
+        const asset = privateAssets.find(row => row.url === canonicalUrl)!;
+        assert.ok(asset);
+        assert.equal(asset.kind, kind);
+        assert.equal(asset.readAccessOwnerId, owner);
+        assert.equal(new URL(asset.accessUrl!).pathname, new URL(canonicalUrl).pathname);
+        assert.ok(new URL(asset.accessUrl!).searchParams.has('X-Amz-Signature'));
+        const [valid] = await validateLibraryPickerCandidates(owner, { candidates: [{ reference: asset.libraryRef, originalUrl: canonicalUrl }] });
+        assert.equal(valid.error, undefined);
+        assert.equal(valid.sourceRevision, asset.sourceRevision);
+        assert.equal('accessUrl' in valid, false);
+        const [transient] = await validateLibraryPickerCandidates(owner, { candidates: [{ reference: asset.libraryRef, originalUrl: asset.accessUrl }] });
+        assert.equal(transient.error, 'SOURCE_VERSION_CHANGED');
+        const [foreignRead] = await validateLibraryPickerCandidates('other', { candidates: [{ reference: asset.libraryRef, originalUrl: canonicalUrl }] });
+        assert.equal(foreignRead.error, 'SOURCE_UNAVAILABLE');
+        const renewed = await renewLibraryMediaReadAccess(owner, asset.readAccessRef, asset.readAccessRevision);
+        assert.equal(renewed.readAccessRevision, asset.readAccessRevision);
+        assert.ok(new URL(renewed.accessUrl!).searchParams.has('X-Amz-Signature'));
+        await assert.rejects(renewLibraryMediaReadAccess('other', asset.readAccessRef, asset.readAccessRevision), /SOURCE_UNAVAILABLE/);
+        if (canonicalUrl === image) {
+            for (const [key, derivative] of [['thumbnailAccessUrl', thumb], ['previewAccessUrl', preview]] as const) {
+                assert.equal(new URL(asset[key]!).pathname, new URL(derivative).pathname);
+                assert.ok(new URL(renewed[key]!).searchParams.has('X-Amz-Signature'));
+            }
+        }
+        if (canonicalUrl === audio) {
+            assert.equal(asset.thumbUrl, foreign);
+            assert.equal(asset.thumbnailAccessUrl, undefined);
+            assert.equal(renewed.thumbnailAccessUrl, undefined);
+        }
+    }
 });

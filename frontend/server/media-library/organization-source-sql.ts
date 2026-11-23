@@ -2,6 +2,10 @@ import { ambiguousOutputIdentitySql, resolvedOutputIdSql } from './output-proven
 // All discovery is account scoped. Candidate limits apply per provenance lookup,
 // never to a request-wide set of independently proven sources.
 export const sourceSeedColumns = `type text,id text,"publicId" text,kind text,url text,original text,provenance text,"jobId" text,"outputId" text`;
+export const librarySavedAssetSourceSql = `CASE WHEN m.source='import' AND (m.source_job_id IS NOT NULL OR m.metadata->>'jobId' IS NOT NULL OR m.metadata->>'sourceJobId' IS NOT NULL)
+  THEN 'saved_job_output' ELSE m.source END`;
+export const libraryLegacyAssetSourceSql = `CASE WHEN u.source IN('upload','storyboard','character','angle','upscale','background-removal') THEN u.source
+  WHEN u.source='generated' OR (u.source='import' AND (u.metadata->>'jobId' IS NOT NULL OR u.metadata->>'sourceJobId' IS NOT NULL)) THEN 'saved_job_output' ELSE 'import' END`;
 const assetOutputIdSql = () => resolvedOutputIdSql('m.source_output_id', 'm.source_job_id', 'm.kind', 'm.url', 'm.user_id');
 export const legacyOutputIdSql = () => resolvedOutputIdSql("NULLIF(u.metadata->>'sourceOutputId','')", "NULLIF(u.metadata->>'jobId','')", legacyKindSql(), 'u.url', 'u.user_id');
 export const assetProjection = ` 'asset'::text AS type,m.id,m.public_id AS "publicId",m.kind,m.url,
