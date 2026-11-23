@@ -69,9 +69,9 @@ export function ModelCinematicCapabilities({ copy, ui }: { copy: CinematicCapabi
           </figure>
         </div> : item.visual.video && ui ? <ModelCinematicFilm video={item.visual.video} poster={item.visual.images[0]} title={item.visual.labels[0]} ui={ui} mask="frame" />
           : <div className="cinema-mode-stills">{item.visual.images.map((url, index) => <figure key={url}>
-            <Image src={url} width={item.visual!.stillSize?.width ?? 840} height={item.visual!.stillSize?.height ?? 462}
-              loading="lazy" sizes={item.visual!.images.length > 1 ? '(min-width: 800px) 22vw, 42vw' : '(min-width: 800px) 44vw, 88vw'}
-              alt={item.visual!.labels[index]} />
+            <Image src={url} alt={item.visual!.labels[index]}
+              width={item.visual!.stillSize?.width ?? 840} height={item.visual!.stillSize?.height ?? 462}
+              loading="lazy" sizes={item.visual!.images.length > 1 ? '(min-width: 800px) 22vw, 42vw' : '(min-width: 800px) 44vw, 88vw'} />
             <figcaption>{item.visual!.labels[index]}</figcaption>
           </figure>)}</div>}
         <figcaption>{item.visual.caption} {item.visual.storyboard ? <a className="cinema-source-link" href="#model-workflow">{item.visual.storyboard.workflowLink}<CinematicArrow direction="down" /></a> : null}

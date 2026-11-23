@@ -15,7 +15,7 @@ export function ModelCinematicShotBreakdown({ copy, frames }: {
     <ol tabIndex={0} aria-labelledby="cinema-shot-breakdown-title">{copy.shots.map((shot, index) => {
       const frame = frames[index];
       return <li key={shot.id}><figure>
-        <Image src={frame.url} width={frame.width} height={frame.height} alt=""
+        <Image src={frame.url} width={frame.width} height={frame.height} alt="" aria-hidden="true"
           sizes="(min-width: 1200px) 18vw, 176px" loading="lazy" />
         <figcaption><strong>{shot.title}</strong><span>{shot.detail}</span></figcaption>
       </figure></li>;
