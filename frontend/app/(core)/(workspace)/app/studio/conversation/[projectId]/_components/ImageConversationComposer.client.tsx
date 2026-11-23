@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, type Ref } from "react";
+import { DictationButton } from '@/components/composer/DictationButton.client';
 import { ArrowUp, Plus } from "lucide-react";
 import styles from "../image-conversation.module.css";
 import type {ConversationLocale} from '@/lib/studio/conversation-quote-presentation';
@@ -66,7 +67,7 @@ export function ImageConversationComposer({
         type="button"
         disabled={blocked}
         ref={libraryTrigger}
-        aria-label={libraryLabel??t('Open library', 'Ouvrir la bibliothèque')}
+        aria-label={libraryLabel??t('Open library', 'Ouvrir la bibliothèque', 'Abrir la biblioteca')}
         onClick={event => onOpenLibrary(event.currentTarget)}
       >
         <Plus size={21} />
@@ -95,6 +96,7 @@ export function ImageConversationComposer({
           }
         }}
       />
+      <DictationButton getTextField={() => textarea.current} locale={locale} value={text} onChange={onTextChange} maxLength={4000} disabled={readOnly || blocked} />
       <button
         className={styles.send}
         type="submit"

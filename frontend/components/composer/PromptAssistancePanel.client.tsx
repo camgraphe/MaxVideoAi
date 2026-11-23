@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useId, useRef, useState, type ReactNode, type RefObject } from 'react';
+import { DictationButton } from '@/components/composer/DictationButton.client';
 import { ArrowUp, ArrowLeft, Eye, Sparkles } from 'lucide-react';
 import type { PreviewMessage } from '@/lib/prompt-assistance/preview-state';
 import type {ApplicationSettingChange} from '@/lib/prompt-assistance/application-review';
@@ -12,6 +13,7 @@ import styles from './prompt-assistance.module.css';
 export type PromptAssistancePanelProps = {
   locale: string; modelLabel: string; messages: readonly PreviewMessage[];
   proposal: { text: string; target: 'prompt' | 'script' | 'lyrics'; stale: boolean } | null;
+  dictationKey?: string;
   message: string; pending: boolean; blocked?: boolean; inputReadOnly?:boolean; sendBlocked?:boolean; showConversationControl?:boolean; maxLength?: number;
   onMessageChange: (text: string) => void; onSend: () => void;
   onProposalTextChange: (text: string) => void; onApply: () => void;
@@ -35,7 +37,7 @@ function assistantReplyText(text: string) {
     index % 2 ? <strong key={index}>{part.slice(2, -2)}</strong> : part);
 }
 
-export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, message, pending, blocked, inputReadOnly, sendBlocked, showConversationControl, maxLength, settingsReview,onReview,onApplyReviewed,onMessageChange, onSend, onProposalTextChange, onApply, onCopy, references, messageRef, modelControl, conversationControl, helpControl, reasoningControl, identityStatus, entryWelcome, feedback, inputNotice, conversationContent, conversationContentVisible }: PromptAssistancePanelProps) {
+export function PromptAssistancePanel({ locale, dictationKey, modelLabel, messages, proposal, message, pending, blocked, inputReadOnly, sendBlocked, showConversationControl, maxLength, settingsReview,onReview,onApplyReviewed,onMessageChange, onSend, onProposalTextChange, onApply, onCopy, references, messageRef, modelControl, conversationControl, helpControl, reasoningControl, identityStatus, entryWelcome, feedback, inputNotice, conversationContent, conversationContentVisible }: PromptAssistancePanelProps) {
   const copy = promptAssistanceCopy(locale);
   const [expanded, setExpanded] = useState(false);
   const [reviewMode,setReviewMode]=useState(false);
@@ -116,6 +118,8 @@ export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, 
         if (event.shiftKey || event.nativeEvent.isComposing || event.keyCode === 229) return;
         event.preventDefault(); if (canSend) sendMessage();
       }} />
+      <span className={styles.inputMic}><DictationButton getTextField={() => input.current} key={dictationKey} locale={locale} value={message} onChange={onMessageChange}
+        maxLength={PROMPT_ASSISTANCE_TEXT_MAX_CHARS} disabled={pending || inputReadOnly || Boolean(inputNotice)} /></span>
       </div>
       <div className={styles.sendRow}><div className={styles.inputReferences}>{modelControl}{references}</div><button type="button" aria-label={copy.send} className={styles.send} disabled={!canSend} onClick={sendMessage}><ArrowUp size={19} aria-hidden /></button></div>
       {messageTooLong?<div id={`${messageId}-limit`} className={styles.liveFeedback} role="status">{copy.messageTooLong(PROMPT_ASSISTANCE_TEXT_MAX_CHARS.toLocaleString(locale))}</div>:null}

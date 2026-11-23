@@ -184,3 +184,8 @@
 .previousReplyHeader button { text-decoration: underline; text-underline-offset: .2em; }
 .previousReply > p { margin-top: .5rem; }
 .previousReplyText { margin-top: .75rem; white-space: pre-wrap; overflow-wrap: anywhere; max-height: 20rem; overflow-y: auto; }
+
+.messageField { position: relative; }
+.messageField > label, .messageField > textarea { padding-inline-end: 48px; }
+.inputMic { position: absolute; inset-inline-end: 0; top: 0; }
+.manualReferences .sendPlaceholder { display: flex; align-items: center; justify-content: flex-end; }
