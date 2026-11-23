@@ -329,7 +329,7 @@ export function Composer({
             )}>
               <ComposerPromptHeader promptId={promptId} promptLabel={promptLabel} hideLabel={assistanceEnabled} prompt={prompt} onPromptChange={onPromptChange}
                 dictation={!assistanceEnabled && !multiPromptEnabled && (!engine.activeVideoOperation || promptField)
-                  ? <DictationButton key={JSON.stringify([assistance?.scopeKey, engine.id, activeManualMode])} locale={locale} value={prompt} onChange={onPromptChange} maxLength={promptMaxChars} disabled={isLoading} /> : undefined}
+                  ? <DictationButton key={JSON.stringify([assistance?.scopeKey, engine.id, activeManualMode])} getTextField={() => document.getElementById(promptId)} locale={locale} value={prompt} onChange={onPromptChange} maxLength={promptMaxChars} disabled={isLoading} /> : undefined}
                 promptMaxChars={promptMaxChars} promptTooLong={promptTooLong} multiPromptEnabled={multiPromptEnabled} locale={locale}
                 multiPromptAction={multiPrompt ? <Button type="button" size="sm" variant={multiPromptEnabled ? 'primary' : 'ghost'}
                   aria-label={multiPromptEnabled ? 'Multi-prompt on' : 'Multi-prompt'} aria-pressed={multiPromptEnabled}

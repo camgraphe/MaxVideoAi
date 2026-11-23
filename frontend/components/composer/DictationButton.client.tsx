@@ -56,11 +56,12 @@ type DictationButtonProps = {
   locale: string;
   value: string;
   onChange: (text: string) => void;
+  getTextField: () => HTMLElement | null | undefined;
   maxLength?: number;
   disabled?: boolean;
 };
 
-export function DictationButton({ locale, value, onChange, maxLength, disabled = false }: DictationButtonProps) {
+export function DictationButton({ locale, value, onChange, getTextField, maxLength, disabled = false }: DictationButtonProps) {
   const language = locale.startsWith('fr') ? 'fr' : locale.startsWith('es') ? 'es' : 'en';
   const words = copy[language];
   const [phase, setPhase] = useState<DictationPhase | null>(null);
@@ -70,7 +71,15 @@ export function DictationButton({ locale, value, onChange, maxLength, disabled =
   const session = useRef<ReturnType<typeof startBrowserDictation>>(null);
   const interimBase = useRef<string | null>(null);
   const draft = useRef({ value, onChange, maxLength });
+  const revealedValue = useRef<string | null>(null);
   const noticeId = useId();
+
+  useLayoutEffect(() => {
+    if (revealedValue.current !== value) return;
+    revealedValue.current = null;
+    const field = getTextField();
+    if (field) field.scrollTop = field.scrollHeight;
+  }, [value, getTextField]);
 
   useLayoutEffect(() => {
     if (draft.current.value !== value && (interimBase.current !== null || !value)) {
@@ -133,6 +142,7 @@ export function DictationButton({ locale, value, onChange, maxLength, disabled =
         const next = appendDictation(committed, interimText, current.maxLength);
         interimBase.current = interimText ? committed : null;
         if (next !== current.value) {
+          revealedValue.current = next;
           current.value = next;
           current.onChange(next);
         }

@@ -130,7 +130,7 @@ export function PromptAssistanceComposer({ context, locale, modelLabel, draftTex
           <div className={styles.inputReferences}>{!milo ? controls?.modelControl : null}{manualReferences}</div>
           <span className={styles.sendPlaceholder}>{!milo && !disabledReason && <DictationButton
             key={JSON.stringify([context.scopeKey, context.accountKey, modelLabel, target])}
-            locale={locale} value={draftText} onChange={onApplyText} maxLength={maxLength} disabled={blocked} />}</span>
+            getTextField={() => manualWriting.current?.querySelector('textarea')} locale={locale} value={draftText} onChange={onApplyText} maxLength={maxLength} disabled={blocked} />}</span>
         </div></div>
       </div>
     </div>

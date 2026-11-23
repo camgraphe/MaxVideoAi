@@ -96,7 +96,7 @@ export function ImageConversationComposer({
           }
         }}
       />
-      <DictationButton locale={locale} value={text} onChange={onTextChange} maxLength={4000} disabled={readOnly || blocked} />
+      <DictationButton getTextField={() => textarea.current} locale={locale} value={text} onChange={onTextChange} maxLength={4000} disabled={readOnly || blocked} />
       <button
         className={styles.send}
         type="submit"

@@ -24,6 +24,7 @@ for (const engine of [chromium, webkit]) {
         await page.goto(fixture.url+'/?lang='+lang);
         const prompt = page.locator('[data-workspace-prompt]');
         const mic = page.getByRole('button',{name:label,exact:true});
+        const stop = page.getByRole('button',{name:/^(Stop dictation|Arrêter la dictée|Detener el dictado)$/});
         const selected = page.locator('.app-reference-selected-summary:visible');
         await expect(selected).toBeVisible();
         const before = await selected.innerText();
@@ -31,6 +32,7 @@ for (const engine of [chromium, webkit]) {
         assert.equal((await page.evaluate(() => (window as any).speech.lang)).split('-')[0], lang);
         await prompt.fill('Edited @Image1');
         assert.equal(await page.evaluate(() => (window as any).speech.interimResults), true);
+        assert.equal(await page.evaluate(() => (window as any).speech.continuous), true);
         await speechResults(page, [['one',false],['two',false]]);
         await expect(prompt).toHaveValue('Edited @Image1 one two');
         await speechResults(page, [['one',false]],1);
@@ -38,6 +40,7 @@ for (const engine of [chromium, webkit]) {
         await speechResults(page, []);
         await expect(prompt).toHaveValue('Edited @Image1');
         await speechResults(page, [[words.slice(0,2),false]]);
+        await stop.click();
         await finalWords(page, words);
         await expect(prompt).toHaveValue('Edited @Image1 '+words);
         assert.equal(await selected.innerText(), before);
@@ -73,8 +76,24 @@ for (const engine of [chromium, webkit]) {
         await expect(message).toHaveValue('@Image1 first draft');
         await speechResults(page, [['first',true],[words,true]],1);
         await speechResults(page, [['first',true],[words,true]],1);
-        await page.evaluate(() => (window as any).speech.onend());
-        await expect(message).toHaveValue('@Image1 first '+words);
+        const beforePause = '@Image1 first '+words;
+        await expect(message).toHaveValue(beforePause);
+        await speechResults(page, [['first',true],[words,true],['more',false]],2);
+        await page.evaluate(() => {
+          const w = window as any;
+          w.previousSpeech = w.speech;
+          w.oldResult = w.speech.onresult;
+          w.speech.onend();
+        });
+        await expect(stop).toBeVisible();
+        await page.waitForFunction(() => (window as any).previousSpeech !== (window as any).speech);
+        await page.evaluate(() => (window as any).oldResult({results:[{isFinal:true,0:{transcript:'obsolete'}}]}));
+        await speechResults(page, [['next phrase',false]]);
+        await expect(message).toHaveValue(beforePause+' more next phrase');
+        await stop.click();
+        await finalWords(page,'next phrase');
+        const fullDraft = beforePause+' more next phrase';
+        await expect(mic).toBeEnabled();
         await mic.click();
         await page.evaluate(() => (window as any).speech.onerror({error:'not-allowed'}));
         await expect(page.getByRole('status')).toContainText(/denied|refusé|denegado/);
@@ -87,8 +106,25 @@ for (const engine of [chromium, webkit]) {
           await mic.click();
           await page.evaluate(code => (window as any).speech.onerror({error:code}),error);
           await expect(page.getByRole('status')).toContainText(notice);
-          await expect(message).toHaveValue('@Image1 first '+words);
+          await expect(message).toHaveValue(fullDraft);
         }
+        const longDraft = Array.from({length:40}, (_, index) => 'Line '+index).join('\n');
+        await message.fill(longDraft);
+        await message.evaluate(field => { field.scrollTop = 0; });
+        await mic.click();
+        await speechResults(page, [['visible words',false]]);
+        await expect(message).toHaveValue(longDraft+' visible words');
+        assert.ok(await message.evaluate(field =>
+          field.scrollHeight > field.clientHeight && field.scrollHeight-field.scrollTop-field.clientHeight < 2));
+        await page.evaluate(() => {
+          const w = window as any;
+          w.previousSpeech = w.speech;
+          w.speech.onend();
+        });
+        await stop.click();
+        await expect(mic).toBeEnabled();
+        await page.waitForTimeout(350);
+        assert.equal(await page.evaluate(() => (window as any).previousSpeech === (window as any).speech),true);
         await message.fill('Reviewed @Image1');
         await page.evaluate(() => {
           Object.defineProperty(window,'SpeechRecognition',{value:undefined,configurable:true});

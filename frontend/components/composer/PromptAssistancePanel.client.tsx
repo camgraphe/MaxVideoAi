@@ -118,7 +118,7 @@ export function PromptAssistancePanel({ locale, dictationKey, modelLabel, messag
         if (event.shiftKey || event.nativeEvent.isComposing || event.keyCode === 229) return;
         event.preventDefault(); if (canSend) sendMessage();
       }} />
-      <span className={styles.inputMic}><DictationButton key={dictationKey} locale={locale} value={message} onChange={onMessageChange}
+      <span className={styles.inputMic}><DictationButton getTextField={() => input.current} key={dictationKey} locale={locale} value={message} onChange={onMessageChange}
         maxLength={PROMPT_ASSISTANCE_TEXT_MAX_CHARS} disabled={pending || inputReadOnly || Boolean(inputNotice)} /></span>
       </div>
       <div className={styles.sendRow}><div className={styles.inputReferences}>{modelControl}{references}</div><button type="button" aria-label={copy.send} className={styles.send} disabled={!canSend} onClick={sendMessage}><ArrowUp size={19} aria-hidden /></button></div>

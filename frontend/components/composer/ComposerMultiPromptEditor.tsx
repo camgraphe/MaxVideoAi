@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import { DictationButton } from '@/components/composer/DictationButton.client';
 import { Button } from '@/components/ui/Button';
 import type { ComposerProps } from './composer-types';
@@ -10,9 +11,11 @@ type ComposerMultiPromptEditorProps = {
 };
 
 export function ComposerMultiPromptEditor({ multiPrompt, labelledBy, locale, disabled }: ComposerMultiPromptEditorProps) {
+  const groupId = useId();
   return (
     <div className="space-y-3 px-4 pb-4" role={labelledBy ? 'group' : undefined} aria-labelledby={labelledBy}>
       {multiPrompt.scenes.map((scene, index) => {
+        const fieldId = groupId + scene.id;
         const maxPromptChars = multiPrompt.maxPromptChars;
         const promptOverLimit =
           typeof maxPromptChars === 'number' && scene.prompt.length > maxPromptChars;
@@ -25,7 +28,7 @@ export function ComposerMultiPromptEditor({ multiPrompt, labelledBy, locale, dis
             <div className="flex items-center justify-between">
               <span className="text-[12px] uppercase tracking-micro text-text-muted">Scene {index + 1}</span>
               <div className="flex items-center gap-1">
-                <DictationButton locale={locale} value={scene.prompt} maxLength={maxPromptChars} disabled={disabled}
+                <DictationButton getTextField={() => document.getElementById(fieldId)} locale={locale} value={scene.prompt} maxLength={maxPromptChars} disabled={disabled}
                   onChange={prompt => multiPrompt.onUpdateScene(scene.id, { prompt })} />
                 {multiPrompt.scenes.length > 1 ? (
                   <Button
@@ -40,7 +43,7 @@ export function ComposerMultiPromptEditor({ multiPrompt, labelledBy, locale, dis
                 ) : null}
               </div>
             </div>
-            <textarea
+            <textarea id={fieldId}
               aria-label={`Scene ${index + 1} prompt`}
               value={scene.prompt}
               maxLength={maxPromptChars}
