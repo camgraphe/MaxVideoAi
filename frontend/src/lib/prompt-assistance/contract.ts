@@ -16,10 +16,14 @@ export const promptAssistanceDraftSchema = z.object({
   readOnlyText:z.object({negativePrompt:z.string().max(5000).optional(),lyrics:z.string().max(3500).optional()}).strict().optional(),
   references:z.array(promptReferenceLocationSchema.extend({label:z.string().max(40),ref:toolAssetRefSchema.nullable()})).max(60),
 }).strict().refine(value=>!value.workflow||(promptWorkflows[value.surface] as readonly string[]).includes(value.workflow),'Workflow does not belong to this generator.');
+// Navigation hints describe visible controls only. Media admission still uses draft.references.
+const pickerRole = z.enum(['image', 'startImage', 'endImage', 'guideImage', 'mask', 'video', 'sourceVideo', 'audio']);
+export type PromptPickerRole = z.infer<typeof pickerRole>;
 export const promptAssistanceRequestSchema = z.object({
   sessionId:z.string().uuid(),requestId:z.string().uuid(),draftRevision:z.number().int().nonnegative(),
   assistanceModel:studioAssistantModelSchema.optional(),assistanceRevision:z.number().int().nonnegative().optional(),
   locale:z.enum(['en','fr','es']),message:z.string().trim().min(1).max(PROMPT_ASSISTANCE_TEXT_MAX_CHARS),draft:promptAssistanceDraftSchema,
+  referencePicker:z.array(pickerRole).max(pickerRole.options.length).optional(),
   activeSuggestion:z.string().trim().min(1).max(PROMPT_ASSISTANCE_TEXT_MAX_CHARS).optional(),
 }).strict().refine(value=>(value.assistanceModel===undefined)===(value.assistanceRevision===undefined),'Model and assistance revision must be provided together.');
 export type PromptAssistanceDraftContext = Omit<z.infer<typeof promptAssistanceDraftSchema>,'text'|'target'>;

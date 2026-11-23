@@ -32,6 +32,7 @@ import { useComposerGenerationGate } from '@/components/composer/useComposerGene
 import { GenerationActionHelp } from '@/components/composer/GenerationActionHelp.client';
 import { PromptAssistanceComposer } from '@/components/composer/PromptAssistanceComposer.client';
 import { applicationReviewKey } from '@/lib/prompt-assistance/application-review';
+import { availablePickerRoles } from './composer/workspace-reference-commands';
 import { composerAssistanceReferences, composerAssistanceReferenceField, hasResolvingAssistanceReferences } from '@/lib/prompt-assistance/client-context';
 import { PROMPT_ASSISTANCE_PREVIEW } from '@/lib/prompt-assistance/preview-state';
 import assistanceStyles from '@/components/composer/prompt-assistance.module.css';
@@ -416,7 +417,9 @@ export function Composer({
         {referenceMentions.needsReview ? <ComposerReferenceMentionNotice
           locale={locale} changed={referenceMentions.changed} onReview={referenceMentions.review} /> : null}
 
-        {assistanceEnabled && assistance ? <PromptAssistanceComposer context={{ ...assistance, reviewKey:assistance.reviewKey?applicationReviewKey([assistance.reviewKey,engine.id,engine.activeVideoOperation,activeManualMode,assets,assistanceNegativePrompt,multiPrompt?.scenes]):undefined, live: assistance.live ? { ...assistance.live,
+        {assistanceEnabled && assistance ? <PromptAssistanceComposer context={{ ...assistance,
+          referencePicker: workspaceDensity ? availablePickerRoles(engine, assetFields, videoSourceWorkflow ?? (extensionWorkflow ? 'extend' : undefined)) : undefined,
+          reviewKey:assistance.reviewKey?applicationReviewKey([assistance.reviewKey,engine.id,engine.activeVideoOperation,activeManualMode,assets,assistanceNegativePrompt,multiPrompt?.scenes]):undefined, live: assistance.live ? { ...assistance.live,
           readOnlyText: {...assistance.live.readOnlyText,...(assistanceNegativePrompt?{negativePrompt:assistanceNegativePrompt}:{})},
           references: [...assistance.live.references,...composerAssistanceReferences(engine, assetFields, assets, assistance.live.mode as import('@/types/engines').Mode)] } : undefined, contextKey: JSON.stringify([assistance.contextKey, engine.id, activeManualMode, assets, assistanceNegativePrompt, multiPrompt?.scenes]) }}
           modeControl={<ComposerCommandBar modes={visibleModeToggles} workspaceDensity={workspaceDensity} activeManualMode={activeManualMode} onModeToggle={onModeToggle} compact />}

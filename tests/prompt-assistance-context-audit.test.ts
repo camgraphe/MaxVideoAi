@@ -8,6 +8,8 @@ import {promptAssistanceRequestSchema} from '../frontend/src/lib/prompt-assistan
 import {composerAssistanceReferences, composerAssistanceSettings} from '../frontend/src/lib/prompt-assistance/client-context';
 import {promptResponseParams} from '../frontend/src/server/prompt-assistance/provider';
 import type {PromptRequestRow} from '../frontend/src/server/prompt-assistance/repository';
+import {availablePickerRoles} from '../frontend/components/composer/workspace-reference-commands';
+import {summarizeWorkspaceInputSchema} from '../frontend/app/(core)/(workspace)/app/_lib/workspace-input-schema';
 import {ENV} from '../frontend/src/lib/env';
 import {getVideoWorkflowSourceField} from '../frontend/lib/video-source-workflow';
 
@@ -215,4 +217,30 @@ test('Milo language policy separates conversation, visual direction and literal 
   assert.match(instructions,/English-only/);
   assert.doesNotMatch(instructions,/otherwise preserve the draft's language/);
  }
+});
+
+test('a Seedance text-to-video draft can share an image from the picker before attaching anything', async () => {
+  const selected = engine('seedance-2-5');
+  const {assetFields} = summarizeWorkspaceInputSchema({
+    selectedEngine: selected, activeMode: 't2v', uiLocale: 'en', isUnifiedSeedance: true,
+    allowsUnifiedVeoFirstLast: false, isUnifiedHappyHorse: false, isUnifiedGeminiOmni: false,
+  });
+  const roles = availablePickerRoles(selected, assetFields);
+  assert.deepEqual(new Set(roles), new Set(['image', 'startImage', 'endImage', 'video', 'audio']));
+  const disabledImages = assetFields.map(entry => ({...entry, disabled: entry.field.type === 'image'}));
+  assert.deepEqual(new Set(availablePickerRoles(selected, disabledImages)), new Set(['video','audio']));
+  assert.deepEqual(availablePickerRoles(selected, []), []);
+  const input = promptAssistanceRequestSchema.parse({
+    ...request(), referencePicker: roles, locale: 'fr', message: 'Comment je mets, euh, une image ? Je te partage',
+  });
+  const context = await buildPromptAssistanceContext('owner', input, {catalog});
+  for (const model of ['gpt-6-luna', 'gpt-6.1-terra', 'gpt-6.1-sol']) {
+    const params = promptResponseParams({model, input_json:input} as PromptRequestRow, context, []);
+    const data = JSON.parse((params.input as Array<{content:string}>).at(-1)!.content);
+    assert.equal(data.modelContext.mode, 't2v');
+    assert.deepEqual(data.modelContext.references, []);
+    assert.deepEqual(data.referencePicker, roles);
+    assert.match(String(params.instructions), /References beside the model.*Upload or Choose from Media/s);
+  }
+  assert.equal(promptAssistanceRequestSchema.safeParse({...input, referencePicker:['an arbitrary instruction']}).success, false);
 });

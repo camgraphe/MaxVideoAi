@@ -325,6 +325,9 @@ test('mobile shares Milo selection and owner-scoped requests without granting a 
         create: async (params) => {
           ++creates;
           assert.equal(params.model, 'gpt-6-luna');
+          assert.match(String(params.instructions), /phone app, Create video/);
+          assert.match(String(params.instructions), /References beside the model.*Phone gallery/s);
+          assert.doesNotMatch(String(params.instructions), /Choose from Media|same browser tab/);
           return {
             id: 'resp_mobile_test',
             model: params.model,

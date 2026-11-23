@@ -19,7 +19,7 @@ export async function readPromptRequest(userId:string,sessionId:string,requestId
   if(!row)throw new Error('REQUEST_NOT_FOUND');
   return row;
 }
-export async function claimPromptRequest(userId:string,input:PromptAssistanceRequest,policy:StudioAssistancePolicy,workers:{enabled?:boolean;executionOwner?:string}={}) {
+export async function claimPromptRequest(userId:string,input:PromptAssistanceRequest,policy:StudioAssistancePolicy,workers:{enabled?:boolean;executionOwner?:string;clientSurface?:'mobile'}={}) {
   if(!userId)throw new Error('UNAUTHORIZED');
   const hash=createHash('sha256').update(stableJson(input)).digest('hex');
   return withDbTransaction(async tx=>{
@@ -43,7 +43,7 @@ export async function claimPromptRequest(userId:string,input:PromptAssistanceReq
     const account=await lockAccount(tx,userId,policy);
     if(input.assistanceModel!==undefined&&(account.selected_model!==input.assistanceModel||Number(account.revision)!==input.assistanceRevision))throw new Error('ASSISTANCE_SELECTION_CHANGED');
     const turn=await openStudioAssistanceTurn(composerScope(userId,input.sessionId),input.requestId,policy,tx);
-    const row=(await tx.query<PromptRequestRow>(`WITH admission AS (SELECT clock_timestamp() admitted_at) INSERT INTO prompt_assistance_requests(user_id,session_id,request_id,input_hash,input_json,lease_id,state,model,created_at,execution_version,execution_deadline_at,execution_owner,lease_expires_at) SELECT $1,$2,$3,$4,$5::jsonb,$6,'preparing',$7,admitted_at,'durable-v1',admitted_at+interval '600 seconds',$8,admitted_at+interval '630 seconds' FROM admission RETURNING *`,[userId,input.sessionId,input.requestId,hash,JSON.stringify(input),randomUUID(),turn.model,executionOwner]))[0];
+    const row=(await tx.query<PromptRequestRow>(`WITH admission AS (SELECT clock_timestamp() admitted_at) INSERT INTO prompt_assistance_requests(user_id,session_id,request_id,input_hash,input_json,lease_id,state,model,created_at,execution_version,execution_deadline_at,execution_owner,lease_expires_at,context_json) SELECT $1,$2,$3,$4,$5::jsonb,$6,'preparing',$7,admitted_at,'durable-v1',admitted_at+interval '600 seconds',$8,admitted_at+interval '630 seconds',$9::jsonb FROM admission RETURNING *`,[userId,input.sessionId,input.requestId,hash,JSON.stringify(input),randomUUID(),turn.model,executionOwner,workers.clientSurface ? JSON.stringify({clientSurface:workers.clientSurface}) : null]))[0];
     return {row:{...row,runtime_policy:turn.tariff_snapshot?.runtime},claimed:true};
   });
 }
