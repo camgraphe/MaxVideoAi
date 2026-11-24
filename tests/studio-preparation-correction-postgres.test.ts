@@ -254,6 +254,57 @@ test('Studio quotes only supported video framing and source-audio settings', asy
     assert.deepEqual(turn.counts, {jobs: 0, charges: 0});
   });
 
+  const klingSourceLanguages = [
+    ['en', 'I want a quote to make this jacket red and keep the original voice.', /Kling Edit.*720.*3840.*each side/, /reached its action limit/],
+    ['fr', 'Une veste rouge en gardant la voix originale.', /Kling Edit.*largeur.*hauteur.*720.*3840/, /atteint sa limite/],
+    ['es', 'Una chaqueta roja conservando la voz original.', /Kling Edit.*ancho.*alto.*720.*3840/, /alcanzó su límite/],
+  ] as const;
+  for (const [locale, message, guidance, limit] of klingSourceLanguages) {
+    await t.test(`Kling Edit reports supported source dimensions at the Studio action limit in ${locale}`, async () => {
+      const id = 'kling-small-source-' + locale;
+      const assetId = runtime.referenceId(id, 'watch_video');
+      const source = { type: 'asset', kind: 'video', assetId };
+      const setup = await runtime.submit(id, 'Hello.', [], async () =>
+        ({ ...response('catalog_read', {}, 0), output: [], output_text: JSON.stringify({ reply: 'Ready.' }) }));
+      assert.equal(setup.error, undefined);
+      await getDb().query(`UPDATE media_assets SET width=854, height=480,
+        metadata=jsonb_set(metadata, '{mediaFacts}', metadata->'mediaFacts' || $2::jsonb) WHERE id=$1`,
+      [assetId, { width: 854, height: 480 }]);
+      let calls = 0;
+      const turn = await runtime.submit(id, message, ['watch_video'], async () => {
+        calls++;
+        if (calls < 4) return response('catalog_read', {}, calls);
+        return response('video_prepare', { reply: 'Review the edit quote.', prompt: 'Turn the jacket red.',
+          modelId: kling.id, mode: 'v2v', operation: 'kling-edit', aspectRatio: null, source,
+          settings: [{ name: 'resolution', value: '720p' }, { name: 'keepAudio', value: true }], outputCount: 1,
+        }, calls);
+      });
+      assert.equal(turn.error, undefined);
+      assert.equal(calls, 4);
+      const step = turn.steps.at(-1)?.result;
+      assert.ok(step && !step.ok);
+      assert.equal(step.error.code, 'REFERENCE_INVALID');
+      assert.match(step.error.message, /Kling Edit.*720.*3840.*each side/);
+      assert.ok(turn.result);
+      assert.match(turn.result.reply ?? '', guidance);
+      assert.match(turn.result.reply ?? '', limit);
+      assert.equal(turn.result.continuation?.reason, 'action_limit');
+      assert.equal(turn.result.continuation?.lastError?.code, 'REFERENCE_INVALID');
+      assert.match(turn.result.continuation?.lastError?.message ?? '', guidance);
+      if (locale !== 'en') assert.doesNotMatch(turn.result.reply ?? '', /requires verified source dimensions|REFERENCE_INVALID/);
+      assert.equal(turn.quotes.length, 0);
+      assert.deepEqual(turn.counts, { jobs: 0, charges: 0 });
+      const { rows } = await getDb().query<StoredDraftRow>(
+        'SELECT draft_json,quote_id,state FROM studio_image_turns WHERE project_id=$1 AND request_id=$2', [id, turn.result.requestId]);
+      assert.equal(rows[0]?.state, 'ready');
+      assert.equal(rows[0].quote_id, null);
+      assert.equal(rows[0].draft_json?.media ?? null, null);
+      assert.equal(rows[0].draft_json?.reply, turn.result.reply);
+      assert.deepEqual(rows[0].draft_json?.continuation, turn.result.continuation);
+      assert.deepEqual(turn.result.attachments, [source]);
+    });
+  }
+
   // This operation requires an approved tariff. Install only its cell on the disposable database.
   await getDb().query('CREATE TABLE app_pricing_change_events(domain text)');
   for (const migration of ['54_customer_tariff_cells.sql', '55_customer_tariff_versions.sql'])

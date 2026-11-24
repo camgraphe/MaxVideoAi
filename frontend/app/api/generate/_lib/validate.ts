@@ -1,5 +1,5 @@
 import type { Mode } from '../../../../fixtures/engineCaps';
-import type { EngineInputSchema } from '@/types/engines';
+import type { EngineInputSchema, EngineModeUiCaps } from '@/types/engines';
 import type { ReferenceBudgetMediaItem, ReferenceBudgetValuesByField } from '@/lib/reference-budget';
 import { ENGINE_CAPS, resolveEngineCapsKey, type EngineCapsKey } from '../../../../fixtures/engineCaps';
 import { listFalEngines } from '../../../../src/config/falEngines';
@@ -15,7 +15,7 @@ import { getVideoSchemaControlConstraintViolation } from '@/lib/video-input-sche
 import type { ValidationResult } from './validate-types';
 import { deriveRuntimeSchemaCaps } from './runtime-schema-options';
 import { getPrivateRuntimeEngineById } from '@/server/video-generation/private-engine-registry';
-export type RequestValidationContext = { inputSchema?: EngineInputSchema | null; referenceValuesByField?: ReferenceBudgetValuesByField<string>; referenceMediaItems?: readonly ReferenceBudgetMediaItem[]; referenceProvenanceIssues?: readonly ReferenceProvenanceIssue[] };
+export type RequestValidationContext = { inputSchema?: EngineInputSchema | null; operationCaps?: EngineModeUiCaps; referenceValuesByField?: ReferenceBudgetValuesByField<string>; referenceMediaItems?: readonly ReferenceBudgetMediaItem[]; referenceProvenanceIssues?: readonly ReferenceProvenanceIssue[] };
 const ENGINE_INPUT_LIMITS = listFalEngines().reduce<Record<string, { promptMaxChars?: number }>>((acc, entry) => {
   acc[entry.id] = { promptMaxChars: entry.engine.inputLimits.promptMaxChars };
   return acc;
@@ -36,7 +36,7 @@ const ENGINE_REQUIRED_PROMPT_MODES = listFalEngines().reduce<Record<string, Mode
 export function validateRequest(engineId: string, mode: Mode | undefined, payload: Record<string, unknown>, context: RequestValidationContext = {}): ValidationResult {
   const capsKey: EngineCapsKey | undefined = resolveEngineCapsKey(engineId, mode);
   const normalizedMode: Mode = mode ?? 't2v';
-  const caps = (capsKey ? ENGINE_CAPS[capsKey] : undefined)
+  const caps = context.operationCaps ?? (capsKey ? ENGINE_CAPS[capsKey] : undefined)
     ?? deriveRuntimeSchemaCaps(context.inputSchema, normalizedMode);
   if (!caps) {
     return {
