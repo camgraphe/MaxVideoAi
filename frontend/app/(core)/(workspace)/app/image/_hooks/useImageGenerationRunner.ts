@@ -3,6 +3,8 @@
 import { useCallback, type Dispatch, type FormEvent, type SetStateAction } from 'react';
 import { runImageGeneration } from '@/lib/api';
 import type { PricingSnapshot } from '@maxvideoai/pricing';
+import { localizeGoogleImageModerationMessage } from '@/lib/generation-failure-messages';
+import { useOptionalI18n } from '@/lib/i18n/I18nProvider';
 import { getDefaultAspectRatio } from '@/lib/image/inputSchema';
 import { validateGptImage2CustomImageSize } from '@/lib/image/gptImage2';
 import { readLastKnownUserId } from '@/lib/last-known';
@@ -131,6 +133,7 @@ export function useImageGenerationRunner({
   complexity,
   watermark,
 }: UseImageGenerationRunnerParams) {
+  const locale = useOptionalI18n()?.locale;
   return useCallback(
     async (event?: FormEvent<HTMLFormElement> | null, canContinue?:()=>boolean) => {
       event?.preventDefault();
@@ -272,7 +275,8 @@ export function useImageGenerationRunner({
         }
         void mutateJobs();
       } catch (err) {
-        setError(err instanceof Error ? err.message : resolvedCopy.errors.generic);
+        const message = err instanceof Error ? err.message : resolvedCopy.errors.generic;
+        setError(localizeGoogleImageModerationMessage(message, locale) ?? message);
       } finally {
         if (!keepActiveGroup) {
           setPendingGroups((prev) => prev.filter((group) => group.id !== pendingId));
@@ -299,6 +303,7 @@ export function useImageGenerationRunner({
       hasComplexityField,
       hasWatermarkField,
       limitGenerations,
+      locale,
       maskUrl,
       mode,
       mutateJobs,

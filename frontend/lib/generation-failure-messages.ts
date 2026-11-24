@@ -10,6 +10,9 @@ const copy = {
     combined: 'The combined duration of the reference videos exceeds the input limit of 15 seconds. Shorten or remove a reference video before trying again.',
     safety: 'This request was blocked by safety checks. Review the prompt and any reference images, video, or audio before trying again.',
     googleSafety: 'Google blocked this request during safety checks. Review the prompt and reference media before trying again.',
+    googleImageOutputBlocked: 'Google blocked the generated image during its moderation checks.',
+    googleImageRequestBlocked: 'Google stopped image generation during its moderation checks.',
+    googleImageRefunded: 'The amount was returned to your wallet.',
     unverified: 'We could not verify the duration of a reference video. Upload it again before generating.',
     measured: 'Measured duration: {duration} seconds.',
     noCharge: 'No credits were charged.',
@@ -31,6 +34,9 @@ const copy = {
     combined: 'La durée cumulée des vidéos de référence dépasse la limite d’entrée de 15 secondes. Raccourcissez ou retirez une vidéo de référence avant de réessayer.',
     safety: 'Cette demande a été bloquée par les contrôles de sécurité. Vérifiez le prompt et les images, vidéos ou fichiers audio de référence avant de réessayer.',
     googleSafety: 'Google a refusé cette demande lors de ses contrôles de modération. Vérifiez le prompt et les médias de référence avant de réessayer.',
+    googleImageOutputBlocked: 'Google a bloqué l’image générée lors de ses contrôles de modération.',
+    googleImageRequestBlocked: 'Google a interrompu la génération lors de ses contrôles de modération.',
+    googleImageRefunded: 'Le montant a été recrédité sur votre portefeuille.',
     unverified: 'Nous n’avons pas pu vérifier la durée d’une vidéo de référence. Importez-la à nouveau avant de générer.',
     measured: 'Durée mesurée : {duration} secondes.',
     noCharge: 'Aucun crédit n’a été débité.',
@@ -52,6 +58,9 @@ const copy = {
     combined: 'La duración total de los vídeos de referencia supera el límite de entrada de 15 segundos. Recorta o elimina un vídeo de referencia antes de intentarlo de nuevo.',
     safety: 'Esta solicitud ha sido bloqueada por los controles de seguridad. Revisa el prompt y las imágenes, los vídeos o el audio de referencia antes de intentarlo de nuevo.',
     googleSafety: 'Google ha rechazado esta solicitud durante sus controles de moderación. Revisa el prompt y los medios de referencia antes de intentarlo de nuevo.',
+    googleImageOutputBlocked: 'Google bloqueó la imagen generada durante sus controles de moderación.',
+    googleImageRequestBlocked: 'Google detuvo la generación de la imagen durante sus controles de moderación.',
+    googleImageRefunded: 'El importe se ha devuelto a tu monedero.',
     unverified: 'No hemos podido verificar la duración de un vídeo de referencia. Vuelve a subirlo antes de generar.',
     measured: 'Duración medida: {duration} segundos.',
     noCharge: 'No se han descontado créditos.',
@@ -68,8 +77,29 @@ const copy = {
   },
 } satisfies Record<Locale, Record<string, string>>;
 
+export const GOOGLE_IMAGE_MODERATION_MESSAGES = {
+  output: copy.en.googleImageOutputBlocked,
+  request: copy.en.googleImageRequestBlocked,
+};
+
 function localeKey(locale = 'en'): Locale {
   return locale.startsWith('fr') ? 'fr' : locale.startsWith('es') ? 'es' : 'en';
+}
+
+export function localizeGoogleImageModerationMessage(
+  message: string | null | undefined,
+  locale = 'en',
+  refundRecorded = false,
+): string | null {
+  const normalized = message?.trim() ?? '';
+  const refundSuffix = ` ${copy.en.googleImageRefunded}`;
+  const includesRefund = normalized.endsWith(refundSuffix);
+  const reason = includesRefund ? normalized.slice(0, -refundSuffix.length) : normalized;
+  const key = reason === GOOGLE_IMAGE_MODERATION_MESSAGES.output ? 'googleImageOutputBlocked'
+    : reason === GOOGLE_IMAGE_MODERATION_MESSAGES.request ? 'googleImageRequestBlocked' : null;
+  if (!key) return null;
+  const text = copy[localeKey(locale)];
+  return includesRefund || refundRecorded ? `${text[key]} ${text.googleImageRefunded}` : text[key];
 }
 
 export function getGeneratedImageFailureMessage(message: string | null | undefined, locale = 'en'): string | null {
@@ -107,6 +137,8 @@ export function getKnownGenerationFailureMessage(params: {
   if (seedance) return seedance;
   const wanImage = getWanImageFailureMessage(params.message, params.locale);
   if (wanImage) return wanImage;
+  const googleImage = localizeGoogleImageModerationMessage(params.message, params.locale);
+  if (googleImage) return googleImage;
   const outputImage = getGeneratedImageFailureMessage(params.message, params.locale);
   if (outputImage) return outputImage;
   const text = copy[localeKey(params.locale)];

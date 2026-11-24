@@ -82,3 +82,23 @@ test('agent messages confirm a real wallet refund for generic and validation fai
 test('opaque transport errors remain unclassified rather than being called safety or input failures', () => {
   assert.equal(getKnownGenerationFailureMessage({ message: 'Unexpected status code: 422' }), null);
 });
+
+test('Google image refusal guidance preserves the blocked stage and the confirmed refund in each language', () => {
+  const output = 'Google blocked the generated image during its moderation checks.';
+  const generic = 'Google stopped image generation during its moderation checks.';
+  const refunded = `${output} The amount was returned to your wallet.`;
+  for (const [locale, image, request, wallet] of [
+    ['en', /blocked the generated image/, /stopped image generation/, /returned to your wallet/],
+    ['fr', /bloqué l’image générée/, /interrompu la génération/, /recrédité sur votre portefeuille/],
+    ['es', /bloqueó la imagen generada/, /detuvo la generación/, /devuelto a tu monedero/],
+  ] as const) {
+    assert.match(getKnownGenerationFailureMessage({ message: output, locale }) ?? '', image);
+    assert.match(getKnownGenerationFailureMessage({ message: generic, locale }) ?? '', request);
+    assert.doesNotMatch(getKnownGenerationFailureMessage({ message: generic, locale }) ?? '', image);
+    assert.doesNotMatch(getKnownGenerationFailureMessage({ message: output, locale }) ?? '', wallet);
+    assert.match(getKnownGenerationFailureMessage({ message: refunded, locale }) ?? '', wallet);
+    const receipt = localizeGenerationRefundDescription(`Refund Nano Banana Pro - 1 image - ${output}`, locale);
+    assert.match(receipt ?? '', image);
+    assert.doesNotMatch(receipt ?? '', /prompt|IMAGE_PROHIBITED_CONTENT/);
+  }
+});
