@@ -11,6 +11,7 @@ export type WalletFailureContext = {
   providerJobId?: string | null;
   failureMessage?: string | null;
   failureOrigin?: string | null;
+  refundDescription?: string;
 };
 
 export type WalletFailureSettlementDependencies = {
@@ -96,7 +97,7 @@ async function reconcileLockedWalletRefund(
   }
 
   const userMessage = toUserFacingFailureMessage(context.failureMessage);
-  const description = buildUserFacingRefundDescription({
+  const description = context.refundDescription ?? buildUserFacingRefundDescription({
     engineLabel: context.engineLabel ?? job.engine_label ?? job.engine_id,
     durationSec: job.duration_sec, reason: context.failureMessage,
   });

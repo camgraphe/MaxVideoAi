@@ -5,6 +5,7 @@ import { runInNewContext } from 'node:vm';
 import ts from '../frontend/node_modules/typescript/lib/typescript.js';
 
 import * as imageRenders from '../frontend/lib/image-renders.ts';
+import * as failureMessages from '../frontend/lib/generation-failure-messages.ts';
 import * as nano21 from '../frontend/src/lib/nano-banana-2-1.ts';
 import { GoogleVertexImageClient } from '../frontend/src/server/images/google-vertex-image-client.ts';
 import * as vertexError from '../frontend/src/server/images/google-vertex-image-error.ts';
@@ -74,6 +75,8 @@ for (const { engineId, modelId, thinkingLevel, wireLevel } of [
     const { executeGoogleVertexImageGeneration } = loadModule<{ executeGoogleVertexImageGeneration: Executor }>(
       'frontend/src/server/images/google-vertex-image-execution.ts', {
         '@/lib/nano-banana-2-1': nano21,
+        '@/lib/generation-failure-messages': failureMessages,
+        '@/server/fal-webhook-refunds': { maybeAutoRefundWalletCharge: async () => assert.fail('Unexpected wallet settlement') },
         '@/lib/media': { normalizeMediaUrl: (url: string) => url },
         '@/server/storage': {
           isStorageConfigured: () => true,
