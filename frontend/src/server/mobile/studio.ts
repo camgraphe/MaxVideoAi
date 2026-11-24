@@ -26,6 +26,7 @@ import type { StudioGenerationActor } from '@/server/agent-api/generation-actor'
 import { studioConversationEditingEnabled } from '@/app/api/studio/_lib/studio-conversation-editing-handler';
 import { MobileHttpError, mobileResponse } from './http';
 import { readMobileStudioPhotos } from './studio-photos';
+import { renewMobileStudioQuote, studioRenewInput } from './studio-renewal';
 
 const nameInput = z.object({ name: studioProjectNameSchema, idempotencyKey: z.string().uuid() });
 const createInput = nameInput.extend({ action: z.literal('create') }).strict();
@@ -51,7 +52,7 @@ const messageInput = z
     customerMaxCredits: z.number().int().nonnegative(),
   })
   .strict();
-const projectInput = z.discriminatedUnion('action', [renameInput, deleteInput, messageInput, studioConfirmInput]);
+const projectInput = z.discriminatedUnion('action', [renameInput, deleteInput, messageInput, studioConfirmInput, studioRenewInput]);
 const customerCeiling = (model: StudioAllowance['model'], maxCredits: number) =>
   miloLevelForModel(model) === 'lite' ? 0 : maxCredits;
 
@@ -182,7 +183,9 @@ export function handleMobileStudio(
           media: turnMedia(turn, labels),
           reply: turn.reply,
           state: turn.task?.state === 'paused' ? 'paused' : turn.state,
-          quote: turn.quote ? mobileStudioQuote(turn.quote, locale, reviewEnabled) : null,
+          quote: turn.quote ? mobileStudioQuote(turn.quote, locale, reviewEnabled,
+            turn.state === 'ready' && !turn.generation &&
+            (turn.quote.summary.surface === 'image' || process.env.STUDIO_CONVERSATION_MEDIA_ENABLED === 'true')) : null,
           ...(reviewEnabled && !turn.quote && (turn.exportQuote || turn.creatorQuote || turn.analysisQuote?.confirmationRequired)
             ? { webReview: true as const }
             : {}),
@@ -193,6 +196,8 @@ export function handleMobileStudio(
     const parsed = projectInput.safeParse(await readBoundedJsonBody(req, 32768));
     if (!parsed.success) throw new SyntaxError('Invalid project command.');
     const input = parsed.data;
+    if (input.action === 'renew-generation')
+      return renewMobileStudioQuote(actor, input, deps.conversationService(actor, req.nextUrl.origin));
     if (input.action === 'confirm-generation') {
       if (req.headers.get(PRICING_POLICY_HEADER) !== LIVE_PRICING_POLICY_REVISION)
         throw new MobileHttpError('REVIEW_REQUIRED', 409, 'Review the current pricing policy.');

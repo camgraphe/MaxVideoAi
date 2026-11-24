@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
+import {renewMobileStudioQuote} from '../frontend/src/server/mobile/studio-renewal';
 import { getDb } from '../frontend/src/lib/db';
 import { getFalEngineById } from '../frontend/src/config/falEngines';
 import { imageTurnRetryInput, type ImageConversationHistoryTurn } from '../frontend/src/lib/studio/image-conversation-contract';
@@ -83,4 +84,12 @@ test('saved labels survive failed renewal, immutable replay and history without 
   assert.deepEqual(observedHistory.map(turn => turn.referenceMentions), [input.referenceMentions, input.referenceMentions]);
   await assert.rejects(service.submit({ ...input, requestId: randomUUID(), references: [foreign], referenceMentions: [{ assetId: foreign, label: 'Image 1' }] }), { code: 'REFERENCE_INVALID' });
   assert.equal(calls, 2, 'foreign media must fail before invoking the director');
+  const nextId = randomUUID();
+  await pg.pool.query('UPDATE media_assets SET deleted_at=now() WHERE public_id=$1',[imageA]);
+  await assert.rejects(renewMobileStudioQuote(actor, {action:'renew-generation', requestId:recovered.requestId,
+    quoteId:recovered.quote!.quoteId, renewalId:nextId, locale:'en'}, service), {code:'REFERENCE_INVALID'});
+  assert.equal(calls, 2);
+  assert.equal((await pg.pool.query('SELECT quote_id FROM studio_image_turns WHERE request_id=$1',[nextId])).rows[0]?.quote_id ?? null,null);
+  assert.equal((await pg.pool.query('SELECT state FROM mcp_generation_quotes WHERE quote_id=$1',[second.quote!.quoteId])).rows[0].state,'prepared');
+
 });

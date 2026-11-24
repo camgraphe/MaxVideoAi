@@ -6,7 +6,11 @@ import { LIVE_PRICING_POLICY_REVISION, PRICING_POLICY_HEADER } from '../frontend
 import type { ImageConversationTurn } from '../frontend/src/lib/studio/image-conversation-contract';
 import { handleMobileStudio } from '../frontend/src/server/mobile/studio';
 
-test('Studio mobile reviews the saved project quote and recovers the same media after a lost confirmation', async () => {
+test('Studio mobile reviews the saved project quote and recovers the same media after a lost confirmation', async t => {
+  const mediaFlag = process.env.STUDIO_CONVERSATION_MEDIA_ENABLED;
+  process.env.STUDIO_CONVERSATION_MEDIA_ENABLED = 'true';
+  t.after(() => { if (mediaFlag === undefined) delete process.env.STUDIO_CONVERSATION_MEDIA_ENABLED;
+    else process.env.STUDIO_CONVERSATION_MEDIA_ENABLED = mediaFlag; });
   const projectId = 'my-project',
     requestId = randomUUID(),
     quoteId = randomUUID(),
@@ -94,6 +98,7 @@ test('Studio mobile reviews the saved project quote and recovers the same media 
   assert.equal(first.quote.review.direction, 'Fireflies above the lake.');
   assert.match(first.quote.review.settings, /9:16/);
   assert.equal(first.quote.amountCents, 24);
+  assert.equal(first.quote.review.canRenew, undefined);
   assert.equal((await post({}, 'stale')).status, 409);
   for (const changes of [
     { amountCents: 23 },
@@ -116,6 +121,10 @@ test('Studio mobile reviews the saved project quote and recovers the same media 
   quote.wallet!.amountCents = 150;
   const expiresAt = quote.expiresAt;
   quote.expiresAt = new Date(0).toISOString();
+  assert.equal((await read()).quote.review.canRenew, true);
+  process.env.STUDIO_CONVERSATION_MEDIA_ENABLED = 'false';
+  assert.equal((await read()).quote.review.canRenew, undefined);
+  process.env.STUDIO_CONVERSATION_MEDIA_ENABLED = 'true';
   assert.equal((await post()).status, 409);
   quote.expiresAt = expiresAt;
   quote.state = 'claimed';
