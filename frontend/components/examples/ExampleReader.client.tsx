@@ -9,8 +9,15 @@ import { readerCopy } from './example-reader-copy';
 import type { ReaderNavigation } from './DiscoveryVideoPlayer.client';
 import styles, { ExampleReaderStyles } from './example-reader-styles';
 
-type Props = { id: string; locale: string; onClose: () => void; navigation: ReaderNavigation; navigationError: boolean };
-export default function ExampleReader({ id, locale, onClose, navigation, navigationError }: Props) {
+type Props = {
+  id: string;
+  locale: string;
+  onClose: () => void;
+  navigation: ReaderNavigation;
+  navigationError: boolean;
+  onComparisonPlayback?: () => void;
+};
+export default function ExampleReader({ id, locale, onClose, navigation, navigationError, onComparisonPlayback }: Props) {
   const copy = readerCopy(locale);
   const { dialogRef, onDialogKeyDown } = useAccessibleModal({ onClose });
   const [result, setResult] = useState<{ id: string; detail: ExampleWatchDetail | null; error: boolean } | null>(null);
@@ -36,7 +43,7 @@ export default function ExampleReader({ id, locale, onClose, navigation, navigat
     <section ref={dialogRef} role="dialog" aria-modal="true" aria-label={copy.reader} aria-labelledby={current?.detail ? 'example-reader-title' : undefined}
       tabIndex={-1} onKeyDown={onDialogKeyDown} className={styles.dialog}>
       {!current?.detail && <button className={styles.close} onClick={onClose} aria-label={copy.close} data-modal-initial-focus="true"><X size={19}/></button>}
-      {current?.detail ? <ExampleReaderContent key={id} detail={current.detail} copy={copy} locale={locale} navigation={navigation} onClose={onClose}/> : <div className={styles.loading}>
+      {current?.detail ? <ExampleReaderContent key={id} detail={current.detail} copy={copy} locale={locale} navigation={navigation} onClose={onClose} onComparisonPlayback={onComparisonPlayback}/> : <div className={styles.loading}>
         <p role="status">{current?.error ? copy.error : copy.loading}</p>
         {current?.error && <><button onClick={() => setRetry(value => value + 1)}>{copy.retry}</button><div className={styles.errorNavigation}>
           <button onClick={navigation.previous} disabled={!navigation.canPrevious || navigation.busy}><ChevronLeft size={16}/>{copy.previous}</button>

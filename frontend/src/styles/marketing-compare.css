@@ -81,18 +81,6 @@
 .marketing-site .compare-score-panel .paired-track{height:20px;margin-top:2px}
 .marketing-site .compare-score-panel .paired-scale{font-size:10px}
 .marketing-site .compare-score-panel .paired-row p{padding:8px 10px;font-size:13px}
-/* Portalled reader stays outside the marketing shell and keeps native video geometry. */
-.compare-video-backdrop{position:fixed;inset:0;z-index:200;background:#000c;display:grid;place-items:center;padding:24px;backdrop-filter:blur(8px)}
-.compare-video-dialog{width:min(100%,1040px);max-height:calc(100dvh - 48px);overflow:auto;background:#1b1a18;color:#f5f2ed;border:1px solid #49443b;border-radius:12px;box-shadow:0 24px 90px #0008;padding:18px}
-.compare-video-dialog header{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:14px}
-.compare-video-dialog h2{font-size:18px;font-weight:500}
-.compare-video-dialog h2 span{display:block;color:#bfb8ad;font-size:12px;margin-top:4px}
-.compare-video-dialog button{min-width:44px;min-height:44px;display:grid;place-items:center}
-.compare-video-dialog :is(button,a):focus-visible{outline:2px solid #e5c394;outline-offset:3px}
-.compare-video-reader{position:relative;background:#080808;border-radius:5px;overflow:hidden}
-.compare-video-full{display:block;width:100%;max-height:68dvh;aspect-ratio:16/9;object-fit:contain}
-.compare-video-dialog>a{display:flex;align-items:center;gap:12px;min-height:44px;color:#e5c394;font-size:13px;margin-top:8px}
-@media(max-width:700px){.compare-video-backdrop{padding:12px}.compare-video-dialog{padding:12px;max-height:calc(100dvh - 24px)}}
 /* Explain what opens, and make the route into creation explicit. */
 .marketing-site .compare-more-scores{border:1px solid #65543d;border-radius:8px;background:#2c2720;margin-top:22px;overflow:hidden}
 .marketing-site .compare-more-scores[open]{background:#252320}
