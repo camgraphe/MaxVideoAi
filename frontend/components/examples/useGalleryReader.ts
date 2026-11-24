@@ -3,11 +3,17 @@ import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { buildGalleryOpening } from './examples-discovery-layout';
 import type { ExampleGalleryVideo, ExampleSort } from './examples-gallery-types';
 
-type Window = { items: ExampleGalleryVideo[]; offset: number; hasMore: boolean };
-export function useGalleryReader(videos: ExampleGalleryVideo[], offset: number, sort: ExampleSort, engineFilter: string | null | undefined, locale: string) {
+type ReaderVideo = Pick<ExampleGalleryVideo, 'id' | 'href'>;
+type Window = { items: readonly ReaderVideo[]; offset: number; hasMore: boolean };
+type Pagination = { offset: number; sort: ExampleSort; engineFilter?: string | null; locale: string };
+type ReaderOptions = { pagination?: Pagination; keepPageUrl?: boolean };
+
+export function useGalleryReader(videos: readonly ReaderVideo[], { pagination, keepPageUrl = false }: ReaderOptions = {}) {
   const token = useId();
+  const offset = pagination?.offset ?? 0;
+  const hasMore = Boolean(pagination) && videos.length === 24;
   const [selected, setSelected] = useState<string | null>(null);
-  const [window, setWindow] = useState<Window>({ items: videos, offset, hasMore: videos.length === 24 });
+  const [window, setWindow] = useState<Window>({ items: videos, offset, hasMore });
   const [busy, setBusy] = useState(false);
   const [navigationError, setNavigationError] = useState(false);
   const request = useRef<AbortController | null>(null);
@@ -17,10 +23,15 @@ export function useGalleryReader(videos: ExampleGalleryVideo[], offset: number, 
     remembered.current.set(id, nextWindow);
     setWindow(nextWindow); setSelected(id); setNavigationError(false);
     const state = { ...globalThis.window.history.state, exampleReader: { token, id } };
-    const url = nextWindow.items.find(video => video.id === id)?.href ?? `/video/${encodeURIComponent(id)}`;
+    const url = keepPageUrl ? undefined : (
+      nextWindow.items.find(video => video.id === id)?.href ?? `/video/${encodeURIComponent(id)}`
+    );
     globalThis.window.history[push ? 'pushState' : 'replaceState'](state, '', url);
-  }, [token]);
-  const open = useCallback((video: ExampleGalleryVideo) => navigate(video.id, { items: videos, offset, hasMore: videos.length === 24 }, true), [navigate, videos, offset]);
+  }, [keepPageUrl, token]);
+  const open = useCallback((video: ReaderVideo) => {
+    const alreadyOpen = globalThis.window.history.state?.exampleReader?.token === token;
+    navigate(video.id, { items: videos, offset, hasMore }, !alreadyOpen);
+  }, [navigate, videos, offset, hasMore, token]);
   const close = useCallback(() => {
     request.current?.abort(); setBusy(false); setSelected(null);
     if (globalThis.window.history.state?.exampleReader?.token === token) globalThis.window.history.back();
@@ -40,10 +51,12 @@ export function useGalleryReader(videos: ExampleGalleryVideo[], offset: number, 
     if (busy || !selected) return;
     const neighbor = window.items[index + direction];
     if (neighbor) { navigate(neighbor.id, window); return; }
+    if (!pagination) return;
     const nextOffset = window.offset + direction * 24;
     if (nextOffset < 0 || (direction === 1 && !window.hasMore)) return;
     const controller = new AbortController(); request.current?.abort(); request.current = controller;
     setBusy(true); setNavigationError(false);
+    const { sort, locale, engineFilter } = pagination;
     const params = new URLSearchParams({ sort, locale, offset: String(nextOffset), limit: '24' });
     if (engineFilter) params.set('engine', engineFilter);
     try {

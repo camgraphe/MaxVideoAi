@@ -81,6 +81,7 @@ type PlaylistVideoQueryOptions = {
   slug: string;
   limit?: number;
   engineAliases?: string[] | null;
+  requirePlayableSource?: boolean;
 };
 
 export async function readPlaylistVideoSelection(options: PlaylistVideoQueryOptions, curationScope?: CurationReadScope) {

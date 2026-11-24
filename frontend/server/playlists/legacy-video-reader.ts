@@ -1,15 +1,18 @@
 import { marketingVideoReader } from '@/server/marketing-media/public-read';
 import { query, type QueryExecutor } from '@/lib/db';
 import { mapGalleryVideoRow, type VideoRow } from '../videos-normalization';
-import { imageThumbFallbackSelect, videoOutputDimensionSelect } from '../videos-query';
+import { imageThumbFallbackSelect, PUBLIC_VIDEO_SOURCE_ELIGIBILITY, videoOutputDimensionSelect } from '../videos-query';
 const PUBLIC_VIDEO_PREDICATE_PLAYLIST = `
   aj.visibility = 'public'
   AND COALESCE(aj.indexable, TRUE)
 `;
 
+type LegacyPlaylistOptions = { slug: string; limit?: number; engineAliases?: string[] | null; requirePlayableSource?: boolean };
+
 /** The public direct reader's legacy query, also usable inside a preview transaction. */
-export async function readLegacyPlaylistVideos({slug,limit,engineAliases}: {slug:string;limit?:number;engineAliases?:string[] | null}, db:QueryExecutor={query}) {
+export async function readLegacyPlaylistVideos({ slug, limit, engineAliases, requirePlayableSource }: LegacyPlaylistOptions, db: QueryExecutor = { query }) {
   const params: unknown[] = [slug];
+  const videoSource = requirePlayableSource ? `(SELECT * FROM app_jobs WHERE ${PUBLIC_VIDEO_SOURCE_ELIGIBILITY})` : 'app_jobs';
   const aliasFilter =
     Array.isArray(engineAliases)
       ? (() => {
@@ -35,7 +38,7 @@ export async function readLegacyPlaylistVideos({slug,limit,engineAliases}: {slug
              aj.indexable, aj.featured, aj.featured_order, aj.final_price_cents, aj.currency, aj.pricing_snapshot, pi.order_index
       FROM playlists p
       JOIN playlist_items pi ON pi.playlist_id = p.id
-      JOIN app_jobs aj ON aj.job_id = pi.video_id
+      JOIN ${videoSource} aj ON aj.job_id = pi.video_id
       WHERE p.slug = $1
         AND p.is_public = TRUE
         AND ${PUBLIC_VIDEO_PREDICATE_PLAYLIST}
