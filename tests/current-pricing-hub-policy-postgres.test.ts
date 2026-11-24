@@ -47,9 +47,11 @@ const klingLaunchInputs: PublicModelQuoteInput[] = [
   { modelId: 'kling-image-v4', mode: 't2i', durationSec: 1, resolution: '2K', quantity: 1 },
   { modelId: 'kling-image-v4', mode: 't2i', durationSec: 1, resolution: '8K', quantity: 1 },
 ];
-// Each new Kling scenario adds one attempt and one transaction. Six unsupported inputs still skip SQL.
+// Each new Kling scenario adds one attempt and one transaction.
 const modelQuoteAttempts = 153 + klingLaunchInputs.length;
-const tariffTransactions = 147 + klingLaunchInputs.length;
+// The two existing H3 base presets now reach their zero-extra-reference tariff.
+const h3BaseResolutions = ['768P', '4K'];
+const tariffTransactions = 147 + klingLaunchInputs.length + h3BaseResolutions.length;
 const actor = '11111111-1111-4111-8111-111111111111';
 const miniAmount = (data: Awaited<ReturnType<typeof buildCurrentPricingHubData>>) =>
   data.video.rows.find(row => row.id === miniInput.modelId)!.quotes['5s-720p'].amountCents;
@@ -106,8 +108,10 @@ test('default Pricing shares one successful policy read while preserving every i
       const nativeInputs: PublicModelQuoteInput[] = [];
       const launchInputs: PublicModelQuoteInput[] = [];
       const klingInputs: PublicModelQuoteInput[] = [];
+      const h3Inputs: PublicModelQuoteInput[] = [];
       const baseline = await buildCurrentPricingHubData(locale, async input => {
         attempts++;
+        if (input.modelId === 'minimax-h3') h3Inputs.push(input);
         if (input.modelId === 'flux-3-max') maxInputs.push(input);
         if (input.modelId === 'nano-banana-2-1') nativeInputs.push(input);
         if (input.modelId === 'kling-image-v4' || (input.modelId === 'kling-v4' && input.resolution === '4k')) {
@@ -121,6 +125,9 @@ test('default Pricing shares one successful policy read while preserving every i
       assert.deepEqual(maxInputs, flux3MaxInputs);
       assert.deepEqual(nativeInputs, nano21Inputs);
       assert.deepEqual(klingInputs, klingLaunchInputs);
+      assert.deepEqual(h3Inputs.map(input => resolvePublicModelScenario(input)?.selector), h3BaseResolutions.map(resolution => ({
+        engineId: 'minimax-h3', mode: 't2v', durationSec: '10', resolution, referenceImageCount: '0',
+      })));
       assert.ok(klingInputs.every(input => resolvePublicModelScenario(input)), 'all three Kling inputs reach canonical pricing');
       for (const modelId of ['kling-v4-flash', 'gpt-image-2-6-flare', 'gpt-image-2-6-sunburst', 'seedance-2-5-flash', 'seedream-5-5', 'seedream-5-0-flash']) {
         const inputs = launchInputs.filter(input => input.modelId === modelId);
