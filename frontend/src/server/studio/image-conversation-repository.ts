@@ -18,6 +18,10 @@ import {
 
 import {automaticallyNameStudioProject,readStudioProjectTitleFallbacks} from './conversation-project-naming';
 import {isUntitledStudioProject} from '@/lib/studio/conversation-project-title';
+import {
+  requestedStudioReplyLanguage, STUDIO_QUOTE_LANGUAGE_HISTORY_LIMIT, STUDIO_REPLY_LANGUAGE_SQL_PREFILTER,
+  type StudioQuoteLanguageContext, type StudioTurnLanguageInput,
+} from './conversation-language';
 
 export type StoredImageTurn = {
   request_id: string;
@@ -68,6 +72,36 @@ export async function listReadyImageHistory(actor: StudioGenerationActor, reques
     WHERE user_id=$1 AND project_id=$2 AND state='ready' AND (created_at,request_id)<(
       SELECT created_at,request_id FROM studio_image_turns WHERE user_id=$1 AND project_id=$2 AND request_id=$3
     ) ORDER BY created_at DESC,request_id DESC LIMIT 30`, [actor.userId, actor.projectId, requestId]);
+}
+
+const priorQuoteLanguageInputs = `FROM studio_image_turns
+    WHERE user_id=$1 AND project_id=$2 AND jsonb_typeof(input_json->'message')='string'
+      AND (created_at,request_id)<(
+        SELECT created_at,request_id FROM studio_image_turns WHERE user_id=$1 AND project_id=$2 AND request_id=$3
+      )`;
+
+/** Read one page prefix. Only actual language commands may outlive the bounded lexical context. */
+export async function readQuoteLanguageContext(actor: StudioGenerationActor, beforeRequestId: string): Promise<StudioQuoteLanguageContext> {
+  const { userId, projectId } = actor;
+  const limit = STUDIO_QUOTE_LANGUAGE_HISTORY_LIMIT;
+  const recent = await query<StudioTurnLanguageInput & { request_id: string }>(`
+    SELECT request_id, input_json->>'message' AS message, input_json->>'locale' AS locale
+    ${priorQuoteLanguageInputs}
+    ORDER BY created_at DESC,request_id DESC LIMIT $4
+  `, [userId, projectId, beforeRequestId, limit]);
+  let precedingCommand = recent.map(turn => requestedStudioReplyLanguage(turn.message)).find(Boolean);
+  let cursor = recent.length === limit ? recent.at(-1)?.request_id : undefined;
+  while (!precedingCommand && cursor) {
+    const candidates = await query<{request_id: string; message: string}>(`
+      SELECT request_id, input_json->>'message' AS message
+      ${priorQuoteLanguageInputs}
+      AND regexp_replace(normalize(input_json->>'message', NFD), U&'[\\0300-\\036F]', '', 'g') ~* $5
+      ORDER BY created_at DESC,request_id DESC LIMIT $4
+    `, [userId, projectId, cursor, limit, STUDIO_REPLY_LANGUAGE_SQL_PREFILTER]);
+    precedingCommand = candidates.map(turn => requestedStudioReplyLanguage(turn.message)).find(Boolean);
+    cursor = candidates.length === limit ? candidates.at(-1)?.request_id : undefined;
+  }
+  return { recent: recent.map(({ message, locale }) => ({ message, locale })), precedingCommand };
 }
 
 async function expirePreparedCreationQuotes(actor: StudioGenerationActor, executor: TransactionQueryExecutor) {

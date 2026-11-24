@@ -110,13 +110,16 @@ test("Studio image wallet insufficiency, retry, repeat confirmation, expiry, and
   assert.equal(prepared.state, "ready");
   assert.equal(prepared.retryable, false);
   assert.equal(prepared.message, input.message);
-  assert.equal(prepared.reply, "Une image de parfum bleu cobalt, en lumière naturelle.");
   assert.ok(prepared.quote);
   assert.equal(prepared.quote.state, "prepared");
   assert.equal(prepared.quote.confirmationRequired, true);
   assert.equal(prepared.quote.fundingMode, "wallet");
   assert.equal(prepared.quote.price.currency, "USD");
   assert.ok(prepared.quote.price.amountCents > 0);
+  const displayPrice = new Intl.NumberFormat('fr-FR', {style: 'currency', currency: 'USD'}).format(prepared.quote.price.amountCents / 100);
+  assert.equal(prepared.reply, 'Une image · 1:1\n\nDevis de génération · ' + displayPrice);
+  assert.equal(prepared.quote.summary.prompt, "Cobalt blue perfume bottle in natural light");
+
   assert.ok("wallet" in prepared.quote);
   assert.deepEqual(prepared.quote.wallet, { amountCents: 0, currency: "USD" });
   assert.equal(prepared.quote.summary.prompt, "Cobalt blue perfume bottle in natural light");

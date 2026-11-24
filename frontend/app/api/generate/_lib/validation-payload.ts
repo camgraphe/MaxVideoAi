@@ -1,5 +1,5 @@
 import type { MaxVideoProviderElement } from '@/lib/video-provider-elements';
-import type { EngineInputSchema, Mode } from '@/types/engines';
+import type { EngineInputSchema, EngineModeUiCaps, Mode } from '@/types/engines';
 import type { ReferenceBudgetMediaItem, ReferenceBudgetValuesByField } from '@/lib/reference-budget';
 import type { ReferenceProvenanceIssue } from './attachment-references';
 import { isMinimaxH3EngineId } from '@/lib/minimax-h3';
@@ -69,6 +69,7 @@ export function buildGenerateValidationPayload(params: {
   seed?: number | null;
   safetyChecker?: boolean | null;
   inputSchema: EngineInputSchema | null | undefined;
+  operationCaps?: EngineModeUiCaps;
   referenceValuesByField: ReferenceBudgetValuesByField<string>;
   referenceMediaItems: readonly ReferenceBudgetMediaItem[];
   referenceProvenanceIssues: readonly ReferenceProvenanceIssue[];
@@ -277,6 +278,7 @@ export function buildGenerateValidationPayload(params: {
     payload,
     {
       inputSchema: params.inputSchema,
+      ...(params.operationCaps ? { operationCaps: params.operationCaps } : {}),
       referenceValuesByField: params.referenceValuesByField,
       referenceMediaItems: params.referenceMediaItems,
       referenceProvenanceIssues: params.referenceProvenanceIssues,
