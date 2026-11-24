@@ -28,10 +28,15 @@ test('reference previews resolve exact owned media in a read-only project scope 
       ['d','other','image',`${base}/user-assets/other/secret.png`,null,'image/png',{},null],
       ['e','owner','image',`${base}/user-assets/other/forged.png`,null,'image/png',{},null],
       ['f','owner','video','https://cdn.maxvideoai.com/video.mp4',`${base}/user-assets/owner/external-thumb.jpg`,'video/mp4',{},null],
+      ['2','owner','image',`${base}/user-assets/owner/photo.png`,null,'image/png',{},'Photo.png'],
+      ['3','owner','image',`${base}/renders/images/owner/output.png`,null,'image/png',{},'Saved.png'],
       ['1','owner','image',`${base}/user-assets/owner/deleted.png`,null,'image/png',{},null],
     ];
     for (const [letter,owner,kind,url,thumb,mime,metadata,name] of rows) await database.pool.query('INSERT INTO media_assets VALUES ($1,$2,$3,$4,$5,$6,$7,\'ready\',null,null,null,$8,$9)', [letter,'ma_'+String(letter).repeat(32),owner,kind,url,thumb,mime,JSON.stringify(metadata),name]);
     await database.pool.query("UPDATE media_assets SET status='deleted',deleted_at=now() WHERE id IN ('1','d')");
+    await database.pool.query(`INSERT INTO app_jobs VALUES ('job','owner',false);
+      INSERT INTO job_outputs VALUES ('output','job','owner','ready');
+      UPDATE media_assets SET source_job_id='job',source_output_id='output' WHERE id='3'`);
     const client = await database.pool.connect();
     try {
       await client.query('BEGIN READ ONLY');
@@ -50,6 +55,32 @@ test('reference previews resolve exact owned media in a read-only project scope 
       assert.equal(assets[2].expiresAt,null);
       assert.doesNotMatch(JSON.stringify(assets),/originalAccess|storageKey|reference-previews-fixture|forged|private\.jpg/);
       assert.deepEqual(signs,['user-assets/owner/image.png','user-assets/owner/thumb.jpg','user-assets/owner/video.mp4']);
+      const {readMobileStudioPhotos} = await import('../frontend/src/server/mobile/studio-photos');
+      const {createSignedDownloadUrl} = await import('../frontend/server/storage');
+      const actor = {userId:'owner',projectId:'film'};
+      let signingDate = new Date('2026-10-03T12:00:00Z');
+      const readPhoto = (assetId: string, original = false) => readMobileStudioPhotos(actor,
+        new URLSearchParams({asset:assetId, original:original ? '1' : '0'}), {
+          read: (owner, input) => module.readConversationReferencePreviews(owner, input, {
+            execute, sign: (key, options) => createSignedDownloadUrl(key, {...options, signingDate}),
+          }),
+        });
+      for (const [id, key] of [['2','user-assets/owner/photo.png'],['3','renders/images/owner/output.png']]) {
+        const assetId = ref(id).assetId;
+        signingDate = new Date('2026-10-03T12:00:00Z');
+        const [thumb] = (await readPhoto(assetId)).items;
+        assert.ok(thumb.state === 'ready' && thumb.thumbnail && !thumb.original);
+        const grant = new URL(thumb.thumbnail);
+        assert.equal(grant.pathname, '/' + key);
+        assert.equal(grant.searchParams.get('X-Amz-Expires'), '300');
+        assert.ok(grant.searchParams.has('X-Amz-Signature'));
+        signingDate = new Date('2026-10-03T12:06:00Z');
+        const [full] = (await readPhoto(assetId, true)).items;
+        assert.ok(full.state === 'ready' && full.original);
+        assert.equal(full.original, full.thumbnail);
+        assert.notEqual(full.original, thumb.thumbnail);
+        assert.equal(new URL(full.original).pathname, grant.pathname);
+      }
       const deleted = await module.readConversationReferencePreviews({userId:'owner',projectId:'film'},{refs:[ref('1'),ref('a')]},dependencies);
       assert.deepEqual(deleted[0],{assetId:ref('1').assetId,kind:'image',mediaAccessError:'MEDIA_DELETED'});
       assert.ok('url' in deleted[1],'A deleted reference keeps healthy references readable.');

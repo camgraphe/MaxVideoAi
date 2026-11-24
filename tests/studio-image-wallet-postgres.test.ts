@@ -2,6 +2,9 @@ import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
 import test from "node:test";
+import { NextRequest } from "next/server";
+import { handleMobileStudio } from "../frontend/src/server/mobile/studio";
+import { LIVE_PRICING_POLICY_REVISION, PRICING_POLICY_HEADER } from "../frontend/src/lib/membership-policy";
 import { getDb } from "../frontend/src/lib/db";
 import { getFalEngineById } from "../frontend/src/config/falEngines";
 import type { AgentPublicGenerationEngine } from "../frontend/src/server/agent-api/model-catalog";
@@ -127,6 +130,33 @@ test("Studio image wallet insufficiency, retry, repeat confirmation, expiry, and
   assert.equal(provider.captures.length, 0);
   assert.equal(directorCalls, 1);
 
+  // Replay the phone wire contract against the same saved quote, wallet and provider as web Studio.
+  const phoneHeaders = { authorization: "Bearer fixture", "x-maxvideoai-auth-mode": "bearer",
+    [PRICING_POLICY_HEADER]: LIVE_PRICING_POLICY_REVISION };
+  const phoneCommand = {
+    action: "confirm-generation", confirmed: true, requestId: input.requestId,
+    quoteId: prepared.quote.quoteId, requestHash: prepared.quote.requestHash,
+    amountCents: prepared.quote.price.amountCents, currency: prepared.quote.price.currency,
+  };
+  const phone = (search: string, command?: typeof phoneCommand) => handleMobileStudio(
+    new NextRequest("https://example.invalid/api/mobile/studio/projects/" + actor.projectId + search, {
+      method: command ? "POST" : "GET", headers: phoneHeaders, ...(command ? {body: JSON.stringify(command)} : {}),
+    }), actor.projectId, {
+      access: async () => ({ok: true, userId: actor.userId}), enabled: () => true,
+      consentBlocked: async () => false, owned: async () => actor.projectId,
+      journal: () => service.read(), conversationService: () => service, allowance: async () => null,
+    },
+  );
+  const legacy = (await (await phone("")).json()).turns[0];
+  const phoneJournal = async () => (await (await phone("?review=1&mediaLabels=1&locale=fr")).json()).turns[0];
+  const firstRead = await phoneJournal();
+  assert.equal(legacy.quote.review, undefined);
+  assert.equal(legacy.quote.amountCents, phoneCommand.amountCents);
+  assert.equal(firstRead.reply, prepared.reply);
+  assert.equal(firstRead.quote.review.requestHash, phoneCommand.requestHash);
+  assert.equal(firstRead.quote.review.wallet, "insufficient");
+  assert.equal((await (await phone("", phoneCommand)).json()).error.code, "INSUFFICIENT_FUNDS");
+
   const [preparedQuote] = (
     await pg.pool.query<{ state: string; price_cents: number }>(
       "SELECT state, price_cents FROM mcp_generation_quotes WHERE quote_id = $1",
@@ -242,6 +272,20 @@ test("Studio image wallet insufficiency, retry, repeat confirmation, expiry, and
     currency: "USD",
   });
   assert.equal(directorCalls, 1);
+  const freshRead = await phoneJournal();
+  assert.equal(freshRead.quote.review.wallet, "ready");
+  assert.equal(freshRead.quote.amountCents, phoneCommand.amountCents);
+  assert.equal(freshRead.quote.review.quoteId, phoneCommand.quoteId);
+  const attempts = await Promise.all([phone("", phoneCommand), phone("", phoneCommand)]);
+  assert.ok(attempts.some(response => response.status === 200));
+  for (const response of attempts.filter(response => response.status !== 200)) {
+    assert.equal(response.status, 409);
+    const {error} = await response.json();
+    assert.ok(["CONFIRMATION_PENDING", "QUOTE_ALREADY_CLAIMED"].includes(error.code), error.code);
+  }
+  const retry = await phone("", phoneCommand);
+  assert.deepEqual(await retry.json(), {projectId: actor.projectId, requestId: input.requestId, quoteId: phoneCommand.quoteId});
+  assert.equal((await phoneJournal()).generation.jobId, phoneCommand.quoteId);
   const confirmed = await service.confirm({
     requestId: input.requestId,
     quoteId: prepared.quote.quoteId,
