@@ -1,10 +1,35 @@
 import { z } from 'zod';
 import { query } from '@/lib/db';
-import { hasDraftCreation, type ImageDraft, type ImageTurnInput } from '@/lib/studio/image-conversation-contract';
+import { hasDraftCreation, type ImageConversationTurn, type ImageDraft, type ImageTurnInput } from '@/lib/studio/image-conversation-contract';
 import type { StudioGenerationActor } from '@/server/agent-api/generation-actor';
 import type { createImageConversationService } from '@/server/studio/image-conversation-service';
 import { MobileHttpError } from './errors';
 import { mobileStudioQuote } from './studio-generation';
+
+/** A refresh reuses the original message and attachments. Its new request ID owns the price and confirmation. */
+export function mobileStudioReviewTurns(turns: ImageConversationTurn[], now = Date.now()) {
+  const visible: ImageConversationTurn[] = [];
+  const positions = new Map<string, number>();
+  for (const turn of turns) {
+    const position = turn.renewedFromRequestId ? positions.get(turn.renewedFromRequestId) : undefined;
+    if (position !== undefined) {
+      const previous = visible[position];
+      const quote = previous.quote;
+      if (!previous.generation && quote && !quote.characterBuilder && !quote.recast && (quote.state === 'expired'
+        || (quote.state === 'prepared' && Date.parse(quote.expiresAt) <= now))) {
+        if (!turn.quote && !turn.generation) continue;
+        if (turn.quote?.requestHash === quote.requestHash) {
+          visible[position] = turn;
+          positions.set(turn.requestId, position);
+          continue;
+        }
+      }
+    }
+    positions.set(turn.requestId, visible.length);
+    visible.push(turn);
+  }
+  return visible;
+}
 
 export const studioRenewInput = z
   .object({

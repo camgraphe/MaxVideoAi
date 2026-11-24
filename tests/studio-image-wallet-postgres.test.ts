@@ -447,6 +447,14 @@ test("Studio image wallet insufficiency, retry, repeat confirmation, expiry, and
   assert.equal(card.quote.review.canRenew, undefined);
   assert.equal(card.quote.review.direction, expired.quote.summary.prompt);
   assert.equal(card.quote.amountCents, expired.quote.price.amountCents - 13);
+  const reopened = (await (await phone('?review=1&locale=fr')).json()).turns as import('../frontend/src/lib/mobile-studio').StudioMessage[];
+  const repriced = reopened.filter(turn => turn.message === expiredInput.message);
+  assert.equal(repriced.length, 1);
+  assert.equal(repriced[0].requestId, card.requestId);
+  assert.equal(repriced[0].renewedFromRequestId, expired.requestId);
+  assert.equal(repriced[0].quote?.review?.quoteId, card.quote.review.quoteId);
+  assert.equal(repriced[0].quote?.amountCents, card.quote.amountCents);
+  assert.ok(reopened.some(turn => turn.requestId === phoneCommand.requestId && turn.generation?.jobId));
   for (const request of [renew, {...renew, renewalId:randomUUID()}, {...renew,locale:'es'}]) {
     const response = await phone('',request);
     assert.equal(response.status,200);

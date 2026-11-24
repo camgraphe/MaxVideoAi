@@ -26,7 +26,7 @@ import type { StudioGenerationActor } from '@/server/agent-api/generation-actor'
 import { studioConversationEditingEnabled } from '@/app/api/studio/_lib/studio-conversation-editing-handler';
 import { MobileHttpError, mobileResponse } from './http';
 import { readMobileStudioPhotos } from './studio-photos';
-import { renewMobileStudioQuote, studioRenewInput } from './studio-renewal';
+import { mobileStudioReviewTurns, renewMobileStudioQuote, studioRenewInput } from './studio-renewal';
 import { readStudioProjectReferenceOrdinals } from '@/server/studio/project-reference-registry';
 
 const nameInput = z.object({ name: studioProjectNameSchema, idempotencyKey: z.string().uuid() });
@@ -180,8 +180,9 @@ export function handleMobileStudio(
         projectName: journal.projectName,
         allowance,
         ...(referenceOrdinals ? { stableReferenceLabels: true as const, referenceOrdinals } : {}),
-        turns: journal.turns.map(turn => ({
+        turns: (reviewEnabled ? mobileStudioReviewTurns(journal.turns) : journal.turns).map(turn => ({
           requestId: turn.requestId,
+          ...(reviewEnabled && turn.renewedFromRequestId ? { renewedFromRequestId: turn.renewedFromRequestId } : {}),
           message: turn.message,
           media: turnMedia(turn, labels),
           reply: turn.reply,

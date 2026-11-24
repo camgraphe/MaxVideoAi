@@ -44,6 +44,7 @@ export type StudioAllowance = {
 };
 export type StudioMessage = {
   requestId: string;
+  renewedFromRequestId?: string;
   message: string;
   media?: StudioReference[];
   reply: string | null;

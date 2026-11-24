@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
-import {renewMobileStudioQuote} from '../frontend/src/server/mobile/studio-renewal';
+import {mobileStudioReviewTurns, renewMobileStudioQuote} from '../frontend/src/server/mobile/studio-renewal';
 import { getDb } from '../frontend/src/lib/db';
 import { getFalEngineById } from '../frontend/src/config/falEngines';
 import { imageTurnRetryInput, type ImageConversationHistoryTurn } from '../frontend/src/lib/studio/image-conversation-contract';
@@ -81,6 +81,21 @@ test('saved labels survive failed renewal, immutable replay and history without 
 
   const second = await service.submit({ ...input, requestId: randomUUID(), references: [imageB], referenceMentions: [{ assetId: imageB, label: 'Image 1' }] });
   assert.deepEqual(second.referenceMentions, [{ assetId: imageB, label: 'Image 1' }]);
+  const journalTurns = (await service.read()).turns;
+  const visible = mobileStudioReviewTurns(journalTurns);
+  assert.deepEqual(visible.map(turn => turn.requestId), [recovered.requestId, second.requestId]);
+  assert.deepEqual(visible.map(turn => turn.references), [[imageA], [imageB]]);
+  assert.equal(visible[0].message, visible[1].message, 'Two independent human messages may have identical text');
+  const next = { ...recovered, requestId: randomUUID(), renewedFromRequestId: recovered.requestId };
+  const expiredParent = { ...recovered, quote: { ...recovered.quote, state: 'expired' as const } };
+  const savedOriginal = journalTurns.find(turn => turn.requestId === original.requestId)!;
+  assert.deepEqual(mobileStudioReviewTurns([savedOriginal, second, expiredParent, next]).map(turn => turn.requestId),
+    [next.requestId, second.requestId]);
+  assert.deepEqual(mobileStudioReviewTurns([next]), [next], 'A renewal remains visible when its parent is on an older page');
+  const usedParent = { ...expiredParent, quote: { ...expiredParent.quote, state: 'accepted' as const } };
+  assert.deepEqual(mobileStudioReviewTurns([usedParent, next]), [usedParent, next], 'Keep any prior accepted receipt');
+  assert.deepEqual(mobileStudioReviewTurns([expiredParent, { ...next, state:'failed', quote:null }]),
+    [expiredParent], 'Keep the last price review available when its refresh fails');
   assert.deepEqual(observedHistory.map(turn => turn.referenceMentions), [input.referenceMentions, input.referenceMentions]);
   await assert.rejects(service.submit({ ...input, requestId: randomUUID(), references: [foreign], referenceMentions: [{ assetId: foreign, label: 'Image 1' }] }), { code: 'REFERENCE_INVALID' });
   assert.equal(calls, 2, 'foreign media must fail before invoking the director');
