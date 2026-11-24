@@ -1,4 +1,4 @@
-import { applicationJobSql } from '@/server/app-job-origin';
+import { applicationJobSql, EXTERNAL_FAL_IMPORT_ORIGIN } from '@/server/app-job-origin';
 import {
   buildRecentGenerationSurfaceFilterClause,
   RECENT_IMAGE_ENGINE_ALIASES,
@@ -6,7 +6,9 @@ import {
   type RecentGenerationSurface,
 } from './recent-generation-surface-filter';
 import { query } from '@/lib/db';
+import { COMPLETED_GENERATION_STATUSES } from './agent-generation-policy';
 import {
+  GENERATION_STATUS_SELECT,
   mapGenerationStatusRecordToAgent,
   type AgentGenerationStatus,
   type GenerationStatusRecord,
@@ -17,6 +19,7 @@ export { buildRecentGenerationSurfaceFilterClause, RECENT_IMAGE_ENGINE_ALIASES }
 export type { RecentGenerationQueryParam, RecentGenerationSurface };
 
 export type RecentGenerationRecord = Omit<GenerationStatusRecord, 'thumb_url'> & {
+  cursor_timestamp?: string;
   updated_at: string;
   thumb_url: string;
   has_audio: boolean | null;
@@ -60,8 +63,8 @@ export class RecentGenerationInputError extends Error {
 
 export function parseRecentGenerationCursor(
   value: string | null | undefined,
-  options: { strict?: boolean } = {}
-): { createdAt: Date | null; id: number | null } {
+  options: { strict?: boolean; precise?: boolean } = {}
+): { createdAt: Date | null; id: number | null; exactTimestamp?: string } {
   if (!value) return { createdAt: null, id: null };
   const strict = options.strict === true;
   if (value.length > MAX_CURSOR_CHARS) {
@@ -73,6 +76,8 @@ export function parseRecentGenerationCursor(
     const [timestampPart, idPart] = parts;
     const parsedDate = timestampPart ? new Date(timestampPart) : null;
     const createdAt = parsedDate && !Number.isNaN(parsedDate.getTime()) ? parsedDate : null;
+    const exactTimestamp = options.precise && createdAt && /\.\d{6}Z$/.test(timestampPart)
+      && timestampPart.slice(0, -4) + 'Z' === createdAt.toISOString() ? timestampPart : undefined;
     const parsedId = idPart ? Number.parseInt(idPart, 10) : NaN;
     const id = Number.isFinite(parsedId) ? parsedId : null;
     if (
@@ -84,12 +89,12 @@ export function parseRecentGenerationCursor(
         !Number.isSafeInteger(id) ||
         id < 0 ||
         String(id) !== idPart?.trim() ||
-        timestampPart !== createdAt.toISOString()
+        (!exactTimestamp && timestampPart !== createdAt.toISOString())
       )
     ) {
       if (strict) throw new RecentGenerationInputError('cursor', 'cursor is invalid.');
     }
-    return { createdAt, id };
+    return { createdAt, id, ...(exactTimestamp ? { exactTimestamp } : {}) };
   }
   const parsedId = Number.parseInt(value, 10);
   if (
@@ -108,10 +113,10 @@ function normalizeRecentLimit(value: number, fallback: number, max: number): num
   return Math.min(max, Math.max(1, Math.floor(value)));
 }
 
-export function formatRecentGenerationCursor(record: { created_at: string; id: number }): string {
+export function formatRecentGenerationCursor(record: { created_at: string; id: number; cursor_timestamp?: string }): string {
   const createdAt = new Date(record.created_at);
   if (Number.isNaN(createdAt.getTime())) return String(record.id);
-  return `${createdAt.toISOString()}|${record.id}`;
+  return `${record.cursor_timestamp ?? createdAt.toISOString()}|${record.id}`;
 }
 
 function addFeedFilter(
@@ -244,12 +249,51 @@ function buildAgentSurfaceClauses(aliasesIndex: number): { image: string; video:
   };
 }
 
-async function readRecentAgentGenerationRecords(params: {
+/** Read newest-first with the visible account history index. Only request another batch
+ * when the media projection rejected every candidate in the previous one. */
+export async function* completedGenerationCandidatePages(userId: string, surface: 'video' | 'image') {
+  const batchSize = 8;
+  type Candidate = GenerationStatusRecord & { cursor_time: string };
+  let before: Pick<Candidate, 'cursor_time' | 'id'> | undefined;
+  const mediaCondition = surface === 'video'
+    ? "NULLIF(BTRIM(j.video_url), '') IS NOT NULL"
+    : "j.render_ids IS NOT NULL AND j.render_ids <> '[]'::jsonb";
+  // Use original media presence to find candidates, including old rows without a
+  // surface. The shared job mapper resolves the precise surface before signing.
+  for (;;) {
+    const args: unknown[] = [userId, COMPLETED_GENERATION_STATUSES, batchSize, surface];
+    if (before) args.push(before.cursor_time, before.id);
+    const rows: Candidate[] = await query<Candidate>(
+      `SELECT ${GENERATION_STATUS_SELECT}, j.created_at::text AS cursor_time
+         FROM app_jobs j
+        WHERE j.user_id = $1 AND j.hidden IS NOT TRUE
+          AND (${mediaCondition} OR (
+            (j.surface = $4 OR (NULLIF(j.video_url, '') IS NULL AND (j.render_ids IS NULL OR j.render_ids = '[]'::jsonb)))
+            AND EXISTS (
+              SELECT 1 FROM job_outputs o WHERE o.job_id = j.job_id AND o.user_id = $1
+                AND o.kind = $4 AND o.status = 'ready' AND o.metadata->>'role' IS DISTINCT FROM 'last_frame'
+            )
+          ))
+          AND LOWER(BTRIM(j.status, (SELECT ${ECMASCRIPT_TRIM_CHARACTERS_SQL}))) = ANY($2::text[])
+          AND j.settings_snapshot->>'origin' IS DISTINCT FROM '${EXTERNAL_FAL_IMPORT_ORIGIN}'
+          ${before ? 'AND (j.created_at, j.id) < ($5::timestamptz, $6::bigint)' : ''}
+        ORDER BY j.created_at DESC, j.id DESC
+        LIMIT $3`,
+      args,
+    );
+    if (rows.length) yield rows;
+    if (rows.length < batchSize) return;
+    before = rows[rows.length - 1];
+  }
+}
+
+export async function readRecentAgentGenerationRecords(params: {
   userId: string;
   surface: 'video' | 'image' | 'audio' | null;
   status: AgentGenerationStatus['status'] | null;
   cursor?: string | null;
   limit: number;
+  preciseCursor?: boolean;
   queryFn?: RecentGenerationQuery;
 }): Promise<RecentGenerationRecord[]> {
   const userId = params.userId.trim();
@@ -267,10 +311,10 @@ async function readRecentAgentGenerationRecords(params: {
     ownedConditions.push(`LOWER(COALESCE(j.status, '')) = ANY($${queryParams.length}::text[])`);
   }
 
-  const cursor = parseRecentGenerationCursor(params.cursor, { strict: true });
+  const cursor = parseRecentGenerationCursor(params.cursor, { strict: true, precise: params.preciseCursor });
   let cursorClause = '';
   if (cursor.createdAt) {
-    queryParams.push(cursor.createdAt, cursor.id ?? Number.MAX_SAFE_INTEGER);
+    queryParams.push(cursor.exactTimestamp ?? cursor.createdAt, cursor.id ?? Number.MAX_SAFE_INTEGER);
     cursorClause = `WHERE (created_at, id) < ($${queryParams.length - 1}, $${queryParams.length})`;
   } else if (cursor.id !== null) {
     queryParams.push(cursor.id);
@@ -296,7 +340,7 @@ async function readRecentAgentGenerationRecords(params: {
          FROM ranked
         WHERE provider_rank = 1
      )
-     SELECT ${RECENT_GENERATIONS_SELECT}
+     SELECT ${RECENT_GENERATIONS_SELECT}${params.preciseCursor ? `, to_char(created_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"') AS cursor_timestamp` : ''}
        FROM deduped
        ${cursorClause}
       ORDER BY created_at DESC, id DESC

@@ -1,6 +1,12 @@
 import type {AgentGenerationStatus} from '@/server/generations/generation-status';
 import {createSignedDownloadUrl, extractStorageKeyFromUrl, ownedMediaStorageKeyForUrl} from '@/server/storage';
 
+export class GenerationMediaOwnershipError extends Error {
+  constructor() {
+    super('MEDIA_NOT_AVAILABLE');
+  }
+}
+
 /** Presentation-only grants for an owned generation; canonical job and quote data stay unchanged. */
 export async function buildOwnedGenerationMediaAccess(
   userId: string,
@@ -12,7 +18,7 @@ export async function buildOwnedGenerationMediaAccess(
   const cache = new Map<string, Promise<string>>();
   async function readable(url: string): Promise<string> {
     const key = ownedMediaStorageKeyForUrl({url, userId});
-    if (extractStorageKeyFromUrl(url) && !key) throw new Error('MEDIA_NOT_AVAILABLE');
+    if (extractStorageKeyFromUrl(url) && !key) throw new GenerationMediaOwnershipError();
     if (!key) return url;
     if (!cache.has(key)) cache.set(key, sign(key, {expiresInSeconds: 300}));
     return cache.get(key)!;

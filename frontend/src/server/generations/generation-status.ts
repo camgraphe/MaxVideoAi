@@ -131,6 +131,13 @@ export async function readOwnedGenerationRecord(params: {
   return record;
 }
 
+export async function readGenerationSeedanceWorkflow(userId: string, workflow: NonNullable<AgentGenerationStatus['seedanceWorkflow']>) {
+  const view = await readOwnedSeedanceWorkflowView(userId, workflow.draftJobId);
+  if (!view) return workflow;
+  return { ...workflow, eligibility: view.eligibility, expiresAt: view.expiresAt, finalJobId: view.final?.jobId ?? null,
+    finalizationAvailable: agentSeedanceWorkflowEnabled() && view.eligibility === 'ready' };
+}
+
 export async function getGenerationStatus(params: {
   userId: string;
   jobId: string;
@@ -140,10 +147,7 @@ export async function getGenerationStatus(params: {
   if (!record) return null;
   let status = mapGenerationStatusRecordToAgent(record);
   if (status?.seedanceWorkflow) {
-    const view = await readOwnedSeedanceWorkflowView(params.userId, status.seedanceWorkflow.draftJobId);
-    if (view) status = { ...status, seedanceWorkflow: { ...status.seedanceWorkflow, eligibility: view.eligibility,
-      expiresAt: view.expiresAt, finalJobId: view.final?.jobId ?? null,
-      finalizationAvailable: agentSeedanceWorkflowEnabled() && view.eligibility === 'ready' } };
+    status = { ...status, seedanceWorkflow: await readGenerationSeedanceWorkflow(params.userId, status.seedanceWorkflow) };
   }
   if (!status || status.paymentStatus !== 'included_mcp_trial') return status;
   const trial = await readTrialJobStatus({ userId: params.userId, jobId: params.jobId });
