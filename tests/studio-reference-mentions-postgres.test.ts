@@ -160,6 +160,15 @@ test('saved labels survive failed renewal, immutable replay and history without 
   assert.deepEqual(renewed.quote?.summary.references.map(ref=>ref.assetId),[recallA]);
   assert.notEqual(renewed.quote?.quoteId,ready.quote!.quoteId);
   assert.deepEqual(renewed.references,[]);
+  await pg.pool.query("UPDATE mcp_generation_quotes SET state='expired' WHERE quote_id=$1",[renewed.quote!.quoteId]);
+  const mobileRenewal = await renewMobileStudioQuote(project, {action:'renew-generation', requestId:renewed.requestId,
+    quoteId:renewed.quote!.quoteId,renewalId:randomUUID(),locale:'fr'},open());
+  assert.equal(mobileRenewal.quote.review?.requestHash,renewed.quote!.requestHash);
+  const frozen = (await pg.pool.query('SELECT input_json,draft_json FROM studio_image_turns WHERE request_id=$1',
+    [mobileRenewal.requestId])).rows[0];
+  assert.deepEqual(frozen.input_json.references,[]);
+  assert.deepEqual(frozen.draft_json.recalledReferences.map((ref: {assetId:string})=>ref.assetId),[recallA]);
+
   // This label belongs only to the other project, even though the user owns both.
   await open().submit({...plain('Photo historique'),references:[recallB],referenceMentions:[{assetId:recallB,label:'Image 9'}]});
   const beforeMissing = seen.length;
