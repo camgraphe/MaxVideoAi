@@ -41,6 +41,10 @@ rendering, no original/playback loading, pagination identity, interactions and
 tool routing. The origin tests cover owned SQL projection, opt-in transport and
 cache isolation. These checks do not establish field Core Web Vitals gains.
 
+## Mobile Library → Activity
+
+The installed iOS and Android clients read `GET /api/mobile/generations` with the signed-in bearer. It returns 20 generations per page, newest first, with optional `surface=image|video|audio` and an opaque `nextCursor`. Studio and Create use the same account history. The detail GET at `/api/mobile/generations/[jobId]` refreshes the selected result, and `/api/mobile/generations/latest?surface=image|video` restores the last playable creation. All three reads require an initialized schema and return private, uncached JSON. The list batches output lookups for each page and retains a row when its media is unavailable.
+
 ## Owners
 
 - `frontend/lib/api-jobs.ts` owns SWR pagination, account/source scope isolation,

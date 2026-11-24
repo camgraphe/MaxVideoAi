@@ -77,6 +77,18 @@ test('public read overlay preserves page IDs, eligibility, settings and dimensio
       const playlist = await readLegacyPlaylistVideos({ slug: 'marketing-fixture' }, executor);
       assert.equal(playlist[0].id, 'stable-page');
       assert.equal(playlist[0].recreationSnapshot, undefined, 'direct playlist cards also omit the full recipe');
+      await executor.query(`
+        INSERT INTO app_jobs(job_id,user_id,engine_id,engine_label,prompt,video_url,thumb_url,status,surface,visibility,indexable,duration_sec,created_at)
+        VALUES('stale-video','owner','luma-ray-3-2','Luma','Old prompt','https://media.example/deleted.mp4',
+          'https://media.example/deleted.jpg','completed','video','public',true,5,'2026-10-23');
+        INSERT INTO playlist_items(video_id,order_index) VALUES('stale-video',8);
+        INSERT INTO job_outputs(job_id,kind,status,url) VALUES('stale-video','video','deleted','https://media.example/deleted.mp4');
+      `);
+      const options = { slug: 'marketing-fixture', limit: 1 };
+      const legacyPage = await readLegacyPlaylistVideos(options, executor);
+      const watchablePage = await readLegacyPlaylistVideos({ ...options, requirePlayableSource: true }, executor);
+      assert.deepEqual(legacyPage.map(video => video.id), ['stale-video']);
+      assert.deepEqual(watchablePage.map(video => video.id), ['stable-page'], 'filter deleted sources before applying the comparison limit');
     } finally {
       if (previousFlag === undefined) delete process.env.MARKETING_MEDIA_ENABLED;
       else process.env.MARKETING_MEDIA_ENABLED = previousFlag;

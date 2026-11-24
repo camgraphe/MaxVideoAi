@@ -1,35 +1,33 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
-import dynamic from 'next/dynamic';
-import type { AppLocale } from '@/i18n/locales';
-const CompareVideoDialog = dynamic(() => import('./CompareVideoDialog.client'), { ssr: false });
 import Link from 'next/link';
 import { Play } from 'lucide-react';
 import { useExampleCardPlayback } from '@/components/examples/useExampleCardPlayback';
 import type { CompareGalleryVideo } from '../_lib/compare-gallery-data';
+import { CompareGalleryReaderContext } from './CompareGalleryReader.client';
 
-export function CompareGalleryCard({ item, name, engine, watchLabel, returnPath, locale }: {
-  engine: string; locale: AppLocale; item: CompareGalleryVideo; name: string; watchLabel: string; returnPath: string;
+export function CompareGalleryCard({ item, name, watchLabel }: {
+  item: CompareGalleryVideo; name: string; watchLabel: string;
 }) {
-  const [open, setOpen] = useState(false);
-  const close = useCallback(() => setOpen(false), []);
-  const href = `/video/${encodeURIComponent(item.id)}?from=${encodeURIComponent(returnPath)}`;
+  const reader = useContext(CompareGalleryReaderContext);
   const link = useRef<HTMLAnchorElement>(null);
   const [visible, setVisible] = useState(false);
   const [intent, setIntent] = useState(false);
-  const { videoRef, playbackAttempt, events, videoReady } = useExampleCardPlayback(item.preview ?? item.video, visible && intent && !open, true);
+  const { videoRef, playbackAttempt, events, videoReady } = useExampleCardPlayback(item.preview ?? item.video, visible && intent && !reader?.isOpen, true);
   useEffect(() => {
     if (!link.current) return;
     const observer = new IntersectionObserver(([entry]) => setVisible(entry.isIntersecting), { threshold: .25 });
     observer.observe(link.current);
     return () => observer.disconnect();
   }, []);
-  return <><Link ref={link} href={href} prefetch={false}
+  return <Link ref={link} href={item.href} prefetch={false}
     onClick={event => {
-      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-      event.preventDefault(); setIntent(false); setOpen(true);
+      if (!reader || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      event.preventDefault();
+      setIntent(false);
+      reader.open(item);
     }}
     className="compare-gallery-video" aria-haspopup="dialog" aria-label={`${watchLabel} · ${name}${item.duration > 0 ? ` · ${item.duration} s` : ''}`}
     onPointerEnter={event => { if (event.pointerType === 'mouse') setIntent(true); }} onPointerLeave={() => setIntent(false)}
@@ -40,5 +38,5 @@ export function CompareGalleryCard({ item, name, engine, watchLabel, returnPath,
       className={`absolute inset-0 h-full w-full object-cover ${videoReady ? 'opacity-100' : 'opacity-0'}`} /> : null}
     <span className="compare-gallery-play"><Play size={16} fill="currentColor" aria-hidden="true" /></span>
     {item.duration > 0 ? <span className="compare-gallery-duration">{item.duration} s</span> : null}
-  </Link>{open ? <CompareVideoDialog engine={engine} item={item} name={name} locale={locale} href={href} onClose={close} /> : null}</>;
+  </Link>;
 }

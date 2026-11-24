@@ -15,7 +15,7 @@ test('reader crosses a page in both directions, uses watch URLs with gallery his
   saved.set(key,Object.getOwnPropertyDescriptor(globalThis,key));Object.defineProperty(globalThis,key,{configurable:true,writable:true,value});
  }
  const videos=cards(24);let observed!:ReturnType<typeof useGalleryReader>;
- function Fixture(){observed=useGalleryReader(videos,24,'playlist','wan','fr');return null;}
+ function Fixture(){observed=useGalleryReader(videos,{pagination:{offset:24,sort:'playlist',engineFilter:'wan',locale:'fr'}});return null;}
  const root=createRoot(dom.window.document.getElementById('root')!);
  try{
   await act(async()=>root.render(React.createElement(Fixture)));
@@ -36,4 +36,62 @@ test('reader crosses a page in both directions, uses watch URLs with gallery his
   await act(async()=>{resolveFetch(new Response(JSON.stringify({cards:cards(0),hasMore:true})));await pending;});
   assert.equal(observed.selected,null);assert.equal(observed.busy,false);
  }finally{await act(async()=>root.unmount());dom.window.close();for(const [key,descriptor] of saved){if(descriptor)Object.defineProperty(globalThis,key,descriptor);else Reflect.deleteProperty(globalThis,key);}}
+});
+
+test('comparison reader walks its fixed list under the original comparison URL', async () => {
+  const comparison = '/fr/comparatif/left-vs-right#examples';
+  const dom = new JSDOM('<div id="root"></div>', { url: `http://localhost${comparison}` });
+  const requests: string[] = [];
+  const originals = new Map<string, PropertyDescriptor | undefined>();
+  const globals = {
+    window: dom.window,
+    document: dom.window.document,
+    IS_REACT_ACT_ENVIRONMENT: true,
+    fetch: async (url: string) => {
+      requests.push(url);
+      return new Response(null, { status: 503 });
+    },
+  };
+  for (const [key, value] of Object.entries(globals)) {
+    originals.set(key, Object.getOwnPropertyDescriptor(globalThis, key));
+    Object.defineProperty(globalThis, key, { configurable: true, writable: true, value });
+  }
+  const videos = [{ id: 'left', href: '/video/first' }, { id: 'right', href: '/video/second' }];
+  let reader!: ReturnType<typeof useGalleryReader>;
+  function Fixture() {
+    reader = useGalleryReader(videos, { keepPageUrl: true });
+    return null;
+  }
+  const root = createRoot(dom.window.document.getElementById('root')!);
+  try {
+    await act(async () => root.render(React.createElement(Fixture)));
+    await act(async () => reader.open(videos[0]));
+    assert.equal(reader.selected, 'left');
+    assert.equal(dom.window.location.pathname + dom.window.location.hash, comparison);
+    assert.equal(reader.canPrevious, false);
+    await act(async () => reader.step(-1));
+    assert.deepEqual(requests, [], 'a fixed list never fetches catalog pages');
+
+    await act(async () => reader.open(videos[0]));
+    await act(async () => reader.step(1));
+    assert.equal(reader.selected, 'right');
+    assert.equal(dom.window.location.pathname + dom.window.location.hash, comparison);
+    assert.equal(reader.canNext, false);
+    assert.equal(dom.window.history.length, 2);
+
+    await act(async () => {
+      const popped = new Promise(resolve => dom.window.addEventListener('popstate', resolve, { once: true }));
+      reader.close();
+      await popped;
+    });
+    assert.equal(reader.selected, null);
+    assert.equal(dom.window.location.pathname + dom.window.location.hash, comparison);
+  } finally {
+    await act(async () => root.unmount());
+    dom.window.close();
+    for (const [key, descriptor] of originals) {
+      if (descriptor) Object.defineProperty(globalThis, key, descriptor);
+      else Reflect.deleteProperty(globalThis, key);
+    }
+  }
 });
