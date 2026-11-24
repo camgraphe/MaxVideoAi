@@ -7,6 +7,7 @@ import { listFalEngines } from '../frontend/src/config/falEngines.ts';
 import { resolveFalVideoResolutionInput } from '../frontend/src/lib/fal.ts';
 import { resolveRuntimeResolutionPolicy } from '../frontend/src/server/video-generation/runtime-resolution';
 import { validateRequest } from '../frontend/app/api/generate/_lib/validate';
+import { resolveVideoOperationEngine } from '../frontend/lib/video-operation';
 import { getExactVideoPresetInput, getPresetQuote, VIDEO_PRICE_PRESETS } from '../frontend/app/(localized)/[locale]/(marketing)/pricing/_lib/pricingHubData';
 
 const currentKlingEngineIds = [
@@ -77,4 +78,15 @@ test('Kling Modify does not change existing public generation price presets', ()
     assert.equal(getExactVideoPresetInput(entry, entryPreset, locale)?.resolution, '1080p');
     assert.equal(getPresetQuote(entry, draftPreset, locale).status, 'unsupported');
   }
+});
+
+test('dispatch validates Kling Edit against actual operation capabilities, preserving Reference timing checks', () => {
+  const entry = listFalEngines().find(({ id }) => id === 'kling-o3-standard')!;
+  const edit = resolveVideoOperationEngine(entry.engine, 'v2v', 'kling-edit');
+  const payload = { prompt: 'Change the lantern to blue.', video_url: 'https://example.com/clip.mp4',
+    resolution: '720p', keep_audio: true };
+  const context = { inputSchema: edit.inputSchema, operationCaps: edit.modeCaps?.v2v };
+  assert.deepEqual(validateRequest(edit.id, 'v2v', payload, context), { ok: true });
+  assert.equal(validateRequest(edit.id, 'v2v', { ...payload, duration: 4 }, context).ok, false);
+  assert.equal(validateRequest(entry.id, 'v2v', payload, { inputSchema: entry.engine.inputSchema }).ok, false);
 });

@@ -1,0 +1,432 @@
+{
+  "marketingName": "Kling Image 4.0",
+  "versionLabel": "4.0",
+  "seo": {
+    "title": "Kling Image 4.0 — Generación, edición y series | MaxVideoAI",
+    "description": "Crea y edita imágenes con Kling Image 4.0. Prepara una serie con un solo brief, usa hasta diez referencias y elige una resolución de hasta 8K."
+  },
+  "hero": {
+    "title": "Kling Image 4.0",
+    "intro": "Crea un visual, retócalo con referencias o muestra al mismo sujeto desde varios ángulos. Elige 2K, 4K u 8K según el detalle que necesites.",
+    "badge": "2K · 4K · 8K",
+    "cta": {
+      "label": "Crear con Kling Image 4.0",
+      "href": "/app/image?engine=kling-image-v4"
+    }
+  },
+  "overview": "Crea un visual, retócalo con referencias o muestra al mismo sujeto desde varios ángulos. Elige 2K, 4K u 8K según el detalle que necesites.",
+  "bestUseCases": [
+    "Fotografía de producto y series de campaña",
+    "Fotogramas de concepto y storyboards",
+    "Edición con referencias y diseños con textos breves"
+  ],
+  "pricingNotes": [
+    "El importe depende del modo, la resolución, el número de imágenes y las referencias. Create indica si hay un presupuesto para tus ajustes antes de confirmar.",
+    "Revisa el presupuesto exacto de tus ajustes antes de generar."
+  ],
+  "faqs": [
+    {
+      "q": "¿Qué es Kling Image 4.0?",
+      "a": "Es el modelo de generación y edición de imágenes de Kuaishou. Crea una imagen o una serie ordenada desde un prompt y añade referencias en el modo de edición."
+    },
+    {
+      "q": "¿Qué resoluciones y formatos puedo elegir?",
+      "a": "Create ofrece 2K, 4K y 8K en ambos modos. Elige Auto, 16:9, 9:16, 1:1, 4:3, 3:4, 3:2, 2:3 o 21:9."
+    },
+    {
+      "q": "¿Cómo funcionan las imágenes de referencia?",
+      "a": "Añade entre una y diez imágenes en el modo de edición. Menciónalas en el orden en que las añadiste, de @Image1 a @Image10. Indica la que define el producto, el sujeto, la composición o el estilo."
+    },
+    {
+      "q": "¿Qué es una serie de imágenes?",
+      "a": "En Create Image, solicita de dos a diez imágenes con el mismo sujeto. Describe cada encuadre en una línea distinta. MCP también admite series. En Studio, cada solicitud a Kling Image genera una sola imagen."
+    },
+    {
+      "q": "¿Cuánto cuesta Kling Image 4.0?",
+      "a": "El importe depende del modo, la resolución, el número de imágenes y las referencias. Create indica si hay un presupuesto para tus ajustes antes de confirmar."
+    },
+    {
+      "q": "¿Puedo utilizar una imagen como fotograma inicial de vídeo?",
+      "a": "Guarda la imagen y elígela como fotograma de apertura de una generación de imagen a vídeo con Kling 4.0. El vídeo tiene sus propios ajustes y presupuesto."
+    }
+  ],
+  "custom": {
+    "specTitle": "Especificaciones",
+    "specNote": "Create ofrece 2K, 4K y 8K en ambos modos. Elige Auto, 16:9, 9:16, 1:1, 4:3, 3:4, 3:2, 2:3 o 21:9.",
+    "safetyNote": "Usa referencias que tengas permiso de utilizar. Revisa los rostros, los textos y las afirmaciones antes de publicar."
+  },
+  "decision": {
+    "modelSlug": "kling-image-v4",
+    "hero": {
+      "eyebrow": "Generador de imágenes con IA en MaxVideoAI",
+      "title": "Kling Image 4.0",
+      "subtitle": "Una idea para toda una serie de imágenes.",
+      "subtitleHighlights": [
+        "8K"
+      ],
+      "paragraph": "Crea un visual, retócalo con referencias o muestra al mismo sujeto desde varios ángulos. Elige 2K, 4K u 8K según el detalle que necesites.",
+      "primaryCta": {
+        "label": "Crear con Kling Image 4.0",
+        "href": "/app/image?engine=kling-image-v4"
+      },
+      "secondaryCta": {
+        "label": "Especificaciones",
+        "href": "#specs"
+      },
+      "quickLinks": [
+        {
+          "label": "Guía de prompts",
+          "href": "#prompting"
+        },
+        {
+          "label": "Especificaciones",
+          "href": "#specs"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Resultados de Kling Image 4.0",
+      "description": "Un cartel de reparación de calzado, una prueba de ropa urbana, un logo en una chaqueta y un primer plano de maquillaje gráfico.",
+      "renderLabel": "Inspeccionar la imagen",
+      "badges": [
+        "Kling Image 4.0"
+      ],
+      "altContext": "Kling Image 4.0"
+    },
+    "features": [
+      {
+        "title": "Dirigir una imagen",
+        "body": "Describe el sujeto, su posición y la luz, y elige una proporción adecuada para tu diseño.",
+        "tone": "quality"
+      },
+      {
+        "title": "Dar un papel a cada referencia",
+        "body": "Añade las imágenes en orden. Usa @Image1 para la forma del producto y @Image2 para la iluminación. Indica qué quieres conservar y qué quieres cambiar.",
+        "tone": "reference"
+      },
+      {
+        "title": "Planificar una serie",
+        "body": "Elige de dos a diez imágenes. Define un sujeto y una dirección artística común, y describe cada vista o plano en orden.",
+        "tone": "continuity"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Anima una imagen terminada",
+        "body": "Guarda la imagen y úsala como fotograma de apertura en una generación de vídeo independiente con Kling 4.0.",
+        "cta": {
+          "label": "Explorar Kling 4.0 vídeo",
+          "href": "/es/modelos/kling-v4"
+        }
+      },
+      {
+        "title": "Explora Seedream 5.5",
+        "body": "Usa Seedream para generar un PNG con transparencia nativa o una sola imagen con edición guiada por referencias.",
+        "cta": {
+          "label": "Ver Seedream 5.5",
+          "href": "/es/modelos/seedream-5-5"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Dirigir una imagen",
+        "body": "Describe el sujeto, su posición y la luz, y elige una proporción adecuada para tu diseño."
+      },
+      {
+        "title": "Dar un papel a cada referencia",
+        "body": "Añade las imágenes en orden. Usa @Image1 para la forma del producto y @Image2 para la iluminación. Indica qué quieres conservar y qué quieres cambiar."
+      },
+      {
+        "title": "Planificar una serie",
+        "body": "Elige de dos a diez imágenes. Define un sujeto y una dirección artística común, y describe cada vista o plano en orden."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Precio de Kling Image 4.0",
+      "subtitle": "Consulta el precio actual de una imagen a cada resolución. Create calcula el importe de toda la serie para la cantidad elegida.",
+      "footnote": "Revisa el presupuesto exacto de tus ajustes antes de generar.",
+      "ctaLabel": "Ver precios de imagen",
+      "ctaHref": "/es/precios#kling-image-v4-pricing"
+    },
+    "meta": {
+      "title": "Kling Image 4.0 — Generación, edición y series | MaxVideoAI",
+      "description": "Crea y edita imágenes con Kling Image 4.0. Prepara una serie con un solo brief, usa hasta diez referencias y elige una resolución de hasta 8K."
+    }
+  },
+  "prompting": {
+    "modelSlug": "kling-image-v4",
+    "section": {
+      "title": "Cómo escribir un prompt para Kling Image 4.0",
+      "intro": "Para un anuncio en la calle, escribe el texto exacto e indica cómo encuadrar el panel para que se lea.",
+      "tip": null,
+      "guide": null,
+      "referencesTitle": "Guiar la imagen"
+    },
+    "tabs": [],
+    "recipe": {
+      "label": "Texto del anuncio",
+      "excerpt": "\"I CAN WALK FROM HERE.\" / \"SHOE REPAIR\"",
+      "note": "Abre «Prompt y ajustes» debajo de la imagen de la marquesina para ver el brief completo.",
+      "factors": [
+        {
+          "icon": "subject",
+          "title": "Sitúa el cartel en la calle.",
+          "body": "Incluye el marco de la marquesina, la acera y a la persona que se aleja."
+        },
+        {
+          "icon": "text",
+          "title": "Da a cada línea su función.",
+          "body": "El titular ocupa dos líneas grandes. Debajo, SHOE REPAIR indica el servicio en un tamaño menor."
+        },
+        {
+          "icon": "framing",
+          "title": "Enfoca el texto.",
+          "body": "Encuadra el cartel casi de frente y mantén todas las letras legibles a través del cristal."
+        }
+      ]
+    },
+    "tabNotes": [],
+    "globalPrinciples": [
+      "Escribe entre comillas el texto exacto y revísalo en la imagen terminada.",
+      "Antes de exportar una serie, revisa la continuidad visual entre todas las imágenes."
+    ],
+    "engineWhy": [],
+    "demo": null,
+    "imageExamples": {
+      "title": "Cómo escribir un prompt para Kling Image 4.0",
+      "intro": "Describe una imagen, guía una edición con referencias ordenadas o planifica las tomas de una serie.",
+      "workspaceLabel": "Crear con Kling Image 4.0",
+      "items": [
+        {
+          "id": "kling-image-4-bus-shelter-sole-print",
+          "title": "I CAN WALK FROM HERE.",
+          "badge": "Marquesina · diseño de cartel",
+          "kind": "typography",
+          "prompt": "Use @Image1 as the exact street photograph and edit only the printed artwork inside the existing bus-shelter ad panel. Keep the camera, framing, metal shelter, glass, brick walls, bench, passer-by and bag exactly in place. The existing shadows and subtle reflections still fall naturally over the new artwork.\n\nRedesign the ad on warm chalk-cream matte stock. Use near-black plum ink and vivid vermilion thread. The central image is a single oversized shoe-tread print, like an ink impression on paper, split at midfoot and visibly sewn back together. Three thick vermilion stitches cross the opening. Use a clean graphic silhouette and a few broad tread shapes, with enough space around the stitches for the repair to read in one glance. Fit the whole illustration below the headline and above the service line. Make the finished print feel like a real independent shoe repair campaign.\n\nKeep the following headline once, large and bold, over these exact two lines. Print the words without quotation marks.\n\n\"I CAN WALK\nFROM HERE.\"\n\nPlace \"SHOE REPAIR\" once at the bottom in smaller bold capitals, aligned with the headline. Use strong contrast and generous outer margins. Keep the period after HERE. The headline, the tread print and the service line are the three elements of the new ad. Add no other words or logos."
+        },
+        {
+          "id": "kling-image-4-pop-up-series",
+          "title": "Una prueba en el pop-up",
+          "badge": "Serie · continuidad visual",
+          "kind": "image",
+          "prompt": "Deliver exactly three separate 3:2 campaign images in the order below. They follow Inès, a 28-year-old designer, during an impromptu fitting at an independent streetwear pop-up. Inès has a short blunt black bob with one apricot-coloured strand over her left brow, a silver ear cuff on her right ear, freckles across her nose and a direct gaze. She wears the same original cobalt-blue cropped jacket in every shot: matte fabric, three broad horizontal quilt channels, a visibly off-centre silver zip and plain unmarked sleeves. Keep the face, ear cuff and jacket construction consistent across all views. The styling is deliberate and current, with wide charcoal trousers and boxy white shoes, no visible branding.\n\n1. Wide, low 24 mm shot outside the gallery. Inès steps off an orange shipping crate as if testing the jacket in motion. Photograph the full outfit in clear afternoon sun. A sharp cast shadow cuts across the pale concrete steps. Use strong geometric diagonals and plenty of room around the body.\n\n2. Steep overhead view from above the cutting table. Inès sits on an orange stool with both forearms on the matte orange tabletop, taking a folded paper pattern out of a sleeve cuff. Put her face and the plain outer panel of her left sleeve in the same frame. Use diffuse north-window light, soft shadows and clean, readable fabric seams. This is the source image for the later sleeve edit.\n\n3. Tight angle just below eye height at the entrance after dark. Inès glances back towards someone arriving, her face and asymmetric collar caught by direct white flash against a deep plum entrance. Keep the apricot strand, collar construction and silver cuff recognizable. Compose a confident diagonal running from the collar towards her eye.\n\nEach result is a single complete image. Clear faces, purposeful gestures, dry surfaces and contemporary editorial finish. Keep the scene free of writing, brand marks and extra outfits."
+        },
+        {
+          "id": "kling-image-4-jacket-back-mark",
+          "title": "El logo marfil en la espalda de la chaqueta de Inès",
+          "badge": "Edición · logo en una chaqueta",
+          "kind": "edit",
+          "prompt": "Edit @Image1 in place. Apply one large ivory screen-printed emblem to the centre of the upper back of Inès's cobalt jacket, between the shoulder blades. Draw a single, wide asymmetrical silhouette that looks like a strip of sewing pattern paper folded back onto itself. Use a bold continuous shape with one sharp diagonal notch. The emblem spans about three fifths of the visible width of the back and reads clearly at phone size. Its placement and proportions feel like the main graphic on a designer's jacket.\n\nPrint the emblem flat onto the textile. Let the cobalt jacket's surface, quilt seams and existing folds remain legible under the ink. Keep the sleeves plain. Preserve the original overhead camera angle, cropping, cobalt colour, haircut, ear cuff, hands, paper, orange cutting table, light and background. All creative change is confined to the single emblem. Add no letters, extra graphics or hardware."
+        },
+        {
+          "id": "kling-image-4-pixel-makeup",
+          "title": "PIXEL CUT",
+          "badge": "Macro · detalle en 4K",
+          "kind": "quality",
+          "prompt": "Create a single 4:3 beauty editorial image in extreme close-up. An adult makeup creator applies the last of three small squared lilac decals underneath one eye before going live. Show one eye, the outer brow, the cheek, and one fingertip carefully seating the last matte square. The three squares follow the cheekbone like pixels that slipped out of a screen. A broad, precise warm-red shadow around the lash line echoes the common shape. Use an intentional off-centre composition: eye toward upper left, three crisp square edges crossing towards lower right.\n\nLight the real skin with one neutral-white strip light from the left. A matte coral bounce lifts the far edge of the face without flattening the skin. Use a short macro focus falloff, with the eyelashes, fine skin texture, powder grains and all three decals in clear focus. Show precise line work and tiny geometric edges. Dry matte surfaces, natural skin and bold colour separation. No glamour smoothing, watermark, text, overlays or branded cosmetics."
+        }
+      ]
+    }
+  },
+  "examples": {
+    "modelSlug": "kling-image-v4",
+    "showWhenEmpty": false,
+    "section": {
+      "title": "Ideas de imágenes para Kling Image 4.0",
+      "intro": "Explora retratos, fotografías de producto y composiciones, y adapta un brief en Create.",
+      "defaultCtaLabel": null,
+      "recreateLabel": "Crear con Kling Image 4.0"
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "Todo"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "image-proof-image",
+        "icon": "image",
+        "title": "Texto a imagen",
+        "body": "Describe una imagen fija."
+      },
+      {
+        "id": "image-proof-pen",
+        "icon": "pen",
+        "title": "Edición con referencias",
+        "body": "Añade de una a diez imágenes ordenadas."
+      },
+      {
+        "id": "image-proof-maximize",
+        "icon": "maximize",
+        "title": "Resolución",
+        "body": "Elige 2K, 4K u 8K."
+      },
+      {
+        "id": "image-proof-sparkles",
+        "icon": "sparkles",
+        "title": "Series de imágenes",
+        "body": "Pide de dos a diez imágenes relacionadas."
+      },
+      {
+        "id": "image-proof-shield",
+        "icon": "shield",
+        "title": "Precio actual",
+        "body": "Revisa tu presupuesto en Create."
+      }
+    ],
+    "fallbackItems": null,
+    "cinematic": {
+      "provenance": "Resultados de Kling Image 4.0",
+      "panels": [
+        {
+          "id": "image-series",
+          "layout": "series",
+          "showWhenReady": true,
+          "assetIds": [
+            "kling-image-4-pop-up-wide",
+            "kling-image-4-pop-up-overhead",
+            "kling-image-4-pop-up-flash"
+          ],
+          "eyebrow": "Serie de imágenes",
+          "title": "Una chaqueta, tres puntos de vista.",
+          "body": "Inès lleva la misma chaqueta azul cobalto delante del pop-up, en la mesa de corte y en la entrada al anochecer.",
+          "note": "Compara el rostro, la cremallera y las costuras en las tres imágenes originales.",
+          "recipe": {
+            "id": "kling-image-4-pop-up-series",
+            "label": "Usar el prompt de las tres imágenes"
+          }
+        },
+        {
+          "id": "sleeve-edit",
+          "layout": "edit",
+          "showWhenReady": true,
+          "assetIds": [
+            "kling-image-4-pop-up-overhead",
+            "kling-image-4-jacket-back-mark"
+          ],
+          "eyebrow": "Edición con referencia",
+          "title": "Un logo grande en la espalda de la chaqueta.",
+          "body": "El motivo marfil sigue el acolchado de la chaqueta azul cobalto de Inès. Desliza el control para ver dónde se añadió.",
+          "note": "Compara la edición con la toma cenital original."
+        },
+        {
+          "id": "street-poster",
+          "layout": "poster",
+          "showWhenReady": true,
+          "assetIds": [
+            "kling-image-4-bus-shelter-sole-print"
+          ],
+          "eyebrow": "Texto en la imagen",
+          "title": "Un cartel que cuenta la reparación.",
+          "body": "La huella de una suela cosida con hilo rojo muestra de un vistazo qué ofrece el taller.",
+          "note": "Abre el original para leer el titular y la línea «SHOE REPAIR»."
+        }
+      ],
+      "imageBriefs": {
+        "title": "Prompts para probar",
+        "intro": "Cada prompt se abre en Create con su modelo y sus ajustes.",
+        "items": [
+          {
+            "recipeId": "kling-image-4-bus-shelter-sole-print",
+            "use": "Marquesina · diseño de cartel",
+            "title": "I CAN WALK FROM HERE.",
+            "body": "Añade la foto original de la marquesina como @Image1. Rediseña el cartel con la huella de una suela cosida y conserva el titular y la línea del servicio."
+          },
+          {
+            "recipeId": "kling-image-4-pop-up-series",
+            "use": "Serie · continuidad visual",
+            "title": "Una prueba en el pop-up",
+            "body": "Inès lleva la misma chaqueta cobalto en tres encuadres. Un contrapicado al sol, una vista cenital en el taller y un primer plano con flash."
+          },
+          {
+            "recipeId": "kling-image-4-jacket-back-mark",
+            "use": "Edición · logo en una chaqueta",
+            "title": "El logo marfil en la espalda de la chaqueta de Inès",
+            "body": "Añade la toma cenital de Inès como @Image1. Pide un logo grande de color marfil que siga el acolchado en la espalda de la chaqueta."
+          },
+          {
+            "recipeId": "kling-image-4-pixel-makeup",
+            "use": "Macro · detalle en 4K",
+            "title": "PIXEL CUT",
+            "body": "Una creadora coloca el último cuadrado lila de su maquillaje. La luz lateral define las pestañas, la textura de la piel y los bordes del motivo."
+          }
+        ]
+      }
+    },
+    "editorialImages": [
+      {
+        "id": "kling-image-4-bus-shelter-poster",
+        "title": "I CAN WALK FROM HERE. · Anuncio de reparación de calzado en una marquesina"
+      },
+      {
+        "id": "kling-image-4-pixel-makeup",
+        "title": "PIXEL CUT · Primer plano de maquillaje en 4K"
+      },
+      {
+        "id": "kling-image-4-pop-up-wide",
+        "title": "Inès delante del pop-up"
+      },
+      {
+        "id": "kling-image-4-pop-up-overhead",
+        "title": "Inès en la mesa de corte"
+      },
+      {
+        "id": "kling-image-4-pop-up-flash",
+        "title": "Inès en la entrada al anochecer"
+      },
+      {
+        "id": "kling-image-4-jacket-back-mark",
+        "title": "El logo marfil en la espalda de la chaqueta de Inès"
+      },
+      {
+        "id": "kling-image-4-bus-shelter-sole-print",
+        "title": "I CAN WALK FROM HERE. · Una huella de suela cosida en una marquesina"
+      }
+    ]
+  },
+  "cinematic": {
+    "modelSlug": "kling-image-v4",
+    "variant": "image",
+    "heroAssetId": "kling-image-4-pixel-makeup",
+    "titleLines": [
+      "Kling Image 4.0"
+    ],
+    "subtitle": "Crea una imagen. Construye una campaña a partir de ella.",
+    "byline": "Generador y editor de imágenes con IA",
+    "intro": "Parte de un prompt, mantén al mismo personaje en una serie o retoca un detalle a partir de una imagen.",
+    "primaryLabel": "Crear con Kling Image 4.0",
+    "caption": "Resultados de Kling Image 4.0",
+    "proofLabel": "Explorar ideas",
+    "overviewLabel": "Resumen",
+    "detailsLabel": "Especificaciones",
+    "examplesLabel": "Ejemplos y prompts",
+    "promptingLabel": "Guía de prompts",
+    "pricingLabel": "Precios",
+    "specsReviewedAt": "2026-11-20",
+    "facts": [
+      {
+        "label": "Resolución",
+        "value": "2K · 4K · 8K"
+      },
+      {
+        "label": "Referencias",
+        "value": "Hasta 10 imágenes"
+      },
+      {
+        "label": "Series",
+        "value": "2 a 10 imágenes relacionadas"
+      },
+      {
+        "label": "Encuadre",
+        "value": "9 opciones, incluida Auto"
+      }
+    ],
+    "promptAssistant": {
+      "title": "Dale forma al brief con Milo.",
+      "body": "Describe la imagen a Milo. Revisa su propuesta en Create y aplícala cuando encaje con tu idea.",
+      "action": "Abrir Milo en Create"
+    }
+  }
+}

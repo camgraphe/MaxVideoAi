@@ -684,6 +684,25 @@
     }
   },
   {
+    "engineId": "kling-image-v4",
+    "marketingName": "Kling Image 4.0",
+    "brandId": "kling",
+    "modelSlug": "kling-image-v4",
+    "family": "kling",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
+    "versionLabel": "4.0",
+    "availability": "available",
+    "logoPolicy": "logoAllowed",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
+  },
+  {
     "engineId": "ltx-2-3-fast",
     "marketingName": "LTX 2.3 Fast",
     "brandId": "lightricks",

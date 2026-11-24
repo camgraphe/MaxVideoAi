@@ -1,3 +1,5 @@
+import { isKlingImageV4EngineId } from '@/lib/image/kling-image-v4';
+import { klingImageV4ManualTariffScenario, klingImageV4QuantityTariffSelector } from '@/lib/image/kling-image-v4-pricing';
 import { isNewSeedreamEngineId, seedreamNewModelPricingUsage } from '@/lib/image/seedream-pricing';
 import { NANO21_ENGINE_ID, normalizeNano21Settings, assertNano21Scenario } from '@/lib/nano-banana-2-1';
 import { isFluxLtxSourceOperation, fluxLtxDurationBounds } from '../../lib/flux-ltx-operations';
@@ -28,6 +30,7 @@ export function continuousWan3TariffSelector(selector: ManualTariffSelector): Ma
 
 /** Reviewed continuous classes only; every other model keeps exact matching. */
 export function continuousInputTariffSelector(selector: ManualTariffSelector): ManualTariffSelector | null {
+  if (isKlingImageV4EngineId(selector.engineId)) return klingImageV4QuantityTariffSelector(selector);
   if (isGptImage26EngineId(selector.engineId)) return gptImage26ContinuousTariffSelector(selector);
   if (['kling-v4', 'kling-v4-flash'].includes(selector.engineId) && selector.billingInputType === 'video_input') {
     const input = Number(selector.inputVideoDurationSec), output = Number(selector.durationSec);
@@ -101,6 +104,7 @@ export function buildManualTariffScenario(context: PricingContext, facts: Pricin
 } {
   if (facts.engineId !== context.engine.id) throw new Error('Manual tariff engine and facts disagree');
   assertSeedanceWorkflowPricing(context);
+  if (isKlingImageV4EngineId(facts.engineId)) return klingImageV4ManualTariffScenario(context);
   if (isNewSeedreamEngineId(facts.engineId)) {
     const usage = seedreamNewModelPricingUsage(context, facts.currency);
     return { selector: { engineId: facts.engineId, mode: usage.mode, resolution: usage.resolution, durationSec: '1',

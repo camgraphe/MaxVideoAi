@@ -5,6 +5,8 @@ import type { ResolvedReference } from "@/server/agent-api/reference-types";
 import type { ImageTurnInput, ImageConversationHistoryTurn } from "@/lib/studio/image-conversation-contract";
 import type { ImageDirector, ImageDirectorTelemetry } from "./image-conversation-director";
 import type { StoredImageTurn } from "./image-conversation-repository";
+import { studioReferenceInputContent } from "./conversation-reference-mentions";
+import { prepareStudioReferenceImages } from "./conversation-reference-images";
 
 export type ImageModelUsage = {
   requestId: string;
@@ -29,6 +31,8 @@ export async function runMeteredImageDirector(
   history: ImageConversationHistoryTurn[],
   references: ResolvedReference[],
 ) {
+  const referenceContent = studioReferenceInputContent(references, input.referenceMentions, false);
+  await prepareStudioReferenceImages(actor.userId, referenceContent);
   const scope = [actor.userId, actor.projectId, turn.request_id, turn.lease_id];
   // If usage storage is unavailable, stop before the paid text call.
   const started = await query(`INSERT INTO studio_image_model_usage (user_id, project_id, request_id, lease_id)
@@ -50,7 +54,7 @@ export async function runMeteredImageDirector(
         WHERE user_id = $1 AND project_id = $2 AND request_id = $3 AND lease_id = $4 AND state <> 'reported' RETURNING lease_id`,
         [...scope, response.responseId, JSON.stringify(response)]);
       reported = saved.length > 0;
-    });
+    }, referenceContent);
   } finally {
     if (!reported) {
       try {

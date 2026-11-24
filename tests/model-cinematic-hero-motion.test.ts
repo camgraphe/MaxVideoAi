@@ -8,7 +8,7 @@ import type { CinematicPresentation } from '../frontend/app/(localized)/[locale]
 
 (globalThis as typeof globalThis & { React: typeof React }).React = React;
 const ui = { play: 'Play', pause: 'Pause', retry: 'Retry' } as CinematicPresentation['ui'];
-async function fixture({ mobile = false, reduced = false, saveData = false } = {}) {
+async function fixture({ mobile = false, reduced = false, saveData = false, autoplay = true } = {}) {
   const dom = new JSDOM('<div id="root"></div>', { url: 'http://localhost/models/example', pretendToBeVisual: true });
   let intersect: (entries: unknown[]) => void = () => {};
   let hidden = false;
@@ -29,7 +29,7 @@ async function fixture({ mobile = false, reduced = false, saveData = false } = {
   for (const [key, value] of Object.entries(globals)) Object.defineProperty(globalThis, key, { value, configurable: true, writable: true });
   const container = dom.window.document.querySelector('#root')!;
   const root = createRoot(container);
-  await act(async () => root.render(React.createElement(ModelCinematicHeroMotion, { src: 'https://media.maxvideoai.com/example.mp4', title: 'Opening', ui })));
+  await act(async () => root.render(React.createElement(ModelCinematicHeroMotion, { src: 'https://media.maxvideoai.com/example.mp4', title: 'Opening', ui, autoplay })));
   return {
     container, plays: () => plays, paused: () => paused,
     visible: (value: boolean) => act(async () => intersect([{ isIntersecting: value }])),
@@ -67,9 +67,14 @@ test('hero motion defers transfer, loops silently and preserves explicit pause a
   } finally { await f.cleanup(); }
 });
 
-test('mobile, reduced motion and Save-Data keep the poster until explicit Play', async () => {
-  for (const policy of ['mobile', 'reduced', 'saveData']) {
-    const f = await fixture({ [policy]: true });
+test('mobile, reduced motion, Save-Data and manual openings keep the poster until explicit Play', async () => {
+  for (const [policy, options] of [
+    ['mobile', { mobile: true }],
+    ['reduced motion', { reduced: true }],
+    ['Save-Data', { saveData: true }],
+    ['manual opening', { autoplay: false }],
+  ] as const) {
+    const f = await fixture(options);
     try {
       await f.visible(true); await f.wait();
       assert.equal(f.container.querySelector('video'), null, policy);

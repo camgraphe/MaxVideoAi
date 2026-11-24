@@ -1,3 +1,4 @@
+import { isKlingImageV4EngineId, klingImageV4ReferenceFailure } from '@/lib/image/kling-image-v4';
 import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
 import { resolveMediaFieldMinDuration } from '@/lib/media-field-constraints';
 import { isWan3EngineId } from '@/lib/wan3-pricing';
@@ -8,7 +9,7 @@ import { isFluxLtxSourceOperation } from '@/lib/flux-ltx-operations';
 import { isH3SourceOperation } from '@/lib/h3-source-operations';
 import { validateLumaCanonicalShape } from './generation-luma-shape';
 import { validateOwnedKlingElements, isElementReference } from '@/lib/kling-owned-elements';
-import { resolveVideoOperationEngine } from '@/lib/video-operation';
+import { resolveVideoOperationEngine, validateKlingEditSourceDimensions } from '@/lib/video-operation';
 import { videoDurationPolicy, videoInheritsSourceFraming } from '@/lib/video-workflow-capabilities';
 import { isLumaSourceVideoMode, validateLumaSourceVideoTiming, LUMA_MODIFY_SOURCE_MAX_SEC } from '@/lib/luma-source-video';
 import {
@@ -157,10 +158,9 @@ function fail(
   throw new GenerationCapabilityError(field, kind, referenceFailure);
 }
 
-// Only the known image constraint and bounded, verified dimensions can cross
-// the generic reference-error boundary into a quote or Studio response.
-export class WanImageCapabilityError extends GenerationCapabilityError {
-  constructor(referenceFailure: ReferenceConstraintFailure, readonly userMessage: string) {
+// Only explicitly authored guidance can cross the generic reference-error boundary.
+export class ActionableReferenceCapabilityError extends GenerationCapabilityError {
+  constructor(readonly userMessage: string, referenceFailure?: ReferenceConstraintFailure) {
     super('references', 'reference_invalid', referenceFailure);
   }
 }
@@ -178,7 +178,7 @@ function failWanImageReference(
     actualHeight: dimensions?.height,
     minimumSidePx,
   });
-  if (userMessage) throw new WanImageCapabilityError(failure, userMessage);
+  if (userMessage) throw new ActionableReferenceCapabilityError(userMessage, failure);
   fail('references', 'reference_invalid', failure);
 }
 
@@ -403,6 +403,10 @@ function validateDerivedSourceFacts(
           || Number(resolved.height) <= 0
         )
       ) fail('references', 'reference_invalid', 'dimensions_unverified');
+      if (request.operation === 'kling-edit' && reference.role === 'source' && resolved.mediaKind === 'video') {
+        const issue = validateKlingEditSourceDimensions(resolved);
+        if (issue) throw new ActionableReferenceCapabilityError(issue);
+      }
       const mediaValidation = validateMediaFileAgainstConstraint({
         name: originalName,
         mimeType: resolved.mimeType,
@@ -915,7 +919,7 @@ function validateReferences(
   candidate: AgentPublicGenerationEngine,
   options: GenerationCapabilityValidationOptions,
 ): void {
-  if ((isKlingV4FalQueueEngineId(request.engineId) || isGptImage26EngineId(request.engineId)) && request.references.some(reference=>reference.kind!=='asset')) fail('references','reference_invalid');
+  if ((isKlingV4FalQueueEngineId(request.engineId) || isKlingImageV4EngineId(request.engineId) || isGptImage26EngineId(request.engineId)) && request.references.some(reference=>reference.kind!=='asset')) fail('references','reference_invalid');
   if (candidate.surface === 'image') {
     const constraints = getReferenceConstraints(candidate.engine, request.mode as ImageGenerationMode);
     const generationReferences = request.references.filter((reference) => reference.role !== 'mask');
@@ -930,6 +934,10 @@ function validateReferences(
   if (options.resolvedReferences) {
     const resolvedKeys = new Set<string>();
     for (const resolved of options.resolvedReferences) {
+      if (isKlingImageV4EngineId(request.engineId)) {
+        const failure = klingImageV4ReferenceFailure(resolved);
+        if (resolved.mediaKind !== 'image' || failure) fail('references', 'reference_invalid', failure ?? 'format_unsupported');
+      }
       if (isGptImage26EngineId(request.engineId)) {
         const failure = gptImage26ReferenceFailure(resolved);
         if (resolved.mediaKind !== 'image' || failure) fail('references', 'reference_invalid', failure ?? 'format_unsupported');

@@ -1,6 +1,7 @@
 'use client';
 /* eslint-disable @next/next/no-img-element */
 
+import { DictationButton } from '@/components/composer/DictationButton.client';
 import clsx from 'clsx';
 import { useMemo, useCallback, useRef, useEffect, useState, useId } from 'react';
 import { Card } from '@/components/ui/Card';
@@ -31,6 +32,7 @@ import { useComposerGenerationGate } from '@/components/composer/useComposerGene
 import { GenerationActionHelp } from '@/components/composer/GenerationActionHelp.client';
 import { PromptAssistanceComposer } from '@/components/composer/PromptAssistanceComposer.client';
 import { applicationReviewKey } from '@/lib/prompt-assistance/application-review';
+import { availablePickerRoles } from './composer/workspace-reference-commands';
 import { composerAssistanceReferences, composerAssistanceReferenceField, hasResolvingAssistanceReferences } from '@/lib/prompt-assistance/client-context';
 import { PROMPT_ASSISTANCE_PREVIEW } from '@/lib/prompt-assistance/preview-state';
 import assistanceStyles from '@/components/composer/prompt-assistance.module.css';
@@ -327,6 +329,8 @@ export function Composer({
               workspaceDensity ? 'flex-wrap gap-2 pb-2 pt-3' : 'flex-wrap gap-3 pb-2 pt-4'
             )}>
               <ComposerPromptHeader promptId={promptId} promptLabel={promptLabel} hideLabel={assistanceEnabled} prompt={prompt} onPromptChange={onPromptChange}
+                dictation={!assistanceEnabled && !multiPromptEnabled && (!engine.activeVideoOperation || promptField)
+                  ? <DictationButton key={JSON.stringify([assistance?.scopeKey, engine.id, activeManualMode])} getTextField={() => document.getElementById(promptId)} locale={locale} value={prompt} onChange={onPromptChange} maxLength={promptMaxChars} disabled={isLoading} /> : undefined}
                 promptMaxChars={promptMaxChars} promptTooLong={promptTooLong} multiPromptEnabled={multiPromptEnabled} locale={locale}
                 multiPromptAction={multiPrompt ? <Button type="button" size="sm" variant={multiPromptEnabled ? 'primary' : 'ghost'}
                   aria-label={multiPromptEnabled ? 'Multi-prompt on' : 'Multi-prompt'} aria-pressed={multiPromptEnabled}
@@ -361,7 +365,7 @@ export function Composer({
               </div> : null}
             </div>
             {multiPromptEnabled && multiPrompt ? (
-              <ComposerMultiPromptEditor multiPrompt={multiPrompt} labelledBy={`${promptId}-heading`} />
+              <ComposerMultiPromptEditor key={JSON.stringify([assistance?.scopeKey, engine.id, activeManualMode])} locale={locale} disabled={isLoading} multiPrompt={multiPrompt} labelledBy={`${promptId}-heading`} />
             ) : (
               <textarea
                 id={promptId}
@@ -413,7 +417,9 @@ export function Composer({
         {referenceMentions.needsReview ? <ComposerReferenceMentionNotice
           locale={locale} changed={referenceMentions.changed} onReview={referenceMentions.review} /> : null}
 
-        {assistanceEnabled && assistance ? <PromptAssistanceComposer context={{ ...assistance, reviewKey:assistance.reviewKey?applicationReviewKey([assistance.reviewKey,engine.id,engine.activeVideoOperation,activeManualMode,assets,assistanceNegativePrompt,multiPrompt?.scenes]):undefined, live: assistance.live ? { ...assistance.live,
+        {assistanceEnabled && assistance ? <PromptAssistanceComposer context={{ ...assistance,
+          referencePicker: workspaceDensity ? availablePickerRoles(engine, assetFields, videoSourceWorkflow ?? (extensionWorkflow ? 'extend' : undefined)) : undefined,
+          reviewKey:assistance.reviewKey?applicationReviewKey([assistance.reviewKey,engine.id,engine.activeVideoOperation,activeManualMode,assets,assistanceNegativePrompt,multiPrompt?.scenes]):undefined, live: assistance.live ? { ...assistance.live,
           readOnlyText: {...assistance.live.readOnlyText,...(assistanceNegativePrompt?{negativePrompt:assistanceNegativePrompt}:{})},
           references: [...assistance.live.references,...composerAssistanceReferences(engine, assetFields, assets, assistance.live.mode as import('@/types/engines').Mode)] } : undefined, contextKey: JSON.stringify([assistance.contextKey, engine.id, activeManualMode, assets, assistanceNegativePrompt, multiPrompt?.scenes]) }}
           modeControl={<ComposerCommandBar modes={visibleModeToggles} workspaceDensity={workspaceDensity} activeManualMode={activeManualMode} onModeToggle={onModeToggle} compact />}

@@ -1,3 +1,4 @@
+import { assertKlingImageV4ReferenceCount, isKlingImageV4EngineId, KLING_IMAGE_V4_PROMPT_MAX_CHARS } from '@/lib/image/kling-image-v4';
 import { NANO21_ENGINE_ID } from '@/lib/nano-banana-2-1';
 import { isGptImage26EngineId } from '@/lib/image/gptImage26';
 import { prepareOpenAIImageReferences } from './openai-image-references';
@@ -24,6 +25,7 @@ import {
   sanitizeCharacterReferences,
 } from './image-provider-payload';
 import type { ImageEngineEntry } from './image-generation-request-context';
+import { qualifyKlingImageV4References } from './kling-image-v4-references';
 import { resolveStoryboardTemplateReferenceUrls } from './storyboard-template-reference';
 
 export type ImageGenerationReferenceContext = {
@@ -66,6 +68,22 @@ export async function prepareImageGenerationReferences({
   let normalizedImageUrls = imageUrls.filter((url) => !characterReferenceUrls.includes(url));
   let combinedImageUrls = [...characterReferenceUrls, ...normalizedImageUrls];
   const effectivePrompt = buildCharacterReferencePrompt(prompt, characterReferences);
+  if (isKlingImageV4EngineId(engine.id)) {
+    // The slot order is semantic for @ImageN, including character images.
+    combinedImageUrls = [...imageUrls, ...characterReferenceUrls.filter(url => !imageUrls.includes(url))];
+    try { assertKlingImageV4ReferenceCount(mode, combinedImageUrls.length); }
+    catch (error) { fail(mode, 'invalid_parameter', (error as Error).message, 400); }
+    if (effectivePrompt.length > KLING_IMAGE_V4_PROMPT_MAX_CHARS) {
+      fail(mode, 'invalid_prompt', 'The combined image prompt exceeds 50,000 characters.', 400);
+    }
+    const reject = () => fail(mode, 'reference_not_qualified',
+      'Use owned PNG, JPEG or WebP originals up to 30 MB, at least 300 px on each side, and with an aspect ratio between 2:5 and 5:2.', 400);
+    if (!await qualifyKlingImageV4References(userId, combinedImageUrls)) reject();
+    return {
+      characterReferences, normalizedImageUrls: combinedImageUrls, combinedImageUrls, effectivePrompt,
+      storedAssetInfoByUrl: new Map(),
+    };
+  }
   if (isGptImage26EngineId(engine.id) && effectivePrompt.length > 32000) fail(mode, 'invalid_prompt', 'The combined image prompt exceeds 32000 characters.', 400);
 
   const invalidImageUrl = combinedImageUrls.find((entry) => !/^https?:\/\//i.test(entry));

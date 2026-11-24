@@ -1,3 +1,4 @@
+import { isKlingImageV4EngineId, KLING_IMAGE_V4_ENDPOINTS } from '@/lib/image/kling-image-v4';
 import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
 import { ApiError } from '@fal-ai/client';
 import { query } from '@/lib/db';
@@ -14,7 +15,9 @@ export async function resolveFalJobQueue(
   const queryFn = dependencies.queryFn ?? query;
   // Legacy requires a matching server-owned ID-only enqueue, not an absent log.
   // The job marker commits with every new V4 accepted association, before logging.
-  const rows = isKlingV4FalQueueEngineId(job.engineId)
+  const isKlingImage = isKlingImageV4EngineId(job.engineId);
+  const requiresReceipt = isKlingImage || isKlingV4FalQueueEngineId(job.engineId);
+  const rows = requiresReceipt
     ? await queryFn<{ receipt: unknown; receipt_present: boolean; receipt_required: boolean; legacy_enqueued: boolean }>(
       `SELECT proof.receipt, proof.id IS NOT NULL AS receipt_present,
            COALESCE(j.settings_snapshot ? 'falQueueReceiptRequired', FALSE) AS receipt_required,
@@ -36,7 +39,7 @@ export async function resolveFalJobQueue(
   const evidence = rows[0];
   // Missing/failed ownership or receipt reads refuse inside status/result so the
   // recovery callers retain their existing pending/retry behavior.
-  if (!isKlingV4FalQueueEngineId(job.engineId) || (evidence?.receipt_present === false
+  if (!requiresReceipt || (!isKlingImage && evidence?.receipt_present === false
     && evidence.receipt_required === false && evidence.legacy_enqueued === true)) {
     return {
       status: () => client.queue.status(job.legacyModel, { requestId: job.requestId }),
@@ -47,6 +50,9 @@ export async function resolveFalJobQueue(
   const fetchFn = dependencies.fetchFn ?? fetch;
   const read = async (kind: 'statusUrl' | 'responseUrl'): Promise<Record<string, unknown>> => {
     const receipt = readFalQueueReceipt(evidence?.receipt, job.requestId);
+    if (isKlingImage && !Object.values(KLING_IMAGE_V4_ENDPOINTS).some(endpoint => endpoint === receipt.endpoint)) {
+      throw new Error('Fal queue receipt endpoint does not match the image job.');
+    }
     const url = receipt[kind]!;
     const response = await fetchFn(url, {
       method: 'GET', redirect: 'error', headers: { Authorization: `Key ${ENV.FAL_API_KEY}` },

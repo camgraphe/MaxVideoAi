@@ -3,12 +3,14 @@ import {z} from 'zod';
 import {toolAssetRefSchema} from '@/lib/toolbox/contract';
 import {NANO21_ENGINE_ID} from '@/lib/nano-banana-2-1';
 import {isGptImage26EngineId} from '@/lib/image/gptImage26';
+import {isKlingImageV4EngineId, KLING_IMAGE_V4_MAX_REFERENCES} from '@/lib/image/kling-image-v4';
 import {isSeedreamSingleImageEngineId} from '@/lib/image/seedream';
 
 export const STUDIO_CONVERSATION_MAX_REFERENCES=8;
 /** The attachment pool precedes model selection; generation keeps its own mode limit. */
 export const STUDIO_CONVERSATION_MAX_ATTACHMENTS=MAX_GENERATION_REFERENCES;
 export function studioImageReferenceLimit(modelId?: string | null): number {
+  if (isKlingImageV4EngineId(modelId)) return KLING_IMAGE_V4_MAX_REFERENCES;
   return modelId === NANO21_ENGINE_ID ? 14 : isGptImage26EngineId(modelId) ? 16
     : modelId && isSeedreamSingleImageEngineId(modelId) ? 10 : STUDIO_CONVERSATION_MAX_REFERENCES;
 }
@@ -18,7 +20,8 @@ export function validateStudioImageReferences(value: {modelId?: string | null; r
     type: 'array', maximum, inclusive: true, path: ['references'], message: `Choose at most ${maximum} references for this image model.`});
 }
 
-export const conversationAspectRatioSchema = z.string().regex(/^(?:[1-9]\d{0,2}:[1-9]\d{0,2}|auto)$/);
+export const conversationAspectRatioPattern = /^(?:[1-9]\d{0,2}:[1-9]\d{0,2}|auto)$/;
+export const conversationAspectRatioSchema = z.string().regex(conversationAspectRatioPattern);
 const settingValue = z.union([z.string().max(4096), z.number().finite(), z.boolean(), z.null()]);
 export const conversationSettingsSchema = z.array(z.object({name: z.string().regex(/^[A-Za-z][A-Za-z0-9._-]{0,63}$/), value: settingValue}).strict()).max(32)
   .refine(values => new Set(values.map(value => value.name)).size === values.length, 'Choose each setting once.');
@@ -60,7 +63,7 @@ export const conversationSelectionProperties = {
     properties: {name: {type: 'string'}, value: {type: ['string','number','boolean','null']}}}},
   outputCount: {type: ['integer','null'], enum: [1,null],description: 'This prepares exactly one output. Multiple variants require separate requests; never describe one preparation as a two-image or batch quote.'},
 };
-export const conversationPreparationReplyProperty={type:'string',description:'Explain the direction and quote review before creation. The server computes and displays the exact price after this call; do not claim a successful preparation has no price because an earlier estimate failed, or invent an unread amount. A studio_preparation_input rejection created no quote: correct the selection within remaining Responses or explain the missing requirement.'};
+export const conversationPreparationReplyProperty={type:'string',description:'Explain the direction and quote review before creation. Leave prices and spending-limit claims to the exact quote the server computes after this call. Prior estimates cannot certify the quote or a limit. A studio_preparation_input rejection created no quote: correct the selection within remaining Responses or explain the missing requirement.'};
 export const conversationCreationPromptProperty={type:'string',description:'Write the visual direction. Preserve client-supplied visible lettering verbatim, including accents and punctuation, unless a rewrite is requested.'};
 export function conversationReferencesProperties(jobOutputs: boolean) {
   return {type: ['array','null'], items: {type: 'object', additionalProperties: false, required: ['ref','role','slot'], properties: {

@@ -7,15 +7,16 @@ import { isCrawlerUserAgent } from '@/lib/crawler-user-agent';
 import type { CinematicPresentation } from '../_lib/model-page-cinematic-data';
 
 /** Optional background motion; the server-rendered responsive image remains the cover. */
-export function ModelCinematicHeroMotion({ src, title, ui }: {
-  src: string; title: string; ui: CinematicPresentation['ui'];
+export function ModelCinematicHeroMotion({ src, title, ui, autoplay = true }: {
+  src: string; title: string; ui: CinematicPresentation['ui']; autoplay?: boolean;
 }) {
   const container = useRef<HTMLDivElement>(null);
   const video = useRef<HTMLVideoElement>(null);
   const userPaused = useRef(false);
   const manual = useRef(false);
   const [visible, setVisible] = useState(false);
-  const [automatic, setAutomatic] = useState(false);
+  const [automaticEligible, setAutomaticEligible] = useState(false);
+  const automatic = autoplay && automaticEligible;
   const [intended, setIntended] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -24,16 +25,17 @@ export function ModelCinematicHeroMotion({ src, title, ui }: {
     measureWaiting, measurePause, restartMeasurement } = usePublicVideoPlayback('model');
 
   useEffect(() => {
+    if (!autoplay) return;
     const desktop = window.matchMedia('(min-width: 768px)');
     const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
     const connection = (navigator as Navigator & { connection?: EventTarget & { saveData?: boolean } }).connection;
-    const update = () => setAutomatic(desktop.matches && !motion.matches && !connection?.saveData && !isCrawlerUserAgent(navigator.userAgent));
+    const update = () => setAutomaticEligible(desktop.matches && !motion.matches && !connection?.saveData && !isCrawlerUserAgent(navigator.userAgent));
     update();
     desktop.addEventListener('change', update);
     motion.addEventListener('change', update);
     connection?.addEventListener('change', update);
     return () => { desktop.removeEventListener('change', update); motion.removeEventListener('change', update); connection?.removeEventListener('change', update); };
-  }, []);
+  }, [autoplay]);
 
   useEffect(() => {
     let inView = false;

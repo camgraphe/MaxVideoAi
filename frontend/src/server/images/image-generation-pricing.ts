@@ -1,3 +1,4 @@
+import { isKlingImageV4EngineId } from '@/lib/image/kling-image-v4';
 import { NANO21_ENGINE_ID, normalizeNano21Settings, assertNano21Scenario } from '@/lib/nano-banana-2-1';
 import { isGptImage26EngineId } from '@/lib/image/gptImage26';
 import { LIVE_MEMBERSHIP_POLICY } from '@/lib/membership-policy';
@@ -51,6 +52,9 @@ export async function resolveImageGenerationPricingSnapshot(params: {
       ? params.combinedImageCount
       : undefined;
   const nano21 = params.engine.id === NANO21_ENGINE_ID ? normalizeNano21Settings(params) : null;
+  if (isKlingImageV4EngineId(params.engine.id) && params.billingProductKey) {
+    throw new Error('Kling Image 4.0 requires its own exact customer tariff.');
+  }
   if (nano21 && params.billingProductKey) throw new Error('Nano Banana 2.1 requires its own exact customer tariff.');
   if (isGptImage26EngineId(params.engine.id) && params.billingProductKey) throw new Error('GPT Image 2.6 requires its own exact customer tariff.');
   if (nano21) assertNano21Scenario({ ...nano21, mode: params.mode, referenceImageCount: params.combinedImageCount, outputCount: params.numImages, aspectRatio: params.resolvedAspectRatio });
@@ -74,7 +78,7 @@ export async function resolveImageGenerationPricingSnapshot(params: {
         quality: params.quality,
         complexity: params.complexity,
         referenceImageCount,
-        ...(isSeedreamEngineId(params.engine.id) ? { inputImageCount: params.mode === 'i2i' ? params.combinedImageCount : 0 } : {}),
+        ...(isSeedreamEngineId(params.engine.id) || isKlingImageV4EngineId(params.engine.id) ? { inputImageCount: params.mode === 'i2i' ? params.combinedImageCount : 0 } : {}),
         membershipTier,
         currency: DISPLAY_CURRENCY,
         addons: params.enableWebSearch ? { enable_web_search: true } : undefined,

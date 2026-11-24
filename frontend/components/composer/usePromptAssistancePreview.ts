@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useLayoutEffect,useReducer, useRef, useState } from 'react';
 import { canApplyProposal, proposalReviewContext, canUndoProposal, canReviewProposal,canApplyReviewedProposal, createPreviewState, previewReducer,type PreviewMessage } from '@/lib/prompt-assistance/preview-state';
-import {PROMPT_ASSISTANCE_LIVE,type PromptAssistanceDraftContext} from '@/lib/prompt-assistance/contract';
+import {PROMPT_ASSISTANCE_LIVE,type PromptAssistanceDraftContext,type PromptPickerRole} from '@/lib/prompt-assistance/contract';
 import {PROMPT_ASSISTANCE_TEXT_MAX_CHARS} from '@/lib/prompt-assistance/limits';
 import type {StudioAssistanceStatus} from '@/lib/studio/assistance-contract';
 import {usePromptAssistanceTransport} from './usePromptAssistanceTransport';
@@ -10,8 +10,8 @@ import {canonicalPromptDraft,promptSessionScope,lastCompletedPromptRequestId} fr
 import {promptWritingModeStorageKey,readPromptWritingMode,writePromptWritingMode} from './prompt-writing-mode-storage';
 
 /** Scope owns the conversation (account/workspace); context changes only invalidate suggestions. */
-export type PromptAssistanceContext = { accountKey?:string; scopeKey: string; reviewKey?:string; contextKey: string; live?:PromptAssistanceDraftContext };
-export function usePromptAssistancePreview({ accountKey, scopeKey, reviewKey, contextKey, live, locale='en', draftText, target, onApplyText, maxLength, blocked, perceptionRevision=0 }: PromptAssistanceContext & {
+export type PromptAssistanceContext = { accountKey?:string; scopeKey: string; reviewKey?:string; contextKey: string; live?:PromptAssistanceDraftContext; referencePicker?:PromptPickerRole[] };
+export function usePromptAssistancePreview({ accountKey, scopeKey, reviewKey, contextKey, live, referencePicker, locale='en', draftText, target, onApplyText, maxLength, blocked, perceptionRevision=0 }: PromptAssistanceContext & {
   locale?:string; perceptionRevision?:number;
   draftText: string; target: 'prompt' | 'script' | 'lyrics'; onApplyText: (text: string) => void; maxLength?: number; blocked?: boolean;
 }) {
@@ -127,7 +127,7 @@ export function usePromptAssistancePreview({ accountKey, scopeKey, reviewKey, co
     const id=++sequence.current;
     const activeSuggestion=state.proposal?.revision===state.revision&&state.proposal.text.trim()?state.proposal.text:undefined;
     const review=applicationContext?async()=>{const [draftFingerprint,compatibilityFingerprint]=await Promise.all([hash(currentDraft),hash(applicationContext.compatibilityKey)]);return {version:1 as const,draftFingerprint,compatibilityFingerprint,compatible:true,settings:applicationContext.settings};}:undefined;
-    if(PROMPT_ASSISTANCE_LIVE&&(!live||!transport.send({...(selection?{assistanceModel:selection.selectedModel,assistanceRevision:selection.revision}:{}),draftRevision:state.revision,locale:locale.startsWith('fr')?'fr':locale.startsWith('es')?'es':'en',message:state.message.trim(),draft:{...live,text:draftText,target},...(activeSuggestion?{activeSuggestion}:{})},id,review)))return;
+    if(PROMPT_ASSISTANCE_LIVE&&(!live||!transport.send({...(selection?{assistanceModel:selection.selectedModel,assistanceRevision:selection.revision}:{}),referencePicker,draftRevision:state.revision,locale:locale.startsWith('fr')?'fr':locale.startsWith('es')?'es':'en',message:state.message.trim(),draft:{...live,text:draftText,target},...(activeSuggestion?{activeSuggestion}:{})},id,review)))return;
     setAppliedPrompt(null);
     sampleDraft.current = draftText;
     dispatch({ type: 'send', id, message: state.message.trim() });

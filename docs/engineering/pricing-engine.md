@@ -1,5 +1,25 @@
 # Pricing Engine
 
+## Kling 4.0 native 4K tariffs (2026-11-23)
+
+Kling 4.0 sends `resolution: "4k"` for native SDR output on its four existing fal
+endpoints. For text-to-video, image-to-video and reference without video input,
+fal lists $0.549 per output second. Reference with video inputs or video elements
+and Edit use $0.329 per billable second, where billable seconds are
+`max(input + output, 2 × output)`. The standard owned-media timing checks also
+apply to 4K. [Text](https://fal.ai/models/kling/v4/text-to-video),
+[image](https://fal.ai/models/kling/v4/image-to-video),
+[reference](https://fal.ai/models/kling/v4/reference-to-video),
+[edit](https://fal.ai/models/kling/v4/video-to-video/edit).
+
+The canonical tariff reader requires a current active literal 4K cell.
+The approved ×1.50 recipe supplies 113 versioned cells in
+`frontend/config/kling-v4-customer-tariffs.json`, scoped to native SDR 4K. It
+compiles output-only rows to fixed USD cents and source-video rows to a
+literal 49.35¢/billable-second term with upward final cent rounding.
+The launch adds the new resolution without updating existing database
+cells. Future edits follow the [native batch workflow](pricing-admin-batches.md#kling-40-native-4k).
+
 ## Seedance 2.5 / Flash commercial candidate (2026-11-13)
 
 The approved authoring inputs are public BytePlus LIST ×2 for every standard 2.5
@@ -74,6 +94,42 @@ canonical selectors and revisioned cells as billing, including continuous
 Inactive or missing V4 cells refuse a quote; no legacy policy can supply a retail
 amount. No cell is seeded or activated by this integration. See the
 [current release and QA boundary](../launch/kling-v4/INTEGRATION-2026-10-25.md).
+
+## Kling Image 4.0 launch qualification (2026-11-23)
+
+Kling Image uses Fal's exact 2K, 4K and 8K choices. A request for one output sends
+`result_type: "single"`. Counts 2–10 send `result_type: "series"` and an explicit
+`series_amount`. The ordered input list accepts 1–10 owned originals in Edit
+and zero references in Text to Image. Auto series counts and standalone batch
+variants are outside the launch. Studio's certified image workflows keep their
+single-output contract.
+
+Fal lists USD 0.063 per 2K output, USD 0.094 per 4K output, and USD 0.157
+per 8K output for both modes. Image to Image adds USD 0.003 per input
+reference, counted once for the request. The published schedule agrees
+with the measured quantities of the 2K single and series, 4K single and
+2K one-reference editorial requests. It is used as a LIST estimate.
+The measured requests do not establish the account invoice or 8K execution.
+
+The approved customer rates are 9.45¢, 14.10¢ and 23.55¢ per output,
+with 0.45¢ per reference in Edit and one upward rounding at the end.
+The six literal quantity cells in `frontend/config/kling-v4-customer-tariffs.json`
+use `durationSec: "continuous"` per mode and resolution and
+`inputImageCount: "continuous"` for Edit. An exact fixed-quantity cell
+remains reviewable in Admin. The Quote database must be active. Each
+quote binds the requested output quantity and the total ordered input
+count. Missing active cells make quotation unavailable across workspace,
+Studio, MCP, and the public pages.
+
+Kling Image submits once and records its accepted Fal queue receipt for
+webhook and polling recovery. A signed callback can recover a lost
+acknowledgement. Completion persists the ordered images and responsive copies
+in MaxVideoAI storage. An incomplete result follows the wallet failure
+settlement path. No Fal generation was required for the disposable PostgreSQL
+and payload/response contract tests.
+
+[Text to Image pricing](https://fal.ai/models/kling/v4/text-to-image) and
+[Image to Image pricing](https://fal.ai/models/kling/v4/image-to-image) were checked on 2026-11-23.
 
 ## Fixed image tool product reservations
 

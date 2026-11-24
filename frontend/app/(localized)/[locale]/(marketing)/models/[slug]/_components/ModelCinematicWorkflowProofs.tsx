@@ -50,6 +50,6 @@ export function ModelCinematicWorkflowProofs({ presentation, workspaceHref }: { 
         </div>
       </div></article>;
     })}
-    {!examples.gallery ? <div className="cinema-workflow-source cinema-wrap"><a href={workflows.source.href} target="_blank" rel="noopener noreferrer">{workflows.source.label}<CinematicArrow direction="external" /></a></div> : null}
+    {!examples.gallery && workflows.source ? <div className="cinema-workflow-source cinema-wrap"><a href={workflows.source.href} target="_blank" rel="noopener noreferrer">{workflows.source.label}<CinematicArrow direction="external" /></a></div> : null}
   </section>;
 }

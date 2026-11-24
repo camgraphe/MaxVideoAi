@@ -1,7 +1,7 @@
 import type { EngineCaps, EngineInputField } from '../../../types/engines';
 import type { RawFalEngineEntry } from './types';
 
-// Provider schema verified 2026-10-25. Publication and execution remain independently closed.
+// The 2026-11-19 fal update adds native 4K to the existing four routes.
 export const KLING_V4_PROMPT_MAX_CHARS = 26000;
 export const KLING_V4_ID = 'kling-v4' as const;
 export const KLING_V4_MODES = ['t2v', 'i2v', 'ref2v', 'v2v'] as const;
@@ -10,7 +10,7 @@ export const KLING_V4_ENDPOINTS = {
   ref2v: 'kling/v4/reference-to-video', v2v: 'kling/v4/video-to-video/edit',
 } as const;
 export const KLING_V4_DURATIONS = Array.from({ length: 28 }, (_, index) => String(index + 3));
-export const KLING_V4_RESOLUTIONS = ['720p', '1080p'] as const;
+export const KLING_V4_RESOLUTIONS = ['720p', '1080p', '4k'] as const;
 export const KLING_V4_ASPECT_RATIOS = ['16:9', '9:16', '1:1', '21:9'] as const;
 const modes = [...KLING_V4_MODES];
 const imageInput: Partial<EngineInputField> = {
@@ -60,8 +60,7 @@ export const KLING_V4_ENGINE: EngineCaps = {
     constraints: { ownedAssetModes: ['i2v', 'ref2v', 'v2v'], minImageSidePx: 300, maxImageSizeMB: 30, maxVideoSizeMB: 300, maxCombinedVideoDurationSec: 30, combinedDurationModes: ['ref2v'] },
   },
   // Source rates and input-video billing are owned by the dedicated pricing adapter.
-  // An unpublished contract supplies neither a customer tariff nor a price hint.
-  updatedAt: '2026-10-25T20:58:10Z', ttlSec: 600,
+  updatedAt: '2026-11-19T00:00:00Z', ttlSec: 600,
   providerMeta: { provider: 'kling', modelSlug: KLING_V4_ENDPOINTS.t2v },
   brandId: 'kling', modeCaps,
 };

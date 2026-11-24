@@ -1,8 +1,8 @@
 # Admin tariff batches
 
 The optional **Tariff batches** section in `/admin/pricing` authors literal prices
-for either the complete 226-class Kling 4 domain, the 72-class Kling 4.0 Flash
-domain, or an explicitly selected subset of one model. GPT Image 2.6 Flare and
+for explicitly selected classes of one model. Kling 4.0 has 339 classes split
+across 720p, 1080p and native 4K. Each resolution has 113 classes. GPT Image 2.6 Flare and
 Sunburst each retain 1,020 exact image classes and add 24 separately reviewed raster
 classes, imported in groups of at most 226. It
 neither publishes the model nor enables generation. The existing unit editor and
@@ -33,8 +33,8 @@ already committed prices.
 
 `server/pricing-admin/tariff-batches/` owns the workflow:
 
-- `kling.ts` adapts canonical scenarios, deduplicates continuous Modify into two
-  Kling 4 classes, and compiles LIST recipes using decimal integer arithmetic.
+- `kling.ts` adapts canonical scenarios, deduplicates continuous Modify into one
+  Kling 4.0 class per resolution, and compiles LIST recipes using decimal integer arithmetic.
   Flash has 54 fixed classes and 18 continuous reference-video classes, with its
   own supplier rates, source date and 20-second aggregate input bound. Supplier
   provenance is bound to the selected model in the operation fingerprint.
@@ -139,6 +139,17 @@ imports use `gptImage26TariffScenarios()`. This example selects the 5-second 720
 Continuous prices use `kind=unit_terms`, `rounding=up`, and one term with
 `unit=billable_seconds` and a literal `centsPerUnit`. Supply continuous selectors
 from the canonical options; do not enumerate sampled input durations.
+
+### Kling 4.0 native 4K
+
+The initial ×1.50 tariffs are versioned with the 4K release. In Admin Pricing,
+select **Kling 4**, resolution **4k**, and **Select visible classes** to review
+the same 113 native SDR 4K classes. There are 84 fixed output-only cells,
+28 reference-video cells with a fixed output duration and one continuous Edit
+cell. The recipe uses 82.35¢ per output second or 49.35¢ per billable second.
+The reference-video and Edit meter uses `max(input + output, 2 × output)` on
+measured source durations. The recipe rounds the total up once to USD cents.
+A missing-only batch with the launch rates reports all 113 cells as unchanged.
 
 GPT Image 2.6 raster proposals instead use three literal terms: 0.0045 cents per
 output-image token, 1.5 cents per output and 3 cents per reference per output.

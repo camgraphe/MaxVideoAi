@@ -1,3 +1,5 @@
+import { KLING_IMAGE_V4_ENDPOINTS } from '@/lib/image/kling-image-v4';
+
 /** Server-produced queue identity. Never accept this object from a generation request. */
 export type FalQueueReceipt = {
   requestId: string;
@@ -9,6 +11,7 @@ export type FalQueueReceipt = {
 };
 
 const V4_ENDPOINTS = new Set([
+  ...Object.values(KLING_IMAGE_V4_ENDPOINTS),
   'kling/v4/flash/text-to-video',
   'kling/v4/flash/image-to-video',
   'kling/v4/flash/reference-to-video',

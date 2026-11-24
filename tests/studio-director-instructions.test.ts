@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import {STUDIO_CONVERSATION_REPLY_MAX_CHARS} from '../frontend/src/lib/studio/conversation-reply';
+import {MILO_LEVELS} from '../frontend/src/lib/studio/assistance-contract';
 import {createStudioConversationDirector} from '../frontend/src/server/studio/conversation-director';
 import {buildStudioDirectorInstructions} from '../frontend/src/server/studio/conversation-director-instructions';
 import {MILO_SCOPE_INSTRUCTIONS} from '../frontend/src/server/studio/milo-scope';
@@ -16,10 +18,62 @@ test('legacy assistance explains its introductory allowance while export help fo
 
 test('mobile Studio guides people to the phone workspaces and identifies web Studio actions', () => {
   const instructions = buildStudioDirectorInstructions({clientSurface:'mobile'});
+  assert.match(instructions, /Add references.*if grouped, Photos\/Videos → camera, Phone gallery or MaxVideoAI library/);
+  assert.match(instructions, /Audio → file, mic or library/);
+  assert.match(instructions, /Older menu: Choose a video \/ Choose a photo by type, or Library if shown/);
+  assert.match(instructions, /× Remove \[name\] keeps draft text; \+ attach new file, then send. No copy, screenshot or model needed/);
+  assert.doesNotMatch(instructions, /Add to conversation/);
   assert.match(instructions, /Video, Image or Audio/);
-  assert.match(instructions, /Video > Modify uses a phone clip/);
-  assert.match(instructions, /approve Studio media actions, edit the timeline and export in web Studio/);
+  assert.match(instructions, /Modify edits a clip, Extend continues/);
+  assert.match(instructions, /confirm price via generation button if shown/);
+  assert.match(instructions, /else same project in web Studio/);
+  assert.match(instructions, /Join\/export\/specialized recipes: web only/);
   assert.doesNotMatch(instructions, /drag to Message Milo/);
+});
+
+test('Studio extension guidance follows this project’s timeline and export tools on web and phone', async () => {
+  for (const clientSurface of [undefined, 'mobile'] as const) {
+    for (const editingEnabled of [false, true]) {
+      for (const exportsEnabled of [false, true]) {
+        const director = createStudioConversationDirector({
+          clientSurface, mediaEnabled: true, editingEnabled, exportsEnabled, assistanceCreditsEnabled: true,
+          createResponse: async params => {
+            const rules = String(params.instructions);
+            const tools = params.tools?.flatMap(tool => tool.type === 'function' ? [tool.name] : []) ?? [];
+            assert.ok(rules.replace(MILO_SCOPE_INSTRUCTIONS, '').length < 8500, 'Keep extension help within the existing director budget.');
+            assert.match(rules, /model_details.*extend mode, extensionOutput=continuation returns only the new clip.*absent means unverified/);
+            assert.equal(tools.includes('timeline_read'), editingEnabled);
+            assert.equal(tools.includes('timeline_edit'), editingEnabled);
+            assert.equal(tools.includes('export_prepare'), exportsEnabled);
+            assert.equal(rules.includes('check the same project’s web timeline'), editingEnabled);
+            assert.equal(rules.includes('already be placed. Add only missing clips in order'), editingEnabled);
+            assert.equal(rules.includes('Do not suggest assembling clips'), !editingEnabled);
+            assert.equal(rules.includes('offer a web export once the saved sequence contains the requested clips'), exportsEnabled);
+            assert.equal(rules.includes('Do not offer a sequence export'), !exportsEnabled);
+            if (clientSurface === 'mobile') {
+              assert.match(rules, /Save copies only this file to your chosen folder/);
+              assert.match(rules, /Share downloads it and opens the system share sheet/);
+              assert.match(rules, /Options vary. Never assume Photos, Gallery or Downloads/);
+              assert.match(rules, /Join\/export\/specialized recipes: web only/);
+            } else {
+              assert.doesNotMatch(rules, /Save copies only this file|system share sheet|Older menu|Phone gallery/);
+            }
+            return {id: 'extension-help', model: 'gpt-6-luna', status: 'completed', service_tier: 'default',
+              usage: null, output: [], output_text: '{"reply":"Fixture reply."}'};
+          },
+          model: 'gpt-6-luna',
+        });
+        const result = await director({
+          message: 'Por ahora solo quiero guardar la continuación. Si pulso Save en su ficha de Library, ¿qué archivo se guarda y dónde?',
+          project: {name: 'Wan 3', revision: 1, memory: {revision: 0, brief: '', decisions: []}},
+          history: [{message: '¿Puedo guardar el original y la continuación de Wan 3 en un solo vídeo?', reply: 'Son dos clips en el proyecto.'}],
+          references: [], checkpoint: async (_, create) => create(),
+          execute: async () => { throw new Error('This guidance fixture cannot change the project.'); },
+        });
+        assert.equal(result.reply, 'Fixture reply.');
+      }
+    }
+  }
 });
 
 // These are the request-envelope contracts, not a claim to test artistic judgment.
@@ -49,7 +103,8 @@ test('director sends creative purpose, current help and live quote rules with it
       assert.match(instructions,/Studio help/);
       assert.match(instructions,/account.*billing.*wallet transfer/i);
       assert.match(instructions,/\[Support\]\(https:\/\/maxvideoai\.com\/contact\)/);
-      assert.match(instructions,/Open library/);
+      assert.match(instructions,/Open library.*Import.*Add to conversation and send/);
+      assert.doesNotMatch(instructions,/Choose a photo or Library/);
       assert.ok(instructions.replace(MILO_SCOPE_INSTRUCTIONS,'').length<8500,`Keep creative guidance within its existing budget; received ${instructions.replace(MILO_SCOPE_INSTRUCTIONS,'').length} characters, exact model facts belong in tools.`);
       assert.ok(MILO_SCOPE_INSTRUCTIONS.length<800,'The shared product boundary has its own bounded budget.');
       assert.ok(instructions.length<9300,'Keep the combined permanent guidance bounded.');
@@ -96,4 +151,83 @@ test('the final response knows its remaining budget without losing executable to
     checkpoint:async(_,create)=>create(),execute:async()=>({ok:true,action:'project.read',data:project})});
   assert.equal(calls,4);
   assert.equal(result.reply,'Here is the price and a useful next step.');
+});
+
+test('all Milo levels receive the scoped creative offer rule and the conversation on web and mobile', async () => {
+  const titles = {message:'Give the three shots short titles text only', reply:'Cold Sparks · Blue Ice · First Light'};
+  const offer = {message:'Give the first shot a darker look', reply:'Keep the ice in shadow. Shall I prepare a quote for Cold Sparks?'};
+  const project = {name:'Fireflies', revision:1, memory:{revision:0, brief:'', decisions:[]}};
+  const pendingQuote = {quoteId:'first-firefly-quote', surface:'video', quoteState:'prepared', jobId:null, status:null};
+  for (const {model} of Object.values(MILO_LEVELS)) {
+    for (const clientSurface of [undefined, 'mobile'] as const) {
+      for (const {message, history, generations = []} of [
+        {message:offer.message, history:[]},
+        {message:offer.message, history:[titles]},
+        {message:'Yes, please.', history:[titles, offer]},
+        {message:'Yes, please.', history:[{message:'Help with the audio.', reply:'Shall I write a voiceover for the opening shot?'}]},
+        {message:'Yes, please.', history:[{message:'Change the mood.', reply:'Shall I explore a warmer version of the scene?'}]},
+        {message:'No quote, thanks.', history:[offer]},
+        {message:offer.message, history:[{message:'Keep this whole project text only.', reply:'Understood.'}]},
+        {message:'Remind me of the direction for the quoted shot.', history:[offer], generations:[pendingQuote]},
+      ]) {
+        let checked = false;
+        const director = createStudioConversationDirector({model, clientSurface, mediaEnabled:true, createResponse:async params => {
+          assert.equal(params.model, model);
+          const rules = String(params.instructions);
+          assert.match(rules, /answer first, then ask one natural next-step question tied to this project/);
+          assert.match(rules, /explore, write, develop visuals or help produce/);
+          assert.match(rules, /Quote only when pricing or production fits the client's intent/);
+          assert.match(rules, /Respect text-only, refusals, closing remarks and existing quotes/);
+          assert.match(rules, /Generation needs separate client confirmation/);
+          assert.equal(params.text?.format?.type, 'json_schema');
+          if (params.text?.format?.type === 'json_schema')
+            assert.deepEqual(params.text.format.schema.required, ['reply', 'nextStepOffer']);
+          const input = params.input as Array<{role?:string;content?:unknown}>;
+          const facts = input.find(item => item.role === 'developer' && typeof item.content === 'string' && item.content.startsWith('Current project facts'));
+          assert.ok(facts && typeof facts.content === 'string');
+          assert.deepEqual(JSON.parse(facts.content.slice(facts.content.indexOf('{'))).generations, generations);
+          if (history.length) {
+            assert.equal(input.at(-2)?.role, 'developer');
+            assert.match(String(input.at(-2)?.content), /Earlier text-only requests for particular deliverables are fulfilled/);
+            assert.match(String(input.at(-2)?.content), /give the new direction and ask a small creative follow-up/);
+            assert.match(String(input.at(-2)?.content), /write the offered text, explore the offered variation, or prepare the offered quote/);
+            assert.match(String(input.at(-2)?.content), /After delivering an accepted suggestion, let the result stand/);
+          }
+          const previousTurns = input.slice(0, -1).filter(item => item.role === 'user' || item.role === 'assistant');
+          assert.deepEqual(previousTurns, history.flatMap(turn => [
+            {role:'user', content:turn.message}, {role:'assistant', content:turn.reply},
+          ]));
+          assert.deepEqual(input.at(-1), {role:'user', content:[{type:'input_text', text:message}]});
+          const tools = params.tools?.flatMap(tool => tool.type === 'function' ? [tool.name] : []) ?? [];
+          assert.ok(tools.includes('video_prepare'));
+          assert.ok(!tools.some(name => /confirm|purchase/.test(name)));
+          checked = true;
+          return {id:'creative-turn', model, status:'completed', service_tier:'default', usage:null, output:[], output_text:'{"reply":"Fixture reply."}'};
+        }});
+        await director({message, history, project:{...project, generations}, references:[], checkpoint:async (_, create) => create(),
+          execute:async () => { throw new Error('No tool call in this envelope fixture.'); }});
+        assert.ok(checked);
+      }
+    }
+  }
+});
+
+test('Studio delivers the offer in conversation text, preserves legacy replies and keeps a complete answer at the limit', async () => {
+  const direction = 'Frame the opening shot at ice level.';
+  const question = 'Should I price that opening shot?';
+  const full = 'x'.repeat(STUDIO_CONVERSATION_REPLY_MAX_CHARS);
+  for (const [envelope, expected] of [
+    [{reply:direction, nextStepOffer:question}, direction + '\n\n' + question],
+    [{reply:direction, nextStepOffer:null}, direction],
+    [{reply:direction}, direction],
+    [{reply:full, nextStepOffer:question}, full],
+  ] as const) {
+    const director = createStudioConversationDirector({createResponse:async () => ({
+      id:'result', model:'gpt-6.1-sol', status:'completed', service_tier:'default', usage:null, output:[], output_text:JSON.stringify(envelope),
+    })});
+    const result = await director({message:'Give the opening shot a darker look.', history:[], references:[],
+      project:{name:'Ice', revision:1, memory:{revision:0, brief:'', decisions:[]}},
+      checkpoint:async (_, create) => create(), execute:async () => { throw Error('Unexpected action'); }});
+    assert.deepEqual(result, {reply:expected, image:null});
+  }
 });

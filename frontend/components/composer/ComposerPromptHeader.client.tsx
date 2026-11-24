@@ -4,7 +4,7 @@ import clsx from 'clsx';
 import type { ReactNode } from 'react';
 import { ComposerPromptClear } from './ComposerPromptClear.client';
 
-export function ComposerPromptHeader({ promptId, promptLabel, prompt, onPromptChange, promptMaxChars, promptTooLong, multiPromptEnabled, multiPromptAction, locale, hideLabel = false }: {
+export function ComposerPromptHeader({ promptId, promptLabel, prompt, onPromptChange, promptMaxChars, promptTooLong, multiPromptEnabled, multiPromptAction, dictation, locale, hideLabel = false }: {
   promptId: string;
   promptLabel: string;
   hideLabel?: boolean;
@@ -14,6 +14,7 @@ export function ComposerPromptHeader({ promptId, promptLabel, prompt, onPromptCh
   promptTooLong: boolean;
   multiPromptEnabled: boolean;
   multiPromptAction?: ReactNode;
+  dictation?: ReactNode;
   locale: string;
 }) {
   return <div className="flex w-full items-center justify-between gap-2">
@@ -28,6 +29,7 @@ export function ComposerPromptHeader({ promptId, promptLabel, prompt, onPromptCh
       ) : null}
     </div>
     <div className="flex shrink-0 items-center gap-1">
+      {dictation}
       {multiPromptAction}
       {!multiPromptEnabled ? <ComposerPromptClear prompt={prompt} onPromptChange={onPromptChange} inputId={promptId} locale={locale} /> : null}
     </div>

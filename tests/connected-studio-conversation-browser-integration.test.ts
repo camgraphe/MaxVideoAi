@@ -10,6 +10,8 @@ import {STUDIO_FIXTURE_OWNERS} from './helpers/studio-auth-fixture';
 import {postStudioMcpRequest,readStudioMcpResponse} from './helpers/studio-mcp-http-fixture';
 import {STUDIO_PRIVATE_MEDIA_HOST,STUDIO_PRIVATE_MEDIA_KEYS} from './helpers/studio-private-storage-fixture';
 
+import {finalWords,installSpeechFixture} from './helpers/browser-speech-recognition';
+
 const browserName = process.env.STUDIO_BROWSER_ENGINE ?? 'chromium';
 const referenceIds=['ma_'+'e'.repeat(32),'ma_'+'f'.repeat(32)];
 const referenceUrls=referenceIds.map((_,index)=>`https://cdn.maxvideoai.com/studio-local-fixture/reference-${index}.webp`);
@@ -33,6 +35,7 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
     browser = await startStudioConnectedBrowserFixture({runtime,browserName});
     const owned = await browser.newContext(session,{viewport: {width: 1440,height: 900},locale: 'en-US',reducedMotion: 'reduce'});
     const page = owned.page;
+    await installSpeechFixture(page);
     async function openFilm(target=page) {
       if(target.viewportSize()!.width<768&&!await target.getByRole('dialog',{name:'Film tools',exact:true}).isVisible())await target.getByRole('button',{name:'Open film tools',exact:true}).click();
     }
@@ -301,6 +304,15 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
     await page.setViewportSize({width:390,height:844});
     await expect(message).toBeVisible();
     await expect(page.getByRole('button',{name:'References · 2 attached',exact:true})).toBeVisible();
+    const referenceDraft = await message.inputValue();
+    page.on('request',recordStarterRequest);
+    await page.getByRole('button',{name:'Dictate',exact:true}).click();
+    await finalWords(page,'under blue light');
+    await expect(message).toHaveValue(referenceDraft.trimEnd()+' under blue light');
+    await expect(page.getByRole('button',{name:'References · 2 attached',exact:true})).toBeVisible();
+    await message.fill(referenceDraft);
+    page.off('request',recordStarterRequest);
+    assert.deepEqual(starterRequests,[],'Dictation only edits the draft with the currently attached references.');
     await proof('media-dock-mobile-compact');
     await page.getByRole('button',{name:'References · 2 attached',exact:true}).click();
     await expect(shelf.getByRole('button',{name:'Mention in message',exact:true})).toBeVisible();

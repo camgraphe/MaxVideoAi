@@ -25,6 +25,16 @@ test('Studio explicit shot plan reaches canonical request and exact paid body wi
  assert.ok(studioVisualCapabilityDetails(candidate).modes.find(mode=>mode.mode==='t2v')!.settings.some(setting=>setting.type==='multi_prompt'));
  assert.ok(Object.hasOwn(STUDIO_MEDIA_DIRECTOR_TOOLS.find(tool=>tool.name==='video_prepare')!.properties,'shotPlan'));
 });
+
+test('Studio discovery and preparation preserve a requested Kling 4.0 4K resolution', async () => {
+ const details = studioVisualCapabilityDetails(candidate);
+ assert.ok(details.surface !== 'audio');
+ assert.deepEqual(details.modes.find(mode => mode.mode === 't2v')?.settings.find(setting => setting.key === 'resolution')?.values, ['720p', '1080p', '4k']);
+ const request = await studioMediaRequest(actor, { ...action, settings: [{ name: 'resolution', value: '4k' }] } as never, input, factories, true) as CanonicalGenerationRequest;
+ const body = buildPaidVideoRequestBody({ request, engine: KLING_V4_ENGINE, quoteId: 'local', canonicalPricing: { membershipTier: 'member' } });
+ assert.equal(request.settings.resolution, '4k');
+ assert.equal(body.resolution, '4k');
+});
 test('Studio rejects ambiguous prompts, fractional shots, mismatching totals and edit shots before any paid call',async()=>{
  for(const patch of [{prompt:'Conflicting direction'},{mode:'v2v'},{shotPlan:[{prompt:'Scene',durationSec:3.5}]},{settings:[{name:'durationSec',value:5}]},{shotPlan:[{prompt:'',durationSec:3}]},{shotPlan:[{prompt:'long',durationSec:31}]}]){
   await assert.rejects(studioMediaRequest(actor,{...action,...patch} as never,input,factories,true));

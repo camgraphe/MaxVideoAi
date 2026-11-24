@@ -1,0 +1,53 @@
+{
+  "modelSlug": "kling-image-v4",
+  "recipes": [
+    {
+      "id": "kling-image-4-bus-shelter-poster",
+      "mode": "t2i",
+      "resolution": "2K",
+      "aspectRatio": "2:3",
+      "numImages": 1,
+      "prompt": "Photograph a real-looking bus shelter on a dry neighbourhood street in late-morning side light. The subject is the printed advertisement mounted in the shelter's vertical panel. Use a 40 mm street-photography perspective from the pavement, only a few degrees off front-on. Frame all four edges of the panel and enough roof, bench, kerb and brickwork to make its location obvious. Let the panel take roughly two-thirds of the frame width, with the print in sharp focus. The dark metal frame is slightly scuffed at its base. The glass is clear over all lettering.\n\nThe ad is for a neighbourhood shoe repair shop. Lay it out on vivid chartreuse matte paper, using deep green ink and a bold, condensed sans-serif. Give the type wide margins and align both text groups left. Set the large headline once, following the exact line break and punctuation below.\n\n\"I CAN WALK\nFROM HERE.\"\n\nLeave a clear gap below the headline. Set \"SHOE REPAIR\" once at the bottom left in smaller capitals. Print the words and the final period without the quotation marks. The artwork consists only of these two text groups on the single flat colour. Keep the rest of the scene free of readable signs, logos and extra lettering.\n\nOn the narrow right side of the frame, a stylish adult in an ink-blue work jacket, wide slate trousers and worn leather sneakers steps away along the pavement, a burnt-orange shoulder bag swinging behind the hip. Catch a natural mid-stride, with clear dry shadows and a warm edge of sun on the jacket. Keep the person beside the panel with the entire headline and small line clear. Make the setting feel inhabited through the worn paving and the light on the brick, as in a candid photograph taken on an ordinary morning."
+    },
+    {
+      "id": "kling-image-4-pop-up-series",
+      "mode": "t2i",
+      "resolution": "2K",
+      "aspectRatio": "3:2",
+      "numImages": 3,
+      "prompt": "Deliver exactly three separate 3:2 campaign images in the order below. They follow Inès, a 28-year-old designer, during an impromptu fitting at an independent streetwear pop-up. Inès has a short blunt black bob with one apricot-coloured strand over her left brow, a silver ear cuff on her right ear, freckles across her nose and a direct gaze. She wears the same original cobalt-blue cropped jacket in every shot: matte fabric, three broad horizontal quilt channels, a visibly off-centre silver zip and plain unmarked sleeves. Keep the face, ear cuff and jacket construction consistent across all views. The styling is deliberate and current, with wide charcoal trousers and boxy white shoes, no visible branding.\n\n1. Wide, low 24 mm shot outside the gallery. Inès steps off an orange shipping crate as if testing the jacket in motion. Photograph the full outfit in clear afternoon sun. A sharp cast shadow cuts across the pale concrete steps. Use strong geometric diagonals and plenty of room around the body.\n\n2. Steep overhead view from above the cutting table. Inès sits on an orange stool with both forearms on the matte orange tabletop, taking a folded paper pattern out of a sleeve cuff. Put her face and the plain outer panel of her left sleeve in the same frame. Use diffuse north-window light, soft shadows and clean, readable fabric seams. This is the source image for the later sleeve edit.\n\n3. Tight angle just below eye height at the entrance after dark. Inès glances back towards someone arriving, her face and asymmetric collar caught by direct white flash against a deep plum entrance. Keep the apricot strand, collar construction and silver cuff recognizable. Compose a confident diagonal running from the collar towards her eye.\n\nEach result is a single complete image. Clear faces, purposeful gestures, dry surfaces and contemporary editorial finish. Keep the scene free of writing, brand marks and extra outfits."
+    },
+    {
+      "id": "kling-image-4-sleeve-edit",
+      "mode": "i2i",
+      "resolution": "2K",
+      "aspectRatio": "3:2",
+      "numImages": 1,
+      "prompt": "Edit @Image1 in place. Add one small graphic motif to the outer upper arm of Inès's right sleeve, on the right side of the image. Place it on the visible cobalt fabric above the bend of the elbow. The motif consists of six pale-ivory squares in two staggered rows of three. Treat it as a matte screen print sitting inside that panel. Allow the squares to follow the existing folds, and leave a clear cobalt border between the motif and the sleeve seams, cuff and elbow.\n\nMatch the reference framing and light. Preserve Inès's face, hands and hair, the other sleeve, every seam, the silver zip, the orange table, the paper and all background details. The output should look like the same shot immediately after this one screen print was added. Keep the squares free from text or additional symbols."
+    },
+    {
+      "id": "kling-image-4-pixel-makeup",
+      "mode": "t2i",
+      "resolution": "4K",
+      "aspectRatio": "4:3",
+      "numImages": 1,
+      "prompt": "Create a single 4:3 beauty editorial image in extreme close-up. An adult makeup creator applies the last of three small squared lilac decals underneath one eye before going live. Show one eye, the outer brow, the cheek, and one fingertip carefully seating the last matte square. The three squares follow the cheekbone like pixels that slipped out of a screen. A broad, precise warm-red shadow around the lash line echoes the common shape. Use an intentional off-centre composition: eye toward upper left, three crisp square edges crossing towards lower right.\n\nLight the real skin with one neutral-white strip light from the left. A matte coral bounce lifts the far edge of the face without flattening the skin. Use a short macro focus falloff, with the eyelashes, fine skin texture, powder grains and all three decals in clear focus. Show precise line work and tiny geometric edges. Dry matte surfaces, natural skin and bold colour separation. No glamour smoothing, watermark, text, overlays or branded cosmetics."
+    },
+    {
+      "id": "kling-image-4-jacket-back-mark",
+      "mode": "i2i",
+      "resolution": "2K",
+      "aspectRatio": "3:2",
+      "numImages": 1,
+      "prompt": "Edit @Image1 in place. Apply one large ivory screen-printed emblem to the centre of the upper back of Inès's cobalt jacket, between the shoulder blades. Draw a single, wide asymmetrical silhouette that looks like a strip of sewing pattern paper folded back onto itself. Use a bold continuous shape with one sharp diagonal notch. The emblem spans about three fifths of the visible width of the back and reads clearly at phone size. Its placement and proportions feel like the main graphic on a designer's jacket.\n\nPrint the emblem flat onto the textile. Let the cobalt jacket's surface, quilt seams and existing folds remain legible under the ink. Keep the sleeves plain. Preserve the original overhead camera angle, cropping, cobalt colour, haircut, ear cuff, hands, paper, orange cutting table, light and background. All creative change is confined to the single emblem. Add no letters, extra graphics or hardware."
+    },
+    {
+      "id": "kling-image-4-bus-shelter-sole-print",
+      "mode": "i2i",
+      "resolution": "2K",
+      "aspectRatio": "2:3",
+      "numImages": 1,
+      "prompt": "Use @Image1 as the exact street photograph and edit only the printed artwork inside the existing bus-shelter ad panel. Keep the camera, framing, metal shelter, glass, brick walls, bench, passer-by and bag exactly in place. The existing shadows and subtle reflections still fall naturally over the new artwork.\n\nRedesign the ad on warm chalk-cream matte stock. Use near-black plum ink and vivid vermilion thread. The central image is a single oversized shoe-tread print, like an ink impression on paper, split at midfoot and visibly sewn back together. Three thick vermilion stitches cross the opening. Use a clean graphic silhouette and a few broad tread shapes, with enough space around the stitches for the repair to read in one glance. Fit the whole illustration below the headline and above the service line. Make the finished print feel like a real independent shoe repair campaign.\n\nKeep the following headline once, large and bold, over these exact two lines. Print the words without quotation marks.\n\n\"I CAN WALK\nFROM HERE.\"\n\nPlace \"SHOE REPAIR\" once at the bottom in smaller bold capitals, aligned with the headline. Use strong contrast and generous outer margins. Keep the period after HERE. The headline, the tread print and the service line are the three elements of the new ad. Add no other words or logos."
+    }
+  ]
+}

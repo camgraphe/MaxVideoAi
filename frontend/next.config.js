@@ -91,6 +91,9 @@ const imageOptimizer = require('./config/image-optimizer.json');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  env: {
+    NEXT_PUBLIC_SONIOX_DICTATION: process.env.SONIOX_API_KEY?.trim() ? '1' : '0',
+  },
   reactStrictMode: true,
   // Keep loopback auth redirects on the browser's cookie origin in local dev.
   // Production retains Next.js URL normalization and its public routing policy.

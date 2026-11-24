@@ -317,6 +317,7 @@ test('canonical projection returns one explicit outcome for every selected scena
     [
       ...['flare', 'sunburst'].flatMap(variant => ['member', 'plus', 'pro'].map(tier =>
         `billing:gpt-image-2-6-${variant}:t2i:10:1024x1024:${tier}`)),
+      ...['member', 'plus', 'pro'].map(tier => `billing:kling-image-v4:t2i:1:2K:${tier}`),
       ...['member', 'plus', 'pro'].map(tier => `billing:kling-v4-flash:t2v:5:720p:${tier}`),
       'billing:nano-banana-2-1:t2i:1:1k:member',
       'billing:nano-banana-2-1:t2i:1:1k:plus',
@@ -326,6 +327,7 @@ test('canonical projection returns one explicit outcome for every selected scena
         `billing:${modelId}:t2i:1:2K:${tier}`)),
       'estimator:gpt-image-2-6-flare:10:1024x1024',
       'estimator:gpt-image-2-6-sunburst:10:1024x1024',
+      'estimator:kling-image-v4:1:2K',
       'estimator:kling-v4-flash:5:720p',
       'estimator:nano-banana-2-1:1:1k',
       'estimator:seedance-2-5-flash:4:480p',

@@ -21,7 +21,7 @@ test('exact model inspection is scoped, gated, non-spending and shares canonical
     CREATE TABLE studio_image_turns(user_id text,project_id text,quote_id uuid,created_at timestamptz);`);
   const actor={authMethod: 'studio-session' as const,userId: 'owner',projectId: 'film',clientId: null};
   const entry=getFalEngineById('wan-3')!;
-  const candidate={engine: entry.engine,surface: 'video' as const,publicModes: ['t2v','i2v','ref2v','fl2v'] as never,modeCaps: Object.fromEntries(entry.modes.map(mode=>[mode.mode,mode.ui]))};
+  const candidate={engine: entry.engine,surface: 'video' as const,publicModes: ['t2v','i2v','ref2v','fl2v','extend'] as never,modeCaps: Object.fromEntries(entry.modes.map(mode=>[mode.mode,mode.ui]))};
   const image=createStudioImageGenerationService(actor,{enabled:true,prepareDependencies: {listPublicEngines:async()=>[]}});
   const video: typeof createStudioVideoGenerationService=(current,options)=>createStudioVideoGenerationService(current,{...options,prepareDependencies:{listPublicEngines:async()=>[candidate]}});
   const audio: typeof createStudioAudioGenerationService=()=>({catalog: async()=>({modes: [], options: {}})}) as never;
@@ -35,6 +35,8 @@ test('exact model inspection is scoped, gated, non-spending and shares canonical
   assert.equal(details.data.modelId,'wan-3');
   const certified=(await video(actor,{enabled:true}).catalog())[0];
   assert.deepEqual(details.data.modes.map(mode=>mode.mode),certified.publicModes);
+  assert.equal(details.data.modes.find(mode => mode.mode === 'extend')?.extensionOutput, 'continuation');
+  assert.ok(details.data.modes.filter(mode => mode.mode !== 'extend').every(mode => mode.extensionOutput === undefined));
   for (const mode of details.data.modes) {
     const canonical=projectAgentModelModeDetails(certified,mode.mode);
     assert.deepEqual(mode.duration,canonical.duration);

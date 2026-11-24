@@ -14,6 +14,23 @@ test('V4 maps documented defaults and uses the exact fal namespace', () => {
   });
 });
 
+test('V4 sends lowercase native 4K in SDR to each existing fal endpoint', () => {
+  const modes = [
+    { mode: 't2v', suffix: 'text-to-video', media: {} },
+    { mode: 'i2v', suffix: 'image-to-video', media: { imageUrl: image } },
+    { mode: 'ref2v', suffix: 'reference-to-video', media: { referenceImages: [image] } },
+    { mode: 'v2v', suffix: 'video-to-video/edit', media: { videoUrl: video } },
+  ] as const;
+  for (const { mode, suffix, media } of modes) {
+    const { model, requestBody } = buildKlingV4FalRequest({ ...base, mode, ...media, resolution: '4k' });
+    assert.equal(model, `kling/v4/${suffix}`);
+    assert.equal(requestBody.resolution, '4k');
+    assert.notEqual(requestBody.hdr, true);
+    assert.equal(requestBody.duration, mode === 'v2v' ? undefined : 5);
+  }
+  assert.throws(() => buildKlingV4FalRequest({ ...base, resolution: '4k', extraInputValues: { hdr: true } }), /unsupported controls/);
+});
+
 test('V4 preserves 30-second multi-shot plans without inherited six-shot truncation', () => {
   const shots = Array.from({ length: 10 }, (_, i) => ({ prompt: `Shot ${i + 1}: the light moves.`, duration: 3 }));
   const actual = buildKlingV4FalRequest({ ...base, prompt: '', durationSec: 30, multiPrompt: shots });
@@ -51,7 +68,7 @@ test('reference count includes the optional start frame; edit accepts only image
 });
 
 test('unsupported controls and invalid provider boundaries fail before submission', () => {
-  for (const patch of [{ durationSec: 31 }, { durationSec: 2 }, { durationOption: '3.5' }, { resolution: '4k' }, { fps: 60 }, { seed: 42 }, { audio: false }, { voiceIds: ['voice'] }, { extraInputValues: { keyframes: [] } }]) {
+  for (const patch of [{ durationSec: 31 }, { durationSec: 2 }, { durationOption: '3.5' }, { resolution: '1440p' }, { fps: 60 }, { seed: 42 }, { audio: false }, { voiceIds: ['voice'] }, { extraInputValues: { keyframes: [] } }]) {
     assert.throws(() => buildKlingV4FalRequest({ ...base, ...patch }), /Kling V4/i);
   }
   for (const patch of [{ multi_prompt: [] }, { prompt: 'x'.repeat(26001) }, { video_urls: Array(6).fill(video) }, { elements: Array(4).fill({ video_url: video }) }, { elements: Array(4).fill({ frontal_image_url: image, reference_image_urls: [image], voice_id: 'v' }) }]) {

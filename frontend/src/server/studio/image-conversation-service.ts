@@ -21,6 +21,7 @@ import {
   type ImageConversation,
   type ImageConversationTurn,
   type ImageDraft,
+  type ImageTurnInput,
   draftSurface, hasDraftCreation,
 } from "@/lib/studio/image-conversation-contract";
 import {
@@ -44,6 +45,7 @@ import {
   failImageTurn,
   listImageTurns,
   listReadyImageHistory,
+  readQuoteLanguageContext,
   readImageConversationProject,
   type StoredImageTurn,
 } from "./image-conversation-repository";
@@ -51,8 +53,30 @@ import {defaultStudioMediaFactories, type StudioMediaFactories} from './conversa
 import {resolveStudioConversationAttachments,type StudioAttachmentFactsDependencies} from './conversation-attachment-facts';
 import {buildStudioGenerationMediaAccess} from './generation-media-access';
 import {projectStudioReply} from '@/lib/studio/conversation-reply';
+import {projectStudioQuotedReply} from './conversation-quote-reply';
+import {
+  requestedStudioReplyLanguage, STUDIO_QUOTE_LANGUAGE_HISTORY_LIMIT, studioQuoteReplyLanguage, type StudioQuoteLanguageContext,
+} from './conversation-language';
 import {imageRequestFromDraft,imageReferenceFingerprintFromReview} from './conversation-image-request';
 export {imageRequestFromDraft,imageReferenceFingerprintFromReview} from './conversation-image-request';
+
+type SavedReplyQuote = {
+  priceCents: number;
+  currency: string;
+  request: NonNullable<ImageConversationTurn['quote']>['summary'];
+};
+
+function projectTurnReply(turn: StoredImageTurn, quote?: SavedReplyQuote, locale?: ImageTurnInput['locale']) {
+  const draft = turn.draft_json;
+  if (!draft) return null;
+  if (!turn.quote_id) return hasDraftCreation(draft) ? null : projectStudioReply(draft.reply);
+  const storedDirection = draft.image?.prompt ?? (draft.media?.action === 'voice.prepare' ? draft.media.script : draft.media?.prompt);
+  const request = quote?.request;
+  const quotedDirection = request?.surface === 'audio' && request.mode === 'voice_only'
+    ? request.settings.script : request?.prompt;
+  const direction = draft.recast?.direction ?? (draft.characterBuilder ? undefined : quotedDirection ?? storedDirection);
+  return projectStudioQuotedReply(draft.reply, turn.input_json, direction, quote, locale) || null;
+}
 
 const ordinaryImageConfirmationSchema = z
   .object({
@@ -131,6 +155,7 @@ export function createImageConversationService(
   async function projectTurn(
     turn: StoredImageTurn,
     readWallet: typeof wallet = wallet,
+    quoteLanguageContext?: StudioQuoteLanguageContext,
   ): Promise<ImageConversationTurn> {
     const expiredLease =
       turn.state === "thinking" &&
@@ -149,6 +174,9 @@ export function createImageConversationService(
         "The saved image quote is unavailable.",
       );
     const balance = quote ? await readWallet() : null;
+    const quoteLocale = turn.quote_id && quote
+      ? studioQuoteReplyLanguage(turn.input_json, quoteLanguageContext ?? await readQuoteLanguageContext(actor, turn.request_id))
+      : undefined;
     return {
       requestId: turn.request_id,
       message: turn.input_json.message,
@@ -159,7 +187,7 @@ export function createImageConversationService(
       ...(turn.input_json.renewedFromRequestId ? {renewedFromRequestId: turn.input_json.renewedFromRequestId} : {}),
       ...(turn.input_json.taskBudget?{taskBudget:turn.input_json.taskBudget}:{}),
       ...(turn.input_json.locale?{locale:turn.input_json.locale}:{}),
-      reply: turn.draft_json ? projectStudioReply(turn.draft_json.reply) : null,
+      reply: projectTurnReply(turn, quote ?? undefined, quoteLocale),
       ...(creatorQuote?{creatorQuote,creatorOperation:await creator().read(creatorQuote)}:{}),
       ...(turn.draft_json?.exportQuote ? {exportQuote: turn.draft_json.exportQuote} : {}),
       ...(turn.draft_json?.analysisQuote ? {analysisQuote:turn.draft_json.analysisQuote} : {}),
@@ -203,7 +231,11 @@ export function createImageConversationService(
   return {
     async read(): Promise<ImageConversation> {
       const owned = await project();
-      const turns = await listImageTurns(actor);
+      const turns = (await listImageTurns(actor)).reverse();
+      const hasQuote = turns.some(turn => turn.quote_id);
+      const prefix = hasQuote ? await readQuoteLanguageContext(actor, turns[0].request_id) : undefined;
+      const history = prefix ? [...prefix.recent].reverse() : [];
+      let precedingCommand = prefix?.precedingCommand;
       // Share this read across the returned turns, never across requests or refreshes.
       let balance: ReturnType<typeof wallet> | undefined;
       const readWallet = () => (balance ??= wallet());
@@ -211,7 +243,15 @@ export function createImageConversationService(
         projectId: actor.projectId,
         projectName: owned.name,
         turns: await Promise.all(
-          turns.reverse().map((turn) => projectTurn(turn, readWallet)),
+          turns.map((turn) => {
+            const previous = turn.quote_id
+              ? { recent: history.slice(-STUDIO_QUOTE_LANGUAGE_HISTORY_LIMIT).reverse(), precedingCommand } : undefined;
+            if (hasQuote && typeof turn.input_json.message === 'string') {
+              history.push(turn.input_json);
+              precedingCommand = requestedStudioReplyLanguage(turn.input_json.message) ?? precedingCommand;
+            }
+            return projectTurn(turn, readWallet, previous);
+          }),
         ),
       };
     },
@@ -278,7 +318,7 @@ export function createImageConversationService(
           (useActions ? await runStudioImageActions({
             actor, turn, input, references: refs, referenceFingerprint, responseReplayOnly,
             historyFacts,
-            history: history.map(saved => ({message: saved.input_json.message, reply: saved.draft_json ? projectStudioReply(saved.draft_json.reply) : null,
+            history: history.map(saved => ({message: saved.input_json.message, reply: projectTurnReply(saved),
               ...(saved.input_json.referenceMentions ? {referenceMentions: saved.input_json.referenceMentions} : {})})),
             taskExecution:dependencies.taskExecution, enabled: dependencies.enabled, factory, createResponse: dependencies.createActionResponse,assistancePolicy: dependencies.assistancePolicy,countInputTokens: dependencies.countInputTokens,
             factories, mediaEnabled: dependencies.mediaEnabled,creatorEnabled,creatorFactory:dependencies.creatorFactory,characterEnabled,characterFactory:dependencies.characterFactory,characterBuilderEnabled,characterBuilderFactory:dependencies.characterBuilderFactory,editingEnabled: dependencies.editingEnabled,exportsEnabled: dependencies.exportsEnabled,requestOrigin: dependencies.requestOrigin,exportDependencies: dependencies.exportDependencies,
@@ -289,7 +329,7 @@ export function createImageConversationService(
             input,
             history.map((saved) => ({
               message: saved.input_json.message,
-              reply: saved.draft_json ? projectStudioReply(saved.draft_json.reply) : null,
+              reply: projectTurnReply(saved),
               ...(saved.input_json.referenceMentions ? {referenceMentions: saved.input_json.referenceMentions} : {}),
             })),
             refs,

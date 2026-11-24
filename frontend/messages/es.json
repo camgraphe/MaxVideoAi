@@ -4148,6 +4148,7 @@
         "presetsHint": "Elige un preset · 1–8 por ejecución",
         "numImagesLabel": "Número de imágenes",
         "numImagesCount": "{count} {unit}",
+        "klingImageSetCount": "Serie de {count} imágenes",
         "numImagesUnit": {
           "singular": "imagen",
           "plural": "imágenes"

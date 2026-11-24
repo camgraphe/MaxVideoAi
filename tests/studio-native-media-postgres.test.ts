@@ -54,6 +54,33 @@ test('native video/voice/music turns keep quotes, confirmation and recovery in t
     {action: 'voice.prepare', reply: 'A calm narration. Review the quote.', script: 'Your film starts with a conversation.', language: 'english'},
     {action: 'music.prepare', reply: 'A restrained instrumental. Review the quote.', prompt: 'Soft piano and warm textures, no vocals', mood: 'dreamy'},
   ];
+  await t.test('accepting a creative offer saves one priced proposal in that project across retries', async () => {
+    const other = {...actor, projectId:'other'};
+    const offer = 'Keep the ice in deep shadow. Shall I prepare the quote for the first firefly shot?';
+    const planning = createImageConversationService(other, {...options, createActionResponse:async () => ({
+      id:'offer', model:'gpt-6.1-sol', status:'completed', service_tier:'default', usage:null,
+      output_text:JSON.stringify({reply:offer}), output:[],
+    })});
+    const direction = await planning.submit({requestId:randomUUID(), message:'Give the first firefly shot a darker look', references:[]});
+    assert.equal(direction.quote, null);
+    assert.equal(direction.reply, offer);
+    const acceptance = {requestId:randomUUID(), message:'Yes, please.', references:[]};
+    const accepted = createImageConversationService(other, {...options, createActionResponse:async params => {
+      assert.ok(JSON.stringify(params.input).includes(offer), 'The offer must survive into the acceptance turn');
+      return {id:'acceptance', model:'gpt-6.1-sol', status:'completed', service_tier:'default', usage:null, output_text:'',
+        output:[{type:'function_call', name:'video_prepare', call_id:'prepare-fireflies', arguments:JSON.stringify({
+          reply:'Review the price for the first shot.', prompt:'Fireflies lift off blue ice, dark exposure, tight framing.', aspectRatio:'9:16', source:null,
+        })}]};
+    }});
+    const quoted = await accepted.submit(acceptance);
+    assert.ok(quoted.quote?.confirmationRequired);
+    assert.ok(quoted.quote.price.amountCents > 0);
+    assert.equal((await accepted.submit(acceptance)).quote?.quoteId, quoted.quote.quoteId);
+    const stored = await pg.pool.query('SELECT studio_project_id, state, job_id, price_cents FROM mcp_generation_quotes WHERE quote_id=$1', [quoted.quote.quoteId]);
+    assert.deepEqual(stored.rows, [{studio_project_id:other.projectId, state:'prepared', job_id:null, price_cents:quoted.quote.price.amountCents}]);
+    assert.equal(provider.captures.length, 0);
+    assert.equal((await pg.pool.query("SELECT COUNT(*)::int AS n FROM app_receipts WHERE type='charge'")).rows[0].n, 0);
+  });
   for (const [index, action] of actions.entries()) {
     next = action;
     const input = {requestId: randomUUID(), message: ['Can it move?', 'Add a voice, you choose the words.', 'Some music too.'][index], references: []};

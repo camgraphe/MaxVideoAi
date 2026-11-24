@@ -14,3 +14,9 @@
 - Preserve public reply schemas, selected-target limits, proofs, request ownership,
   exact history and shared ledger/recovery behavior. Offline provider fixtures
   establish plumbing and structural refusal, not real-model semantic quality.
+
+- Keep Create navigation in `app-guide.ts`. The route records the native client
+  at admission so the worker can select its guide. The optional request-level
+  `referencePicker` describes controls in the current UI, separately from draft
+  identity, generation capabilities and the validated owned attachments.
+  Studio selects its own web or native guide in the conversation director.

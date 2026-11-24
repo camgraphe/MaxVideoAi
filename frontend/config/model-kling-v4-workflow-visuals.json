@@ -1,0 +1,109 @@
+{
+  "modelSlug": "kling-v4",
+  "sourceProofId": "kling-v4-create",
+  "sourceSha256": "a3d2396eae4e1d8a32aeed3e1b42d98f791dab278fcf96f585d217885a87c9f2",
+  "frames": {
+    "opening-start": {
+      "id": "opening-start",
+      "url": "/assets/model-examples/kling-v4/7b22d45bc5d6ad1105d7f5d493f4e719d78a6b8f3381fcf65d383ee3b1f73e63.webp",
+      "sha256": "7b22d45bc5d6ad1105d7f5d493f4e719d78a6b8f3381fcf65d383ee3b1f73e63",
+      "bytes": 39838,
+      "width": 896,
+      "height": 504,
+      "source": "kling-v4-create",
+      "atSecond": 0.72
+    },
+    "opening-end": {
+      "id": "opening-end",
+      "url": "/assets/model-examples/kling-v4/7f5056b4e57f540bd32ec97ceaca86013d138d0d2a1047f8c551c1bbe4db912e.webp",
+      "sha256": "7f5056b4e57f540bd32ec97ceaca86013d138d0d2a1047f8c551c1bbe4db912e",
+      "bytes": 31986,
+      "width": 896,
+      "height": 504,
+      "source": "kling-v4-create",
+      "atSecond": 4.8
+    },
+    "reference-kitchen": {
+      "id": "reference-kitchen",
+      "url": "/assets/model-examples/kling-v4/ee1d9d75c88911b9d6fe4157d7633e419f7e3938459666317eee5c59918688eb.webp",
+      "sha256": "ee1d9d75c88911b9d6fe4157d7633e419f7e3938459666317eee5c59918688eb",
+      "bytes": 36498,
+      "width": 896,
+      "height": 504,
+      "source": "kling-v4-create",
+      "atSecond": 9.1
+    },
+    "reference-platform": {
+      "id": "reference-platform",
+      "url": "/assets/model-examples/kling-v4/9b33177f5b961ec34a9f5d17e6f4059ba7d73d6f37fa90a27881afa7a64ed34c.webp",
+      "sha256": "9b33177f5b961ec34a9f5d17e6f4059ba7d73d6f37fa90a27881afa7a64ed34c",
+      "bytes": 32280,
+      "width": 896,
+      "height": 504,
+      "source": "kling-v4-create",
+      "atSecond": 26.5
+    },
+    "prompt-guide": {
+      "id": "prompt-guide",
+      "url": "/assets/model-examples/kling-v4/5a194962feff123ca16b08bd4f5ef303d66f62f13e61146d9c15507ea088f9ca.webp",
+      "sha256": "5a194962feff123ca16b08bd4f5ef303d66f62f13e61146d9c15507ea088f9ca",
+      "bytes": 37598,
+      "width": 896,
+      "height": 504,
+      "source": "kling-v4-create",
+      "atSecond": 17.75
+    },
+    "edit-source": {
+      "id": "edit-source",
+      "url": "/assets/model-examples/kling-v4/55f36afe2b7ad215e70bb5132a868e251b72f22c4989832d3aacf8df3109ab30.webp",
+      "sha256": "55f36afe2b7ad215e70bb5132a868e251b72f22c4989832d3aacf8df3109ab30",
+      "bytes": 29666,
+      "width": 896,
+      "height": 504,
+      "source": "kling-v4-create",
+      "atSecond": 3.75
+    },
+    "text-storyboard": {
+      "id": "text-storyboard",
+      "url": "/assets/model-examples/kling-v4/da0cd70ef82c92020d351532df4722204754360c09d8c4e94bac0dc1912608db.webp",
+      "sha256": "da0cd70ef82c92020d351532df4722204754360c09d8c4e94bac0dc1912608db",
+      "width": 896,
+      "height": 504,
+      "bytes": 47360,
+      "source": "ImageGen",
+      "originalSha256": "f9d927df5b227cccdb7a12175bea8ab712ef582de61862bd47d4979834d722e3"
+    },
+    "edit-illustration": {
+      "id": "edit-illustration",
+      "url": "/assets/model-examples/kling-v4/d3e87d39f160d4c5400f4a2b04cd4b89c6c4743eea0b78c084365ef854d60858.webp",
+      "sha256": "d3e87d39f160d4c5400f4a2b04cd4b89c6c4743eea0b78c084365ef854d60858",
+      "width": 896,
+      "height": 504,
+      "bytes": 28154,
+      "source": "ImageGen",
+      "originalSha256": "f5167da281a4250d7a19ba2579730c6e43d48f56db08bf141c15aadfe40fa542",
+      "referenceId": "edit-source"
+    }
+  },
+  "modes": {
+    "text": [
+      "text-storyboard"
+    ],
+    "image": [
+      "opening-start",
+      "opening-end"
+    ],
+    "references": [
+      "reference-platform",
+      "reference-kitchen"
+    ],
+    "edit": [
+      "edit-source",
+      "edit-illustration"
+    ]
+  },
+  "promptGuide": {
+    "id": "kling-v4-prompt-guide",
+    "frameId": "prompt-guide"
+  }
+}

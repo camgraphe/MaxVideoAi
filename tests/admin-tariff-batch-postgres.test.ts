@@ -10,12 +10,14 @@ import { upsertCustomerTariffCell } from '../frontend/server/pricing/customer-ta
 import type { TariffBatchProposal } from '../frontend/server/pricing-admin/tariff-batches/contract';
 import { gpt26RasterProposal } from '../frontend/server/pricing-admin/tariff-batches/gpt26';
 import { computeCanonicalBillingSnapshot } from '../frontend/server/pricing/quote-billing';
+import { quotePublicModelScenario } from '../frontend/server/pricing/quote-public-model-scenario';
+import { KLING_V4_ENGINE } from '../frontend/src/config/fal-engines/kling-v4';
 import { GPT_IMAGE_2_6_ENGINE_REGISTRY } from '../frontend/src/config/fal-engines/gpt-image-2-6';
 
 const actor = '11111111-1111-4111-8111-111111111111';
 const source = 'a'.repeat(40);
 import { withTariffBatchFixture as fixture } from './helpers/tariff-batch-postgres-fixture';
-const classes = klingBatchClasses();
+const classes = klingBatchClasses().filter(row => row.selector.resolution !== '4k');
 const proposal = (count = 2, multiplier = '1.50', intent: 'create_missing' | 'replace_selected' = 'create_missing'): TariffBatchProposal => ({
   schemaVersion: 1, modelId: 'kling-v4', intent, reason: 'Synthetic local qualification', pricing: { kind: 'list_multiplier', multiplier },
   selections: classes.slice(0, count).map(c => ({ selector: c.selector })),
@@ -184,6 +186,54 @@ test('all 226 classes commit atomically within the bounded transaction and resum
   assert.ok(done.receipt!.lockDurationMs < 5000);
   console.log(JSON.stringify({ measurement: 'full-226', elapsedMs: performance.now() - start, lockDurationMs: done.receipt!.lockDurationMs }));
   assert.equal((await confirm(await previewTariffBatch(proposal(226), actor))).receipt?.changes.length, 0);
+}));
+
+test('113 versioned Kling 4K prices match the approved recipe without changing legacy prices or paid snapshots', async () => fixture(async ({ db }) => {
+  const legacy = await confirm(await previewTariffBatch(proposal(226), actor));
+  assert.equal(legacy.status, 'committed');
+  const readLegacy = async () => (await db.pool.query("SELECT * FROM app_customer_tariff_cells WHERE selector_json->>'resolution' <> '4k' ORDER BY id")).rows;
+  const previous = await readLegacy();
+  await db.pool.query("INSERT INTO app_jobs (job_id, user_id, pricing_snapshot, payment_status) VALUES ('kling-prior-paid', 'synthetic-user', $1::jsonb, 'paid')",
+    [JSON.stringify({ totalCents: 177, resolution: '1080p' })]);
+  const readPaid = async () => (await db.pool.query("SELECT * FROM app_jobs WHERE job_id = 'kling-prior-paid'")).rows;
+  const paid = await readPaid();
+  const text4k = { modelId: 'kling-v4', mode: 't2v', resolution: '4k', durationSec: 5 };
+  const edit4k = { engine: KLING_V4_ENGINE, mode: 'v2v' as const, resolution: '4k', durationSec: 5.25, inheritedDurationSec: 5.25,
+    hasVideoInput: true, inputVideoDurationSec: 5.25 };
+  const fourK: TariffBatchProposal = { schemaVersion: 1, modelId: 'kling-v4', intent: 'create_missing',
+    reason: 'Synthetic native 4K qualification', pricing: { kind: 'list_multiplier', multiplier: '1.50' },
+    selections: klingBatchClasses().filter(row => row.selector.resolution === '4k').map(row => ({ selector: row.selector })) };
+  const preview = await previewTariffBatch(fourK, actor);
+  assert.deepEqual(preview.plan.counts, { create: 0, update: 0, unchanged: 113, conflict: 0 });
+  assert.equal((await counts(db)).revision, '226');
+  const done = await confirm(preview);
+  assert.equal(done.status, 'committed');
+  assert.equal(done.receipt?.revisionBefore, 226);
+  assert.equal(done.receipt?.revisionAfter, 226);
+  assert.equal(done.receipt?.changes.length, 0);
+  const quoted = await quotePublicModelScenario(text4k);
+  assert.equal(quoted.status, 'exact');
+  if (quoted.status === 'exact') assert.equal(quoted.amountCents, 412);
+  for (const [input, expected] of [
+    [{ ...text4k, mode: 'ref2v', hasVideoInput: false }, 412],
+    [{ ...text4k, mode: 'ref2v', hasVideoInput: true, inputVideoDurationSec: 12.5 }, 864],
+    [{ ...text4k, mode: 'v2v', inputVideoDurationSec: 5.25 }, 506],
+  ] as const) {
+    const result = await quotePublicModelScenario(input);
+    assert.equal(result.status, 'exact', JSON.stringify(input));
+    if (result.status === 'exact') assert.equal(result.amountCents, expected);
+  }
+  for (const invalid of [
+    { ...text4k, mode: 'ref2v' },
+    { ...text4k, mode: 'ref2v', hasVideoInput: true },
+    { ...text4k, mode: 'ref2v', hasVideoInput: false, inputVideoDurationSec: 3 },
+    { ...text4k, mode: 'ref2v', hasVideoInput: true, inputVideoDurationSec: 31 },
+    { ...text4k, mode: 'v2v', hasVideoInput: false, inputVideoDurationSec: 3 },
+  ]) assert.deepEqual(await quotePublicModelScenario(invalid), { status: 'unavailable' });
+  assert.deepEqual(await quotePublicModelScenario({ ...text4k, hdr: true }), { status: 'unavailable' });
+  assert.equal((await computeCanonicalBillingSnapshot(edit4k)).totalCents, 519);
+  assert.deepEqual(await readLegacy(), previous);
+  assert.deepEqual(await readPaid(), paid);
 }));
 
 test('expired previews and disabled admission fail closed without tariff writes', async () => fixture(async ({ db }) => {

@@ -53,6 +53,7 @@ import { NANO_BANANA_2_FAL_ENGINE_REGISTRY } from './nano-banana-2';
 import { NANO_BANANA_2_1_FAL_ENGINE_REGISTRY } from './nano-banana-2-1';
 import { GPT_IMAGE_2_FAL_ENGINE_REGISTRY } from './gpt-image-2';
 import { GPT_IMAGE_2_5_FAL_ENGINE_REGISTRY } from './gpt-image-2-5';
+import { KLING_IMAGE_V4_FAL_ENGINE_REGISTRY } from './kling-image-v4';
 import { SEEDREAM_FAL_ENGINE_REGISTRY } from './seedream';
 
 // Build-only contracts awaiting a future model-registry publication gate.
@@ -106,6 +107,7 @@ export const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
   ...GPT_IMAGE_2_6_ENGINE_REGISTRY,
   ...KLING_V4_FLASH_FAL_ENGINE_REGISTRY,
   ...SEEDREAM_FAL_ENGINE_REGISTRY,
+  ...KLING_IMAGE_V4_FAL_ENGINE_REGISTRY,
   ...WAN_3_FAL_ENGINE_REGISTRY,
   ...WAN_3_PRIME_FAL_ENGINE_REGISTRY,
   ...LTX_2_5_FAST_FAL_ENGINE_REGISTRY,

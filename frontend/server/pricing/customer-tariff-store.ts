@@ -1,6 +1,7 @@
 import { isValidManualTariffPrice, type ManualTariffCell, type ManualTariffSelector } from '@maxvideoai/pricing';
 
 import versionedDocument from '@/config/customer-tariffs.json';
+import klingLaunchTariffs from '@/config/kling-v4-customer-tariffs.json';
 import { continuousInputTariffSelector } from '@/lib/pricing-manual-scenario';
 import { createQueryExecutor, getDb, isTransactionQueryExecutor, type QueryExecutor, type TransactionQueryExecutor } from '@/lib/db';
 
@@ -189,7 +190,10 @@ function projectSelectedState(state: RawState, selectors: ManualTariffSelector[]
   if (versionedDocument.schemaVersion !== 1 || !Array.isArray(versionedDocument.cells)) return { status: 'unavailable' };
   return {
     status: 'loaded', revision: integer(state.revision), active: state.active && customerTariffsEnabledByCode(),
-    versionedCells: (versionedDocument.cells as ManualTariffCell[])
+    versionedCells: [
+      ...versionedDocument.cells as ManualTariffCell[],
+      ...klingLaunchTariffs as unknown as ManualTariffCell[],
+    ]
       .filter((cell) => !selectors || keys?.includes(selectorKey(cell.selector))),
     databaseCells: [...versions, ...rows].map(mapCell),
   };

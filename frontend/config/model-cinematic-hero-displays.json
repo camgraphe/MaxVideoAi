@@ -41,6 +41,22 @@
         ],
         "aspect": 1.8181818181818181,
         "position": 0.5
+      },
+      "kling-v4-hero": {
+        "widths": [
+          640,
+          1280
+        ],
+        "aspect": 1.7777777777777777,
+        "position": 0.5
+      },
+      "kling-image-4-pixel-makeup": {
+        "widths": [
+          480,
+          780
+        ],
+        "aspect": 1.3333333333333333,
+        "position": 0.5
       }
     }
   },
@@ -140,6 +156,104 @@
           "width": 1280,
           "height": 704,
           "bytes": 13693
+        }
+      ]
+    },
+    {
+      "id": "kling-image-4-pixel-makeup",
+      "originalSha256": "e3cc0acc765fcc72725161a6125aa3f140a94b7ebb54a9f3132ba4eef8e36756",
+      "crop": {
+        "left": 0,
+        "top": 0,
+        "width": 4672,
+        "height": 3520
+      },
+      "desktop": [
+        {
+          "url": "/assets/model-examples/cinematic-heroes/313816cafc3e5778776b7bf008e5a182763aa64195b8f9a6a0ddaddae0b6cb39.avif",
+          "sha256": "313816cafc3e5778776b7bf008e5a182763aa64195b8f9a6a0ddaddae0b6cb39",
+          "width": 960,
+          "height": 723,
+          "bytes": 13881
+        },
+        {
+          "url": "/assets/model-examples/cinematic-heroes/7b52618007e490a4364032d501486061a37c7e9151c05ba15e7c08ea9d1cd2f3.avif",
+          "sha256": "7b52618007e490a4364032d501486061a37c7e9151c05ba15e7c08ea9d1cd2f3",
+          "width": 1600,
+          "height": 1205,
+          "bytes": 35657
+        },
+        {
+          "url": "/assets/model-examples/cinematic-heroes/8415400e50ceddfc673ef506ec2113270e98a8a7d10fa0bd63362cb7dc615af4.avif",
+          "sha256": "8415400e50ceddfc673ef506ec2113270e98a8a7d10fa0bd63362cb7dc615af4",
+          "width": 2560,
+          "height": 1929,
+          "bytes": 78514
+        }
+      ],
+      "mobile": [
+        {
+          "url": "/assets/model-examples/cinematic-heroes/260e8011fb76cf75920ed742597824d917e767ca83d06ffa59ab94fa2ea33f9b.avif",
+          "sha256": "260e8011fb76cf75920ed742597824d917e767ca83d06ffa59ab94fa2ea33f9b",
+          "width": 480,
+          "height": 362,
+          "bytes": 4174
+        },
+        {
+          "url": "/assets/model-examples/cinematic-heroes/adcaacaa051cfaeac80c930a0eabad08beca2a704a01e8429e1789ac6cfcb4ec.avif",
+          "sha256": "adcaacaa051cfaeac80c930a0eabad08beca2a704a01e8429e1789ac6cfcb4ec",
+          "width": 780,
+          "height": 588,
+          "bytes": 9251
+        }
+      ]
+    },
+    {
+      "id": "kling-v4-hero",
+      "originalSha256": "f2db6fbd5a8f3645aaebf60cf1adebe29127bbdcbe82f4a87df5731650b240e7",
+      "crop": {
+        "left": 0,
+        "top": 0,
+        "width": 1280,
+        "height": 720
+      },
+      "desktop": [
+        {
+          "url": "/assets/model-examples/cinematic-heroes/646af52b1a2f4ce171e62ec5bcbf2a89c981c949355ea416e503151a5009dbc7.avif",
+          "sha256": "646af52b1a2f4ce171e62ec5bcbf2a89c981c949355ea416e503151a5009dbc7",
+          "width": 960,
+          "height": 540,
+          "bytes": 13238
+        },
+        {
+          "url": "/assets/model-examples/cinematic-heroes/1880dffb0be7d544d3ca22c5aa2b8aecb264c8743c11d7c937fcb2ab6774addb.avif",
+          "sha256": "1880dffb0be7d544d3ca22c5aa2b8aecb264c8743c11d7c937fcb2ab6774addb",
+          "width": 1280,
+          "height": 720,
+          "bytes": 20388
+        },
+        {
+          "url": "/assets/model-examples/cinematic-heroes/1880dffb0be7d544d3ca22c5aa2b8aecb264c8743c11d7c937fcb2ab6774addb.avif",
+          "sha256": "1880dffb0be7d544d3ca22c5aa2b8aecb264c8743c11d7c937fcb2ab6774addb",
+          "width": 1280,
+          "height": 720,
+          "bytes": 20388
+        }
+      ],
+      "mobile": [
+        {
+          "url": "/assets/model-examples/cinematic-heroes/52994445ab96c2f96defd5418d9ae17618f3e634eb52be9b0c765f58459ee614.avif",
+          "sha256": "52994445ab96c2f96defd5418d9ae17618f3e634eb52be9b0c765f58459ee614",
+          "width": 640,
+          "height": 360,
+          "bytes": 8136
+        },
+        {
+          "url": "/assets/model-examples/cinematic-heroes/1880dffb0be7d544d3ca22c5aa2b8aecb264c8743c11d7c937fcb2ab6774addb.avif",
+          "sha256": "1880dffb0be7d544d3ca22c5aa2b8aecb264c8743c11d7c937fcb2ab6774addb",
+          "width": 1280,
+          "height": 720,
+          "bytes": 20388
         }
       ]
     },
