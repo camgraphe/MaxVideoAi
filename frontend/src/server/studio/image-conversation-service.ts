@@ -56,6 +56,7 @@ import {resolveStudioConversationAttachments,type StudioAttachmentFactsDependenc
 import {buildStudioGenerationMediaAccess} from './generation-media-access';
 import {projectStudioReply} from '@/lib/studio/conversation-reply';
 import {projectStudioQuotedReply} from './conversation-quote-reply';
+import {originalStudioReferences} from './project-reference-registry';
 import {
   requestedStudioReplyLanguage, STUDIO_QUOTE_LANGUAGE_HISTORY_LIMIT, studioQuoteReplyLanguage, type StudioQuoteLanguageContext,
 } from './conversation-language';
@@ -77,6 +78,18 @@ function projectTurnReply(turn: StoredImageTurn, quote?: SavedReplyQuote, locale
   const quotedDirection = request?.surface === 'audio' && request.mode === 'voice_only'
     ? request.settings.script : request?.prompt;
   const direction = draft.recast?.direction ?? (draft.characterBuilder ? undefined : quotedDirection ?? storedDirection);
+  if (quote && request?.surface === 'image' && request.mode === 'i2i' && request.references.length && !draft.characterBuilder) {
+    const receipts = [...originalStudioReferences(turn.input_json, turn.request_id), ...(draft.recalledReferences ?? [])];
+    const sources = request.references.map(ref => {
+      if (ref.kind !== 'asset') return undefined;
+      const label = receipts.find(item => item.assetId === ref.assetId && item.kind === 'image')?.label;
+      return receipts.some(item => item.label === label && item.assetId !== ref.assetId) ? undefined : label;
+    });
+    const model = getBaseEngineIncludingHidden(request.engineId)?.label ?? request.engineId;
+    return projectStudioQuotedReply(draft.reply, turn.input_json, direction, {
+      ...quote, edit: {model, sources: sources.every((source): source is string => !!source) ? sources : []},
+    }, locale);
+  }
   return projectStudioQuotedReply(draft.reply, turn.input_json, direction, quote, locale) || null;
 }
 

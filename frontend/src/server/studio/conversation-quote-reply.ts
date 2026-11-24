@@ -42,7 +42,8 @@ export function projectStudioQuotedReply(
   reply: string,
   input: { message: string; locale?: Locale },
   creativeDirection?: string | null,
-  quote?: { priceCents: number; currency: string; request?: Parameters<typeof conversationQuotePresentation>[0] },
+  quote?: { priceCents: number; currency: string; request?: Parameters<typeof conversationQuotePresentation>[0];
+    edit?: {model: string; sources: readonly string[]} },
   resolvedLocale?: Locale,
 ): string {
   const locale = resolvedLocale ?? studioConversationLanguage(input.message, [], input.locale);
@@ -59,8 +60,18 @@ export function projectStudioQuotedReply(
   }
 
   // A purely creative reply already has its price in the adjacent quote card.
-  if (!quote || (brief && reply.trim() === direction)) return brief;
+  if (!quote || (!quote.edit && brief && reply.trim() === direction)) return brief;
   const amount = formatCustomerAmount(quote.priceCents, quote.currency, locale);
+  if (quote.edit) {
+    const source = new Intl.ListFormat(locale, {type:'conjunction'}).format(quote.edit.sources);
+    const model = quote.edit.model;
+    const title = {
+      en: 'Edit with ' + model + (source ? ' using ' + source : ''),
+      fr: 'Retouche avec ' + model + (source ? ' à partir d’' + source : ''),
+      es: 'Retoque con ' + model + (source ? ' a partir de ' + source : ''),
+    }[locale];
+    return [title + '.', brief, amount && label.price + ' · ' + amount].filter(Boolean).join('\n\n');
+  }
   let description = brief;
   if (!description && quote.request) {
     const request = quote.request;
