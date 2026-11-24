@@ -43,6 +43,7 @@ function rawTransaction(overrides: Partial<RawTransactionRow> = {}): RawTransact
     job_duration_sec: 8,
     is_mcp_generation: false,
     is_studio_generation: false,
+    is_create_generation: false, confirmation_platform: null,
     has_refund: false,
     latest_charge_id: 10,
     ...overrides,

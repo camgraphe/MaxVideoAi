@@ -597,3 +597,18 @@ customer tariff store. Durable server previews, one atomic confirmation, per-cel
 history and fenced recovery are specified in [pricing-admin-batches.md](pricing-admin-batches.md).
 Migration 81 and the admission flags default off; this feature does not publish a
 model, enable generation or change a runtime pricing policy.
+
+### Native generation platform in Transactions
+
+The icon beside Studio or Create records the app that confirmed an ordinary generation. Native Studio
+and Create confirmation handlers pass the optional `x-maxvideoai-client-platform` header
+(`ios` or `android`) through `withNativeConfirmationPlatform` after bearer authentication.
+Web confirmation, Expo web, quote preparation and price renewal omit this metadata. A project can
+be prepared on one device and confirmed on another.
+
+Apply Neon migration `106_generation_confirmation_platform.sql` before enabling the new server
+writer. The first successful quote claim stores the platform with the job ID inside the same
+reservation transaction. Replays, dispatch and refunds reuse that record. The admin projection
+matches the receipt's owner and job to a single quote. Old clients and historical receipts have
+no platform icon unless that confirmation recorded a platform. Login provider and payment method
+are independent. Mobile Create routes are delivered separately from the Studio routes.

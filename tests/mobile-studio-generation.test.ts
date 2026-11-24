@@ -168,3 +168,19 @@ test('Studio mobile reviews the saved project quote and recovers the same media 
   turn.generation = { ...generation, result: { surface: 'audio', audioUrl } } as typeof generation;
   assert.deepEqual((await read()).generation.outputs, [{ kind: 'audio', url: audioUrl }]);
 });
+
+test('only an explicit native reporting header on a generation session can identify the app', async () => {
+  const { withNativeConfirmationPlatform, generationClaimPlatform } = await import('../frontend/src/server/agent-api/native-generation-platform');
+  for (const authMethod of ['studio-session', 'mobile-session', 'oauth', 'toolbox-session']) {
+    for (const value of ['ios', 'android', '', 'web', 'google', 'ios, android', 'iOS']) {
+      const actor = { authMethod };
+      const headers = new Headers({ 'user-agent': 'iPhone', 'x-maxvideoai-auth-mode': 'bearer',
+        'x-maxvideoai-client-platform': value });
+      const confirmed = withNativeConfirmationPlatform(actor, headers);
+      const supported = ['studio-session', 'mobile-session'].includes(authMethod) && ['ios', 'android'].includes(value);
+      assert.equal(generationClaimPlatform(confirmed), supported ? value : undefined);
+    }
+  }
+  assert.equal(generationClaimPlatform(withNativeConfirmationPlatform({authMethod:'studio-session'},
+    new Headers({'user-agent':'Android'}))), undefined);
+});

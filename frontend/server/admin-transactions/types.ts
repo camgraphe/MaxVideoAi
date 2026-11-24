@@ -1,3 +1,5 @@
+import type { NativeGenerationPlatform } from '@/server/agent-api/native-generation-platform';
+
 export type RawTransactionRow = {
   receipt_id: number;
   user_id: string | null;
@@ -21,6 +23,8 @@ export type RawTransactionRow = {
   job_duration_sec: number | null;
   is_mcp_generation: boolean;
   is_studio_generation: boolean;
+  is_create_generation: boolean;
+  confirmation_platform: string | null;
   has_refund: boolean;
   latest_charge_id: number | null;
 };
@@ -43,6 +47,8 @@ export type AdminTransactionRecord = {
   jobDurationSec: number | null;
   isMcpGeneration: boolean;
   isStudioGeneration: boolean;
+  isCreateGeneration: boolean;
+  confirmationPlatform: NativeGenerationPlatform | null;
   jobCreatedAt: string | null;
   jobProgress: number | null;
   jobMessage: string | null;

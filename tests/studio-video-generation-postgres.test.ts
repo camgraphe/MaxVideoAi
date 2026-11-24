@@ -14,6 +14,7 @@ test('session video shares canonical quotes/reservations and rejects image, MCP 
   process.env.DATABASE_URL = pg.databaseUrl;
   t.after(async () => {await getDb().end(); if (prior === undefined) delete process.env.DATABASE_URL; else process.env.DATABASE_URL = prior; await pg.cleanup();});
   await createPaidGenerationTestSchema(pg.pool);
+  await pg.pool.query(readFileSync('neon/migrations/106_generation_confirmation_platform.sql','utf8'));
   await pg.pool.query(readFileSync('neon/migrations/53_studio_media_generation_scope.sql', 'utf8'));
   await addTopup(pg.pool, 'video-owner', 10000);
   await pg.pool.query(`CREATE TABLE job_outputs (id text PRIMARY KEY, job_id text, user_id text, status text, kind text, url text);
@@ -25,7 +26,7 @@ test('session video shares canonical quotes/reservations and rejects image, MCP 
   const catalog = [video, image].map(entry => ({engine: entry.engine, surface: entry === video ? 'video' as const : 'image' as const,
     publicModes: entry === video ? ['t2v' as const, 'i2v' as const] : ['t2i' as const], modeCaps: Object.fromEntries(entry.modes.map(mode => [mode.mode, mode.ui]))}));
   const provider = new ProviderHarness(pg.pool);
-  const actor = {authMethod: 'studio-session' as const, userId: 'video-owner', projectId: 'film', clientId: null};
+  const actor = {authMethod: 'studio-session' as const, userId: 'video-owner', projectId: 'film', clientId: null, confirmationPlatform: 'android' as const};
   const options = {enabled: true, prepareDependencies: {listPublicEngines: async () => catalog, resolveRequestExecutability: () => ({executable: true as const, reason: 'available' as const})},
     confirmDependencies: {listPublicEngines: async () => catalog, resolveRequestExecutability: () => ({executable: true as const, reason: 'available' as const}), submitPaidGeneration: provider.submit}};
   const service = module.createStudioVideoGenerationService(actor, options);
@@ -40,6 +41,8 @@ test('session video shares canonical quotes/reservations and rejects image, MCP 
     await assert.rejects(module.createStudioVideoGenerationService({...actor, projectId: 'other'}, options).confirm({quoteId: quote.quoteId, confirmed: true}), {code: 'QUOTE_EXPIRED'});
     await assert.rejects(module.createStudioImageGenerationService(actor, options).confirm({quoteId: quote.quoteId, confirmed: true}), {code: 'QUOTE_EXPIRED'});
     await Promise.all([service.confirm({quoteId: quote.quoteId, confirmed: true}), service.confirm({quoteId: quote.quoteId, confirmed: true})]);
+    assert.deepEqual((await pg.pool.query('SELECT confirmation_platform FROM mcp_generation_quotes WHERE quote_id=$1',
+      [quote.quoteId])).rows, [{confirmation_platform:'android'}]);
     assert.equal(provider.captures.filter(call => call.quoteId === quote.quoteId).length, 1);
     assert.equal((await service.recover(quote.quoteId))?.jobId, quote.quoteId);
     assert.deepEqual((await pg.pool.query("SELECT amount_cents FROM app_receipts WHERE job_id=$1 AND type='charge'", [quote.quoteId])).rows.map(row => row.amount_cents), [quote.price.amountCents]);
