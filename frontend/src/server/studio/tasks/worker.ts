@@ -8,6 +8,7 @@ import {studioTaskSchemaReady,studioTaskReplyEnvelopeReady,readStudioTaskUsage,t
 import {studioTasksEnabled,StudioTaskStop} from './policy';
 import type {StudioTaskExecution} from './execution';
 import type {StudioWorkerScope} from '../worker-host';
+import {registeredStudioMessage} from '../project-reference-registry';
 import {readStudioTaskPreviousWork} from './previous-work';
 
 type ServiceOptions=Omit<Parameters<typeof createImageConversationService>[1],'enabled'|'actionsEnabled'|'assistancePolicy'|'taskExecution'>;
@@ -54,11 +55,12 @@ export async function runStudioTaskWorkerOnce(dependencies:WorkerDependencies={}
   try{
     const segment=(await query<{max_calls:number}>('SELECT max_calls FROM studio_task_segments WHERE user_id=$1 AND project_id=$2 AND request_id=$3',[row.user_id,row.project_id,row.segment_request_id]))[0];
     const previousWork=await readStudioTaskPreviousWork(actor,row.request_id,row.segment_request_id);
-    const execution:StudioTaskExecution={taskRequestId:row.request_id,segmentRequestId:row.segment_request_id,workerId,profile:row.profile_json,policyVersion:row.policy_version,maxCalls:segment.max_calls,deadlineAt:row.deadline_at!,enabled:dependencies.enabled??studioTasksEnabled(),locale:row.input_json.locale,recoveryOnly:row.replay_only||row.deadline_at!.getTime()<=Date.now(),previousWork};
+    const input = registeredStudioMessage(row.input_json);
+    const execution:StudioTaskExecution={referenceLabelChanges:row.input_json.referenceLabelChanges,taskRequestId:row.request_id,segmentRequestId:row.segment_request_id,workerId,profile:row.profile_json,policyVersion:row.policy_version,maxCalls:segment.max_calls,deadlineAt:row.deadline_at!,enabled:dependencies.enabled??studioTasksEnabled(),locale:row.input_json.locale,recoveryOnly:row.replay_only||row.deadline_at!.getTime()<=Date.now(),previousWork};
     const service=createImageConversationService(actor,{enabled:true,actionsEnabled:true,assistancePolicy:dependencies.assistancePolicy??studioAssistancePolicy(),
       mediaEnabled:process.env.STUDIO_CONVERSATION_MEDIA_ENABLED==='true',editingEnabled:process.env.STUDIO_CONVERSATION_EDITING_ENABLED==='true',exportsEnabled:process.env.STUDIO_CONVERSATION_EXPORTS_ENABLED==='true',
       ...dependencies.serviceOptions,taskExecution:execution});
-    const turn=await service.submit({...row.input_json,requestId:row.segment_request_id});
+    const turn=await service.submit({...input,requestId:row.segment_request_id});
     const usage=await readStudioTaskUsage(row),paused=!!turn.continuation;
     const code=turn.continuation?.lastError?.code;
     const reason=code?.startsWith('TASK_')?code.slice(5).toLowerCase():turn.continuation?.reason==='output_limit'?'output':'steps';

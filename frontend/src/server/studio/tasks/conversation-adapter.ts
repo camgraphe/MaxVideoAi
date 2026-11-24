@@ -4,6 +4,7 @@ import {AgentApiError} from '@/server/agent-api/errors';
 import {imageTurnInputSchema,type ImageConversation,type ImageConversationTurn} from '@/lib/studio/image-conversation-contract';
 import {STUDIO_TASK_POLICY_VERSION} from '@/lib/studio/task-budget-contract';
 import type {createImageConversationService} from '../image-conversation-service';
+import {registeredStudioMessage} from '../project-reference-registry';
 import {createStudioTaskService} from './service';
 import {studioTaskSchemaReady,projectStudioTask,type StudioTaskRow} from './repository';
 import {studioTasksEnabled} from './policy';
@@ -21,7 +22,7 @@ export function createStudioTaskConversationAdapter(actor:StudioGenerationActor,
       const task=await projectStudioTask(row),index=turns.findIndex(turn=>turn.requestId===row.segment_request_id);
       const active=['queued','running'].includes(task.state),failed=['failed','unknown'].includes(task.state);
       const existing=index>=0?turns[index]:null;
-      const turn:ImageConversationTurn={...row.input_json,requestId:row.segment_request_id,reply:null,quote:null,generation:null,createdAt:new Date(row.updated_at).toISOString(),...existing,task,
+      const turn:ImageConversationTurn={...registeredStudioMessage(row.input_json),requestId:row.segment_request_id,reply:null,quote:null,generation:null,createdAt:new Date(row.updated_at).toISOString(),...existing,task,
         state:active?'thinking':failed?'failed':existing?.state??'ready',retryable:false};
       if(index>=0)turns[index]=turn;else turns.push(turn);
     }

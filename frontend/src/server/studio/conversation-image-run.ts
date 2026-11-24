@@ -152,6 +152,7 @@ export async function runStudioImageActions(options: {
   references: ResolvedReference[]; referenceFingerprint: string;
   history: ImageConversationHistoryTurn[]; enabled: boolean;
   historyFacts?:StudioConversationHistoryFacts;
+  selectedModelId?: string;
   factory: ImageGenerationFactory; createResponse?: StudioResponseCreator;
   responseReplayOnly?: boolean;
   taskExecution?:StudioTaskExecution;
@@ -182,7 +183,7 @@ export async function runStudioImageActions(options: {
   const director = createStudioConversationDirector({clientSurface: input.clientSurface, creatorEnabled:creator.executionEnabled,model: assistance?.model,runtimePolicy:assistance?.tariff_snapshot?.runtime,modelForNextCall:()=>currentModel,createResponse: options.createResponse, mediaEnabled: options.mediaEnabled,characterEnabled:options.characterEnabled,characterBuilderEnabled:options.characterBuilderEnabled,editingEnabled: options.editingEnabled,exportsEnabled: options.exportsEnabled,analysisEnabled,analysisSponsored,analysisProfiles:{video:!!analysisPolicy?.video,audio:!!analysisPolicy?.audio},assistanceCreditsEnabled:policy.credits===true,taskExecution:options.taskExecution,localGreetingEnabled:!options.responseReplayOnly&&!hasGreetingCheckpoint});
   const character = () => (options.characterFactory ?? createCharacterStudioIntegration)(actor,{executionEnabled:options.characterEnabled===true});
   let currentCallId: string;
-  const execute = createStudioActionExecutor(actor, {accountUrl:options.requestOrigin,referenceFingerprint:options.referenceFingerprint,enabled: options.enabled, generation, factories: options.factories, mediaEnabled: options.mediaEnabled,
+  const execute = createStudioActionExecutor(actor, {selectedModelId:options.selectedModelId,accountUrl:options.requestOrigin,referenceFingerprint:options.referenceFingerprint,enabled: options.enabled, generation, factories: options.factories, mediaEnabled: options.mediaEnabled,
     creator,prepareCreator:action=>creator.prepare(action,async(quote,executor)=>{await completeStudioAction(actor,turn,currentCallId,{ok:true,action:action.action,data:quote},executor);}),
     character:options.characterEnabled ? character() : undefined,
     saveCharacter:options.characterEnabled?request=>saveStudioConversationCharacter(actor,request,
@@ -276,7 +277,7 @@ export async function runStudioImageActions(options: {
       }).prepare(request);
     },
   });
-  const draft = await director({referenceFingerprint:options.referenceFingerprint,message: input.message, shotPlanRevision:input.shotPlanRevision, locale:input.locale, history: options.history, references: options.references, referenceMentions: input.referenceMentions, historyFacts: options.historyFacts,
+  const draft = await director({referenceFingerprint:options.referenceFingerprint,message: input.message, shotPlanRevision:input.shotPlanRevision, locale:input.locale, history: options.history, references: options.references, referenceMentions: input.referenceMentions, historyFacts: options.historyFacts,selectedModelId:options.selectedModelId,
     project: await readStudioConversationProject(actor,{exportsEnabled:options.editingEnabled&&options.exportsEnabled,...(options.taskExecution?{taskContext:{message:input.message,requestId:options.taskExecution.taskRequestId}}:{})}),
     checkpoint: async (index, create, params, checkpointOptions) => {
       let solBounds:StudioLunaFallback['solBounds'];

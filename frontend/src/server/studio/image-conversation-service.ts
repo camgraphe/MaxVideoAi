@@ -16,7 +16,7 @@ import {recordedStudioOutputDuration,recordedStudioSourceVideoOutput} from './co
 import {recallStudioReferences} from './conversation-reference-recall';
 import {readStudioArchiveDecisions, readStudioConversationArchive} from './conversation-archive';
 import {projectStudioQuoteDirections,readStudioHistoricalEstimates} from './conversation-history-facts';
-import { getBaseEngineIncludingHidden } from "@/lib/engines";
+
 import { z } from "zod";
 import {
   imageTurnInputSchema,
@@ -56,6 +56,7 @@ import {resolveStudioConversationAttachments,type StudioAttachmentFactsDependenc
 import {buildStudioGenerationMediaAccess} from './generation-media-access';
 import {projectStudioReply} from '@/lib/studio/conversation-reply';
 import {projectStudioQuotedReply} from './conversation-quote-reply';
+import {studioQuoteSourceLabels, studioQuoteModelLabel} from './conversation-quote-sources';
 import {
   requestedStudioReplyLanguage, STUDIO_QUOTE_LANGUAGE_HISTORY_LIMIT, studioQuoteReplyLanguage, type StudioQuoteLanguageContext,
 } from './conversation-language';
@@ -66,6 +67,7 @@ type SavedReplyQuote = {
   priceCents: number;
   currency: string;
   request: NonNullable<ImageConversationTurn['quote']>['summary'];
+  sources?: ReturnType<typeof studioQuoteSourceLabels>;
 };
 
 function projectTurnReply(turn: StoredImageTurn, quote?: SavedReplyQuote, locale?: ImageTurnInput['locale']) {
@@ -179,6 +181,7 @@ export function createImageConversationService(
     const quoteLocale = turn.quote_id && quote
       ? studioQuoteReplyLanguage(turn.input_json, quoteLanguageContext ?? await readQuoteLanguageContext(actor, turn.request_id))
       : undefined;
+    const sources = quote && quoteLocale ? studioQuoteSourceLabels(turn,quote.request,quoteLocale) : undefined;
     return {
       requestId: turn.request_id,
       message: turn.input_json.message,
@@ -189,7 +192,7 @@ export function createImageConversationService(
       ...(turn.input_json.renewedFromRequestId ? {renewedFromRequestId: turn.input_json.renewedFromRequestId} : {}),
       ...(turn.input_json.taskBudget?{taskBudget:turn.input_json.taskBudget}:{}),
       ...(turn.input_json.locale?{locale:turn.input_json.locale}:{}),
-      reply: projectTurnReply(turn, quote ?? undefined, quoteLocale),
+      reply: projectTurnReply(turn, quote ? {...quote,sources} : undefined, quoteLocale),
       ...(creatorQuote?{creatorQuote,creatorOperation:await creator().read(creatorQuote)}:{}),
       ...(turn.draft_json?.exportQuote ? {exportQuote: turn.draft_json.exportQuote} : {}),
       ...(turn.draft_json?.analysisQuote ? {analysisQuote:turn.draft_json.analysisQuote} : {}),
@@ -203,6 +206,7 @@ export function createImageConversationService(
             expiresAt: quote.expiresAt.toISOString(),
             requestHash: quote.requestHash,
             summary: quote.request,
+            ...(sources?.displayNames ? {sourceReferenceSummary:sources.displayNames} : {}),
             ...(quote.request.surface==='video'&&recordedStudioOutputDuration(quote.pricingSnapshot)!==undefined
               ? {outputDurationSec:recordedStudioOutputDuration(quote.pricingSnapshot)} : {}),
             ...(quote.request.surface==='video'&&recordedStudioSourceVideoOutput(quote.pricingSnapshot)
@@ -216,7 +220,7 @@ export function createImageConversationService(
               quote.expiresAt.getTime() <= Date.now()
                 ? "expired"
                 : quote.state,
-            modelLabel:characterBuilder?'Character Builder': recast ? 'Character Recast' : getBaseEngineIncludingHidden(quote.request.engineId)?.label ?? quote.request.engineId,
+            modelLabel:characterBuilder?'Character Builder': recast ? 'Character Recast' : studioQuoteModelLabel(quote.request),
             ...(builderQuote?{characterBuilder:{confirmationEnabled:characterBuilderEnabled,recipe:projectCharacterBuilderRecipe(builderQuote.recipe)}}:{}),
             ...(recast ? {recast:{
               ...(videoPassage ? {videoRange:{startSec:videoPassage.startSec,endSec:videoPassage.endSec}} : {}),
@@ -265,7 +269,7 @@ export function createImageConversationService(
       const { turn, claimed, responseReplayOnly } = await claimImageTurn(actor, submitted, {allowRecordedResponseRecovery: dependencies.actionsEnabled === true,taskWorkerId:dependencies.taskExecution?.workerId, renewalQuoteId});
       if (!claimed) return projectTurn(turn);
       try {
-        const recall = await recallStudioReferences(actor, submitted, turn.draft_json);
+        const recall = await recallStudioReferences(actor, submitted, turn.draft_json, dependencies.taskExecution?.referenceLabelChanges);
         const input = recall.input;
         if (recall.clarification) {
           if (turn.draft_json) throw new AgentApiError('REFERENCE_INVALID', recall.clarification);
@@ -329,7 +333,7 @@ export function createImageConversationService(
         const draft =
           turn.draft_json ??
           (useActions ? await runStudioImageActions({
-            actor, turn, input, references: refs, referenceFingerprint, responseReplayOnly,
+            actor, turn, input, references: refs, referenceFingerprint, responseReplayOnly, selectedModelId: recall.selectedModelId,
             historyFacts,
             history: history.map(saved => ({message: saved.input_json.message, reply: projectTurnReply(saved),
               ...(saved.input_json.referenceMentions ? {referenceMentions: saved.input_json.referenceMentions} : {})})),

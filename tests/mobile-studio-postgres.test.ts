@@ -8,6 +8,7 @@ import { getDb } from '../frontend/src/lib/db';
 import { chooseStudioAssistance } from '../frontend/src/server/studio/assistance-ledger';
 import { STUDIO_TASK_PROFILES } from '../frontend/src/lib/studio/task-budget-contract';
 import { handleMobileStudio } from '../frontend/src/server/mobile/studio';
+import {runStudioTaskWorkerOnce} from '../frontend/src/server/studio/tasks/worker';
 import { createPaidGenerationTestSchema, startDisposablePostgres } from './helpers/disposable-postgres';
 
 const headers = { authorization: 'Bearer offline-fixture', 'x-maxvideoai-auth-mode': 'bearer' };
@@ -281,4 +282,69 @@ test('Studio phone projects, journal and reviewed messages share website ownersh
   assert.equal(old[0].profile_json.targetInputTokens, undefined);
   assert.deepEqual(old[0].input_json.referenceMentions, [{ assetId: foreignImage, label: 'Image 7' }]);
   assert.equal((await pg.pool.query('SELECT count(*)::int AS n FROM media_assets WHERE user_id=$1',[owner])).rows[0].n, 3);
+
+  await t.test('two phones allocate stable image labels under the task lock and can replay either saved request', async () => {
+    const finish = (id:string) => pg.pool.query("UPDATE studio_tasks SET state='completed',phase='done' WHERE request_id=$1",[id]);
+    await finish(requestId);
+    await finish(legacy.requestId);
+    const ids = ['ma_'+'1'.repeat(32),'ma_'+'2'.repeat(32)];
+    for (const id of ids) await pg.pool.query(`INSERT INTO media_assets(id,public_id,user_id,kind,url,mime_type,source,status)
+      VALUES($1,$2,$3,'image',$4,'image/png','upload','ready')`,[randomUUID(),id,owner,'https://cdn.maxvideoai.com/'+id+'.png']);
+    // The older phone omits the label. The other phone still has Image 1 in its local draft.
+    const commands = ids.map((assetId,index)=>({...command,requestId:randomUUID(),locale:'fr',message:'Une autre photo pour plus tard.',
+      media:[{kind:'image',assetId,...(index ? {label:'Image 1'} : {})}]}));
+    const results = await Promise.all(commands.map(input=>route(projectId,input)));
+    assert.deepEqual(results.map(r=>r.status).sort(),[200,429]);
+    const firstIndex = results.findIndex(r=>r.status===200);
+    const first = commands[firstIndex], second = commands[1-firstIndex];
+    await finish(first.requestId);
+    assert.equal((await route(projectId,second)).status,200);
+    await finish(second.requestId);
+    for (const [input,label] of [[first,'Image 2'],[second,'Image 3']] as const) {
+      const {rows:[row]} = await pg.pool.query('SELECT input_json FROM studio_tasks WHERE request_id=$1',[input.requestId]);
+      assert.deepEqual(row.input_json.referenceMentions,[{assetId:input.media[0].assetId,label}]);
+      assert.equal((await route(projectId,input)).status,200);
+      assert.equal((await route(projectId,{...input,media:[{...input.media[0],label}]})).status,200);
+      assert.ok((await route(projectId,{...input,message:'Different intent'})).status>=400);
+    }
+    const retry = {...first,requestId:randomUUID(),message:'Retouche Image 1.'};
+    assert.equal((await route(projectId,retry)).status,200);
+    let calls = 0;
+    assert.ok(await runStudioTaskWorkerOnce({enabled:true,serviceOptions:{createActionResponse:async()=>{
+      calls++; throw Error('A conflicting label needs clarification before any model call.');
+    }}}));
+    assert.equal(calls,0);
+    const {rows:[processed]} = await pg.pool.query(`SELECT s.state,s.error,s.input_json->'referenceLabelChanges' AS changes,
+      t.state AS turn_state,t.draft_json->>'reply' AS reply FROM studio_tasks s LEFT JOIN studio_image_turns t
+      USING(user_id,project_id,request_id) WHERE s.request_id=$1`,[retry.requestId]);
+    assert.equal(processed.state,'completed',JSON.stringify(processed));
+    const journal = await (await route(projectId,undefined,owner,'?mediaLabels=1')).json();
+    assert.deepEqual(journal.referenceOrdinals,{image:3,video:1,audio:1});
+    const clarified = journal.turns.find((turn:{requestId:string})=>turn.requestId===retry.requestId);
+    assert.equal(clarified.message,retry.message);
+    assert.match(clarified.reply,/Image 1 ou Image 2/);
+    assert.deepEqual(clarified.media,[{...first.media[0],label:'Image 2'}]);
+    assert.equal(clarified.quote,null);
+    assert.equal((await pg.pool.query('SELECT count(*)::int n FROM studio_assistance_calls')).rows[0].n,0);
+    assert.equal((await pg.pool.query('SELECT count(*)::int n FROM app_jobs')).rows[0].n,0);
+    const mixed = [];
+    for (const ref of [media[2],media[0]]) {
+      const id = 'ma_' + randomUUID().replaceAll('-','');
+      await pg.pool.query(`INSERT INTO media_assets(id,public_id,user_id,kind,url,mime_type,source,status)
+        SELECT $1,$2,user_id,kind,$5,mime_type,source,status FROM media_assets WHERE user_id=$3 AND public_id=$4`,
+        [randomUUID(),id,owner,ref.assetId,'https://cdn.maxvideoai.com/'+id+(ref.kind==='audio'?'.mp3':'.mp4')]);
+      mixed.push({...ref,assetId:id,label:ref.kind === 'video' ? 'Video 1' : 'Audio 1'});
+    }
+    const mixedInput={...command,requestId:randomUUID(),message:'Save these files for later.',media:mixed};
+    assert.equal((await route(projectId,mixedInput)).status,200);
+    assert.equal((await route(projectId,mixedInput)).status,200);
+    const withMedia=await (await route(projectId,undefined,owner,'?mediaLabels=1')).json();
+    assert.deepEqual(withMedia.referenceOrdinals,{image:3,video:2,audio:2});
+    assert.deepEqual(withMedia.turns.find((turn:{requestId:string})=>turn.requestId===mixedInput.requestId).media,
+      mixed.map((ref,i)=>({...ref,label:['Video 2','Audio 2'][i]})));
+    await finish(mixedInput.requestId);
+    const next = await (await route(undefined,{...create,idempotencyKey:randomUUID()})).json();
+    assert.equal((await route(next.projectId,{...first,requestId:randomUUID(),media:[{kind:'image',assetId:first.media[0].assetId}]})).status,200);
+    assert.deepEqual((await (await route(next.projectId,undefined,owner,'?mediaLabels=1')).json()).referenceOrdinals,{image:1,video:0,audio:0});
+  });
 });
