@@ -23,7 +23,7 @@ import {
   type StudioQuoteLanguageContext, type StudioTurnLanguageInput,
 } from './conversation-language';
 
-import type {StoredStudioDraft, StudioRecalledReference} from './project-reference-registry';
+import {registeredStudioMessage, type StoredStudioDraft, type StudioRecalledReference} from './project-reference-registry';
 
 export type StoredImageTurn = {
   /** Server-selected sources for this execution, saved only with its draft. */
@@ -144,7 +144,7 @@ export async function claimImageTurn(
         WHERE s.user_id=$1 AND s.project_id=$2 AND s.request_id=$3`,[actor.userId,actor.projectId,parsed.requestId]))[0];
       if(task){
         if(!options.taskWorkerId&&existing?.state==='ready')return {turn:existing,claimed:false};
-        if(task.state!=='running'||task.worker_id!==options.taskWorkerId||task.segment_request_id!==parsed.requestId||stableJson({...task.input_json,requestId:parsed.requestId})!==stableJson(parsed))throw new AgentApiError('RATE_LIMITED','This task is queued or has another active worker.');
+        if(task.state!=='running'||task.worker_id!==options.taskWorkerId||task.segment_request_id!==parsed.requestId||stableJson({...registeredStudioMessage(task.input_json),requestId:parsed.requestId})!==stableJson(parsed))throw new AgentApiError('RATE_LIMITED','This task is queued or has another active worker.');
       }else if(parsed.taskBudget)throw new AgentApiError('ENGINE_UNAVAILABLE','Review and enqueue this task before dispatch.');
       const another=await executor.query("SELECT request_id FROM studio_tasks WHERE user_id=$1 AND state IN ('queued','running','unknown') AND request_id IS DISTINCT FROM $2::uuid LIMIT 1",[actor.userId,task?.request_id??null]);
       if(another.length)throw new AgentApiError('RATE_LIMITED','Finish or recover the previous Studio task.');

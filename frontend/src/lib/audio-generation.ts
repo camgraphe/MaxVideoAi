@@ -79,6 +79,9 @@ export const AUDIO_PACK_VALUES = ['music_only', 'voice_only', 'sfx_only', 'song'
 export type AudioPackId = (typeof AUDIO_PACK_VALUES)[number];
 
 export type AudioVoiceModel = 'seed' | 'minimax' | 'eleven-v4';
+export const AUDIO_VOICE_MODEL_LABELS: Record<AudioVoiceModel,string> = {
+  seed: 'Seed Audio 1.0', minimax: 'MiniMax Speech-02 HD', 'eleven-v4': 'Eleven v4',
+};
 export const AUDIO_MINIMAX_VOICE_VALUES = ['English_FriendlyPerson', 'Wise_Woman'] as const;
 export const AUDIO_MINIMAX_SPEECH_MODEL_ID = 'fal-ai/minimax/speech-02-hd';
 export const AUDIO_SONG_MODEL_ID = 'fal-ai/minimax-music/v2.6';
@@ -418,19 +421,19 @@ function buildMusicVendorCostComponent(input: { durationSec: number; musicModel?
 function buildVoiceVendorCostComponent(durationSec: number, script?: string | null, voiceModel?: AudioVoiceModel | null, wholeCentEstimate = false) {
   if (voiceModel === 'eleven-v4') {
     const characters = Array.from(script?.trim() ?? '').length;
-    return { type: 'voice_eleven_v4', label: 'Eleven v4', model: 'elevenlabs/tts/eleven-v4',
+    return { type: 'voice_eleven_v4', label: AUDIO_VOICE_MODEL_LABELS['eleven-v4'], model: 'elevenlabs/tts/eleven-v4',
       unit: 'character', units: characters, amountCents: characters * 0.008 };
   }
   if (voiceModel === 'minimax') {
     const characters = Array.from(script?.trim() ?? '').length;
-    return { type: 'voice_minimax_speech_02_hd', label: 'MiniMax Speech-02 HD', model: AUDIO_MINIMAX_SPEECH_MODEL_ID,
+    return { type: 'voice_minimax_speech_02_hd', label: AUDIO_VOICE_MODEL_LABELS.minimax, model: AUDIO_MINIMAX_SPEECH_MODEL_ID,
       unit: 'character', units: characters, amountCents: characters * 0.01 };
   }
   const exactMinutes = normalizeAudioDuration(durationSec) / 60;
   const billedMinutes = Number(exactMinutes.toFixed(2));
   return {
     type: 'voice_seed_audio_1_0',
-    label: 'Seed Audio 1.0',
+    label: AUDIO_VOICE_MODEL_LABELS.seed,
     model: AUDIO_SEED_AUDIO_MODEL_ID,
     unit: 'minute',
     units: wholeCentEstimate ? billedMinutes : exactMinutes,

@@ -3,6 +3,11 @@ import type { StudioAssistantModel } from './studio/assistance-contract';
 export type StudioReference = { assetId: string; kind: 'image' | 'video' | 'audio'; label?: string };
 const referenceTypes = { image: 'Image', video: 'Video', audio: 'Audio' };
 export const studioReferenceLabel = (kind: StudioReference['kind'], ordinal: number) => `${referenceTypes[kind]} ${ordinal}`;
+export function studioReferenceDisplayLabel(label: string, locale: 'en'|'fr'|'es') {
+  if (locale === 'fr') return label.replace(/^Video /, 'Vidéo ');
+  if (locale === 'es') return label.replace(/^Image /, 'Imagen ').replace(/^Video /, 'Vídeo ');
+  return label;
+}
 export function studioReferenceOrdinal(kind: StudioReference['kind'], label?: string) {
   const parts = typeof label === 'string' ? label.match(/^(Image|Video|Audio) ([1-9]\d{0,5})$/) : null;
   return parts?.[1] === referenceTypes[kind] ? Number(parts[2]) : 0;

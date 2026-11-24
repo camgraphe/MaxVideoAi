@@ -48,12 +48,40 @@ test('persisted Studio quotes and MCP preparations agree on optional image guida
     const quote=studio.quotes[0];
     if(quote.request_json.surface==='audio')throw new Error('Expected visual quote');
     assert.equal(quote.request_json.references.length,item.refs.length);
+    if (item.name === 'wan-extend-owned-clip') assert.match(studio.result?.reply ?? '', /Wan 3.*using Video 1/i);
     const mcp=await runtime.prepareMcp(quote.request_json,'parity-'+item.name);
     assert.deepEqual(mcp.quote.request_json,quote.request_json);
     assert.equal(mcp.quote.price_cents,quote.price_cents);
     assert.equal(mcp.quote.currency,quote.currency);
     assert.equal(mcp.quote.auth_origin,'oauth');assert.equal(mcp.quote.studio_project_id,null);
     assert.deepEqual(studio.counts,{jobs:0,charges:0});assert.equal(studio.parity[0].matched,true);
+  });
+  await t.test('selecting the offered video model reopens just the clip in the signed extension',async()=>{
+    const id='wan-selected-after-comparison', requestId=randomUUID();
+    const offered=await runtime.submit(id,'I may also use this voice later. How can I extend my clip?',['watch_video','voice_sample'],async()=>({
+      id:'video-offer',model:'gpt-6.1-sol',status:'completed',service_tier:'default',output_text:JSON.stringify({reply:'Would you like Wan 3 for Video 1?'}),output:[],
+    }));
+    assert.equal(offered.quotes.length,0);
+    const request=cases.find(item=>item.name==='wan-extend-owned-clip')!;
+    const assetId=runtime.referenceId(id,'watch_video');
+    const args={...request.args,references:[{role:'source',slot:null,ref:{type:'asset',kind:'video',assetId}}]};
+    const selected=await runtime.submit(id,'Wan 3',[],async params=>{
+      const attachments=records(params).filter(item=>item.type==='input_text'&&String(item.text).startsWith('Attached media for this message only'));
+      assert.equal(attachments.length,1);
+      assert.ok(String(attachments[0].text).includes(assetId));
+      return {id:'video-selected',model:'gpt-6.1-sol',status:'completed',service_tier:'default',output_text:'',output:[
+        {type:'function_call',name:'video_prepare',call_id:'video-selected',arguments:JSON.stringify(args)}]};
+    },requestId);
+    assert.equal(selected.error,undefined);
+    assert.match(selected.result?.reply??'',/Wan 3.*using Video 1/i);
+    assert.doesNotMatch(selected.result!.reply!,/Audio 1/);
+    assert.equal(selected.quotes.length,1);
+    assert.equal(selected.quotes[0].request_json.references.length,1);
+    assert.ok(JSON.stringify(selected.quotes[0].request_json.references).includes(assetId));
+    const reopened=await runtime.submit(id,'Wan 3',[],async()=>{throw Error('Unexpected model call');},requestId);
+    assert.equal(reopened.result?.reply,selected.result?.reply);
+    assert.deepEqual(reopened.quotes,selected.quotes);
+    assert.deepEqual(reopened.counts,{jobs:0,charges:0});
   });
   for(let index=0;index<21;index++){
     const response=async()=>({id:'human-response-'+index,model:'gpt-6.1-sol',status:'completed' as const,service_tier:'default' as const,usage:undefined,output_text:JSON.stringify({reply:'What would you like to create?'}),output:[]});
@@ -209,6 +237,38 @@ test('real conversation Audio preparation covers seven packs, exact clone/source
     assert.deepEqual(result.fixtureReferences.map(ref=>ref.key),item.keys);
     const replay=await runtime.submit(id,'Prepare this Audio pack using my exact references.',item.keys,async()=>{throw new Error('Replay must not buy another Response.');},requestId);
     assert.deepEqual(replay.quotes,result.quotes);assert.deepEqual(replay.counts,{jobs:0,charges:0});
+    for (const key of item.keys) assert.ok(result.result?.reply?.includes(key === 'watch_video' ? 'Video 1' : 'Audio 1'));
+    assert.equal(replay.result?.reply,result.result?.reply);
+  });
+  for (const [mode,choice,keys,offer] of [
+    ['voice_only','Seed Audio',['voice_sample'],'Should I use Seed Audio 1.0 for Audio 1?'],
+    ['cinematic','Cinematic Audio',['watch_video'],'Would you like Cinematic Audio for Video 1?'],
+    ['cinematic_voice','Cinematic + Voice',['watch_video','voice_sample'],'Would you like Cinematic + Voice for Video 1 and Audio 1?'],
+  ] as const) await t.test('recall for ' + mode,async()=>{
+    const id='audio-offer-'+mode;
+    const offered=await runtime.submit(id,'What can I make with these files?',[...keys],async()=>({
+      id:'offer-'+mode,model:'gpt-6.1-sol',status:'completed',service_tier:'default',output_text:JSON.stringify({reply:offer}),output:[],
+    }));
+    assert.equal(offered.result?.reply,offer);
+    const pack=cases.find(item=>item.mode===mode)!;
+    const refs=keys.map(key=>({role:key==='watch_video'?'source_video':'voice_sample',
+      asset:{type:'asset',kind:key==='watch_video'?'video':'audio',assetId:runtime.referenceId(id,key)}}));
+    const requestId=randomUUID();
+    const selected=await runtime.submit(id,choice,[],async params=>{
+      const seen=records(params).filter(item=>item.type==='input_text'&&String(item.text).startsWith('Attached media for this message only'));
+      for (const ref of refs) assert.ok(seen.some(item=>String(item.text).includes(ref.asset.assetId)), 'source presented to the director');
+      return {id:'select-'+mode,model:'gpt-6.1-sol',status:'completed',service_tier:'default',output_text:'',output:[{type:'function_call',
+        name:'audio_prepare',call_id:'select-call-'+mode,arguments:JSON.stringify({reply:'Review the audio quote.',mode,modelId:pack.modelId,
+          prompt:'Gentle music.',settings:pack.settings,references:refs,outputCount:1})}]};
+    },requestId);
+    assert.deepEqual(selected.error,undefined);
+    assert.deepEqual(selected.quotes[0]?.request_json.references,refs);
+    assert.deepEqual(selected.result?.attachments ?? [],[]);
+    for (const key of keys) assert.ok(selected.result?.reply?.includes(key==='watch_video'?'Video 1':'Audio 1'));
+    const reopened=await runtime.submit(id,choice,[],async()=>{throw Error('Reopening a quote must not call the director.');},requestId);
+    assert.equal(reopened.result?.reply,selected.result?.reply);
+    assert.deepEqual(reopened.quotes,selected.quotes);
+    assert.deepEqual(reopened.counts,{jobs:0,charges:0});
   });
   const id='legacy-clone';const sample={role:'voice_sample',asset:{type:'asset',kind:'audio',assetId:runtime.referenceId(id,'voice_sample')}};
   const legacy=await runtime.submit(id,'Clone the attached voice for this script.',['voice_sample'],async()=>({id:'legacy-clone-response',model:'gpt-6.1-sol',status:'completed',service_tier:'default',usage:undefined,output_text:'',output:[{type:'function_call',name:'voice_prepare',call_id:'legacy-clone-call',arguments:JSON.stringify({reply:'Review the clone quote.',script:'This is the exact supplied script.',language:'english',modelId:'audio-voice-only',settings:[{name:'voiceModel',value:'seed'}],references:[sample],outputCount:1})}]}));

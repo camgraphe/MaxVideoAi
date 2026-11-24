@@ -1,4 +1,6 @@
-import { query } from '@/lib/db';
+import { query, type TransactionQueryExecutor } from '@/lib/db';
+import { studioReferenceLabel, studioReferenceOrdinal } from '@/lib/mobile-studio';
+import { AgentApiError } from '@/server/agent-api/errors';
 import type { ImageDraft, ImageTurnInput } from '@/lib/studio/image-conversation-contract';
 import { studioTaskSchemaReady } from './tasks/repository';
 
@@ -23,10 +25,10 @@ export function originalStudioReferences(input: ImageTurnInput, requestId: strin
   });
 }
 
-async function originalEntries(beforeTurn: boolean, exactTurns = false) {
+async function originalEntries(beforeTurn: boolean, exactTurns = false, tasksReady?: boolean) {
   const selection = exactTurns ? 'AND t.request_id=ANY($4::uuid[])' : '';
   const before = beforeTurn ? 'AND (t.created_at,t.request_id) < (SELECT created_at,request_id FROM anchor)' : '';
-  const tasks = await studioTaskSchemaReady();
+  const tasks = tasksReady ?? await studioTaskSchemaReady();
   return `WITH anchor AS (
       SELECT created_at,request_id FROM studio_image_turns
       WHERE user_id=$1 AND project_id=$2 ${beforeTurn ? 'AND request_id=$3' : 'AND false'}
@@ -72,6 +74,60 @@ export async function readStudioProjectReferenceOrdinals(actor: Project): Promis
   return ordinals;
 }
 
+export type RegisteredStudioInput = ImageTurnInput & { referenceLabelChanges?: {from:string; to:string}[] };
+
+/** Only the canonical message, attachments and labels participate in the worker's turn identity. */
+export function registeredStudioMessage(registered: RegisteredStudioInput): ImageTurnInput {
+  const input = {...registered};
+  delete input.referenceLabelChanges;
+  return input;
+}
+
+/** Called inside task admission, after acquiring the Studio account lock and checking replay identity. */
+export async function registerStudioReferenceLabels(actor: Project, input: ImageTurnInput, tx: TransactionQueryExecutor): Promise<RegisteredStudioInput> {
+  const refs = originalStudioReferences(input,input.requestId);
+  if (!refs.length) return input;
+  const rows = await tx.query<{
+    kind:Kind; maximum:number; occupied:string[]; known:{assetId:string; label:string}[];
+  }>(`${await originalEntries(false,false,true)}, labels AS (
+    SELECT kind,label,split_part(label,' ',2)::int AS ordinal,count(DISTINCT asset_id) AS owners,min(asset_id) AS asset
+    FROM entries GROUP BY kind,label
+  ) SELECT kind,max(ordinal)::int AS maximum,
+    coalesce(array_agg(label) FILTER (WHERE label=ANY($4::text[])),ARRAY[]::text[]) AS occupied,
+    coalesce(jsonb_agg(jsonb_build_object('assetId',asset,'label',label) ORDER BY ordinal)
+      FILTER (WHERE owners=1 AND asset=ANY($3::text[])),'[]'::jsonb) AS known
+    FROM labels GROUP BY kind`,[actor.userId,actor.projectId,refs.map(ref=>ref.assetId),refs.map(ref=>ref.label)]);
+  const maxima: StudioReferenceOrdinals = {image:0,video:0,audio:0};
+  const known = new Map<string,string>();
+  const occupied = new Set<string>();
+  for (const row of rows) {
+    maxima[row.kind] = row.maximum;
+    for (const label of row.occupied) occupied.add(label);
+    for (const binding of row.known) if (!known.has(binding.assetId)) known.set(binding.assetId,binding.label);
+  }
+  const changes: NonNullable<RegisteredStudioInput['referenceLabelChanges']> = [];
+  const bindings = new Map(refs.map(ref => {
+    let label = known.get(ref.assetId);
+    if (!label) {
+      const ordinal = Math.max(maxima[ref.kind]+1, studioReferenceOrdinal(ref.kind,ref.label));
+      if (ordinal>999999) throw new AgentApiError('PARAMETER_INVALID','This project has reached its reference label limit.');
+      maxima[ref.kind] = ordinal;
+      label = studioReferenceLabel(ref.kind,ordinal);
+    }
+    if (ref.label !== label && occupied.has(ref.label)) changes.push({from:ref.label,to:label});
+    occupied.add(label);
+    return [ref.assetId,{assetId:ref.assetId,label}] as const;
+  }));
+  // The phone journal also uses the submitted mention order for mixed image, video and audio.
+  const referenceMentions = (input.referenceMentions ?? []).map(({assetId}) => {
+    const assigned = bindings.get(assetId)!;
+    bindings.delete(assetId);
+    return assigned;
+  });
+  referenceMentions.push(...bindings.values());
+  return {...input,referenceMentions,...(changes.length ? {referenceLabelChanges:changes} : {})};
+}
+
 /** Two distinct files per requested label suffice to detect ambiguity across the whole project. */
 export async function findStudioProjectReferences(actor: Project, before: string, labels: string[]) {
   return query<StudioRecalledReference>(
@@ -88,9 +144,10 @@ export async function findStudioProjectReferences(actor: Project, before: string
 /** A natural reference to the project's one photo (or both photos) must be unique. */
 export async function findStudioProjectReferencesByKind(actor: Project, before: string, kind: Kind) {
   return query<StudioRecalledReference>(
-    `${await originalEntries(true)}
-    SELECT DISTINCT ON (asset_id) request_id AS "requestId",asset_id AS "assetId",kind,label
-    FROM entries WHERE kind=$4 ORDER BY asset_id,request_id LIMIT 3`,
+    `${await originalEntries(true)}, files AS (
+      SELECT DISTINCT ON (asset_id) request_id,asset_id,kind,label,split_part(label,' ',2)::int AS ordinal
+      FROM entries WHERE kind=$4 ORDER BY asset_id,ordinal,request_id
+    ) SELECT request_id AS "requestId",asset_id AS "assetId",kind,label FROM files ORDER BY ordinal,asset_id LIMIT 3`,
     [actor.userId, actor.projectId, before, kind],
   );
 }

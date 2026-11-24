@@ -1,4 +1,5 @@
 import { getModelRoster } from '@/lib/model-roster';
+import { AUDIO_PACK_VALUES, AUDIO_VOICE_MODEL_LABELS, getAudioPackConfig } from '@/lib/audio-generation';
 
 // Compare user-visible names, family names and engine IDs on word boundaries.
 function words(value: string) {
@@ -8,6 +9,15 @@ function words(value: string) {
 const names = new Set(getModelRoster().flatMap(model =>
   [model.engineId, model.marketingName, model.family ?? ''].filter(Boolean).map(words),
 ));
+for (const mode of AUDIO_PACK_VALUES) {
+  const pack = getAudioPackConfig(mode);
+  names.add(words(pack.engineId));
+  names.add(words(pack.label));
+}
+for (const label of Object.values(AUDIO_VOICE_MODEL_LABELS)) {
+  names.add(words(label));
+  names.add(words(label.replace(/\s+\d+(?:\.\d+)*$/, '')));
+}
 
 export function studioModelChoice(message: string) {
   if (message.length > 160) return null;
@@ -21,7 +31,7 @@ export function studioModelChoice(message: string) {
 export function offeredStudioModel(reply: string, choice: string) {
   const normalized = ' ' + words(reply) + ' ';
   if (!normalized.includes(' ' + choice + ' ') || askedToReattach(reply)) return false;
-  return /\b(?:lequel|laquelle|quel modele|choisi\w*|choix|prefer\w*|souhait\w*|veux tu|voulez vous|which|choose|pick|select|would you like|shall i|quieres|prefier\w*|cual|elige|elegir|que modelo)\b/.test(normalized)
+  return /\b(?:lequel|laquelle|quel modele|choisi\w*|choix|prefer\w*|souhait\w*|veux tu|voulez vous|which|choose|pick|select|would you like|shall i|should i|quieres|prefier\w*|cual|elige|elegir|que modelo)\b/.test(normalized)
     || (reply.includes('?') && /\b(?:prepar\w*|go with|on part sur)\b/.test(normalized));
 }
 

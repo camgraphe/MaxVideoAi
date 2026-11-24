@@ -81,7 +81,7 @@ test('a Studio model choice resumes its offered edit and keeps the quote tied to
   assert.equal((await open().submit(select)).quote?.quoteId,selected.quote?.quoteId);
   assert.notEqual(change.quote?.quoteId,selected.quote?.quoteId);
   // Use an independent old project for each boundary, keeping the same account and available assets.
-  async function scenario(assets: string[], reply: string, choice: string, intervening?: string) {
+  async function scenario(assets: string[], reply: string, choice: string, intervening?: string, anotherPhoto = false) {
     const projectId = randomUUID(), source = message('Une retouche de ma photo.', assets, assets.map((_,i) => 'Image ' + (i+1)));
     await pool.query('INSERT INTO studio_projects(id,user_id,name) VALUES($1,$2,$3)',[projectId,actor.userId,'Photos']);
     const insert = (turn: ReturnType<typeof message>, answer: string, minutes: number) => pool.query(
@@ -89,7 +89,7 @@ test('a Studio model choice resumes its offered edit and keeps the quote tied to
        VALUES($1,$2,$3,$4,$5,$6,$4,$7,now(),'ready',now()-interval '2 days'+$8*interval '1 minute')`,
       [actor.userId,projectId,turn.requestId,'a'.repeat(64),turn,{reply:answer,image:null},randomUUID(),minutes]);
     await insert(source,reply,0);
-    if (intervening) await insert(message(intervening),'Compris.',1);
+    if (intervening) await insert(anotherPhoto ? message(intervening,[photo2],['Image 2']) : message(intervening),'Compris.',1);
     const before = observed.length;
     const result = await open({...actor,projectId}).submit(message(choice));
     return {result, seen:observed.slice(before)};
@@ -104,6 +104,9 @@ test('a Studio model choice resumes its offered edit and keeps the quote tied to
   assert.equal(ambiguous.result.quote,null);
   assert.deepEqual(ambiguous.seen,[]);
   assert.match(ambiguous.result.reply!,/Image 1 ou Image 2/);
+  const intervening = await scenario([photo1],comparison,'Seedream','Voici une autre photo.',true);
+  assert.deepEqual(intervening.seen,[]);
+  assert.match(intervening.result.reply!,/Image 1 ou Image 2/);
   for (const [offer,choice,intervening] of [[comparison,'Seedream','Ignore Image 1.'],
     [comparison,'Seedream','Parlons maintenant de musique.'],
     ['Voici les spécifications de Seedream.','Seedream'],

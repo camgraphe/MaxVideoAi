@@ -16,7 +16,7 @@ import {recordedStudioOutputDuration,recordedStudioSourceVideoOutput} from './co
 import {recallStudioReferences} from './conversation-reference-recall';
 import {readStudioArchiveDecisions, readStudioConversationArchive} from './conversation-archive';
 import {projectStudioQuoteDirections,readStudioHistoricalEstimates} from './conversation-history-facts';
-import { getBaseEngineIncludingHidden } from "@/lib/engines";
+
 import { z } from "zod";
 import {
   imageTurnInputSchema,
@@ -56,7 +56,7 @@ import {resolveStudioConversationAttachments,type StudioAttachmentFactsDependenc
 import {buildStudioGenerationMediaAccess} from './generation-media-access';
 import {projectStudioReply} from '@/lib/studio/conversation-reply';
 import {projectStudioQuotedReply} from './conversation-quote-reply';
-import {originalStudioReferences} from './project-reference-registry';
+import {studioQuoteSourceLabels, studioQuoteModelLabel} from './conversation-quote-sources';
 import {
   requestedStudioReplyLanguage, STUDIO_QUOTE_LANGUAGE_HISTORY_LIMIT, studioQuoteReplyLanguage, type StudioQuoteLanguageContext,
 } from './conversation-language';
@@ -78,19 +78,8 @@ function projectTurnReply(turn: StoredImageTurn, quote?: SavedReplyQuote, locale
   const quotedDirection = request?.surface === 'audio' && request.mode === 'voice_only'
     ? request.settings.script : request?.prompt;
   const direction = draft.recast?.direction ?? (draft.characterBuilder ? undefined : quotedDirection ?? storedDirection);
-  if (quote && request?.surface === 'image' && request.mode === 'i2i' && request.references.length && !draft.characterBuilder) {
-    const receipts = [...originalStudioReferences(turn.input_json, turn.request_id), ...(draft.recalledReferences ?? [])];
-    const sources = request.references.map(ref => {
-      if (ref.kind !== 'asset') return undefined;
-      const label = receipts.find(item => item.assetId === ref.assetId && item.kind === 'image')?.label;
-      return receipts.some(item => item.label === label && item.assetId !== ref.assetId) ? undefined : label;
-    });
-    const model = getBaseEngineIncludingHidden(request.engineId)?.label ?? request.engineId;
-    return projectStudioQuotedReply(draft.reply, turn.input_json, direction, {
-      ...quote, edit: {model, sources: sources.every((source): source is string => !!source) ? sources : []},
-    }, locale);
-  }
-  return projectStudioQuotedReply(draft.reply, turn.input_json, direction, quote, locale) || null;
+  return projectStudioQuotedReply(draft.reply, turn.input_json, direction,
+    quote && {...quote, sources: studioQuoteSourceLabels(turn, quote.request)}, locale) || null;
 }
 
 const ordinaryImageConfirmationSchema = z
@@ -229,7 +218,7 @@ export function createImageConversationService(
               quote.expiresAt.getTime() <= Date.now()
                 ? "expired"
                 : quote.state,
-            modelLabel:characterBuilder?'Character Builder': recast ? 'Character Recast' : getBaseEngineIncludingHidden(quote.request.engineId)?.label ?? quote.request.engineId,
+            modelLabel:characterBuilder?'Character Builder': recast ? 'Character Recast' : studioQuoteModelLabel(quote.request),
             ...(builderQuote?{characterBuilder:{confirmationEnabled:characterBuilderEnabled,recipe:projectCharacterBuilderRecipe(builderQuote.recipe)}}:{}),
             ...(recast ? {recast:{
               ...(videoPassage ? {videoRange:{startSec:videoPassage.startSec,endSec:videoPassage.endSec}} : {}),
@@ -278,7 +267,7 @@ export function createImageConversationService(
       const { turn, claimed, responseReplayOnly } = await claimImageTurn(actor, submitted, {allowRecordedResponseRecovery: dependencies.actionsEnabled === true,taskWorkerId:dependencies.taskExecution?.workerId, renewalQuoteId});
       if (!claimed) return projectTurn(turn);
       try {
-        const recall = await recallStudioReferences(actor, submitted, turn.draft_json);
+        const recall = await recallStudioReferences(actor, submitted, turn.draft_json, dependencies.taskExecution?.referenceLabelChanges);
         const input = recall.input;
         if (recall.clarification) {
           if (turn.draft_json) throw new AgentApiError('REFERENCE_INVALID', recall.clarification);

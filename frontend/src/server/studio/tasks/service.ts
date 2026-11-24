@@ -11,6 +11,7 @@ import {chooseStudioAssistance,lockAccount,openStudioAssistanceTurn,readStudioAs
 import {studioTaskSavedUsageKnown} from './saved-usage';
 import {studioTasksEnabled} from './policy';
 import {studioTaskSourceFingerprint} from './source';
+import {registeredStudioMessage,registerStudioReferenceLabels} from '../project-reference-registry';
 import {studioTaskSchemaReady,studioTaskReplyEnvelopeReady,readStudioTaskRow,readStudioTaskUsage,projectStudioTask,type StudioTaskRow} from './repository';
 
 export function createStudioTaskService(actor:StudioGenerationActor,dependencies:{enabled?:boolean;assistancePolicy?:StudioAssistancePolicy}={}) {
@@ -41,7 +42,15 @@ export function createStudioTaskService(actor:StudioGenerationActor,dependencies
         if(!await studioTaskSchemaReady(tx,input.taskBudget!.policyVersion)||!await studioTaskReplyEnvelopeReady(tx))throw new AgentApiError('ENGINE_UNAVAILABLE','Apply the explicit Studio task migration before activation.');
         const account=await authorize(tx);
         const prior=(await tx.query<StudioTaskRow>('SELECT * FROM studio_tasks WHERE user_id=$1 AND project_id=$2 AND request_id=$3',[actor.userId,actor.projectId,input.requestId]))[0];
-        if(prior){if(prior.input_hash!==hash)throw new AgentApiError('PARAMETER_INVALID','This request identity belongs to another intent.');return projectStudioTask(prior,tx);}
+        if (prior) {
+          if (prior.input_hash !== hash) {
+            const saved = registeredStudioMessage(prior.input_json);
+            if (!input.clientSurface) delete saved.clientSurface;
+            if (stableJson(saved) !== stableJson(input))
+              throw new AgentApiError('PARAMETER_INVALID','This request identity belongs to another intent.');
+          }
+          return projectStudioTask(prior,tx);
+        }
         if(input.taskBudget!.model&&input.taskBudget!.model!==account.selected_model||input.taskBudget!.assistanceRevision!==undefined&&input.taskBudget!.assistanceRevision!==Number(account.revision))throw new AgentApiError('CONFIRMATION_REQUIRED','Refresh the selected model and assistance policy before sending.');
         await noOtherActive(tx,input.requestId);
         const assistance=await openStudioAssistanceTurn(actor,input.requestId,policy,tx);
@@ -53,7 +62,8 @@ export function createStudioTaskService(actor:StudioGenerationActor,dependencies
         if(count>=(assistance.mode==='paid_sol'?60:20))throw new AgentApiError('RATE_LIMITED','The current hourly task allowance is reached. Try later.');
         const sourceFingerprint=await studioTaskSourceFingerprint(actor,input,tx,true);
         // The invoking UI describes navigation. It does not change the reviewed request or its retry identity.
-        const storedInput = clientSurface ? { ...input, clientSurface } : input;
+        const registered = await registerStudioReferenceLabels(actor,input,tx);
+        const storedInput = clientSurface ? { ...registered, clientSurface } : registered;
         // A chat can finish on sponsored Lite. Preserve the original behavior for all other callers.
         const automaticLite = clientSurface === 'mobile' && allowLiteFallback && input.taskBudget!.profile === 'standard' && assistance.model !== 'gpt-6-luna';
         const row=(await tx.query<StudioTaskRow>(`INSERT INTO studio_tasks(user_id,project_id,request_id,segment_request_id,input_hash,input_json,source_fingerprint,policy_version,profile,profile_json,model,max_credits,allowed_calls)

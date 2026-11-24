@@ -1,3 +1,4 @@
+import { studioReferenceDisplayLabel } from '@/lib/mobile-studio';
 import { query } from '@/lib/db';
 import { STUDIO_CONVERSATION_MAX_ATTACHMENTS } from '@/lib/studio/conversation-creation-contract';
 import type { ImageTurnInput } from '@/lib/studio/image-conversation-contract';
@@ -9,6 +10,7 @@ import {
   projectStillContainsReferences,
   type StoredStudioDraft,
   type StudioRecalledReference,
+  type RegisteredStudioInput,
 } from './project-reference-registry';
 import { resolveStudioMedia } from './media-resolver';
 import { studioConversationLanguage } from './conversation-language';
@@ -132,6 +134,11 @@ const copy = {
   },
 };
 
+function whichFile(locale: keyof typeof copy, labels: string[]) {
+  const choices = new Intl.ListFormat(locale, {type:'disjunction'}).format(labels.map(label => studioReferenceDisplayLabel(label, locale)));
+  return {en:'Which file do you mean, ' + choices + '?', fr:'De quel fichier parles-tu, ' + choices + ' ?', es:'¿A qué archivo te refieres, ' + choices + '?'}[locale];
+}
+
 async function previousTurns(actor: StudioGenerationActor, before: string, limit: number) {
   return query<PriorTurn>(
     `SELECT request_id,input_json,draft_json FROM studio_image_turns
@@ -147,11 +154,18 @@ export async function recallStudioReferences(
   actor: StudioGenerationActor,
   input: ImageTurnInput,
   draft: StoredStudioDraft | null,
+  labelChanges?: RegisteredStudioInput['referenceLabelChanges'],
 ): Promise<Recall> {
   if (draft && !draft.recalledReferences) return { input };
   const before = input.renewedFromRequestId ?? input.requestId;
   const text = normalized(input.message);
   const mentioned = requestedLabels(text);
+  // The old label in the submitted text could mean either the earlier file or the new attachment.
+  const conflicts = labelChanges?.filter(change => mentioned.include.includes(change.from) || mentioned.exclude.has(change.from));
+  if (!draft && conflicts?.length) {
+    const labels = [...new Set(conflicts.flatMap(change => [change.from,change.to]))];
+    return {input, clarification:whichFile(studioConversationLanguage(input.message, [], input.locale), labels)};
+  }
   let filtered = false;
   if (mentioned.exclude.size) {
     const entered = originalStudioReferences(input, input.requestId);
@@ -199,8 +213,7 @@ export async function recallStudioReferences(
   const clarifyFiles = (refs: StudioRecalledReference[]): Recall => {
     const labels = [...new Set(refs.map(ref => ref.label))];
     if (labels.length < 2 || labels.length !== refs.length) return clarify('ambiguous');
-    const choices = new Intl.ListFormat(locale, {type:'disjunction'}).format(labels);
-    return {input, clarification: {en:'Which file should I use, ' + choices + '?', fr:'Quel fichier veux-tu utiliser, ' + choices + ' ?', es:'¿Qué archivo quieres usar, ' + choices + '?'}[locale]};
+    return {input, clarification:whichFile(locale, labels)};
   };
   let sources: StudioRecalledReference[] = [];
   if (draft?.recalledReferences) {
@@ -219,24 +232,36 @@ export async function recallStudioReferences(
       ? (names[named[1] as keyof typeof names].toLowerCase() as StudioRecalledReference['kind'])
       : undefined;
     let foundModelOffer = false;
+    const interveningFiles: StudioRecalledReference[] = [];
     for (const prior of history) {
       const priorExclusions = requestedLabels(normalized(prior.input_json.message)).exclude;
       const direct = originalStudioReferences(prior.input_json, prior.request_id).filter(
         (ref) => !priorExclusions.has(ref.label),
       );
       const active = [...direct, ...(prior.draft_json?.recalledReferences ?? [])].filter(
-        (ref) => !kind || ref.kind === kind,
+        (ref) => !priorExclusions.has(ref.label) && (!kind || ref.kind === kind),
       );
       const reply = normalized(prior.draft_json?.reply ?? '');
       if (follow === 'model' && modelChoice && !foundModelOffer) {
         // A price already prepared or an explicit exclusion ends this offer.
-        if (prior.draft_json?.image || prior.draft_json?.media || priorExclusions.size) return unchanged;
+        if (prior.draft_json?.image || prior.draft_json?.media || (priorExclusions.size && !active.length)) return unchanged;
         if (direct.length && fileSetAside(prior.input_json.message)) continue;
         if (!active.length && sameStudioModelChoice(prior.input_json.message, modelChoice) && askedToReattach(reply)) continue;
-        if (!offeredStudioModel(reply, modelChoice)) return unchanged;
+        if (!offeredStudioModel(reply, modelChoice)) {
+          // A different file arrived between the proposed edit and the choice. Only the user can resolve that.
+          if (direct.length && !priorExclusions.size) {
+            interveningFiles.push(...direct);
+            continue;
+          }
+          return unchanged;
+        }
         foundModelOffer = true;
       }
       if (active.length) {
+        if (interveningFiles.length) {
+          const candidates = new Map([...active,...interveningFiles].map(ref=>[ref.assetId,ref]));
+          if (candidates.size > 1) return clarifyFiles([...candidates.values()]);
+        }
         // A bare yes or number follows an actual creative choice or offer.
         if (follow === 'accept' || follow === 'choice') {
           const aboutMedia =
@@ -245,7 +270,17 @@ export async function recallStudioReferences(
             !!prior.draft_json?.recalledReferences?.length;
           if (!offer.test(reply) || !aboutMedia) return unchanged;
         }
-        if (active.length > 1 && follow !== 'compare') return clarifyFiles(active);
+        if (active.length > 1 && follow !== 'compare') {
+          // Bind a named model to the files in its offer. An alternative between files still needs a choice.
+          const proposed = requestedLabels(reply).include;
+          const named = active.filter(ref => proposed.includes(ref.label));
+          if ((foundModelOffer || follow === 'accept') && named.length === proposed.length && named.length &&
+              !/\b(?:or|ou|o)\s+(?:(?:la|le|el|the)\s+)?(?:image|imagen|photo|foto|video|audio|#?\d+)\b/.test(reply)) {
+            sources = named;
+            break;
+          }
+          return clarifyFiles(active);
+        }
         if (follow === 'compare' && active.length === 1) {
           kind = active[0].kind;
         } else {
