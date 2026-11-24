@@ -12,6 +12,7 @@ import {
   type StudioRecalledReference,
   type RegisteredStudioInput,
 } from './project-reference-registry';
+import { asksForSameFile, hasVisualBrief, leavesVisualBrief, visualReplyKind } from './conversation-visual-followup';
 import { resolveStudioMedia } from './media-resolver';
 import { studioConversationLanguage } from './conversation-language';
 import { askedToReattach, fileSetAside, offeredStudioModel, sameStudioModelChoice, studioModelChoice, studioOfferedModelId } from './conversation-model-choice';
@@ -195,15 +196,17 @@ export async function recallStudioReferences(
       text,
     );
   const modelChoice = studioModelChoice(text);
+  const visualReply = visualReplyKind(text);
   const follow =
     !newWork &&
+    !leavesVisualBrief(text) &&
     !current.length &&
     !mentioned.exclude.size &&
-    !/\b(?:without|sans|sin)\b|\bdo not use\b|\bne .*pas (?:utiliser|reprendre)\b/.test(text) &&
-    (followUp(text) || (modelChoice && 'model'));
+    ((!/\b(?:without|sans|sin)\b|\bdo not use\b|\bne .*pas (?:utiliser|reprendre)\b/.test(text) &&
+      (followUp(text) || (modelChoice && 'model'))) || (visualReply && 'visual'));
   const unchanged: Recall = filtered ? { input, sources: [] } : { input };
   if (!draft && !labels.length && !follow) return unchanged;
-  const history = await previousTurns(actor, before, follow === 'model' ? 12 : 4);
+  const history = await previousTurns(actor, before, follow === 'model' || follow === 'visual' ? 12 : 4);
   const locale = studioConversationLanguage(
     input.message,
     history.map((t) => ({ message: t.input_json.message })).reverse(),
@@ -226,6 +229,31 @@ export async function recallStudioReferences(
       const matches = found.filter((ref) => ref.label === label);
       if (matches.length !== 1) return clarify(matches.length ? 'ambiguous' : 'missing');
       sources.push(matches[0]);
+    }
+  } else if (follow === 'visual') {
+    // Free directions and corrections only inherit the active visual brief. Never search the whole project.
+    let restoring = false;
+    for (const prior of history) {
+      const message = normalized(prior.input_json.message);
+      const reply = normalized(prior.draft_json?.reply ?? '');
+      if (leavesVisualBrief(message) || requestedLabels(message).exclude.size) break;
+      const direct = originalStudioReferences(prior.input_json, prior.request_id);
+      if (direct.length && fileSetAside(message)) continue;
+      const bound = [
+        ...direct,
+        ...(prior.draft_json?.recalledReferences ?? []),
+      ];
+      if (!bound.length) {
+        if (!asksForSameFile(reply) || !(visualReplyKind(message) || followUp(message))) break;
+        restoring = true;
+        continue;
+      }
+      if (visualReply === 'pointer' && !restoring && !asksForSameFile(reply)) break;
+      if (!prior.draft_json || !hasVisualBrief(message, reply, prior.draft_json)) break;
+      const visual = bound.filter((ref) => ref.kind === 'image' || ref.kind === 'video');
+      sources = [...new Map(visual.map((ref) => [ref.assetId, ref])).values()];
+      if (sources.length > 1) return clarifyFiles(sources);
+      break;
     }
   } else {
     const named = text.match(/\b(images?|imagenes|imagen|photos?|fotos?|videos?|audios?)\b/);
@@ -290,6 +318,7 @@ export async function recallStudioReferences(
         }
         break;
       }
+      if (follow === 'edit' && !priorExclusions.size && asksForSameFile(reply) && visualReplyKind(normalized(prior.input_json.message))) continue;
       // Bridge old option/acceptance replies written before sources were saved on drafts.
       if (!followUp(normalized(prior.input_json.message))) break;
     }
