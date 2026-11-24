@@ -1,3 +1,4 @@
+import type { NativeGenerationPlatform } from './native-generation-platform';
 import { randomUUID } from 'node:crypto';
 
 import { query, type QueryExecutor, type TransactionQueryExecutor } from '@/lib/db';
@@ -80,7 +81,8 @@ type QuoteLockDependencies = {
   executor: TransactionQueryExecutor;
 };
 
-type QuoteClaimDependencies = QuoteLockDependencies & {
+export type QuoteClaimDependencies = QuoteLockDependencies & {
+  confirmationPlatform?: NativeGenerationPlatform;
   claimedAt: Date;
 };
 
@@ -566,9 +568,15 @@ export function createQuoteRepository<Request>(codec: {
     assertJobInput(input);
     const claimedAt = finiteDate(dependencies.claimedAt);
     if (!claimedAt) throw new Error('Invalid quote claim clock.');
+    const params = scopedParams([input.quoteId, input.userId, input.oauthClientId, input.jobId, claimedAt]);
+    let platformAssignment = '';
+    if (dependencies.confirmationPlatform) {
+      params.push(dependencies.confirmationPlatform);
+      platformAssignment = `, confirmation_platform = $${params.length}`;
+    }
     const rows = await dependencies.executor.query<QuoteRow>(
       `UPDATE mcp_generation_quotes
-          SET state = 'claimed', job_id = $4, claimed_at = $5, updated_at = $5
+          SET state = 'claimed', job_id = $4, claimed_at = $5, updated_at = $5${platformAssignment}
         WHERE quote_id = $1
           AND user_id = $2
           AND oauth_client_id IS NOT DISTINCT FROM $3
@@ -579,7 +587,7 @@ export function createQuoteRepository<Request>(codec: {
           AND job_id IS NULL
           AND claimed_at IS NULL
       RETURNING ${QUOTE_COLUMNS}`,
-      scopedParams([input.quoteId, input.userId, input.oauthClientId, input.jobId, claimedAt]),
+      params,
     );
     return parseOptionalQuote(rows);
   }

@@ -123,6 +123,20 @@ test('history filters before pagination, retains precision and resolves receipts
       assert.equal(receipt.isStudioGeneration, true);
     }
 
+    assert.equal(studioHistory.transactions[0].confirmationPlatform, null);
+    await db.pool.query(`ALTER TABLE mcp_generation_quotes ADD COLUMN confirmation_platform text;
+      UPDATE mcp_generation_quotes SET confirmation_platform='ios' WHERE job_id IN ('studio-image','foreign-studio');
+      UPDATE mcp_generation_quotes SET confirmation_platform='android' WHERE job_id='studio-video';
+      UPDATE mcp_generation_quotes SET auth_origin='mobile-session',confirmation_platform='android' WHERE job_id='toolbox-job'`);
+    for (const [id, platform, create] of [['125','ios',false],['131','ios',false],['126','android',false],
+      ['127',null,false],['128','android',true],['130',null,false]] as const) {
+      const row = await fetchTransactionReceipt(id);
+      assert.equal(row?.confirmationPlatform, platform);
+      assert.equal(row?.isCreateGeneration, create);
+    }
+    await db.pool.query(`INSERT INTO mcp_generation_quotes(job_id,user_id,auth_origin,confirmation_platform)
+      VALUES ('studio-image',$1,'studio-session','android')`, [owner]);
+    assert.equal((await fetchTransactionReceipt('125'))?.confirmationPlatform, null, 'ambiguous provenance');
     // The first reader has no product column: historical prefix identity must still work.
     await db.pool.query(`INSERT INTO app_receipts(id,user_id,type,amount_cents,currency,job_id,created_at)
       VALUES (140,$1,'charge',500,'USD','studio-sol-pack:synthetic-pack','2026-09-22T10:05:00Z')`, [owner]);

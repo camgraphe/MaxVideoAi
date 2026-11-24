@@ -331,25 +331,43 @@ export function AdminTransactionTable({
   );
 }
 
+function GenerationPlatformIcon({ platform }: { platform: NonNullable<AdminTransactionRecord['confirmationPlatform']> }) {
+  const label = platform === 'ios' ? 'Confirmed in the iOS app' : 'Confirmed in the Android app';
+  return (
+    <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" role="img" aria-label={label}>
+      <title>{label}</title>
+      {platform === 'ios' ? (
+        <path d="M16.8 1.6c.2 2.3-1.7 4.8-4.2 5 .1-2.4 1.9-4.5 4.2-5ZM20.2 17.2c-.5 1.5-2.2 5-4.3 5-1.3 0-1.9-.8-3.5-.8-1.5 0-2.3.8-3.5.8-2.2 0-5.6-5-5.6-9.5 0-3.5 2-5.8 5-5.8 1.5 0 2.6.9 3.8.9 1 0 2.4-1 4.2-1 1.6 0 3 .8 4 2-1.8 1.1-2.7 2.5-2.7 4.2 0 2 1 3.3 2.6 4.2Z" />
+      ) : (
+        <g>
+          <path fillRule="evenodd" d="m6.8 7.3-1.6-2.7.9-.5 1.7 2.8a10 10 0 0 1 8.4 0l1.7-2.8.9.5-1.6 2.7A10.3 10.3 0 0 1 22 16H2a10.3 10.3 0 0 1 4.8-8.7ZM7.5 12a1 1 0 1 0 2 0 1 1 0 0 0-2 0Zm7 0a1 1 0 1 0 2 0 1 1 0 0 0-2 0Z" />
+        </g>
+      )}
+    </svg>
+  );
+}
+
 function TransactionAmount({ row }: { row: AdminTransactionRecord }) {
   const isMiloPack = isMiloPackTransaction(row);
+  const source = row.isStudioGeneration ? 'Studio' : row.isCreateGeneration ? 'Create' : row.isMcpGeneration ? 'MCP' : null;
   const model = isMiloPack ? MILO_PACK_LABEL : row.jobId ? row.jobEngineLabel?.trim() : null;
   const duration = !isMiloPack && row.jobId ? formatJobDuration(row.jobDurationSec) : null;
   return (
     <td className="whitespace-nowrap px-3 py-2.5 font-medium tabular-nums">
       <div className="flex items-center gap-2">
         <span>{formatCurrency(row.amountCents, row.currency)}</span>
-        {!isMiloPack && (row.isStudioGeneration || row.isMcpGeneration) ? (
+        {!isMiloPack && source ? (
           <span
             className={clsx(
-              'rounded border px-1.5 py-0.5 text-[10px] font-semibold leading-none',
+              'inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-[10px] font-semibold leading-none',
               row.isStudioGeneration
                 ? 'border-violet-500/20 bg-violet-500/10 text-violet-600 dark:text-violet-400'
                 : 'border-brand/20 bg-brand/10 text-brand',
             )}
-            title={row.isStudioGeneration ? 'Generation submitted from Studio' : 'Generation submitted via MCP'}
+            title={source === 'MCP' ? 'Generation submitted via MCP' : `Generation submitted from ${source}`}
           >
-            {row.isStudioGeneration ? 'Studio' : 'MCP'}
+            {source}
+            {row.confirmationPlatform && source !== 'MCP' && <GenerationPlatformIcon platform={row.confirmationPlatform} />}
           </span>
         ) : null}
       </div>

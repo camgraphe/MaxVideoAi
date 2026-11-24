@@ -28,7 +28,7 @@ function receipt(overrides: Partial<AdminTransactionRecord> = {}): AdminTransact
     receiptId: 10, userId: 'synthetic-account', userEmail: null, type: 'charge', amountCents: 500, currency: 'USD',
     description: 'Synthetic purchase', refundReason: null, billingProductKey: null, jobId: null,
     jobStatus: null, jobPaymentStatus: null, jobEngineLabel: null, jobVideoUrl: null, jobDurationSec: null,
-    isMcpGeneration: false, isStudioGeneration: false, jobCreatedAt: null, jobProgress: null, jobMessage: null,
+    isMcpGeneration: false, isStudioGeneration: false, isCreateGeneration: false, confirmationPlatform: null, jobCreatedAt: null, jobProgress: null, jobMessage: null,
     createdAt: '2026-09-22T10:00:00Z', hasRefund: false, latestChargeId: 10, isLatestCharge: true,
     canRefund: true, ...overrides,
   };
@@ -79,4 +79,15 @@ test('real media keeps its model, duration, MCP origin, generation link and refu
     assert.equal(document.querySelector('aside a[href^="/admin/jobs"]')?.getAttribute('href'), '/admin/jobs?jobId=synthetic-media');
     assert.ok([...document.querySelectorAll('button')].some(button => button.textContent === 'Refund tokens'));
   } finally { dom.window.close(); }
+});
+
+test('generation badges identify the native confirmation platform accessibly when known', async () => {
+  for (const [source, platform, label] of [['Studio','ios','Confirmed in the iOS app'],
+    ['Create','android','Confirmed in the Android app'], ['Studio',null,null], ['Create',null,null]] as const) {
+    const dom = await render(receipt({isStudioGeneration:source==='Studio',isCreateGeneration:source==='Create',
+      confirmationPlatform:platform, jobId:'example-render'}));
+    const badge = dom.window.document.querySelector('tbody [title="Generation submitted from ' + source + '"]')!;
+    assert.ok(badge?.textContent?.includes(source));
+    assert.equal(badge.querySelector('svg[role="img"]')?.getAttribute('aria-label') ?? null, label);
+  }
 });

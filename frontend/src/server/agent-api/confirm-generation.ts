@@ -1,3 +1,5 @@
+import { generationClaimPlatform } from './native-generation-platform';
+import type { QuoteClaimDependencies } from './quote-repository';
 import { resolveCanonicalFluxLineage } from './generation-flux-lineage';
 import { fluxDraftQuoteBinding } from '@/server/flux-draft-cache';
 import { resolveCanonicalLumaLineage, lumaLineageQuoteBinding } from './generation-luma-lineage';
@@ -165,7 +167,7 @@ export type ConfirmGenerationDependencies = {
   ): Promise<IncludedTrialGenerationReservation>;
   claimPreparedQuote(
     input: OwnedQuoteJobInput,
-    dependencies: ExecutorDependencies & { claimedAt: Date },
+    dependencies: QuoteClaimDependencies,
   ): Promise<McpGenerationQuote | null>;
   submitPaidGeneration(execution: PaidGenerationReservation['execution']): Promise<PaidGenerationProviderOutcome>;
   submitTrialGeneration(
@@ -501,7 +503,7 @@ async function confirmationTransaction(
     }
     const claimed = await dependencies.claimPreparedQuote(
       { ...owner, jobId: reservation.jobId },
-      { executor, claimedAt: databaseNow },
+      { executor, claimedAt: databaseNow, confirmationPlatform: generationClaimPlatform(principal) },
     );
     if (!claimed || claimed.state !== 'claimed' || claimed.jobId !== reservation.jobId) {
       throw new AgentApiError('INTERNAL_ERROR', 'The generation quote could not be claimed.');

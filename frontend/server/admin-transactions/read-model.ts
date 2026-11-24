@@ -1,3 +1,4 @@
+import { isNativeGenerationPlatform } from '@/server/agent-api/native-generation-platform';
 import { transactionSelectForCurrentSchema } from './projection';
 import { query } from '@/lib/db';
 import { isMiloPackTransaction } from '@/lib/admin/transaction-review';
@@ -55,6 +56,8 @@ export function mapAdminTransactionRow(row: RawTransactionRow, userEmail: string
     jobDurationSec: row.job_duration_sec ?? null,
     isMcpGeneration: row.is_mcp_generation,
     isStudioGeneration: row.is_studio_generation,
+    isCreateGeneration: row.is_create_generation,
+    confirmationPlatform: isNativeGenerationPlatform(row.confirmation_platform) ? row.confirmation_platform : null,
     jobCreatedAt: row.job_created_at,
     jobProgress: row.job_progress ?? null,
     jobMessage: row.job_message,

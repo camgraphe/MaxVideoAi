@@ -1,3 +1,4 @@
+import type { NativeGenerationPlatform } from './native-generation-platform';
 import { createHash } from "node:crypto";
 import { stableJson } from "./generation-normalization";
 import type { ResolvedReference } from "./reference-types";
@@ -22,6 +23,7 @@ export function requireStudioGenerationRequest(request: CanonicalGenerationReque
 /** Constructed only after session access and project ownership have been checked. */
 export type StudioGenerationActor = {
   authMethod: "studio-session";
+  confirmationPlatform?: NativeGenerationPlatform;
   userId: string;
   projectId: string;
   clientId: null;

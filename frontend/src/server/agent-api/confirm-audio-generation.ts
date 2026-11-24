@@ -1,3 +1,5 @@
+import { generationClaimPlatform } from './native-generation-platform';
+import type { QuoteClaimDependencies } from './quote-repository';
 import { audioDispatchObservation } from '@/lib/audio-dispatch-observation';
 import { mapOutputRow, type DbJobOutputRow } from '@/server/media-library-records';
 import { promoteCompletedMcpJobOutputs } from '@/server/media-library/mcp-output-assets';
@@ -60,7 +62,7 @@ export type ConfirmAudioGenerationDependencies = {
   checkSpendingLimits(input: { userId: string; priceCents: number; currency: string }, dependencies: { executor: TransactionQueryExecutor }): Promise<McpSpendingDecision>;
   buildReservation(prepared: PreparedAudioRun, userId: string): Reservation;
   reserveInitialJob(input: Reservation['initialJob'], dependencies: { executor: TransactionQueryExecutor }): Promise<void>;
-  claimPreparedQuote(input: OwnedQuoteJobInput, dependencies: { executor: TransactionQueryExecutor; claimedAt: Date }): Promise<AudioQuote | null>;
+  claimPreparedQuote(input: OwnedQuoteJobInput, dependencies: QuoteClaimDependencies): Promise<AudioQuote | null>;
   /** Trusted durable dispatch, committed atomically with reservation and quote claim. */
   enqueueRun?(input: { quoteId: string; principal: GenerationActor; execution: ReservedAudioRun }, dependencies: { executor: TransactionQueryExecutor }): Promise<void>;
   executeRun(input: ReservedAudioRun): Promise<unknown>;
@@ -349,7 +351,7 @@ async function confirmationTransaction(
     }
     const claimed = await dependencies.claimPreparedQuote(
       { ...owner, jobId: reservation.initialJob.jobId },
-      { executor, claimedAt: databaseNow },
+      { executor, claimedAt: databaseNow, confirmationPlatform: generationClaimPlatform(principal) },
     );
     if (!claimed || claimed.state !== 'claimed' || claimed.jobId !== reservation.initialJob.jobId) {
       throw new AgentApiError('INTERNAL_ERROR', 'The Audio quote could not be claimed.');

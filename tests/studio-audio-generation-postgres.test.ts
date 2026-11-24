@@ -19,6 +19,7 @@ test('session voice/music retain exact Audio billing, recovery, refund and OAuth
   process.env.DATABASE_URL = pg.databaseUrl;
   t.after(async () => {await getDb().end(); if (previous === undefined) delete process.env.DATABASE_URL; else process.env.DATABASE_URL = previous; await pg.cleanup();});
   await createPaidGenerationTestSchema(pg.pool);
+  await pg.pool.query(readFileSync('neon/migrations/106_generation_confirmation_platform.sql','utf8'));
   await pg.pool.query(readFileSync('neon/migrations/53_studio_media_generation_scope.sql', 'utf8'));
   const userId = '00000000-0000-4000-8000-000000000083';
   await pg.pool.query(`CREATE TABLE studio_projects (id text PRIMARY KEY,user_id text,name text,deleted_at timestamptz);
@@ -26,7 +27,7 @@ test('session voice/music retain exact Audio billing, recovery, refund and OAuth
   await pg.pool.query("INSERT INTO profiles VALUES ($1,'usd')", [userId]);
   await pg.pool.query("INSERT INTO studio_projects VALUES ('film',$1,'Film',NULL),('other',$1,'Other',NULL),('foreign','foreign','Private',NULL)", [userId]);
   await pg.pool.query("INSERT INTO app_receipts(user_id,type,amount_cents,currency) VALUES ($1,'topup',1000,'USD')", [userId]);
-  const actor = {authMethod: 'studio-session' as const, userId, projectId: 'film', clientId: null};
+  const actor = {authMethod: 'studio-session' as const, userId, projectId: 'film', clientId: null, confirmationPlatform: 'android' as const};
   const env = {FAL_KEY: 'test-only-provider', GOOGLE_VERTEX_PROJECT_ID: 'test-project', GOOGLE_VERTEX_SERVICE_ACCOUNT_JSON: 'test-only-no-network'};
   const caps = () => listAudioCapabilities(env);
   const executor = {query: async <TRecord=unknown>(sql: string, params?: ReadonlyArray<unknown>) => (await pg.pool.query<TRecord>(sql, params)).rows};
@@ -55,6 +56,8 @@ test('session voice/music retain exact Audio billing, recovery, refund and OAuth
     await assert.rejects(createConfirmAudioGenerationService('https://maxvideoai.com', {paidGenerationEnabled: () => true, listCapabilities: caps})({quoteId: quote.quoteId, confirmed: true}, {authMethod: 'oauth', userId, clientId: 'client', emailVerified: true}), {code: 'QUOTE_EXPIRED'});
     const before = executions;
     const results = await Promise.all([service.confirm({quoteId: quote.quoteId, confirmed: true}), service.confirm({quoteId: quote.quoteId, confirmed: true})]);
+    assert.deepEqual((await pg.pool.query('SELECT confirmation_platform FROM mcp_generation_quotes WHERE quote_id=$1',
+      [quote.quoteId])).rows, [{confirmation_platform:'android'}]);
     assert.equal(executions, before + 1);
     assert.equal(results[0].jobId, results[1].jobId);
     assert.equal((await service.recover(quote.quoteId))?.result?.surface, 'audio');

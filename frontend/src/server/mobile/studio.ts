@@ -1,3 +1,4 @@
+import { withNativeConfirmationPlatform } from '@/server/agent-api/native-generation-platform';
 import { LIVE_PRICING_POLICY_REVISION, PRICING_POLICY_HEADER } from '@/lib/membership-policy';
 import { mobileStudioGeneration, mobileStudioQuote, reviewedStudioQuote, studioConfirmInput } from './studio-generation';
 import { z } from 'zod';
@@ -206,7 +207,7 @@ export function handleMobileStudio(
       const journal = await deps.journal(actor, req.nextUrl.origin);
       const saved = reviewedStudioQuote(journal.turns.find(turn => turn.requestId === input.requestId), input);
       if (!saved) {
-        await deps.conversationService(actor, req.nextUrl.origin).confirm({
+        await deps.conversationService(withNativeConfirmationPlatform(actor, req.headers), req.nextUrl.origin).confirm({
           requestId: input.requestId, quoteId: input.quoteId, confirmed: true,
         });
       }

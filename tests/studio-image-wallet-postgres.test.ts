@@ -33,6 +33,7 @@ test("Studio image wallet insufficiency, retry, repeat confirmation, expiry, and
   });
 
   await createPaidGenerationTestSchema(pg.pool);
+  await pg.pool.query(readFileSync("neon/migrations/106_generation_confirmation_platform.sql", "utf8"));
   await pg.pool.query(
     "CREATE TABLE studio_projects (id text PRIMARY KEY, user_id text NOT NULL, name text NOT NULL, deleted_at timestamptz)",
   );
@@ -145,13 +146,15 @@ test("Studio image wallet insufficiency, retry, repeat confirmation, expiry, and
     quoteId: prepared.quote.quoteId, requestHash: prepared.quote.requestHash,
     amountCents: prepared.quote.price.amountCents, currency: prepared.quote.price.currency,
   };
-  const phone = (search: string, command?: object) => handleMobileStudio(
+  const phone = (search: string, command?: object, platform = 'ios') => handleMobileStudio(
     new NextRequest("https://example.invalid/api/mobile/studio/projects/" + actor.projectId + search, {
-      method: command ? "POST" : "GET", headers: phoneHeaders, ...(command ? {body: JSON.stringify(command)} : {}),
+      method: command ? "POST" : "GET", headers: { ...phoneHeaders, "x-maxvideoai-client-platform": platform }, ...(command ? {body: JSON.stringify(command)} : {}),
     }), actor.projectId, {
       access: async () => ({ok: true, userId: actor.userId}), enabled: () => true,
       consentBlocked: async () => false, owned: async () => actor.projectId,
-      journal: () => service.read(), conversationService: () => service, allowance: async () => null,
+      journal: () => service.read(), conversationService: (confirmingActor) => createImageConversationService(confirmingActor, {
+        enabled: true, director, generationFactory: makeFactory(),
+      }), allowance: async () => null,
     },
   );
   const legacy = (await (await phone("")).json()).turns[0];
@@ -166,12 +169,12 @@ test("Studio image wallet insufficiency, retry, repeat confirmation, expiry, and
 
   const [preparedQuote] = (
     await pg.pool.query<{ state: string; price_cents: number }>(
-      "SELECT state, price_cents FROM mcp_generation_quotes WHERE quote_id = $1",
+      "SELECT state, price_cents, confirmation_platform FROM mcp_generation_quotes WHERE quote_id = $1",
       [prepared.quote.quoteId],
     )
   ).rows;
   assert.deepEqual(preparedQuote, {
-    state: "prepared",
+    state: "prepared", confirmation_platform: null,
     price_cents: prepared.quote.price.amountCents,
   });
   assert.equal(
@@ -290,7 +293,7 @@ test("Studio image wallet insufficiency, retry, repeat confirmation, expiry, and
     const {error} = await response.json();
     assert.ok(["CONFIRMATION_PENDING", "QUOTE_ALREADY_CLAIMED"].includes(error.code), error.code);
   }
-  const retry = await phone("", phoneCommand);
+  const retry = await phone("", phoneCommand, "android");
   assert.deepEqual(await retry.json(), {projectId: actor.projectId, requestId: input.requestId, quoteId: phoneCommand.quoteId});
   assert.equal((await phoneJournal()).generation.jobId, phoneCommand.quoteId);
   const confirmed = await service.confirm({
@@ -298,6 +301,12 @@ test("Studio image wallet insufficiency, retry, repeat confirmation, expiry, and
     quoteId: prepared.quote.quoteId,
     confirmed: true,
   });
+  const provenance = await pg.pool.query(`SELECT q.confirmation_platform FROM mcp_generation_quotes q
+    JOIN app_jobs j ON j.job_id=q.job_id AND j.user_id=q.user_id
+    JOIN app_receipts r ON r.job_id=j.job_id AND r.user_id::text=j.user_id AND r.type='charge'
+    WHERE q.quote_id=$1`, [prepared.quote.quoteId]);
+  assert.deepEqual(provenance.rows, [{ confirmation_platform: 'ios' }]);
+  await assert.rejects(pg.pool.query("UPDATE mcp_generation_quotes SET confirmation_platform='android' WHERE quote_id=$1", [prepared.quote.quoteId]));
   assert.equal(confirmed.jobId, prepared.quote.quoteId);
   const recovered = await service.confirm({
     requestId: input.requestId,
