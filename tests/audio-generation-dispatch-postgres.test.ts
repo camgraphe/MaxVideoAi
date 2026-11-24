@@ -119,7 +119,11 @@ test('Audio dispatch reserves and runs at most once against durable PostgreSQL s
       "DELETE FROM app_jobs WHERE job_id=(SELECT job_id FROM audio_generation_dispatch WHERE quote_id=$1)"]) {
       await assert.rejects(pg.pool.query(sql, [item.quote.quoteId]));
     }
-    await run();
+    // The worker skips locked rows. Wait for the rejected writes to release this row
+    // before dispatching it, so the next scenario starts with an empty queue.
+    await pg.pool.query('SELECT quote_id FROM audio_generation_dispatch WHERE quote_id=$1 FOR UPDATE', [item.quote.quoteId]);
+    assert.equal(await run(), true);
+    assert.equal((await dispatch(item.quote.quoteId)).state, 'completed');
   });
 
   await t.test('a mismatched billing product cannot dispatch even when job and charge agree with each other', async () => {

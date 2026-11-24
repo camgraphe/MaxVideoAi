@@ -401,7 +401,12 @@ test('MCP montage opens the current conversation with private playback, durable 
 
     // The current mobile picker recovers one committed project after a lost acknowledgement.
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.getByRole('button', { name: 'Projects', exact: true }).click();
+    const [projectList] = await Promise.all([
+      page.waitForResponse(response => new URL(response.url()).pathname === '/api/studio/conversation-projects'
+        && response.request().method() === 'GET', { timeout: 30_000 }),
+      page.getByRole('button', { name: 'Projects', exact: true }).click(),
+    ]);
+    assert.equal(projectList.status(), 200);
     const projects = page.getByRole('dialog', { name: 'Your projects', exact: true });
     await expect(projects.locator('[data-project-row]')).toHaveCount(1);
     await expect(projects.locator('[data-project-row]')).toHaveAttribute('href', montage.studioUrl);

@@ -32,7 +32,9 @@ export type StudioGeneration = {
   status: 'accepted' | 'running' | 'completed' | 'failed';
   outputs: StudioOutput[];
 };
+export const STUDIO_AUTO_LITE_HEADER = 'x-maxvideoai-studio-auto-lite';
 export type StudioAllowance = {
+  lowCreditsRemaining?: number;
   model: StudioAssistantModel;
   label: string;
   revision: number;
@@ -43,6 +45,7 @@ export type StudioAllowance = {
   customerMaxCredits: number;
 };
 export type StudioMessage = {
+  continuedWithLite?: true;
   requestId: string;
   renewedFromRequestId?: string;
   message: string;
