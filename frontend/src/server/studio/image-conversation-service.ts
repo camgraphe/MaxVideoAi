@@ -55,12 +55,21 @@ import {projectStudioQuotedReply} from './conversation-quote-reply';
 import {imageRequestFromDraft,imageReferenceFingerprintFromReview} from './conversation-image-request';
 export {imageRequestFromDraft,imageReferenceFingerprintFromReview} from './conversation-image-request';
 
-function projectTurnReply(turn: StoredImageTurn, quote?: Parameters<typeof projectStudioQuotedReply>[3]) {
+type SavedReplyQuote = {
+  priceCents: number;
+  currency: string;
+  request: NonNullable<ImageConversationTurn['quote']>['summary'];
+};
+
+function projectTurnReply(turn: StoredImageTurn, quote?: SavedReplyQuote) {
   const draft = turn.draft_json;
   if (!draft) return null;
-  if (!turn.quote_id) return projectStudioReply(draft.reply);
-  const direction = draft.image?.prompt ?? (draft.media?.action === 'voice.prepare' ? draft.media.script : draft.media?.prompt)
-    ?? draft.recast?.direction;
+  if (!turn.quote_id) return hasDraftCreation(draft) ? null : projectStudioReply(draft.reply);
+  const storedDirection = draft.image?.prompt ?? (draft.media?.action === 'voice.prepare' ? draft.media.script : draft.media?.prompt);
+  const request = quote?.request;
+  const quotedDirection = request?.surface === 'audio' && request.mode === 'voice_only'
+    ? request.settings.script : request?.prompt;
+  const direction = draft.recast?.direction ?? (draft.characterBuilder ? undefined : quotedDirection ?? storedDirection);
   return projectStudioQuotedReply(draft.reply, turn.input_json, direction, quote) || null;
 }
 

@@ -1,6 +1,5 @@
 import {query} from '@/lib/db';
 import {projectStudioReply} from '@/lib/studio/conversation-reply';
-import {projectStudioQuotedReply} from './conversation-quote-reply';
 import type {StudioConversationArchiveEntry} from '@/lib/studio/image-conversation-contract';
 import type {StudioConversationQuoteFacts} from '@/lib/studio/conversation-action-contract';
 import {requireGenerationActor, type StudioGenerationActor} from '@/server/agent-api/generation-actor';
@@ -98,11 +97,13 @@ export async function readStudioConversationArchive(
     : /\b(?:audio|sound|music|musique|musica)\b/.test(text) ? 'audio' : null;
   const rows = await query<ArchiveRow>(`
     WITH older AS (
-      SELECT t.request_id,t.created_at,t.input_json->>'message' AS message,t.draft_json->>'reply' AS reply,
+      SELECT t.request_id,t.created_at,t.input_json->>'message' AS message,
+        -- Quote history uses the saved creation request instead of assistant preparation prose.
+        CASE WHEN t.quote_id IS NULL THEN t.draft_json->>'reply' END AS reply,
         q.quote_id,q.state AS quote_state,q.request_json->>'surface' AS surface,q.request_json->>'engineId' AS model_id,
-        COALESCE(NULLIF(q.request_json->>'prompt',''),q.request_json->'settings'->>'script',
-          q.request_json->'settings'->>'lyrics',q.request_json->'settings'->>'multiPrompt','') AS direction,
-        j.job_id,j.status
+        NULLIF(concat_ws(E'\\n\\n',NULLIF(q.request_json->>'prompt',''),
+          NULLIF(q.request_json->'settings'->>'script',''),NULLIF(q.request_json->'settings'->>'lyrics','')),'') AS direction,
+        q.request_json->'settings'->'multiPrompt' AS shots,j.job_id,j.status
       FROM studio_image_turns t
       JOIN studio_projects p ON p.user_id=t.user_id AND p.id=t.project_id AND p.deleted_at IS NULL
       JOIN studio_image_turns boundary ON boundary.user_id=t.user_id AND boundary.project_id=t.project_id AND boundary.request_id=$3
@@ -122,8 +123,8 @@ export async function readStudioConversationArchive(
        ORDER BY created_at,request_id LIMIT 1)
       UNION ALL
       (SELECT request_id,'related',2,score FROM (
-        SELECT request_id,created_at,ts_rank(to_tsvector('simple',concat_ws(' ',message,reply,model_id,direction)),
-          to_tsquery('simple',NULLIF($7,''))) AS score FROM older
+        SELECT request_id,created_at,ts_rank(to_tsvector('simple',concat_ws(' ',message,reply,model_id,direction,
+          jsonb_path_query_array(shots,'$[*].prompt')::text)),to_tsquery('simple',NULLIF($7,''))) AS score FROM older
        ) matches WHERE score>0 ORDER BY score DESC,CASE WHEN $5 THEN created_at END,created_at DESC,request_id LIMIT 3)
       UNION ALL
       (SELECT request_id,'opening',CASE WHEN $5 THEN 2 ELSE 3 END,1.0 FROM older ORDER BY created_at,request_id LIMIT 1)
@@ -138,7 +139,7 @@ export async function readStudioConversationArchive(
     SELECT s.request_id AS "requestId",s.created_at AS "createdAt",s.reason AS "selectedFor",s.message,s.reply,s.quote_id AS "quoteId",
       t.input_json->'references' AS "imageIds",t.input_json->'attachments' AS attachments,t.input_json->'referenceMentions' AS mentions,
       s.model_id AS "modelId",s.surface,q.request_json->>'mode' AS mode,
-      COALESCE(NULLIF(q.request_json->>'prompt',''),q.request_json->'settings'->>'script',q.request_json->'settings'->>'lyrics') AS direction,q.request_json->'settings'->'multiPrompt' AS shots,
+      s.direction,s.shots,
       (SELECT jsonb_object_agg(key,value) FROM jsonb_each(CASE WHEN jsonb_typeof(q.request_json->'settings')='object'
         THEN q.request_json->'settings' ELSE '{}'::jsonb END) WHERE key=ANY($8)) AS settings,
       q.request_json->'references' AS references,s.job_id AS "jobId",s.status,
@@ -155,8 +156,7 @@ export async function readStudioConversationArchive(
   for (const row of rows) {
     const attachments = projectAttachments(row);
     const render = projectRender(row, terms);
-    const safeReply = row.reply && (row.quoteId ? projectStudioQuotedReply(row.reply, {message:row.message ?? ''}, row.direction) : projectStudioReply(row.reply));
-    const reply = excerpt(safeReply, 360, terms);
+    const reply = excerpt(row.reply && projectStudioReply(row.reply), 360, terms);
     const entry = {requestId: row.requestId, createdAt: row.createdAt.toISOString(), selectedFor: row.selectedFor, message: excerpt(row.message, 480, terms),
       ...(attachments.length ? {attachments} : {}), ...(reply ? {reply} : {}), ...(render ? {render} : {})};
     if (JSON.stringify([...result, entry]).length <= maxArchiveChars) result.push(entry);

@@ -1,20 +1,14 @@
 import { formatCustomerAmount } from '@/lib/customer-price-presentation';
-import { projectStudioReply, STUDIO_CONVERSATION_REPLY_MAX_CHARS } from '@/lib/studio/conversation-reply';
+import { projectStudioReply } from '@/lib/studio/conversation-reply';
 import { studioConversationLanguage } from './conversation-language';
 
 type Locale = NonNullable<Parameters<typeof studioConversationLanguage>[2]>;
-
-const quoteCopy = {
-  en: 'Generation quote',
-  fr: 'Devis de génération',
-  es: 'Presupuesto de generación',
+const labels = {
+  en: { brief: 'Creative brief', price: 'Generation quote' },
+  fr: { brief: 'Consigne créative', price: 'Devis de génération' },
+  es: { brief: 'Indicación creativa', price: 'Presupuesto de generación' },
 } as const;
-
-const monetaryAmount = /\p{Sc}\s*[.,]?\d|\d\s*\p{Sc}|\b(?:USD|EUR|GBP|CAD|AUD|CHF|MXN)\s*[.,]?\d|\d\s*(?:USD|EUR|GBP|CAD|AUD|CHF|MXN)\b|\b(?:dollars?|euros?|pounds?|bucks?|cents?|centimes?|centavos?)\b/iu;
-const priceClaim = /\b(?:free of charge|no charge|no cost|no fee|at no cost|(?:is|will be|would be) free|gratis|gratuit(?:e|s|es)?|sin coste|sin costo|price is|current estimate|(?:will|would) cost|it costs|priced at|prix estime|cout estime|estimacion actual|precio (?:es|de))\b/iu;
-const limitClaim = /\b(?:(?:under|within|below|above|over|fits?|meets?)\b[^!?\n]{0,44}\b(?:budget|limit|ceiling|cap)|(?:sous|respecte|depasse|dans)\b[^!?\n]{0,44}\b(?:budget|plafond|limite)|(?:dentro|debajo|encima|supera|respeta)\b[^!?\n]{0,44}\b(?:presupuesto|limite))\b/iu;
-const quotedCopy = /«[^»\n]+»|“[^”\n]+”|‘[^’\n]+’|"[^"\n]+"|'[^'\n]+'|`[^`\n]+`/g;
-const lettering = /\b(?:print|printed|write|lettering|lettrage|inscription|imprime[rz]?|inscris|inscrire|imprimir|escribe|texto|rotulo)\b/iu;
+const previewLength = 220;
 
 export function projectStudioQuotedReply(
   reply: string,
@@ -22,21 +16,22 @@ export function projectStudioQuotedReply(
   creativeDirection?: string | null,
   quote?: { priceCents: number; currency: string },
 ): string {
-  const safeReply = projectStudioReply(reply);
   const locale = studioConversationLanguage(input.message, [], input.locale);
-  const sentences = new Intl.Segmenter(locale, { granularity: 'sentence' });
-  const direction = safeReply.split('\n').map(line => [...sentences.segment(line)].filter(({ segment }) => {
-    const text = segment.normalize('NFD').replace(/\p{Mark}/gu, '');
-    // A literal already present in the creative direction can be mock-up copy.
-    const prose = creativeDirection && lettering.test(text) ? segment.replace(quotedCopy, literal =>
-      creativeDirection.includes(literal.slice(1, -1).trim()) ? '' : literal) : segment;
-    const claim = prose.normalize('NFD').replace(/\p{Mark}/gu, '');
-    return !limitClaim.test(claim) && !monetaryAmount.test(claim) && !priceClaim.test(claim);
-  }).map(({ segment }) => segment).join('').trimEnd()).join('\n').trim();
-  if (direction === safeReply.trim()) return safeReply;
-  if (!quote) return direction;
+  const label = labels[locale];
+  const direction = creativeDirection?.trim() ?? '';
+  // Free-form preparation prose cannot attest to a price or a spending limit.
+  // Only the recorded creative input can supply the excerpt next to the receipt.
+  let brief = '';
+  if (direction && projectStudioReply(direction) === direction) {
+    const characters = Array.from(direction.replace(/[\r\n\t]+/g, ' '));
+    const excerpt = characters.length > previewLength
+      ? characters.slice(0, previewLength - 1).join('').trimEnd() + '…'
+      : characters.join('');
+    brief = label.brief + ' · ' + excerpt;
+  }
+
+  // A purely creative reply already has its price in the adjacent quote card.
+  if (!quote || (brief && reply.trim() === direction)) return brief;
   const amount = formatCustomerAmount(quote.priceCents, quote.currency, locale);
-  if (!amount) return direction;
-  const receipt = `${quoteCopy[locale]} · ${amount}.`;
-  return [direction.slice(0, STUDIO_CONVERSATION_REPLY_MAX_CHARS - receipt.length - 2), receipt].filter(Boolean).join('\n\n');
+  return [brief, amount && label.price + ' · ' + amount].filter(Boolean).join('\n\n');
 }

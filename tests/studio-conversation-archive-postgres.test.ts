@@ -5,6 +5,8 @@ import test from 'node:test';
 import type {QueryExecutor} from '../frontend/src/lib/db';
 import {normalizeGenerationRequest, hashCanonicalGenerationRequest} from '../frontend/src/server/agent-api/generation-normalization';
 import {createQuoteRepository, generationQuoteCodec} from '../frontend/src/server/agent-api/quote-repository';
+import {hashCanonicalAudioRequest, normalizeAudioGenerationRequest} from '../frontend/src/server/agent-api/audio-normalization';
+import {audioQuoteRepositoryForActor} from '../frontend/src/server/agent-api/audio-quote-repository';
 import {readStudioArchiveDecisions, readStudioConversationArchive} from '../frontend/src/server/studio/conversation-archive';
 import {createStudioTaskService} from '../frontend/src/server/studio/tasks/service';
 import {runStudioTaskWorkerOnce} from '../frontend/src/server/studio/tasks/worker';
@@ -38,9 +40,10 @@ test('long Studio projects recover exact original and named renders from the own
     ]);
     return requestId;
   }
-  async function addRender(index: number, prompt: string) {
+  async function addRender(index: number, prompt: string, reply = 'Review the historical quote.', shot?: string) {
     const request = normalizeGenerationRequest({surface:'video', engineId:'seedance-2-5', mode:'i2v', prompt,
-      settings:{durationSec:4, aspectRatio:'9:16', resolution:'480p', audio:true, negativePrompt:'PRIVATE_SETTING'},
+      settings:{durationSec:4, aspectRatio:'9:16', resolution:'480p', audio:true, negativePrompt:'PRIVATE_SETTING',
+        ...(shot ? {multiPrompt:[{durationSec:4,prompt:shot}]} : {})},
       references:[{kind:'asset', assetId, role:'first_frame'}], outputCount:1});
     const quote = await repository.insertPreparedQuote({userId:actor.userId, oauthClientId:null, request,
       requestHash:hashCanonicalGenerationRequest(request), catalogRevision:'fixture', pricingSnapshot:{privateToken:'PRIVATE_TOKEN'},
@@ -51,19 +54,29 @@ test('long Studio projects recover exact original and named renders from the own
     await pg.pool.query("UPDATE mcp_generation_quotes SET state='accepted',updated_at=clock_timestamp() WHERE quote_id=$1", [quote.quoteId]);
     await pg.pool.query("INSERT INTO app_jobs(job_id,user_id,status) VALUES($1,'owner','completed')", [jobId]);
     await pg.pool.query("INSERT INTO job_outputs(id,user_id,job_id,kind,status,url) VALUES ($1,'owner',$2,'video','ready','https://private.example/PRIVATE_URL')", [output.outputId, jobId]);
-    const turn = await addTurn('Prepare the next blue-ice shot.', 'Review the historical quote.', quote.quoteId);
+    const turn = await addTurn('Prepare the next blue-ice shot.', reply, quote.quoteId);
     return {turn, quoteId:quote.quoteId, output};
   }
 
   const opening = await addTurn('The film is for the midnight festival.', 'Use a cobalt palette.');
   const original = await addRender(0, 'Fireflies lifting from a crack in blue ice.');
-  const named = await addRender(1, 'Chromatic sundial crossings.');
+  const named = await addRender(1, 'Chromatic sundial crossings.',
+    'The studio tariff for starlingprice is five cents. This preparation uses a made-up direction.');
+  const comparison = await addTurn('Compare prices without preparing a generation.', 'The starlingprice preliminary estimate is $0.05.');
   const decision = await addTurn('Keep the changed ending.', 'Background. '.repeat(400) + 'The brass pendulum stops on beat three. https://x.example/PRIVATE_SIGNED?token=q ');
   await addTurn('PRIVATE_FAILED pendulum', 'Never completed.', null, 'film', 'failed');
   const foreign = await addTurn('PRIVATE_FOREIGN pendulum', 'Cross owner.', null, 'foreign');
   const other = await addTurn('PRIVATE_OTHER pendulum', 'Cross project.', null, 'other');
+  const shot = await addRender(2, 'Aerial opening.', undefined, 'Filigree sandbars at dusk.');
+  const audio = normalizeAudioGenerationRequest({schemaVersion:1, surface:'audio', engineId:'audio-song', mode:'song',
+    prompt:'Light acoustic music.', settings:{lyrics:'The marigolds shimmer under the moon.'}, references:[], outputCount:1});
+  const audioQuote = await audioQuoteRepositoryForActor(actor).insertPreparedQuote({
+    userId:actor.userId, oauthClientId:null, request:audio, requestHash:hashCanonicalAudioRequest(audio), catalogRevision:'fixture',
+    pricingSnapshot:{totalCents:17,currency:'USD'}, priceCents:17, currency:'USD', fundingMode:'wallet',
+  }, {executor});
+  const song = await addTurn('Prepare a song.', 'Review the historical quote.', audioQuote.quoteId);
   let constraint = '', revision = '';
-  for (let i = 2; i <= 36; i++) {
+  for (let i = 3; i <= 36; i++) {
     await addRender(i, `Late studio take ${i}.`);
     if (i === 14) constraint = await addTurn('Keep every future scene silent. Source https://example.test/PRIVATE_SIGNED?v=1', 'Silent.');
     if (i === 22) revision = await addTurn('Change the sound decision. From now on keep the wind, without music.', 'Natural wind only.');
@@ -94,7 +107,21 @@ test('long Studio projects recover exact original and named renders from the own
   assert.match(related.find(entry => entry.requestId === decision)?.reply ?? '', /brass pendulum stops on beat three/);
   assert.equal((await readStudioConversationArchive(actor, boundary, 'Chromatic sundial'))[0].requestId, named.turn);
   assert.equal((await readStudioConversationArchive(actor, boundary, named.output.outputId))[0].selectedFor, 'exact_id');
-  assert.equal((await readStudioConversationArchive(actor, boundary, named.quoteId))[0].requestId, named.turn);
+  const byEstimateTerm = await readStudioConversationArchive(actor, boundary, 'starlingprice');
+  assert.ok(!byEstimateTerm.some(entry => entry.requestId === named.turn), 'Free quote prose cannot influence archive ranking.');
+  assert.match(byEstimateTerm.find(entry => entry.requestId === comparison && entry.selectedFor === 'related')?.reply ?? '', /preliminary estimate is \$0\.05/);
+  const exactQuote = (await readStudioConversationArchive(actor, boundary, named.quoteId))[0];
+  assert.equal(exactQuote.requestId, named.turn);
+  assert.equal(exactQuote.reply, undefined);
+  assert.equal(exactQuote.render?.direction, 'Chromatic sundial crossings.');
+  const byShotDirection = (await readStudioConversationArchive(actor, boundary, 'Filigree sandbars'))[0];
+  assert.equal(byShotDirection.requestId, shot.turn);
+  assert.equal(byShotDirection.selectedFor, 'related');
+  assert.equal(byShotDirection.render?.direction, 'Shot 1 · 4 s\nFiligree sandbars at dusk.');
+  const byLyrics = (await readStudioConversationArchive(actor, boundary, 'marigolds shimmer'))[0];
+  assert.equal(byLyrics.requestId, song);
+  assert.equal(byLyrics.selectedFor, 'related');
+  assert.equal(byLyrics.render?.direction, 'Light acoustic music.\n\nThe marigolds shimmer under the moon.');
   for (const result of [archive,related]) {
     assert.ok(result.length <= 5 && JSON.stringify(result).length <= 6500);
     assert.doesNotMatch(JSON.stringify(result), /PRIVATE_|private\.example|Never an archived turn/);
@@ -140,7 +167,7 @@ test('long Studio projects recover exact original and named renders from the own
     assert.equal(await runStudioTaskWorkerOnce(options), false);
   }
   assert.equal(calls, 2);
-  assert.equal((await pg.pool.query('SELECT COUNT(*)::int n FROM mcp_generation_quotes')).rows[0].n, 37);
+  assert.equal((await pg.pool.query('SELECT COUNT(*)::int n FROM mcp_generation_quotes')).rows[0].n, 38);
   assert.equal((await pg.pool.query('SELECT COUNT(*)::int n FROM app_receipts')).rows[0].n, 0);
 
   await pg.pool.query("UPDATE job_outputs SET status='deleted' WHERE id=$1", [original.output.outputId]);
