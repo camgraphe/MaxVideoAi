@@ -146,6 +146,7 @@ export interface GenerationJob {
   createdAt: string;
   url: string | null;
   playbackUrl: string | null;
+  shareSourceUrl?: string;
   thumbnailUrl: string | null;
   mediaKind?: Surface | 'audio';
   audioUrl?: string | null;

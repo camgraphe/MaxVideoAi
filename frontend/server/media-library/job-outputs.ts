@@ -129,7 +129,7 @@ export async function upsertLegacyJobOutputs(row: LegacyJobMediaRow, options: {
 
 export async function listJobOutputsByJobIds(
   jobIds: string[],
-  options: { ensureSchema?: boolean } = {}
+  options: { ensureSchema?: boolean; userId?: string } = {}
 ): Promise<Map<string, JobOutputRecord[]>> {
   const ids = Array.from(new Set(jobIds.filter(Boolean)));
   const map = new Map<string, JobOutputRecord[]>();
@@ -139,9 +139,9 @@ export async function listJobOutputsByJobIds(
     `SELECT id, job_id, user_id, kind, url, storage_url, thumb_url, preview_url, mime_type, width, height,
             duration_sec, position, status, metadata, created_at
        FROM job_outputs
-      WHERE job_id = ANY($1::text[])
+      WHERE job_id = ANY($1::text[]) ${options.userId === undefined ? '' : 'AND user_id = $2'}
       ORDER BY job_id ASC, kind ASC, position ASC`,
-    [ids]
+    options.userId === undefined ? [ids] : [ids, options.userId]
   );
   rows.forEach((row) => {
     const output = mapOutputRow(row);
