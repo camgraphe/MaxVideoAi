@@ -9,9 +9,11 @@ import {createCharacterStudioIntegration} from '@/server/character-studio/integr
 import {isStudioCharacterEnabled} from './feature-access';
 import type {StudioCharacterFactory} from './conversation-character';
 import type {StudioTaskExecution} from "./tasks/execution";
+import {renewReviewedStudioGeneration} from './renew-generation-quote';
 import {customerDisplayPrice} from '@/lib/customer-price-presentation';
 import type {StudioExportDependencies} from './conversation-export-command';
 import {recordedStudioOutputDuration,recordedStudioSourceVideoOutput} from './conversation-quote-facts';
+import {recallStudioReferences} from './conversation-reference-recall';
 import {readStudioArchiveDecisions, readStudioConversationArchive} from './conversation-archive';
 import {projectStudioQuoteDirections,readStudioHistoricalEstimates} from './conversation-history-facts';
 import { getBaseEngineIncludingHidden } from "@/lib/engines";
@@ -255,14 +257,25 @@ export function createImageConversationService(
         ),
       };
     },
-    async submit(value: unknown) {
+    async submit(value: unknown, renewalQuoteId?: string) {
       await project();
-      const input = imageTurnInputSchema.parse(value);
-      if (input.attachments?.length && (!dependencies.actionsEnabled || !dependencies.mediaEnabled))
+      const submitted = imageTurnInputSchema.parse(value);
+      if (submitted.attachments?.length && (!dependencies.actionsEnabled || !dependencies.mediaEnabled))
         throw new AgentApiError('ENGINE_UNAVAILABLE', 'Video and audio attachments are unavailable in this image pilot.');
-      const { turn, claimed, responseReplayOnly } = await claimImageTurn(actor, input, {allowRecordedResponseRecovery: dependencies.actionsEnabled === true,taskWorkerId:dependencies.taskExecution?.workerId});
+      const { turn, claimed, responseReplayOnly } = await claimImageTurn(actor, submitted, {allowRecordedResponseRecovery: dependencies.actionsEnabled === true,taskWorkerId:dependencies.taskExecution?.workerId, renewalQuoteId});
       if (!claimed) return projectTurn(turn);
       try {
+        const recall = await recallStudioReferences(actor, submitted, turn.draft_json);
+        const input = recall.input;
+        if (recall.clarification) {
+          if (turn.draft_json) throw new AgentApiError('REFERENCE_INVALID', recall.clarification);
+          const draft = {reply: recall.clarification, image: null};
+          await persistImageDraft(actor, turn, draft, studioReferenceFingerprint([]));
+          return projectTurn({...turn, state: 'ready', draft_json: draft});
+        }
+        if (input.attachments?.length && (!dependencies.actionsEnabled || !dependencies.mediaEnabled))
+          throw new AgentApiError('ENGINE_UNAVAILABLE', 'Video and audio references are unavailable in this project.');
+        turn.recalledReferences = recall.sources;
         const refs = await generation.resolveReferences({
           schemaVersion: 1,
           surface: "image",
@@ -337,7 +350,9 @@ export function createImageConversationService(
         if (!turn.draft_json && !useActions)
           await persistImageDraft(actor, turn, draft, referenceFingerprint);
         if (hasDraftCreation(draft) && !useActions) {
-          if (dependencies.actionsEnabled) {
+          if (renewalQuoteId) {
+            await renewReviewedStudioGeneration(actor, turn, renewalQuoteId, factories, dependencies.enabled, dependencies.mediaEnabled === true);
+          } else if (dependencies.actionsEnabled) {
             await resumeStudioImageAction({actor, turn, input, references: refs, referenceFingerprint, enabled: dependencies.enabled, factory, factories, mediaEnabled: dependencies.mediaEnabled,characterEnabled,characterFactory:dependencies.characterFactory,characterBuilderEnabled,characterBuilderFactory:dependencies.characterBuilderFactory,requestOrigin:dependencies.requestOrigin,editingEnabled:dependencies.editingEnabled});
           } else {
           const request = imageRequestFromDraft(

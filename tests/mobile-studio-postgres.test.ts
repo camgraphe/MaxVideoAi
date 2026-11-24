@@ -205,7 +205,9 @@ test('Studio phone projects, journal and reviewed messages share website ownersh
   assert.deepEqual(saved.input_json.attachments.map((ref: {assetId:string}) => ref.assetId), [media[0].assetId, media[2].assetId]);
   assert.deepEqual(reopened.turns[0].media, media);
   assert.equal(a.stableReferenceLabels, true);
+  assert.equal('referenceOrdinals' in reopened, false);
   const withLabels = await (await route(projectId, undefined, owner, '?mediaLabels=1')).json();
+  assert.deepEqual(withLabels.referenceOrdinals, { image: 1, video: 1, audio: 1 });
   assert.deepEqual(withLabels.turns[0].media, media.map((ref, i) => ({ ...ref, label: ['Audio 1','Image 1','Video 1'][i] })));
   const photo = media[1].assetId;
   const photoQuery = '?view=photos&asset=' + photo + '&requestId=' + requestId;
@@ -270,6 +272,8 @@ test('Studio phone projects, journal and reviewed messages share website ownersh
   assert.equal((await sendLegacy()).status, 200);
   const old = (await pg.pool.query('SELECT profile, max_credits, profile_json, input_json FROM studio_tasks WHERE request_id=$1', [legacy.requestId])).rows;
   assert.equal(old.length, 1);
+  const relabelledJournal = await (await route(otherProject.projectId, undefined, foreign, '?mediaLabels=1')).json();
+  assert.deepEqual(relabelledJournal.referenceOrdinals, { image: 7, video: 0, audio: 0 });
   assert.equal(old[0].profile, 'quick');
   assert.equal(old[0].profile_json.explicitLiteChoice, true);
   assert.equal(old[0].max_credits, STUDIO_TASK_PROFILES.quick.maxCredits);

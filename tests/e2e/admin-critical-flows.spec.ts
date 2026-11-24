@@ -92,11 +92,18 @@ test.describe('admin critical flows', () => {
   });
 
   test('pricing cockpit compares costs and previews a policy change', async ({ page }) => {
+    test.setTimeout(90_000);
     const confirmRequests: string[] = [];
     page.on('request', (request) => {
       if (request.url().includes('/api/admin/pricing/confirm')) confirmRequests.push(request.url());
     });
-    await openAdminRoute(page, '/admin/pricing');
+    const [inventoryResponse] = await Promise.all([
+      page.waitForResponse(response => new URL(response.url()).pathname === '/api/admin/pricing/inventory'
+        && response.request().method() === 'GET', { timeout: 45_000 }),
+      openAdminRoute(page, '/admin/pricing'),
+    ]);
+    expect(inventoryResponse.status()).toBe(200);
+    expect((await inventoryResponse.json()).ok).toBe(true);
     await expect(page.getByRole('heading', { level: 1, name: 'Pricing', exact: true })).toBeVisible();
     await expect(page.getByText('Supplier cost and customer price', { exact: true })).toBeVisible();
     await page.getByRole('tab', { name: 'Pricing', exact: true }).focus();
