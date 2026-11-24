@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
+import {mobileStudioReviewTurns, renewMobileStudioQuote} from '../frontend/src/server/mobile/studio-renewal';
 import { getDb } from '../frontend/src/lib/db';
 import { getFalEngineById } from '../frontend/src/config/falEngines';
 import { imageTurnRetryInput, type ImageConversationHistoryTurn } from '../frontend/src/lib/studio/image-conversation-contract';
@@ -80,6 +81,21 @@ test('saved labels survive failed renewal, immutable replay and history without 
 
   const second = await service.submit({ ...input, requestId: randomUUID(), references: [imageB], referenceMentions: [{ assetId: imageB, label: 'Image 1' }] });
   assert.deepEqual(second.referenceMentions, [{ assetId: imageB, label: 'Image 1' }]);
+  const journalTurns = (await service.read()).turns;
+  const visible = mobileStudioReviewTurns(journalTurns);
+  assert.deepEqual(visible.map(turn => turn.requestId), [recovered.requestId, second.requestId]);
+  assert.deepEqual(visible.map(turn => turn.references), [[imageA], [imageB]]);
+  assert.equal(visible[0].message, visible[1].message, 'Two independent human messages may have identical text');
+  const next = { ...recovered, requestId: randomUUID(), renewedFromRequestId: recovered.requestId };
+  const expiredParent = { ...recovered, quote: { ...recovered.quote, state: 'expired' as const } };
+  const savedOriginal = journalTurns.find(turn => turn.requestId === original.requestId)!;
+  assert.deepEqual(mobileStudioReviewTurns([savedOriginal, second, expiredParent, next]).map(turn => turn.requestId),
+    [next.requestId, second.requestId]);
+  assert.deepEqual(mobileStudioReviewTurns([next]), [next], 'A renewal remains visible when its parent is on an older page');
+  const usedParent = { ...expiredParent, quote: { ...expiredParent.quote, state: 'accepted' as const } };
+  assert.deepEqual(mobileStudioReviewTurns([usedParent, next]), [usedParent, next], 'Keep any prior accepted receipt');
+  assert.deepEqual(mobileStudioReviewTurns([expiredParent, { ...next, state:'failed', quote:null }]),
+    [expiredParent], 'Keep the last price review available when its refresh fails');
   assert.deepEqual(observedHistory.map(turn => turn.referenceMentions), [input.referenceMentions, input.referenceMentions]);
   await assert.rejects(service.submit({ ...input, requestId: randomUUID(), references: [foreign], referenceMentions: [{ assetId: foreign, label: 'Image 1' }] }), { code: 'REFERENCE_INVALID' });
   assert.equal(calls, 2, 'foreign media must fail before invoking the director');
@@ -159,6 +175,15 @@ test('saved labels survive failed renewal, immutable replay and history without 
   assert.deepEqual(renewed.quote?.summary.references.map(ref=>ref.assetId),[recallA]);
   assert.notEqual(renewed.quote?.quoteId,ready.quote!.quoteId);
   assert.deepEqual(renewed.references,[]);
+  await pg.pool.query("UPDATE mcp_generation_quotes SET state='expired' WHERE quote_id=$1",[renewed.quote!.quoteId]);
+  const mobileRenewal = await renewMobileStudioQuote(project, {action:'renew-generation', requestId:renewed.requestId,
+    quoteId:renewed.quote!.quoteId,renewalId:randomUUID(),locale:'fr'},open());
+  assert.equal(mobileRenewal.quote.review?.requestHash,renewed.quote!.requestHash);
+  const frozen = (await pg.pool.query('SELECT input_json,draft_json FROM studio_image_turns WHERE request_id=$1',
+    [mobileRenewal.requestId])).rows[0];
+  assert.deepEqual(frozen.input_json.references,[]);
+  assert.deepEqual(frozen.draft_json.recalledReferences.map((ref: {assetId:string})=>ref.assetId),[recallA]);
+
   // This label belongs only to the other project, even though the user owns both.
   await open().submit({...plain('Photo historique'),references:[recallB],referenceMentions:[{assetId:recallB,label:'Image 9'}]});
   const beforeMissing = seen.length;
@@ -178,5 +203,12 @@ test('saved labels survive failed renewal, immutable replay and history without 
   assert.equal(seen.length,previousCalls);
   assert.deepEqual(await readStudioProjectReferenceOrdinals(project),{image:9,video:0,audio:0});
   assert.equal((await pg.pool.query("SELECT count(*)::int AS n FROM app_receipts WHERE type='charge'")).rows[0].n,0);
+  const nextId = randomUUID();
+  await pg.pool.query('UPDATE media_assets SET deleted_at=now() WHERE public_id=$1',[imageA]);
+  await assert.rejects(renewMobileStudioQuote(actor, {action:'renew-generation', requestId:recovered.requestId,
+    quoteId:recovered.quote!.quoteId, renewalId:nextId, locale:'en'}, service), {code:'REFERENCE_INVALID'});
+  assert.equal(calls, 2);
+  assert.equal((await pg.pool.query('SELECT quote_id FROM studio_image_turns WHERE request_id=$1',[nextId])).rows[0]?.quote_id ?? null,null);
+  assert.equal((await pg.pool.query('SELECT state FROM mcp_generation_quotes WHERE quote_id=$1',[second.quote!.quoteId])).rows[0].state,'prepared');
 
 });

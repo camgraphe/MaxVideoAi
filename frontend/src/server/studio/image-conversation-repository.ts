@@ -108,17 +108,17 @@ export async function readQuoteLanguageContext(actor: StudioGenerationActor, bef
   return { recent: recent.map(({ message, locale }) => ({ message, locale })), precedingCommand };
 }
 
-async function expirePreparedCreationQuotes(actor: StudioGenerationActor, executor: TransactionQueryExecutor) {
+async function expirePreparedCreationQuotes(actor: StudioGenerationActor, executor: TransactionQueryExecutor, keep?: string) {
   await executor.query(
-    "UPDATE mcp_generation_quotes SET state = 'expired', updated_at = clock_timestamp() WHERE user_id = $1 AND auth_origin = 'studio-session' AND studio_project_id = $2 AND state = 'prepared'",
-    [actor.userId, actor.projectId],
+    "UPDATE mcp_generation_quotes SET state = 'expired', updated_at = clock_timestamp() WHERE user_id = $1 AND auth_origin = 'studio-session' AND studio_project_id = $2 AND state = 'prepared' AND quote_id IS DISTINCT FROM $3::uuid",
+    [actor.userId, actor.projectId, keep ?? null],
   );
 }
 
 export async function claimImageTurn(
   actor: StudioGenerationActor,
   input: ImageTurnInput,
-  options: {allowRecordedResponseRecovery?: boolean;taskWorkerId?:string} = {},
+  options: {allowRecordedResponseRecovery?: boolean;taskWorkerId?:string;renewalQuoteId?:string} = {},
 ): Promise<{ turn: StoredImageTurn; claimed: boolean; responseReplayOnly?: boolean }> {
   const parsed = imageTurnInputSchema.parse(input);
   const hash = createHash("sha256").update(stableJson(parsed)).digest("hex");
@@ -200,6 +200,7 @@ export async function claimImageTurn(
         [actor.userId, actor.projectId, parsed.renewedFromRequestId],
       ))[0];
       if (!renewal || !hasDraftCreation(renewal.draft_json) || !renewal.quote_id
+        || (options.renewalQuoteId && renewal.quote_id !== options.renewalQuoteId)
         || renewal.input_json.message !== parsed.message
         || stableJson(renewal.input_json.shotPlanRevision ?? null) !== stableJson(parsed.shotPlanRevision ?? null)
         || stableJson(renewal.input_json.references) !== stableJson(parsed.references)
@@ -213,9 +214,27 @@ export async function claimImageTurn(
       if (!quote || quote.job_id || !(quote.state === "expired" || (quote.state === "prepared" && quote.expires_at <= clock)))
         throw new AgentApiError("QUOTE_EXPIRED", "Only an expired, unconfirmed quote can be renewed. Review the existing generation first.");
     }
+    if (!existing && renewal && options.renewalQuoteId) {
+      // Concurrent clients can hold different retry IDs for the same expired quote.
+      const [successor] = await executor.query<StoredImageTurn>(
+        `WITH RECURSIVE successors(request_id) AS (
+           SELECT request_id FROM studio_image_turns WHERE user_id=$1 AND project_id=$2 AND request_id=$3
+           UNION SELECT child.request_id FROM studio_image_turns child
+             JOIN successors parent ON child.input_json->>'renewedFromRequestId'=parent.request_id::text
+             WHERE child.user_id=$1 AND child.project_id=$2
+         ) SELECT ${IMAGE_TURN_COLUMNS.split(', ').map(column => 't.' + column).join(', ')}
+         FROM successors s JOIN studio_image_turns t ON t.request_id=s.request_id AND t.user_id=$1 AND t.project_id=$2
+         JOIN mcp_generation_quotes q ON q.quote_id=t.quote_id AND q.user_id=t.user_id AND q.studio_project_id=t.project_id
+         WHERE s.request_id<>$3 AND t.state='ready' AND q.auth_origin='studio-session' AND (q.job_id IS NOT NULL
+           OR q.state IN ('accepted','claimed') OR (q.state='prepared' AND q.expires_at>clock_timestamp()))
+         ORDER BY (q.job_id IS NOT NULL OR q.state IN ('accepted','claimed')) DESC,t.created_at DESC,t.request_id DESC LIMIT 1`,
+        [actor.userId, actor.projectId, renewal.request_id],
+      );
+      if (successor) return {turn: successor, claimed: false};
+    }
     // A saved creation retry resumes that intent; a new message has no creation
     // intent yet and may only ask for clarification about the current quote.
-    if (hasDraftCreation(existing?.draft_json ?? renewal?.draft_json ?? null))
+    if (!options.renewalQuoteId && hasDraftCreation(existing?.draft_json ?? renewal?.draft_json ?? null))
       await expirePreparedCreationQuotes(actor, executor);
     const lease = options.taskWorkerId??randomUUID();
     const rows = existing
@@ -277,7 +296,9 @@ export async function attachImageQuote(
   turn: StoredImageTurn,
   quoteId: string,
   executor: TransactionQueryExecutor,
+  supersedePrevious = false,
 ) {
+  if (supersedePrevious) await expirePreparedCreationQuotes(actor, executor, quoteId);
   const rows = await executor.query(
     `UPDATE studio_image_turns SET quote_id = $5, state = 'ready', updated_at = clock_timestamp() WHERE user_id = $1 AND project_id = $2 AND request_id = $3 AND lease_id = $4 AND state = 'thinking' AND draft_json IS NOT NULL RETURNING request_id`,
     [actor.userId, actor.projectId, turn.request_id, turn.lease_id, quoteId],

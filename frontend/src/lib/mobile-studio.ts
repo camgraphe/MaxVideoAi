@@ -13,6 +13,7 @@ export type StudioPhotoRead = { assetId: string } & (
 );
 export type StudioProject = { id: string; name: string; updatedAt: string };
 export type StudioQuoteReview = {
+  canRenew?: true;
   quoteId: string;
   requestHash: string;
   expiresAt: string;
@@ -46,6 +47,7 @@ export type StudioAllowance = {
 export type StudioMessage = {
   continuedWithLite?: true;
   requestId: string;
+  renewedFromRequestId?: string;
   message: string;
   media?: StudioReference[];
   reply: string | null;

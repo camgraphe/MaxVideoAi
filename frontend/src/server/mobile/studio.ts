@@ -26,6 +26,7 @@ import type { StudioGenerationActor } from '@/server/agent-api/generation-actor'
 import { studioConversationEditingEnabled } from '@/app/api/studio/_lib/studio-conversation-editing-handler';
 import { MobileHttpError, mobileResponse } from './http';
 import { readMobileStudioPhotos } from './studio-photos';
+import { mobileStudioReviewTurns, renewMobileStudioQuote, studioRenewInput } from './studio-renewal';
 import { readStudioProjectReferenceOrdinals } from '@/server/studio/project-reference-registry';
 
 const nameInput = z.object({ name: studioProjectNameSchema, idempotencyKey: z.string().uuid() });
@@ -52,7 +53,7 @@ const messageInput = z
     customerMaxCredits: z.number().int().nonnegative(),
   })
   .strict();
-const projectInput = z.discriminatedUnion('action', [renameInput, deleteInput, messageInput, studioConfirmInput]);
+const projectInput = z.discriminatedUnion('action', [renameInput, deleteInput, messageInput, studioConfirmInput, studioRenewInput]);
 const customerCeiling = (model: StudioAllowance['model'], maxCredits: number) =>
   miloLevelForModel(model) === 'lite' ? 0 : maxCredits;
 
@@ -175,15 +176,18 @@ export function handleMobileStudio(
         projectName: journal.projectName,
         allowance,
         ...(referenceOrdinals ? { stableReferenceLabels: true as const, referenceOrdinals } : {}),
-        turns: journal.turns.map(turn => ({
+        turns: (reviewEnabled ? mobileStudioReviewTurns(journal.turns) : journal.turns).map(turn => ({
           requestId: turn.requestId,
+          ...(reviewEnabled && turn.renewedFromRequestId ? { renewedFromRequestId: turn.renewedFromRequestId } : {}),
           message: turn.message,
           media: turnMedia(turn, labels),
           reply: turn.reply,
           ...(turn.task?.model === MILO_LEVELS.lite.model && turn.taskBudget?.model &&
             turn.taskBudget.model !== MILO_LEVELS.lite.model ? { continuedWithLite: true as const } : {}),
           state: turn.task?.state === 'paused' ? 'paused' : turn.state,
-          quote: turn.quote ? mobileStudioQuote(turn.quote, locale, reviewEnabled) : null,
+          quote: turn.quote ? mobileStudioQuote(turn.quote, locale, reviewEnabled,
+            turn.state === 'ready' && !turn.generation &&
+            (turn.quote.summary.surface === 'image' || process.env.STUDIO_CONVERSATION_MEDIA_ENABLED === 'true')) : null,
           ...(reviewEnabled && !turn.quote && (turn.exportQuote || turn.creatorQuote || turn.analysisQuote?.confirmationRequired)
             ? { webReview: true as const }
             : {}),
@@ -194,6 +198,8 @@ export function handleMobileStudio(
     const parsed = projectInput.safeParse(await readBoundedJsonBody(req, 32768));
     if (!parsed.success) throw new SyntaxError('Invalid project command.');
     const input = parsed.data;
+    if (input.action === 'renew-generation')
+      return renewMobileStudioQuote(actor, input, deps.conversationService(actor, req.nextUrl.origin));
     if (input.action === 'confirm-generation') {
       if (req.headers.get(PRICING_POLICY_HEADER) !== LIVE_PRICING_POLICY_REVISION)
         throw new MobileHttpError('REVIEW_REQUIRED', 409, 'Review the current pricing policy.');
