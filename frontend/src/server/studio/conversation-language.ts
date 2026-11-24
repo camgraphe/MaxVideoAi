@@ -18,9 +18,9 @@ export function studioConversationLanguage(message:string,history:readonly {mess
     if(requested)return /english|anglais|ingles/.test(requested)?'en':/french|francais|frances/.test(requested)?'fr':'es';
     const words=new Set(text.match(/[a-z]+/g)??[]);
     const scores=([
-      ['es',['quiero','necesito','presupuesto','entiendo','hablar','hablame','puedes','para','tienda','imagenes','adelante','perfecto','generar','genera','tengo','pero','que','una','por','favor']],
-      ['fr',['veux','voudrais','besoin','devis','comprends','peux','pour','boutique','images','continue','parfait','generer','genere','avec','mais','une','bonjour','merci']],
-      ['en',['want','need','budget','understand','please','can','for','shop','images','continue','perfect','generate','with','this','the','would','could','hello','thanks']],
+      ['es',['quiero','necesito','presupuesto','entiendo','hablar','hablame','puedes','para','tienda','imagenes','voz','adelante','perfecto','generar','genera','tengo','pero','que','una','por','favor']],
+      ['fr',['veux','voudrais','besoin','devis','comprends','peux','pour','boutique','images','voix','continue','parfait','generer','genere','avec','mais','une','bonjour','merci']],
+      ['en',['want','need','budget','understand','please','can','for','shop','images','voice','continue','perfect','generate','with','this','the','would','could','hello','thanks']],
     ] as const).map(([locale,markers])=>({locale,score:markers.filter(word=>words.has(word)).length})).sort((a,b)=>b.score-a.score);
     if(scores[0].score>=2&&scores[0].score>scores[1].score)return scores[0].locale;
   }

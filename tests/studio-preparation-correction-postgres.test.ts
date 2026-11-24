@@ -256,8 +256,8 @@ test('Studio quotes only supported video framing and source-audio settings', asy
 
   const klingSourceLanguages = [
     ['en', 'I want a quote to make this jacket red and keep the original voice.', /Kling Edit.*720.*3840.*each side/, /reached its action limit/],
-    ['fr', 'Je veux un devis pour mettre la veste en rouge avec la voix originale.', /Kling Edit.*largeur.*hauteur.*720.*3840/, /atteint sa limite/],
-    ['es', 'Quiero un presupuesto para poner la chaqueta roja y conservar la voz original.', /Kling Edit.*ancho.*alto.*720.*3840/, /alcanzó su límite/],
+    ['fr', 'Une veste rouge en gardant la voix originale.', /Kling Edit.*largeur.*hauteur.*720.*3840/, /atteint sa limite/],
+    ['es', 'Una chaqueta roja conservando la voz original.', /Kling Edit.*ancho.*alto.*720.*3840/, /alcanzó su límite/],
   ] as const;
   for (const [locale, message, guidance, limit] of klingSourceLanguages) {
     await t.test(`Kling Edit reports supported source dimensions at the Studio action limit in ${locale}`, async () => {
