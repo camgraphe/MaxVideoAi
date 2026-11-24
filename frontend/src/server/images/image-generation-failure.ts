@@ -26,7 +26,7 @@ export async function persistFailedImageGeneration(params: {
   priceOnlyReceipts: boolean;
   pricing: PricingSnapshot;
   refundOnFailure?: boolean;
-  failedPaymentStatus?: string;
+  failedPaymentStatus?: string | null;
   providerJobId: string | null;
   providerMode: string;
   quality: string | null;
@@ -129,7 +129,7 @@ export async function persistFailedImageGeneration(params: {
            provider_job_id = COALESCE($3, provider_job_id),
            provisional = FALSE,
            updated_at = NOW(),
-           payment_status = $4,
+           payment_status = COALESCE($4, payment_status),
            provider = $5
        WHERE job_id = $1`,
       [jobId, message, providerJobId ?? null, failedPaymentStatus, providerMode]
