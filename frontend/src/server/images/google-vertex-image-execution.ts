@@ -4,6 +4,7 @@ import { normalizeMediaUrl } from '@/lib/media';
 import type { BillingProductKey, JobSurface } from '@/types/billing';
 import type { EngineCaps, PricingSnapshot } from '@/types/engines';
 import type { GeneratedImage, ImageGenerationMode, ImageGenerationResponse } from '@/types/image-generation';
+import { maybeAutoRefundWalletCharge } from '@/server/fal-webhook-refunds';
 import {
   createSignedDownloadUrl,
   extractStorageKeyFromUrl,
@@ -316,7 +317,7 @@ export async function executeGoogleVertexImageGeneration(params: {
       });
     }
     const moderationRefusal = error instanceof GoogleVertexImageError && error.code === GOOGLE_VERTEX_IMAGE_SAFETY_BLOCK;
-    const { message, providerBody, providerStatus, refundRecorded } = await persistFailedImageGeneration({
+    const { message, providerBody, providerStatus } = await persistFailedImageGeneration({
       characterReferenceCount: params.characterReferenceCount,
       enableWebSearch: params.enableWebSearch,
       engineId: params.engine.id,
@@ -337,15 +338,25 @@ export async function executeGoogleVertexImageGeneration(params: {
       ...(modelId === NANO21_MODEL_ID ? { providerUsage: parseGoogleVertexImageUsage(lastProviderResponse) } : {}),
       quality: params.quality,
       referenceImageUrls: params.combinedImageUrls,
+      refundOnFailure: !moderationRefusal,
+      failedPaymentStatus: moderationRefusal ? null : undefined,
       refundDescription: params.refundDescription,
-      refundReason: moderationRefusal ? error.message : undefined,
       resolvedAspectRatio: params.resolvedAspectRatio,
       resolution: params.resolution,
       thinkingLevel: params.thinkingLevel,
     });
 
-    const publicMessage = moderationRefusal
-      ? localizeGoogleImageModerationMessage(message, 'en', refundRecorded && params.pendingReceipt.amountCents > 0) ?? message
+    const moderationRefunded = moderationRefusal && await maybeAutoRefundWalletCharge(params.jobId, {
+      providerJobId,
+      failureMessage: message,
+      failureOrigin: GOOGLE_VERTEX_IMAGE_SAFETY_BLOCK,
+      refundDescription: `${params.refundDescription.replace(/\b1 images\b/g, '1 image')} - ${message}`,
+    }).catch((settlementError) => {
+      console.warn('[images] could not confirm Google moderation refund', settlementError);
+      return false;
+    });
+    const publicMessage = moderationRefunded
+      ? localizeGoogleImageModerationMessage(message, 'en', true) ?? message
       : message;
     throw new ImageGenerationExecutionError(publicMessage, {
       mode: params.mode,
@@ -359,7 +370,7 @@ export async function executeGoogleVertexImageGeneration(params: {
         engineId: params.engineEntry.id,
         engineLabel: params.engineEntry.marketingName,
         jobId: params.jobId,
-        paymentStatus: 'refunded_wallet',
+        paymentStatus: moderationRefusal && !moderationRefunded ? 'paid_wallet' : 'refunded_wallet',
       },
     });
   }

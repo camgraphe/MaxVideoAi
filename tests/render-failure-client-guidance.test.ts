@@ -5,6 +5,7 @@ import { getVideoFailureCodeFromSettingsSnapshot } from '../frontend/lib/video-f
 import { mapGenerationStatusRecordToAgent } from '../frontend/src/server/generations/agent-generation-policy';
 import type { GenerationStatusRecord } from '../frontend/src/server/generations/generation-status';
 import { getWorkspaceGenerationFailureMessage } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-failure-messages';
+import { conversationFailurePresentation } from '../frontend/src/lib/studio/conversation-quote-presentation';
 
 const generic = 'MaxVideoAI could not complete this render. Please retry in a few moments. If this keeps happening, contact support with your request ID.';
 const workspaceCopy = { messages: { seedanceCopyrightBlocked: '', seedanceCopyrightBlockedRefunded: '' } };
@@ -100,5 +101,22 @@ test('Google image refusal guidance preserves the blocked stage and the confirme
     const receipt = localizeGenerationRefundDescription(`Refund Nano Banana Pro - 1 image - ${output}`, locale);
     assert.match(receipt ?? '', image);
     assert.doesNotMatch(receipt ?? '', /prompt|IMAGE_PROHIBITED_CONTENT/);
+  }
+});
+
+test('Studio retains the Google output refusal when generation status includes recovery guidance', () => {
+  for (const payment_status of ['paid_wallet', 'refunded_wallet']) {
+    const generation = mapGenerationStatusRecordToAgent(failedRecord({
+      surface: 'image',
+      engine_id: 'nano-banana-pro',
+      message: 'Google blocked the generated image during its moderation checks.',
+      payment_status,
+    }));
+    assert.ok(generation);
+    const displayed = conversationFailurePresentation(generation, 'fr');
+    assert.match(displayed, /Google a bloqué l’image générée/);
+    assert.match(displayed, /nouveau devis/);
+    assert.equal(/remboursé/.test(displayed), payment_status === 'refunded_wallet');
+    assert.doesNotMatch(displayed, /prompt|référence|fresh exact quote/);
   }
 });

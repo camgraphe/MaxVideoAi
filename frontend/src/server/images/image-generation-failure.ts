@@ -26,13 +26,12 @@ export async function persistFailedImageGeneration(params: {
   priceOnlyReceipts: boolean;
   pricing: PricingSnapshot;
   refundOnFailure?: boolean;
-  failedPaymentStatus?: string;
+  failedPaymentStatus?: string | null;
   providerJobId: string | null;
   providerMode: string;
   quality: string | null;
   referenceImageUrls: string[];
   refundDescription: string;
-  refundReason?: string;
   resolvedAspectRatio: string | null;
   resolution: string;
   style?: string | null;
@@ -62,7 +61,6 @@ export async function persistFailedImageGeneration(params: {
     quality,
     referenceImageUrls,
     refundDescription,
-    refundReason,
     resolvedAspectRatio,
     resolution,
     style = null,
@@ -131,7 +129,7 @@ export async function persistFailedImageGeneration(params: {
            provider_job_id = COALESCE($3, provider_job_id),
            provisional = FALSE,
            updated_at = NOW(),
-           payment_status = $4,
+           payment_status = COALESCE($4, payment_status),
            provider = $5
        WHERE job_id = $1`,
       [jobId, message, providerJobId ?? null, failedPaymentStatus, providerMode]
@@ -194,15 +192,13 @@ export async function persistFailedImageGeneration(params: {
     console.warn('[images] failed to record fal queue log', logError);
   }
 
-  let refundRecorded = false;
   if (refundOnFailure) {
-    const receiptReason = refundReason ?? safetyReason;
-    refundRecorded = await (deps.recordRefundReceiptFn ?? recordRefundReceipt)(
+    await (deps.recordRefundReceiptFn ?? recordRefundReceipt)(
       pendingReceipt,
-      receiptReason ? `${refundDescription.replace(/\b1 images\b/g, '1 image')} - ${receiptReason}` : refundDescription,
+      safetyReason ? `${refundDescription.replace(/\b1 images\b/g, '1 image')} - ${safetyReason}` : refundDescription,
       priceOnlyReceipts
     );
   }
 
-  return { message, providerBody, providerStatus, refundRecorded };
+  return { message, providerBody, providerStatus };
 }

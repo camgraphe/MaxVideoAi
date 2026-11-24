@@ -11,6 +11,7 @@ const IMAGE = { responseId: 'synthetic-accepted-response', candidates: [{ finish
 const EMPTY = { responseId: 'synthetic-empty-response', candidates: [{ finishReason: 'STOP', content: { parts: [{ text: 'No image' }] } }] };
 const SAFETY = { responseId: 'synthetic-safety-response', promptFeedback: { blockReason: 'SAFETY' }, candidates: [] };
 const OUTPUT_REFUSAL = { responseId: 'synthetic-output-refusal', candidates: [{ finishReason: 'IMAGE_PROHIBITED_CONTENT', finishMessage: 'Private provider diagnostics' }] };
+const OUTPUT_SAFETY = { responseId: 'synthetic-image-safety', candidates: [{ finishReason: 'IMAGE_SAFETY' }] };
 const GENERAL_REFUSAL = { responseId: 'synthetic-general-refusal', candidates: [{ finishReason: 'PROHIBITED_CONTENT' }] };
 const OUTPUT_REFUSAL_MESSAGE = 'Google blocked the generated image during its moderation checks.';
 const GENERAL_REFUSAL_MESSAGE = 'Google stopped image generation during its moderation checks.';
@@ -61,6 +62,7 @@ test('reserved direct Vertex jobs preserve the real POST boundary, original char
     const { createAtomicInitialImageJob } = await import('../frontend/src/server/images/image-initial-job');
     const { executeAfterInitialJobReservation } = await import('../frontend/src/server/generations/initial-job-reservation');
     const { executeImageGeneration } = await import('../frontend/src/server/images/execute-image-generation');
+    const { mapGenerationStatusRecordToAgent } = await import('../frontend/src/server/generations/agent-generation-policy');
     const { resolveOwnedReferenceAssetForActor } = await import('../frontend/src/server/agent-api/reference-assets');
     const { isStorageConfigured } = await import('../frontend/server/storage');
     assert.equal(isStorageConfigured(), false, 'no real storage upload can occur');
@@ -93,9 +95,10 @@ test('reserved direct Vertex jobs preserve the real POST boundary, original char
       { name: 'non-string response ID is refused while the invalid envelope remains uncertain', id: 'invalid-response-id', kind: 'invalid-id', expectedPosts: 1, pending: true },
       { name: 'validated definitive empty response keeps the original refund policy', id: 'definite-empty', kind: 'empty', expectedPosts: 1, pending: false, responseId: EMPTY.responseId },
       { name: 'validated safety response keeps the original refund policy', id: 'definite-safety', kind: 'safety', expectedPosts: 1, pending: false, responseId: SAFETY.responseId },
-      { name: 'Nano Banana Pro identifies blocked output in the response, job and refund receipt', id: 'output-refusal', kind: 'output-refusal', expectedPosts: 1, pending: false, responseId: OUTPUT_REFUSAL.responseId, reason: OUTPUT_REFUSAL_MESSAGE, pro: true },
-      { name: 'Nano Banana 2.1 reports general moderation when Google supplies no image-specific reason', id: 'general-refusal', kind: 'general-refusal', expectedPosts: 1, pending: false, responseId: GENERAL_REFUSAL.responseId, reason: GENERAL_REFUSAL_MESSAGE },
-      { name: 'the refusal message confirms a refund only when a receipt is written', id: 'moderation-without-refund', kind: 'output-refusal', expectedPosts: 1, pending: false, responseId: OUTPUT_REFUSAL.responseId, reason: OUTPUT_REFUSAL_MESSAGE, pro: true, skipRefund: true },
+      { name: 'Nano Banana Pro identifies blocked output in the response, job and refund receipt', id: 'output-refusal', kind: 'moderation', payload: OUTPUT_REFUSAL, expectedPosts: 1, pending: false, responseId: OUTPUT_REFUSAL.responseId, reason: OUTPUT_REFUSAL_MESSAGE, pro: true },
+      { name: 'Vertex IMAGE_SAFETY also identifies a blocked output', id: 'image-safety', kind: 'moderation', payload: OUTPUT_SAFETY, expectedPosts: 1, pending: false, responseId: OUTPUT_SAFETY.responseId, reason: OUTPUT_REFUSAL_MESSAGE },
+      { name: 'Nano Banana 2.1 reports general moderation when Google supplies no image-specific reason', id: 'general-refusal', kind: 'moderation', payload: GENERAL_REFUSAL, expectedPosts: 1, pending: false, responseId: GENERAL_REFUSAL.responseId, reason: GENERAL_REFUSAL_MESSAGE },
+      { name: 'the refusal message confirms a refund only when a receipt is written', id: 'moderation-without-refund', kind: 'moderation', payload: OUTPUT_REFUSAL, expectedPosts: 1, pending: false, responseId: OUTPUT_REFUSAL.responseId, reason: OUTPUT_REFUSAL_MESSAGE, pro: true, skipRefund: true },
       { name: 'legacy Nano2 storage failure still uses its existing refund policy', id: 'legacy-storage', kind: 'image', expectedPosts: 1, pending: false, old: true, responseId: IMAGE.responseId },
       { name: 'legacy Nano2 malformed bodies retain two attempts and the existing empty refund policy', id: 'legacy-truncated', kind: 'truncated', expectedPosts: 2, pending: false, old: true },
     ];
@@ -108,16 +111,16 @@ test('reserved direct Vertex jobs preserve the real POST boundary, original char
         : scenario.kind === 'interrupted' ? new Response(new ReadableStream({ start(controller) {
           controller.enqueue(new TextEncoder().encode('{"candidates":[')); controller.error(new Error('synthetic interrupted body'));
         } }), { status: 200 })
-        : new Response(JSON.stringify(scenario.kind === 'empty' ? EMPTY : scenario.kind === 'safety' ? SAFETY
-          : scenario.kind === 'output-refusal' ? OUTPUT_REFUSAL : scenario.kind === 'general-refusal' ? GENERAL_REFUSAL
+        : new Response(JSON.stringify(scenario.payload ?? (scenario.kind === 'empty' ? EMPTY : scenario.kind === 'safety' ? SAFETY
           : scenario.kind === 'invalid' ? { responseId: scenario.responseId, candidates: [] }
-            : scenario.kind === 'invalid-id' ? { responseId: { untrusted: 'object' }, candidates: [] } : IMAGE));
+            : scenario.kind === 'invalid-id' ? { responseId: { untrusted: 'object' }, candidates: [] } : IMAGE)));
       const entry = scenario.old ? legacy : scenario.pro ? pro : nano;
       const pricing = { totalCents: 79, currency: 'USD', membershipTier: 'member',
         meta: { pricingMode: 'manual_tariff', customerTariffRevision: 7, syntheticFixture: true } } as PricingSnapshot;
       const receipt = { userId: 'fixture-owner', amountCents: 79, currency: 'USD', description: 'Synthetic original image quote',
         jobId: scenario.id, surface: 'image' as const, billingProductKey: null, snapshot: pricing, applicationFeeCents: null, vendorAccountId: null };
       await db.pool.query('UPDATE app_customer_tariff_state SET revision=7');
+      const expectedPaymentStatus = scenario.pending || scenario.skipRefund ? 'paid_wallet' : 'refunded_wallet';
       await assert.rejects(executeAfterInitialJobReservation({
         reserveInitialState: () => createAtomicInitialImageJob({ ...receipt, engineId: entry.id, engineLabel: entry.marketingName,
           auditPricingSnapshot: pricing, mode: 't2i', durationSec: 1, prompt: 'Synthetic still', aspectRatio: '1:1', canUpscale: false,
@@ -138,7 +141,7 @@ test('reserved direct Vertex jobs preserve the real POST boundary, original char
         },
       }), error => {
         const value = error as { code?: string; status?: number; message?: string; extras?: { paymentStatus?: string } };
-        assert.equal(value.extras?.paymentStatus, scenario.pending ? 'paid_wallet' : 'refunded_wallet');
+        assert.equal(value.extras?.paymentStatus, expectedPaymentStatus);
         if (scenario.pending) assert.equal(value.code, 'provider_outcome_ambiguous');
         if (scenario.reason) {
           assert.equal(value.code, 'google_vertex_image_safety_block');
@@ -153,7 +156,7 @@ test('reserved direct Vertex jobs preserve the real POST boundary, original char
       assert.equal(job.status, scenario.pending ? 'running' : 'failed');
       assert.equal(job.provisional, false);
       assert.equal(job.provider_job_id, scenario.responseId ?? null);
-      assert.equal(job.payment_status, scenario.pending ? 'paid_wallet' : 'refunded_wallet');
+      assert.equal(job.payment_status, expectedPaymentStatus);
       t.diagnostic(`${scenario.id}: nativePOSTs=${posts}; referenceReads=${referenceReads}; authCalls=${authCalls}; status=${job.status}; payment=${job.payment_status}; providerId=${job.provider_job_id ?? 'unknown'}`);
       if (entry.id === nano.id && scenario.expectedPosts) {
         assert.equal(nativeBodies[0].generationConfig.thinkingConfig?.thinkingLevel,'HIGH');
@@ -165,6 +168,9 @@ test('reserved direct Vertex jobs preserve the real POST boundary, original char
       assert.ok(receipts.every(row => JSON.stringify(row.pricing_snapshot) === JSON.stringify(job.pricing_snapshot)));
       if (scenario.reason) {
         assert.equal(job.message, scenario.reason);
+        const status = mapGenerationStatusRecordToAgent(job);
+        assert.ok(status?.message?.includes(scenario.reason));
+        assert.equal(status.message.includes('returned to your wallet'), !scenario.skipRefund);
         if (!scenario.skipRefund) assert.equal(receipts[1].description, `Refund ${entry.marketingName} - 1 image - ${scenario.reason}`);
       }
       if (scenario.pending) {
@@ -183,7 +189,7 @@ test('reserved direct Vertex jobs preserve the real POST boundary, original char
       if (scenario.old && posts) assert.match(nativeUrls[0], /\/locations\/europe-west4\//);
     });
     assert.equal(expectedErrors.length, scenarios.length, 'expected synthetic failures are captured instead of emitted as unexplained noise');
-    assert.deepEqual(unexpectedWarnings, []);
+    assert.deepEqual(unexpectedWarnings, ['[images] could not confirm Google moderation refund']);
   } finally {
     await getDb().end().catch(() => undefined); await db.cleanup();
     for (const [name, value] of previous) { if (value === undefined) delete process.env[name]; else process.env[name] = value; }

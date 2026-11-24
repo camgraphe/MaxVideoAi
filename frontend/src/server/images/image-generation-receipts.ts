@@ -50,10 +50,9 @@ export function buildReceiptSnapshot(pricing: PricingSnapshot): Record<string, u
   return snapshot;
 }
 
-/** Reports whether this call wrote a refund receipt. */
-export async function recordRefundReceipt(receipt: PendingReceipt, label: string, priceOnly: boolean): Promise<boolean> {
+export async function recordRefundReceipt(receipt: PendingReceipt, label: string, priceOnly: boolean) {
   try {
-    const rows = await query(
+    await query(
       `INSERT INTO app_receipts (
          user_id,
          type,
@@ -72,8 +71,7 @@ export async function recordRefundReceipt(receipt: PendingReceipt, label: string
          destination_acct
        )
        VALUES ($1,'refund',$2,$3,$4,$5,$6,$7,$8::jsonb,$9,$10,$11,$12,$13,$14)
-       ON CONFLICT DO NOTHING
-       RETURNING id`,
+       ON CONFLICT DO NOTHING`,
       [
         receipt.userId,
         receipt.amountCents,
@@ -91,9 +89,7 @@ export async function recordRefundReceipt(receipt: PendingReceipt, label: string
         priceOnly ? null : receipt.vendorAccountId,
       ]
     );
-    return rows.length > 0;
   } catch (error) {
     console.warn('[images] failed to record refund receipt', error);
-    return false;
   }
 }

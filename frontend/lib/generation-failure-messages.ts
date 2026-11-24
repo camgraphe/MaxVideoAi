@@ -92,12 +92,13 @@ export function localizeGoogleImageModerationMessage(
   refundRecorded = false,
 ): string | null {
   const normalized = message?.trim() ?? '';
-  const refundSuffix = ` ${copy.en.googleImageRefunded}`;
-  const includesRefund = normalized.endsWith(refundSuffix);
-  const reason = includesRefund ? normalized.slice(0, -refundSuffix.length) : normalized;
+  // Agent status can append recovery instructions. Match the fixed first sentence.
+  const sentenceEnd = normalized.indexOf('. ');
+  const reason = sentenceEnd < 0 ? normalized : normalized.slice(0, sentenceEnd + 1);
   const key = reason === GOOGLE_IMAGE_MODERATION_MESSAGES.output ? 'googleImageOutputBlocked'
     : reason === GOOGLE_IMAGE_MODERATION_MESSAGES.request ? 'googleImageRequestBlocked' : null;
   if (!key) return null;
+  const includesRefund = normalized === `${reason} ${copy.en.googleImageRefunded}`;
   const text = copy[localeKey(locale)];
   return includesRefund || refundRecorded ? `${text[key]} ${text.googleImageRefunded}` : text[key];
 }

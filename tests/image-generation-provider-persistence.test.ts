@@ -68,10 +68,7 @@ test('Seedream output moderation is explained to the customer and on the refund 
     refundDescription: 'Refund Seedream - 1 images', resolvedAspectRatio: 'auto', resolution: '2K', thinkingLevel: null,
   }, {
     queryFn: async (sql, params) => { queries.push({ sql, params }); return []; },
-    recordRefundReceiptFn: async (_receipt, label) => {
-      refundLabel = label;
-      return true;
-    },
+    recordRefundReceiptFn: async (_receipt, label) => { refundLabel = label; },
   });
   assert.match(result.message, /Seedream.*generated image.*safety/i);
   assert.doesNotMatch(result.message, /BytePlus|private-id|Request id/i);
