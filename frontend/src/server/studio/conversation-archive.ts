@@ -1,5 +1,6 @@
 import {query} from '@/lib/db';
 import {projectStudioReply} from '@/lib/studio/conversation-reply';
+import {projectStudioQuotedReply} from './conversation-quote-reply';
 import type {StudioConversationArchiveEntry} from '@/lib/studio/image-conversation-contract';
 import type {StudioConversationQuoteFacts} from '@/lib/studio/conversation-action-contract';
 import {requireGenerationActor, type StudioGenerationActor} from '@/server/agent-api/generation-actor';
@@ -154,7 +155,8 @@ export async function readStudioConversationArchive(
   for (const row of rows) {
     const attachments = projectAttachments(row);
     const render = projectRender(row, terms);
-    const reply = excerpt(row.reply ? projectStudioReply(row.reply) : null, 360, terms);
+    const safeReply = row.reply && (row.quoteId ? projectStudioQuotedReply(row.reply, {message:row.message ?? ''}, row.direction) : projectStudioReply(row.reply));
+    const reply = excerpt(safeReply, 360, terms);
     const entry = {requestId: row.requestId, createdAt: row.createdAt.toISOString(), selectedFor: row.selectedFor, message: excerpt(row.message, 480, terms),
       ...(attachments.length ? {attachments} : {}), ...(reply ? {reply} : {}), ...(render ? {render} : {})};
     if (JSON.stringify([...result, entry]).length <= maxArchiveChars) result.push(entry);

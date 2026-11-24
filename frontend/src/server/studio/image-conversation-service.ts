@@ -51,8 +51,18 @@ import {defaultStudioMediaFactories, type StudioMediaFactories} from './conversa
 import {resolveStudioConversationAttachments,type StudioAttachmentFactsDependencies} from './conversation-attachment-facts';
 import {buildStudioGenerationMediaAccess} from './generation-media-access';
 import {projectStudioReply} from '@/lib/studio/conversation-reply';
+import {projectStudioQuotedReply} from './conversation-quote-reply';
 import {imageRequestFromDraft,imageReferenceFingerprintFromReview} from './conversation-image-request';
 export {imageRequestFromDraft,imageReferenceFingerprintFromReview} from './conversation-image-request';
+
+function projectTurnReply(turn: StoredImageTurn, quote?: Parameters<typeof projectStudioQuotedReply>[3]) {
+  const draft = turn.draft_json;
+  if (!draft) return null;
+  if (!turn.quote_id) return projectStudioReply(draft.reply);
+  const direction = draft.image?.prompt ?? (draft.media?.action === 'voice.prepare' ? draft.media.script : draft.media?.prompt)
+    ?? draft.recast?.direction;
+  return projectStudioQuotedReply(draft.reply, turn.input_json, direction, quote) || null;
+}
 
 const ordinaryImageConfirmationSchema = z
   .object({
@@ -159,7 +169,7 @@ export function createImageConversationService(
       ...(turn.input_json.renewedFromRequestId ? {renewedFromRequestId: turn.input_json.renewedFromRequestId} : {}),
       ...(turn.input_json.taskBudget?{taskBudget:turn.input_json.taskBudget}:{}),
       ...(turn.input_json.locale?{locale:turn.input_json.locale}:{}),
-      reply: turn.draft_json ? projectStudioReply(turn.draft_json.reply) : null,
+      reply: projectTurnReply(turn, quote ?? undefined),
       ...(creatorQuote?{creatorQuote,creatorOperation:await creator().read(creatorQuote)}:{}),
       ...(turn.draft_json?.exportQuote ? {exportQuote: turn.draft_json.exportQuote} : {}),
       ...(turn.draft_json?.analysisQuote ? {analysisQuote:turn.draft_json.analysisQuote} : {}),
@@ -278,7 +288,7 @@ export function createImageConversationService(
           (useActions ? await runStudioImageActions({
             actor, turn, input, references: refs, referenceFingerprint, responseReplayOnly,
             historyFacts,
-            history: history.map(saved => ({message: saved.input_json.message, reply: saved.draft_json ? projectStudioReply(saved.draft_json.reply) : null,
+            history: history.map(saved => ({message: saved.input_json.message, reply: projectTurnReply(saved),
               ...(saved.input_json.referenceMentions ? {referenceMentions: saved.input_json.referenceMentions} : {})})),
             taskExecution:dependencies.taskExecution, enabled: dependencies.enabled, factory, createResponse: dependencies.createActionResponse,assistancePolicy: dependencies.assistancePolicy,countInputTokens: dependencies.countInputTokens,
             factories, mediaEnabled: dependencies.mediaEnabled,creatorEnabled,creatorFactory:dependencies.creatorFactory,characterEnabled,characterFactory:dependencies.characterFactory,characterBuilderEnabled,characterBuilderFactory:dependencies.characterBuilderFactory,editingEnabled: dependencies.editingEnabled,exportsEnabled: dependencies.exportsEnabled,requestOrigin: dependencies.requestOrigin,exportDependencies: dependencies.exportDependencies,
@@ -289,7 +299,7 @@ export function createImageConversationService(
             input,
             history.map((saved) => ({
               message: saved.input_json.message,
-              reply: saved.draft_json ? projectStudioReply(saved.draft_json.reply) : null,
+              reply: projectTurnReply(saved),
               ...(saved.input_json.referenceMentions ? {referenceMentions: saved.input_json.referenceMentions} : {}),
             })),
             refs,
