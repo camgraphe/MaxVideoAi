@@ -123,6 +123,15 @@ Studio entry opens the recent supported project or idempotently creates a fresh 
 
 The chat builds intent through the common agent/generation services. Owned media and measured reference facts are resolved before pricing or submission. Every generation requires a current exact quote and explicit confirmation. Request/response journal and assistance usage recovery are durable so lost replies can resume without repeating paid dispatch.
 
+For image references in a Studio message, `conversation-reference-images.ts`
+checks the account's storage key after attachment resolution. The worker reads
+each distinct owned original once and passes the same transient JPEG to both
+the token counter and the director. The shared Create/Studio image reader
+bounds the source, decoded pixels and JPEG size. Studio also caps a batch at
+64 MiB of originals, 16 MiB of encoded input and 45 seconds. Completed response
+checkpoints replay before these reads. Generation references keep their original
+identity, and the journal and review snapshot exclude image bytes and read grants.
+
 Creative guidance belongs to `conversation-director-instructions.ts` and reaches
 all tiers through the active `createStudioConversationDirector`. Clients without
 assets receive concrete native direction, including coherent images then animation

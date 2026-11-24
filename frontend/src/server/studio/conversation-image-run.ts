@@ -32,6 +32,7 @@ import type {ResolvedReference} from '@/server/agent-api/reference-types';
 import type {ImageTurnInput,ImageConversationHistoryTurn,StudioConversationHistoryFacts} from '@/lib/studio/image-conversation-contract';
 import type {StudioActionRequest, StudioActionResult} from '@/lib/studio/conversation-action-contract';
 import {createStudioConversationDirector, type StudioResponseCreator} from './conversation-director';
+import {prepareStudioReferenceImages} from './conversation-reference-images';
 import {createStudioActionExecutor} from './conversation-actions';
 import {createStudioAnalysisService} from './media-analysis/service';
 import {studioAnalysisPolicy} from './media-analysis/policy';
@@ -304,7 +305,11 @@ export async function runStudioImageActions(options: {
       const outputTokens=params.max_output_tokens??2200;
       if(currentModel!=='gpt-6-luna')solBounds={inputTokens,outputTokens,allowCreditCompletion:true};
       return {policy,inputTokens,outputTokens,lunaFallback};
-    },applyReservation:call=>{if(params)params.max_output_tokens=call.output_token_bound;if(readStudioCreditCompletion(call.pricing_snapshot))checkpointOptions?.onCreditCompletion?.();}} : undefined, {replayOnly: options.responseReplayOnly || checkpointOptions?.replayOnly,reviewContext:process.env.ASSISTANT_REVIEW_CONTEXT_ENABLED==='true'&&params?()=>buildAssistantReviewContext(params):undefined});
+    },applyReservation:call=>{if(params)params.max_output_tokens=call.output_token_bound;if(readStudioCreditCompletion(call.pricing_snapshot))checkpointOptions?.onCreditCompletion?.();}} : undefined, {
+        prepareInput: () => prepareStudioReferenceImages(actor.userId, checkpointOptions?.referenceContent ?? []),
+        replayOnly: options.responseReplayOnly || checkpointOptions?.replayOnly,
+        reviewContext: process.env.ASSISTANT_REVIEW_CONTEXT_ENABLED === 'true' && params ? () => buildAssistantReviewContext(params) : undefined,
+      });
       try{return await checkpoint();}
       catch(error){
         const action=error instanceof AgentApiError?error.nextAction:undefined;

@@ -166,7 +166,7 @@ function canonicalPreparation<T>(build: () => T, correctable=false): T {
   }
 }
 
-function videoDefaults(candidate: AgentPublicGenerationEngine, mode: CanonicalGenerationRequest['mode'], aspectRatio: string, legacy: boolean) {
+function videoDefaults(candidate: AgentPublicGenerationEngine, mode: CanonicalGenerationRequest['mode'], aspectRatio: string | null, legacy: boolean) {
   const details = projectAgentModelModeDetails(candidate, mode);
   const caps = candidate.modeCaps[mode]!;
   const engineMode = toEngineGenerationMode(candidate.engine.id, mode);
@@ -178,7 +178,7 @@ function videoDefaults(candidate: AgentPublicGenerationEngine, mode: CanonicalGe
     ...Object.fromEntries(details.settings.filter(setting => setting.default !== null).map(setting => [setting.key, setting.default])),
     ...(!(candidate.engine.id === 'kling-v4' && mode === 'v2v') && details.durationPolicy === 'requested' ? { durationSec: legacy ? 5 : normalizeVideoDurationOption(caps.duration?.default) ?? details.duration?.options?.[0] ?? details.duration?.range?.min } : {}),
     resolution: legacy ? '480p' : resolution,
-    ...(details.aspectRatios.length ? {aspectRatio} : {}),
+    ...(aspectRatio != null && details.aspectRatios.length ? {aspectRatio} : {}),
     ...(details.audio === 'optional' ? {audio: legacy ? false : true} : {}),
   };
 }

@@ -4,7 +4,7 @@ import type {StudioAssistantModel} from '@/lib/studio/assistance-contract';
 import type {resolveStudioMedia,StudioResolvedMedia} from '@/server/studio/media-resolver';
 import type {buildPromptAssistanceContext} from './context';
 import {resolvePromptReference} from './reference-resolution';
-import {loadPromptReferenceImage} from './reference-images';
+import {loadVisionReferenceImage} from '@/server/studio/media-analysis/reference-image';
 import {readPromptReferenceAnalyses} from './reference-analysis';
 import {studioAnalysisPolicy} from '@/server/studio/media-analysis/policy';
 import {studioAnalysisPilotEnabled} from '@/server/studio/media-analysis/pilot-funding';
@@ -32,7 +32,7 @@ export async function preparePromptPerception(userId:string,input:PromptAssistan
     // Re-resolve ownership at use time; an earlier context or paid analysis grants no new access.
     const media=await resolvePromptReference(userId,selected,deps.resolve);
     if(media.kind==='image'){
-      const image=await(deps.image??loadPromptReferenceImage)(media,deadline);size+=image.length;
+      const image=await(deps.image??loadVisionReferenceImage)(media,deadline);size+=image.length;
       if(size>16*1024*1024)throw new Error('REFERENCE_IMAGES_TOO_LARGE');
       content.push({type:'input_text',text:`${reference.label} (${reference.role})`},{type:'input_image',image_url:image,detail:'auto'});
       reference.perception={image:'provided'};

@@ -1,3 +1,5 @@
+import {prepareVideoOperationTariffs} from '../frontend/server/pricing/video-operation-tariffs';
+import {operationIdentity, operationPolicy, operationTariffState} from './helpers/video-operation-tariff-fixture';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {randomUUID} from 'node:crypto';
@@ -205,4 +207,101 @@ test('safe selection correction preserves durable receipts, ownership and moneta
     assert.equal(calls,1);
     assert.equal((await getDb().query<{n:number}>('SELECT count(*)::int n FROM app_jobs')).rows[0].n,0);
   });
+});
+
+test('Studio quotes only supported video framing and source-audio settings', async t => {
+  const kling = getFalEngineById('kling-o3-standard')!;
+  const video = getFalEngineById('wan-3')!;
+  const catalog: AgentPublicGenerationEngine[] = [kling, video].map(({engine}) => ({
+    engine, surface: 'video', publicModes: engine.modes, modeCaps: engine.modeCaps!,
+  }));
+  const previousEnv = {...process.env};
+  const runtime = await createStudioCallRuntime(catalog);
+  t.after(() => runtime.close());
+  t.after(() => { process.env = previousEnv; });
+
+  await t.test('selectable framing asks for a correction and preserves the requested portrait ratio', async () => {
+    let calls = 0;
+    const turn = await runtime.submit('selectable-video-framing', 'Prépare une vidéo verticale en 9:16.', [], async params => {
+      calls++;
+      if (calls === 2) assert.equal(failureReceipt(params).error.code, 'PARAMETER_INVALID');
+      return response('video_prepare', {reply: 'Voici le devis.', prompt: 'A red jacket in the wind.', modelId: video.id, mode: 't2v',
+        aspectRatio: calls === 1 ? null : '9:16', settings: [{name: 'resolution', value: '720p'}], source: null}, calls);
+    });
+    assert.equal(turn.error, undefined);
+    assert.equal(calls, 2);
+    assert.equal(turn.quotes.length, 1);
+    assert.equal(turn.quotes[0].request_json.settings.aspectRatio, '9:16');
+    assert.deepEqual(turn.counts, {jobs: 0, charges: 0});
+  });
+
+  await t.test('a mode with generated audio cannot promise to retain the source track', async () => {
+    const id = 'unsupported-source-audio';
+    const source = {type: 'asset', kind: 'video', assetId: runtime.referenceId(id, 'watch_video')};
+    let calls = 0;
+    const turn = await runtime.submit(id, 'Je veux garder la voix originale.', ['watch_video'], async params => {
+      calls++;
+      if (calls === 1) return response('video_prepare', {reply: 'Voici le devis.', prompt: 'Change the jacket.',
+        modelId: video.id, mode: 'v2v', aspectRatio: '9:16', source, settings: [{name: 'keepAudio', value: true}]}, calls);
+      const receipt = failureReceipt(params);
+      assert.equal(receipt.error.code, 'PARAMETER_INVALID');
+      assert.match(receipt.error.message, /keepAudio/);
+      return {...response('model_details', {}, calls), output: [], output_text: JSON.stringify({reply: 'Ce mode ne propose pas de conserver la piste originale.'})};
+    });
+    assert.equal(calls, 2);
+    assert.equal(turn.error, undefined);
+    assert.equal(turn.quotes.length, 0);
+    assert.deepEqual(turn.counts, {jobs: 0, charges: 0});
+  });
+
+  // This operation requires an approved tariff. Install only its cell on the disposable database.
+  await getDb().query('CREATE TABLE app_pricing_change_events(domain text)');
+  for (const migration of ['54_customer_tariff_cells.sql', '55_customer_tariff_versions.sql'])
+    await getDb().query(readFileSync('neon/migrations/' + migration, 'utf8'));
+  const tariffs = await prepareVideoOperationTariffs({...operationIdentity, state: operationTariffState(), policy: operationPolicy});
+  const cell = tariffs.cells.find(cell => cell.selector.engineId === kling.id && cell.selector.operation === 'kling-edit');
+  assert.ok(cell);
+  await getDb().query(`INSERT INTO app_customer_tariff_cells(id,selector_key,selector_json,price_json,currency,effective_from,revision,updated_by)
+    VALUES($1,$2,$3,$4,'USD','2026-10-02',1,$5)`, [cell.id, JSON.stringify(Object.entries(cell.selector).sort(([a],[b])=>a.localeCompare(b))), cell.selector, cell.price, operationIdentity.actorId]);
+  await getDb().query('UPDATE app_customer_tariff_state SET active=TRUE, revision=1');
+  Object.assign(process.env, {NODE_ENV: 'development', PRICING_SANDBOX: '1'});
+  for (const aspectRatio of ['', null]) {
+    await t.test(`Kling Edit keeps source framing through quote and saved draft for ${JSON.stringify(aspectRatio)}`, async () => {
+      const id = aspectRatio === null ? 'kling-inherit-framing' : 'kling-legacy-blank-framing';
+      const ref = {type: 'asset', assetId: runtime.referenceId(id, 'watch_video'), kind: 'video'};
+      let calls = 0;
+      const turn = await runtime.submit(id, 'Une veste rouge. Et je veux entendre la vraie voix de ma vidéo.', ['watch_video'], async params => {
+        calls++;
+        if (calls === 1) return response('model_details', {modelId: kling.id}, calls);
+        const facts = params.input as Array<{type?: string; output?: string}>;
+        const result = facts.find(item => item.type === 'function_call_output');
+        assert.ok(result?.output);
+        const details = JSON.parse(result.output);
+        const edit = details.data.modes.find((mode: {mode: string}) => mode.mode === 'v2v').operations
+          .find((operation: {operation: string}) => operation.operation === 'kling-edit');
+        assert.deepEqual(edit.aspectRatios, []);
+        assert.equal(edit.durationPolicy, 'source_video');
+        assert.ok(edit.settings.some((setting: {key: string}) => setting.key === 'keepAudio'));
+        return response('video_prepare', {reply: 'Voici le devis.', prompt: 'Change the jacket to red.', aspectRatio,
+          modelId: kling.id, mode: 'v2v', operation: 'kling-edit', source: null, references: [{ref, role: 'source', slot: null}],
+          settings: [{name: 'resolution', value: '720p'}, {name: 'keepAudio', value: true}], outputCount: 1}, calls);
+      });
+      assert.equal(turn.error, undefined, JSON.stringify({calls, steps: turn.steps.map(step => step.result.ok ? step.request.action : step.result.error)}));
+      assert.equal(calls, 2);
+      assert.equal(turn.quotes.length, 1);
+      assert.ok(turn.quotes[0].price_cents > 0);
+      const request = turn.quotes[0].request_json;
+      assert.ok(request.surface === 'video');
+      assert.equal(request.operation, 'kling-edit');
+      assert.equal(request.settings.keepAudio, true);
+      assert.ok(!Object.hasOwn(request.settings, 'aspectRatio'));
+      assert.ok(!Object.hasOwn(request.settings, 'durationSec'));
+      assert.deepEqual(request.references, [{kind: 'asset', assetId: ref.assetId, role: 'source'}]);
+      const {rows} = await getDb().query<StoredDraftRow>('SELECT draft_json FROM studio_image_turns WHERE project_id=$1', [id]);
+      const saved = rows[0].draft_json?.media;
+      assert.ok(saved?.action === 'video.prepare');
+      assert.equal(saved.aspectRatio, null);
+      assert.deepEqual(turn.counts, {jobs: 0, charges: 0});
+    });
+  }
 });
