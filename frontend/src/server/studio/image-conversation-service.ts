@@ -12,6 +12,7 @@ import type {StudioTaskExecution} from "./tasks/execution";
 import {customerDisplayPrice} from '@/lib/customer-price-presentation';
 import type {StudioExportDependencies} from './conversation-export-command';
 import {recordedStudioOutputDuration,recordedStudioSourceVideoOutput} from './conversation-quote-facts';
+import {recallStudioReferences} from './conversation-reference-recall';
 import {readStudioArchiveDecisions, readStudioConversationArchive} from './conversation-archive';
 import {projectStudioQuoteDirections,readStudioHistoricalEstimates} from './conversation-history-facts';
 import { getBaseEngineIncludingHidden } from "@/lib/engines";
@@ -257,12 +258,23 @@ export function createImageConversationService(
     },
     async submit(value: unknown) {
       await project();
-      const input = imageTurnInputSchema.parse(value);
-      if (input.attachments?.length && (!dependencies.actionsEnabled || !dependencies.mediaEnabled))
+      const submitted = imageTurnInputSchema.parse(value);
+      if (submitted.attachments?.length && (!dependencies.actionsEnabled || !dependencies.mediaEnabled))
         throw new AgentApiError('ENGINE_UNAVAILABLE', 'Video and audio attachments are unavailable in this image pilot.');
-      const { turn, claimed, responseReplayOnly } = await claimImageTurn(actor, input, {allowRecordedResponseRecovery: dependencies.actionsEnabled === true,taskWorkerId:dependencies.taskExecution?.workerId});
+      const { turn, claimed, responseReplayOnly } = await claimImageTurn(actor, submitted, {allowRecordedResponseRecovery: dependencies.actionsEnabled === true,taskWorkerId:dependencies.taskExecution?.workerId});
       if (!claimed) return projectTurn(turn);
       try {
+        const recall = await recallStudioReferences(actor, submitted, turn.draft_json);
+        const input = recall.input;
+        if (recall.clarification) {
+          if (turn.draft_json) throw new AgentApiError('REFERENCE_INVALID', recall.clarification);
+          const draft = {reply: recall.clarification, image: null};
+          await persistImageDraft(actor, turn, draft, studioReferenceFingerprint([]));
+          return projectTurn({...turn, state: 'ready', draft_json: draft});
+        }
+        if (input.attachments?.length && (!dependencies.actionsEnabled || !dependencies.mediaEnabled))
+          throw new AgentApiError('ENGINE_UNAVAILABLE', 'Video and audio references are unavailable in this project.');
+        turn.recalledReferences = recall.sources;
         const refs = await generation.resolveReferences({
           schemaVersion: 1,
           surface: "image",
