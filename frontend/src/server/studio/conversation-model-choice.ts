@@ -6,9 +6,27 @@ function words(value: string) {
   return value.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
 }
 
-const names = new Set(getModelRoster().flatMap(model =>
+const roster = getModelRoster();
+const names = new Set(roster.flatMap(model =>
   [model.engineId, model.marketingName, model.family ?? ''].filter(Boolean).map(words),
 ));
+const modelIds = new Set(roster.map(model => model.engineId));
+const spellings = new Map<string, Set<string>>();
+for (const model of roster) {
+  for (const spelling of [words(model.engineId), words(model.marketingName)]) {
+    const ids = spellings.get(spelling) ?? new Set<string>();
+    ids.add(model.engineId);
+    spellings.set(spelling, ids);
+  }
+}
+
+/** A full name may differ in punctuation. A family alone never substitutes for a model ID. */
+export function studioModelIdFromSpelling(value: string) {
+  if (modelIds.has(value)) return value;
+  const matches = spellings.get(words(value));
+  return matches?.size === 1 ? [...matches][0] : value;
+}
+
 for (const mode of AUDIO_PACK_VALUES) {
   const pack = getAudioPackConfig(mode);
   names.add(words(pack.engineId));
@@ -33,6 +51,16 @@ export function offeredStudioModel(reply: string, choice: string) {
   if (!normalized.includes(' ' + choice + ' ') || askedToReattach(reply)) return false;
   return /\b(?:lequel|laquelle|quel modele|choisi\w*|choix|prefer\w*|souhait\w*|veux tu|voulez vous|which|choose|pick|select|would you like|shall i|should i|quieres|prefier\w*|cual|elige|elegir|que modelo)\b/.test(normalized)
     || (reply.includes('?') && /\b(?:prepar\w*|go with|on part sur)\b/.test(normalized));
+}
+
+export function studioOfferedModelId(reply: string, choice: string) {
+  const offer = ' ' + words(reply) + ' ';
+  const matches = roster.filter(model => {
+    const identifiers = [words(model.marketingName), words(model.engineId)];
+    const chosen = identifiers.some(name => name === choice || name.startsWith(choice + ' ')) || words(model.family ?? '') === choice;
+    return chosen && identifiers.some(name => offer.includes(' ' + name + ' '));
+  });
+  return matches.length === 1 ? matches[0].engineId : undefined;
 }
 
 export function sameStudioModelChoice(message: string, choice: string) {

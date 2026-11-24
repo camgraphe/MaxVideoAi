@@ -152,6 +152,7 @@ export async function runStudioImageActions(options: {
   references: ResolvedReference[]; referenceFingerprint: string;
   history: ImageConversationHistoryTurn[]; enabled: boolean;
   historyFacts?:StudioConversationHistoryFacts;
+  selectedModelId?: string;
   factory: ImageGenerationFactory; createResponse?: StudioResponseCreator;
   responseReplayOnly?: boolean;
   taskExecution?:StudioTaskExecution;
@@ -276,7 +277,7 @@ export async function runStudioImageActions(options: {
       }).prepare(request);
     },
   });
-  const draft = await director({referenceFingerprint:options.referenceFingerprint,message: input.message, shotPlanRevision:input.shotPlanRevision, locale:input.locale, history: options.history, references: options.references, referenceMentions: input.referenceMentions, historyFacts: options.historyFacts,
+  const draft = await director({referenceFingerprint:options.referenceFingerprint,message: input.message, shotPlanRevision:input.shotPlanRevision, locale:input.locale, history: options.history, references: options.references, referenceMentions: input.referenceMentions, historyFacts: options.historyFacts,selectedModelId:options.selectedModelId,
     project: await readStudioConversationProject(actor,{exportsEnabled:options.editingEnabled&&options.exportsEnabled,...(options.taskExecution?{taskContext:{message:input.message,requestId:options.taskExecution.taskRequestId}}:{})}),
     checkpoint: async (index, create, params, checkpointOptions) => {
       let solBounds:StudioLunaFallback['solBounds'];

@@ -14,10 +14,10 @@ import {
 } from './project-reference-registry';
 import { resolveStudioMedia } from './media-resolver';
 import { studioConversationLanguage } from './conversation-language';
-import { askedToReattach, fileSetAside, offeredStudioModel, sameStudioModelChoice, studioModelChoice } from './conversation-model-choice';
+import { askedToReattach, fileSetAside, offeredStudioModel, sameStudioModelChoice, studioModelChoice, studioOfferedModelId } from './conversation-model-choice';
 
 type PriorTurn = { request_id: string; input_json: ImageTurnInput; draft_json: StoredStudioDraft };
-type Recall = { input: ImageTurnInput; sources?: StudioRecalledReference[]; clarification?: string };
+type Recall = { input: ImageTurnInput; sources?: StudioRecalledReference[]; selectedModelId?: string; clarification?: string };
 const normalized = (text: string) => text.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
 const names = {
   image: 'Image',
@@ -216,6 +216,7 @@ export async function recallStudioReferences(
     return {input, clarification:whichFile(locale, labels)};
   };
   let sources: StudioRecalledReference[] = [];
+  let selectedModelId: string | undefined;
   if (draft?.recalledReferences) {
     sources = draft.recalledReferences;
   } else if (labels.length) {
@@ -255,6 +256,7 @@ export async function recallStudioReferences(
           }
           return unchanged;
         }
+        selectedModelId = studioOfferedModelId(reply, modelChoice);
         foundModelOffer = true;
       }
       if (active.length) {
@@ -318,6 +320,7 @@ export async function recallStudioReferences(
   }
   return {
     sources: selected,
+    selectedModelId,
     input: {
       ...input,
       references: [

@@ -1,3 +1,5 @@
+import {mobileStudioQuote} from '../frontend/src/server/mobile/studio-generation';
+import {studioModelIdFromSpelling} from '../frontend/src/server/studio/conversation-model-choice';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {randomUUID,createHash} from 'node:crypto';
@@ -19,7 +21,7 @@ function records(value:unknown):Record<string,unknown>[] {
   return [record,...Object.values(record).flatMap(records)];
 }
 
-function catalog():AgentPublicGenerationEngine[]{return ['gpt-image-2-5-flare','seedance-2-0-mini','wan-3','luma-uni-1','luma-uni-1-max'].map(id=>{
+function catalog():AgentPublicGenerationEngine[]{return ['gpt-image-2-5-flare','seedance-2-0-mini','wan-3','seedream-5-0-flash','luma-uni-1','luma-uni-1-max'].map(id=>{
   const entry=getFalEngineById(id)!;
   return {engine:entry.engine,surface:entry.category==='image'?'image':'video',publicModes:entry.modes.map(m=>m.mode) as AgentPublicGenerationEngine['publicModes'],modeCaps:Object.fromEntries(entry.modes.map(m=>[m.mode,m.ui]))};
 });}
@@ -66,6 +68,7 @@ test('persisted Studio quotes and MCP preparations agree on optional image guida
     const assetId=runtime.referenceId(id,'watch_video');
     const args={...request.args,references:[{role:'source',slot:null,ref:{type:'asset',kind:'video',assetId}}]};
     const selected=await runtime.submit(id,'Wan 3',[],async params=>{
+      assert.ok(records(params).some(item=>item.role==='developer' && String(item.content).includes('registered ID is wan-3')));
       const attachments=records(params).filter(item=>item.type==='input_text'&&String(item.text).startsWith('Attached media for this message only'));
       assert.equal(attachments.length,1);
       assert.ok(String(attachments[0].text).includes(assetId));
@@ -268,6 +271,9 @@ test('real conversation Audio preparation covers seven packs, exact clone/source
     const reopened=await runtime.submit(id,choice,[],async()=>{throw Error('Reopening a quote must not call the director.');},requestId);
     assert.equal(reopened.result?.reply,selected.result?.reply);
     assert.deepEqual(reopened.quotes,selected.quotes);
+    const review=mobileStudioQuote(reopened.result!.quote!, 'en', true).review;
+    const names=keys.map(key=>key==='watch_video'?'Video 1':'Audio 1').join(' and ');
+    assert.equal(review?.references,names);
     assert.deepEqual(reopened.counts,{jobs:0,charges:0});
   });
   const id='legacy-clone';const sample={role:'voice_sample',asset:{type:'asset',kind:'audio',assetId:runtime.referenceId(id,'voice_sample')}};
@@ -275,3 +281,40 @@ test('real conversation Audio preparation covers seven packs, exact clone/source
   assert.equal(legacy.error,undefined);assert.equal(legacy.quotes.length,1);assert.deepEqual(legacy.quotes[0].request_json.references,[sample]);assert.deepEqual(legacy.counts,{jobs:0,charges:0});
   assert.equal(fetches,0);
 });
+
+test('a dotted Seedream tool ID reads and prepares the exact offered edition',async t=>{
+    const prior={DATABASE_URL:process.env.DATABASE_URL,PRICING_SANDBOX:process.env.PRICING_SANDBOX,NODE_ENV:process.env.NODE_ENV};
+    delete process.env.DATABASE_URL;
+    Object.assign(process.env,{NODE_ENV:'development',PRICING_SANDBOX:'1'});
+    const runtime=await createStudioCallRuntime(catalog());
+    t.after(async()=>{
+      await runtime.close();
+      for(const [key,value] of Object.entries(prior)) {
+        if(value===undefined) delete process.env[key]; else process.env[key]=value;
+      }
+    });
+    for(const migration of ['27_pricing_admin_cockpit.sql','54_customer_tariff_cells.sql','55_customer_tariff_versions.sql'])
+      await query(readFileSync('neon/migrations/'+migration,'utf8'));
+    await query('UPDATE app_customer_tariff_state SET active=true, revision=1');
+    assert.equal(studioModelIdFromSpelling('Seedream'),'Seedream');
+    assert.equal(studioModelIdFromSpelling('seedream-5.9-flash'),'seedream-5.9-flash');
+    const id='dotted-seedream', assetId=runtime.referenceId(id,'watch'), requestId=randomUUID();
+    let step=0;
+    const ready=await runtime.submit(id,'Prepare a retouch of Image 1 with Seedream 5.0 Flash.',['watch'],async()=>{
+      const details=step++ === 0;
+      const args=details?{modelId:'seedream-5.0-flash'}:{reply:'Review the image quote.',modelId:'seedream-5.0-flash',
+        prompt:'Use a midnight blue background.',mode:'i2i',aspectRatio:'1:1',settings:[{name:'resolution',value:'1K'}],outputCount:1,
+        references:[{ref:{type:'asset',kind:'image',assetId},role:'reference',slot:null}]};
+      return {id:'seedream-'+step,model:'gpt-6.1-sol',status:'completed',service_tier:'default',output_text:'',output:[
+        {type:'function_call',name:details?'model_details':'image_prepare',call_id:'seedream-call-'+step,arguments:JSON.stringify(args)}]};
+    },requestId);
+    assert.equal(ready.error,undefined,JSON.stringify(ready.steps.map(s=>({action:s.request.action,result:s.result.ok?s.result.action:s.result.error}))));
+    assert.equal(step,2);
+    assert.ok(ready.steps.every(receipt=>receipt.result.ok));
+    assert.equal(ready.quotes[0]?.request_json.engineId,'seedream-5-0-flash');
+    assert.equal(ready.quotes[0]?.request_json.mode,'i2i');
+    assert.match(ready.result?.reply??'',/Seedream 5.0 Flash using Image 1/);
+    const again=await runtime.submit(id,'Prepare a retouch of Image 1 with Seedream 5.0 Flash.',['watch'],async()=>{throw Error('Unexpected model call');},requestId);
+    assert.deepEqual(again.quotes,ready.quotes);
+    assert.deepEqual(again.counts,{jobs:0,charges:0});
+  });

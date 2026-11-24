@@ -22,6 +22,7 @@ import type {StudioQuoteDiscardResult} from './conversation-quote-command';
 import {studioVisualCapabilityDetails,studioVisualCapabilitySummary,studioAudioCapabilityDetails} from './conversation-capabilities';
 import {conversationSelectionSettings} from '@/lib/studio/conversation-creation-contract';
 import {studioAudioCapabilitySummary} from './conversation-audio-discovery';
+import {studioModelIdFromSpelling} from './conversation-model-choice';
 import {priceStudioFilm} from './conversation-film-pricing';
 
 export function createStudioActionExecutor(actor: StudioGenerationActor, dependencies: {
@@ -59,6 +60,9 @@ export function createStudioActionExecutor(actor: StudioGenerationActor, depende
   const generation = dependencies.generation ?? createStudioImageGenerationService(actor, {enabled: dependencies.enabled});
   return async (value: StudioActionRequest): Promise<StudioActionResult> => {
     const request = studioActionRequestSchema.parse(value);
+    // The raw tool call keeps its replay identity. Current catalog and preparation checks use the exact model ID.
+    if ((request.action === 'model.details' || request.action === 'image.prepare' || request.action === 'video.prepare' ||
+        request.action === 'pricing.read') && request.modelId) request.modelId = studioModelIdFromSpelling(request.modelId);
     try {
       if (!dependencies.enabled) throw new AgentApiError('ENGINE_UNAVAILABLE', 'Studio actions are unavailable.');
       const project = await (dependencies.readProject ?? readStudioConversationProject)(actor,{exportsEnabled:dependencies.editingEnabled&&dependencies.exportsEnabled});

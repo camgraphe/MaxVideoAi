@@ -58,7 +58,7 @@ export function mobileStudioQuote(
       settings: view.settings,
       direction: view.direction,
       operation: view.operation,
-      references: view.referenceSummary,
+      references: quote.sourceReferenceSummary ?? view.referenceSummary,
       outputCount: 'outputCount' in quote.summary ? quote.summary.outputCount : 1,
     },
   };

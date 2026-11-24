@@ -66,7 +66,7 @@ export function ImageQuoteCard({
       <p className={styles.muted}>
         {!quote.recast && quote.modelLabel+' · '}{presentation.settings} ·{" "}
         {referenceCount
-          ? presentation.referenceSummary || `${referenceCount} ${t('reference', 'référence', "referencia")}${referenceCount > 1 ? "s" : ""}`
+          ? quote.sourceReferenceSummary || presentation.referenceSummary || `${referenceCount} ${t('reference', 'référence', "referencia")}${referenceCount > 1 ? "s" : ""}`
           : t('Original creation', 'Création originale', "Creación original")}
       </p>
       {quote.recast?.videoRange && <p className={styles.muted}>{t('Video passage','Passage vidéo','Fragmento de vídeo')} · {range(quote.recast.videoRange)}</p>}

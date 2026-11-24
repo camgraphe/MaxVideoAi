@@ -67,6 +67,7 @@ type SavedReplyQuote = {
   priceCents: number;
   currency: string;
   request: NonNullable<ImageConversationTurn['quote']>['summary'];
+  sources?: ReturnType<typeof studioQuoteSourceLabels>;
 };
 
 function projectTurnReply(turn: StoredImageTurn, quote?: SavedReplyQuote, locale?: ImageTurnInput['locale']) {
@@ -78,8 +79,7 @@ function projectTurnReply(turn: StoredImageTurn, quote?: SavedReplyQuote, locale
   const quotedDirection = request?.surface === 'audio' && request.mode === 'voice_only'
     ? request.settings.script : request?.prompt;
   const direction = draft.recast?.direction ?? (draft.characterBuilder ? undefined : quotedDirection ?? storedDirection);
-  return projectStudioQuotedReply(draft.reply, turn.input_json, direction,
-    quote && {...quote, sources: studioQuoteSourceLabels(turn, quote.request)}, locale) || null;
+  return projectStudioQuotedReply(draft.reply, turn.input_json, direction, quote, locale) || null;
 }
 
 const ordinaryImageConfirmationSchema = z
@@ -181,6 +181,7 @@ export function createImageConversationService(
     const quoteLocale = turn.quote_id && quote
       ? studioQuoteReplyLanguage(turn.input_json, quoteLanguageContext ?? await readQuoteLanguageContext(actor, turn.request_id))
       : undefined;
+    const sources = quote && quoteLocale ? studioQuoteSourceLabels(turn,quote.request,quoteLocale) : undefined;
     return {
       requestId: turn.request_id,
       message: turn.input_json.message,
@@ -191,7 +192,7 @@ export function createImageConversationService(
       ...(turn.input_json.renewedFromRequestId ? {renewedFromRequestId: turn.input_json.renewedFromRequestId} : {}),
       ...(turn.input_json.taskBudget?{taskBudget:turn.input_json.taskBudget}:{}),
       ...(turn.input_json.locale?{locale:turn.input_json.locale}:{}),
-      reply: projectTurnReply(turn, quote ?? undefined, quoteLocale),
+      reply: projectTurnReply(turn, quote ? {...quote,sources} : undefined, quoteLocale),
       ...(creatorQuote?{creatorQuote,creatorOperation:await creator().read(creatorQuote)}:{}),
       ...(turn.draft_json?.exportQuote ? {exportQuote: turn.draft_json.exportQuote} : {}),
       ...(turn.draft_json?.analysisQuote ? {analysisQuote:turn.draft_json.analysisQuote} : {}),
@@ -205,6 +206,7 @@ export function createImageConversationService(
             expiresAt: quote.expiresAt.toISOString(),
             requestHash: quote.requestHash,
             summary: quote.request,
+            ...(sources?.displayNames ? {sourceReferenceSummary:sources.displayNames} : {}),
             ...(quote.request.surface==='video'&&recordedStudioOutputDuration(quote.pricingSnapshot)!==undefined
               ? {outputDurationSec:recordedStudioOutputDuration(quote.pricingSnapshot)} : {}),
             ...(quote.request.surface==='video'&&recordedStudioSourceVideoOutput(quote.pricingSnapshot)
@@ -331,7 +333,7 @@ export function createImageConversationService(
         const draft =
           turn.draft_json ??
           (useActions ? await runStudioImageActions({
-            actor, turn, input, references: refs, referenceFingerprint, responseReplayOnly,
+            actor, turn, input, references: refs, referenceFingerprint, responseReplayOnly, selectedModelId: recall.selectedModelId,
             historyFacts,
             history: history.map(saved => ({message: saved.input_json.message, reply: projectTurnReply(saved),
               ...(saved.input_json.referenceMentions ? {referenceMentions: saved.input_json.referenceMentions} : {})})),

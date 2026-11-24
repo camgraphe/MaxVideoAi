@@ -1,3 +1,4 @@
+import {mobileStudioQuote} from '../frontend/src/server/mobile/studio-generation';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
@@ -71,6 +72,8 @@ test('a Studio model choice resumes its offered edit and keeps the quote tied to
     assert.equal(turn.quote.summary.mode,'i2i');
     assert.deepEqual(turn.quote.summary.references.map(r=>r.assetId).sort(),[...refs].sort());
     assert.equal(turn.quote.price.amountCents,3);
+    assert.equal(turn.quote.sourceReferenceSummary,source);
+    assert.equal(mobileStudioQuote(turn.quote,'fr',true).review?.references,source);
     assert.ok(turn.reply?.includes('Retouche avec Seedream 5.0 Flash à partir d’' + source));
     assert.match(turn.reply,/0,03\s*\$US/);
     assert.deepEqual(turn.references,[]);

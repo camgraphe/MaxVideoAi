@@ -1,4 +1,3 @@
-import { studioReferenceDisplayLabel } from '@/lib/mobile-studio';
 import { formatCustomerAmount } from '@/lib/customer-price-presentation';
 import { projectStudioReply } from '@/lib/studio/conversation-reply';
 import { conversationQuotePresentation } from '@/lib/studio/conversation-quote-presentation';
@@ -44,7 +43,7 @@ export function projectStudioQuotedReply(
   input: { message: string; locale?: Locale },
   creativeDirection?: string | null,
   quote?: { priceCents: number; currency: string; request?: Parameters<typeof conversationQuotePresentation>[0];
-    sources?: {model: string; labels: string[]; unnamed: number} },
+    sources?: {model: string; displayNames: string} },
   resolvedLocale?: Locale,
 ): string {
   const locale = resolvedLocale ?? studioConversationLanguage(input.message, [], input.locale);
@@ -64,14 +63,7 @@ export function projectStudioQuotedReply(
   if (!quote || (!quote.sources && brief && reply.trim() === direction)) return brief;
   const amount = formatCustomerAmount(quote.priceCents, quote.currency, locale);
   if (quote.sources && quote.request) {
-    const names = quote.sources.labels.map(name => studioReferenceDisplayLabel(name, locale));
-    const count = quote.sources.unnamed;
-    if (names.length && count) {
-      names.push({en: count + (count === 1 ? ' other reference' : ' other references'),
-        fr: count + (count === 1 ? ' autre référence' : ' autres références'),
-        es: count + (count === 1 ? ' referencia más' : ' referencias más')}[locale]);
-    }
-    const source = new Intl.ListFormat(locale, {type:'conjunction'}).format(names);
+    const source = quote.sources.displayNames;
     const edit = quote.request.surface === 'image' && quote.request.mode === 'i2i';
     const operation = edit ? {en:'Edit', fr:'Retouche', es:'Retoque'}[locale] : conversationQuotePresentation(quote.request, locale).title;
     const model = quote.sources.model;

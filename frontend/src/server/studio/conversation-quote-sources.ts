@@ -1,4 +1,6 @@
 import { AUDIO_VOICE_MODEL_LABELS, getAudioPackConfig } from '@/lib/audio-generation';
+import { studioReferenceDisplayLabel } from '@/lib/mobile-studio';
+import type { ConversationLocale } from '@/lib/studio/conversation-quote-presentation';
 import { getBaseEngineIncludingHidden } from '@/lib/engines';
 import type { ImageConversationTurn } from '@/lib/studio/image-conversation-contract';
 import { originalStudioReferences } from './project-reference-registry';
@@ -15,7 +17,7 @@ export function studioQuoteModelLabel(request: QuoteRequest) {
 }
 
 /** Names come from the original turn receipts, in the order of the signed request. */
-export function studioQuoteSourceLabels(turn: StoredImageTurn, request: QuoteRequest) {
+export function studioQuoteSourceLabels(turn: StoredImageTurn, request: QuoteRequest, locale: ConversationLocale) {
   if (!request.references.length || turn.draft_json?.characterBuilder || turn.draft_json?.recast) return undefined;
   const receipts = [...originalStudioReferences(turn.input_json, turn.request_id), ...(turn.draft_json?.recalledReferences ?? [])];
   const assetIds = request.surface === 'audio'
@@ -31,5 +33,12 @@ export function studioQuoteSourceLabels(turn: StoredImageTurn, request: QuoteReq
   }
   unnamed += assetIds.filter(id => !id).length;
   if (!sources.size && !(request.surface === 'image' && request.mode === 'i2i')) return undefined;
-  return {model: studioQuoteModelLabel(request), labels: [...sources], unnamed};
+  const names = [...sources].map(name => studioReferenceDisplayLabel(name, locale));
+  if (names.length && unnamed) {
+    const other = {en: unnamed === 1 ? 'other reference' : 'other references',
+      fr: unnamed === 1 ? 'autre référence' : 'autres références',
+      es: unnamed === 1 ? 'referencia más' : 'referencias más'}[locale];
+    names.push(unnamed + ' ' + other);
+  }
+  return {model: studioQuoteModelLabel(request), displayNames: new Intl.ListFormat(locale, {type:'conjunction'}).format(names)};
 }
