@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { NextRequest } from 'next/server';
+import { POST as publicQuote } from '../frontend/app/api/pricing/quote/route';
 import { withDbTransaction } from '../frontend/src/lib/db';
 import { loadPricingPolicyOverridesWithExecutor } from '../frontend/src/lib/pricing-rule-store';
 import { evaluateManualTariffPrice } from '@maxvideoai/pricing/src/manual-tariff-price';
@@ -81,6 +83,30 @@ test('PG17 VideoOperation initialization rejects stale review, rolls back failur
     });
     assert.equal(result.insertedCells, 89);
     assert.equal(result.revision, 1887);
+    const indicative = { modelId:'kling-o3-standard',mode:'v2v',operation:'kling-edit',
+      resolution:'720p',durationSec:4,inputVideoDurationSec:4,hasVideoInput:true };
+    const indicativeQuote = async (body: unknown) => {
+      const response = await publicQuote(new NextRequest('https://example.invalid/api/pricing/quote',
+        {method:'POST',body:JSON.stringify(body)}));
+      return response.json();
+    };
+    const fourSeconds = await indicativeQuote(indicative);
+    assert.equal(fourSeconds.status,'exact');
+    assert.equal(fourSeconds.amountCents,66);
+    assert.equal(fourSeconds.operation,'kling-edit');
+    assert.match(fourSeconds.scenarioLabel,/4s source/);
+    for (const seconds of [3,4.125,15]) {
+      const quote = await indicativeQuote({...indicative,durationSec:seconds,inputVideoDurationSec:seconds});
+      assert.equal(quote.status,'exact');
+      assert.ok(quote.amountCents>0);
+    }
+    for (const changed of [{durationSec:4.1},{durationSec:2.99,inputVideoDurationSec:2.99},
+      {durationSec:15.01,inputVideoDurationSec:15.01},{hasVideoInput:false},{aspectRatio:'9:16'},
+      {resolution:'1080p'},{modelId:'wan-3'},{operation:'unsupported'}])
+      assert.equal((await indicativeQuote({...indicative,...changed})).status,'unavailable');
+    const withoutOperation = await indicativeQuote({...indicative,operation:undefined});
+    assert.notEqual(withoutOperation.operation,'kling-edit');
+
     const oldRows = (await database.pool.query('SELECT * FROM app_customer_tariff_cells WHERE id=ANY($1::text[]) ORDER BY id', [beforeRows.map(row => row.id)])).rows;
     assert.deepEqual(oldRows, beforeRows);
     const events = (await database.pool.query('SELECT * FROM app_pricing_change_events')).rows;
