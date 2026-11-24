@@ -23,7 +23,7 @@ export default function ExamplesGalleryGridClient({initialExamples,priceSlots,de
   const {opening,rest}=useMemo(()=>buildGalleryOpening(videos,openingEnabled??(prioritizeFirstPoster&&sort==='playlist')),[videos,openingEnabled,prioritizeFirstPoster,sort]);
   const visibleVideos=useMemo(()=>[...opening,...rest],[opening,rest]);
   const ids=useMemo(()=>visibleVideos.filter(video=>video.previewVideoUrl).map(video=>video.id),[visibleVideos]);
-  const reader=useGalleryReader(visibleVideos,Math.max(0,initialOffset-videos.length),sort,engineFilter,locale);
+  const reader=useGalleryReader(visibleVideos,{offset:Math.max(0,initialOffset-videos.length),sort,engineFilter,locale});
   const preview=useGalleryPreviewBudget(ids,Boolean(reader.selected));
   const firstVisibleId=visibleVideos[0]?.id;
   const card=(video:ExampleGalleryVideo,frame?:'lead'|'portrait'|'side')=><ExampleGalleryCard key={video.id} video={video} locale={locale}

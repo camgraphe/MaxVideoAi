@@ -17,9 +17,17 @@ import { exampleRequestSource } from '@/lib/example-continuation';
 import { normalizeAppLocale } from '@/i18n/locales';
 import { localizeMarketingPathname } from '@/lib/i18n/marketing-locale-switch';
 
-type Props = { detail: ExampleWatchDetail; copy: ReaderCopy; locale: string; navigation?: ReaderNavigation; onClose?: () => void; headingLevel?: 'h1' | 'h2' };
+type Props = {
+  detail: ExampleWatchDetail;
+  copy: ReaderCopy;
+  locale: string;
+  navigation?: ReaderNavigation;
+  onClose?: () => void;
+  headingLevel?: 'h1' | 'h2';
+  onComparisonPlayback?: () => void;
+};
 
-export function ExampleReaderContent({ detail, copy, locale, navigation, onClose, headingLevel = 'h2' }: Props) {
+export function ExampleReaderContent({ detail, copy, locale, navigation, onClose, headingLevel = 'h2', onComparisonPlayback }: Props) {
   const Heading = headingLevel;
   const SectionHeading = headingLevel === 'h1' ? 'h2' : 'h3';
   const QuoteHeading = headingLevel === 'h1' ? 'h3' : 'h4';
@@ -51,7 +59,7 @@ export function ExampleReaderContent({ detail, copy, locale, navigation, onClose
     </nav>}
     <div className={`${styles.layout} ${portrait ? styles.portrait : ''}`}>
       <div className={styles.media}>
-        <DiscoveryVideoPlayer detail={detail} copy={copy} surface={headingLevel === 'h1' ? 'watch' : 'gallery'}/>
+        <DiscoveryVideoPlayer detail={detail} copy={copy} surface={headingLevel === 'h1' ? 'watch' : 'gallery'} onComparisonPlayback={onComparisonPlayback}/>
         <header className={styles.heading}>
           <Heading id="example-reader-title">{detail.title}</Heading>
           <div className={styles.renderDetails}>

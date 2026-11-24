@@ -108,9 +108,11 @@ covers the server-rendered URL selection contract.
 
 ## Comparison detail galleries
 
-Comparison detail pages load optional public `examples-<modelSlug>` playlists through the route-local `compare-gallery-loader.ts`. `compare-gallery-data.ts` rechecks exact normalized model identity, public visibility, usable poster/original URLs, deduplication and the three-item limit. Prelaunch models skip media lookup; missing media must not break the page or substitute a sibling model. The historical same-prompt showdown configuration remains separate and is not used by this template.
+Comparison detail pages load optional public `examples-<modelSlug>` playlists through the route-local `compare-gallery-loader.ts`. `compare-gallery-data.ts` rechecks exact normalized model identity, public watch access, usable poster and original URLs, deduplication and the three-item limit. Prelaunch models skip media lookup. Missing media leaves the rest of the comparison usable. The historical same-prompt showdown keeps its own configuration.
 
-`CompareGalleryCard.client.tsx` owns intent and visibility only, delegating incidental muted previews to `useExampleCardPlayback`. Preserve responsive lazy covers, the configured image quality and fixed geometry. Ordinary activation opens `CompareVideoDialog.client.tsx`, loaded on demand; modified clicks and the underlying HTML link retain the watch-page URL. The modal delegates focus, Escape and restoration to `useAccessibleModal` and full playback to `PublicVideoPlayer`, with original fidelity and `preload="none"`. No automatic playback of all gallery items. Show independent-example labeling; do not imply identical prompts or controlled test conditions.
+`CompareGalleryCard.client.tsx` owns card intent and visibility and delegates incidental previews to `useExampleCardPlayback`. Preserve the responsive lazy covers, image quality and fixed geometry. Each card renders a native watch link. Ordinary activation loads the shared `ExampleReader` on demand and suspends the gallery's previews. `CompareGalleryReader.client.tsx` passes the two displayed strips to `useGalleryReader` as a single bounded list, in document order. Previous and Next replace the watch history entry. Close, Escape and Back restore the comparison and the shared modal restores focus. Modified clicks follow the standalone watch link.
+
+The comparison reader starts at Original quality with `preload="none"` and reports the comparison play event for the selected model. It uses the public example detail endpoint for the prompt, settings, sharing and current quotes. Watch routes own canonical resolution and SEO eligibility. Label these clips as independent examples with their original models.
 
 ## Model detail examples
 

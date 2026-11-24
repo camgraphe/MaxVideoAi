@@ -9,13 +9,26 @@ import styles from './example-reader-styles';
 
 export type ReaderNavigation = { previous: () => void; next: () => void; canPrevious: boolean; canNext: boolean; busy: boolean };
 const time = (seconds: number) => `${Math.floor(seconds / 60)}:${Math.floor(seconds % 60).toString().padStart(2, '0')}`;
-export function DiscoveryVideoPlayer({ detail, copy, surface = 'watch' }: { detail: ExampleWatchDetail; copy: ReaderCopy; surface?: 'watch' | 'gallery' }) {
+export function DiscoveryVideoPlayer({ detail, copy, surface = 'watch', onComparisonPlayback }: {
+  detail: ExampleWatchDetail;
+  copy: ReaderCopy;
+  surface?: 'watch' | 'gallery';
+  onComparisonPlayback?: () => void;
+}) {
   const trackedPath = useRef<string | null>(null);
-  const controls = usePublicVideoControls(detail.videoUrl, 'watch', 'auto', undefined, () => {
-    if (detail.analyticsPath && trackedPath.current !== detail.analyticsPath && trackPublicVideoPlay(detail.analyticsPath, surface)) {
-      trackedPath.current = detail.analyticsPath;
-    }
-  });
+  const trackedComparison = useRef<string | null>(null);
+  const isComparison = Boolean(onComparisonPlayback);
+  const controls = usePublicVideoControls(
+    detail.videoUrl, isComparison ? 'comparison' : 'watch', isComparison ? 'original' : 'auto', undefined, () => {
+      if (onComparisonPlayback && trackedComparison.current !== detail.id) {
+        trackedComparison.current = detail.id;
+        onComparisonPlayback();
+      }
+      if (detail.analyticsPath && trackedPath.current !== detail.analyticsPath && trackPublicVideoPlay(detail.analyticsPath, surface)) {
+        trackedPath.current = detail.analyticsPath;
+      }
+    },
+  );
   const frame = useRef<HTMLDivElement>(null);
   const playbackButton = useRef<HTMLButtonElement>(null);
   const [width, height] = detail.aspectRatio.split(':').map(Number);

@@ -12,9 +12,10 @@ const sample = (id: string, overrides: Partial<GalleryVideo> = {}): GalleryVideo
   promptExcerpt: '', createdAt: '2026-09-15', indexable: true, ...overrides,
 } as GalleryVideo);
 
-test('comparison gallery excludes sibling models, private videos and unusable media', () => {
+test('comparison gallery excludes sibling models, ineligible videos and unusable media', () => {
   const result = selectCompareGalleryVideos([
     sample('sibling', {engineId: 'minimax-h3-max'}), sample('private', {visibility: 'private'}),
+    sample('not-publicly-playable', {indexable: false}),
     sample('no-poster', {thumbUrl: null}), sample('no-video', {videoUrl: null}), sample('valid'),
   ], 'minimax-h3', 'minimax-h3');
   assert.deepEqual(result.map(v=>v.id), ['valid']);
@@ -26,8 +27,11 @@ test('comparison gallery deduplicates before limiting to three actual model exam
 });
 
 test('comparison gallery preserves exact media identity and strips unrelated user fields', () => {
-  const [item] = selectCompareGalleryVideos([sample('a')], 'minimax-h3', 'minimax-h3');
-  assert.deepEqual(item, {id:'a', engineLabel: 'MiniMax H3', poster:'https://media.example/a.jpg', video:'https://media.example/a.mp4', preview:'https://media.example/a-preview.mp4',duration:12,aspectRatio:'16:9',hasAudio:true});
+  const [item] = selectCompareGalleryVideos([sample('a clip')], 'minimax-h3', 'minimax-h3');
+  assert.deepEqual(item, {
+    id: 'a clip', href: '/video/a%20clip', engineLabel: 'MiniMax H3', poster: 'https://media.example/a clip.jpg',
+    video: 'https://media.example/a clip.mp4', preview: 'https://media.example/a clip-preview.mp4', duration: 12,
+  });
 });
 
 test('an upgraded comparison retains the original version of its example videos', () => {
@@ -51,6 +55,12 @@ test('comparison media remains optional, prelaunch-gated and reader-owned', () =
   assert.match(card, /visible && intent/);
   assert.match(card, /preload="none"/);
   assert.doesNotMatch(card, /autoPlay|priority[=\s]/);
+  assert.match(card, /href=\{item\.href\}/);
+  const galleries = readFileSync(root + '_components/CompareModelGalleries.tsx', 'utf8');
+  assert.match(galleries, /<CompareGalleryReader\b/);
+  const reader = readFileSync(root + '_components/CompareGalleryReader.client.tsx', 'utf8');
+  assert.match(reader, /dynamic\(\(\) => import\('@\/components\/examples\/ExampleReader\.client'\)/);
+  assert.match(reader, /useGalleryReader\(videos\)/);
   const content=readFileSync(root+'_components/CompareDetailContent.tsx','utf8');
   assert.ok(content.indexOf('<CompareEngineHeroCards') < content.indexOf('<CompareModelGalleries'));
   assert.ok(content.indexOf('<CompareModelGalleries') < content.indexOf('<CompareScorecardSection'));
