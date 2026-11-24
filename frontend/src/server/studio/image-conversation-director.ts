@@ -2,6 +2,7 @@ import OpenAI from "openai";
 import type {
   Response,
   ResponseCreateParamsNonStreaming,
+  ResponseInputContent,
 } from "openai/resources/responses/responses";
 import {
   imageDraftSchema,
@@ -19,6 +20,7 @@ export type ImageDirector = (
   history: ImageConversationHistoryTurn[],
   references: ResolvedReference[],
   observeResponse?: (event: ImageDirectorTelemetry) => void,
+  referenceContent?: ResponseInputContent[],
 ) => Promise<ImageDraft>;
 const format = {
   type: "json_schema" as const,
@@ -69,7 +71,7 @@ export function createStudioImageDirector(
     onResponse?: (event: ImageDirectorTelemetry) => void;
   } = {},
 ): ImageDirector {
-  return async (input, history, references, observeResponse) => {
+  return async (input, history, references, observeResponse, referenceContent) => {
     if (!options.createResponse && !process.env.OPENAI_API_KEY)
       throw new AgentApiError(
         "ENGINE_UNAVAILABLE",
@@ -112,7 +114,7 @@ Si le brief suffit et demande de créer, image contient un prompt précis et un 
             role: "user",
             content: [
               { type: "input_text", text: input.message },
-              ...studioReferenceInputContent(references, input.referenceMentions, false),
+              ...(referenceContent ?? studioReferenceInputContent(references, input.referenceMentions, false)),
             ],
           },
         ],

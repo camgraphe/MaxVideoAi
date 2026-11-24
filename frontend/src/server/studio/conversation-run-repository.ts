@@ -127,7 +127,7 @@ export async function completeStudioAction(actor: StudioGenerationActor, turn: S
 }
 
 /** Checkpoint each paid text request before dispatch and its complete output before any action. */
-export async function checkpointStudioResponse(actor: StudioGenerationActor, turn: StoredImageTurn, index: number, create: () => Promise<StudioDirectorResponse>, meter?: {prepare(): Promise<{inputTokens: number;outputTokens: number;policy: StudioAssistancePolicy;lunaFallback?:StudioLunaFallback}>;applyReservation?(call:Pick<AssistanceCall,'output_token_bound'|'pricing_snapshot'>):void}, options: {replayOnly?: boolean;reviewContext?:()=>unknown} = {}): Promise<StudioDirectorResponse> {
+export async function checkpointStudioResponse(actor: StudioGenerationActor, turn: StoredImageTurn, index: number, create: () => Promise<StudioDirectorResponse>, meter?: {prepare(): Promise<{inputTokens: number;outputTokens: number;policy: StudioAssistancePolicy;lunaFallback?:StudioLunaFallback}>;applyReservation?(call:Pick<AssistanceCall,'output_token_bound'|'pricing_snapshot'>):void}, options: {replayOnly?: boolean;prepareInput?: () => Promise<void>;reviewContext?:()=>unknown} = {}): Promise<StudioDirectorResponse> {
   const scope = [actor.userId, actor.projectId, turn.request_id, turn.lease_id, index];
   const prior = (await query<{response_json: StudioDirectorResponse}>(`SELECT response_json FROM studio_conversation_responses
     WHERE user_id=$1 AND project_id=$2 AND request_id=$3 AND response_index=$4 AND state='reported' ORDER BY created_at DESC LIMIT 1`, [actor.userId, actor.projectId, turn.request_id, index]))[0];
@@ -145,6 +145,7 @@ export async function checkpointStudioResponse(actor: StudioGenerationActor, tur
     if (meter) return stopStudioAssistanceReplay(actor,turn.request_id);
     throw new AgentApiError('RATE_LIMITED','This message reached its retry limit.');
   }
+  await options.prepareInput?.();
   const bounds = await meter?.prepare();
   let assistanceCall: AssistanceCall | undefined;
   await withDbTransaction(async tx => {
