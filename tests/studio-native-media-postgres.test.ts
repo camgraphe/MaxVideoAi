@@ -6,6 +6,7 @@ import {getDb} from '../frontend/src/lib/db';
 import {getFalEngineById} from '../frontend/src/config/falEngines';
 import {createImageConversationService} from '../frontend/src/server/studio/image-conversation-service';
 import {createStudioVideoGenerationService} from '../frontend/src/server/studio/image-generation-service';
+import {renewMobileStudioQuote} from '../frontend/src/server/mobile/studio-renewal';
 import {createStudioAudioGenerationService} from '../frontend/src/server/studio/audio-generation-service';
 import {listAudioCapabilities} from '../frontend/src/server/agent-api/audio-capabilities';
 import {prepareAudioRun} from '../frontend/src/server/audio/prepare-audio';
@@ -121,4 +122,24 @@ test('native video/voice/music turns keep quotes, confirmation and recovery in t
   assert.ok(renewed.quote && renewed.quote.quoteId !== saved.quote.quoteId);
   assert.equal(renewed.quote.summary.surface, 'audio');
   assert.equal((renewed.quote.summary.settings as any).script, actions[1].script);
+  for (const action of [actions[0], actions[2]]) {
+    next = action;
+    const source = await service.submit({requestId:randomUUID(), message:'Prepare my next test quote.', references:[]});
+    assert.ok(source.quote);
+    await pg.pool.query("UPDATE mcp_generation_quotes SET state='expired' WHERE quote_id=$1",[source.quote.quoteId]);
+    const before = calls;
+    const input = {action:'renew-generation' as const, requestId:source.requestId,
+      quoteId:source.quote.quoteId,renewalId:randomUUID(),locale:'es' as const};
+    await assert.rejects(renewMobileStudioQuote({...actor,projectId:'other'},input,service), {code:'REVIEW_REQUIRED'});
+    const fresh = await renewMobileStudioQuote(actor,input,service);
+    assert.notEqual(fresh.quote.review?.quoteId,source.quote.quoteId);
+    assert.equal(fresh.requestId,input.renewalId);
+    assert.equal(fresh.quote.state,'prepared');
+    assert.equal(fresh.quote.amountCents,source.quote.price.amountCents);
+    assert.deepEqual(await renewMobileStudioQuote(actor,input,service),fresh);
+    assert.equal(calls,before);
+    assert.equal(provider.captures.length,1);
+    assert.equal(audioExecutions,2);
+  }
+
 });

@@ -5,6 +5,7 @@ import test from "node:test";
 import { NextRequest } from "next/server";
 import { handleMobileStudio } from "../frontend/src/server/mobile/studio";
 import { LIVE_PRICING_POLICY_REVISION, PRICING_POLICY_HEADER } from "../frontend/src/lib/membership-policy";
+import { priceCanonicalGeneration } from "../frontend/src/server/agent-api/generation-pricing";
 import { getDb } from "../frontend/src/lib/db";
 import { getFalEngineById } from "../frontend/src/config/falEngines";
 import type { AgentPublicGenerationEngine } from "../frontend/src/server/agent-api/model-catalog";
@@ -63,12 +64,18 @@ test("Studio image wallet insufficiency, retry, repeat confirmation, expiry, and
   const makeFactory = (
     prepareNow?: () => Date,
     getWalletSummary?: () => Promise<WalletSummary>,
+    archivedPriceDelta = 0,
   ): ImageGenerationFactory =>
     (currentActor, options) =>
       createStudioImageGenerationService(currentActor, {
         ...options,
         prepareDependencies: {
           ...(prepareNow ? { now: prepareNow } : {}),
+          ...(archivedPriceDelta ? {priceGeneration: async (request, tier, context) => {
+            const live = await priceCanonicalGeneration(request, tier, undefined, context);
+            const priceCents = live.priceCents + archivedPriceDelta;
+            return {...live, priceCents, pricingSnapshot:{...live.pricingSnapshot,totalCents:priceCents}};
+          }} : {}),
           ...(getWalletSummary
             ? { getWalletSummary: async () => getWalletSummary() }
             : {}),
@@ -138,7 +145,7 @@ test("Studio image wallet insufficiency, retry, repeat confirmation, expiry, and
     quoteId: prepared.quote.quoteId, requestHash: prepared.quote.requestHash,
     amountCents: prepared.quote.price.amountCents, currency: prepared.quote.price.currency,
   };
-  const phone = (search: string, command?: typeof phoneCommand) => handleMobileStudio(
+  const phone = (search: string, command?: object) => handleMobileStudio(
     new NextRequest("https://example.invalid/api/mobile/studio/projects/" + actor.projectId + search, {
       method: command ? "POST" : "GET", headers: phoneHeaders, ...(command ? {body: JSON.stringify(command)} : {}),
     }), actor.projectId, {
@@ -372,7 +379,7 @@ test("Studio image wallet insufficiency, retry, repeat confirmation, expiry, and
   const expiredService = createImageConversationService(actor, {
     enabled: true,
     director,
-    generationFactory: makeFactory(() => new Date(Date.now() - 2 * 60 * 60 * 1000)),
+    generationFactory: makeFactory(() => new Date(Date.now() - 2 * 60 * 60 * 1000), undefined, 13),
   });
   const expiredInput = {
     ...input,
@@ -419,4 +426,79 @@ test("Studio image wallet insufficiency, retry, repeat confirmation, expiry, and
     ).rows[0].state,
     "expired",
   );
+  const renew = {action: 'renew-generation', requestId: expired.requestId,
+    quoteId: expired.quote.quoteId, renewalId: randomUUID(), locale: 'fr'};
+  const callsBeforeRenewal = directorCalls;
+  const used = await phone('', {...renew, requestId: phoneCommand.requestId, quoteId: phoneCommand.quoteId});
+  assert.equal(used.status, 409);
+  for (const invalid of [{quoteId: randomUUID()}, {requestId: randomUUID()}, {renewalId: expired.requestId}])
+    assert.equal((await phone('', {...renew, ...invalid})).status, 409);
+  assert.equal((await phone('', {...renew, confirmed:true})).status, 400);
+  const concurrent = await Promise.all([phone('', renew), phone('', renew)]);
+  assert.ok(concurrent.some(result => result.status === 200));
+  for (const result of concurrent.filter(result => result.status !== 200))
+    assert.equal((await result.json()).error.code, 'RENEWAL_PENDING');
+  const card = await (await phone('', renew)).json();
+  assert.equal(card.projectId, actor.projectId);
+  assert.equal(card.requestId, renew.renewalId);
+  assert.ok(card.quote.review.requestHash);
+  assert.equal(card.quote.state, 'prepared');
+  assert.notEqual(card.quote.review.quoteId, expired.quote.quoteId);
+  assert.equal(card.quote.review.canRenew, undefined);
+  assert.equal(card.quote.review.direction, expired.quote.summary.prompt);
+  assert.equal(card.quote.amountCents, expired.quote.price.amountCents - 13);
+  const reopened = (await (await phone('?review=1&locale=fr')).json()).turns as import('../frontend/src/lib/mobile-studio').StudioMessage[];
+  const repriced = reopened.filter(turn => turn.message === expiredInput.message);
+  assert.equal(repriced.length, 1);
+  assert.equal(repriced[0].requestId, card.requestId);
+  assert.equal(repriced[0].renewedFromRequestId, expired.requestId);
+  assert.equal(repriced[0].quote?.review?.quoteId, card.quote.review.quoteId);
+  assert.equal(repriced[0].quote?.amountCents, card.quote.amountCents);
+  assert.ok(reopened.some(turn => turn.requestId === phoneCommand.requestId && turn.generation?.jobId));
+  for (const request of [renew, {...renew, renewalId:randomUUID()}, {...renew,locale:'es'}]) {
+    const response = await phone('',request);
+    assert.equal(response.status,200);
+    const retried = await response.json();
+    assert.equal(retried.requestId,card.requestId);
+    assert.equal(retried.quote.review.quoteId,card.quote.review.quoteId);
+    assert.equal(retried.quote.amountCents,card.quote.amountCents);
+    if (request.locale==='es') assert.notEqual(retried.quote.review.title,card.quote.review.title);
+  }
+  assert.equal(directorCalls, callsBeforeRenewal);
+  assert.equal(provider.captures.length, 1);
+  const counts = await pg.pool.query(`SELECT
+    (SELECT count(*)::int FROM studio_image_turns WHERE input_json->>'renewedFromRequestId'=$1) AS renewals,
+    (SELECT count(*)::int FROM app_jobs WHERE user_id=$2) AS jobs,
+    (SELECT count(*)::int FROM app_receipts WHERE user_id=$2 AND type='charge') AS charges`, [expired.requestId,actor.userId]);
+  assert.deepEqual(counts.rows[0],{renewals:1,jobs:1,charges:1});
+
+  // A price from an older page is still addressable by its exact turn and receipt.
+  if (expired.quote.summary.surface !== 'image') assert.fail('Expected the saved image request');
+  const historicalPrice = await makeFactory(() => new Date(Date.now()-3*86400000))(actor,{enabled:true}).prepare(expired.quote.summary);
+  const historicalId = randomUUID();
+  await pg.pool.query(`INSERT INTO studio_image_turns
+    (user_id,project_id,request_id,request_hash,input_json,draft_json,draft_reference_fingerprint,quote_id,state,lease_id,lease_expires_at,created_at)
+    SELECT user_id,project_id,$2,request_hash,jsonb_set(input_json,'{requestId}',to_jsonb($2::uuid)),draft_json,draft_reference_fingerprint,
+      $3,'ready',$4,clock_timestamp(),clock_timestamp()-interval '3 days' FROM studio_image_turns WHERE request_id=$1`,
+    [expired.requestId,historicalId,historicalPrice.quoteId,randomUUID()]);
+  for (let i=0;i<35;i++) {
+    const id = randomUUID();
+    await pg.pool.query(`INSERT INTO studio_image_turns
+      (user_id,project_id,request_id,request_hash,input_json,state,lease_id,lease_expires_at,created_at)
+      VALUES ($1,$2,$3,$4,$5,'ready',$6,clock_timestamp(),clock_timestamp()-interval '1 day'+$7*interval '1 minute')`,
+      [actor.userId,actor.projectId,id,'c'.repeat(64),{requestId:id,message:'Noted.',references:[]},randomUUID(),i]);
+  }
+  assert.ok(!(await service.read()).turns.some(turn=>turn.requestId===historicalId));
+  const archivedCommand = {...renew,requestId:historicalId,quoteId:historicalPrice.quoteId,renewalId:randomUUID()};
+  const historical = await phone('',archivedCommand);
+  assert.equal(historical.status,200);
+  const historicalCard = await historical.json();
+  assert.equal(historicalCard.quote.review.direction,card.quote.review.direction);
+  await pg.pool.query("UPDATE mcp_generation_quotes SET state='expired' WHERE quote_id=$1",[historicalCard.quote.review.quoteId]);
+  const nextPrice = await (await phone('',{...archivedCommand,renewalId:randomUUID()})).json();
+  assert.equal(nextPrice.quote.state,'prepared');
+  assert.notEqual(nextPrice.quote.review.quoteId,historicalCard.quote.review.quoteId);
+  assert.equal(provider.captures.length,1);
+  assert.equal(directorCalls,callsBeforeRenewal);
+
 });

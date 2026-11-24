@@ -33,7 +33,7 @@ export function createStudioTaskService(actor:StudioGenerationActor,dependencies
   }
   return {
     async read(requestId:string){return projectStudioTask(await readStudioTaskRow(actor,requestId));},
-    async enqueue(raw:unknown, clientSurface?: 'mobile') {
+    async enqueue(raw:unknown, clientSurface?: 'mobile', allowLiteFallback = false) {
       available();const input=imageTurnInputSchema.parse(raw);
       if(!input.taskBudget)throw new AgentApiError('CONFIRMATION_REQUIRED','Review the assistance ceiling before sending.');
       const hash=createHash('sha256').update(stableJson(input)).digest('hex');
@@ -54,8 +54,10 @@ export function createStudioTaskService(actor:StudioGenerationActor,dependencies
         const sourceFingerprint=await studioTaskSourceFingerprint(actor,input,tx,true);
         // The invoking UI describes navigation. It does not change the reviewed request or its retry identity.
         const storedInput = clientSurface ? { ...input, clientSurface } : input;
+        // A chat can finish on sponsored Lite. Preserve the original behavior for all other callers.
+        const automaticLite = clientSurface === 'mobile' && allowLiteFallback && input.taskBudget!.profile === 'standard' && assistance.model !== 'gpt-6-luna';
         const row=(await tx.query<StudioTaskRow>(`INSERT INTO studio_tasks(user_id,project_id,request_id,segment_request_id,input_hash,input_json,source_fingerprint,policy_version,profile,profile_json,model,max_credits,allowed_calls)
-          VALUES($1,$2,$3,$3,$4,$5::jsonb,$6,$7,$8,$9::jsonb,$10,$11,$12) RETURNING *`,[actor.userId,actor.projectId,input.requestId,hash,JSON.stringify(storedInput),sourceFingerprint,input.taskBudget!.policyVersion,input.taskBudget!.profile,JSON.stringify({...profile,explicitLiteChoice:true}),assistance.model,profile.maxCredits,profile.maxCalls]))[0];
+          VALUES($1,$2,$3,$3,$4,$5::jsonb,$6,$7,$8,$9::jsonb,$10,$11,$12) RETURNING *`,[actor.userId,actor.projectId,input.requestId,hash,JSON.stringify(storedInput),sourceFingerprint,input.taskBudget!.policyVersion,input.taskBudget!.profile,JSON.stringify(automaticLite ? profile : {...profile,explicitLiteChoice:true}),assistance.model,profile.maxCredits,profile.maxCalls]))[0];
         await tx.query('INSERT INTO studio_task_segments(user_id,project_id,task_request_id,request_id,max_calls) VALUES($1,$2,$3,$3,$4)',[actor.userId,actor.projectId,input.requestId,profile.maxCalls]);
         await tx.query('INSERT INTO studio_task_memory_notes(user_id,project_id,request_id,message,reference_ids) VALUES($1,$2,$3,$4,$5::jsonb) ON CONFLICT DO NOTHING',[actor.userId,actor.projectId,input.requestId,input.message,JSON.stringify([...input.references,...(input.attachments??[]).map(r=>r.type==='asset'?r.assetId:r.outputId)])]);
         return projectStudioTask(row,tx);

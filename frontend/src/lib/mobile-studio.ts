@@ -13,6 +13,7 @@ export type StudioPhotoRead = { assetId: string } & (
 );
 export type StudioProject = { id: string; name: string; updatedAt: string };
 export type StudioQuoteReview = {
+  canRenew?: true;
   quoteId: string;
   requestHash: string;
   expiresAt: string;
@@ -31,7 +32,9 @@ export type StudioGeneration = {
   status: 'accepted' | 'running' | 'completed' | 'failed';
   outputs: StudioOutput[];
 };
+export const STUDIO_AUTO_LITE_HEADER = 'x-maxvideoai-studio-auto-lite';
 export type StudioAllowance = {
+  lowCreditsRemaining?: number;
   model: StudioAssistantModel;
   label: string;
   revision: number;
@@ -42,7 +45,9 @@ export type StudioAllowance = {
   customerMaxCredits: number;
 };
 export type StudioMessage = {
+  continuedWithLite?: true;
   requestId: string;
+  renewedFromRequestId?: string;
   message: string;
   media?: StudioReference[];
   reply: string | null;
@@ -55,6 +60,7 @@ export type StudioJournal = {
   projectId: string;
   projectName: string;
   stableReferenceLabels?: true;
+  referenceOrdinals?: Record<StudioReference['kind'], number>;
   turns: StudioMessage[];
   allowance: StudioAllowance | null;
 };

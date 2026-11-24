@@ -27,6 +27,7 @@ export function mobileStudioQuote(
   quote: Quote,
   locale: ConversationLocale,
   reviewEnabled: boolean,
+  renewableTurn = false,
 ): NonNullable<StudioMessage['quote']> {
   const price = {
     label: quote.modelLabel,
@@ -47,6 +48,8 @@ export function mobileStudioQuote(
     ...price,
     review: {
       ...(notices.length ? { notices: notices.map((notice) => notice.message) } : {}),
+      ...(renewableTurn && (quote.state === 'expired' ||
+        (quote.state === 'prepared' && Date.parse(quote.expiresAt) <= Date.now())) ? {canRenew: true as const} : {}),
       quoteId: quote.quoteId,
       requestHash: quote.requestHash,
       expiresAt: quote.expiresAt,

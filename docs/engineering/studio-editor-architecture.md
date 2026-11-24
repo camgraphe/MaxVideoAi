@@ -183,6 +183,14 @@ are revalidated. The separate duration cache never applies to film plans: failur
 of one film component is not proof that every cut is impossible. Paid follow-up
 responses remain recoverable in replay-only mode even after a comparison receipt.
 
+Studio resolves references from earlier messages through `project-reference-registry.ts`.
+The original turn owns the attachment and label. On a follow-up, the server checks the
+originating project and current media access before using pixels or preparing a quote.
+Its saved draft records the selected source IDs for retries and renewals. Historical
+labels shared by multiple files require clarification. The mobile journal’s optional
+`referenceOrdinals` counts the highest label of each kind across the complete project,
+including numbers previously assigned to unavailable files.
+
 Server-authored comparison/preparation replies follow the client's conversation
 language, including short confirmations using recent authored history. Requested
 voice-over/dialogue language does not change Studio's reply language. Failure
