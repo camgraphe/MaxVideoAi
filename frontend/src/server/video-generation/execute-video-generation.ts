@@ -242,6 +242,7 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
     seed,
     safetyChecker,
     inputSchema: engine.inputSchema,
+    operationCaps: engine.activeVideoOperation === 'kling-edit' ? engine.modeCaps?.[mode] : undefined,
     referenceValuesByField,
     referenceMediaItems,
     referenceProvenanceIssues,
