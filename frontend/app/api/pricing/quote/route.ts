@@ -17,12 +17,13 @@ const OPTIONAL_NUMBER = ['quantity', 'referenceImageCount', 'inputVideoDurationS
 function parseInput(payload: unknown): PublicModelQuoteInput | null {
   if (!payload || typeof payload !== 'object' || Array.isArray(payload)) return null;
   const body = payload as Record<string, unknown>;
-  const fractionalMedia = typeof body.modelId === 'string' && typeof body.mode === 'string'
+  const fractionalMedia = body.operation === 'kling-edit' || typeof body.modelId === 'string' && typeof body.mode === 'string'
     && (ltx25AudioTariffBounds(body.modelId, body.mode) || (supportsOmniTariffMedia(body.modelId, body.mode) && body.mode !== 'extend'));
   const openQuantity = typeof body.modelId === 'string' && typeof body.mode === 'string'
     ? openTariffQuantityKey(body.modelId, body.mode) : null;
   if (typeof body.modelId !== 'string' || !/^[a-zA-Z0-9_-]{1,100}$/.test(body.modelId) ||
       typeof body.mode !== 'string' || !/^[a-z0-9-]{1,30}$/.test(body.mode) ||
+      (body.operation !== undefined && body.operation !== 'kling-edit') ||
       typeof body.resolution !== 'string' || !/^[a-zA-Z0-9_.]{1,30}$/.test(body.resolution) ||
       (body.durationOption !== undefined && body.durationOption !== 'auto') ||
       !Number.isFinite(body.durationSec) || (!fractionalMedia && !Number.isInteger(body.durationSec))
