@@ -23,11 +23,15 @@ import {
   type StudioQuoteLanguageContext, type StudioTurnLanguageInput,
 } from './conversation-language';
 
+import type {StoredStudioDraft, StudioRecalledReference} from './project-reference-registry';
+
 export type StoredImageTurn = {
+  /** Server-selected sources for this execution, saved only with its draft. */
+  recalledReferences?: StudioRecalledReference[];
   request_id: string;
   request_hash: string;
   input_json: ImageTurnInput;
-  draft_json: ImageDraft | null;
+  draft_json: StoredStudioDraft | null;
   draft_reference_fingerprint: string | null;
   quote_id: string | null;
   state: "thinking" | "ready" | "failed";
@@ -242,7 +246,8 @@ export async function persistImageDraft(
   draft: ImageDraft,
   referenceFingerprint: string,
 ) {
-  const parsed = imageDraftSchema.parse(draft);
+  const validated = imageDraftSchema.parse(draft);
+  const parsed: StoredStudioDraft = turn.recalledReferences ? {...validated, recalledReferences: turn.recalledReferences} : validated;
   await withDbTransaction(async executor => {
     await executor.query("SELECT pg_advisory_xact_lock(hashtextextended($1, 0))", [`studio-image:${actor.userId}`]);
     const rows = await executor.query(

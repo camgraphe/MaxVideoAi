@@ -55,6 +55,7 @@ export type StudioJournal = {
   projectId: string;
   projectName: string;
   stableReferenceLabels?: true;
+  referenceOrdinals?: Record<StudioReference['kind'], number>;
   turns: StudioMessage[];
   allowance: StudioAllowance | null;
 };
