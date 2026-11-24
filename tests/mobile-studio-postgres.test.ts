@@ -177,7 +177,10 @@ test('Studio phone projects, journal and reviewed messages share website ownersh
   }
   assert.equal(wake.length, 0);
   assert.equal((await route(projectId, command, foreign)).status, 404);
-  const sent = await route(projectId, command);
+  const sent = await handleMobileStudio(request(command, {...headers,'x-maxvideoai-studio-auto-lite':'1'}), projectId, {
+    access: async () => ({ok:true, userId:owner}), consentBlocked:async()=>false,
+    wake: (_kind,scope) => { wake.push(scope.requestId); },
+  });
   assert.equal(sent.status, 200);
   assert.deepEqual(await sent.json(), { projectId, requestId });
   assert.equal((await route(projectId, command)).status, 200);
@@ -193,6 +196,7 @@ test('Studio phone projects, journal and reviewed messages share website ownersh
   assert.deepEqual(wake, [requestId, requestId]);
   const { rows: [saved] } = await pg.pool.query('SELECT input_json, profile, profile_json FROM studio_tasks WHERE request_id=$1', [requestId]);
   assert.equal(saved.profile, 'standard');
+  assert.equal(saved.profile_json.explicitLiteChoice, undefined, 'replay from another client preserves the fallback policy');
   assert.equal(saved.profile_json.targetInputTokens, 64_000);
   assert.equal(saved.profile_json.maxInputTokens, 128_000);
   assert.equal(saved.input_json.clientSurface, 'mobile');
@@ -267,6 +271,7 @@ test('Studio phone projects, journal and reviewed messages share website ownersh
   const old = (await pg.pool.query('SELECT profile, max_credits, profile_json, input_json FROM studio_tasks WHERE request_id=$1', [legacy.requestId])).rows;
   assert.equal(old.length, 1);
   assert.equal(old[0].profile, 'quick');
+  assert.equal(old[0].profile_json.explicitLiteChoice, true);
   assert.equal(old[0].max_credits, STUDIO_TASK_PROFILES.quick.maxCredits);
   assert.equal(old[0].profile_json.maxInputTokens, 12_000);
   assert.equal(old[0].profile_json.targetInputTokens, undefined);

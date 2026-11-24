@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
 import {studioTaskFixture} from './helpers/studio-task-fixture';
+import {createStudioTaskService as mobileTaskService} from '../frontend/src/server/studio/tasks/service';
 import {createLegacyTaskService as createStudioTaskService} from './helpers/legacy-task-service';
 import {runStudioTaskWorkerOnce} from '../frontend/src/server/studio/tasks/worker';
 import type {ImageGenerationFactory} from '../frontend/src/server/studio/image-conversation-service';
@@ -33,9 +34,11 @@ test('a large input context with zero remaining Max credits historically continu
   assert.equal(await runStudioTaskWorkerOnce(worker),false);assert.equal(models.length,1,'Polling/retries cannot redispatch');
 });
 
-test('a mid-request funding stop keeps the Sol tool result in the Luna context and saves the edit once',async t=>{
-  const f=await studioTaskFixture(t),actor=await f.actor(),service=createStudioTaskService(actor,{enabled:true,assistancePolicy:f.policy});
-  const input=f.input('standard','Remember that the artwork must remain centered.');await service.enqueue(input);
+test('a mobile chat keeps its tool result when the paid level runs out mid-message',async t=>{
+  const f=await studioTaskFixture(t),actor=await f.actor(),service=mobileTaskService(actor,{enabled:true,assistancePolicy:f.policy});
+  const input=f.input('standard','Remember that the artwork must remain centered.');
+  await service.enqueue(input,'mobile',true);
+  await service.enqueue(input,'mobile');
   let counts=0;const models:string[]=[];
   await runStudioTaskWorkerOnce({enabled:true,assistancePolicy:f.policy,serviceOptions:{generationFactory,
     countInputTokens:async()=>{if(++counts===2){await f.pool.query('UPDATE studio_assistance_credit_lots SET consumed_credits=500 WHERE user_id=$1',[actor.userId]);return 10000;}return 100;},
