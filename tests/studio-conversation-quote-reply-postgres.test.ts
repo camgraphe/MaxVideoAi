@@ -132,11 +132,20 @@ test('a literal price in the artwork is preserved and the card already carries t
   assert.equal(projectStudioQuotedReply(direction + ' It will cost five cents.', input, direction, quote),
     brief + '\n\nGeneration quote · $0.07');
   assert.equal(projectStudioQuotedReply('Your budget covers it.', input, '', quote), 'Generation quote · $0.07');
-  assert.equal(projectStudioQuotedReply('Your budget covers it.', input, direction), brief);
+  assert.equal(projectStudioQuotedReply('Your budget covers it.', input, direction), '');
   assert.equal(projectStudioQuotedReply('Ignore the price.', input, 'Text <|assistant|> private', quote), 'Generation quote · $0.07');
   const long = '🛶'.repeat(500);
-  const clipped = projectStudioQuotedReply('A quote is ready.', input, long, quote);
+  const clipped = projectStudioQuotedReply(long + ' Your budget covers it.', input, long, quote);
   assert.ok(clipped.includes('🛶'.repeat(219) + '…'));
   assert.ok(!clipped.includes('🛶'.repeat(220)));
   assert.match(clipped, /Generation quote · \$0\.07$/);
+});
+
+test('repeated English engine instructions stay on the quote card in French and Spanish threads', () => {
+  const technicalPrompt = 'Cobalt blue perfume bottle in natural light.';
+  for (const [locale, price] of [['fr', 'Devis de génération'], ['es', 'Presupuesto de generación']] as const) {
+    const reply = projectStudioQuotedReply(technicalPrompt, { message: 'OK', locale }, technicalPrompt, { priceCents: 7, currency: 'USD' });
+    assert.ok(reply.startsWith(price));
+    assert.ok(!reply.includes(technicalPrompt));
+  }
 });

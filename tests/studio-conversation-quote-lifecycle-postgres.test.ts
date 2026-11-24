@@ -55,8 +55,10 @@ test('conversation quote lifetime follows creation intent, not every message', a
     const beforeJobs = provider.captures.length;
     const resumed = await service.submit(original);
     assert.equal(resumed.state, 'ready');
-    assert.equal(resumed.reply, saved.reply);
     assert.ok(resumed.quote);
+    const formatted = new Intl.NumberFormat('en-US', {style: 'currency', currency: resumed.quote.price.currency}).format(resumed.quote.price.amountCents / 100);
+    assert.equal(resumed.reply, 'Image · 3:4\n\nGeneration quote · ' + formatted);
+    assert.equal(resumed.quote.summary.prompt, saved.image!.prompt);
     assert.equal(resumed.quote.summary.settings.resolution, 'custom');
     assert.equal(resumed.quote.summary.settings.imageWidth, 1024);
     assert.equal(resumed.quote.summary.settings.imageHeight, 1360);
