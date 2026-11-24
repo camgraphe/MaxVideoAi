@@ -10,7 +10,8 @@ const roster = getModelRoster();
 const names = new Set(roster.flatMap(model =>
   [model.engineId, model.marketingName, model.family ?? ''].filter(Boolean).map(words),
 ));
-const modelIds = new Set(roster.map(model => model.engineId));
+const families = new Map(roster.map(model => [model.engineId, words(model.family ?? '')]));
+const familyNames = new Set(families.values());
 const spellings = new Map<string, Set<string>>();
 for (const model of roster) {
   for (const spelling of [words(model.engineId), words(model.marketingName)]) {
@@ -20,10 +21,15 @@ for (const model of roster) {
   }
 }
 
+// Match complete catalogue names, longest first so the family name inside an edition is not a second offer.
+const offeredName = new RegExp('\\b(?:' + [...spellings.keys()].sort((a,b) => b.length-a.length).join('|') + ')\\b', 'gu');
+
 /** A full name may differ in punctuation. A family alone never substitutes for a model ID. */
-export function studioModelIdFromSpelling(value: string) {
-  if (modelIds.has(value)) return value;
-  const matches = spellings.get(words(value));
+export function studioModelIdFromSpelling(value: string, selectedModelId?: string) {
+  const name = words(value);
+  if (selectedModelId && families.get(selectedModelId) === name) return selectedModelId;
+  if (families.has(value) || familyNames.has(name)) return value;
+  const matches = spellings.get(name);
   return matches?.size === 1 ? [...matches][0] : value;
 }
 
@@ -54,13 +60,16 @@ export function offeredStudioModel(reply: string, choice: string) {
 }
 
 export function studioOfferedModelId(reply: string, choice: string) {
-  const offer = ' ' + words(reply) + ' ';
-  const matches = roster.filter(model => {
-    const identifiers = [words(model.marketingName), words(model.engineId)];
-    const chosen = identifiers.some(name => name === choice || name.startsWith(choice + ' ')) || words(model.family ?? '') === choice;
-    return chosen && identifiers.some(name => offer.includes(' ' + name + ' '));
-  });
-  return matches.length === 1 ? matches[0].engineId : undefined;
+  const selected = new Set<string>();
+  for (const match of words(reply).matchAll(offeredName)) {
+    const name = match[0];
+    for (const id of spellings.get(name) ?? []) {
+      if (name === choice || name.startsWith(choice + ' ') || words(id) === choice || families.get(id) === choice) {
+        selected.add(id);
+      }
+    }
+  }
+  return selected.size === 1 ? [...selected][0] : undefined;
 }
 
 export function sameStudioModelChoice(message: string, choice: string) {

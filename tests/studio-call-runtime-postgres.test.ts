@@ -1,5 +1,5 @@
 import {mobileStudioQuote} from '../frontend/src/server/mobile/studio-generation';
-import {studioModelIdFromSpelling} from '../frontend/src/server/studio/conversation-model-choice';
+import {studioModelIdFromSpelling,studioOfferedModelId} from '../frontend/src/server/studio/conversation-model-choice';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {randomUUID,createHash} from 'node:crypto';
@@ -66,7 +66,8 @@ test('persisted Studio quotes and MCP preparations agree on optional image guida
     assert.equal(offered.quotes.length,0);
     const request=cases.find(item=>item.name==='wan-extend-owned-clip')!;
     const assetId=runtime.referenceId(id,'watch_video');
-    const args={...request.args,references:[{role:'source',slot:null,ref:{type:'asset',kind:'video',assetId}}]};
+    // The tool's model guess cannot change the edition the user has just accepted.
+    const args={...request.args,modelId:'veo-3-1-fast',references:[{role:'source',slot:null,ref:{type:'asset',kind:'video',assetId}}]};
     const selected=await runtime.submit(id,'Wan 3',[],async params=>{
       assert.ok(records(params).some(item=>item.role==='developer' && String(item.content).includes('registered ID is wan-3')));
       const attachments=records(params).filter(item=>item.type==='input_text'&&String(item.text).startsWith('Attached media for this message only'));
@@ -79,6 +80,7 @@ test('persisted Studio quotes and MCP preparations agree on optional image guida
     assert.match(selected.result?.reply??'',/Wan 3.*using Video 1/i);
     assert.doesNotMatch(selected.result!.reply!,/Audio 1/);
     assert.equal(selected.quotes.length,1);
+    assert.equal(selected.quotes[0].request_json.engineId,'wan-3');
     assert.equal(selected.quotes[0].request_json.references.length,1);
     assert.ok(JSON.stringify(selected.quotes[0].request_json.references).includes(assetId));
     const reopened=await runtime.submit(id,'Wan 3',[],async()=>{throw Error('Unexpected model call');},requestId);
@@ -297,6 +299,11 @@ test('a dotted Seedream tool ID reads and prepares the exact offered edition',as
       await query(readFileSync('neon/migrations/'+migration,'utf8'));
     await query('UPDATE app_customer_tariff_state SET active=true, revision=1');
     assert.equal(studioModelIdFromSpelling('Seedream'),'Seedream');
+    const flash=studioOfferedModelId('Seedream 5.0 Flash or Nano Banana Pro. Which do you prefer?', 'seedream');
+    assert.equal(flash,'seedream-5-0-flash');
+    assert.equal(studioModelIdFromSpelling('seedream',flash),flash);
+    assert.equal(studioModelIdFromSpelling('seedream'),'seedream');
+    assert.equal(studioOfferedModelId('Seedream 5.0 Flash or Seedream 5.0 Pro?', 'seedream'),undefined);
     assert.equal(studioModelIdFromSpelling('seedream-5.9-flash'),'seedream-5.9-flash');
     const id='dotted-seedream', assetId=runtime.referenceId(id,'watch'), requestId=randomUUID();
     let step=0;
