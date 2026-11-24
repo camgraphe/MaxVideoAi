@@ -5,8 +5,10 @@ import {AgentApiError,toAgentApiFailure} from '../frontend/src/server/agent-api/
 import {GenerationCapabilityError,validateCanonicalGenerationCapabilities} from '../frontend/src/server/agent-api/generation-capability-validation';
 import {normalizeGenerationRequest,hashCanonicalGenerationRequest} from '../frontend/src/server/agent-api/generation-normalization';
 import {readGenerationPricing,type GenerationPricingReadDependencies} from '../frontend/src/server/agent-api/generation-pricing-read';
+import {canonicalOperationSourceDuration} from '../frontend/src/server/agent-api/generation-operation-facts';
 import type {CanonicalGenerationRequest} from '../frontend/src/server/agent-api/generation-types';
 import type {AgentPublicGenerationEngine} from '../frontend/src/server/agent-api/model-catalog';
+import type {ResolvedReference} from '../frontend/src/server/agent-api/reference-types';
 
 const studio={authMethod:'studio-session' as const,userId:'owner',projectId:'film',clientId:null};
 const oauth={authMethod:'oauth' as const,userId:'owner',clientId:'client',emailVerified:true};
@@ -124,6 +126,55 @@ test('reference-required and unsupported mode codes remain distinct from paramet
   const valid={...videoInput,settings:{...videoInput.settings,aspectRatio:'16:9'}};
   assert.equal((await failure({...valid,mode:'i2v'})).error.code,'REFERENCE_REQUIRED');
   assert.equal((await failure({...valid,mode:'reframe'})).error.code,'MODE_UNSUPPORTED');
+});
+
+test('Kling Edit rejects each unsupported source side before pricing and leaves Reference alone', async () => {
+  const kling = candidate('kling-o3-standard', 'video');
+  const request = normalizeGenerationRequest({ surface: 'video', engineId: kling.engine.id, mode: 'v2v',
+    operation: 'kling-edit', prompt: 'Make the jacket red.', settings: { resolution: '720p', keepAudio: true },
+    references: [{ kind: 'asset', assetId: 'clip', role: 'source' }], outputCount: 1 });
+  const source: ResolvedReference = { assetId: 'clip', role: 'source', mediaKind: 'video',
+    storageUrl: 'https://private.invalid/SECRET_SOURCE.mp4', mimeType: 'video/mp4',
+    width: 854, height: 480, durationSec: 4, sizeBytes: 50_000 };
+  const before = structuredClone(request);
+  let priceReads = 0;
+  const deps = {
+    ...dependencies(async (priced, _, context) => {
+      priceReads++;
+      canonicalOperationSourceDuration(priced, context?.resolvedReferences);
+      return { priceCents: 66, currency: 'USD', membershipTier: 'member',
+        pricingSnapshot: { totalCents: 66, currency: 'USD', membershipTier: 'member' } };
+    }),
+    listPublicEngines: async () => [kling],
+  };
+  const mobile = { authMethod: 'mobile-session' as const, userId: 'owner', clientId: null };
+  for (const [width, height] of [[854, 480], [480, 854], [3841, 2160]]) {
+    for (const actor of [studio, mobile, oauth]) {
+      await assert.rejects(readGenerationPricing(request, actor, { ...deps,
+        resolveGenerationReferences: async () => [{ ...source, width, height }],
+      }), (error: unknown) => {
+        assert.ok(error instanceof AgentApiError);
+        assert.equal(error.code, 'REFERENCE_INVALID');
+        assert.match(error.message, /Kling Edit.*720.*3840.*each side/);
+        assert.doesNotMatch(JSON.stringify(error), /SECRET_SOURCE|private\.invalid/);
+        return true;
+      });
+    }
+  }
+  assert.equal(priceReads, 0);
+  for (const [width, height] of [[720, 1280], [1280, 720], [3840, 2160]]) {
+    const { pricing } = await readGenerationPricing(request, studio, { ...deps,
+      resolveGenerationReferences: async () => [{ ...source, width, height }],
+    });
+    assert.equal(pricing.priceCents, 66);
+  }
+  const reference = normalizeGenerationRequest({ ...request, operation: 'kling-reference',
+    settings: { durationSec: 4, aspectRatio: '16:9', resolution: '720p' } });
+  assert.equal((await readGenerationPricing(reference, studio, { ...deps,
+    resolveGenerationReferences: async () => [source],
+  })).pricing.priceCents, 66);
+  assert.equal(priceReads, 4);
+  assert.deepEqual(request, before);
 });
 
 for (const mode of ['v2v', 'extend'] as const) {

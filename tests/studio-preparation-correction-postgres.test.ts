@@ -254,6 +254,43 @@ test('Studio quotes only supported video framing and source-audio settings', asy
     assert.deepEqual(turn.counts, {jobs: 0, charges: 0});
   });
 
+  await t.test('Kling Edit reports supported source dimensions before making a Studio quote', async () => {
+    const id = 'kling-small-source';
+    const assetId = runtime.referenceId(id, 'watch_video');
+    const source = { type: 'asset', kind: 'video', assetId };
+    const setup = await runtime.submit(id, 'Hello.', [], async () =>
+      ({ ...response('catalog_read', {}, 0), output: [], output_text: JSON.stringify({ reply: 'Ready.' }) }));
+    assert.equal(setup.error, undefined);
+    await getDb().query(`UPDATE media_assets SET width=854, height=480,
+      metadata=jsonb_set(metadata, '{mediaFacts}', metadata->'mediaFacts' || $2::jsonb) WHERE id=$1`,
+    [assetId, { width: 854, height: 480 }]);
+    let calls = 0;
+    const turn = await runtime.submit(id, 'Keep the original voice and turn the jacket red.', ['watch_video'], async () => {
+      calls++;
+      if (calls < 4) return response('catalog_read', {}, calls);
+      return response('video_prepare', { reply: 'Review the edit quote.', prompt: 'Turn the jacket red.',
+        modelId: kling.id, mode: 'v2v', operation: 'kling-edit', aspectRatio: null, source,
+        settings: [{ name: 'resolution', value: '720p' }, { name: 'keepAudio', value: true }], outputCount: 1,
+      }, calls);
+    });
+    assert.equal(turn.error, undefined);
+    assert.equal(calls, 4);
+    const step = turn.steps.at(-1)?.result;
+    assert.ok(step && !step.ok);
+    assert.equal(step.error.code, 'REFERENCE_INVALID');
+    assert.match(step.error.message, /Kling Edit.*720.*3840.*each side/);
+    assert.ok(turn.result);
+    assert.match(turn.result.reply ?? '', /Kling Edit.*720.*3840.*each side/);
+    assert.equal(turn.quotes.length, 0);
+    assert.deepEqual(turn.counts, { jobs: 0, charges: 0 });
+    const { rows } = await getDb().query<StoredDraftRow>(
+      'SELECT draft_json,quote_id,state FROM studio_image_turns WHERE project_id=$1 AND request_id=$2', [id, turn.result.requestId]);
+    assert.equal(rows[0]?.state, 'ready');
+    assert.equal(rows[0].quote_id, null);
+    assert.equal(rows[0].draft_json?.media ?? null, null);
+    assert.deepEqual(turn.result.attachments, [source]);
+  });
+
   // This operation requires an approved tariff. Install only its cell on the disposable database.
   await getDb().query('CREATE TABLE app_pricing_change_events(domain text)');
   for (const migration of ['54_customer_tariff_cells.sql', '55_customer_tariff_versions.sql'])
