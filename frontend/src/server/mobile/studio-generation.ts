@@ -68,11 +68,16 @@ export function mobileStudioGeneration(
   const result = generation.result;
   if (generation.status === 'completed' && result) {
     if (result.surface === 'image') {
-      outputs.push(...result.imageUrls.map((url) => ({ kind: 'image' as const, url })));
+      // The thumbnail list is deduplicated independently. Only a single image and thumbnail pair is unambiguous.
+      const previewUrl = result.imageUrls.length === 1 && result.thumbnailUrls?.length === 1
+        ? result.thumbnailUrls[0]
+        : undefined;
+      outputs.push(...result.imageUrls.map((url) => ({ kind: 'image' as const, url, ...(previewUrl ? { previewUrl } : {}) })));
     } else {
       if (result.videoUrl)
         outputs.push({
           kind: 'video',
+          originalUrl: result.videoUrl,
           url: result.surface === 'video' ? result.playbackVideoUrl || result.videoUrl : result.videoUrl,
         });
       if (result.audioUrl) outputs.push({ kind: 'audio', url: result.audioUrl });

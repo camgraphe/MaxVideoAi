@@ -40,7 +40,7 @@ test('Studio mobile reviews the saved project quote and recovers the same media 
   const generation = {
     jobId: 'job-test',
     status: 'completed',
-    result: { surface: 'video', videoUrl: 'https://example.invalid/clip.mp4' },
+    result: { surface: 'video', videoUrl: 'https://example.invalid/clip.mp4', playbackVideoUrl: 'https://example.invalid/preview.mp4' },
   } as NonNullable<ImageConversationTurn['generation']>;
   let owned = true,
     consentBlocked = false,
@@ -141,15 +141,20 @@ test('Studio mobile reviews the saved project quote and recovers the same media 
     assert.deepEqual(await (await post()).json(), { projectId, requestId, quoteId });
   assert.equal(confirms, 1);
   assert.deepEqual((await read()).generation.outputs, [
-    { kind: 'video', url: 'https://example.invalid/clip.mp4' },
+    { kind: 'video', url: 'https://example.invalid/preview.mp4', originalUrl: 'https://example.invalid/clip.mp4' },
   ]);
   assert.equal((await read('')).generation, undefined);
   const imageUrls = ['https://example.invalid/one.jpg', 'https://example.invalid/two.jpg'];
-  turn.generation = { ...generation, result: { surface: 'image', imageUrls } } as typeof generation;
+  const thumbnailUrls = ['https://example.invalid/one-thumb.jpg', 'https://example.invalid/two-thumb.jpg'];
+  turn.generation = { ...generation, result: { surface: 'image', imageUrls, thumbnailUrls } };
   assert.deepEqual(
     (await read()).generation.outputs,
     imageUrls.map((url) => ({ kind: 'image', url })),
   );
+  turn.generation = { ...generation, result: { surface: 'image', imageUrls: [imageUrls[0]], thumbnailUrls: [thumbnailUrls[0]] } };
+  assert.deepEqual((await read()).generation.outputs, [
+    { kind: 'image', url: imageUrls[0], previewUrl: thumbnailUrls[0] },
+  ]);
   const audioUrl = 'https://example.invalid/music.mp3';
   turn.generation = { ...generation, result: { surface: 'audio', audioUrl } } as typeof generation;
   assert.deepEqual((await read()).generation.outputs, [{ kind: 'audio', url: audioUrl }]);
