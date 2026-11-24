@@ -122,15 +122,19 @@ export function conversationQuotePresentation(request: NonNullable<ImageConversa
   const referenceSummary=[...referenceCounts].map(([label,count])=>count>1?`${count} × ${label}`:label).join(' · ');
   if (request.surface === 'audio') {
     const voice = request.mode === 'voice_only';
+    const soundtrack = request.mode === 'cinematic' || request.mode === 'cinematic_voice';
     const titles={
       voice_only:t('Voiceover','Voix off', "Voz en off"), music_only:t('Music','Musique', "Música"),
       sfx_only:t('Sound effect','Effet sonore', "Efecto de sonido"), song:t('Song','Chanson', "Canción"), ambience_only:t('Ambience','Ambiance sonore', "Ambiente sonoro"),
       cinematic:t('Video soundtrack','Bande-son vidéo', "Banda sonora de vídeo"), cinematic_voice:t('Video soundtrack with voice','Bande-son vidéo avec voix', "Banda sonora de vídeo con voz"),
     };
     const cloned=request.references?.some(reference=>reference.role==='voice_sample');
-    return {title: titles[request.mode],operation:'',
+    return {title: titles[request.mode],operation: soundtrack
+      ? t('This quote adds a soundtrack to the existing video while preserving its visuals.',
+        'Ce devis ajoute une bande-son à la vidéo existante et conserve ses images.',
+        'Este presupuesto añade una banda sonora al vídeo existente y conserva sus imágenes.') : '',
       create: voice ? t('Create voiceover', 'Créer la voix', "Crear voz en off") : request.mode==='music_only' ? t('Create music','Créer la musique', "Crear música")
-        : request.mode==='cinematic'||request.mode==='cinematic_voice' ? t('Create soundtrack','Créer la bande-son', "Crear banda sonora") : t('Create audio','Créer le son', "Crear audio"),
+        : soundtrack ? t('Create soundtrack','Créer la bande-son', "Crear banda sonora") : t('Create audio','Créer le son', "Crear audio"),
       direction: voice ? request.settings.script ?? '' : [request.prompt,
         request.settings.script ? `${t('Narration','Narration', "Narración")}: ${request.settings.script}` : '',
         request.settings.lyrics ? `${t('Lyrics','Paroles', "Letra")}: ${request.settings.lyrics}` : ''].filter(Boolean).join('\n\n'),
@@ -145,6 +149,12 @@ export function conversationQuotePresentation(request: NonNullable<ImageConversa
     return `${t('Subject','Sujet', "Sujeto")} ${index+1} · ${subject.kind==='video'?t('video','vidéo', "vídeo"):t('image views','vues image', "vistas de imagen")} · ${t('reference positions','positions des références', "posiciones de referencia")} ${slots.map(slot=>slot+1).join(', ')}`;
   }).join('\n');
   const video = request.surface === 'video';
+  let audioSetting = video && request.settings.audio === false ? t('silent', 'sans audio', 'sin audio') : '';
+  if (video && request.mode === 'v2v' && request.operation === 'kling-edit' && typeof request.settings.keepAudio === 'boolean') {
+    audioSetting = request.settings.keepAudio
+      ? t('Keep source audio', 'Conserver le son d’origine', 'Conservar el audio original')
+      : t('Discard source audio', 'Retirer le son d’origine', 'Descartar el audio original');
+  }
   const fluxMax = video && isFlux3MaxEngineId(request.engineId);
   const keyframeIndexes = fluxMax && request.mode === 'ref2v' ? parseFlux3MaxKeyframeIndexes(request.settings.keyframeIndexes) : null;
   const keyframeTimes = keyframeIndexes?.map(index => `${new Intl.NumberFormat(locale, {maximumFractionDigits:3}).format(index / 24)} s`).join(', ');
@@ -177,5 +187,5 @@ export function conversationQuotePresentation(request: NonNullable<ImageConversa
     referenceSummary,
     settings: [video&&sourceVideoOutput?seedanceEditSourceLabel(sourceVideoOutput,locale):request.settings.aspectRatio, dimensions,dimensions&&request.settings.resolution==='custom'?'':request.settings.resolution,
       segment || (video && duration && !sourceVideoOutput ? `${duration} s` : ''),
-      video ? request.settings.audio === false ? t('silent', 'sans audio', "sin audio") : '' : request.settings.outputFormat ?? 'PNG', ...maxControls].filter(Boolean).join(' · ')};
+      video ? audioSetting : request.settings.outputFormat ?? 'PNG', ...maxControls].filter(Boolean).join(' · ')};
 }

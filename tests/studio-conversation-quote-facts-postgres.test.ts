@@ -177,6 +177,52 @@ test('persisted Studio quote facts stay exact, bounded, isolated and available t
     assert.doesNotMatch(JSON.stringify(summary),/PRIVATE_|script|lyrics|prompt|pricingSnapshot/);
   });
 
+  await t.test('saved quote cards keep the recorded source-audio choice and soundtrack operation', async () => {
+    const projectId = 'audio-presentation';
+    await pg.pool.query("INSERT INTO studio_projects(id,user_id,name) VALUES($1,'owner','Audio presentation')", [projectId]);
+    const scopedActor = { ...actor, projectId };
+    const videoRepo = createQuoteRepository(generationQuoteCodec, { origin: 'studio-session', projectId });
+    const assetId = 'ma_' + 'a'.repeat(32);
+    const source = { type: 'asset' as const, assetId, kind: 'video' as const };
+    const edits = [];
+    for (const keepAudio of [true, false]) {
+      const edit = normalizeGenerationRequest({ surface: 'video', engineId: 'kling-o3-standard', mode: 'v2v',
+        operation: 'kling-edit', prompt: 'Make the lantern blue.', settings: { resolution: '720p', keepAudio },
+        references: [{ kind: 'asset', role: 'source', assetId }], outputCount: 1 });
+      const quote = await videoRepo.insertPreparedQuote({ userId: actor.userId, oauthClientId: null, request: edit,
+        requestHash: hashCanonicalGenerationRequest(edit), catalogRevision: 'fixture', pricingSnapshot: {},
+        priceCents: 66, currency: 'USD', fundingMode: 'wallet' }, { executor });
+      await linkQuote(quote.quoteId, actor.userId, projectId, { reply: 'Review the edit.', image: null,
+        media: { action: 'video.prepare', reply: 'Review the edit.', mode: edit.mode, modelId: edit.engineId,
+          operation: edit.operation, prompt: edit.prompt, aspectRatio: null, source,
+          settings: [{ name: 'resolution', value: '720p' }, { name: 'keepAudio', value: keepAudio }] } });
+      edits.push({ quoteId: quote.quoteId, edit, keepAudio });
+    }
+    const soundtrack = normalizeAudioGenerationRequest({ schemaVersion: 1, surface: 'audio', engineId: 'audio-cinematic',
+      mode: 'cinematic', prompt: 'Gentle music', settings: { durationSec: 6, mood: 'documentary' },
+      references: [{ role: 'source_video', asset: source }], outputCount: 1 });
+    const audioQuote = await audioQuoteRepositoryForActor(scopedActor).insertPreparedQuote({ userId: actor.userId, oauthClientId: null,
+      request: soundtrack, requestHash: hashCanonicalAudioRequest(soundtrack), catalogRevision: 'fixture',
+      pricingSnapshot: { totalCents: 17, currency: 'USD' },
+      priceCents: 17, currency: 'USD', fundingMode: 'wallet' }, { executor });
+    await linkQuote(audioQuote.quoteId, actor.userId, projectId, { reply: 'Review the soundtrack.', image: null,
+      media: { action: 'audio.prepare', mode: 'cinematic', modelId: soundtrack.engineId, reply: 'Review the soundtrack.',
+        prompt: soundtrack.prompt, settings: [{ name: 'mood', value: 'documentary' }], references: [{ ref: source, role: 'source_video' }] } });
+    const service = createImageConversationService(scopedActor, { enabled: true, mediaEnabled: true });
+    const { turns } = await service.read();
+    for (const { quoteId, edit, keepAudio } of edits) {
+      const saved = turns.find(turn => turn.quote?.quoteId === quoteId)?.quote;
+      assert.ok(saved);
+      assert.deepEqual(saved.summary, edit);
+      assert.equal(saved.price.amountCents, 66);
+      assert.match(conversationQuotePresentation(saved.summary, 'fr').settings, keepAudio ? /Conserver le son d’origine/ : /Retirer le son d’origine/);
+    }
+    const savedAudio = turns.find(turn => turn.quote?.quoteId === audioQuote.quoteId)?.quote;
+    assert.ok(savedAudio);
+    assert.deepEqual(savedAudio.summary, soundtrack);
+    assert.match(conversationQuotePresentation(savedAudio.summary, 'es').operation, /vídeo existente.*conserva sus imágenes/);
+  });
+
   await t.test('custom image dimensions, quality and output count preserve the recorded configuration',async()=>{
     const image=normalizeGenerationRequest({surface:'image',engineId:'gpt-image-2',mode:'t2i',prompt:'PRIVATE_IMAGE_PROMPT',settings:{resolution:'custom',aspectRatio:'3:4',imageWidth:1024,imageHeight:1360,quality:'high',style:'PRIVATE_ARTISTIC_STYLE'},references:[],outputCount:3});
     const quote=await repository.insertPreparedQuote({userId:actor.userId,oauthClientId:null,request:image,requestHash:hashCanonicalGenerationRequest(image),catalogRevision:'fixture',pricingSnapshot:{},priceCents:144,currency:'USD',fundingMode:'wallet'},{executor});

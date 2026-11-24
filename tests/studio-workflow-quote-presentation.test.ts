@@ -16,6 +16,7 @@ test('every audio quote names the operation being purchased, preserving lyrics a
       settings:{...(mode==='song'||mode==='voice_only'?{}:{durationSec:30}),mood:'dreamy',...settings},references:[]});
     const shown=conversationQuotePresentation(request,'en');
     assert.equal(shown.title,title);
+    assert.equal(shown.operation,'');
     if(mode==='song')assert.match(shown.direction,/Our garden blooms because you shine\./);
     if(mode==='voice_only')assert.equal(shown.direction,'Find your next adventure.');
   }
@@ -35,6 +36,50 @@ test('a finished video soundtrack quote identifies its source video and cloned v
   assert.match(shown.referenceSummary,/source video/);
   assert.match(shown.referenceSummary,/voice sample/);
   assert.equal(conversationQuotePresentation(request,'fr').title,'Bande-son vidéo avec voix');
+});
+
+test('both cinematic soundtrack quotes identify the existing video and preserve its visuals', () => {
+  for (const withVoice of [false, true]) {
+    const request = normalizeAudioGenerationRequest({ schemaVersion: 1, outputCount: 1, surface: 'audio',
+      mode: withVoice ? 'cinematic_voice' : 'cinematic', engineId: withVoice ? 'audio-cinematic-voice' : 'audio-cinematic',
+      prompt: 'Light energetic music',
+      settings: { durationSec: 6, mood: 'documentary', ...(withVoice ? { script: 'An adventure begins.', language: 'english' } : {}) },
+      references: [{ role: 'source_video', asset: { type: 'asset', assetId: 'ma_' + 'a'.repeat(32), kind: 'video' } }],
+    });
+    const notes = {
+      en: /adds a soundtrack to the existing video.*preserving its visuals/,
+      fr: /ajoute une bande-son à la vidéo existante.*conserve ses images/,
+      es: /añade una banda sonora al vídeo existente.*conserva sus imágenes/,
+    };
+    for (const locale of ['en', 'fr', 'es'] as const) {
+      const shown = conversationQuotePresentation(request, locale);
+      assert.match(shown.operation, notes[locale]);
+      assert.doesNotMatch(shown.settings, notes[locale]);
+      assert.doesNotMatch(shown.direction, notes[locale]);
+    }
+  }
+});
+
+test('only an explicit Kling Edit setting describes how the source audio is treated', () => {
+  const request = { surface: 'video' as const, engineId: 'kling-o3-standard', mode: 'v2v' as const,
+    prompt: 'Lighten the background', references: [], outputCount: 1, schemaVersion: 1 as const };
+  const labels = {
+    en: ['Keep source audio', 'Discard source audio'],
+    fr: ['Conserver le son d’origine', 'Retirer le son d’origine'],
+    es: ['Conservar el audio original', 'Descartar el audio original'],
+  };
+  const silent = { en: 'silent', fr: 'sans audio', es: 'sin audio' };
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    for (const [index, keepAudio] of [true, false].entries()) {
+      const edit = { ...request, operation: 'kling-edit' as const, settings: { resolution: '720p', keepAudio } };
+      assert.equal(conversationQuotePresentation(edit, locale).settings, `720p · ${labels[locale][index]}`);
+      assert.equal(conversationQuotePresentation({ ...edit, operation: 'kling-reference' }, locale).settings, '720p');
+      assert.equal(conversationQuotePresentation({ ...request, settings: edit.settings }, locale).settings, '720p');
+    }
+    assert.equal(conversationQuotePresentation({ ...request, operation: 'kling-edit', settings: { resolution: '720p' } }, locale).settings, '720p');
+    assert.equal(conversationQuotePresentation({ ...request, operation: 'kling-edit', settings: { resolution: '720p', audio: false } },
+      locale).settings, `720p · ${silent[locale]}`);
+  }
 });
 
 test('extension and edit quotes retain their operation and exact requested settings',()=>{
