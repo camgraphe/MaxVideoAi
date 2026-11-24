@@ -150,7 +150,10 @@ export function resolvePublicModelScenario(input: PublicModelQuoteInput): Manual
     } catch { return null; }
   }
   if (isGptImage26EngineId(model.id)) return resolveGpt26PublicScenario(input);
-  const defaultReferences = isLumaAgentsImageEngineId(model.id) || model.id === 'seedream-5-0-pro' ? 0 : 1;
+  // The H3 starting frame is part of i2v. Only ref2v bills additional references.
+  const h3BaseMode = model.id === 'minimax-h3' && (input.mode === 't2v' || input.mode === 'i2v');
+  if (h3BaseMode && (input.hasVideoInput || input.inputVideoDurationSec !== undefined)) return null;
+  const defaultReferences = h3BaseMode || isLumaAgentsImageEngineId(model.id) || model.id === 'seedream-5-0-pro' ? 0 : 1;
   const gptImage = isGptImageFamilyEngineId(model.id);
   const entry = getFalEngineById(model.id);
   const mode = entry?.modes.find(candidate => candidate.mode === input.mode);
@@ -189,9 +192,9 @@ export function resolvePublicModelScenario(input: PublicModelQuoteInput): Manual
   const pricingEngine = applyEngineVariantPricing(entry!.engine, mode.mode);
   if (input.voiceControl && !pricingEngine.pricingDetails?.addons?.voice_control) return null;
   const audio = input.voiceControl ? true : input.audio;
-  const references = manualTariffReferenceCounts(entry!, mode.mode);
-  if (input.referenceImageCount !== undefined && !references.values.includes(input.referenceImageCount)
-    && !(references.values.includes(undefined) && input.referenceImageCount === 1)) return null;
+  const referenceCounts = h3BaseMode ? [0] : manualTariffReferenceCounts(entry!, mode.mode).values;
+  if (input.referenceImageCount !== undefined && !referenceCounts.includes(input.referenceImageCount)
+    && !(referenceCounts.includes(undefined) && input.referenceImageCount === 1)) return null;
   if (input.hasVideoInput !== undefined && typeof input.hasVideoInput !== 'boolean') return null;
   const hasVideoInput = input.hasVideoInput ?? (['v2v', 'extend'].includes(input.mode) || (input.inputVideoDurationSec ?? 0) > 0);
   const klingV4 = model.id === 'kling-v4';

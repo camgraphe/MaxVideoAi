@@ -66,6 +66,22 @@ test('public quotes select exact bounded references and preserve the default Lum
   assert.equal(resolvePublicModelScenario({ ...luma, referenceImageCount: 1.5 }), null);
 });
 
+test('MiniMax H3 base modes use the zero-extra-reference tariff with or without an explicit count', () => {
+  for (const mode of ['t2v', 'i2v']) {
+    const input = { modelId: 'minimax-h3', mode, resolution: '2K', durationSec: 10, aspectRatio: '16:9', audio: true };
+    const base = resolvePublicModelScenario(input);
+    assert.ok(base);
+    assert.equal(base.selector.referenceImageCount, '0');
+    assert.deepEqual(resolvePublicModelScenario({ ...input, referenceImageCount: 0 })?.selector, base.selector);
+    assert.equal(resolvePublicModelScenario({ ...input, referenceImageCount: 1 }), null);
+    assert.equal(resolvePublicModelScenario({ ...input, hasVideoInput: true }), null);
+    assert.equal(resolvePublicModelScenario({ ...input, inputVideoDurationSec: 4 }), null);
+  }
+  const reference = resolvePublicModelScenario({ modelId: 'minimax-h3', mode: 'ref2v', resolution: '2K',
+    durationSec: 10, aspectRatio: '16:9', referenceImageCount: 2 });
+  assert.equal(reference?.selector.referenceImageCount, '2');
+});
+
 test('public scenario resolution uses supported video and image selectors only', () => {
   const video = resolvePublicModelScenario({ modelId: 'seedance-2-0-mini', mode: 't2v', durationSec: 5,
     resolution: '720p', audio: false });
