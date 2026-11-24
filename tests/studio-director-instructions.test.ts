@@ -18,14 +18,62 @@ test('legacy assistance explains its introductory allowance while export help fo
 
 test('mobile Studio guides people to the phone workspaces and identifies web Studio actions', () => {
   const instructions = buildStudioDirectorInstructions({clientSurface:'mobile'});
-  assert.match(instructions, /Add references.*Choose a photo or Library.*send/);
+  assert.match(instructions, /Add references.*if grouped, Photos\/Videos → camera, Phone gallery or MaxVideoAI library/);
+  assert.match(instructions, /Audio → file, mic or library/);
+  assert.match(instructions, /Older menu: Choose a video \/ Choose a photo by type, or Library if shown/);
+  assert.match(instructions, /× Remove \[name\] keeps draft text; \+ attach new file, then send. No copy, screenshot or model needed/);
   assert.doesNotMatch(instructions, /Add to conversation/);
   assert.match(instructions, /Video, Image or Audio/);
-  assert.match(instructions, /Video > Modify uses a phone clip/);
-  assert.match(instructions, /confirm the displayed price with the generation button if shown/);
-  assert.match(instructions, /otherwise open the same project in web Studio/);
-  assert.match(instructions, /Specialized recipes, timeline editing and export use web Studio/);
+  assert.match(instructions, /Modify edits a clip, Extend continues/);
+  assert.match(instructions, /confirm price via generation button if shown/);
+  assert.match(instructions, /else same project in web Studio/);
+  assert.match(instructions, /Join\/export\/specialized recipes: web only/);
   assert.doesNotMatch(instructions, /drag to Message Milo/);
+});
+
+test('Studio extension guidance follows this project’s timeline and export tools on web and phone', async () => {
+  for (const clientSurface of [undefined, 'mobile'] as const) {
+    for (const editingEnabled of [false, true]) {
+      for (const exportsEnabled of [false, true]) {
+        const director = createStudioConversationDirector({
+          clientSurface, mediaEnabled: true, editingEnabled, exportsEnabled, assistanceCreditsEnabled: true,
+          createResponse: async params => {
+            const rules = String(params.instructions);
+            const tools = params.tools?.flatMap(tool => tool.type === 'function' ? [tool.name] : []) ?? [];
+            assert.ok(rules.replace(MILO_SCOPE_INSTRUCTIONS, '').length < 8500, 'Keep extension help within the existing director budget.');
+            assert.match(rules, /model_details.*extend mode, extensionOutput=continuation returns only the new clip.*absent means unverified/);
+            assert.equal(tools.includes('timeline_read'), editingEnabled);
+            assert.equal(tools.includes('timeline_edit'), editingEnabled);
+            assert.equal(tools.includes('export_prepare'), exportsEnabled);
+            assert.equal(rules.includes('check the same project’s web timeline'), editingEnabled);
+            assert.equal(rules.includes('already be placed. Add only missing clips in order'), editingEnabled);
+            assert.equal(rules.includes('Do not suggest assembling clips'), !editingEnabled);
+            assert.equal(rules.includes('offer a web export once the saved sequence contains the requested clips'), exportsEnabled);
+            assert.equal(rules.includes('Do not offer a sequence export'), !exportsEnabled);
+            if (clientSurface === 'mobile') {
+              assert.match(rules, /Save copies only this file to your chosen folder/);
+              assert.match(rules, /Share downloads it and opens the system share sheet/);
+              assert.match(rules, /Options vary. Never assume Photos, Gallery or Downloads/);
+              assert.match(rules, /Join\/export\/specialized recipes: web only/);
+            } else {
+              assert.doesNotMatch(rules, /Save copies only this file|system share sheet|Older menu|Phone gallery/);
+            }
+            return {id: 'extension-help', model: 'gpt-6-luna', status: 'completed', service_tier: 'default',
+              usage: null, output: [], output_text: '{"reply":"Fixture reply."}'};
+          },
+          model: 'gpt-6-luna',
+        });
+        const result = await director({
+          message: 'Por ahora solo quiero guardar la continuación. Si pulso Save en su ficha de Library, ¿qué archivo se guarda y dónde?',
+          project: {name: 'Wan 3', revision: 1, memory: {revision: 0, brief: '', decisions: []}},
+          history: [{message: '¿Puedo guardar el original y la continuación de Wan 3 en un solo vídeo?', reply: 'Son dos clips en el proyecto.'}],
+          references: [], checkpoint: async (_, create) => create(),
+          execute: async () => { throw new Error('This guidance fixture cannot change the project.'); },
+        });
+        assert.equal(result.reply, 'Fixture reply.');
+      }
+    }
+  }
 });
 
 // These are the request-envelope contracts, not a claim to test artistic judgment.

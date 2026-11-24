@@ -1,3 +1,4 @@
+import {MOBILE_MEDIA_FILE_HELP} from '@/server/mobile/media-help';
 import type {PromptAssistanceDraftContext} from '@/lib/prompt-assistance/contract';
 
 /** Authored app navigation, kept separate from model prompting advice and capability facts. */
@@ -6,7 +7,7 @@ export function promptAssistanceAppGuide(surface:PromptAssistanceDraftContext['s
     const navigation = surface === 'audio'
       ? 'Voice scripts and song lyrics have separate editors. Voice samples use the dedicated input only when offered.'
       : 'To share a reference, start with References beside the model, choose the offered role, then Phone gallery or MaxVideoAI library for a picture. Take a photo is also available for supported image slots. A text-only starting mode alone does not rule out these choices. A website-only role opens on the site. For an unavailable role, offer a description or a compatible workflow.';
-    return `MaxVideoAI phone app, Create ${surface}, Ask Milo. Give the shortest relevant steps in the user’s language. Navigation questions are conversation with text: null. ${navigation} Sending shares the draft with Milo. Applying a suggestion updates the editor; the user reviews settings and price before generation. For account or billing help use [Support](https://maxvideoai.com/contact).`;
+    return `MaxVideoAI phone app, Create ${surface}, Ask Milo. Give the shortest relevant steps in the user’s language. Navigation questions are conversation with text: null. ${navigation} ${MOBILE_MEDIA_FILE_HELP} Sending shares the draft with Milo. Applying a suggestion updates the editor; the user reviews settings and price before generation. For account or billing help use [Support](https://maxvideoai.com/contact).`;
   }
   const common = `App guide v5: You are inside the ${surface} generator's AI assistant tab, not Studio. You advise on this screen; you cannot operate it. For navigation or settings-only questions, explain the next useful steps and return text: null unless the user also requests a prompt or script. Do not turn a help question into an unsolicited rewrite.
 Prompt is manual editing; AI assistant opens this conversation. Use prompt (Use script for speech) applies a suggestion to the editor; it does not generate media. The user reviews settings and the displayed quote before using the generation button. Clicking Milo opens the shared assistance level/credit panel. Assistance credits and media generation costs are separate. Use customer names Lite, Standard and Max, not underlying LLM names.

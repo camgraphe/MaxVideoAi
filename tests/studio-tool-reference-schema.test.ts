@@ -73,6 +73,15 @@ for (const tool of scopedTools) {
   });
 }
 
+test('only the video tool accepts null framing and new calls must use a well-formed ratio or null', () => {
+  const validate = compile(studioToolReferenceProperties('video_prepare', videoTool.properties, references));
+  const payload = videoParameters({type: 'asset', kind: 'video', assetId: video});
+  for (const aspectRatio of [null, '9:16', 'auto']) assert.equal(validate({...payload, aspectRatio}).valid, true);
+  for (const aspectRatio of ['', 'portrait', '0:9']) assert.equal(validate({...payload, aspectRatio}).valid, false);
+  const imageTool = STUDIO_DIRECTOR_TOOLS.find(tool => tool.name === 'image_prepare')!;
+  assert.equal(compile(imageTool.properties)({...parameters('image_prepare', []), aspectRatio: null}).valid, false);
+});
+
 test('context enrichment never mutates or freezes the shared original tool properties', () => {
   const before = structuredClone(tools);
   function freezeState(value: unknown): boolean[] {
