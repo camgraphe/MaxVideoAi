@@ -147,9 +147,9 @@ test('Kling Edit rejects each unsupported source side before pricing and leaves 
     }),
     listPublicEngines: async () => [kling],
   };
-  const mobile = { authMethod: 'mobile-session' as const, userId: 'owner', clientId: null };
-  for (const [width, height] of [[854, 480], [480, 854], [3841, 2160]]) {
-    for (const actor of [studio, mobile, oauth]) {
+  const toolbox = { authMethod: 'toolbox-session' as const, userId: 'owner', clientId: null };
+  for (const [width, height] of [[854, 480], [480, 854], [3841, 2160], [2160, 3841]]) {
+    for (const actor of [studio, toolbox, oauth]) {
       await assert.rejects(readGenerationPricing(request, actor, { ...deps,
         resolveGenerationReferences: async () => [{ ...source, width, height }],
       }), (error: unknown) => {
