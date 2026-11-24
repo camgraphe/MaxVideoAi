@@ -245,6 +245,39 @@ test('owned upload and saved output use identical bounded pixels for count and d
   await prepareStudioReferenceImages(actor.userId, [external], async () =>
     assert.fail('external URL must not be fetched by Studio'),
   );
+  await f.pool.query("UPDATE app_jobs SET hidden=false WHERE job_id='vision-job'");
+  const recall = {...f.input('standard','Compare Image 1 and Image 2.'), references:[]};
+  const beforeRecall = reads.length;
+  await service.enqueue(recall,'mobile');
+  await runStudioTaskWorkerOnce(worker);
+  assert.equal((await service.read(recall.requestId)).state,'completed');
+  assert.deepEqual(reads.slice(beforeRecall),keys);
+  const [storedRecall] = (await f.pool.query('SELECT input_json,draft_json FROM studio_image_turns WHERE request_id=$1',[recall.requestId])).rows;
+  assert.deepEqual(storedRecall.input_json.references,[]);
+  assert.deepEqual(storedRecall.draft_json.recalledReferences.map((ref: {assetId:string})=>ref.assetId),ids);
+  for (const [message,expected] of [
+    ['Ignore Image 1, utilise Image 2.', [keys[1]]],
+    ['N’utilise pas Image 1.', []],
+  ] as const) {
+    const next = {...f.input('standard',message),references:[]};
+    const start = reads.length;
+    let countedInput: string | undefined;
+    await service.enqueue(next,'mobile');
+    await runStudioTaskWorkerOnce({...worker,serviceOptions:{
+      countInputTokens:async params=>{
+        countedInput = JSON.stringify(studioTokenCountInput(params).input);
+        assert.equal(countedInput.match(/data:image\/jpeg;base64,/g)?.length??0,expected.length);
+        return 500;
+      },
+      createActionResponse:async params=>{
+        assert.equal(JSON.stringify(params.input),countedInput);
+        return {id:randomUUID(),model:params.model!,status:'completed',service_tier:'default',
+          usage:{input_tokens:500,output_tokens:5,input_tokens_details:{cached_tokens:0}},output:[],output_text:JSON.stringify({reply:'Entendu.'})};
+      },
+    }});
+    assert.equal((await service.read(next.requestId)).state,'completed');
+    assert.deepEqual(reads.slice(start),expected);
+  }
   const tooMany = Array.from({ length: 9 }, () => image(urls[0]));
   await assert.rejects(
     prepareStudioReferenceImages(actor.userId, tooMany, async () => 'x'.repeat(2 * 1024 * 1024)),
