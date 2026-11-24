@@ -6,8 +6,9 @@ import type { ExampleGalleryVideo, ExampleSort } from './examples-gallery-types'
 type ReaderVideo = Pick<ExampleGalleryVideo, 'id' | 'href'>;
 type Window = { items: readonly ReaderVideo[]; offset: number; hasMore: boolean };
 type Pagination = { offset: number; sort: ExampleSort; engineFilter?: string | null; locale: string };
+type ReaderOptions = { pagination?: Pagination; keepPageUrl?: boolean };
 
-export function useGalleryReader(videos: readonly ReaderVideo[], pagination?: Pagination) {
+export function useGalleryReader(videos: readonly ReaderVideo[], { pagination, keepPageUrl = false }: ReaderOptions = {}) {
   const token = useId();
   const offset = pagination?.offset ?? 0;
   const hasMore = Boolean(pagination) && videos.length === 24;
@@ -22,9 +23,11 @@ export function useGalleryReader(videos: readonly ReaderVideo[], pagination?: Pa
     remembered.current.set(id, nextWindow);
     setWindow(nextWindow); setSelected(id); setNavigationError(false);
     const state = { ...globalThis.window.history.state, exampleReader: { token, id } };
-    const url = nextWindow.items.find(video => video.id === id)?.href ?? `/video/${encodeURIComponent(id)}`;
+    const url = keepPageUrl ? undefined : (
+      nextWindow.items.find(video => video.id === id)?.href ?? `/video/${encodeURIComponent(id)}`
+    );
     globalThis.window.history[push ? 'pushState' : 'replaceState'](state, '', url);
-  }, [token]);
+  }, [keepPageUrl, token]);
   const open = useCallback((video: ReaderVideo) => {
     const alreadyOpen = globalThis.window.history.state?.exampleReader?.token === token;
     navigate(video.id, { items: videos, offset, hasMore }, !alreadyOpen);

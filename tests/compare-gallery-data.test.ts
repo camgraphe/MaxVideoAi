@@ -48,7 +48,7 @@ test('comparison gallery does not substitute another model when no examples exis
 test('comparison media remains optional, prelaunch-gated and reader-owned', () => {
   const root = 'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/';
   const loader=readFileSync(root+'_lib/compare-gallery-loader.ts','utf8');
-  assert.ok(loader.indexOf('if (isPrelaunch) return []') < loader.indexOf('await listPlaylistVideos'));
+  assert.ok(loader.indexOf('if (isPrelaunch) return []') < loader.indexOf('await listWatchablePlaylistVideos'));
   assert.match(loader, /catch\s*\{[\s\S]*return \[\]/);
   const card=readFileSync(root+'_components/CompareGalleryCard.client.tsx','utf8');
   assert.match(card, /useExampleCardPlayback/);
@@ -60,7 +60,7 @@ test('comparison media remains optional, prelaunch-gated and reader-owned', () =
   assert.match(galleries, /<CompareGalleryReader\b/);
   const reader = readFileSync(root + '_components/CompareGalleryReader.client.tsx', 'utf8');
   assert.match(reader, /dynamic\(\(\) => import\('@\/components\/examples\/ExampleReader\.client'\)/);
-  assert.match(reader, /useGalleryReader\(videos\)/);
+  assert.match(reader, /useGalleryReader\(videos, \{ keepPageUrl: true \}\)/);
   const content=readFileSync(root+'_components/CompareDetailContent.tsx','utf8');
   assert.ok(content.indexOf('<CompareEngineHeroCards') < content.indexOf('<CompareModelGalleries'));
   assert.ok(content.indexOf('<CompareModelGalleries') < content.indexOf('<CompareScorecardSection'));

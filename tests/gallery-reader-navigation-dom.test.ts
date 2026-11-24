@@ -15,7 +15,7 @@ test('reader crosses a page in both directions, uses watch URLs with gallery his
   saved.set(key,Object.getOwnPropertyDescriptor(globalThis,key));Object.defineProperty(globalThis,key,{configurable:true,writable:true,value});
  }
  const videos=cards(24);let observed!:ReturnType<typeof useGalleryReader>;
- function Fixture(){observed=useGalleryReader(videos,{offset:24,sort:'playlist',engineFilter:'wan',locale:'fr'});return null;}
+ function Fixture(){observed=useGalleryReader(videos,{pagination:{offset:24,sort:'playlist',engineFilter:'wan',locale:'fr'}});return null;}
  const root=createRoot(dom.window.document.getElementById('root')!);
  try{
   await act(async()=>root.render(React.createElement(Fixture)));
@@ -38,7 +38,7 @@ test('reader crosses a page in both directions, uses watch URLs with gallery his
  }finally{await act(async()=>root.unmount());dom.window.close();for(const [key,descriptor] of saved){if(descriptor)Object.defineProperty(globalThis,key,descriptor);else Reflect.deleteProperty(globalThis,key);}}
 });
 
-test('comparison reader walks its fixed list using one history entry', async () => {
+test('comparison reader walks its fixed list under the original comparison URL', async () => {
   const comparison = '/fr/comparatif/left-vs-right#examples';
   const dom = new JSDOM('<div id="root"></div>', { url: `http://localhost${comparison}` });
   const requests: string[] = [];
@@ -59,14 +59,15 @@ test('comparison reader walks its fixed list using one history entry', async () 
   const videos = [{ id: 'left', href: '/video/first' }, { id: 'right', href: '/video/second' }];
   let reader!: ReturnType<typeof useGalleryReader>;
   function Fixture() {
-    reader = useGalleryReader(videos);
+    reader = useGalleryReader(videos, { keepPageUrl: true });
     return null;
   }
   const root = createRoot(dom.window.document.getElementById('root')!);
   try {
     await act(async () => root.render(React.createElement(Fixture)));
     await act(async () => reader.open(videos[0]));
-    assert.equal(dom.window.location.pathname, '/video/first');
+    assert.equal(reader.selected, 'left');
+    assert.equal(dom.window.location.pathname + dom.window.location.hash, comparison);
     assert.equal(reader.canPrevious, false);
     await act(async () => reader.step(-1));
     assert.deepEqual(requests, [], 'a fixed list never fetches catalog pages');
@@ -74,7 +75,7 @@ test('comparison reader walks its fixed list using one history entry', async () 
     await act(async () => reader.open(videos[0]));
     await act(async () => reader.step(1));
     assert.equal(reader.selected, 'right');
-    assert.equal(dom.window.location.pathname, '/video/second');
+    assert.equal(dom.window.location.pathname + dom.window.location.hash, comparison);
     assert.equal(reader.canNext, false);
     assert.equal(dom.window.history.length, 2);
 

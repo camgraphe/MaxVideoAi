@@ -17,7 +17,7 @@ export const CompareGalleryReaderContext = createContext<ReaderContext | null>(n
 export function CompareGalleryReader({ videos, locale, children }: {
   videos: ComparisonVideo[]; locale: AppLocale; children: ReactNode;
 }) {
-  const reader = useGalleryReader(videos);
+  const reader = useGalleryReader(videos, { keepPageUrl: true });
   const selected = videos.find(video => video.id === reader.selected);
   return (
     <CompareGalleryReaderContext.Provider value={{ isOpen: Boolean(selected), open: reader.open }}>

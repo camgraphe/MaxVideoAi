@@ -167,6 +167,11 @@ export async function listPlaylistVideos(slug: string, limit: number, curationSc
   return listPlaylistVideosWithOptions({ slug, limit }, curationScope);
 }
 
+export async function listWatchablePlaylistVideos(slug: string, limit: number): Promise<GalleryVideo[]> {
+  if (shouldSkipBuildTimeMarketingVideoQueries()) return [];
+  return listPlaylistVideosWithOptions({ slug, limit, requirePlayableSource: true });
+}
+
 /** An explicitly managed empty playlist suppresses model-page marketing fallbacks. */
 export async function listModelExamplePlaylist(slug: string, limit: number) {
   if (shouldSkipBuildTimeMarketingVideoQueries()) return { videos: [], managed: false };

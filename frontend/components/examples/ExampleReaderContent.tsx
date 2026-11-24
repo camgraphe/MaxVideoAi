@@ -48,7 +48,7 @@ export function ExampleReaderContent({ detail, copy, locale, navigation, onClose
   const comparisonNote = !detail.scenario ? copy.proposedNote : detail.quotes.some(quote => quote.changed.length > 0) ? copy.compareNote : null;
 
   return <>
-    <PublicVideoAnalytics key={detail.id} videoId={detail.id} watchPath={detail.watchHref} analyticsPath={detail.analyticsPath}/>
+    {!onComparisonPlayback && <PublicVideoAnalytics key={detail.id} videoId={detail.id} watchPath={detail.watchHref} analyticsPath={detail.analyticsPath}/>}
     {navigation && <nav className={styles.playerNavigation} aria-label={copy.reader}>
       <span>{copy.reader}</span>
       <div>

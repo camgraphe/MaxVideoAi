@@ -20,9 +20,12 @@ export function DiscoveryVideoPlayer({ detail, copy, surface = 'watch', onCompar
   const isComparison = Boolean(onComparisonPlayback);
   const controls = usePublicVideoControls(
     detail.videoUrl, isComparison ? 'comparison' : 'watch', isComparison ? 'original' : 'auto', undefined, () => {
-      if (onComparisonPlayback && trackedComparison.current !== detail.id) {
-        trackedComparison.current = detail.id;
-        onComparisonPlayback();
+      if (onComparisonPlayback) {
+        if (trackedComparison.current !== detail.id) {
+          trackedComparison.current = detail.id;
+          onComparisonPlayback();
+        }
+        return;
       }
       if (detail.analyticsPath && trackedPath.current !== detail.analyticsPath && trackPublicVideoPlay(detail.analyticsPath, surface)) {
         trackedPath.current = detail.analyticsPath;
