@@ -18,6 +18,13 @@ export type VideoOperationCaps = {
   endpoint?: string;
 };
 const KLING_OMNI_IDS = new Set(['kling-o3-standard', 'kling-o3-pro', 'kling-o3-4k']);
+const KLING_EDIT_MIN_SOURCE_SIDE = 720;
+const KLING_EDIT_MAX_SOURCE_SIDE = 3840;
+export const KLING_EDIT_SOURCE_DIMENSIONS_MESSAGE = {
+  en: `Kling Edit requires verified source dimensions between ${KLING_EDIT_MIN_SOURCE_SIDE} and ${KLING_EDIT_MAX_SOURCE_SIDE} pixels on each side.`,
+  fr: `Pour utiliser Kling Edit, choisissez une vidéo source dont la largeur et la hauteur sont comprises entre ${KLING_EDIT_MIN_SOURCE_SIDE} et ${KLING_EDIT_MAX_SOURCE_SIDE} pixels.`,
+  es: `Para usar Kling Edit, elige un vídeo de origen cuyo ancho y alto estén entre ${KLING_EDIT_MIN_SOURCE_SIDE} y ${KLING_EDIT_MAX_SOURCE_SIDE} píxeles.`,
+} as const;
 
 /** Omission is intentionally not normalized to Reference: old JSON and receipts stay stable. */
 export function normalizeVideoOperation(engineId: string, mode: string, value: unknown): VideoOperation | undefined {
@@ -137,8 +144,9 @@ export function validateKlingEditSource(source: { durationSec?: number | null; w
 }
 
 export function validateKlingEditSourceDimensions(source: { width?: number | null; height?: number | null }): string | undefined {
-  if (![source.width, source.height].every(side => typeof side === 'number' && Number.isFinite(side) && side >= 720 && side <= 3840)) {
-    return 'Kling Edit requires verified source dimensions between 720 and 3840 pixels on each side.';
+  if (![source.width, source.height].every(side => typeof side === 'number' && Number.isFinite(side)
+    && side >= KLING_EDIT_MIN_SOURCE_SIDE && side <= KLING_EDIT_MAX_SOURCE_SIDE)) {
+    return KLING_EDIT_SOURCE_DIMENSIONS_MESSAGE.en;
   }
   return undefined;
 }

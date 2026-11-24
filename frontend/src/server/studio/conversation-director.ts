@@ -26,6 +26,7 @@ import {studioCurrentComparisonReply} from './conversation-current-comparison-re
 import {studioGreetingReply,studioExplicitFilmDuration,studioLongPromptDraft,studioSelectedFilmPlan} from './conversation-intent';
 import {studioFilmComparisonReply} from './conversation-film-reply';
 import {studioConversationLanguage,studioOutputLimitMessage} from './conversation-language';
+import {KLING_EDIT_SOURCE_DIMENSIONS_MESSAGE} from '@/lib/video-operation';
 import {studioFailedFilmComparisonReply} from './conversation-comparison-failure';
 
 export type StudioDirectorResponse = Pick<Response, 'id' | 'model' | 'status' | 'service_tier' | 'usage' | 'output_text'> & {output: Response['output'];incomplete_details?: Response['incomplete_details']};
@@ -65,7 +66,12 @@ function overlongDirectorReply(completedEdits:number,locale:'en'|'fr'|'es'):Imag
   return {image:null,reply:message,continuation:{reason:'output_limit',completedEdits,lastError:{code:'STUDIO_REPLY_TOO_LONG',message}}};
 }
 function pendingDirectorReply(reason: 'action_limit'|'output_limit',completedEdits: number,lastResult?: StudioActionResult,correctionRejected = false,locale:'en'|'fr'|'es'='en'): ImageDraft {
-  const lastError = lastResult && !lastResult.ok ? {code: lastResult.error.code,message: lastResult.error.message.slice(0,800)} : undefined;
+  const error = lastResult?.ok === false ? lastResult.error : undefined;
+  // Match only the canonical diagnostic on a recognized correction receipt, including saved receipts.
+  const guidance = reason === 'action_limit' && lastResult?.action === 'video.prepare'
+    && error?.code === 'REFERENCE_INVALID' && error.message === KLING_EDIT_SOURCE_DIMENSIONS_MESSAGE.en
+    && isStudioPreparationCorrection(lastResult) ? KLING_EDIT_SOURCE_DIMENSIONS_MESSAGE[locale] : undefined;
+  const lastError = error ? {code: error.code,message: guidance ?? error.message.slice(0,800)} : undefined;
   if(locale!=='en'){
     const saved=completedEdits?(locale==='fr'?`${completedEdits} modification(s) de la timeline enregistrée(s). `:`${completedEdits} cambio(s) guardado(s) en la línea de tiempo. `):'';
     const text=reason==='output_limit'?studioOutputLimitMessage[locale]:locale==='fr'
@@ -73,10 +79,11 @@ function pendingDirectorReply(reason: 'action_limit'|'output_limit',completedEdi
         :'Cette demande a atteint sa limite de travail ou de réponse. Le travail enregistré est conservé, mais la demande complète reste à terminer. Précisez la prochaine étape à réaliser.'
       : correctionRejected?'La preparación y su corrección han sido rechazadas. No se ha creado un nuevo presupuesto. Hay que elegir ajustes compatibles con las opciones del modelo y los medios seleccionados antes de continuar.'
         :'Esta solicitud alcanzó su límite de trabajo o de respuesta. El trabajo guardado se conserva, pero la solicitud completa sigue pendiente. Indica el siguiente paso que quieres realizar.';
-    return {image:null,continuation:{reason,completedEdits,...(lastError?{lastError}:{})},reply:projectStudioReply(saved+text)};
+    return {image:null,continuation:{reason,completedEdits,...(lastError?{lastError}:{})},
+      reply:projectStudioReply(saved+(guidance ? guidance+' ' : '')+text)};
   }
   const saved = completedEdits ? `Saved ${completedEdits} timeline edit${completedEdits === 1 ? '' : 's'}. ` : '';
-  const failure = lastError ? `The last action failed (${lastError.code}): ${lastError.message} ` : '';
+  const failure = guidance ? guidance+' ' : lastError ? `The last action failed (${lastError.code}): ${lastError.message} ` : '';
   const limit = correctionRejected ? 'The single preparation correction was also rejected.'
     : 'This message reached its action limit.';
   return {image: null,continuation: {reason,completedEdits,...(lastError ? {lastError} : {})},
