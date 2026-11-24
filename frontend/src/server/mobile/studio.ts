@@ -5,7 +5,7 @@ import { MILO_LEVELS, miloLevelForModel, studioAssistantModelSchema } from '@/li
 import { STUDIO_CONVERSATION_TASK_BUDGET, STUDIO_TASK_POLICY_VERSION, STUDIO_TASK_PROFILES } from '@/lib/studio/task-budget-contract';
 import { studioProjectNameSchema } from '@/lib/studio/conversation-project-title';
 import type { ImageConversationTurn } from '@/lib/studio/image-conversation-contract';
-import type { StudioAllowance, StudioJournal, StudioReference } from '@/lib/mobile-studio';
+import { STUDIO_AUTO_LITE_HEADER, type StudioAllowance, type StudioJournal, type StudioReference } from '@/lib/mobile-studio';
 import { readBoundedJsonBody } from '@/server/read-bounded-json-body';
 import { resolveStudioApiAccess } from '@/server/studio/access';
 import {
@@ -82,14 +82,10 @@ async function readAllowance(userId: string): Promise<StudioAllowance | null> {
   const status = await readStudioAssistanceStatus(userId);
   if (!status.enabled || !status.canContinue || status.unresolvedCalls || !status.credits) return null;
   const level = miloLevelForModel(status.selectedModel);
-  if (
-    level === 'lite'
-      ? !status.sponsoredAvailable
-      : status.credits.included.remaining + (status.paid.enabled ? status.credits.purchased.remaining : 0) <=
-        0
-  )
-    return null;
+  const remaining = status.credits.included.remaining + (status.paid.enabled ? status.credits.purchased.remaining : 0);
+  if (level === 'lite' ? !status.sponsoredAvailable : remaining <= 0) return null;
   return {
+    ...(level !== 'lite' && remaining <= status.credits.included.total / 10 ? { lowCreditsRemaining: remaining } : {}),
     model: status.selectedModel,
     label: MILO_LEVELS[level].label,
     revision: status.revision,
@@ -161,11 +157,13 @@ export function handleMobileStudio(
         projectId: journal.projectId,
         projectName: journal.projectName,
         allowance,
-        turns: journal.turns.map(({ requestId, message, references, attachments, referenceMentions, reply, state, task, quote }) => ({
+        turns: journal.turns.map(({ requestId, message, references, attachments, referenceMentions, reply, state, task, taskBudget, quote }) => ({
           requestId,
           message,
           media: turnMedia({ references, attachments, referenceMentions }),
           reply,
+          ...(task?.model === MILO_LEVELS.lite.model && taskBudget?.model &&
+            taskBudget.model !== MILO_LEVELS.lite.model ? { continuedWithLite: true as const } : {}),
           state: task?.state === 'paused' ? 'paused' : state,
           quote: quote
             ? {
@@ -218,7 +216,7 @@ export function handleMobileStudio(
         model: input.model,
         assistanceRevision: input.assistanceRevision,
       },
-    }, 'mobile').catch(error => {
+    }, 'mobile', req.headers.get(STUDIO_AUTO_LITE_HEADER) === '1').catch(error => {
       if (error instanceof Error && ['MEDIA_NOT_AVAILABLE','MEDIA_DELETED'].includes(error.message))
         throw new MobileHttpError('REFERENCE_INVALID', 422, 'A reference is no longer available.');
       throw error;

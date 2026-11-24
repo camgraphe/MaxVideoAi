@@ -2,7 +2,9 @@ import type { StudioAssistantModel } from './studio/assistance-contract';
 
 export type StudioReference = { assetId: string; kind: 'image' | 'video' | 'audio' };
 export type StudioProject = { id: string; name: string; updatedAt: string };
+export const STUDIO_AUTO_LITE_HEADER = 'x-maxvideoai-studio-auto-lite';
 export type StudioAllowance = {
+  lowCreditsRemaining?: number;
   model: StudioAssistantModel;
   label: string;
   revision: number;
@@ -12,6 +14,7 @@ export type StudioAllowance = {
   customerMaxCredits: number;
 };
 export type StudioMessage = {
+  continuedWithLite?: true;
   requestId: string;
   message: string;
   media?: StudioReference[];
