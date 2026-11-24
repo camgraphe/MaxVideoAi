@@ -7,7 +7,7 @@ import { MILO_LEVELS, miloLevelForModel, studioAssistantModelSchema } from '@/li
 import { STUDIO_CONVERSATION_TASK_BUDGET, STUDIO_TASK_POLICY_VERSION, STUDIO_TASK_PROFILES } from '@/lib/studio/task-budget-contract';
 import { studioProjectNameSchema } from '@/lib/studio/conversation-project-title';
 import type { ImageConversationTurn } from '@/lib/studio/image-conversation-contract';
-import { studioReferenceLabel, studioReferenceOrdinal, type StudioAllowance, type StudioJournal, type StudioReference } from '@/lib/mobile-studio';
+import { STUDIO_AUTO_LITE_HEADER, studioReferenceLabel, studioReferenceOrdinal, type StudioAllowance, type StudioJournal, type StudioReference } from '@/lib/mobile-studio';
 import { readBoundedJsonBody } from '@/server/read-bounded-json-body';
 import { resolveStudioApiAccess } from '@/server/studio/access';
 import {
@@ -26,6 +26,8 @@ import type { StudioGenerationActor } from '@/server/agent-api/generation-actor'
 import { studioConversationEditingEnabled } from '@/app/api/studio/_lib/studio-conversation-editing-handler';
 import { MobileHttpError, mobileResponse } from './http';
 import { readMobileStudioPhotos } from './studio-photos';
+import { mobileStudioReviewTurns, renewMobileStudioQuote, studioRenewInput } from './studio-renewal';
+import { readStudioProjectReferenceOrdinals } from '@/server/studio/project-reference-registry';
 
 const nameInput = z.object({ name: studioProjectNameSchema, idempotencyKey: z.string().uuid() });
 const createInput = nameInput.extend({ action: z.literal('create') }).strict();
@@ -51,7 +53,7 @@ const messageInput = z
     customerMaxCredits: z.number().int().nonnegative(),
   })
   .strict();
-const projectInput = z.discriminatedUnion('action', [renameInput, deleteInput, messageInput, studioConfirmInput]);
+const projectInput = z.discriminatedUnion('action', [renameInput, deleteInput, messageInput, studioConfirmInput, studioRenewInput]);
 const customerCeiling = (model: StudioAllowance['model'], maxCredits: number) =>
   miloLevelForModel(model) === 'lite' ? 0 : maxCredits;
 
@@ -88,14 +90,10 @@ async function readAllowance(userId: string): Promise<StudioAllowance | null> {
   const status = await readStudioAssistanceStatus(userId);
   if (!status.enabled || !status.canContinue || status.unresolvedCalls || !status.credits) return null;
   const level = miloLevelForModel(status.selectedModel);
-  if (
-    level === 'lite'
-      ? !status.sponsoredAvailable
-      : status.credits.included.remaining + (status.paid.enabled ? status.credits.purchased.remaining : 0) <=
-        0
-  )
-    return null;
+  const remaining = status.credits.included.remaining + (status.paid.enabled ? status.credits.purchased.remaining : 0);
+  if (level === 'lite' ? !status.sponsoredAvailable : remaining <= 0) return null;
   return {
+    ...(level !== 'lite' && remaining <= status.credits.included.total / 10 ? { lowCreditsRemaining: remaining } : {}),
     model: status.selectedModel,
     label: MILO_LEVELS[level].label,
     revision: status.revision,
@@ -121,6 +119,7 @@ const owners = {
   remove: removeStudioConversationProject,
   journal: readJournal,
   photos: readMobileStudioPhotos,
+  referenceOrdinals: readStudioProjectReferenceOrdinals,
   conversationService,
   allowance: readAllowance,
   tasksEnabled: studioTasksEnabled,
@@ -163,26 +162,32 @@ export function handleMobileStudio(
     const actor = { authMethod: 'studio-session' as const, clientId: null, userId, projectId };
     if (req.method === 'GET') {
       if (req.nextUrl.searchParams.get('view') === 'photos') return deps.photos(actor, req.nextUrl.searchParams);
-      const [journal, allowance] = await Promise.all([
+      const labels = req.nextUrl.searchParams.get('mediaLabels') === '1';
+      const [journal, allowance, referenceOrdinals] = await Promise.all([
         deps.journal(actor, req.nextUrl.origin),
         deps.allowance(userId).catch(() => null),
+        labels ? deps.referenceOrdinals(actor) : undefined,
       ]);
       const reviewEnabled = req.nextUrl.searchParams.get('review') === '1';
-      const labels = req.nextUrl.searchParams.get('mediaLabels') === '1';
       const lang = req.nextUrl.searchParams.get('locale');
       const locale = lang === 'fr' || lang === 'es' ? lang : 'en';
       return {
         projectId: journal.projectId,
         projectName: journal.projectName,
         allowance,
-        ...(labels ? { stableReferenceLabels: true as const } : {}),
-        turns: journal.turns.map(turn => ({
+        ...(referenceOrdinals ? { stableReferenceLabels: true as const, referenceOrdinals } : {}),
+        turns: (reviewEnabled ? mobileStudioReviewTurns(journal.turns) : journal.turns).map(turn => ({
           requestId: turn.requestId,
+          ...(reviewEnabled && turn.renewedFromRequestId ? { renewedFromRequestId: turn.renewedFromRequestId } : {}),
           message: turn.message,
           media: turnMedia(turn, labels),
           reply: turn.reply,
+          ...(turn.task?.model === MILO_LEVELS.lite.model && turn.taskBudget?.model &&
+            turn.taskBudget.model !== MILO_LEVELS.lite.model ? { continuedWithLite: true as const } : {}),
           state: turn.task?.state === 'paused' ? 'paused' : turn.state,
-          quote: turn.quote ? mobileStudioQuote(turn.quote, locale, reviewEnabled) : null,
+          quote: turn.quote ? mobileStudioQuote(turn.quote, locale, reviewEnabled,
+            turn.state === 'ready' && !turn.generation &&
+            (turn.quote.summary.surface === 'image' || process.env.STUDIO_CONVERSATION_MEDIA_ENABLED === 'true')) : null,
           ...(reviewEnabled && !turn.quote && (turn.exportQuote || turn.creatorQuote || turn.analysisQuote?.confirmationRequired)
             ? { webReview: true as const }
             : {}),
@@ -193,6 +198,8 @@ export function handleMobileStudio(
     const parsed = projectInput.safeParse(await readBoundedJsonBody(req, 32768));
     if (!parsed.success) throw new SyntaxError('Invalid project command.');
     const input = parsed.data;
+    if (input.action === 'renew-generation')
+      return renewMobileStudioQuote(actor, input, deps.conversationService(actor, req.nextUrl.origin));
     if (input.action === 'confirm-generation') {
       if (req.headers.get(PRICING_POLICY_HEADER) !== LIVE_PRICING_POLICY_REVISION)
         throw new MobileHttpError('REVIEW_REQUIRED', 409, 'Review the current pricing policy.');
@@ -246,7 +253,7 @@ export function handleMobileStudio(
         model: input.model,
         assistanceRevision: input.assistanceRevision,
       },
-    }, 'mobile').catch(error => {
+    }, 'mobile', req.headers.get(STUDIO_AUTO_LITE_HEADER) === '1').catch(error => {
       if (error instanceof Error && ['MEDIA_NOT_AVAILABLE','MEDIA_DELETED'].includes(error.message))
         throw new MobileHttpError('REFERENCE_INVALID', 422, 'A reference is no longer available.');
       throw error;

@@ -177,7 +177,10 @@ test('Studio phone projects, journal and reviewed messages share website ownersh
   }
   assert.equal(wake.length, 0);
   assert.equal((await route(projectId, command, foreign)).status, 404);
-  const sent = await route(projectId, command);
+  const sent = await handleMobileStudio(request(command, {...headers,'x-maxvideoai-studio-auto-lite':'1'}), projectId, {
+    access: async () => ({ok:true, userId:owner}), consentBlocked:async()=>false,
+    wake: (_kind,scope) => { wake.push(scope.requestId); },
+  });
   assert.equal(sent.status, 200);
   assert.deepEqual(await sent.json(), { projectId, requestId });
   assert.equal((await route(projectId, command)).status, 200);
@@ -193,6 +196,7 @@ test('Studio phone projects, journal and reviewed messages share website ownersh
   assert.deepEqual(wake, [requestId, requestId]);
   const { rows: [saved] } = await pg.pool.query('SELECT input_json, profile, profile_json FROM studio_tasks WHERE request_id=$1', [requestId]);
   assert.equal(saved.profile, 'standard');
+  assert.equal(saved.profile_json.explicitLiteChoice, undefined, 'replay from another client preserves the fallback policy');
   assert.equal(saved.profile_json.targetInputTokens, 64_000);
   assert.equal(saved.profile_json.maxInputTokens, 128_000);
   assert.equal(saved.input_json.clientSurface, 'mobile');
@@ -201,7 +205,9 @@ test('Studio phone projects, journal and reviewed messages share website ownersh
   assert.deepEqual(saved.input_json.attachments.map((ref: {assetId:string}) => ref.assetId), [media[0].assetId, media[2].assetId]);
   assert.deepEqual(reopened.turns[0].media, media);
   assert.equal(a.stableReferenceLabels, true);
+  assert.equal('referenceOrdinals' in reopened, false);
   const withLabels = await (await route(projectId, undefined, owner, '?mediaLabels=1')).json();
+  assert.deepEqual(withLabels.referenceOrdinals, { image: 1, video: 1, audio: 1 });
   assert.deepEqual(withLabels.turns[0].media, media.map((ref, i) => ({ ...ref, label: ['Audio 1','Image 1','Video 1'][i] })));
   const photo = media[1].assetId;
   const photoQuery = '?view=photos&asset=' + photo + '&requestId=' + requestId;
@@ -266,7 +272,10 @@ test('Studio phone projects, journal and reviewed messages share website ownersh
   assert.equal((await sendLegacy()).status, 200);
   const old = (await pg.pool.query('SELECT profile, max_credits, profile_json, input_json FROM studio_tasks WHERE request_id=$1', [legacy.requestId])).rows;
   assert.equal(old.length, 1);
+  const relabelledJournal = await (await route(otherProject.projectId, undefined, foreign, '?mediaLabels=1')).json();
+  assert.deepEqual(relabelledJournal.referenceOrdinals, { image: 7, video: 0, audio: 0 });
   assert.equal(old[0].profile, 'quick');
+  assert.equal(old[0].profile_json.explicitLiteChoice, true);
   assert.equal(old[0].max_credits, STUDIO_TASK_PROFILES.quick.maxCredits);
   assert.equal(old[0].profile_json.maxInputTokens, 12_000);
   assert.equal(old[0].profile_json.targetInputTokens, undefined);

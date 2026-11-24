@@ -1,6 +1,8 @@
 import { isKlingImageV4EngineId } from '@/lib/image/kling-image-v4';
 import { isNewSeedreamEngineId } from '@/lib/image/seedream-pricing';
 import { isSeedance25EngineId } from '@/lib/seedance-model-variants';
+import { videoOperationTariffContexts } from '@/lib/pricing-audit/video-operation-tariff-inventory';
+import { operationContinuousTariffBounds } from './video-operation-continuous-tariff';
 import { createHash } from 'node:crypto';
 
 import type { PricingSnapshot } from '@maxvideoai/pricing';
@@ -116,13 +118,28 @@ export function resolvePublicModelScenario(input: PublicModelQuoteInput): Manual
   const model = getRuntimeModelById(input.modelId);
   if (!model || !model.publication.app.published ||
       !(model.publication.pricing.published || model.publication.model.published) ||
-      !Number.isFinite(input.durationSec) || (!ltx25AudioTariffBounds(input.modelId, input.mode)
+      !Number.isFinite(input.durationSec) || (input.operation !== 'kling-edit' && !ltx25AudioTariffBounds(input.modelId, input.mode)
         && !(supportsOmniTariffMedia(input.modelId, input.mode) && input.mode !== 'extend') && !Number.isInteger(input.durationSec))
       || input.durationSec < 1 || (openTariffQuantityKey(input.modelId, input.mode) === 'durationSec'
         ? !Number.isSafeInteger(input.durationSec) : input.durationSec > 120) ||
       !input.mode || !input.resolution || (input.quantity ?? 1) !== 1) return null;
   if (input.referenceImageCount !== undefined && (!Number.isSafeInteger(input.referenceImageCount)
     || input.referenceImageCount < 0 || input.referenceImageCount > 32)) return null;
+  if (input.operation !== undefined) {
+    if (input.operation !== 'kling-edit' || input.mode !== 'v2v' || input.hasVideoInput !== true ||
+      input.inputVideoDurationSec !== input.durationSec || input.aspectRatio !== undefined ||
+      input.durationOption !== undefined || input.audio !== undefined || input.quality !== undefined ||
+      input.inputAudioDurationSec !== undefined || input.inheritedDurationSec !== undefined ||
+      input.referenceTokenBudget !== undefined || input.customImageSize !== undefined ||
+      input.voiceControl || input.hdr || input.exrExport || (input.referenceImageCount ?? 0) > 4) return null;
+    const template = videoOperationTariffContexts({ modelId: model.id, mode: input.mode })
+      .find(context => context.operation === input.operation && context.resolution === input.resolution);
+    if (!template) return null;
+    const { minimum, maximum } = operationContinuousTariffBounds(template);
+    if (input.durationSec < minimum || input.durationSec > maximum) return null;
+    return buildManualTariffCoverageScenario({ ...template, durationSec: input.durationSec,
+      inputVideoDurationSec: input.durationSec, referenceImageCount: input.referenceImageCount ?? 0 }, 'kling-edit');
+  }
   if (isNewSeedreamEngineId(model.id)) {
     const entry = getFalEngineById(model.id);
     const mode = entry?.modes.find(candidate => candidate.mode === input.mode)?.mode;
@@ -247,6 +264,7 @@ export function resolvePublicModelScenario(input: PublicModelQuoteInput): Manual
   }
   const candidates = supportedScenarios(model.id, input.mode).filter((scenario) =>
     scenario.selector.mode === input.mode &&
+    scenario.selector.operation !== 'kling-edit' &&
     scenario.selector.resolution.toLowerCase() === resolution.toLowerCase() &&
     (openKey === 'durationSec' || ltxAudioDuration || omniInherits || scenario.selector.durationSec === String(billedDuration)) &&
     (scenario.selector.referenceImageCount === undefined
@@ -345,7 +363,7 @@ export async function quotePublicModelScenario(
     const inheritsEditSource = (entry && isSeedance25EngineId(entry.id)) && mode === 'v2v'
       && resolveSeedance25ModeAvailability(entry.engine, mode)?.inheritsSourceVideo === true;
     const automatic = snapshot.meta?.seedanceAutomaticPricing as { durationRange?: { min: number; max: number }; billedDurationSec?: number } | undefined;
-    const quantityLabel = automatic?.durationRange
+    const quantityLabel = input.operation === 'kling-edit' ? `${input.inputVideoDurationSec}s source` : automatic?.durationRange
       ? `Auto (${automatic.durationRange.min}–${automatic.durationRange.max}s) · ${automatic.billedDurationSec}s price bracket`
       : getFalEngineById(input.modelId)?.category === 'image'
       ? `${seconds} image${seconds === 1 ? '' : 's'}` : inheritsEditSource
@@ -358,6 +376,7 @@ export async function quotePublicModelScenario(
     const outputEstimateLabel = snapshot.meta?.providerCostKind === 'conservative-list-output-bound'
       ? ' · conservative automatic-output estimate' : '';
     return { status: 'exact', amountCents: snapshot.totalCents, currency: snapshot.currency,
+      ...(input.operation ? {operation:input.operation} : {}),
       revision, scenarioLabel: `${input.mode} · ${quantityLabel}${sourceLabel} · ${input.resolution}${outputEstimateLabel}` };
   } catch {
     return { status: 'unavailable' };

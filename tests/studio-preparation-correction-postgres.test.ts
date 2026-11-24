@@ -9,7 +9,8 @@ import {getFalEngineById} from '../frontend/src/config/falEngines';
 import {createStudioCallRuntime} from '../scripts/qa/studio-call-runtime';
 import type {AgentPublicGenerationEngine} from '../frontend/src/server/agent-api/model-catalog';
 import {createImageConversationService} from '../frontend/src/server/studio/image-conversation-service';
-import {createStudioImageGenerationService} from '../frontend/src/server/studio/image-generation-service';
+import {renewMobileStudioQuote} from '../frontend/src/server/mobile/studio-renewal';
+import {createStudioImageGenerationService,createStudioVideoGenerationService} from '../frontend/src/server/studio/image-generation-service';
 import {chooseStudioAssistance,readStudioAssistanceStatus} from '../frontend/src/server/studio/assistance-ledger';
 import {STUDIO_ASSISTANCE_TARIFF} from '../frontend/src/lib/studio/assistance-contract';
 import {AgentApiError} from '../frontend/src/server/agent-api/errors';
@@ -352,6 +353,20 @@ test('Studio quotes only supported video framing and source-audio settings', asy
       const saved = rows[0].draft_json?.media;
       assert.ok(saved?.action === 'video.prepare');
       assert.equal(saved.aspectRatio, null);
+      const {rows:[owner]} = await getDb().query<{user_id:string}>('SELECT user_id FROM studio_projects WHERE id=$1',[id]);
+      const actor = {authMethod:'studio-session' as const,projectId:id,userId:owner.user_id,clientId:null};
+      await getDb().query("UPDATE mcp_generation_quotes SET state='expired' WHERE quote_id=$1",[turn.result!.quote!.quoteId]);
+      const service = createImageConversationService(actor,{enabled:true,actionsEnabled:true,mediaEnabled:true,
+        createActionResponse:async()=>assert.fail('Renewal cannot start a Milo call'),
+        videoGenerationFactory:(who,options)=>createStudioVideoGenerationService(who,{...options,
+          prepareDependencies:{listPublicEngines:async()=>catalog,resolveRequestExecutability:()=>({executable:true,reason:'available'})}}),
+      });
+      const mobile = await renewMobileStudioQuote(actor,{action:'renew-generation',requestId:turn.result!.requestId,
+        quoteId:turn.result!.quote!.quoteId,renewalId:randomUUID(),locale:'fr'},service);
+      assert.equal(mobile.quote.amountCents,turn.quotes[0].price_cents);
+      assert.notEqual(mobile.quote.review?.quoteId,turn.result!.quote!.quoteId);
+      assert.equal(mobile.quote.review?.requestHash,turn.result!.quote!.requestHash);
+
       assert.deepEqual(turn.counts, {jobs: 0, charges: 0});
     });
   }
