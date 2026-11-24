@@ -1,6 +1,7 @@
 export type PublicModelQuoteInput = {
   modelId: string;
   mode: string;
+  operation?: 'kling-edit';
   durationSec: number;
   durationOption?: 'auto';
   resolution: string;
@@ -21,5 +22,5 @@ export type PublicModelQuoteInput = {
 };
 
 export type PublicModelQuote =
-  | { status: 'exact'; amountCents: number; currency: string; revision: string; scenarioLabel: string }
+  | { status: 'exact'; amountCents: number; currency: string; revision: string; scenarioLabel: string; operation?: 'kling-edit' }
   | { status: 'unavailable' };
