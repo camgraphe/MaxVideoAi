@@ -55,9 +55,10 @@ for (const musicModel of ['clip', 'pro'] as const) {
 }
 
 export function studioRevisionModel(choice: string) {
-  const audio = audioChoices.get(choice);
+  const name = words(choice);
+  const audio = audioChoices.get(name);
   if (audio) return {audio};
-  const ids = spellings.get(choice);
+  const ids = spellings.get(name);
   return ids?.size === 1 ? {modelId:[...ids][0]} : undefined;
 }
 

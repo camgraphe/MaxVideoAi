@@ -17,7 +17,7 @@ import { resolveStudioMedia } from './media-resolver';
 import { studioConversationLanguage } from './conversation-language';
 import { askedToReattach, fileSetAside, offeredStudioModel, sameStudioModelChoice, studioModelChoice, studioOfferedModelId } from './conversation-model-choice';
 
-import {readStudioRevisionRequest, revisionAssetIds, studioQuoteRevision, type StudioQuoteRevision} from './conversation-quote-revision';
+import {readStudioRevisionRequest, revisionAssetIds, studioQuoteRevision, studioRevisionAlternatives, type StudioQuoteRevision} from './conversation-quote-revision';
 
 type PriorTurn = { quote_id: string | null; request_id: string; input_json: ImageTurnInput; draft_json: StoredStudioDraft };
 type Recall = { input: ImageTurnInput; sources?: StudioRecalledReference[]; selectedModelId?: string; revision?: StudioQuoteRevision; clarification?: string };
@@ -243,14 +243,14 @@ export async function recallStudioReferences(
             const matches=await findStudioProjectReferences(actor,before,[label]);
             if(matches.length!==1) return clarify(matches.length?'ambiguous':'missing');
             const next=matches[0];
-            if(sources.some(ref=>ref.assetId===next.assetId)) continue;
             const slots=sources.flatMap((ref,i)=>ref.kind===next.kind?[i]:[]);
+            if(slots.length>1) return clarifyFiles(slots.map(index=>sources[index]));
             if(slots.length!==1 || substituted.has(slots[0])) return clarify('ambiguous');
             substituted.add(slots[0]);
             sources[slots[0]]=next;
           }
           revision=studioQuoteRevision(request,prior.draft_json,modelChoice,sources,locale);
-          if (modelChoice) revision.alternative=studioQuoteRevision(request,prior.draft_json,null,sources,locale).action;
+          if (modelChoice) revision.alternatives=studioRevisionAlternatives(request,prior.draft_json,sources,locale,prior.input_json.message);
         }
       }
     }

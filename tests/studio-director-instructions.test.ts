@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {STUDIO_CONVERSATION_REPLY_MAX_CHARS} from '../frontend/src/lib/studio/conversation-reply';
 import {MILO_LEVELS} from '../frontend/src/lib/studio/assistance-contract';
+import {mentionsPersonToPreserve} from '../frontend/src/server/studio/conversation-video-edit-preference';
 import {createStudioConversationDirector} from '../frontend/src/server/studio/conversation-director';
 import {buildStudioDirectorInstructions} from '../frontend/src/server/studio/conversation-director-instructions';
 import {MILO_SCOPE_INSTRUCTIONS} from '../frontend/src/server/studio/milo-scope';
@@ -254,4 +255,12 @@ test('Studio scopes the recognizable-person edit preference to compatible video 
     await director({message,references:[...refs],history:[],project:{name:'Review',revision:1,memory:{revision:0,brief:'',decisions:[]}},
       checkpoint:async(_index,create)=>create(),execute:async()=>{throw Error('No generations');}});
   }
+});
+
+test('the quote fallback uses the recognizable-person order only with positive evidence in the saved edit',()=>{
+  for(const brief of ['Keep my face recognizable.', 'Garde mon visage et change la veste.', 'Mantén mi cara.'])
+    assert.equal(mentionsPersonToPreserve(brief),true,brief);
+  for(const brief of ['Light the shoe on a turntable.', 'Affiche publicitaire sans visage reconnaissable.', 'Show the watch face.',
+    'Product shot without a recognizable person.', 'Anuncio sin personas.'])
+    assert.equal(mentionsPersonToPreserve(brief),false,brief);
 });
