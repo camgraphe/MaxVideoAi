@@ -150,7 +150,7 @@ test('switching the model on a prepared edit reuses only the signed source, incl
   assert.equal(incompatible.quote, null);
   assert.match(incompatible.reply!, /Vidéo 2/);
   assert.match(incompatible.reply!, /modification vidéo/);
-  assert.match(incompatible.reply!, /préparer le devis avec Wan 3 Prime/);
+  assert.match(incompatible.reply!, /préparer le devis avec Wan 3 \?/);
   assert.doesNotMatch(incompatible.reply!, /rattache|rejoindre/);
   await pool.query('UPDATE media_assets SET deleted_at=now() WHERE public_id=$1', [v2]);
   const unavailable = await open().submit(message('Utilise Vidéo 2.'));

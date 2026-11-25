@@ -14,13 +14,14 @@ import {
 } from './project-reference-registry';
 import { asksForSameFile, hasVisualBrief, leavesVisualBrief, visualReplyKind } from './conversation-visual-followup';
 import { resolveStudioMedia } from './media-resolver';
+import { isStudioReferenceError, readStudioPreparationRefusals } from './tasks/preparation-refusals';
 import { studioConversationLanguage } from './conversation-language';
 import { comparisonSelection, readComparedEdit } from './conversation-comparison-choice';
 import { askedToReattach, fileSetAside, offeredStudioModel, sameStudioModelChoice, studioModelChoice, studioOfferedModelId } from './conversation-model-choice';
 
 import {readStudioRevisionRequest, revisionAssetIds, studioQuoteRevision, studioRevisionAlternatives, type StudioQuoteRevision} from './conversation-quote-revision';
 
-type PriorTurn = { quote_id: string | null; request_id: string; input_json: ImageTurnInput; draft_json: StoredStudioDraft };
+type PriorTurn = { state: string; quote_id: string | null; request_id: string; input_json: ImageTurnInput; draft_json: StoredStudioDraft };
 type Recall = { input: ImageTurnInput; sources?: StudioRecalledReference[]; selectedModelId?: string; revision?: StudioQuoteRevision; clarification?: string };
 const normalized = (text: string) => text.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
 const names = {
@@ -72,6 +73,7 @@ function followUp(text: string) {
     .trim()
     .replace(/[.!?]+$/, '')
     .trim();
+  if (/^(?:ok(?:ay)?[, ]+go(?: ahead)?|oui[, ]+vas[- ]y|si[, ]+adelante)$/.test(brief)) return 'accept';
   if (
     /^(?:(?:je choisis|i choose|elijo)\s+)?(?:(?:option|version|choix|opcion|choice)\s*)?#?[1-9](?:\s*(?:st|nd|rd|th|ere|eme))?$/.test(
       brief,
@@ -143,13 +145,13 @@ function whichFile(locale: keyof typeof copy, labels: string[]) {
   return {en:'Which file do you mean, ' + choices + '?', fr:'De quel fichier parles-tu, ' + choices + ' ?', es:'¿A qué archivo te refieres, ' + choices + '?'}[locale];
 }
 
-async function previousTurns(actor: StudioGenerationActor, before: string, limit: number) {
+async function previousTurns(actor: StudioGenerationActor, before: string, limit: number, includeFailed: boolean) {
   return query<PriorTurn>(
-    `SELECT request_id,input_json,draft_json,quote_id FROM studio_image_turns
-    WHERE user_id=$1 AND project_id=$2 AND state='ready' AND (created_at,request_id)<(
+    `SELECT state,request_id,input_json,draft_json,quote_id FROM studio_image_turns
+    WHERE user_id=$1 AND project_id=$2 AND (state='ready' OR ($5 AND state='failed')) AND (created_at,request_id)<(
       SELECT created_at,request_id FROM studio_image_turns WHERE user_id=$1 AND project_id=$2 AND request_id=$3)
     ORDER BY created_at DESC,request_id DESC LIMIT $4`,
-    [actor.userId, actor.projectId, before, limit],
+    [actor.userId, actor.projectId, before, limit, includeFailed],
   );
 }
 
@@ -214,7 +216,8 @@ export async function recallStudioReferences(
       (followUp(text) || (modelChoice && 'model'))) || (visualReply && 'visual'));
   const unchanged: Recall = filtered ? { input, sources: [] } : { input };
   if (!draft && !labels.length && !follow && !comparisonChoice) return unchanged;
-  const history = await previousTurns(actor, before, mayRevise || follow === 'model' || follow === 'visual' ? 12 : 4);
+  const accepting = follow === 'accept';
+  const history = await previousTurns(actor, before, mayRevise || follow === 'model' || follow === 'visual' || accepting ? 12 : 4, accepting);
   const locale = studioConversationLanguage(
     input.message,
     history.map((t) => ({ message: t.input_json.message })).reverse(),
@@ -262,7 +265,7 @@ export async function recallStudioReferences(
             sources[slots[0]]=next;
           }
           revision=studioQuoteRevision(request,prior.draft_json,modelChoice,sources,locale);
-          if (modelChoice) revision.alternatives=studioRevisionAlternatives(request,prior.draft_json,sources,locale,prior.input_json.message);
+          if (modelChoice) revision.alternatives=studioRevisionAlternatives(request,prior.draft_json,sources,locale);
         }
       }
     }
@@ -309,8 +312,17 @@ export async function recallStudioReferences(
       : undefined;
     let foundModelOffer = false;
     const interveningFiles: StudioRecalledReference[] = [];
+    const refusals = accepting ? await readStudioPreparationRefusals(actor,history.filter(turn=>turn.state==='failed').map(turn=>turn.request_id)) : new Map<string,string>();
     for (const prior of history) {
-      const priorExclusions = requestedLabels(normalized(prior.input_json.message)).exclude;
+      const message = normalized(prior.input_json.message);
+      const priorExclusions = requestedLabels(message).exclude;
+      if (accepting && (leavesVisualBrief(message) || priorExclusions.size)) break;
+      if (prior.state === 'failed') {
+        // A new confirmation may cross old refusals of this same confirmation, never a new file or unrelated failure.
+        if (accepting && followUp(message)==='accept' && !originalStudioReferences(prior.input_json,prior.request_id).length
+            && isStudioReferenceError(refusals.get(prior.request_id) ?? '')) continue;
+        break;
+      }
       const direct = originalStudioReferences(prior.input_json, prior.request_id).filter(
         (ref) => !priorExclusions.has(ref.label),
       );
@@ -366,6 +378,9 @@ export async function recallStudioReferences(
         break;
       }
       if (follow === 'edit' && !priorExclusions.size && asksForSameFile(reply) && visualReplyKind(normalized(prior.input_json.message))) continue;
+      // Short answers to creative clarifications keep the source of the active brief.
+      if (accepting && prior.draft_json && !prior.quote_id && !leavesVisualBrief(reply) && reply.includes('?')
+          && hasVisualBrief(message, reply, prior.draft_json)) continue;
       // Bridge old option/acceptance replies written before sources were saved on drafts.
       if (!followUp(normalized(prior.input_json.message))) break;
     }

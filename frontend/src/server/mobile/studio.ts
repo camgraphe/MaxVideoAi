@@ -29,6 +29,16 @@ import { MobileHttpError, mobileResponse } from './http';
 import { readMobileStudioPhotos } from './studio-photos';
 import { mobileStudioReviewTurns, renewMobileStudioQuote, studioRenewInput } from './studio-renewal';
 import { readStudioProjectReferenceOrdinals } from '@/server/studio/project-reference-registry';
+import { readStudioPreparationRefusals, isStudioReferenceError } from '@/server/studio/tasks/preparation-refusals';
+import type { StudioPauseReason } from '@/lib/mobile-studio';
+
+function pauseReason(turn: ImageConversationTurn, refusals: Map<string,string>): { pauseReason?: StudioPauseReason } {
+  if (turn.task?.state !== 'paused') return {};
+  const reason = turn.task.error;
+  if (reason === 'budget' || reason === 'steps' || reason === 'output' || reason === 'deadline' || reason === 'context' || reason === 'funding')
+    return {pauseReason: reason};
+  return isStudioReferenceError(refusals.get(turn.requestId) ?? '') ? {pauseReason: 'reference'} : {};
+}
 
 const nameInput = z.object({ name: studioProjectNameSchema, idempotencyKey: z.string().uuid() });
 const createInput = nameInput.extend({ action: z.literal('create') }).strict();
@@ -119,6 +129,7 @@ const owners = {
   rename: renameStudioConversationProject,
   remove: removeStudioConversationProject,
   journal: readJournal,
+  preparationRefusals: readStudioPreparationRefusals,
   photos: readMobileStudioPhotos,
   referenceOrdinals: readStudioProjectReferenceOrdinals,
   conversationService,
@@ -172,12 +183,15 @@ export function handleMobileStudio(
       const reviewEnabled = req.nextUrl.searchParams.get('review') === '1';
       const lang = req.nextUrl.searchParams.get('locale');
       const locale = lang === 'fr' || lang === 'es' ? lang : 'en';
+      const turns = reviewEnabled ? mobileStudioReviewTurns(journal.turns) : journal.turns;
+      const paused = turns.filter(turn => turn.task?.state === 'paused' && (turn.task.error == null || turn.task.error === 'provider'));
+      const refusals = await deps.preparationRefusals(actor, paused.map(turn => turn.requestId));
       return {
         projectId: journal.projectId,
         projectName: journal.projectName,
         allowance,
         ...(referenceOrdinals ? { stableReferenceLabels: true as const, referenceOrdinals } : {}),
-        turns: (reviewEnabled ? mobileStudioReviewTurns(journal.turns) : journal.turns).map(turn => ({
+        turns: turns.map(turn => ({
           requestId: turn.requestId,
           ...(reviewEnabled && turn.renewedFromRequestId ? { renewedFromRequestId: turn.renewedFromRequestId } : {}),
           message: turn.message,
@@ -186,6 +200,7 @@ export function handleMobileStudio(
           ...(turn.task?.model === MILO_LEVELS.lite.model && turn.taskBudget?.model &&
             turn.taskBudget.model !== MILO_LEVELS.lite.model ? { continuedWithLite: true as const } : {}),
           state: turn.task?.state === 'paused' ? 'paused' : turn.state,
+          ...pauseReason(turn, refusals),
           quote: turn.quote ? mobileStudioQuote(turn.quote, locale, reviewEnabled,
             turn.state === 'ready' && !turn.generation &&
             (turn.quote.summary.surface === 'image' || process.env.STUDIO_CONVERSATION_MEDIA_ENABLED === 'true')) : null,

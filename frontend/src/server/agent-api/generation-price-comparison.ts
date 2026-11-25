@@ -1,3 +1,5 @@
+import {editOutputSeconds,editSourceAspect} from '@/lib/video-edit-output-defaults';
+import {videoInheritsSourceFraming} from '@/lib/video-workflow-capabilities';
 import { resolveVideoOperationEngine } from '@/lib/video-operation';
 import { customerDisplayPrice } from "@/lib/customer-price-presentation";
 import { recordedGenerationOutputDuration, recordedGenerationSourceVideoOutput } from "@/lib/generation-output-duration";
@@ -34,6 +36,8 @@ export type GenerationPriceComparisonInput = Pick<
   baselineModelId?: string;
   baselineSettings?: CanonicalGenerationRequest["settings"];
   candidateModelIds?: string[];
+  /** Studio recommendations for an existing clip. Applied after price and capability validation. */
+  studioEdit?: {preferred: readonly string[]};
 };
 export type GenerationPriceOption = StudioPricingEstimate & {
   modelLabel: string;
@@ -203,6 +207,16 @@ export async function compareGenerationPrices(
             ),
             aspectRatio: defaultAspectRatio(details.aspectRatios, references),
           };
+          if (input.studioEdit && base.mode === 'v2v') {
+            const source = references.find(ref => ref.role === 'source' && ref.mediaKind === 'video');
+            defaults.aspectRatio = videoInheritsSourceFraming(candidate.engine, 'v2v') ? undefined :
+              editSourceAspect(details.aspectRatios, source?.width ?? null, source?.height ?? null);
+            if (details.durationPolicy === 'requested') {
+            // This is an OUTPUT default. The pricing resolver retains the exact measured input duration.
+            const duration = candidate.modeCaps.v2v?.duration;
+            defaults.durationSec = editOutputSeconds(duration,candidate.engine.maxDurationSec,source?.durationSec ?? null);
+            }
+          }
           for (const setting of details.settings) {
             if (
               ["imageWidth", "imageHeight"].includes(setting.key) &&
@@ -434,6 +448,11 @@ export async function compareGenerationPrices(
       estimatedAt,
       quoteRequired: true,
     };
+  if (input.studioEdit?.preferred.length && base.surface === 'video' && base.mode === 'v2v' && !input.baselineModelId && !input.candidateModelIds?.length) {
+    const preferred = input.studioEdit.preferred.flatMap(id => comparable.filter(option => option.modelId === id));
+    return {options:[...preferred,...comparable.filter(option=>!preferred.includes(option))].slice(0,3),
+      baseline, comparisonCurrency, excludedCurrencies, unavailable:unavailable.sort((a,b)=>a.modelId.localeCompare(b.modelId)), estimatedAt,quoteRequired:true};
+  }
   const selected = [comparable[0]];
   const preferred =
     comparable.find((option) => option.modelId === input.baselineModelId) ??

@@ -49,6 +49,7 @@ export type StudioAllowance = {
   maxCredits: number;
   customerMaxCredits: number;
 };
+export type StudioPauseReason = 'reference' | 'budget' | 'steps' | 'output' | 'deadline' | 'context' | 'funding';
 export type StudioMessage = {
   continuedWithLite?: true;
   requestId: string;
@@ -57,6 +58,7 @@ export type StudioMessage = {
   media?: StudioReference[];
   reply: string | null;
   state: 'thinking' | 'ready' | 'failed' | 'paused';
+  pauseReason?: StudioPauseReason;
   quote: { label: string; amountCents: number; currency: string; state: string; review?: StudioQuoteReview } | null;
   generation?: StudioGeneration;
   webReview?: true;

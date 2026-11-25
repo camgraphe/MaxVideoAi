@@ -8,7 +8,7 @@ import {
 } from '../frontend/src/server/studio/conversation-quote-revision';
 import { normalizeGenerationRequest } from '../frontend/src/server/agent-api/generation-normalization';
 
-test('Studio offers only the first compatible portrait edit model and leaves product ads on the existing model', async () => {
+test('Studio offers only the first compatible portrait edit model and applies the ordinary edit preference to a product clip', async () => {
   const source = {
     assetId: 'ma_' + 'b'.repeat(32),
     label: 'Video 1',
@@ -36,12 +36,12 @@ test('Studio offers only the first compatible portrait edit model and leaves pro
     references: [{ kind: 'asset', assetId: source.assetId, role: 'source' }],
     outputCount: 1,
   });
-  const offered = studioRevisionAlternatives(request, draft, [source], 'fr', '');
+  const offered = studioRevisionAlternatives(request, draft, [source], 'fr');
   assert.deepEqual(
     offered.map((item) => item.label),
-    ['Wan 3 Prime', 'Wan 3', 'Luma Ray 3.2', 'Seedance 2.5'],
+    ['Wan 3', 'Wan 3 Prime', 'Luma Ray 3.2', 'Seedance 2.5'],
   );
-  for (const model of ['Wan 3 Prime', 'Wan 3', 'Luma Ray 3.2']) {
+  for (const model of ['Wan 3', 'Wan 3 Prime', 'Luma Ray 3.2']) {
     const checked: string[] = [];
     const wanted = offered.find((item) => item.label === model)!;
     const reply = await prepareStudioQuoteRevision(
@@ -66,8 +66,7 @@ test('Studio offers only the first compatible portrait edit model and leaves pro
       draft,
       [source],
       'en',
-      'Product ad without people.',
     ).map((item) => item.label),
-    ['Seedance 2.5'],
+    ['Wan 3', 'Wan 3 Prime', 'Luma Ray 3.2', 'Seedance 2.5'],
   );
 });

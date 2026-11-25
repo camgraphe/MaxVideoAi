@@ -1,3 +1,4 @@
+import {offerCompatibleEdit,recoverPortraitEdit,unavailableEditSource} from './conversation-edit-recovery';
 import {STUDIO_CHARACTER_AUTHORING_DIRECTOR_TOOLS} from '@/lib/studio/conversation-character-authoring-contract';
 import {STUDIO_CREATOR_DIRECTOR_TOOLS} from '@/lib/studio/conversation-creator-contract';
 import OpenAI from 'openai';
@@ -29,7 +30,7 @@ import {studioConversationLanguage,studioOutputLimitMessage} from './conversatio
 import {KLING_EDIT_SOURCE_DIMENSIONS_MESSAGE} from '@/lib/video-operation';
 import {studioFailedFilmComparisonReply} from './conversation-comparison-failure';
 
-import {studioVideoEditAdvice} from './conversation-video-edit-preference';
+import {asksForVideoEditModels,studioVideoEditAdvice} from './conversation-video-edit-preference';
 import {prepareStudioQuoteRevision, type StudioQuoteRevision} from './conversation-quote-revision';
 
 export type StudioDirectorResponse = Pick<Response, 'id' | 'model' | 'status' | 'service_tier' | 'usage' | 'output_text'> & {output: Response['output'];incomplete_details?: Response['incomplete_details']};
@@ -190,6 +191,8 @@ export function createStudioConversationDirector(options: {clientSurface?: Image
     let comparisonReplayOnly: Parameters<typeof studioRepeatedComparisonReply>[0] | undefined;
     let recoveredComparison: StudioActionResult | undefined;
     let needsFilmComparison=!!filmDuration;
+    let needsEditComparison=options.mediaEnabled && !context.selectedModelId && !context.revision && !filmDuration
+      && context.references.length===1 && context.references[0].mediaKind==='video' && asksForVideoEditModels(context.message);
     const failedInputs=new Map<string,Parameters<typeof studioRepeatedComparisonReply>[0]>();
     const failedComparisons=new Map<string,Extract<StudioActionResult,{ok:false}>>();
     for(const work of options.taskExecution?.previousWork??[]){
@@ -204,7 +207,7 @@ export function createStudioConversationDirector(options: {clientSurface?: Image
         .filter(tool=>!selectedFilmPlan||tool.action!=='pricing.compare');
       // A final comparison renders its own reply; other reads need another Response.
       // Older checkpointed reads remain recoverable during paid-response replay.
-      const tools = failedFilmComparison ? availableTools.filter(tool=>tool.action==='pricing.compare') : needsFilmComparison ? availableTools.filter(tool=>tool.action==='pricing.compare') : correctionAction
+      const tools = failedFilmComparison ? availableTools.filter(tool=>tool.action==='pricing.compare') : (needsFilmComparison || needsEditComparison) ? availableTools.filter(tool=>tool.action==='pricing.compare') : correctionAction
         ? availableTools.filter(tool => tool.action === correctionAction)
         : index === maxResponses-1 ? availableTools.filter(tool => tool.action.endsWith('.prepare') || tool.action === 'timeline.edit' || tool.action === 'quote.discard' || tool.action === 'pricing.compare')
         : index === Math.max(0,maxResponses-2) ? availableTools.filter(tool => tool.action !== 'project.remember') : availableTools;
@@ -214,10 +217,11 @@ export function createStudioConversationDirector(options: {clientSurface?: Image
         model, service_tier: 'default', store: false, reasoning: studioReasoning(writingLongPrompts && model === 'gpt-6.1-sol' && effort === 'xhigh' ? 'medium' : effort), max_output_tokens: options.taskExecution?.profile.maxOutputTokens??options.runtimePolicy?.maxOutputTokens??2200,
         include: ['reasoning.encrypted_content'],
         parallel_tool_calls: false,
-        tool_choice: needsFilmComparison?{type:'function',name:'pricing_compare'}:'auto',
+        tool_choice: (needsFilmComparison || needsEditComparison)?{type:'function',name:'pricing_compare'}:'auto',
         instructions: buildStudioDirectorInstructions({...options,characterEnabled,taskEnabled:!!options.taskExecution})
           + `\n\nResponse ${index + 1} of ${maxResponses}: ${maxResponses - index} Responses remain, including this one. Open-model/alternative-price work starts with pricing_compare. Keep selected models; planning alone never authorizes preparation.`
           + (writingLongPrompts?'\nFor this text-only drafting request, write the requested prompts directly. Distribute the available reply across all requested prompts and finish the last one.':'')
+          + (needsEditComparison?'\n\nCompare executable edits of the attached source with pricing_compare (video, v2v, source role). Preserve explicit models, framing, duration and sound requirements. Leave unspecified output settings to the catalog; the measured input duration is not a requested output setting.':'')
           + (selectedFilmPlan?'\n\nThe client selected the last offered film variant. Continue that choice; do not offer or compare the same menu again. Preserve its model, component durations and explicit settings. Inspect only missing capabilities, then prepare the first unfinished requested component as a fresh exact quote. Use the complete earlier brief and retain the remaining film plan; one component quote is not the whole film. If essential direction is missing, ask one question. Never treat the historical total as the new quote price or confirm a purchase.':'')
           + (filmDuration?`\n\nThe requested complete film is ${filmDuration} seconds. First compare with filmDurationSec=${filmDuration}, surface video and t2v/i2v/ref2v as appropriate. Preserve explicitly selected models via candidateModelIds and all requested settings/references. Omit durationSec from settings unless the client explicitly set a component length; do not guess one. This call returns several fully priced cut plans; do not prepare the opening clip before the client chooses.`:'' )
           + (index === maxResponses-1
@@ -296,6 +300,8 @@ export function createStudioConversationDirector(options: {clientSurface?: Image
       if(freshResponse&&needsFilmComparison&&(action.action!=='pricing.compare'||action.surface!=='video'))
         throw new AgentApiError('PARAMETER_INVALID','Compare the complete film cuts before preparing a component quote.');
       needsFilmComparison=false;
+      const editRecommendation=needsEditComparison && action.action==='pricing.compare' && action.surface==='video' && action.mode==='v2v';
+      needsEditComparison=false;
       if (freshResponse && correctionAction && action.action !== correctionAction)
         throw new AgentApiError('PARAMETER_INVALID', 'Studio can only correct the rejected preparation in this response.');
       if (!options.mediaEnabled && STUDIO_MEDIA_DIRECTOR_TOOLS.some(tool => tool.action === action.action))
@@ -348,11 +354,24 @@ export function createStudioConversationDirector(options: {clientSurface?: Image
         }
       }
       const result = await context.execute(call.call_id, action);
+      if (editRecommendation && action.action==='pricing.compare' && result.ok && result.action==='pricing.compare' && result.data.options.length) {
+        return studioCurrentComparisonReply(action,result,completedEdits,locale);
+      }
       if(recoveredInputComparison)recoveredComparison=result;
       if(attemptFingerprint&&isStudioConstraintMismatch(result,context.referenceFingerprint))failedInputs.set(attemptFingerprint,result);
       if(revalidatedCachedComparison||(comparisonReplayOnly&&action.action==='pricing.compare'))recoveredComparison=result;
       if(comparisonFingerprint&&isStudioComparisonMismatch(result))failedComparisons.set(comparisonFingerprint,result);
       if(action.action==='creator.prepare'||action.action==='creator.subtitle-export.prepare'||action.action==='creator.studio-subtitles.prepare'){
+        if (!result.ok && action.action==='creator.prepare' && result.error.nextAction?.type === 'studio_portrait_video_edit' && !correctionAction) {
+          const recovered=await recoverPortraitEdit(action,context,locale);
+          if (recovered) return recovered;
+          correctionAction = 'video.prepare';
+          correctionResult = result;
+          input.push(...response.output as ResponseInputItem[], {type:'function_call_output',call_id:call.call_id,output:JSON.stringify(result)});
+          continue;
+        }
+        if (!result.ok && action.action==='creator.prepare' && !result.error.retryable && ['REFERENCE_INVALID','REFERENCE_REQUIRED','REFERENCE_NOT_FOUND'].includes(result.error.code)
+            && action.inputs.some(({source})=>source.type==='asset' && source.kind==='video' && !context.references.some(ref=>ref.assetId===source.assetId && ref.mediaKind==='video'))) return unavailableEditSource(locale);
         if(!result.ok)throw new AgentApiError(result.error.code,result.error.message,result.error.retryable,result.error.nextAction);
         if(result.action!==action.action)throw new AgentApiError('INTERNAL_ERROR','Studio could not recover the creator quote.');
         return {reply:projectStudioReply(action.reply),image:null,creatorQuote:result.data};
@@ -388,6 +407,10 @@ export function createStudioConversationDirector(options: {clientSurface?: Image
         if(recoveredComparison)return studioRecoveredComparisonReply(recoveredComparison,completedEdits,locale);
         if(comparisonReplayOnly)return studioRepeatedComparisonReply(comparisonReplayOnly,completedEdits,locale);
         return studioCurrentComparisonReply(action,result,completedEdits,locale);
+      }
+      if (action.action==='video.prepare' && !result.ok && !result.error.retryable && ['MODE_UNSUPPORTED','ENGINE_UNAVAILABLE'].includes(result.error.code)) {
+        const alternative=await offerCompatibleEdit(action,context,locale);
+        if (alternative) return alternative;
       }
       if (isStudioPreparationCorrection(result)) {
         correctionResult = result;
