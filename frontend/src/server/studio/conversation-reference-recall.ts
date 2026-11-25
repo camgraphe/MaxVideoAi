@@ -15,6 +15,7 @@ import {
 import { asksForSameFile, hasVisualBrief, leavesVisualBrief, visualReplyKind } from './conversation-visual-followup';
 import { resolveStudioMedia } from './media-resolver';
 import { studioConversationLanguage } from './conversation-language';
+import { comparisonSelection, readComparedEdit } from './conversation-comparison-choice';
 import { askedToReattach, fileSetAside, offeredStudioModel, sameStudioModelChoice, studioModelChoice, studioOfferedModelId } from './conversation-model-choice';
 
 import {readStudioRevisionRequest, revisionAssetIds, studioQuoteRevision, studioRevisionAlternatives, type StudioQuoteRevision} from './conversation-quote-revision';
@@ -202,6 +203,7 @@ export async function recallStudioReferences(
   const modelChoice = studioModelChoice(modelText);
   const replacement = labels.length === 1 && /^(?:non[, ]+|no[, ]+)?(?:plutot|rather|instead|use|utilise|usa|mejor)\s+(?:la |le |the |el )?(?:image|imagen|photo|foto|video|audio)\s+#?\d+[.! ]*$/.test(text);
   const mayRevise = !draft && !newWork && !current.length && !mentioned.exclude.size && !!(modelChoice || replacement);
+  const comparisonChoice = !draft && !current.length && !newWork && !mentioned.include.length && !mentioned.exclude.size && comparisonSelection(input.message);
   const visualReply = visualReplyKind(text);
   const follow =
     !newWork &&
@@ -211,7 +213,7 @@ export async function recallStudioReferences(
     ((!/\b(?:without|sans|sin)\b|\bdo not use\b|\bne .*pas (?:utiliser|reprendre)\b/.test(text) &&
       (followUp(text) || (modelChoice && 'model'))) || (visualReply && 'visual'));
   const unchanged: Recall = filtered ? { input, sources: [] } : { input };
-  if (!draft && !labels.length && !follow) return unchanged;
+  if (!draft && !labels.length && !follow && !comparisonChoice) return unchanged;
   const history = await previousTurns(actor, before, mayRevise || follow === 'model' || follow === 'visual' ? 12 : 4);
   const locale = studioConversationLanguage(
     input.message,
@@ -227,7 +229,17 @@ export async function recallStudioReferences(
   let sources: StudioRecalledReference[] = [];
   let selectedModelId: string | undefined;
   let revision:StudioQuoteRevision|undefined;
-  if (mayRevise) {
+  if (comparisonChoice) {
+    // Only cross the same failed selection. Any other turn starts a different context.
+    const prior = history.find(turn => turn.quote_id || !comparisonSelection(turn.input_json.message)
+      || originalStudioReferences(turn.input_json, turn.request_id).length || !askedToReattach(turn.draft_json?.reply ?? ''));
+    if (!prior || prior.quote_id) return unchanged;
+    const bound = [...originalStudioReferences(prior.input_json, prior.request_id), ...(prior.draft_json?.recalledReferences ?? [])];
+    const choice = await readComparedEdit(actor, prior.request_id, bound, locale, comparisonChoice);
+    if (!choice) return unchanged;
+    if ('clarification' in choice) return { input, clarification: choice.clarification };
+    ({ sources, revision } = choice);
+  } else if (mayRevise) {
     // A new subject, a different attachment or an exclusion ends the old revision context.
     const prior = history.find(turn => turn.quote_id || originalStudioReferences(turn.input_json,turn.request_id).length ||
       !modelChoice || !sameStudioModelChoice(turn.input_json.message,modelChoice) || !askedToReattach(turn.draft_json?.reply ?? ''));
@@ -265,7 +277,7 @@ export async function recallStudioReferences(
       if (matches.length !== 1) return clarify(matches.length ? 'ambiguous' : 'missing');
       sources.push(matches[0]);
     }
-  } else if (!revision && follow === 'visual') {
+  } else if (!revision && !comparisonChoice && follow === 'visual') {
     // Free directions and corrections only inherit the active visual brief. Never search the whole project.
     let restoring = false;
     for (const prior of history) {
@@ -290,7 +302,7 @@ export async function recallStudioReferences(
       if (sources.length > 1) return clarifyFiles(sources);
       break;
     }
-  } else if (!revision) {
+  } else if (!revision && !comparisonChoice) {
     const named = text.match(/\b(images?|imagenes|imagen|photos?|fotos?|videos?|audios?)\b/);
     let kind = named && !modelChoice
       ? (names[named[1] as keyof typeof names].toLowerCase() as StudioRecalledReference['kind'])
