@@ -23,7 +23,7 @@ import {
   validateGptImage2CustomImageSize,
   type GptImage2ImageSize,
 } from '@/lib/image/gptImage2';
-import { STORYBOARD_INCLUDED_PAYMENT_STATUS, getStoryboardBillingIdentity } from '@/lib/storyboard-pricing';
+import { STORYBOARD_EDIT_SOURCE, STORYBOARD_INCLUDED_PAYMENT_STATUS } from '@/lib/storyboard-pricing';
 import { isLumaAgentsImageEngineId } from '@/lib/luma-agents';
 import { buildResponseFromExistingJob } from './existing-image-job-response';
 import { failImageGenerationExecution as fail, ImageGenerationExecutionError } from './image-generation-error';
@@ -45,6 +45,7 @@ import {
 } from './luma-agents-execution';
 import {
   resolveIncludedKlingFirstFrameParentJobId,
+  resolveStoryboardRequestBillingIdentity,
 } from './storyboard-image-billing';
 import { executeAfterInitialJobReservation } from '@/server/generations/initial-job-reservation';
 import type { ExecuteImageGenerationOptions } from './image-generation-execution-contract';
@@ -79,6 +80,10 @@ export async function executeImageGeneration({
 
   const { engineEntry, engine, mode, modeConfig, resolvedAspectRatio, prompt, numImages, durationSec } =
     resolveImageGenerationRequestContext(requestedBody);
+  const requestMetadata = normalizeImageGenerationMetadata(requestedBody.metadata);
+  const storyboardBillingIdentity = resolveStoryboardRequestBillingIdentity({
+    jobSurface, engine, mode, numImages, body: requestedBody, metadata: requestMetadata,
+  });
   const gpt26 = isGptImage26EngineId(engine.id) ? normalizeGptImage26Settings(requestedBody) : null;
   const body = gpt26 ? { ...requestedBody, ...gpt26 } : requestedBody;
 
@@ -105,7 +110,6 @@ export async function executeImageGeneration({
       reservedJobId: preReservedInitialState.jobId,
     });
   }
-  const requestMetadata = normalizeImageGenerationMetadata(body.metadata);
   const engineResponseExtras = { engineId: engineEntry.id, engineLabel: engineEntry.marketingName };
 
   const resolutionResult = resolveRequestedResolution(
@@ -205,12 +209,18 @@ export async function executeImageGeneration({
     jobSurface,
     source: body.source,
     metadata: requestMetadata,
+    resolution,
+    quality,
+    referenceImageCount: combinedImageUrls.length,
   });
 
   let pricingResult: Awaited<ReturnType<typeof resolveImageGenerationPricingSnapshot>>;
   try {
     pricingResult = await resolveImageGenerationPricingSnapshot({
       engine, mode, durationSec, resolution, customImageSize, quality,
+      editReferenceSize: storyboardBillingIdentity && body.source === STORYBOARD_EDIT_SOURCE
+        ? resolveGptImage2AutoInputImageSize(combinedImageUrls.map((url) => storedAssetInfoByUrl.get(url)))
+        : null,
       complexity: gpt26?.complexity,
       combinedImageCount: combinedImageUrls.length,
       enableWebSearch, thinkingLevel, ...(nano21 ?? {}), numImages, billingProductKey, billingQuantityMultiplier,
@@ -230,8 +240,6 @@ export async function executeImageGeneration({
   const falAspectRatio = resolvedAspectRatio && resolvedAspectRatio !== 'auto' ? resolvedAspectRatio : null;
   const resolutionField = getImageInputField(engine, 'resolution', mode);
   const resolutionEngineParam = resolutionField?.engineParam;
-  const storyboardBillingIdentity =
-    jobSurface === 'storyboard' && engine.id === 'gpt-image-2' ? getStoryboardBillingIdentity(body.source) : null;
   const billingEngineId = storyboardBillingIdentity?.engineId ?? engine.id;
   const billingEngineLabel = storyboardBillingIdentity?.engineLabel ?? engine.label;
 
@@ -416,6 +424,7 @@ export async function executeImageGeneration({
         enableWebSearch,
         engine,
         engineEntry,
+        imagePaymentStatus,
         indexable,
         jobId,
         jobSurface,
@@ -441,7 +450,9 @@ export async function executeImageGeneration({
         watermark,
       });
       if (directProviderResponse) {
-        return directProviderResponse;
+        return storyboardBillingIdentity
+          ? { ...directProviderResponse, engineId: billingEngineId, engineLabel: billingEngineLabel }
+          : directProviderResponse;
       }
 
       try {

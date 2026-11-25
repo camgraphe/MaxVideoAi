@@ -19,9 +19,11 @@ test('storyboard generation and edit retain their displayed revision and refresh
   const previousFetch = globalThis.fetch;
   let revision = 7;
   let estimates = 0;
-  globalThis.fetch = async (input) => {
+  const bodies: Array<Record<string, unknown>> = [];
+  globalThis.fetch = async (input, init) => {
     assert.equal(String(input), '/api/images/estimate', 'refresh may only request an estimate, never generation');
     estimates += 1;
+    bodies.push(JSON.parse(String(init?.body)));
     return Response.json({ ok: true, pricing: {
       totalCents: revision === 7 ? 123 : 145, currency: 'USD',
       meta: { pricingMode: 'manual_tariff', customerTariffRevision: revision },
@@ -31,13 +33,18 @@ test('storyboard generation and edit retain their displayed revision and refresh
   const selectedImage = { url: 'https://media.example/frame.png', width: 1920, height: 1080 };
   function Fixture() {
     latest = useStoryboardPricing({ locale: 'en', storyboardOrientation: 'landscape', storyboardTier: 'hd',
-      targetModel: 'seedance', selectedImage });
+      targetModel: 'kling', referenceImageCount: 3, selectedImage });
     return null;
   }
   const root = createRoot(dom.window.document.getElementById('root')!);
   try {
     await act(async () => root.render(React.createElement(Fixture)));
     assert.equal(estimates, 4, 'three generation tiers and one edit quote must be fetched');
+    assert.ok(bodies.every(body => body.engineId === 'gpt-image-2-6-sunburst'));
+    for (const body of bodies.filter(body => body.source === 'storyboard')) {
+      assert.equal(body.referenceImageCount, 3);
+      assert.deepEqual(body.metadata, { storyboard: { role: 'board', targetModel: 'kling' } });
+    }
     assert.equal(latest?.generationPricingSnapshot?.meta?.customerTariffRevision, 7);
     assert.equal(latest?.editPricingSnapshot?.meta?.customerTariffRevision, 7);
     assert.equal(latest?.activePrice, '$1.23');

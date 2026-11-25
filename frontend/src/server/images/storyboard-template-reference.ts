@@ -1,5 +1,6 @@
 import { basename, join, normalize, sep } from 'node:path';
 import { readFile } from 'node:fs/promises';
+import { CANONICAL_PRODUCTION_ORIGIN, SITE_ORIGIN } from '@/lib/siteOrigin';
 import {
   isStorageConfigured,
   recordUserAsset,
@@ -34,15 +35,26 @@ function isLocalTemplateHost(hostname: string): boolean {
   );
 }
 
-function getLocalStoryboardTemplatePathname(url: string): string | null {
+function parseStoryboardTemplateUrl(url: string): URL | null {
   try {
     const parsed = new URL(url);
-    return isLocalTemplateHost(parsed.hostname) && STORYBOARD_TEMPLATE_PATH_PATTERN.test(parsed.pathname)
-      ? parsed.pathname
-      : null;
+    if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return null;
+    return url === `${parsed.origin}${parsed.pathname}` && STORYBOARD_TEMPLATE_PATH_PATTERN.test(parsed.pathname)
+      ? parsed : null;
   } catch {
     return null;
   }
+}
+
+/** Project an exact browser template choice to the pinned public PNG. */
+export function getPublicStoryboardTemplateReferenceUrl(url: string): string | null {
+  const parsed = parseStoryboardTemplateUrl(url);
+  if (!parsed || parsed.protocol !== 'https:') return null;
+  const trustedOrigins = [CANONICAL_PRODUCTION_ORIGIN, SITE_ORIGIN];
+  for (const host of [process.env.VERCEL_URL, process.env.VERCEL_BRANCH_URL]) {
+    if (host) trustedOrigins.push(`https://${host}`);
+  }
+  return trustedOrigins.includes(parsed.origin) ? `${CANONICAL_PRODUCTION_ORIGIN}${parsed.pathname}` : null;
 }
 
 function getStoryboardTemplatePublicRoots(cwd: string): string[] {
@@ -113,14 +125,17 @@ async function uploadStoryboardTemplateReference(params: {
 export async function resolveStoryboardTemplateReferenceUrls(params: {
   urls: string[];
   userId: string;
+  firstSlotOnly?: boolean;
   deps?: ResolveDeps;
 }): Promise<StoryboardTemplateReferenceResolution> {
   const storedAssetInfoByUrl = new Map<string, StoredAssetInfo>();
   const recordUserAssetFn = params.deps?.recordUserAssetFn ?? recordUserAsset;
   const urls = await Promise.all(
-    params.urls.map(async (url) => {
-      const pathname = getLocalStoryboardTemplatePathname(url);
-      if (!pathname) return url;
+    params.urls.map(async (url, index) => {
+      if (params.firstSlotOnly && index > 0) return url;
+      const template = parseStoryboardTemplateUrl(url);
+      if (!template || !isLocalTemplateHost(template.hostname)) return url;
+      const { pathname } = template;
 
       const upload = await uploadStoryboardTemplateReference({
         pathname,

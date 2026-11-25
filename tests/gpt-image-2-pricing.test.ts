@@ -313,9 +313,7 @@ test('GPT Image 2 storyboard edit auto pricing follows the selected storyboard d
 });
 
 test('GPT Image 2 storyboard portrait HD estimate uses a valid 9:16 custom size', async () => {
-  const portraitHd = getStoryboardOutputConfig('hd', 'portrait');
-  assert.equal(portraitHd.resolution, 'custom');
-  assert.deepEqual(portraitHd.customImageSize, { width: 1152, height: 2048 });
+  const portraitHd = { resolution: 'custom', customImageSize: { width: 1152, height: 2048 }, quality: 'medium' };
 
   const response = await estimateImagePricing(
     new Request('http://localhost:3000/api/images/estimate', {

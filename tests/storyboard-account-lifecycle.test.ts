@@ -113,9 +113,16 @@ test('the normal Kling bundle generates, persists and hides only its own include
   try{
     await f.edit('Kling scene');await f.w.fx.act(async()=>f.w.builder.target.onTargetChange('kling'));
     await f.w.fx.act(async()=>f.w.builder.submission.onGenerate());
-    await f.respond(f.w.requests.find((x:any)=>x.url==='/api/images/generate'),generated);
+    const board=f.w.requests.find((x:any)=>x.url==='/api/images/generate');
+    assert.equal(JSON.parse(board.init.body).engineId,'gpt-image-2-6-sunburst');
+    await f.respond(board,generated);
     const first=f.w.requests.filter((x:any)=>x.url==='/api/images/generate').at(-1);
-    assert.equal(JSON.parse(first.init.body).metadata.storyboard.parentJobId,'A-board');
+    const framePayload=JSON.parse(first.init.body);
+    assert.equal(framePayload.metadata.storyboard.parentJobId,'A-board');
+    assert.equal(framePayload.jobId,'storyboard_kling_first_frame_A-board');
+    assert.equal(framePayload.engineId,'gpt-image-2-6-sunburst');
+    assert.equal(framePayload.imageUrls[0],generated.images[0].url);
+    assert.equal(framePayload.resolution,'2048x1152');
     await f.respond(first,{...generated,jobId:'A-first',images:[{url:'https://example.invalid/A-first.png'}]});
     const hidden=f.w.requests.find((x:any)=>x.url==='/api/jobs/A-first');assert.ok(hidden);
     assert.equal(new Headers(hidden.init.headers).get('Authorization'),'Bearer token-account-A');
@@ -124,6 +131,51 @@ test('the normal Kling bundle generates, persists and hides only its own include
     assert.ok(f.w.localStorage.getItem('maxvideoai.storyboard.klingFirstFrames.v1:account-A'));
     assert.equal(f.w.builder.submission.running,false);
   }finally{await f.close();}
+});
+
+test('an edit on a historical board sends its original to Sunburst with the displayed quote', async () => {
+  const f = await mountStoryboard();
+  try {
+    const original = f.w.resultPanel.recentOutputs[0];
+    await f.w.fx.act(async () => f.w.resultPanel.onSelectRecentOutput(original));
+    await f.w.fx.act(async () => f.w.resultPanel.onEditInstructionChange('Make the jacket blue'));
+    assert.equal(f.w.resultPanel.editPricingReady, true);
+    await f.w.fx.act(async () => f.w.resultPanel.onApplyEdit());
+    const request = f.w.requests.find((x: { url: string }) => x.url === '/api/images/generate');
+    const payload = JSON.parse(request.init.body);
+    assert.equal(payload.engineId, 'gpt-image-2-6-sunburst');
+    assert.equal(payload.source, 'storyboard_edit');
+    assert.deepEqual(payload.imageUrls, [original.url]);
+    assert.match(payload.prompt, /Make the jacket blue/);
+    await f.respond(request, generated);
+    assert.equal(f.w.resultPanel.editInstruction, '');
+  } finally {
+    await f.close();
+  }
+});
+
+test('a recovered Kling board starts its included frame without resubmitting the paid board', async () => {
+  const f = await mountStoryboard();
+  try {
+    await f.edit('Kling scene');
+    await f.w.fx.act(async () => f.w.builder.target.onTargetChange('kling'));
+    await f.w.fx.act(async () => f.w.builder.submission.onGenerate());
+    const submissions = () => f.w.requests.filter((r: { url: string }) => r.url === '/api/images/generate');
+    const jobId = JSON.parse(submissions()[0].init.body).jobId;
+    await f.respond(submissions()[0], {
+      ok: false, jobId, error: { code: 'provider_outcome_ambiguous', message: 'Awaiting recovery' },
+    }, 503);
+    const lookup = f.w.requests.find((r: { url: string }) => r.url === `/api/jobs/${jobId}`);
+    assert.ok(lookup);
+    assert.equal(new Headers(lookup.init.headers).get('Authorization'), 'Bearer token-account-A');
+    assert.equal(submissions().length, 1);
+    await f.respond(lookup, { ok: true, jobId, status: 'completed', imageRenders: generated.images, pricing: generated.pricing });
+    assert.equal(submissions().length, 2);
+    assert.equal(JSON.parse(submissions()[1].init.body).jobId, `storyboard_kling_first_frame_${jobId}`);
+    assert.equal(f.w.resultPanel.selectedImage.url, generated.images[0].url);
+  } finally {
+    await f.close();
+  }
 });
 
 test('a save started under A keeps its token and ignores a late failure under B',async()=>{

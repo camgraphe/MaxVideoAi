@@ -204,7 +204,7 @@ test('storyboard tool is reachable from the tools hub as its own workspace', () 
   assert.match(configSource, /STORYBOARD_STYLE_OPTIONS/);
   assert.match(configSource, /STORYBOARD_TARGET_OPTIONS/);
   assert.match(configSource, /STORYBOARD_TARGET_LOGOS/);
-  assert.match(configSource, /STORYBOARD_REFERENCE_SLOT_COUNT\s*=\s*4/);
+  assert.match(configSource, /maxCount:\s*STORYBOARD_REFERENCE_SLOT_COUNT/);
   assert.match(configSource, /STORYBOARD_REFERENCE_FIELD/);
   assert.match(configSource, /STORYBOARD_REFERENCE_ENGINE/);
   assert.doesNotMatch(configSource, /useState|useEffect|authFetch|localStorage/);
@@ -224,7 +224,10 @@ test('storyboard tool is reachable from the tools hub as its own workspace', () 
   assert.match(pricingHookSource, /authFetch\('\/api\/images\/estimate'/);
   assert.match(pricingHookSource, /STORYBOARD_SOURCE/);
   assert.match(pricingHookSource, /STORYBOARD_EDIT_SOURCE/);
-  assert.match(pricingHookSource, /resolveStoryboardVisiblePrice/);
+  assert.match(pricingHookSource, /metadata:\s*\{ storyboard:\s*\{ role: 'board', targetModel \} \}/);
+  assert.match(pricingHookSource, /referenceImageCount,/);
+  assert.match(workspaceSource, /getStoryboardKlingFirstFrameJobId\(storyboardJobId\)/);
+  assert.doesNotMatch(pricingHookSource, /resolveStoryboardVisiblePrice|klingFirstFramePrice/);
   assert.match(pricingHookSource, /getStoryboardOutputConfig/);
   assert.match(pricingHookSource, /getStoryboardEditOutputConfig/);
   assert.doesNotMatch(workspaceSource, /authFetch\('\/api\/images\/estimate'/);
@@ -262,7 +265,7 @@ test('storyboard tool is reachable from the tools hub as its own workspace', () 
   assert.match(workspaceSource, /setStoryboardOrientation\(orientation\)/);
   assert.match(workspaceSource, /activeRecentOutputId=\{previewingTemplate \? null : selectedRecentOutput\?\.id \?\? null\}/);
   assert.match(workspaceSource, /StoryboardReferenceLibraryModal/);
-  assert.match(configSource, /STORYBOARD_REFERENCE_SLOT_COUNT = 4/);
+  assert.match(configSource, /export \{ STORYBOARD_REFERENCE_SLOT_COUNT \}/);
   assert.match(configSource, /STORYBOARD_REFERENCE_FIELD/);
   assert.match(configSource, /STORYBOARD_REFERENCE_ENGINE/);
   assert.match(workspaceSource, /useStoryboardReferences/);
@@ -287,7 +290,7 @@ test('storyboard tool is reachable from the tools hub as its own workspace', () 
   assert.match(workspaceSource, /klingFirstFrame/);
   assert.match(workspaceSource, /buildKlingFirstFrameFromRecentOutput/);
   assert.match(workspaceSource, /role: 'kling_first_frame'/);
-  assert.match(workspaceSource, /parentJobId:\s*response\.jobId/);
+  assert.match(workspaceSource, /parentJobId:\s*storyboardJobId/);
   assert.match(workspaceSource, /selectedKlingFirstFrame\?\.image\?\.url\s*\?\s*'kling'/);
   assert.match(workspaceSource, /startFrameImageUrl/);
   assert.match(generatorHandoffSource, /start_image_url/);

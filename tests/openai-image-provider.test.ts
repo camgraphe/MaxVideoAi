@@ -94,3 +94,47 @@ test('only verified owned originals with raster MIME and bounded size are signed
   assert.equal(signed, 1);
   await assert.rejects(prepareOpenAIImageReferences({ userId: 'owner', urls: [url] }, { ownedKeyFn: () => null, queryFn: async () => { throw new Error('Must not query'); }, signFn: async () => { throw new Error('Must not sign'); } }));
 });
+
+test('a Storyboard board can submit one exact bundled template in its first slot', async () => {
+  const deps = {
+    ownedKeyFn: () => null,
+    queryFn: async () => { throw new Error('The bundled template does not need an asset row'); },
+    signFn: async () => { throw new Error('The bundled template does not need a signature'); },
+  };
+  const templateOrigin = 'https://maxvideoai.com';
+  for (const suffix of ['4', '6', '8', 'portrait-4', 'portrait-6', 'portrait-8']) {
+    const url = `${templateOrigin}/storyboard/templates/storyboard-template-${suffix}.png`;
+    assert.deepEqual(await prepareOpenAIImageReferences({ userId: 'owner', urls: [url], storyboard: { role: 'board' } }, deps), [url]);
+  }
+});
+
+test('template-shaped URLs outside the pinned Storyboard board slot remain unowned', async () => {
+  const path = '/storyboard/templates/storyboard-template-6.png';
+  const origin = 'https://maxvideoai.com';
+  const template = `${origin}${path}`;
+  const deps = {
+    ownedKeyFn: () => null,
+    queryFn: async () => { throw new Error('An unowned URL must not query the library'); },
+    signFn: async () => { throw new Error('An unowned URL must not be signed'); },
+  };
+  const board = { role: 'board' } as const;
+  for (const [urls, storyboard] of [
+    [[template], undefined],
+    [[template], { role: 'edit' }],
+    [[template], { role: 'kling_first_frame', parentJobId: 'storyboard_parent' }],
+    [[template, template], board],
+    [[`https://untrusted.example${path}`], board],
+    [[`https://maxvideoai.com@untrusted.example${path}`], board],
+    [[`https://user@maxvideoai.com${path}`], board],
+    [[`http://maxvideoai.com${path}`], board],
+    [[`${origin}${path}?v=1`], board],
+    [[`${origin}${path}#preview`], board],
+    [[`${origin}/discard/..${path}`], board],
+    [[`${origin}/storyboard/templates/storyboard-template-5.png`], board],
+  ] as const) {
+    await assert.rejects(prepareOpenAIImageReferences({ userId: 'owner', urls: [...urls], storyboard }, deps), {
+      code: 'OPENAI_IMAGE_REFERENCE_INVALID',
+      status: 400,
+    });
+  }
+});
