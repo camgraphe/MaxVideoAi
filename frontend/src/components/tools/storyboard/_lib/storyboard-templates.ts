@@ -1,3 +1,6 @@
+import { GPT_IMAGE_26_PRESET_SIZES, validateGptImage26Dimensions } from '@/lib/image/gptImage26Dimensions';
+import { STORYBOARD_HD_LANDSCAPE, STORYBOARD_HD_PORTRAIT } from '@/lib/storyboard-pricing';
+
 export type StoryboardFrameCount = 4 | 6 | 8;
 export type StoryboardLengthPresetId = 'short' | 'medium' | 'long';
 export type StoryboardOrientation = 'landscape' | 'portrait';
@@ -46,13 +49,13 @@ export const STORYBOARD_TEMPLATE_SIZES: Record<StoryboardOrientation, Storyboard
 export const STORYBOARD_OUTPUT_CONFIG: Record<StoryboardTier, Record<StoryboardOrientation, StoryboardOutputConfig>> = {
   hd: {
     landscape: {
-      resolution: '1920x1080',
+      resolution: STORYBOARD_HD_LANDSCAPE,
       customImageSize: null,
       quality: 'medium',
     },
     portrait: {
-      resolution: 'custom',
-      customImageSize: { width: 1152, height: 2048 },
+      resolution: STORYBOARD_HD_PORTRAIT,
+      customImageSize: null,
       quality: 'medium',
     },
   },
@@ -63,8 +66,8 @@ export const STORYBOARD_OUTPUT_CONFIG: Record<StoryboardTier, Record<StoryboardO
       quality: 'medium',
     },
     portrait: {
-      resolution: 'custom',
-      customImageSize: { width: 2160, height: 3840 },
+      resolution: '2160x3840',
+      customImageSize: null,
       quality: 'medium',
     },
   },
@@ -75,8 +78,8 @@ export const STORYBOARD_OUTPUT_CONFIG: Record<StoryboardTier, Record<StoryboardO
       quality: 'high',
     },
     portrait: {
-      resolution: 'custom',
-      customImageSize: { width: 2160, height: 3840 },
+      resolution: '2160x3840',
+      customImageSize: null,
       quality: 'high',
     },
   },
@@ -133,8 +136,18 @@ export function getStoryboardOutputConfig(
   return STORYBOARD_OUTPUT_CONFIG[tier]?.[orientation] ?? STORYBOARD_OUTPUT_CONFIG.hd.landscape;
 }
 
-export function getStoryboardEditOutputConfig(): StoryboardOutputConfig {
-  return STORYBOARD_EDIT_OUTPUT_CONFIG;
+export function getStoryboardEditOutputConfig(
+  original?: { width?: number | null; height?: number | null }
+): StoryboardOutputConfig {
+  if (!original?.width || !original.height) return STORYBOARD_EDIT_OUTPUT_CONFIG;
+  const size = { width: original.width, height: original.height };
+  const resolution = `${size.width}x${size.height}`;
+  if (resolution === '1920x1080') return STORYBOARD_OUTPUT_CONFIG.hd.landscape;
+  if (resolution === '1080x1920') return STORYBOARD_OUTPUT_CONFIG.hd.portrait;
+  if (!validateGptImage26Dimensions(size)) return STORYBOARD_EDIT_OUTPUT_CONFIG;
+  return GPT_IMAGE_26_PRESET_SIZES.some(preset => preset === resolution)
+    ? { resolution, customImageSize: null, quality: 'medium' }
+    : { resolution: 'custom', customImageSize: size, quality: 'medium' };
 }
 
 export function getStoryboardTemplatePath(frameCount: number, orientation: StoryboardOrientation = 'landscape'): string {

@@ -263,3 +263,32 @@ test('server storyboard quote uses the specific database rule and preserves prov
     compatibilityProfile: 'standard',
   });
 });
+
+test('Storyboarder keeps the legacy customer floor and reflects increases in the native quoted cost', async () => {
+  const { computeCanonicalStoryboardBillingSnapshot } = await import('../frontend/server/pricing/quote-billing');
+  const pricingPolicy = { loadOverrides: async () => ({
+    status: 'loaded' as const,
+    rules: [{
+      id: 'storyboard-generate', engineId: 'storyboarder', mode: 'storyboard',
+      marginPercent: 2, marginFlatCents: 0, surchargeAudioPercent: 0, surchargeUpscalePercent: 0, currency: 'USD',
+    }],
+  }) };
+  for (const [cost, total, platformFee] of [[8.565, 33, 24], [13, 39, 26]]) {
+    const result = await computeCanonicalStoryboardBillingSnapshot({
+      operation: 'storyboard',
+      tier: '4k',
+      legacySupplierCostCents: 11,
+      snapshot: {
+        currency: 'USD', totalCents: 18, subtotalBeforeDiscountCents: 18,
+        base: { seconds: 1, rate: cost / 100, unit: 'image', amountCents: cost },
+        addons: [], margin: { amountCents: 0, percentApplied: 0, flatCents: 0 },
+        meta: { pricingMode: 'manual_tariff', customerTariffRevision: 7, providerCostIncomplete: true },
+      },
+    }, { pricingPolicy });
+    assert.equal(result.totalCents, total);
+    assert.equal(result.base.amountCents, cost);
+    assert.equal(result.platformFeeCents, platformFee);
+    assert.equal(result.meta?.customerTariffRevision, 7);
+    assert.equal(result.meta?.providerCostIncomplete, true);
+  }
+});

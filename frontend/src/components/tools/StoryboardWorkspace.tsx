@@ -14,7 +14,7 @@ import { hideJob, runImageGeneration, saveImageToLibrary } from '@/lib/api';
 import { suggestDownloadFilename, triggerAppDownload } from '@/lib/download';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { STORYBOARD_GENERATOR_HANDOFF_STORAGE_KEY, buildStoryboardGeneratorHandoff, buildStoryboardGeneratorHandoffUrl } from '@/lib/storyboard-generator-handoff';
-import { STORYBOARD_EDIT_SOURCE, STORYBOARD_SOURCE } from '@/lib/storyboard-pricing';
+import { STORYBOARD_EDIT_SOURCE, STORYBOARD_IMAGE_ENGINE_ID, STORYBOARD_SOURCE, getStoryboardKlingFirstFrameJobId } from '@/lib/storyboard-pricing';
 import type { ImageGenerationResponse } from '@/types/image-generation';
 import { StoryboardAuthModal } from './storyboard/_components/StoryboardAuthModal';
 import { StoryboardReferenceLibraryModal } from './storyboard/_components/StoryboardReferenceLibraryModal';
@@ -25,7 +25,8 @@ import { useStoryboardAccountScope } from './storyboard/_hooks/useStoryboardAcco
 import { useStoryboardPricing } from './storyboard/_hooks/useStoryboardPricing';
 import { useStoryboardRecentOutputs, type StoryboardRecentOutput } from './storyboard/_hooks/useStoryboardRecentOutputs';
 import { resolveStoryboardWorkspaceCopy } from './storyboard/_lib/storyboard-workspace-copy';
-import { KLING_STORYBOARD_FIRST_FRAME_JOB_PREFIX, buildKlingStoryboardFirstFramePrompt } from './storyboard/_lib/storyboard-first-frame';
+import { buildKlingStoryboardFirstFramePrompt } from './storyboard/_lib/storyboard-first-frame';
+import { resolveStoryboardImageSubmission } from './storyboard/_lib/storyboard-image-submission';
 import { buildKlingFirstFrameFromRecentOutput, getStoredKlingFirstFrame, writeStoredKlingFirstFrame, type KlingFirstFrameState } from './storyboard/_lib/storyboard-kling-first-frame-storage';
 import { buildStoryboardPrompt, type StoryboardStyle, type StoryboardTargetModel } from './storyboard/_lib/storyboard-prompt';
 import { buildStoryboardShotPlan } from './storyboard/_lib/storyboard-shot-plan';
@@ -123,7 +124,10 @@ function OwnedStoryboardWorkspace({ auth }: { auth: ReturnType<typeof useRequire
   const selectedRecentImage = selectedRecentOutput ? { url: selectedRecentOutput.url, thumbUrl: selectedRecentOutput.thumbUrl ?? selectedRecentOutput.previewUrl ?? null, width: selectedRecentOutput.width, height: selectedRecentOutput.height, mimeType: selectedRecentOutput.mime } : null;
   const selectedImage = previewingTemplate ? null : selectedRecentImage ?? generatedImage;
   const selectedImageJobId = previewingTemplate ? null : selectedRecentOutput?.jobId ?? result?.jobId ?? null;
-  const { activePrice, editOutputConfig, editPriceLabel, tierConfig, tierPriceLabels, generationPricingSnapshot, editPricingSnapshot } = useStoryboardPricing({ locale, storyboardOrientation, storyboardTier, targetModel, selectedImage });
+  const { activePrice, editOutputConfig, editPriceLabel, tierConfig, tierPriceLabels, generationPricingSnapshot, editPricingSnapshot } = useStoryboardPricing({
+    locale, storyboardOrientation, storyboardTier, targetModel, selectedImage,
+    referenceImageCount: 1 + readyReferenceImages.length,
+  });
   const selectedKlingFirstFrame = useMemo(() => {
     if (!selectedImage?.url || previewingTemplate) return null;
     if (selectedRecentOutput) {
@@ -154,7 +158,7 @@ function OwnedStoryboardWorkspace({ auth }: { auth: ReturnType<typeof useRequire
       }),
     [action, dialogue, durationSec, frameCount, readyReferenceImages.length, style, subject, targetModel]
   );
-  const canRun = Boolean(subject.trim()) && !running && !referenceUploading;
+  const canRun = Boolean(subject.trim()) && !running && !referenceUploading && (!user || Boolean(generationPricingSnapshot));
   const saveLabel = copy.saveToLibrary ?? 'Save to Storyboard library';
 
   function handleRecognizablePeopleToggle() {
@@ -204,11 +208,13 @@ function OwnedStoryboardWorkspace({ auth }: { auth: ReturnType<typeof useRequire
       setAuthModalOpen(true);
       return;
     }
-    if (!subject.trim()) {
+    if (!edit && !subject.trim()) {
       setError(copy.missingSubject);
       return;
     }
-    if (edit && !selectedImage?.url) return;
+    if (edit && (!selectedImage?.url || !editInstruction.trim())) return;
+    const displayedPricing = edit ? editPricingSnapshot : generationPricingSnapshot;
+    if (!displayedPricing) return;
 
     setRunning(true);
     setError(null);
@@ -222,7 +228,7 @@ function OwnedStoryboardWorkspace({ auth }: { auth: ReturnType<typeof useRequire
       const sourceImages = edit && selectedImage ? [selectedImage] : [templateReference, ...readyReferenceImages];
       const outputConfig = edit ? editOutputConfig : tierConfig;
       const prompt = buildStoryboardPrompt({
-        subject,
+        subject: (edit ? selectedRecentOutput?.storyboard?.subject : null) || subject,
         action,
         dialogue,
         visualNotes,
@@ -236,9 +242,10 @@ function OwnedStoryboardWorkspace({ auth }: { auth: ReturnType<typeof useRequire
         shotPlan,
         editInstruction: edit ? editInstruction : null,
       });
-      const response = await runImageGeneration({
-        jobId: `storyboard_${crypto.randomUUID()}`,
-        engineId: 'gpt-image-2',
+      const jobId = `storyboard_${crypto.randomUUID()}`;
+      const response = await resolveStoryboardImageSubmission(runImageGeneration({
+        jobId,
+        engineId: STORYBOARD_IMAGE_ENGINE_ID,
         mode: 'i2i',
         prompt,
         numImages: 1,
@@ -250,26 +257,25 @@ function OwnedStoryboardWorkspace({ auth }: { auth: ReturnType<typeof useRequire
         outputFormat: 'png',
         source: edit ? STORYBOARD_EDIT_SOURCE : STORYBOARD_SOURCE,
         metadata: edit ? undefined : { storyboard: { role: 'board', targetModel } },
-      }, edit ? editPricingSnapshot : generationPricingSnapshot, request);
+      }, displayedPricing, request), jobId, captureAccountRequest, copy.generationFailed);
       if (!request.isCurrent()) return;
+      const storyboardImage = response.images[0];
+      if (!storyboardImage?.url) throw new Error(copy.generationFailed);
       setResult(response);
       setPreviewingTemplate(false);
       setSelectedRecentOutput(null);
       setKlingFirstFrame(null);
 
       if (!edit && targetModel === 'kling') {
-        const storyboardImage = response.images[0] ?? null;
-        if (!storyboardImage?.url) {
-          throw new Error(copy.generationFailed);
-        }
         const firstFrameConfig = getStoryboardOutputConfig('hd', storyboardOrientation);
-        const firstFrameJobId = `${KLING_STORYBOARD_FIRST_FRAME_JOB_PREFIX}${crypto.randomUUID()}`;
+        const storyboardJobId = response.jobId ?? jobId;
+        const firstFrameJobId = getStoryboardKlingFirstFrameJobId(storyboardJobId);
         const firstFrameSourceImages = [storyboardImage, ...readyReferenceImages];
         const firstFrameRequest = captureAccountRequest();
         if (!request.isCurrent() || !firstFrameRequest) return;
-        const firstFrameResponse = await runImageGeneration({
+        const firstFrameResponse = await resolveStoryboardImageSubmission(runImageGeneration({
           jobId: firstFrameJobId,
-          engineId: 'gpt-image-2',
+          engineId: STORYBOARD_IMAGE_ENGINE_ID,
           mode: 'i2i',
           prompt: buildKlingStoryboardFirstFramePrompt({
             subject,
@@ -297,18 +303,18 @@ function OwnedStoryboardWorkspace({ auth }: { auth: ReturnType<typeof useRequire
           metadata: {
             storyboard: {
               role: 'kling_first_frame',
-              parentJobId: response.jobId ?? null,
+              parentJobId: storyboardJobId,
               targetModel: 'kling',
             },
           },
-        }, response.pricing, firstFrameRequest);
+        }, response.pricing, firstFrameRequest), firstFrameJobId, captureAccountRequest, copy.generationFailed);
         if (!request.isCurrent()) return;
         const firstFrameImage = firstFrameResponse.images[0] ?? null;
         if (!firstFrameImage?.url) {
           throw new Error(copy.generationFailed);
         }
         const nextFirstFrame: KlingFirstFrameState = {
-          storyboardJobId: response.jobId ?? null,
+          storyboardJobId,
           storyboardUrl: storyboardImage.url,
           image: firstFrameImage,
           jobId: firstFrameResponse.jobId ?? firstFrameJobId,
@@ -325,7 +331,10 @@ function OwnedStoryboardWorkspace({ auth }: { auth: ReturnType<typeof useRequire
       if (edit) setEditInstruction('');
       void refreshRecentOutputs();
     } catch (runError) {
-      if (request.isCurrent()) setError(runError instanceof Error ? runError.message : copy.generationFailed);
+      if (request.isCurrent()) {
+        setError(runError instanceof Error ? runError.message : copy.generationFailed);
+        void refreshRecentOutputs();
+      }
     } finally {
       if (request.isCurrent()) setRunning(false);
     }
@@ -443,6 +452,7 @@ function OwnedStoryboardWorkspace({ auth }: { auth: ReturnType<typeof useRequire
               durationSec={durationSec}
               editInstruction={editInstruction}
               editPriceLabel={editPriceLabel}
+              editPricingReady={Boolean(editPricingSnapshot)}
               frameCount={frameCount}
               orientation={storyboardOrientation}
               onApplyEdit={() => void runStoryboard(true)}

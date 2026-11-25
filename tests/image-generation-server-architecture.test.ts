@@ -198,7 +198,9 @@ test('storyboard image billing uses storyboard identity instead of provider disp
   assert.doesNotMatch(storyboardPricingSource, /storyboard_gpt_image_2/);
   assert.match(storyboardPricingSource, /engineLabel: STORYBOARD_BILLING_LABEL/);
   assert.match(imageGenerateRouteSource, /isStoryboardBillingSource\(body\?\.source\) \? 'storyboard' : 'image'/);
-  assert.match(executorSource, /getStoryboardBillingIdentity/);
+  assert.match(executorSource, /resolveStoryboardRequestBillingIdentity/);
+  assert.match(storyboardImageBillingSource, /getStoryboardBillingIdentity/);
+  assert.match(storyboardImageBillingSource, /engine\.providerMeta\?\.provider !== 'openai_images'/);
   assert.match(executorSource, /const billingEngineId = storyboardBillingIdentity\?\.engineId \?\? engine\.id/);
   assert.match(executorSource, /const billingEngineLabel = storyboardBillingIdentity\?\.engineLabel \?\? engine\.label/);
   assert.match(executorSource, /createAtomicInitialImageJob\(\{[\s\S]+engineId: billingEngineId,[\s\S]+engineLabel: billingEngineLabel/);
@@ -209,6 +211,7 @@ test('storyboard image billing uses storyboard identity instead of provider disp
   assert.match(imageGenerationPricingSource, /applyStoryboardImagePricing/);
   assert.match(executorSource, /resolveIncludedKlingFirstFrameParentJobId/);
   assert.match(executorSource, /walletChargeMode === 'included'/);
+  assert.match(executorSource, /executeDirectImageProviderIfAvailable\(\{[\s\S]+imagePaymentStatus,/);
   assert.match(storyboardImageBillingSource, /applyStoryboardKlingBundlePricing/);
   assert.match(storyboardImageBillingSource, /createIncludedStoryboardKlingFirstFramePricing/);
   assert.match(storyboardImageBillingSource, /settings_snapshot->'storyboard'->>'targetModel' = 'kling'/);

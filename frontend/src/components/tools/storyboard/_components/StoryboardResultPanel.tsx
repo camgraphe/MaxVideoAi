@@ -16,6 +16,7 @@ type StoryboardResultPanelProps = {
   durationSec: number;
   editInstruction: string;
   editPriceLabel: string;
+  editPricingReady: boolean;
   frameCount: number;
   klingFirstFrame: StoryboardGeneratedImage | null;
   orientation: StoryboardOrientation;
@@ -41,6 +42,7 @@ export function StoryboardResultPanel({
   durationSec,
   editInstruction,
   editPriceLabel,
+  editPricingReady,
   frameCount,
   klingFirstFrame,
   orientation,
@@ -153,7 +155,7 @@ export function StoryboardResultPanel({
               <Button
                 type="button"
                 variant="outline"
-                disabled={!editInstruction.trim() || running}
+                disabled={!editInstruction.trim() || running || !editPricingReady}
                 onClick={onApplyEdit}
                 className="min-w-[160px] justify-between"
               >

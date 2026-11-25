@@ -30,6 +30,23 @@ revision refresh. It is remounted by the account boundary, and its obsolete
 effects cannot apply prices to the next account. The auth modal is a presentational
 component under `_components/StoryboardAuthModal.tsx`.
 
+## Provider and billing
+
+Storyboarder sends boards, edits and the included Kling first frame to GPT Image
+2.6 Sunburst through the existing direct OpenAI Images provider. HD output uses
+2048 × 1152 and 1152 × 2048. The estimate and reservation both use the active
+native tariff cell and the Storyboarder product rule with the historical customer
+price as a floor. OpenAI's published output component is the pre-generation
+supplier estimate. Prompt and reference input tokens are recorded from the
+provider response when available.
+
+The Kling estimate includes both operations in one wallet reservation. The
+frame's job ID derives from its paid, completed parent. The child uses the
+parent's exact original in its first reference slot and retains the included
+payment status throughout direct-provider completion and recovery. When an
+image response is ambiguous, the open workspace checks the owned job for its
+result for a bounded interval. Recovery reads use the original job ID.
+
 ## References
 
 `useStoryboardReferences` owns one upload identity and abort controller per slot.
@@ -39,8 +56,11 @@ state updates. Preparation also revalidates before dispatch, so a removed file
 cannot start an upload after compression. Retiring one slot does not cancel
 other slots. Unmount retires outstanding uploads and releases local blob previews.
 
-The selected exact original remains the generation input. This change does not
-alter thumbnails, image optimization, media storage or provider execution.
+The original remains the generation input. Only the first board slot accepts a
+pinned bundled template. The server verifies owned originals against storage
+before preparing their signed URLs. A historical Storyboard image can also be
+read from its completed, owned job if the original output projection is absent.
+For edits, the verified original dimensions determine the historical price floor.
 
 ## Browser storage and generator handoff
 
@@ -60,7 +80,11 @@ callers; the authenticated workspace always supplies the account id.
 
 - `tests/storyboard-account-lifecycle.test.ts`: actual controller, hooks and API
   adapters with controlled host auth/transport; A → B, logout, late history,
-  uploads, board/first-frame completions, saves and same-user token refresh.
+  uploads, edits, board/first-frame recovery, saves and same-user token refresh.
+- `tests/storyboard-openai-pricing-postgres.test.ts`: public estimate, wallet
+  reservation, historical floors and included-parent validation using PG17.
+- `tests/storyboard-openai-reference-postgres.test.ts`: original ownership,
+  storage metadata and historical projection fallback.
 - `tests/storyboard-reference-upload-lifecycle.test.ts`: remove, replace,
   response inversion, stale failures, library selection and late preparation.
 - `tests/storyboard-kling-first-frame-storage.test.ts`: original matching,

@@ -1,4 +1,5 @@
 import type { EngineCaps, EngineInputField } from '@/types/engines';
+import { STORYBOARD_IMAGE_ENGINE_ID, STORYBOARD_REFERENCE_SLOT_COUNT } from '@/lib/storyboard-pricing';
 import type { StoryboardStyle, StoryboardTargetModel } from './storyboard-prompt';
 import { STORYBOARD_REFERENCE_SUPPORTED_FORMATS } from './storyboard-reference-library';
 
@@ -8,7 +9,7 @@ export const STORYBOARD_TARGET_LOGOS: Record<StoryboardTargetModel, { src: strin
   seedance: { src: '/brand/partners/bytedance/bytedance-mark-light.svg' },
   kling: { src: '/brand/partners/kling/kling-mark-light.png' },
 };
-export const STORYBOARD_REFERENCE_SLOT_COUNT = 4;
+export { STORYBOARD_REFERENCE_SLOT_COUNT };
 export const STORYBOARD_REFERENCE_FIELD: EngineInputField = {
   id: 'storyboard_reference_images',
   type: 'image',
@@ -18,7 +19,7 @@ export const STORYBOARD_REFERENCE_FIELD: EngineInputField = {
   minCount: 0,
 };
 export const STORYBOARD_REFERENCE_ENGINE: EngineCaps = {
-  id: 'gpt-image-2',
+  id: STORYBOARD_IMAGE_ENGINE_ID,
   label: 'Storyboarder',
   provider: 'MaxVideoAI',
   status: 'live',

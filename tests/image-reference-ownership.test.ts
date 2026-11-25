@@ -15,13 +15,15 @@ async function load() {
   const fixture = {
     reads: [] as string[],
     uploads: [] as string[],
+    ownedAssets: [] as Array<{ url: string; mime_type: string; size_bytes: number; width: number; height: number }>,
+    storageOriginals: new Map<string, Buffer>(),
     marketingPublic: false,
     bytes: await createRequire(resolve(frontend, 'package.json'))('sharp')({
       create: { width: 2, height: 2, channels: 3, background: '#abcdef' },
     }).png().toBuffer() as Buffer,
   };
   const stubs: Record<string, string> = {
-    '@/lib/db': 'export const query = async () => [];',
+    '@/lib/db': 'export const query = async (_sql, [userId, urls]) => fixture.ownedAssets.filter(asset => userId === "' + owner + '" && urls.includes(asset.url));',
     '@/lib/schema': 'export const ensureAssetSchema = async () => {};',
     '@/server/marketing-media/access': 'export const canReadMarketingFile = async () => fixture.marketingPublic;',
     '@/server/storage': `
@@ -29,7 +31,11 @@ async function load() {
       export {isAllowedAssetHost} from './server/asset-url-policy';
       export const isStorageConfigured = () => true;
       export const recordUserAsset = async () => {};
-      export const getStorageObjectBuffer = async () => { throw new Error("unexpected original read"); };
+      export const getStorageObjectBuffer = async key => {
+        const bytes = fixture.storageOriginals.get(key);
+        if (!bytes) throw new Error("unexpected original read");
+        return bytes;
+      };
       export const uploadImageToStorage = async input => {
         fixture.uploads.push(input.userId);
         return {url: '${base}/normalized-references/' + input.userId + '/copy.jpg', mime: input.mime};
@@ -56,8 +62,9 @@ async function load() {
     process: { cwd: () => frontend, env: {
       S3_BUCKET: 'image-ownership-fixture', S3_REGION: 'us-east-1',
       S3_ACCESS_KEY_ID: 'fixture-key', S3_SECRET_ACCESS_KEY: 'fixture-secret', S3_PUBLIC_BASE_URL: base,
+      VERCEL_BRANCH_URL: 'maxvideoai-approved-branch.vercel.app',
     } },
-    URL, Buffer, AbortController, Response, setTimeout, clearTimeout, console,
+    URL, Buffer, AbortController, AbortSignal, Response, setTimeout, clearTimeout, console,
     fetch: async (url: string) => {
       fixture.reads.push(String(url));
       const parsed = new URL(url);
@@ -118,4 +125,59 @@ test('published marketing files remain usable but a namespace alone never grants
   await assert.rejects(prepare(api, other, url), { code: 'reference_not_owned' });
   fixture.marketingPublic = true;
   assert.equal((await prepare(api, other, url)).combinedImageUrls[0], url);
+});
+
+test('OpenAI Storyboard preparation pins the browser template and keeps image references ahead of character references', async () => {
+  const { api, fixture } = await load();
+  const template = 'https://maxvideoai-approved-branch.vercel.app/storyboard/templates/storyboard-template-portrait-6.png';
+  const character = `${base}/user-assets/${owner}/character.png`;
+  for (const url of [original, character]) {
+    fixture.ownedAssets.push({ url, mime_type: 'image/png', size_bytes: 1024, width: 1024, height: 1024 });
+    fixture.storageOriginals.set(new URL(url).pathname.slice(1), fixture.bytes);
+  }
+  const body = {
+    engineId: 'gpt-image-2-6-sunburst', mode: 'i2i', prompt: 'Offline Storyboard ownership fixture',
+    source: 'storyboard', metadata: { storyboard: { role: 'board', targetModel: 'seedance' } },
+    imageUrls: [template, original],
+    characterReferences: [{ id: 'character', jobId: 'fixture-job', imageUrl: character }],
+  };
+  const context = api.resolveImageGenerationRequestContext(body);
+  const result = await api.prepareImageGenerationReferences({ userId: owner, body, ...context });
+
+  assert.deepEqual(Array.from(result.combinedImageUrls), [template, original, character]);
+  const [primary, ...signed] = Array.from(result.preparedOpenAIReferenceUrls as string[]);
+  assert.equal(primary, 'https://maxvideoai.com/storyboard/templates/storyboard-template-portrait-6.png');
+  assert.deepEqual(signed.map(value => new URL(value).pathname), [new URL(original).pathname, new URL(character).pathname]);
+  assert.ok(signed.every(value => new URL(value).searchParams.has('X-Amz-Signature')));
+  assert.deepEqual(fixture.uploads, []);
+});
+
+test('OpenAI Storyboard edits price from original bytes when both request and saved metadata claim different dimensions', async () => {
+  const { api, fixture } = await load();
+  fixture.ownedAssets.push({ url: original, mime_type: 'image/png', size_bytes: 1024, width: 1024, height: 768 });
+  fixture.storageOriginals.set(new URL(original).pathname.slice(1), await createRequire(resolve(frontend, 'package.json'))('sharp')({
+    create: { width: 1920, height: 1080, channels: 3, background: '#abcdef' },
+  }).png().toBuffer());
+  const body = {
+    engineId: 'gpt-image-2-6-sunburst', mode: 'i2i', prompt: 'Offline Storyboard edit fixture',
+    source: 'storyboard_edit', imageUrls: [original],
+    referenceImageSizes: [{ width: 2160, height: 3840 }],
+  };
+  const context = api.resolveImageGenerationRequestContext(body);
+  const result = await api.prepareImageGenerationReferences({ userId: owner, body, ...context });
+
+  assert.deepEqual({ ...result.storedAssetInfoByUrl.get(original) }, { mime: 'image/png', width: 1920, height: 1080 });
+});
+
+test('the pinned Storyboard input exception does not extend to GPT Image 2.6 Flare', async () => {
+  const { api } = await load();
+  const body = {
+    engineId: 'gpt-image-2-6-flare', mode: 'i2i', prompt: 'Offline reference fixture',
+    source: 'storyboard', imageUrls: ['https://maxvideoai.com/storyboard/templates/storyboard-template-6.png'],
+  };
+  const context = api.resolveImageGenerationRequestContext(body);
+
+  await assert.rejects(api.prepareImageGenerationReferences({ userId: owner, body, ...context }), {
+    code: 'OPENAI_IMAGE_REFERENCE_INVALID', status: 400,
+  });
 });

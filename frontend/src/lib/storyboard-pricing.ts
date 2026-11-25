@@ -3,7 +3,11 @@ import type { ImageGenerationRequest } from '@/types/image-generation';
 
 export const STORYBOARD_PRICING_MULTIPLIER = 3;
 export const STORYBOARD_EDIT_PRICING_MULTIPLIER = 2;
+export const STORYBOARD_IMAGE_ENGINE_ID = 'gpt-image-2-6-sunburst';
 export const STORYBOARD_SOURCE = 'storyboard';
+export const STORYBOARD_REFERENCE_SLOT_COUNT = 4;
+export const STORYBOARD_HD_LANDSCAPE = '2048x1152';
+export const STORYBOARD_HD_PORTRAIT = '1152x2048';
 export const STORYBOARD_EDIT_SOURCE = 'storyboard_edit';
 export const STORYBOARD_BILLING_ENGINE_ID = 'storyboarder';
 export const STORYBOARD_BILLING_LABEL = 'Storyboarder';
@@ -50,6 +54,10 @@ export function isKlingStoryboardBoardMetadata(metadata: ImageGenerationRequest[
   return metadata?.storyboard?.role === 'board' && metadata.storyboard.targetModel === 'kling';
 }
 
+export function getStoryboardKlingFirstFrameJobId(parentJobId: string): string {
+  return `${STORYBOARD_KLING_FIRST_FRAME_JOB_PREFIX}${parentJobId}`;
+}
+
 export function getKlingStoryboardFirstFrameParentJobId(
   metadata: ImageGenerationRequest['metadata'] | null | undefined
 ): string | null {
@@ -73,12 +81,20 @@ export function inferStoryboardOrientation(params: {
 export function getStoryboardKlingFirstFramePricingConfig(params: {
   customImageSize?: { width?: number | null; height?: number | null } | null;
   aspectRatio?: string | null;
+  engineId?: string;
 }): {
   resolution: string;
   customImageSize: { width: number; height: number } | null;
   quality: 'medium';
 } {
   const orientation = inferStoryboardOrientation(params);
+  if (params.engineId === STORYBOARD_IMAGE_ENGINE_ID) {
+    return {
+      resolution: orientation === 'portrait' ? STORYBOARD_HD_PORTRAIT : STORYBOARD_HD_LANDSCAPE,
+      customImageSize: null,
+      quality: 'medium',
+    };
+  }
   return orientation === 'portrait'
     ? {
         resolution: 'custom',

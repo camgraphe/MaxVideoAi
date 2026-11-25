@@ -12,11 +12,12 @@ import { extractOpenAIImages, parseOpenAIImageUsage } from './openai-image-respo
 import { persistFailedImageGeneration } from './image-generation-failure';
 import { markImageProviderOutcomeAmbiguous } from './image-provider-failure-policy';
 import { ImageGenerationExecutionError } from './image-generation-error';
-import { openAIImageCompletionContext, reserveOpenAIImageResult, persistOpenAIImageResult } from './openai-image-result-store';
+import { openAIImageCompletionContext, reserveOpenAIImageResult, persistOpenAIImageResult, type OpenAIImagePaymentStatus } from './openai-image-result-store';
 import { recoverOpenAIImageResult, type OpenAIImageRecoveryDependencies } from './openai-image-output-recovery';
 
 const PROVIDER_MODE = 'openai_images_direct';
 export type OpenAIImageExecutionParams = Parameters<typeof executeGoogleVertexImageGeneration>[0] & {
+  imagePaymentStatus?: OpenAIImagePaymentStatus;
   outputCompression?: number; complexity?: string | null; background?: string | null; preparedReferenceUrls?: string[];
   customImageSize?: {width: number; height: number} | null;
 };
@@ -41,6 +42,7 @@ type ExecutionDependencies = OpenAIImageRecoveryDependencies & {
 /** Runs only after the shared atomic job reservation. Owns every direct-provider
  * outcome, because the legacy fal catch does not surround direct execution. */
 export async function executeOpenAIImageGeneration(params: OpenAIImageExecutionParams, deps: ExecutionDependencies = {}): Promise<ImageGenerationResponse> {
+  const paymentStatus = params.imagePaymentStatus ?? 'paid_wallet';
   let providerJobId: string | null = null;
   let acceptedResponse = false;
   let providerUsage: ReturnType<typeof parseOpenAIImageUsage> = null;
@@ -66,22 +68,24 @@ export async function executeOpenAIImageGeneration(params: OpenAIImageExecutionP
     return { ok: true, jobId: params.jobId, mode: params.mode, images, description: null,
       requestId: providerJobId ?? undefined, providerJobId: providerJobId ?? undefined,
       engineId: params.engineEntry.id, engineLabel: params.engineEntry.marketingName, pricing: params.pricing,
-      paymentStatus: 'paid_wallet', thumbUrl: heroThumb, aspectRatio: params.resolvedAspectRatio, resolution: settings.resolution };
+      paymentStatus, thumbUrl: heroThumb, aspectRatio: params.resolvedAspectRatio, resolution: settings.resolution };
   } catch (error) {
     if (error instanceof OpenAIImageError) providerJobId ??= error.requestId;
     if (acceptedResponse || (error instanceof OpenAIImageError && error.submissionState === 'uncertain')) {
       const message = 'The image outcome is still being verified. Keep this job ID; do not submit it again.';
       try { await (deps.ambiguousFn ?? markImageProviderOutcomeAmbiguous)(params.jobId, providerJobId ?? undefined, { providerMode: PROVIDER_MODE, userId: params.userId, message, strict: true }); }
       catch { console.warn('[images] OpenAI outcome persistence deferred', { jobId: params.jobId, providerJobId }); }
-      throw new ImageGenerationExecutionError(message, { mode: params.mode, status: 503, code: 'provider_outcome_ambiguous', extras: { jobId: params.jobId, providerJobId: providerJobId ?? undefined, paymentStatus: 'paid_wallet' } });
+      throw new ImageGenerationExecutionError(message, { mode: params.mode, status: 503, code: 'provider_outcome_ambiguous', extras: { jobId: params.jobId, providerJobId: providerJobId ?? undefined, paymentStatus } });
     }
     // Local preparation failure or a definite HTTP rejection may be refunded.
     const safeError = error instanceof OpenAIImageError || error instanceof ImageGenerationExecutionError ? error
       : new OpenAIImageError('OpenAI image preparation failed.', { status: 400, code: 'OPENAI_IMAGE_PREPARATION_FAILED' });
+    const refundOnFailure = paymentStatus === 'paid_wallet';
     const { message } = await (deps.failFn ?? persistFailedImageGeneration)({ ...params, engineId: params.engine.id,
       error: safeError, falModelId: params.engine.providerMeta?.modelSlug ?? '', providerJobId, providerMode: PROVIDER_MODE,
-      referenceImageUrls: params.combinedImageUrls, providerUsage });
+      referenceImageUrls: params.combinedImageUrls, providerUsage, refundOnFailure,
+      failedPaymentStatus: refundOnFailure ? 'refunded_wallet' : null });
     throw new ImageGenerationExecutionError(message, { mode: params.mode, code: safeError.code, status: safeError.status ?? 502,
-      extras: { jobId: params.jobId, engineId: params.engine.id, engineLabel: params.engine.label, paymentStatus: 'refunded_wallet' } });
+      extras: { jobId: params.jobId, engineId: params.engine.id, engineLabel: params.engine.label, paymentStatus: refundOnFailure ? 'refunded_wallet' : paymentStatus } });
   }
 }

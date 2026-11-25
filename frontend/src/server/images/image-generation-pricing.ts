@@ -24,6 +24,7 @@ export async function resolveImageGenerationPricingSnapshot(params: {
   durationSec: number;
   resolution: string;
   customImageSize: GptImage2ImageSize | null;
+  editReferenceSize?: GptImage2ImageSize | null;
   quality: string | null;
   complexity?: string;
   combinedImageCount: number;
@@ -96,23 +97,27 @@ export async function resolveImageGenerationPricingSnapshot(params: {
     return { pricing, membershipTier };
   }
 
-  pricing = await applyStoryboardImagePricing({
-    pricing,
-    engine: params.engine,
-    jobSurface: params.jobSurface,
-    source: params.source,
-    metadata: params.metadata,
-    includedKlingFirstFrameParentJobId: params.includedKlingFirstFrameParentJobId,
-    customImageSize: params.customImageSize,
-    resolution: params.resolution,
-    quality: params.quality,
-    resolvedAspectRatio: params.resolvedAspectRatio,
-    membershipTier,
-    currency: DISPLAY_CURRENCY,
-  });
-  // The included frame is already paid by its validated parent storyboard bundle.
-  try { if (!params.includedKlingFirstFrameParentJobId) assertDisplayedCustomerTariffRevision(params.customerTariffRevision, pricing); }
-  catch (error) {
+  try {
+    pricing = await applyStoryboardImagePricing({
+      pricing,
+      engine: params.engine,
+      jobSurface: params.jobSurface,
+      source: params.source,
+      metadata: params.metadata,
+      includedKlingFirstFrameParentJobId: params.includedKlingFirstFrameParentJobId,
+      customImageSize: params.customImageSize,
+      editReferenceSize: params.editReferenceSize,
+      complexity: params.complexity,
+      referenceImageCount,
+      resolution: params.resolution,
+      quality: params.quality,
+      resolvedAspectRatio: params.resolvedAspectRatio,
+      membershipTier,
+      currency: DISPLAY_CURRENCY,
+    });
+    // The included frame is already paid by its validated parent storyboard bundle.
+    if (!params.includedKlingFirstFrameParentJobId) assertDisplayedCustomerTariffRevision(params.customerTariffRevision, pricing);
+  } catch (error) {
     if (!(error instanceof CustomerTariffRevisionError)) throw error;
     throw new ImageGenerationExecutionError(error.message, { mode: params.mode, status: error.status, code: error.code });
   }

@@ -7,7 +7,7 @@ type GoogleVertexImageParams = Parameters<typeof executeGoogleVertexImageGenerat
 type BytePlusSeedreamParams = Parameters<typeof executeBytePlusSeedreamGeneration>[0];
 
 type DirectImageProviderParams = GoogleVertexImageParams & Pick<BytePlusSeedreamParams, 'watermark'>
-  & Pick<OpenAIImageExecutionParams, 'outputCompression' | 'background' | 'complexity' | 'preparedReferenceUrls' | 'customImageSize'>;
+  & Pick<OpenAIImageExecutionParams, 'outputCompression' | 'background' | 'complexity' | 'preparedReferenceUrls' | 'customImageSize' | 'imagePaymentStatus'>;
 
 export async function executeDirectImageProviderIfAvailable(
   params: DirectImageProviderParams
