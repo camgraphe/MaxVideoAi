@@ -8,6 +8,7 @@ import ffmpeg from '@ffmpeg-installer/ffmpeg';
 import { ensureExecutableFfmpegPath } from './ffmpeg-runtime';
 import { createFalClient } from '@fal-ai/client';
 import { ENV } from '@/lib/env';
+import { createFalQueueReadFetch } from '@/lib/fal-queue-fetch';
 import { withDbTransaction } from '@/lib/db';
 import { createOwnedMediaReadUrl } from './owned-media-read-access';
 import { downloadVideoExcerptMedia, inspectVideoExcerptBytes, withVideoExcerptSlot } from './video-excerpts/media';
@@ -32,7 +33,11 @@ export function createFluxDraftRecoveryFetch(origin:{endpoint:string;providerReq
   };
 }
 function recoveryClient(origin:{endpoint:string;providerRequestId:string}) {
-  return createFalClient({credentials:ENV.FAL_API_KEY,retry:{maxRetries:0},fetch:createFluxDraftRecoveryFetch(origin)});
+  return createFalClient({
+    credentials: ENV.FAL_API_KEY,
+    retry: { maxRetries: 0 },
+    fetch: createFalQueueReadFetch(createFluxDraftRecoveryFetch(origin)),
+  });
 }
 
 /** Compare decoded content, not container bytes: delivery may legitimately remux. */

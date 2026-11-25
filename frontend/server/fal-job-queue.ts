@@ -5,6 +5,7 @@ import { query } from '@/lib/db';
 import { ENV } from '@/lib/env';
 import { getFalClient } from '@/lib/fal-client';
 import { readFalQueueReceipt } from '@/lib/fal-queue-receipt';
+import { createFalQueueReadFetch } from '@/lib/fal-queue-fetch';
 
 /** Read only server-owned enqueue evidence, never caller settings or webhook URLs. */
 export async function resolveFalJobQueue(
@@ -47,7 +48,7 @@ export async function resolveFalJobQueue(
     };
   }
   // An invalid new receipt must not silently become a legacy fallback.
-  const fetchFn = dependencies.fetchFn ?? fetch;
+  const fetchFn = createFalQueueReadFetch(dependencies.fetchFn);
   const read = async (kind: 'statusUrl' | 'responseUrl'): Promise<Record<string, unknown>> => {
     const receipt = readFalQueueReceipt(evidence?.receipt, job.requestId);
     if (isKlingImage && !Object.values(KLING_IMAGE_V4_ENDPOINTS).some(endpoint => endpoint === receipt.endpoint)) {

@@ -15,9 +15,16 @@ export function getOptionalEnv(name: string, fallback?: string): string | undefi
   return String(value);
 }
 
-const falKey =
-  getOptionalEnv('FAL_API_KEY') ??
-  getOptionalEnv('FAL_KEY');
+const falOverrideKey = getOptionalEnv('FAL_API_KEY');
+const falDirectKey = getOptionalEnv('FAL_DIRECT_KEY');
+const falMarketplaceKey = getOptionalEnv('FAL_KEY');
+const falKey = falOverrideKey ?? falDirectKey ?? falMarketplaceKey;
+
+let falQueueReadFallbackKey: string | undefined;
+if (falDirectKey && falMarketplaceKey && falDirectKey !== falMarketplaceKey) {
+  if (falKey === falDirectKey) falQueueReadFallbackKey = falMarketplaceKey;
+  if (falKey === falMarketplaceKey) falQueueReadFallbackKey = falDirectKey;
+}
 
 const RECEIPTS_PRICE_ONLY =
   (getOptionalEnv('RECEIPTS_PRICE_ONLY', 'true') ?? 'true').toLowerCase() === 'true';
@@ -65,6 +72,7 @@ export const ENV = {
   GA4_API_SECRET: getOptionalEnv('GA4_API_SECRET'),
   FAL_API_KEY: falKey,
   FAL_KEY: falKey,
+  FAL_QUEUE_READ_FALLBACK_KEY: falQueueReadFallbackKey,
   ALIBABA_MODEL_STUDIO_API_KEY: getOptionalEnv('ALIBABA_MODEL_STUDIO_API_KEY'),
   ALIBABA_MODEL_STUDIO_BASE_URL: getOptionalEnv(
     'ALIBABA_MODEL_STUDIO_BASE_URL',
