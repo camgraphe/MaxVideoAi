@@ -1,5 +1,6 @@
 import { createFalClient, type FalClient } from '@fal-ai/client';
 import { ENV } from '@/lib/env';
+import { createFalQueueReadFetch } from '@/lib/fal-queue-fetch';
 
 let client: FalClient | null = null;
 
@@ -12,6 +13,7 @@ export function getFalClient(): FalClient {
     if (typeof window === 'undefined') {
       if (falKey) {
         config.credentials = falKey;
+        config.fetch = createFalQueueReadFetch();
       }
     } else {
       config.proxyUrl = '/api/fal/proxy';

@@ -14,6 +14,21 @@ Completed attempts cannot regress through late failure/polling updates, and late
 acceptance cannot overwrite terminal diagnostics. Customer job status, delivered
 media and wallet receipts remain owned by the generation lifecycle.
 
+## Fal account cutover
+
+The server selects the first configured credential from `FAL_API_KEY` (explicit
+override), `FAL_DIRECT_KEY` (direct account) and `FAL_KEY` (Vercel Marketplace).
+Fal queue submissions use the selected credential. With both account keys
+configured, a 404 on an authenticated Fal queue status or result read can be
+retried once against the other account using the same request ID. The exact
+Fal queue origin and read path are checked before sending the alternate
+credential. Receipt ownership and terminal reconciliation stay with their
+existing callers.
+
+Keep the integration-provided `FAL_KEY` available for operator marketing runs.
+Choose it explicitly in the isolated generation process, which determines the
+Fal account used to submit and retrieve that output.
+
 ## Historical completed Fal repair
 
 Run `frontend/scripts/repair-completed-fal-attempts.ts` with the configured database
