@@ -162,7 +162,7 @@ export function handleMobileStudio(
       throw new MobileHttpError('PROJECT_UNAVAILABLE', 404, 'This project is unavailable.');
     const actor = { authMethod: 'studio-session' as const, clientId: null, userId, projectId };
     if (req.method === 'GET') {
-      if (req.nextUrl.searchParams.get('view') === 'photos') return deps.photos(actor, req.nextUrl.searchParams);
+      if (['photos', 'video-previews'].includes(req.nextUrl.searchParams.get('view') ?? '')) return deps.photos(actor, req.nextUrl.searchParams);
       const labels = req.nextUrl.searchParams.get('mediaLabels') === '1';
       const [journal, allowance, referenceOrdinals] = await Promise.all([
         deps.journal(actor, req.nextUrl.origin),
