@@ -12,6 +12,7 @@ import * as vertexError from '../frontend/src/server/images/google-vertex-image-
 import * as vertexPayload from '../frontend/src/server/images/google-vertex-image-payload.ts';
 import * as vertexResponse from '../frontend/src/server/images/google-vertex-image-response.ts';
 import * as executionError from '../frontend/src/server/images/image-generation-error.ts';
+import * as openAIImageResultStore from '../frontend/src/server/images/openai-image-result-store.ts';
 
 type Executor = typeof import('../frontend/src/server/images/google-vertex-image-execution.ts').executeGoogleVertexImageGeneration;
 type Completion = typeof import('../frontend/src/server/images/image-generation-completion.ts').persistCompletedImageGeneration;
@@ -54,6 +55,7 @@ for (const { engineId, modelId, thinkingLevel, wireLevel } of [
         '@/lib/image-renders': imageRenders,
         '@/server/media-library': { upsertLegacyJobOutputs: async () => undefined },
         './image-initial-job': { PLACEHOLDER_THUMB: '/placeholder.png' },
+        './openai-image-result-store': openAIImageResultStore,
       },
     );
     class SyntheticTransportClient extends GoogleVertexImageClient {
