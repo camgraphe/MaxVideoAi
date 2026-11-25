@@ -1,9 +1,6 @@
-import { STORYBOARD_KLING_FIRST_FRAME_JOB_PREFIX } from '@/lib/storyboard-pricing';
 import type { StoryboardStyle } from './storyboard-prompt';
 import type { StoryboardShotPlan } from './storyboard-shot-plan';
 import type { StoryboardOrientation } from './storyboard-templates';
-
-export const KLING_STORYBOARD_FIRST_FRAME_JOB_PREFIX = STORYBOARD_KLING_FIRST_FRAME_JOB_PREFIX;
 
 type KlingStoryboardFirstFramePromptInput = {
   subject: string;

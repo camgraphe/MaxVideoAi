@@ -8,14 +8,7 @@ import type { PricingSnapshot } from '@/types/engines';
 import type { ImageGenerationMode, ImageGenerationRequest } from '@/types/image-generation';
 import { isLumaAgentsImageEngineId } from '@/lib/luma-agents';
 import { isSeedreamEngineId } from '@/lib/image/seedream';
-import {
-  applyStoryboardKlingBundlePricing,
-  getStoryboardKlingFirstFramePricingConfig,
-  isKlingStoryboardBoardMetadata,
-  resolveStoryboardTier,
-  STORYBOARD_EDIT_SOURCE,
-  STORYBOARD_SOURCE,
-} from '@/lib/storyboard-pricing';
+import { applyStoryboardImagePricing } from './storyboard-image-billing';
 import {
   clampRequestedImageCount,
   getImageInputField,
@@ -216,46 +209,18 @@ async function estimateImageGenerationInternal(
         : undefined,
   });
 
-  let finalPricing = pricing;
-  if (webExtensions && engine.id === 'gpt-image-2' && input.source === STORYBOARD_SOURCE) {
-    finalPricing = await computeCanonicalPublicStoryboardSnapshot({
-      snapshot: pricing,
-      operation: STORYBOARD_SOURCE,
-      tier: resolveStoryboardTier({
-        customImageSize,
-        resolution: resolutionResult.resolution,
-        quality: input.quality,
-      }),
-    });
-    if (isKlingStoryboardBoardMetadata(input.metadata)) {
-      const firstFrameConfig = getStoryboardKlingFirstFramePricingConfig({
-        customImageSize,
-        aspectRatio: typeof input.aspectRatio === 'string' ? input.aspectRatio : null,
-      });
-      const firstFramePricing = await computeCanonicalPublicStoryboardSnapshot({
-        snapshot: await computeCanonicalPublicSnapshot({
-          engine,
-          durationSec: 1,
-          resolution: firstFrameConfig.resolution,
-          customImageSize: firstFrameConfig.customImageSize,
-          quality: firstFrameConfig.quality,
-          currency: engine.pricing?.currency ?? 'USD',
-        }),
-        operation: STORYBOARD_SOURCE,
-        tier: 'hd',
-      });
-      finalPricing = applyStoryboardKlingBundlePricing(finalPricing, firstFramePricing);
-    }
-  } else if (
-    webExtensions &&
-    engine.id === 'gpt-image-2' &&
-    input.source === STORYBOARD_EDIT_SOURCE
-  ) {
-    finalPricing = await computeCanonicalPublicStoryboardSnapshot({
-      snapshot: pricing,
-      operation: STORYBOARD_EDIT_SOURCE,
-    });
-  }
+  const finalPricing = webExtensions ? await applyStoryboardImagePricing({
+    pricing, engine, jobSurface: 'storyboard', source: input.source, metadata: input.metadata,
+    includedKlingFirstFrameParentJobId: null,
+    resolution: resolutionResult.resolution, customImageSize, quality: gpt26?.quality ?? input.quality ?? null,
+    complexity: gpt26?.complexity, referenceImageCount,
+    editReferenceSize: resolveGptImage2AutoInputImageSize(referenceImageSizes),
+    resolvedAspectRatio: input.aspectRatio ?? null, membershipTier: input.membershipTier,
+    currency: engine.pricing?.currency ?? 'USD',
+  }, {
+    quoteImage: computeCanonicalPublicSnapshot,
+    quoteStoryboard: computeCanonicalPublicStoryboardSnapshot,
+  }) : pricing;
 
   return {
     pricing: finalPricing,

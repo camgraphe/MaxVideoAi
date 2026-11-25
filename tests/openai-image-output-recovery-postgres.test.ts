@@ -2,22 +2,140 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { executeOpenAIImageGeneration, type OpenAIImageExecutionParams } from '../frontend/src/server/images/openai-image-execution';
+import { ImageGenerationExecutionError } from '../frontend/src/server/images/image-generation-error';
+import { OpenAIImageError } from '../frontend/src/server/images/openai-image-error';
 import { recoverOpenAIImageResult, runOpenAIImageOutputRecovery } from '../frontend/src/server/images/openai-image-output-recovery';
 import { openAIImageCompletionContext, persistOpenAIImageResult, reserveOpenAIImageResult } from '../frontend/src/server/images/openai-image-result-store';
 import { extractOpenAIImages } from '../frontend/src/server/images/openai-image-response';
 import { createPaidGenerationTestSchema, startDisposablePostgres } from './helpers/disposable-postgres';
+import { getFalEngineById } from '../frontend/src/config/falEngines';
 import { getDb } from '../frontend/src/lib/db';
+import { getBaseEngineIncludingHidden } from '../frontend/src/lib/engines';
+import { ensureBillingProviderSchema } from '../frontend/src/lib/schema/billing-provider-schema';
 
 const png = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aWKsAAAAASUVORK5CYII=';
 const params = { userId: 'owner', jobId: 'recover-images', engine: { id: 'gpt-image-2-6-flare', label: 'Flare', providerMeta: { provider: 'openai_images', modelSlug: 'gpt-image-2.6-flare' } },
   engineEntry: { id: 'gpt-image-2-6-flare', marketingName: 'Flare' }, mode: 't2i', effectivePrompt: 'A private prompt', combinedImageUrls: [], numImages: 4,
   outputFormat: 'png', quality: 'high', complexity: 'high', resolution: '1024x1024', background: 'auto', pricing: { totalCents: 99, currency: 'USD' } } as OpenAIImageExecutionParams;
 
+test('OpenAI keeps an included Kling first frame covered throughout execution and recovery', async (t) => {
+  const db = await startDisposablePostgres('openai-recovery-included');
+  const previous = process.env.DATABASE_URL;
+  process.env.DATABASE_URL = db.databaseUrl;
+  t.after(async () => {
+    await getDb().end();
+    await db.cleanup();
+    if (previous === undefined) delete process.env.DATABASE_URL; else process.env.DATABASE_URL = previous;
+  });
+  await createPaidGenerationTestSchema(db.pool);
+  await ensureBillingProviderSchema();
+  await db.pool.query(readFileSync('neon/migrations/95_openai_image_results.sql', 'utf8'));
+  await db.pool.query(`INSERT INTO app_jobs(job_id,user_id,surface,status,payment_status,final_price_cents,settings_snapshot)
+    VALUES ('storyboard_paid','owner','storyboard','completed','paid_wallet',99,$1::jsonb)`,
+    [JSON.stringify({ storyboard: { role: 'board', targetModel: 'kling' } })]);
+  const engine = getBaseEngineIncludingHidden('gpt-image-2-6-sunburst');
+  const engineEntry = getFalEngineById('gpt-image-2-6-sunburst');
+  assert.ok(engine && engineEntry);
+  const boardUrl = 'https://media.maxvideoai.com/renders/board.png';
+  const source = 'https://media.maxvideoai.com/renders/first-frame.png';
+  const settings = { storyboard: { role: 'kling_first_frame', targetModel: 'kling', parentJobId: 'storyboard_paid' } };
+  for (const scenario of ['complete', 'rejection', 'transport', 'storage-failure', 'partial', 'payment-changed'] as const) {
+    await t.test(scenario, async () => {
+      const jobId = `storyboard_kling_first_frame_${scenario}`;
+      const pricing = { ...params.pricing, totalCents: 0 };
+      await db.pool.query(`INSERT INTO app_jobs(job_id,user_id,surface,status,payment_status,final_price_cents,settings_snapshot)
+        VALUES ($1,'owner','storyboard','pending','included',0,$2::jsonb)`, [jobId, JSON.stringify(settings)]);
+      let posts = 0;
+      const storage = {
+        uploadFn: async () => ({ url: source, mime: 'image/png' }),
+        thumbnailsFn: async () => ['https://media.maxvideoai.com/thumbs/first-frame.webp'],
+      };
+      const run = executeOpenAIImageGeneration({ ...params, engine, engineEntry, jobId, jobSurface: 'storyboard', mode: 'i2i',
+        resolution: '2048x1152', quality: 'medium', combinedImageUrls: [boardUrl], preparedReferenceUrls: [boardUrl],
+        numImages: 1, imagePaymentStatus: 'included', pricing, pricingSnapshotJson: JSON.stringify(pricing),
+        visibility: 'private', indexable: false,
+        pendingReceipt: { jobId, userId: params.userId, billingProductKey: null, surface: 'storyboard', snapshot: pricing,
+          description: 'Included first frame', amountCents: 0, currency: 'USD', applicationFeeCents: null, vendorAccountId: null },
+      }, {
+        ...storage,
+        assertAvailableFn: () => undefined,
+        generateFn: async (mode, payload) => {
+          posts++;
+          assert.equal(mode, 'i2i');
+          assert.equal(payload.model, 'gpt-image-2.6-sunburst');
+          assert.equal(payload.size, '2048x1152');
+          assert.deepEqual(payload.images, [{ image_url: boardUrl }]);
+          if (scenario === 'transport') throw new OpenAIImageError('Timed out', { submissionState: 'uncertain' });
+          if (scenario === 'rejection') throw new OpenAIImageError('Rejected', { status: 400 });
+          return { requestId: 'req_first_frame', body: { data: [{ b64_json: scenario === 'partial' ? 'invalid' : png }] } };
+        },
+        uploadFn: async () => {
+          if (scenario === 'storage-failure') throw new Error('Storage unavailable');
+          if (scenario === 'payment-changed') {
+            await db.pool.query("UPDATE app_jobs SET payment_status='paid_wallet' WHERE job_id=$1", [jobId]);
+          }
+          return storage.uploadFn();
+        },
+      });
+      if (scenario === 'complete') {
+        assert.equal((await run).paymentStatus, 'included');
+      } else {
+        await assert.rejects(run, (error: unknown) => {
+          assert.ok(error instanceof ImageGenerationExecutionError);
+          assert.equal(error.code, scenario === 'rejection' ? 'OPENAI_IMAGE_ERROR' : 'provider_outcome_ambiguous');
+          assert.equal(error.extras?.paymentStatus, 'included');
+          return true;
+        });
+      }
+      if (scenario === 'storage-failure') {
+        assert.deepEqual(await runOpenAIImageOutputRecovery(storage), { recovered: 1, deferred: 0 });
+      }
+      if (scenario === 'payment-changed') {
+        assert.deepEqual(await runOpenAIImageOutputRecovery(storage), { recovered: 0, deferred: 0 });
+      }
+      const [job] = (await db.pool.query('SELECT status,payment_status,render_ids FROM app_jobs WHERE job_id=$1', [jobId])).rows;
+      const [receipt] = (await db.pool.query('SELECT state,images,completion_context FROM app_openai_image_results WHERE job_id=$1', [jobId])).rows;
+      assert.equal(job.payment_status, scenario === 'payment-changed' ? 'paid_wallet' : 'included');
+      assert.equal(receipt.completion_context.paymentStatus, 'included');
+      assert.equal(posts, 1);
+      assert.equal((await db.pool.query('SELECT type FROM app_receipts WHERE job_id=$1', [jobId])).rowCount, 0);
+      if (scenario === 'complete' || scenario === 'storage-failure') {
+        assert.equal(job.status, 'completed');
+        assert.equal(job.render_ids[0].url, source);
+        const [output] = (await db.pool.query('SELECT url FROM job_outputs WHERE job_id=$1', [jobId])).rows;
+        assert.equal(output.url, source);
+        assert.equal(receipt.state, 'completed');
+        assert.deepEqual(receipt.images, []);
+      } else {
+        assert.equal(job.render_ids, null);
+        assert.equal(job.status, { rejection: 'failed', transport: 'running', partial: 'provider_polling_stalled', 'payment-changed': 'running' }[scenario]);
+        assert.equal(receipt.state, { rejection: 'awaiting_response', transport: 'awaiting_response', partial: 'needs_review', 'payment-changed': 'received' }[scenario]);
+      }
+    });
+  }
+  await t.test('included recovery requires both the stored Storyboarder surface and first-frame role', async () => {
+    for (const [surface, role] of [['storyboard', 'board'], ['image', 'kling_first_frame']] as const) {
+      const jobId = `storyboard_kling_first_frame_invalid_${surface}`;
+      const context = openAIImageCompletionContext({ ...params, engine, engineEntry, jobId, jobSurface: 'storyboard',
+        numImages: 1, imagePaymentStatus: 'included' });
+      await db.pool.query(`INSERT INTO app_jobs(job_id,user_id,surface,status,payment_status,final_price_cents,settings_snapshot)
+        VALUES ($1,'owner',$2,'pending','included',0,$3::jsonb)`,
+        [jobId, surface, JSON.stringify({ storyboard: { ...settings.storyboard, role } })]);
+      await assert.rejects(reserveOpenAIImageResult(context), { code: 'OPENAI_IMAGE_ALREADY_SUBMITTED' });
+      await db.pool.query(`INSERT INTO app_openai_image_results(job_id,user_id,state,completion_context)
+        VALUES ($1,'owner','awaiting_response',$2::jsonb)`, [jobId, JSON.stringify(context)]);
+      await persistOpenAIImageResult({ jobId, userId: params.userId, requestId: 'req_invalid_role',
+        extracted: extractOpenAIImages({ data: [{ b64_json: png }] }, 'png', 1), usage: null });
+    }
+    assert.deepEqual(await runOpenAIImageOutputRecovery(), { recovered: 0, deferred: 0 });
+  });
+});
+
 test('accepted OpenAI batches survive first/later storage failures and recover without any second provider request', async () => {
   const db = await startDisposablePostgres('openai-output-recovery');
   try {
     await db.pool.query(`CREATE TABLE app_jobs(job_id TEXT PRIMARY KEY, user_id TEXT, provider TEXT, provider_job_id TEXT, render_ids JSONB,
-      status TEXT, payment_status TEXT, progress INT, message TEXT, updated_at TIMESTAMPTZ);
+      status TEXT, payment_status TEXT, surface TEXT, settings_snapshot JSONB, progress INT, message TEXT, updated_at TIMESTAMPTZ);
       INSERT INTO app_jobs(job_id,user_id,status,payment_status,progress) VALUES ('recover-images','owner','pending','paid_wallet',0);`);
     await db.pool.query(readFileSync('neon/migrations/95_openai_image_results.sql', 'utf8'));
     const queryFn = async <T>(sql: string, args?: readonly unknown[]) => (await db.pool.query(sql, args as unknown[])).rows as T[];
@@ -45,6 +163,7 @@ test('accepted OpenAI batches survive first/later storage failures and recover w
         ambiguousFn: async () => undefined, failFn: async () => { throw new Error('An accepted response must not refund'); },
       }), { code: 'provider_outcome_ambiguous' });
       assert.equal(posts, 1); assert.equal(completions, 0);
+      await db.pool.query("UPDATE app_openai_image_results SET completion_context=completion_context-'paymentStatus'");
       assert.equal(await recoverOpenAIImageResult(params.jobId, 'foreign-owner', recoveryDeps), null);
       const result = await recoverOpenAIImageResult(params.jobId, params.userId, recoveryDeps);
       assert.equal(result?.images.length, 4); assert.equal(completions, 1); assert.equal(posts, 1);
@@ -89,8 +208,8 @@ test('a refund committed during storage cannot be overwritten by image completio
 test('concurrent recovery claims one batch and an expired worker lease can resume stored outputs', async () => {
   const db = await startDisposablePostgres('openai-recovery-lease');
   try {
-    await db.pool.query(`CREATE TABLE app_jobs(job_id TEXT PRIMARY KEY,user_id TEXT,status TEXT,payment_status TEXT);
-      INSERT INTO app_jobs VALUES('recover-images','owner','running','paid_wallet')`);
+    await db.pool.query(`CREATE TABLE app_jobs(job_id TEXT PRIMARY KEY,user_id TEXT,status TEXT,payment_status TEXT,surface TEXT,settings_snapshot JSONB);
+      INSERT INTO app_jobs(job_id,user_id,status,payment_status) VALUES('recover-images','owner','running','paid_wallet')`);
     await db.pool.query(readFileSync('neon/migrations/95_openai_image_results.sql', 'utf8'));
     const queryFn = async <T>(sql: string, args?: readonly unknown[]) => (await db.pool.query(sql, args as unknown[])).rows as T[];
     const stage = async () => {
@@ -129,7 +248,8 @@ test('concurrent recovery claims one batch and an expired worker lease can resum
 test('paired display preparation checkpoints receipt bytes and resumes completion without refetch or reupload',async()=>{
  const db=await startDisposablePostgres('openai-display-recovery');
  try{
-  await db.pool.query(`CREATE TABLE app_jobs(job_id TEXT PRIMARY KEY,user_id TEXT,status TEXT,payment_status TEXT); INSERT INTO app_jobs VALUES('recover-images','owner','running','paid_wallet')`);
+  await db.pool.query(`CREATE TABLE app_jobs(job_id TEXT PRIMARY KEY,user_id TEXT,status TEXT,payment_status TEXT,surface TEXT,settings_snapshot JSONB);
+    INSERT INTO app_jobs(job_id,user_id,status,payment_status) VALUES('recover-images','owner','running','paid_wallet')`);
   await db.pool.query(readFileSync('neon/migrations/95_openai_image_results.sql','utf8'));
   const queryFn=async<T>(sql:string,args?:readonly unknown[])=>(await db.pool.query(sql,args as unknown[])).rows as T[];
   await reserveOpenAIImageResult(openAIImageCompletionContext({...params,numImages:1}),queryFn);

@@ -15,7 +15,7 @@ const params = { userId: 'owner', jobId: 'offline-job', engine: { id: 'gpt-image
 test('OpenAI output, ambiguous transport and storage failure retain the paid identity and never cause another POST', async () => {
   const db = await startDisposablePostgres('openai-image-output');
   try {
-    await db.pool.query(`CREATE TABLE app_jobs(job_id TEXT PRIMARY KEY, user_id TEXT, provider TEXT, provider_job_id TEXT, render_ids JSONB, status TEXT, payment_status TEXT, progress INT, message TEXT, updated_at TIMESTAMPTZ);
+    await db.pool.query(`CREATE TABLE app_jobs(job_id TEXT PRIMARY KEY, user_id TEXT, provider TEXT, provider_job_id TEXT, render_ids JSONB, status TEXT, payment_status TEXT, surface TEXT, settings_snapshot JSONB, progress INT, message TEXT, updated_at TIMESTAMPTZ);
       INSERT INTO app_jobs(job_id,user_id,status,payment_status,progress) VALUES ('offline-job','owner','pending','paid_wallet',0);`);
     await db.pool.query(readFileSync('neon/migrations/95_openai_image_results.sql', 'utf8'));
     for (const scenario of ['complete', 'partial', 'storage-failure', 'transport', 'rejection'] as const) {

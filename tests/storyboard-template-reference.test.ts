@@ -131,3 +131,27 @@ test('leaves non-storyboard template URLs unchanged', async () => {
   assert.deepEqual(result.urls, ['http://localhost:3000/assets/other.png']);
   assert.equal(result.storedAssetInfoByUrl.size, 0);
 });
+
+test('direct Storyboard requests only materialize the first local template slot', async () => {
+  const first = 'http://localhost:3000/storyboard/templates/storyboard-template-6.png';
+  const second = 'http://localhost:3000/storyboard/templates/storyboard-template-8.png';
+  const reference = 'https://media.maxvideoai.com/storyboard-template-references/owner/template.png';
+  const uploads: Array<string | null | undefined> = [];
+  const result = await resolveStoryboardTemplateReferenceUrls({
+    userId: 'owner',
+    urls: [first, second],
+    firstSlotOnly: true,
+    deps: {
+      isStorageConfiguredFn: () => true,
+      readFileFn: async () => Buffer.from('png'),
+      uploadImageToStorageFn: async ({ fileName }) => {
+        uploads.push(fileName);
+        return { url: reference, key: 'storyboard-template-references/owner/template.png', size: 3, width: 1600, height: 1000, mime: 'image/png' };
+      },
+      recordUserAssetFn: async () => 'asset_template',
+    },
+  });
+
+  assert.deepEqual(result.urls, [reference, second]);
+  assert.deepEqual(uploads, ['storyboard-template-6.png']);
+});

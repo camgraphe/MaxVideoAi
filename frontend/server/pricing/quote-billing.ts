@@ -278,6 +278,7 @@ export type CanonicalStoryboardSnapshotInput = {
   snapshot: PricingSnapshot;
   operation: StoryboardPricingOperation;
   tier?: StoryboardTier;
+  legacySupplierCostCents?: number;
 };
 
 export async function computeCanonicalStoryboardBillingSnapshot(
@@ -298,18 +299,29 @@ export async function computeCanonicalStoryboardBillingSnapshot(
   const profileId = policy.rule.compatibilityProfile ?? 'standard';
   const compatibilityProfile = policyDocument.compatibilityProfiles.find((profile) => profile.id === profileId);
   if (!compatibilityProfile) throw new Error(`Missing pricing compatibility profile ${profileId}`);
+  const facts = { ...projection.facts, currency: policy.rule.currency };
+  const scenario = {
+    id: `billing:${STORYBOARD_BILLING_ENGINE_ID}:${input.operation}:${projection.resolution}`,
+    engineId: STORYBOARD_BILLING_ENGINE_ID,
+    mode: input.operation,
+    resolution: projection.resolution,
+    membershipTier: LIVE_MEMBERSHIP_POLICY.tier,
+    discountPercent: LIVE_MEMBERSHIP_POLICY.discountPercent,
+  };
+  const priceFloorCents = input.legacySupplierCostCents === undefined ? undefined : quoteCanonicalPricing({
+    facts: { ...facts, vendorSubtotalExactCents: input.legacySupplierCostCents },
+    scenario,
+    policy,
+    compatibilityProfile,
+  }).customerTotalCents;
   const quote = quoteCanonicalPricing({
-    facts: {
-      ...projection.facts,
-      currency: policy.rule.currency,
-    },
-    scenario: {
-      id: `billing:${STORYBOARD_BILLING_ENGINE_ID}:${input.operation}:${projection.resolution}`,
-      engineId: STORYBOARD_BILLING_ENGINE_ID,
-      mode: input.operation,
-      resolution: projection.resolution,
-      membershipTier: LIVE_MEMBERSHIP_POLICY.tier,
-      discountPercent: LIVE_MEMBERSHIP_POLICY.discountPercent,
+    facts,
+    scenario: priceFloorCents === undefined ? scenario : {
+      ...scenario,
+      commercialAdjustment: {
+        pricingBasisExactCents: facts.vendorSubtotalExactCents,
+        minimumCustomerTotalCents: priceFloorCents,
+      },
     },
     policy,
     compatibilityProfile,
@@ -319,6 +331,9 @@ export async function computeCanonicalStoryboardBillingSnapshot(
     base: projection.base,
     addons: projection.addons,
     vendorAccountId,
-    meta: projection.meta,
+    meta: {
+      ...projection.meta,
+      ...(priceFloorCents === undefined ? {} : { storyboard_legacy_price_floor_cents: priceFloorCents }),
+    },
   });
 }

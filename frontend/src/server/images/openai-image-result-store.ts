@@ -5,7 +5,10 @@ import type { OpenAIImageExecutionParams } from './openai-image-execution';
 import type { extractOpenAIImages, parseOpenAIImageUsage } from './openai-image-response';
 import { OpenAIImageError } from './openai-image-error';
 
-export type OpenAIImageCompletionContext = Omit<Parameters<typeof persistCompletedImageGeneration>[0], 'images' | 'openAIRecoveryLease'>;
+export type OpenAIImagePaymentStatus = 'paid_wallet' | 'included';
+export type OpenAIImageCompletionContext = Omit<Parameters<typeof persistCompletedImageGeneration>[0], 'images' | 'openAIRecoveryLease' | 'paymentStatus'> & {
+  paymentStatus?: OpenAIImagePaymentStatus;
+};
 export type OpenAIImageResultRow = {
   job_id: string; user_id: string; provider_request_id: string | null;
   completion_context: OpenAIImageCompletionContext;
@@ -13,6 +16,18 @@ export type OpenAIImageResultRow = {
   response_complete: boolean;
   stored_images: Array<{ index: number; image: GeneratedImage }>;
 };
+
+// An included reservation is valid only for the first-frame role admitted by Storyboarder billing.
+export const OPENAI_IMAGE_JOB_PAYMENT_SQL = `CASE
+  WHEN j.payment_status = 'paid_wallet' THEN 'paid_wallet'
+  WHEN j.payment_status = 'included' AND j.surface = 'storyboard'
+    AND j.settings_snapshot->'storyboard'->>'role' = 'kling_first_frame'
+    AND j.settings_snapshot->'storyboard'->>'targetModel' = 'kling'
+    AND NULLIF(BTRIM(j.settings_snapshot->'storyboard'->>'parentJobId'), '') IS NOT NULL
+  THEN 'included'
+END`;
+// Existing OpenAI receipts represent wallet charges and predate the payment field.
+export const OPENAI_IMAGE_RECEIPT_PAYMENT_SQL = `COALESCE(r.completion_context->>'paymentStatus', 'paid_wallet')`;
 
 /** Allowlist only completion facts: never persist keys, signed references or prompts. */
 export function openAIImageCompletionContext(p: OpenAIImageExecutionParams): OpenAIImageCompletionContext {
@@ -22,7 +37,8 @@ export function openAIImageCompletionContext(p: OpenAIImageExecutionParams): Ope
     engineId: p.engine.id, engineLabel: p.engine.label, indexable: p.indexable,
     jobId: p.jobId, jobSurface: p.jobSurface, limitGenerations: p.limitGenerations,
     maskUrl: null, mode: p.mode, normalizedSeed: p.normalizedSeed, numImages: p.numImages,
-    outputFormat: p.outputFormat, pricing: p.pricing, pricingSnapshotJson: p.pricingSnapshotJson,
+    outputFormat: p.outputFormat, paymentStatus: p.imagePaymentStatus ?? 'paid_wallet',
+    pricing: p.pricing, pricingSnapshotJson: p.pricingSnapshotJson,
     providerJobId: null, providerMode: 'openai_images_direct', quality: p.quality,
     resolvedAspectRatio: p.resolvedAspectRatio, resolution: p.resolution,
     thinkingLevel: p.thinkingLevel, userId: p.userId, vendorAccountId: p.vendorAccountId,
@@ -32,9 +48,10 @@ export function openAIImageCompletionContext(p: OpenAIImageExecutionParams): Ope
 
 export async function reserveOpenAIImageResult(context: OpenAIImageCompletionContext, execute: typeof query = query): Promise<void> {
   const rows = await execute(`INSERT INTO app_openai_image_results(job_id,user_id,state,completion_context)
-    SELECT job_id,user_id,'awaiting_response',$3::jsonb FROM app_jobs
-    WHERE job_id=$1 AND user_id=$2 AND status NOT IN ('completed','failed')
-    ON CONFLICT (job_id) DO NOTHING RETURNING job_id`, [context.jobId, context.userId, JSON.stringify(context)]);
+    SELECT j.job_id,j.user_id,'awaiting_response',$3::jsonb FROM app_jobs j
+    WHERE j.job_id=$1 AND j.user_id=$2 AND j.status NOT IN ('completed','failed')
+      AND ${OPENAI_IMAGE_JOB_PAYMENT_SQL} = $4
+    ON CONFLICT (job_id) DO NOTHING RETURNING job_id`, [context.jobId, context.userId, JSON.stringify(context), context.paymentStatus ?? 'paid_wallet']);
   if (!rows.length) throw new OpenAIImageError('This OpenAI request already has a durable attempt.', { submissionState: 'uncertain', code: 'OPENAI_IMAGE_ALREADY_SUBMITTED' });
 }
 

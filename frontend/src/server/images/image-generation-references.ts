@@ -1,7 +1,9 @@
 import { assertKlingImageV4ReferenceCount, isKlingImageV4EngineId, KLING_IMAGE_V4_PROMPT_MAX_CHARS } from '@/lib/image/kling-image-v4';
 import { NANO21_ENGINE_ID } from '@/lib/nano-banana-2-1';
 import { isGptImage26EngineId } from '@/lib/image/gptImage26';
-import { prepareOpenAIImageReferences } from './openai-image-references';
+import { getKlingStoryboardFirstFrameParentJobId, isStoryboardBillingSource, STORYBOARD_EDIT_SOURCE, STORYBOARD_IMAGE_ENGINE_ID, STORYBOARD_SOURCE } from '@/lib/storyboard-pricing';
+import { prepareOpenAIImageReferenceContext, type OpenAIStoryboardReferenceScope } from './openai-image-references';
+import { OpenAIImageError } from './openai-image-error';
 import { extractStorageKeyFromUrl, ownedMediaStorageKeyForUrl } from '@/server/storage';
 import { canReadMarketingFile } from '@/server/marketing-media/access';
 import { query } from '@/lib/db';
@@ -25,6 +27,7 @@ import {
   sanitizeCharacterReferences,
 } from './image-provider-payload';
 import type { ImageEngineEntry } from './image-generation-request-context';
+import { normalizeImageGenerationMetadata } from './image-generation-normalization';
 import { qualifyKlingImageV4References } from './kling-image-v4-references';
 import { resolveStoryboardTemplateReferenceUrls } from './storyboard-template-reference';
 
@@ -51,15 +54,25 @@ export async function prepareImageGenerationReferences({
   prompt: string;
 }): Promise<ImageGenerationReferenceContext> {
   const engine = engineEntry.engine;
+  const isOpenAI = isGptImage26EngineId(engine.id);
+  let openAIStoryboard: OpenAIStoryboardReferenceScope | undefined;
+  if (engine.id === STORYBOARD_IMAGE_ENGINE_ID && isStoryboardBillingSource(body.source)) {
+    const metadata = normalizeImageGenerationMetadata(body.metadata);
+    if (body.source === STORYBOARD_EDIT_SOURCE) openAIStoryboard = { role: 'edit' };
+    else if (metadata?.storyboard?.role === 'kling_first_frame') {
+      openAIStoryboard = { role: 'kling_first_frame', parentJobId: getKlingStoryboardFirstFrameParentJobId(metadata) };
+    } else openAIStoryboard = { role: 'board' };
+  }
   const rawImageUrls = Array.isArray(body.imageUrls) ? body.imageUrls : [];
   const submittedImageUrls = rawImageUrls
     .map((entry) => (typeof entry === 'string' ? entry.trim() : ''))
     .filter((entry) => entry.length);
   const storyboardTemplateReferences =
-    body.source === 'storyboard'
+    body.source === STORYBOARD_SOURCE && (!isOpenAI || openAIStoryboard?.role === 'board')
       ? await resolveStoryboardTemplateReferenceUrls({
           urls: submittedImageUrls,
           userId,
+          firstSlotOnly: Boolean(openAIStoryboard),
         })
       : { urls: submittedImageUrls, storedAssetInfoByUrl: new Map<string, StoredAssetInfo>() };
   const imageUrls = storyboardTemplateReferences.urls;
@@ -67,6 +80,9 @@ export async function prepareImageGenerationReferences({
   const characterReferenceUrls = characterReferences.map((entry) => entry.imageUrl);
   let normalizedImageUrls = imageUrls.filter((url) => !characterReferenceUrls.includes(url));
   let combinedImageUrls = [...characterReferenceUrls, ...normalizedImageUrls];
+  if (openAIStoryboard) {
+    combinedImageUrls = [...imageUrls, ...characterReferenceUrls.filter(url => !imageUrls.includes(url))];
+  }
   const effectivePrompt = buildCharacterReferencePrompt(prompt, characterReferences);
   if (isKlingImageV4EngineId(engine.id)) {
     // The slot order is semantic for @ImageN, including character images.
@@ -84,7 +100,7 @@ export async function prepareImageGenerationReferences({
       storedAssetInfoByUrl: new Map(),
     };
   }
-  if (isGptImage26EngineId(engine.id) && effectivePrompt.length > 32000) fail(mode, 'invalid_prompt', 'The combined image prompt exceeds 32000 characters.', 400);
+  if (isOpenAI && effectivePrompt.length > 32000) fail(mode, 'invalid_prompt', 'The combined image prompt exceeds 32000 characters.', 400);
 
   const invalidImageUrl = combinedImageUrls.find((entry) => !/^https?:\/\//i.test(entry));
   if (invalidImageUrl) {
@@ -125,10 +141,20 @@ export async function prepareImageGenerationReferences({
   }
   const supportedReferenceFormats = getSupportedImageFormats(engine);
   // Validate original ownership, MIME and size before any optional format conversion.
-  const preparedOpenAIReferenceUrls = isGptImage26EngineId(engine.id)
-    ? await prepareOpenAIImageReferences({ userId, urls: combinedImageUrls }) : undefined;
+  let preparedOpenAIReferenceUrls: string[] | undefined;
   let storedAssetInfoByUrl = new Map<string, StoredAssetInfo>();
-  if (supportedReferenceFormats.length && combinedImageUrls.length) {
+  if (isOpenAI) {
+    try {
+      const prepared = await prepareOpenAIImageReferenceContext({ userId, urls: combinedImageUrls, storyboard: openAIStoryboard });
+      preparedOpenAIReferenceUrls = prepared.preparedReferenceUrls;
+      if (openAIStoryboard) storedAssetInfoByUrl = prepared.storedAssetInfoByUrl;
+    } catch (error) {
+      if (openAIStoryboard && error instanceof OpenAIImageError) fail(mode, error.code, error.message, error.status);
+      throw error;
+    }
+  }
+  // Storyboard's direct path consumes the verified original supplied above.
+  if (!openAIStoryboard && supportedReferenceFormats.length && combinedImageUrls.length) {
     storedAssetInfoByUrl = await getStoredAssetInfoByUrl(userId, combinedImageUrls);
     storyboardTemplateReferences.storedAssetInfoByUrl.forEach((value, key) => {
       storedAssetInfoByUrl.set(key, value);

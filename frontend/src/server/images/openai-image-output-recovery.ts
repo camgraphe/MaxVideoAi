@@ -5,7 +5,7 @@ import { uploadImageToStorage } from '@/server/storage';
 import { createImageThumbnailBatch, prepareImageRenditions } from '@/server/image-thumbnails';
 import type { GeneratedImage } from '@/types/image-generation';
 import { persistCompletedImageGeneration } from './image-generation-completion';
-import type { OpenAIImageResultRow } from './openai-image-result-store';
+import { OPENAI_IMAGE_JOB_PAYMENT_SQL, OPENAI_IMAGE_RECEIPT_PAYMENT_SQL, type OpenAIImageResultRow } from './openai-image-result-store';
 
 export type OpenAIImageRecoveryDependencies = {
   queryFn?: typeof query;
@@ -24,7 +24,8 @@ export async function recoverOpenAIImageResult(jobId: string, userId: string, de
     WHERE r.job_id=$1 AND r.user_id=$2 AND r.state='received'
       AND (r.lease_expires_at IS NULL OR r.lease_expires_at<NOW())
       AND EXISTS(SELECT 1 FROM app_jobs j WHERE j.job_id=r.job_id AND j.user_id=r.user_id
-        AND j.status NOT IN ('completed','failed') AND j.payment_status='paid_wallet')
+        AND j.status NOT IN ('completed','failed')
+        AND ${OPENAI_IMAGE_JOB_PAYMENT_SQL} = ${OPENAI_IMAGE_RECEIPT_PAYMENT_SQL})
     RETURNING r.job_id,r.user_id,r.provider_request_id,r.completion_context,r.images,r.response_complete,r.stored_images`, [jobId, userId, lease]);
   if (!receipt) return null;
   const stored = [...receipt.stored_images];
@@ -44,14 +45,16 @@ export async function recoverOpenAIImageResult(jobId: string, userId: string, de
     }
     if (!receipt.response_complete || stored.length !== receipt.completion_context.numImages) {
       // One statement makes the private receipt and public job agree. Reuse the
-      // established manual-review state; keep paid facts and partial originals.
+      // established manual-review state; keep payment and partial originals.
       await execute(`WITH review AS (
         UPDATE app_openai_image_results SET state='needs_review',lease_token=NULL,lease_expires_at=NULL,updated_at=NOW()
-        WHERE job_id=$1 AND user_id=$2 AND lease_token=$3 RETURNING job_id
-      ) UPDATE app_jobs SET status='provider_polling_stalled',provider='openai_images_direct',
-        provider_job_id=COALESCE($4,provider_job_id),message=$5,updated_at=NOW()
-        WHERE job_id IN (SELECT job_id FROM review) AND user_id=$2
-          AND payment_status='paid_wallet' AND status NOT IN ('completed','failed')`, [jobId, userId, lease, receipt.provider_request_id,
+        WHERE job_id=$1 AND user_id=$2 AND state='received' AND lease_token=$3 AND lease_expires_at>NOW()
+        RETURNING job_id,completion_context
+      ) UPDATE app_jobs j SET status='provider_polling_stalled',provider='openai_images_direct',
+        provider_job_id=COALESCE($4,j.provider_job_id),message=$5,updated_at=NOW()
+        FROM review r WHERE j.job_id=r.job_id AND j.user_id=$2
+          AND j.status NOT IN ('completed','failed')
+          AND ${OPENAI_IMAGE_JOB_PAYMENT_SQL} = ${OPENAI_IMAGE_RECEIPT_PAYMENT_SQL}`, [jobId, userId, lease, receipt.provider_request_id,
         `This image batch needs manual review (${stored.length} validated, ${receipt.completion_context.numImages} requested). The received originals are preserved. Contact MaxVideoAI support with this job ID; do not submit it again.`]);
       return null;
     }
@@ -94,7 +97,8 @@ export async function runOpenAIImageOutputRecovery(deps: OpenAIImageRecoveryDepe
   const candidates = await execute<{ job_id: string; user_id: string }>(`SELECT r.job_id,r.user_id
     FROM app_openai_image_results r JOIN app_jobs j ON j.job_id=r.job_id AND j.user_id=r.user_id
     WHERE r.state='received' AND (r.lease_expires_at IS NULL OR r.lease_expires_at<NOW())
-      AND j.status NOT IN ('completed','failed') AND j.payment_status='paid_wallet'
+      AND j.status NOT IN ('completed','failed')
+      AND ${OPENAI_IMAGE_JOB_PAYMENT_SQL} = ${OPENAI_IMAGE_RECEIPT_PAYMENT_SQL}
     ORDER BY r.updated_at LIMIT 5`);
   let recovered = 0, deferred = 0;
   for (const row of candidates) {

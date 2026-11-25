@@ -5,6 +5,7 @@ import type { BillingProductKey, JobSurface } from '@/types/billing';
 import type { PricingSnapshot } from '@/types/engines';
 import type { GeneratedImage, ImageGenerationMode } from '@/types/image-generation';
 import { PLACEHOLDER_THUMB } from './image-initial-job';
+import { OPENAI_IMAGE_JOB_PAYMENT_SQL, OPENAI_IMAGE_RECEIPT_PAYMENT_SQL } from './openai-image-result-store';
 
 type CompletedImage = GeneratedImage & {
   thumbUrl?: string | null;
@@ -81,7 +82,7 @@ export async function persistCompletedImageGeneration(params: {
   const renderIdsJson = JSON.stringify(storedRenderEntries);
 
   const completedRows = await query(
-    `UPDATE app_jobs
+    `UPDATE app_jobs j
      SET thumb_url = $2,
          preview_frame = $2,
          video_url = $3,
@@ -102,10 +103,11 @@ export async function persistCompletedImageGeneration(params: {
          provider = $16,
          provisional = FALSE,
          updated_at = NOW()
-     WHERE job_id = $1${params.openAIRecoveryLease ? `
-       AND user_id = $17 AND payment_status = 'paid_wallet' AND status NOT IN ('completed','failed')
-       AND EXISTS (SELECT 1 FROM app_openai_image_results r WHERE r.job_id = app_jobs.job_id
-         AND r.user_id = $17 AND r.state = 'received' AND r.lease_token = $18 AND r.lease_expires_at > NOW())` : ''}
+     WHERE j.job_id = $1${params.openAIRecoveryLease ? `
+       AND j.user_id = $17 AND j.payment_status = $15 AND j.status NOT IN ('completed','failed')
+       AND EXISTS (SELECT 1 FROM app_openai_image_results r WHERE r.job_id = j.job_id
+         AND r.user_id = $17 AND r.state = 'received' AND r.lease_token = $18 AND r.lease_expires_at > NOW()
+         AND ${OPENAI_IMAGE_JOB_PAYMENT_SQL} = ${OPENAI_IMAGE_RECEIPT_PAYMENT_SQL})` : ''}
      RETURNING job_id`,
     [
       jobId,

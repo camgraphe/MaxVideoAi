@@ -4,8 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { authFetch } from '@/lib/authFetch';
 import { CUSTOMER_PRICING_REFRESH_EVENT } from '@/lib/customer-tariff-revision';
 import type { PricingSnapshot } from '@/types/engines';
-import { STORYBOARD_EDIT_SOURCE, STORYBOARD_SOURCE } from '@/lib/storyboard-pricing';
-import { resolveStoryboardVisiblePrice } from '../_lib/storyboard-price-display';
+import { STORYBOARD_EDIT_SOURCE, STORYBOARD_IMAGE_ENGINE_ID, STORYBOARD_SOURCE } from '@/lib/storyboard-pricing';
 import type { StoryboardTargetModel } from '../_lib/storyboard-prompt';
 import {
   STORYBOARD_TEMPLATE_SIZES,
@@ -25,6 +24,7 @@ export type UseStoryboardPricingParams = {
   storyboardOrientation: StoryboardOrientation;
   storyboardTier: StoryboardTier;
   targetModel: StoryboardTargetModel;
+  referenceImageCount: number;
   selectedImage: {
     url?: string | null;
     width?: number | null;
@@ -46,27 +46,35 @@ export function useStoryboardPricing({
   storyboardOrientation,
   storyboardTier,
   targetModel,
+  referenceImageCount,
   selectedImage,
 }: UseStoryboardPricingParams): {
   tierConfig: StoryboardOutputConfig;
   editOutputConfig: StoryboardOutputConfig;
-  klingFirstFramePrice: StoryboardPriceValue;
   activePrice: string;
   editPriceLabel: string;
   tierPriceLabels: Record<StoryboardTier, string>;
   generationPricingSnapshot: PricingSnapshot | null;
   editPricingSnapshot: PricingSnapshot | null;
 } {
-  const [tierPrices, setTierPrices] = useState<StoryboardPriceState>({ hd: null, '4k': null, ultra: null });
-  const [editPrice, setEditPrice] = useState<StoryboardPriceValue>(null);
+  const [tierQuotes, setTierQuotes] = useState<{ key: string; prices: StoryboardPriceState } | null>(null);
+  const [editQuote, setEditQuote] = useState<{ key: string; price: StoryboardPriceValue } | null>(null);
   const [priceRefresh, setPriceRefresh] = useState(0);
   useEffect(() => {
-    const refresh = () => { setTierPrices({ hd: null, '4k': null, ultra: null }); setEditPrice(null); setPriceRefresh((value) => value + 1); };
+    const refresh = () => setPriceRefresh((value) => value + 1);
     window.addEventListener(CUSTOMER_PRICING_REFRESH_EVENT, refresh);
     return () => window.removeEventListener(CUSTOMER_PRICING_REFRESH_EVENT, refresh);
   }, []);
   const tierConfig = getStoryboardOutputConfig(storyboardTier, storyboardOrientation);
-  const editOutputConfig = getStoryboardEditOutputConfig();
+  const selectedUrl = selectedImage?.url;
+  const selectedWidth = selectedImage?.width ?? null;
+  const selectedHeight = selectedImage?.height ?? null;
+  const editOutputConfig = useMemo(() => getStoryboardEditOutputConfig({ width: selectedWidth, height: selectedHeight }),
+    [selectedWidth, selectedHeight]);
+  const tierKey = `${storyboardOrientation}:${targetModel}:${referenceImageCount}:${priceRefresh}`;
+  const editKey = JSON.stringify([selectedUrl, selectedWidth, selectedHeight, priceRefresh]);
+  const tierPrices = tierQuotes?.key === tierKey ? tierQuotes.prices : null;
+  const editPrice = editQuote?.key === editKey ? editQuote.price : null;
 
   useEffect(() => {
     let active = true;
@@ -78,14 +86,16 @@ export function useStoryboardPricing({
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              engineId: 'gpt-image-2',
+              engineId: STORYBOARD_IMAGE_ENGINE_ID,
               mode: 'i2i',
               numImages: 1,
               referenceImageSizes: [STORYBOARD_TEMPLATE_SIZES[storyboardOrientation]],
+              referenceImageCount,
               resolution: config.resolution,
               customImageSize: config.customImageSize,
               quality: config.quality,
               source: STORYBOARD_SOURCE,
+              metadata: { storyboard: { role: 'board', targetModel } },
             }),
           });
           const payload = (await response.json().catch(() => null)) as {
@@ -101,34 +111,28 @@ export function useStoryboardPricing({
         })
       );
       if (!active) return;
-      setTierPrices(Object.fromEntries(entries) as StoryboardPriceState);
+      setTierQuotes({ key: tierKey, prices: Object.fromEntries(entries) as StoryboardPriceState });
     }
     void loadPrices().catch(() => {
-      if (active) setTierPrices({ hd: null, '4k': null, ultra: null });
+      if (active) setTierQuotes(null);
     });
     return () => {
       active = false;
     };
-  }, [storyboardOrientation, priceRefresh]);
+  }, [storyboardOrientation, targetModel, referenceImageCount, tierKey]);
 
   useEffect(() => {
-    if (!selectedImage?.url) {
-      setEditPrice(null);
-      return;
-    }
-
+    if (!selectedUrl) return;
     let active = true;
-    const selectedImageWidth = selectedImage.width ?? null;
-    const selectedImageHeight = selectedImage.height ?? null;
     async function loadEditPrice() {
       const response = await authFetch('/api/images/estimate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          engineId: 'gpt-image-2',
+          engineId: STORYBOARD_IMAGE_ENGINE_ID,
           mode: 'i2i',
           numImages: 1,
-          referenceImageSizes: [{ width: selectedImageWidth, height: selectedImageHeight }],
+          referenceImageSizes: [{ width: selectedWidth, height: selectedHeight }],
           resolution: editOutputConfig.resolution,
           customImageSize: editOutputConfig.customImageSize,
           quality: editOutputConfig.quality,
@@ -140,57 +144,34 @@ export function useStoryboardPricing({
         pricing?: PricingSnapshot;
       } | null;
       if (!active) return;
-      setEditPrice(
-        payload?.ok && payload.pricing?.totalCents != null
+      setEditQuote({
+        key: editKey,
+        price: payload?.ok && payload.pricing?.totalCents != null
           ? { cents: payload.pricing.totalCents, currency: payload.pricing.currency ?? 'USD', pricing: payload.pricing }
-          : null
-      );
+          : null,
+      });
     }
     void loadEditPrice().catch(() => {
-      if (active) setEditPrice(null);
+      if (active) setEditQuote(null);
     });
     return () => {
       active = false;
     };
-  }, [
-    priceRefresh,
-    selectedImage?.height,
-    selectedImage?.url,
-    selectedImage?.width,
-    editOutputConfig.customImageSize,
-    editOutputConfig.quality,
-    editOutputConfig.resolution,
-  ]);
+  }, [selectedUrl, selectedWidth, selectedHeight, editOutputConfig, editKey]);
 
-  const klingFirstFramePrice = tierPrices.hd;
-  const tierPriceLabels = useMemo(
-    () =>
-      Object.fromEntries(
-        STORYBOARD_TIER_OPTIONS.map((tier) => [
-          tier,
-          formatStoryboardPrice(
-            resolveStoryboardVisiblePrice({
-              targetModel,
-              tierPrice: tierPrices[tier],
-              klingFirstFramePrice,
-            }),
-            locale
-          ),
-        ])
-      ) as Record<StoryboardTier, string>,
-    [klingFirstFramePrice, locale, targetModel, tierPrices]
-  );
+  const tierPriceLabels = useMemo(() => Object.fromEntries(
+    STORYBOARD_TIER_OPTIONS.map(tier => [tier, formatStoryboardPrice(tierPrices?.[tier] ?? null, locale)])
+  ) as Record<StoryboardTier, string>, [locale, tierPrices]);
   const activePrice = tierPriceLabels[storyboardTier];
   const editPriceLabel = useMemo(() => formatStoryboardPrice(editPrice, locale), [editPrice, locale]);
 
   return {
     tierConfig,
     editOutputConfig,
-    klingFirstFramePrice,
     activePrice,
     editPriceLabel,
     tierPriceLabels,
-    generationPricingSnapshot: tierPrices[storyboardTier]?.pricing ?? null,
+    generationPricingSnapshot: tierPrices?.[storyboardTier]?.pricing ?? null,
     editPricingSnapshot: editPrice?.pricing ?? null,
   };
 }
