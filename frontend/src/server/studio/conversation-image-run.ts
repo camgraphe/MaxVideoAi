@@ -63,9 +63,9 @@ async function prepareMediaAction(options: {
   actor: StudioGenerationActor; turn: StoredImageTurn; input: ImageTurnInput;
   references:ResolvedReference[];
   referenceFingerprint: string; enabled: boolean; factories: StudioMediaFactories;editingEnabled?:boolean;
-}, action: StudioMediaIntent, callId: string) {
+}, action: StudioMediaIntent, callId: string, checked?:Awaited<ReturnType<typeof validateStudioMediaRequest>>) {
   const {actor, turn, factories} = options;
-  const selection = await validateStudioMediaRequest(actor, action, options.input, factories, options.enabled,{reviewedReferences:options.references});
+  const selection = checked ?? await validateStudioMediaRequest(actor, action, options.input, factories, options.enabled,{reviewedReferences:options.references});
   if (!turn.draft_json) {
     const source=selection.extensionSource;
     const extensionAssembly=source&&options.editingEnabled&&selection.extensionOutput==='continuation'?planStudioExtensionAssembly(action,(await readStudioConversationTimeline(actor)).data,source.mediaFacts?.source==='probe'?source.mediaFacts.durationSec??null:null,studioExtensionSourceSnapshot(source)):undefined;
@@ -153,6 +153,7 @@ export async function runStudioImageActions(options: {
   history: ImageConversationHistoryTurn[]; enabled: boolean;
   historyFacts?:StudioConversationHistoryFacts;
   selectedModelId?: string;
+  revision?: import('./conversation-quote-revision').StudioQuoteRevision;
   factory: ImageGenerationFactory; createResponse?: StudioResponseCreator;
   responseReplayOnly?: boolean;
   taskExecution?:StudioTaskExecution;
@@ -183,6 +184,9 @@ export async function runStudioImageActions(options: {
   const director = createStudioConversationDirector({clientSurface: input.clientSurface, creatorEnabled:creator.executionEnabled,model: assistance?.model,runtimePolicy:assistance?.tariff_snapshot?.runtime,modelForNextCall:()=>currentModel,createResponse: options.createResponse, mediaEnabled: options.mediaEnabled,characterEnabled:options.characterEnabled,characterBuilderEnabled:options.characterBuilderEnabled,editingEnabled: options.editingEnabled,exportsEnabled: options.exportsEnabled,analysisEnabled,analysisSponsored,analysisProfiles:{video:!!analysisPolicy?.video,audio:!!analysisPolicy?.audio},assistanceCreditsEnabled:policy.credits===true,taskExecution:options.taskExecution,localGreetingEnabled:!options.responseReplayOnly&&!hasGreetingCheckpoint});
   const character = () => (options.characterFactory ?? createCharacterStudioIntegration)(actor,{executionEnabled:options.characterEnabled===true});
   let currentCallId: string;
+  // A deterministic revision's preflight and execution share this single turn and action receipt.
+  let revisionImage: Awaited<ReturnType<typeof validateStudioImageRequest>> | undefined;
+  let revisionMedia: Awaited<ReturnType<typeof validateStudioMediaRequest>> | undefined;
   const execute = createStudioActionExecutor(actor, {selectedModelId:options.selectedModelId,accountUrl:options.requestOrigin,referenceFingerprint:options.referenceFingerprint,enabled: options.enabled, generation, factories: options.factories, mediaEnabled: options.mediaEnabled,
     creator,prepareCreator:action=>creator.prepare(action,async(quote,executor)=>{await completeStudioAction(actor,turn,currentCallId,{ok:true,action:action.action,data:quote},executor);}),
     character:options.characterEnabled ? character() : undefined,
@@ -246,7 +250,7 @@ export async function runStudioImageActions(options: {
     },
     prepareMedia: async action => {
       if (!options.factories) throw new AgentApiError('ENGINE_UNAVAILABLE', 'Studio media tools are unavailable.');
-      return prepareMediaAction({...options, factories: options.factories}, action, currentCallId);
+      return prepareMediaAction({...options, factories: options.factories}, action, currentCallId, revisionMedia);
     },
     recover: async quoteId => {
       const saved = (await listImageTurns(actor)).find(turn => turn.quote_id === quoteId);
@@ -261,7 +265,7 @@ export async function runStudioImageActions(options: {
       const draft = {reply: action.reply,image: imageSelectionStripSchema.parse(action)};
       // Validate selection before saving intent. Catalog/ownership failures remain terminal.
       const catalog = await generation.catalog();
-      const selection = await validateStudioImageRequest({actor,draft,input,catalog,
+      const selection = revisionImage ?? await validateStudioImageRequest({actor,draft,input,catalog,
         reviewedReferences:options.references,resolveReferences:generation.resolveReferences});
       // Once preparation can mutate state, recovery must preserve this exact intent.
       await persistImageDraft(actor, turn, draft, options.referenceFingerprint);
@@ -277,8 +281,26 @@ export async function runStudioImageActions(options: {
       }).prepare(request);
     },
   });
-  const draft = await director({referenceFingerprint:options.referenceFingerprint,message: input.message, shotPlanRevision:input.shotPlanRevision, locale:input.locale, history: options.history, references: options.references, referenceMentions: input.referenceMentions, historyFacts: options.historyFacts,selectedModelId:options.selectedModelId,
+  const draft = await director({referenceFingerprint:options.referenceFingerprint,message: input.message, shotPlanRevision:input.shotPlanRevision, locale:input.locale, history: options.history, references: options.references, referenceMentions: input.referenceMentions, historyFacts: options.historyFacts,selectedModelId:options.selectedModelId,revision:!options.responseReplayOnly && !options.taskExecution?.recoveryOnly ? options.revision : undefined,
     project: await readStudioConversationProject(actor,{exportsEnabled:options.editingEnabled&&options.exportsEnabled,...(options.taskExecution?{taskContext:{message:input.message,requestId:options.taskExecution.taskRequestId}}:{})}),
+    validateRevision: async action => {
+      if (options.taskExecution) await assertStudioTaskExecution(actor,options.taskExecution);
+      if (await getActiveAccountRestrictionStrict(actor.userId))
+        throw new AgentApiError('ACCOUNT_RESTRICTED','This account is temporarily restricted. Open MaxVideoAI for help.');
+      try {
+        if (action.action==='image.prepare') {
+          revisionImage = await validateStudioImageRequest({actor,input,draft:{reply:action.reply,image:imageSelectionStripSchema.parse(action)},
+            catalog:await generation.catalog(), reviewedReferences:options.references, resolveReferences:generation.resolveReferences});
+        } else {
+          if (!options.mediaEnabled || !options.factories) throw new AgentApiError('ENGINE_UNAVAILABLE','Studio media tools are unavailable.');
+          revisionMedia = await validateStudioMediaRequest(actor,action,input,options.factories,options.enabled,{reviewedReferences:options.references});
+        }
+      } catch (error) {
+        if (error instanceof AgentApiError && !error.retryable &&
+          ['MODE_UNSUPPORTED','ENGINE_UNAVAILABLE','PARAMETER_INVALID','REFERENCE_INVALID','REFERENCE_REQUIRED'].includes(error.code)) return error;
+        throw error;
+      }
+    },
     checkpoint: async (index, create, params, checkpointOptions) => {
       let solBounds:StudioLunaFallback['solBounds'];
       let lunaFallback:StudioLunaFallback|undefined=currentModel==='gpt-6-luna'&&assistance&&assistance.model!=='gpt-6-luna'?{}:undefined;

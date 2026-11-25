@@ -33,21 +33,43 @@ export function studioModelIdFromSpelling(value: string, selectedModelId?: strin
   return matches?.size === 1 ? [...matches][0] : value;
 }
 
+type AudioChoice = { mode?: typeof AUDIO_PACK_VALUES[number]; voiceModel?: keyof typeof AUDIO_VOICE_MODEL_LABELS; musicModel?: 'clip' | 'pro' };
+const audioChoices = new Map<string, AudioChoice>();
 for (const mode of AUDIO_PACK_VALUES) {
   const pack = getAudioPackConfig(mode);
   names.add(words(pack.engineId));
   names.add(words(pack.label));
+  for (const name of [pack.engineId, pack.label]) audioChoices.set(words(name), {mode});
 }
-for (const label of Object.values(AUDIO_VOICE_MODEL_LABELS)) {
+for (const [voiceModel, label] of Object.entries(AUDIO_VOICE_MODEL_LABELS)) {
+  for (const name of [label, label.replace(/\s+\d+(?:\.\d+)*$/, '')]) audioChoices.set(words(name), {voiceModel:voiceModel as keyof typeof AUDIO_VOICE_MODEL_LABELS});
   names.add(words(label));
   names.add(words(label.replace(/\s+\d+(?:\.\d+)*$/, '')));
+}
+
+for (const musicModel of ['clip', 'pro'] as const) {
+  for (const name of ['Google Lyria 3 ' + musicModel, 'Lyria 3 ' + musicModel]) {
+    names.add(words(name));
+    audioChoices.set(words(name), {musicModel});
+  }
+}
+
+export function studioRevisionModel(choice: string) {
+  const name = words(choice);
+  const audio = audioChoices.get(name);
+  if (audio) return {audio};
+  const ids = spellings.get(name);
+  return ids?.size === 1 ? {modelId:[...ids][0]} : undefined;
 }
 
 export function studioModelChoice(message: string) {
   if (message.length > 160) return null;
   const choice = words(message)
     .replace(/^(?:oui|yes|si|ok) /, '')
-    .replace(/^(?:je (?:choisis|prends|prefere|veux)|allons y avec|partons sur|va pour|avec|i (?:choose|prefer|want)|let s (?:use|go with)|go with|use|elijo|prefiero|quiero|con) /, '')
+    .replace(/^(?:non |no )?(?:plutot |mejor |instead use )/, '')
+    .replace(/ (?:instead|plutot|en su lugar)$/, '')
+    .replace(/^(?:je (?:prefererais|prefere|voudrais|veux)|i (?:would |d )?(?:prefer|rather|like)|preferiria|prefiero|me gustaria) (?:faire (?:ca|cela) (?:avec|sur)|(?:to )?(?:do (?:this|that|it) (?:with|using)|use|go with)|(?:hacerlo|hacer eso) con) /, '')
+    .replace(/^(?:je (?:choisis|prends|prefere|prefererais|veux)|allons y avec|partons sur|va pour|avec|i (?:choose|prefer|want)|let s (?:use|go with)|go with|switch to|change to|use|cambia a|elijo|prefiero|quiero|con) /, '')
     .replace(/ (?:s il (?:te|vous) plait|svp|merci|please|por favor|gracias)$/, '');
   return names.has(choice) ? choice : null;
 }
