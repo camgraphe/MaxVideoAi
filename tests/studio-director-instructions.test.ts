@@ -244,12 +244,12 @@ test('Studio scopes the recognizable-person edit preference to compatible video 
     const director=createStudioConversationDirector({mediaEnabled:true,createResponse:async params=>{
       const input=JSON.stringify(params.input);
       if(refs.length) {
-        assert.match(input,/recognizable person in the source, prefer Wan 3 Prime, then Wan 3, then Luma Ray 3.2/);
-        assert.match(input,/only when available and compatible with the operation and file/);
+        assert.match(input,/including a recognizable person, recommend Wan 3, then Wan 3 Prime, then Luma Ray 3.2/);
+        assert.match(input,/only when available and compatible with the operation, source and requested settings/);
         assert.match(input,/Honor an explicit model choice/);
         assert.match(input,/does not apply to text-only or product\/ad shots without recognizable people/);
         assert.match(input,/including generated images/);
-      } else assert.doesNotMatch(input,/prefer Wan 3 Prime/);
+      } else assert.doesNotMatch(input,/recommend Wan 3/);
       return {id:'fixture',model:'gpt-6-luna',status:'completed',service_tier:null,usage:undefined,output:[],output_text:'{"reply":"Fixture reply."}'};
     }});
     await director({message,references:[...refs],history:[],project:{name:'Review',revision:1,memory:{revision:0,brief:'',decisions:[]}},

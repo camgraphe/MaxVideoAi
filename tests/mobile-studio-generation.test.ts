@@ -184,3 +184,18 @@ test('only an explicit native reporting header on a generation session can ident
   assert.equal(generationClaimPlatform(withNativeConfirmationPlatform({authMethod:'studio-session'},
     new Headers({'user-agent':'Android'}))), undefined);
 });
+
+test('only an owned paused segment with matching terminal evidence reports a reference issue',async()=>{
+  const projectId='project';
+  const states=[['paused','provider'],['paused',null],['paused','budget'],['unknown','usage'],['completed',null],['paused','provider']] as const;
+  const turns=states.map(([state,error])=>({requestId:randomUUID(),message:'Continue',references:[],reply:null,state:'failed',quote:null,task:{state,error}}));
+  const deps={enabled:()=>true,access:async()=>({ok:true,userId:'owner'}),owned:async()=>projectId,consentBlocked:async()=>false,allowance:async()=>null,
+    journal:async()=>({projectId,turns}),preparationRefusals:async(actor:{userId:string;projectId:string},ids:string[])=>{
+      assert.equal(actor.userId,'owner');assert.equal(actor.projectId,projectId);
+      assert.deepEqual(ids,[turns[0].requestId,turns[1].requestId,turns[5].requestId]);
+      return new Map([[ids[0],'REFERENCE_INVALID'],[ids[1],'MODE_UNSUPPORTED']]);
+    }} as unknown as NonNullable<Parameters<typeof handleMobileStudio>[2]>;
+  const response=await handleMobileStudio(new NextRequest('https://example.invalid/api/mobile/studio/projects/project',{headers:{authorization:'Bearer test','x-maxvideoai-auth-mode':'bearer'}}),projectId,deps);
+  assert.equal(response.status,200);
+  assert.deepEqual((await response.json()).turns.map((turn:{pauseReason?:string})=>turn.pauseReason),['reference',undefined,'budget',undefined,undefined,undefined]);
+});

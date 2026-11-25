@@ -2,6 +2,7 @@ import {trustedAccountUrlFromOrigin} from '@/server/agent-api/account-destinatio
 import {saveStudioConversationCharacter,prepareStudioConversationCharacterBuilder,type StudioCharacterBuilderFactory} from './conversation-character-authoring';
 import {createCharacterBuilderAuthoringService} from '@/server/character-studio/authoring';
 import {createStudioCreatorToolsService,type StudioCreatorFactory} from './conversation-creator';
+import {portraitMisroutedToProduct,studioVideoEditAdvice} from './conversation-video-edit-preference';
 import {isCreatorExecutionEnabled} from '@/server/tools/creator-execution-gates';
 import {STUDIO_TASK_POLICY_VERSION,STUDIO_TASK_V3_POLICY_VERSION,studioTaskInputTarget} from '@/lib/studio/task-budget-contract';
 import {createCharacterStudioIntegration} from '@/server/character-studio/integration';
@@ -187,8 +188,13 @@ export async function runStudioImageActions(options: {
   // A deterministic revision's preflight and execution share this single turn and action receipt.
   let revisionImage: Awaited<ReturnType<typeof validateStudioImageRequest>> | undefined;
   let revisionMedia: Awaited<ReturnType<typeof validateStudioMediaRequest>> | undefined;
-  const execute = createStudioActionExecutor(actor, {selectedModelId:options.selectedModelId,accountUrl:options.requestOrigin,referenceFingerprint:options.referenceFingerprint,enabled: options.enabled, generation, factories: options.factories, mediaEnabled: options.mediaEnabled,
-    creator,prepareCreator:action=>creator.prepare(action,async(quote,executor)=>{await completeStudioAction(actor,turn,currentCallId,{ok:true,action:action.action,data:quote},executor);}),
+  const execute = createStudioActionExecutor(actor, {clientMessage:input.message,selectedModelId:options.selectedModelId,accountUrl:options.requestOrigin,referenceFingerprint:options.referenceFingerprint,enabled: options.enabled, generation, factories: options.factories, mediaEnabled: options.mediaEnabled,
+    creator,prepareCreator:action=>{
+      if (options.mediaEnabled && portraitMisroutedToProduct(action, [...options.history.slice(-4).map(t=>t.message),input.message].join(' '),options.references)) {
+        throw new AgentApiError('MODE_UNSUPPORTED', 'This is a personal clip edit. Prepare the edit with video_prepare in v2v, using the exact same source, creative direction and requested settings. '+studioVideoEditAdvice,false,{type:'studio_portrait_video_edit'});
+      }
+      return creator.prepare(action,async(quote,executor)=>{await completeStudioAction(actor,turn,currentCallId,{ok:true,action:action.action,data:quote},executor);});
+    },
     character:options.characterEnabled ? character() : undefined,
     saveCharacter:options.characterEnabled?request=>saveStudioConversationCharacter(actor,request,
       (options.characterBuilderFactory??createCharacterBuilderAuthoringService)(actor,{executionEnabled:options.characterBuilderEnabled===true,accountUrl:trustedAccountUrlFromOrigin(options.requestOrigin)}),character()):undefined,

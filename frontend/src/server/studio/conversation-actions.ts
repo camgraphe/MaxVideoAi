@@ -1,3 +1,4 @@
+import {studioEditComparisonPolicy} from './conversation-video-edit-preference';
 import type {StudioCharacterBuilderIntent} from '@/lib/studio/conversation-character-authoring-contract';
 import type {StudioCreatorTools} from './conversation-creator';
 import type {StudioCreatorPreparation,StudioCreatorQuote} from '@/lib/studio/conversation-creator-contract';
@@ -29,6 +30,7 @@ export function createStudioActionExecutor(actor: StudioGenerationActor, depende
   enabled: boolean;
   accountUrl?: string;
   selectedModelId?: string;
+  clientMessage?: string;
   creator?: Pick<StudioCreatorTools,'executionEnabled'|'read'|'readDocument'|'editDocument'>;
   prepareCreator?(request:StudioCreatorPreparation):Promise<StudioCreatorQuote>;
   readProject?: typeof readStudioConversationProject;
@@ -119,7 +121,10 @@ export function createStudioActionExecutor(actor: StudioGenerationActor, depende
           const scenario={surface:request.surface,mode:request.mode,...(operation ? {operation}:{}),
             settings:conversationSelectionSettings(request.settings),references:selected.references, ...lumaSource,...fluxSource};
           if(request.action==='pricing.compare') {
+            const ordinaryEdit = dependencies.clientMessage && request.surface === 'video' && request.mode === 'v2v'
+              && !request.filmDurationSec && !operation;
             const comparison={...scenario,prompt:request.prompt,
+              ...(ordinaryEdit ? {studioEdit:studioEditComparisonPolicy(dependencies.clientMessage!)} : {}),
               ...(request.baselineModelId?{baselineModelId:request.baselineModelId}:{}),...(request.baselineSettings?{baselineSettings:conversationSelectionSettings(request.baselineSettings)}:{}),...(request.candidateModelIds?{candidateModelIds:request.candidateModelIds}:{})};
             const pricingService={...service,compare:(input:Parameters<typeof service.compare>[0])=>service.compare(input,selected.resolveReferences)};
             return {ok:true,action:request.action,data:request.filmDurationSec?await priceStudioFilm(comparison,request.filmDurationSec,pricingService):await pricingService.compare(comparison)};

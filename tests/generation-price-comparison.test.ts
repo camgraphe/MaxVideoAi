@@ -585,3 +585,31 @@ test('an incompatible original baseline is unavailable without losing compatible
  assert.equal(result.baseline,null);
  assert.ok(result.unavailable.some(item=>item.modelId==='wan-3'&&item.baseline===true&&item.code==='PARAMETER_INVALID'));
 });
+
+test('Studio recommends compatible edit models for the actual clip and keeps an explicit price objective', async()=>{
+  const {studioEditComparisonPolicy}=await import('../frontend/src/server/studio/conversation-video-edit-preference');
+  const source={assetId:'ma_'+'a'.repeat(32),mediaKind:'video' as const,role:'source' as const,width:1080,height:1920,durationSec:4.132,
+    storageUrl:'https://cdn.maxvideoai.com/source.mov',mimeType:'video/quicktime',sizeBytes:100000};
+  const refs=[{kind:'asset' as const,role:'source' as const,assetId:source.assetId}];
+  const amounts:Record<string,number>={'gemini-omni-flash':36,'wan-3':72,'wan-3-prime':109,'luma-ray-3-2':118};
+  const priced=dependencies({
+    listPublicEngines:async()=>Object.keys(amounts).map(candidate),resolveGenerationReferences:async()=>[source],
+    priceGeneration:async(request,tier)=>({priceCents:amounts[request.engineId],currency:'USD',membershipTier:tier,pricingSnapshot:{totalCents:amounts[request.engineId],currency:'USD',membershipTier:tier}}),
+  });
+  const compare=(message:string,settings:Record<string,number|string>={},candidateModelIds?:string[])=>compareGenerationPrices({
+    surface:'video',mode:'v2v',prompt:'Make the hair glow.',settings,references:refs,candidateModelIds,studioEdit:studioEditComparisonPolicy(message)},actor,priced);
+  const ordinary=await compare('J’aimerais que mes cheveux prennent feu dans la vidéo');
+  assert.deepEqual(ordinary.options.slice(0,2).map(option=>option.modelId),['wan-3','wan-3-prime'],JSON.stringify(ordinary.unavailable));
+  for(const wan of ordinary.options.slice(0,2)){
+    assert.equal(wan.settings.durationSec,4);assert.equal(wan.settings.aspectRatio,'9:16');
+    assert.deepEqual(wan.references,refs);
+  }
+  assert.equal(source.durationSec,4.132);
+  assert.equal((await compare('Retouche en gardant mon visage reconnaissable')).options[0].modelId,'wan-3');
+  assert.equal((await compare('Le moins cher possible')).options[0].modelId,'gemini-omni-flash');
+  for(const brief of ['Je ne cherche pas le moins cher, je veux garder mon visage.','I have no budget limit, keep the original framing.','Quiero mantener la cara, no busco el más barato.'])
+    assert.equal((await compare(brief)).options[0].modelId,'wan-3',brief);
+  const explicit=await compare('Wan 3, sortie en 5 secondes et en 16:9',{durationSec:5,aspectRatio:'16:9'},['wan-3']);
+  assert.equal(explicit.options[0].settings.durationSec,5);assert.equal(explicit.options[0].settings.aspectRatio,'16:9');
+  await assert.rejects(compare('Exact output required',{durationSec:4.132},['wan-3']),{code:'PARAMETER_INVALID'});
+});

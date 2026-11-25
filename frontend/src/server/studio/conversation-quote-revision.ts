@@ -17,7 +17,7 @@ import type { StudioGenerationActor } from '@/server/agent-api/generation-actor'
 import { AgentApiError } from '@/server/agent-api/errors';
 import type { StudioDirectorContext } from './conversation-director';
 import type { StudioRecalledReference } from './project-reference-registry';
-import { mentionsPersonToPreserve, portraitEditModels } from './conversation-video-edit-preference';
+import { videoEditModels } from './conversation-video-edit-preference';
 import { studioRevisionModel } from './conversation-model-choice';
 import { studioQuoteModelLabel } from './conversation-quote-sources';
 
@@ -146,7 +146,7 @@ export function studioQuoteRevision(
       const aspectRatio = previous.aspectRatio ?? (caps?.aspectRatio?.includes('auto') ? 'auto' : null);
       // These edit models deliver MP4 directly without Seedance's container selector.
       const fixedMp4 =
-        request.mode === 'v2v' && portraitEditModels.some((candidate) => candidate.id === model.modelId);
+        request.mode === 'v2v' && videoEditModels.some((candidate) => candidate.id === model.modelId);
       const settings = (previous.settings ?? []).filter(
         (s) => !(fixedMp4 && s.name === 'outputFormat' && s.value === 'mp4'),
       );
@@ -188,16 +188,14 @@ export function studioRevisionAlternatives(
   draft: ImageDraft,
   sources: StudioRecalledReference[],
   locale: Locale,
-  originalMessage: string,
 ) {
   const alternatives: { label: string; action: Prepare }[] = [];
   if (
     request.surface === 'video' &&
     request.mode === 'v2v' &&
-    (!request.operation || request.operation === 'kling-edit') &&
-    mentionsPersonToPreserve(request.prompt + ' ' + originalMessage)
+    (!request.operation || request.operation === 'kling-edit')
   ) {
-    for (const candidate of portraitEditModels) {
+    for (const candidate of videoEditModels) {
       const { action } = studioQuoteRevision(request, draft, candidate.id, sources, locale);
       if (action) alternatives.push({ label: candidate.label, action });
     }

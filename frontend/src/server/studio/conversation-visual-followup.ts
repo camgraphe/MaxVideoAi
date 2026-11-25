@@ -48,7 +48,7 @@ export function visualReplyKind(text: string) {
 }
 
 const visualBrief =
-  /\b(?:retouch\w*|retoc\w*|edit\w*|modif\w*|portrait\w*|retrato\w*|look|pistes?|direc\w*|ideas?|idees?|cadrage|styl\w*|estilo|visage|rostro|affiche|poster|[eo]ptions?|opciones)\b/;
+  /\b(?:retouch\w*|retoc\w*|edit\w*|modif\w*|portrait\w*|retrato\w*|look|pistes?|direc\w*|ideas?|idees?|cadrage|styl\w*|estilo|visages?|faces?|rostros?|caras?|affiche|poster|[eo]ptions?|opciones)\b/;
 const asksForDirection =
   /\?|\b(?:[12][).:]|deux (?:idees|pistes|options)|two (?:ideas|options)|dos (?:ideas|opciones))\s/;
 

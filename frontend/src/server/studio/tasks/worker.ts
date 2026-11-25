@@ -10,6 +10,8 @@ import type {StudioTaskExecution} from './execution';
 import type {StudioWorkerScope} from '../worker-host';
 import {registeredStudioMessage} from '../project-reference-registry';
 import {readStudioTaskPreviousWork} from './previous-work';
+import {AgentApiError} from '@/server/agent-api/errors';
+import {isStudioPreparationError,readStudioPreparationRefusals} from './preparation-refusals';
 
 type ServiceOptions=Omit<Parameters<typeof createImageConversationService>[1],'enabled'|'actionsEnabled'|'assistancePolicy'|'taskExecution'>;
 type WorkerDependencies={enabled?:boolean;assistancePolicy?:StudioAssistancePolicy;serviceOptions?:ServiceOptions;scope?:StudioWorkerScope};
@@ -69,6 +71,14 @@ export async function runStudioTaskWorkerOnce(dependencies:WorkerDependencies={}
     return true;
   }catch(error){
     const usage=await readStudioTaskUsage(row);
+    if (!usage.unknownCalls && error instanceof AgentApiError && !error.retryable && isStudioPreparationError(error.code)) {
+      const refusals = await readStudioPreparationRefusals(actor, [row.segment_request_id]);
+      if (refusals.get(row.segment_request_id) === error.code) {
+        await query(`UPDATE studio_tasks SET state='paused',phase='paused',error=NULL,lease_expires_at=NULL,updated_at=clock_timestamp()
+          WHERE user_id=$1 AND project_id=$2 AND request_id=$3 AND worker_id=$4 AND state='running'`,scope);
+        return true;
+      }
+    }
     const reports=await query(`SELECT response_id FROM studio_conversation_responses WHERE user_id=$1 AND project_id=$2 AND request_id=$3 AND state='reported'`,[row.user_id,row.project_id,row.segment_request_id]);
     const reason=error instanceof StudioTaskStop?error.reason:'provider';
     // Known saved output can settle/replay within the original deadline. Unknown
