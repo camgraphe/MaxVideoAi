@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {STUDIO_CONVERSATION_REPLY_MAX_CHARS} from '../frontend/src/lib/studio/conversation-reply';
 import {MILO_LEVELS} from '../frontend/src/lib/studio/assistance-contract';
+import {mentionsPersonToPreserve} from '../frontend/src/server/studio/conversation-video-edit-preference';
 import {createStudioConversationDirector} from '../frontend/src/server/studio/conversation-director';
 import {buildStudioDirectorInstructions} from '../frontend/src/server/studio/conversation-director-instructions';
 import {MILO_SCOPE_INSTRUCTIONS} from '../frontend/src/server/studio/milo-scope';
@@ -230,4 +231,36 @@ test('Studio delivers the offer in conversation text, preserves legacy replies a
       checkpoint:async (_, create) => create(), execute:async () => { throw Error('Unexpected action'); }});
     assert.deepEqual(result, {reply:expected, image:null});
   }
+});
+
+test('Studio scopes the recognizable-person edit preference to compatible video edits and honors the named model',async()=>{
+  const source={assetId:'ma_'+'a'.repeat(32),mediaKind:'video' as const,role:'source' as const,storageUrl:'https://cdn.maxvideoai.com/outline.mp4',mimeType:'video/mp4',width:1080,height:1920};
+  for (const [message,refs] of [
+    ['Change my jacket and keep my face recognizable.',[source]],
+    ['Edit a shoe advertisement without a person.',[source]],
+    ['Je préférerais utiliser Wan 3.',[source]],
+    ['Write a text-only product pitch.',[]],
+  ] as const) {
+    const director=createStudioConversationDirector({mediaEnabled:true,createResponse:async params=>{
+      const input=JSON.stringify(params.input);
+      if(refs.length) {
+        assert.match(input,/recognizable person in the source, prefer Wan 3 Prime, then Wan 3, then Luma Ray 3.2/);
+        assert.match(input,/only when available and compatible with the operation and file/);
+        assert.match(input,/Honor an explicit model choice/);
+        assert.match(input,/does not apply to text-only or product\/ad shots without recognizable people/);
+        assert.match(input,/including generated images/);
+      } else assert.doesNotMatch(input,/prefer Wan 3 Prime/);
+      return {id:'fixture',model:'gpt-6-luna',status:'completed',service_tier:null,usage:undefined,output:[],output_text:'{"reply":"Fixture reply."}'};
+    }});
+    await director({message,references:[...refs],history:[],project:{name:'Review',revision:1,memory:{revision:0,brief:'',decisions:[]}},
+      checkpoint:async(_index,create)=>create(),execute:async()=>{throw Error('No generations');}});
+  }
+});
+
+test('the quote fallback uses the recognizable-person order only with positive evidence in the saved edit',()=>{
+  for(const brief of ['Keep my face recognizable.', 'Garde mon visage et change la veste.', 'Mantén mi cara.'])
+    assert.equal(mentionsPersonToPreserve(brief),true,brief);
+  for(const brief of ['Light the shoe on a turntable.', 'Affiche publicitaire sans visage reconnaissable.', 'Show the watch face.',
+    'Product shot without a recognizable person.', 'Anuncio sin personas.'])
+    assert.equal(mentionsPersonToPreserve(brief),false,brief);
 });

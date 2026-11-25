@@ -17,8 +17,10 @@ import { resolveStudioMedia } from './media-resolver';
 import { studioConversationLanguage } from './conversation-language';
 import { askedToReattach, fileSetAside, offeredStudioModel, sameStudioModelChoice, studioModelChoice, studioOfferedModelId } from './conversation-model-choice';
 
-type PriorTurn = { request_id: string; input_json: ImageTurnInput; draft_json: StoredStudioDraft };
-type Recall = { input: ImageTurnInput; sources?: StudioRecalledReference[]; selectedModelId?: string; clarification?: string };
+import {readStudioRevisionRequest, revisionAssetIds, studioQuoteRevision, studioRevisionAlternatives, type StudioQuoteRevision} from './conversation-quote-revision';
+
+type PriorTurn = { quote_id: string | null; request_id: string; input_json: ImageTurnInput; draft_json: StoredStudioDraft };
+type Recall = { input: ImageTurnInput; sources?: StudioRecalledReference[]; selectedModelId?: string; revision?: StudioQuoteRevision; clarification?: string };
 const normalized = (text: string) => text.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
 const names = {
   image: 'Image',
@@ -142,7 +144,7 @@ function whichFile(locale: keyof typeof copy, labels: string[]) {
 
 async function previousTurns(actor: StudioGenerationActor, before: string, limit: number) {
   return query<PriorTurn>(
-    `SELECT request_id,input_json,draft_json FROM studio_image_turns
+    `SELECT request_id,input_json,draft_json,quote_id FROM studio_image_turns
     WHERE user_id=$1 AND project_id=$2 AND state='ready' AND (created_at,request_id)<(
       SELECT created_at,request_id FROM studio_image_turns WHERE user_id=$1 AND project_id=$2 AND request_id=$3)
     ORDER BY created_at DESC,request_id DESC LIMIT $4`,
@@ -195,7 +197,11 @@ export async function recallStudioReferences(
     /\b(?:from scratch|de zero|desde cero|(?:new|nouvelle?|nueva?) (?:photo|image|imagen|video|audio)|(?:image|photo|video) (?:neuve|nouvelle|nueva))\b/.test(
       text,
     );
-  const modelChoice = studioModelChoice(text);
+  // Only strip a trailing, explicitly named replacement. Questions and unrelated text remain ordinary turns.
+  const modelText = labels.length ? text.replace(/(?:[,;]?\s+(?:avec|with|con|using|sur|on|en|pour|for|para)\s+)(?:(?:la|le|the|el)\s+)?(?:image|imagen|photo|foto|video|audio)\s+#?\d+[.! ]*$/, '') : text;
+  const modelChoice = studioModelChoice(modelText);
+  const replacement = labels.length === 1 && /^(?:non[, ]+|no[, ]+)?(?:plutot|rather|instead|use|utilise|usa|mejor)\s+(?:la |le |the |el )?(?:image|imagen|photo|foto|video|audio)\s+#?\d+[.! ]*$/.test(text);
+  const mayRevise = !draft && !newWork && !current.length && !mentioned.exclude.size && !!(modelChoice || replacement);
   const visualReply = visualReplyKind(text);
   const follow =
     !newWork &&
@@ -206,7 +212,7 @@ export async function recallStudioReferences(
       (followUp(text) || (modelChoice && 'model'))) || (visualReply && 'visual'));
   const unchanged: Recall = filtered ? { input, sources: [] } : { input };
   if (!draft && !labels.length && !follow) return unchanged;
-  const history = await previousTurns(actor, before, follow === 'model' || follow === 'visual' ? 12 : 4);
+  const history = await previousTurns(actor, before, mayRevise || follow === 'model' || follow === 'visual' ? 12 : 4);
   const locale = studioConversationLanguage(
     input.message,
     history.map((t) => ({ message: t.input_json.message })).reverse(),
@@ -220,9 +226,38 @@ export async function recallStudioReferences(
   };
   let sources: StudioRecalledReference[] = [];
   let selectedModelId: string | undefined;
+  let revision:StudioQuoteRevision|undefined;
+  if (mayRevise) {
+    // A new subject, a different attachment or an exclusion ends the old revision context.
+    const prior = history.find(turn => turn.quote_id || originalStudioReferences(turn.input_json,turn.request_id).length ||
+      !modelChoice || !sameStudioModelChoice(turn.input_json.message,modelChoice) || !askedToReattach(turn.draft_json?.reply ?? ''));
+    if (prior?.quote_id && prior.draft_json && !prior.draft_json.recast && !prior.draft_json.characterBuilder) {
+      const request = await readStudioRevisionRequest(actor,prior.quote_id,prior.draft_json);
+      if (request?.references.length) {
+        const receipts = [...originalStudioReferences(prior.input_json,prior.request_id),...(prior.draft_json.recalledReferences ?? [])];
+        const bound = revisionAssetIds(request).map(id=>receipts.find(ref=>ref.assetId===id));
+        if (bound.every((ref):ref is StudioRecalledReference=>!!ref)) {
+          sources=[...bound];
+          const substituted=new Set<number>();
+          for (const label of labels) {
+            const matches=await findStudioProjectReferences(actor,before,[label]);
+            if(matches.length!==1) return clarify(matches.length?'ambiguous':'missing');
+            const next=matches[0];
+            const slots=sources.flatMap((ref,i)=>ref.kind===next.kind?[i]:[]);
+            if(slots.length>1) return clarifyFiles(slots.map(index=>sources[index]));
+            if(slots.length!==1 || substituted.has(slots[0])) return clarify('ambiguous');
+            substituted.add(slots[0]);
+            sources[slots[0]]=next;
+          }
+          revision=studioQuoteRevision(request,prior.draft_json,modelChoice,sources,locale);
+          if (modelChoice) revision.alternatives=studioRevisionAlternatives(request,prior.draft_json,sources,locale,prior.input_json.message);
+        }
+      }
+    }
+  }
   if (draft?.recalledReferences) {
     sources = draft.recalledReferences;
-  } else if (labels.length) {
+  } else if (!revision && labels.length) {
     if (labels.length > STUDIO_CONVERSATION_MAX_ATTACHMENTS) return clarify('ambiguous');
     const found = await findStudioProjectReferences(actor, before, labels);
     for (const label of labels) {
@@ -230,7 +265,7 @@ export async function recallStudioReferences(
       if (matches.length !== 1) return clarify(matches.length ? 'ambiguous' : 'missing');
       sources.push(matches[0]);
     }
-  } else if (follow === 'visual') {
+  } else if (!revision && follow === 'visual') {
     // Free directions and corrections only inherit the active visual brief. Never search the whole project.
     let restoring = false;
     for (const prior of history) {
@@ -255,7 +290,7 @@ export async function recallStudioReferences(
       if (sources.length > 1) return clarifyFiles(sources);
       break;
     }
-  } else {
+  } else if (!revision) {
     const named = text.match(/\b(images?|imagenes|imagen|photos?|fotos?|videos?|audios?)\b/);
     let kind = named && !modelChoice
       ? (names[named[1] as keyof typeof names].toLowerCase() as StudioRecalledReference['kind'])
@@ -349,6 +384,7 @@ export async function recallStudioReferences(
   }
   return {
     sources: selected,
+    revision,
     selectedModelId,
     input: {
       ...input,
