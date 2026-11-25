@@ -68,7 +68,11 @@ import {
   type OwnedQuoteJobInput,
 } from './quote-repository';
 import { resolveOwnedReferenceAssetForActor } from './reference-assets';
-import { assertGenerationReferenceUrls, resolveGenerationReferencesForActor } from './resolve-generation-references';
+import {
+  assertDistinctGenerationFrames,
+  assertGenerationReferenceUrls,
+  resolveGenerationReferencesForActor,
+} from './resolve-generation-references';
 import type { ResolvedReference } from './reference-types';
 import {
   checkMcpConfirmationSpendingLimits,
@@ -404,6 +408,7 @@ async function confirmationTransaction(
         throw new AgentApiError('INTERNAL_ERROR', 'The reference media could not be verified.');
       }
     }
+    assertDistinctGenerationFrames(quote.request, candidate.engine.brandId, resolvedReferences);
     const executionReadiness = dependencies.resolveRequestExecutability?.(
       quote.request,
       candidate,

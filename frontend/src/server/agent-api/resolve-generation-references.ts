@@ -1,4 +1,6 @@
 import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
+import { hasDuplicateFrameUrls } from '@/lib/video-input-schema';
+import { isAllowedAssetHost } from '@/server/storage';
 import {validateKlingV4OwnedMedia,type KlingV4OwnedMediaDependencies} from '@/app/api/generate/_lib/kling-v4-owned-media';
 import { qualifyFluxLtxSourceReference } from './flux-ltx-source-reference';
 import { inspectOwnedFluxLtxSource } from '@/server/video-excerpts/flux-ltx-source';
@@ -13,7 +15,9 @@ import {
 } from './reference-assets';
 import type { ResolvedReference } from './reference-types';
 import { AgentApiError } from './errors';
-import { isAllowedAssetHost } from '@/server/storage';
+import { normalizeControlledHttpsReferenceUrl } from './controlled-reference-url';
+
+const DISTINCT_FRAME_QUOTE_BRANDS = new Set(['black-forest-labs', 'google-veo', 'google-gemini']);
 
 /** Match submission URL admissibility before a quote or wallet reservation exists. */
 export function assertGenerationReferenceUrls(request: CanonicalGenerationRequest): void {
@@ -26,6 +30,31 @@ export function assertGenerationReferenceUrls(request: CanonicalGenerationReques
         { type: 'import_reference_files' },
       );
     }
+  }
+}
+
+export function assertDistinctGenerationFrames(
+  request: CanonicalGenerationRequest,
+  brandId: string | undefined,
+  resolvedReferences: readonly ResolvedReference[],
+): void {
+  if (request.mode !== 'fl2v' || !DISTINCT_FRAME_QUOTE_BRANDS.has(brandId ?? '')) return;
+
+  const frameUrl = (role: 'first_frame' | 'last_frame') => {
+    const reference = request.references.find((candidate) => candidate.role === role);
+    if (!reference || reference.kind === 'https') return reference?.url;
+    const resolved = resolvedReferences.find((candidate) =>
+      candidate.assetId === reference.assetId && candidate.role === role && candidate.slot === reference.slot);
+    if (!resolved) return undefined;
+    try {
+      return normalizeControlledHttpsReferenceUrl(resolved.storageUrl);
+    } catch {
+      return undefined;
+    }
+  };
+
+  if (hasDuplicateFrameUrls(frameUrl('first_frame'), frameUrl('last_frame'))) {
+    throw new AgentApiError('REFERENCE_INVALID', 'Choose a different image for the last frame (last_frame).');
   }
 }
 

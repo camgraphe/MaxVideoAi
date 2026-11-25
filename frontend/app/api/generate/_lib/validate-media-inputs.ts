@@ -1,6 +1,6 @@
 import type { Mode } from '../../../../fixtures/engineCaps';
 import type { EngineInputSchema } from '@/types/engines';
-import { VIDEO_MEDIA_FIELD_CANDIDATES } from '@/lib/video-input-schema';
+import { hasDuplicateFrameUrls, VIDEO_MEDIA_FIELD_CANDIDATES } from '@/lib/video-input-schema';
 import {
   evaluateReferenceBudget,
   resolveEngineReferenceBudget,
@@ -503,7 +503,7 @@ export function validateModeMediaInputs(params: {
         },
       };
     }
-    if (firstFrame === lastFrame) {
+    if (hasDuplicateFrameUrls(firstFrame, lastFrame)) {
       return {
         ok: false,
         error: {

@@ -21,7 +21,7 @@ import type {CanonicalGenerationRequest} from './generation-types';
 import type {AgentPublicGenerationEngine} from './model-catalog';
 import type {GenerationPricingResult} from './generation-pricing';
 import type {ResolvedReference} from './reference-types';
-import {assertGenerationReferenceUrls,resolveGenerationReferencesForActor} from './resolve-generation-references';
+import {assertDistinctGenerationFrames,assertGenerationReferenceUrls,resolveGenerationReferencesForActor} from './resolve-generation-references';
 import type {PrepareGenerationDependencies} from './prepare-generation';
 
 export type GenerationPricingReadDependencies=Pick<PrepareGenerationDependencies,'resolveFluxLineage' | 'listPublicEngines' | 'resolveGenerationReferences' | 'resolveRequestExecutability' | 'resolveMembershipPricing' | 'priceGeneration'>;
@@ -232,6 +232,7 @@ export async function readGenerationPricing(request: CanonicalGenerationRequest,
       throw new AgentApiError('INTERNAL_ERROR', 'The reference media could not be verified.');
     }
   }
+  assertDistinctGenerationFrames(request, candidate.engine.brandId, resolvedReferences);
   const executionReadiness = dependencies.resolveRequestExecutability?.(
     request,
     candidate,

@@ -4,6 +4,11 @@ export const VIDEO_PROVIDER_MAX_SEED = 2_147_483_647;
 
 export { VIDEO_MEDIA_FIELD_CANDIDATES } from '../../lib/video-media-field-candidates';
 
+export function hasDuplicateFrameUrls(firstFrameUrl?: string, lastFrameUrl?: string): boolean {
+  const firstFrame = firstFrameUrl?.trim();
+  return Boolean(firstFrame && firstFrame === lastFrameUrl?.trim());
+}
+
 export function listActiveVideoInputFields(
   inputSchema: EngineInputSchema | null | undefined,
   mode: Mode,
