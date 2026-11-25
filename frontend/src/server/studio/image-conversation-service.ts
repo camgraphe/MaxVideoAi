@@ -333,7 +333,7 @@ export function createImageConversationService(
         const draft =
           turn.draft_json ??
           (useActions ? await runStudioImageActions({
-            actor, turn, input, references: refs, referenceFingerprint, responseReplayOnly, selectedModelId: recall.selectedModelId,
+            actor, turn, input, references: refs, referenceFingerprint, responseReplayOnly, selectedModelId: recall.selectedModelId, revision:recall.revision,
             historyFacts,
             history: history.map(saved => ({message: saved.input_json.message, reply: projectTurnReply(saved),
               ...(saved.input_json.referenceMentions ? {referenceMentions: saved.input_json.referenceMentions} : {})})),
