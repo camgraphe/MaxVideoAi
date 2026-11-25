@@ -38,6 +38,7 @@ test('Storyboarder prices the direct OpenAI workflow identically in estimates an
     ]) {
       await db.pool.query(readFileSync(`neon/migrations/${migration}`, 'utf8'));
     }
+    await db.pool.query("UPDATE app_pricing_rules SET effective_from = '2026-11-07' WHERE engine_id = 'storyboarder'");
     const tariffs = JSON.parse(readFileSync(
       'docs/launch/2026-11-07-gpt26-raster-tariffs/gpt-image-2-6-sunburst-raster.json', 'utf8',
     )) as TariffBatchProposal;
