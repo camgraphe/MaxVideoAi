@@ -1,3 +1,4 @@
+import { isSeedance25EngineId } from '@/lib/seedance-model-variants';
 import { isKlingImageV4EngineId, klingImageV4ReferenceFailure } from '@/lib/image/kling-image-v4';
 import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
 import { resolveMediaFieldMinDuration } from '@/lib/media-field-constraints';
@@ -61,6 +62,9 @@ const VIDEO_FIELD_BY_SETTING: Record<string, string> = {
   promptCameraDirection: 'prompt_camera_direction',
   promptEditInstruction: 'prompt_edit_instruction',
   outputFormat: 'output_format',
+  resizeMode: 'resize_mode',
+  promptOptimizer: 'prompt_optimizer',
+  cameraMotion: 'camera_motion',
   cameraFixed: 'camera_fixed',
   cfgScale: 'cfg_scale',
   contextSec: 'context',
@@ -137,7 +141,8 @@ export type ReferenceConstraintFailure =
   | 'size_exceeded'
   | 'format_unsupported'
   | 'image_aspect_ratio_unsupported'
-  | 'image_dimensions_too_small';
+  | 'image_dimensions_too_small'
+  | 'video_dimensions_too_small';
 
 export class GenerationCapabilityError extends Error {
   constructor(
@@ -243,7 +248,8 @@ function validateVideoModeCaps(
     || !seedanceAutomaticDurationBounds(candidate.engine.id) || !caps.duration || !('options' in caps.duration)
     || !caps.duration.options.includes('auto'))) fail('durationOption');
   const sourceDurationPending = duration === undefined
-    && (videoDurationPolicy(candidate.engine, request.mode as Mode, caps) === 'source_video'
+    && ((request.mode === 'a2v' && request.orderedMediaReferences)
+      || videoDurationPolicy(candidate.engine, request.mode as Mode, caps) === 'source_video'
       || (request.engineId === 'kling-v4' && request.mode === 'v2v'));
   if (!sourceDurationPending) {
     if (!Number.isSafeInteger(duration) || (duration as number) < 1) fail('durationSec');
@@ -543,6 +549,10 @@ function validateVideoExecutionConstraints(
   // Asset modality is unavailable during initial canonical ingress. Keep all other
   // validation active; check the complete permutation after owned facts resolve.
   if (request.engineId === 'minimax-h3-max' && request.references.some(reference => !resolvedMediaKind(reference, options))) delete payload.reference_order;
+  // Only the mobile field-bound workflow qualifies an audio-only Seedance source.
+  if (isSeedance25EngineId(request.engineId) && request.mode === 'ref2v'
+    && !payload.image_urls && !payload.video_urls && payload.audio_urls && !request.orderedMediaReferences)
+    fail('references', 'parameter_invalid');
   const provider = validateProviderSpecificConstraints({
     engineId: request.engineId,
     normalizedMode: toEngineGenerationMode(request.engineId, request.mode),
@@ -706,6 +716,10 @@ function fieldsForReference(
     const kind = field.type as CanonicalReferenceMediaKind;
     if (!byKind.has(kind)) byKind.set(kind, field);
   }
+  if (reference.kind === 'asset' && reference.fieldId) {
+    const field = reference.mediaKind && byKind.get(reference.mediaKind);
+    return field?.id === reference.fieldId && (!mediaKind || mediaKind === reference.mediaKind) ? [field] : [];
+  }
   return mediaKind ? [byKind.get(mediaKind)].filter((field): field is EngineInputField => Boolean(field)) : [...byKind.values()];
 }
 
@@ -735,19 +749,29 @@ function resolvedReference(
 }
 
 /** Quote the same owned audio file that the paid submission will validate. */
-function validateTrustedAudioFormat(
+function validateTrustedReferenceFile(
   reference: CanonicalGenerationReference,
   fields: readonly EngineInputField[],
   candidate: AgentPublicGenerationEngine,
   options: GenerationCapabilityValidationOptions,
+  boundMedia: boolean,
 ): void {
-  if (fields.length !== 1 || fields[0]!.type !== 'audio'
-    || reference.kind !== 'asset' || !options.resolvedReferences) return;
+  if (fields.length !== 1 || reference.kind !== 'asset' || !options.resolvedReferences) return;
   const field = fields[0]!;
-  // These field-level audio formats also run at the paid attachment boundary.
-  if (!field.acceptedMimeTypes?.length && !field.acceptedFileExtensions?.length) return;
+  // Legacy audio fields and explicitly bound native media use the original file.
+  if (!boundMedia && (field.type !== 'audio' || (!field.acceptedMimeTypes?.length && !field.acceptedFileExtensions?.length))) return;
   const resolved = resolvedReference(reference, options);
   if (!resolved) fail('references', 'reference_invalid');
+  if (boundMedia && field.type === 'video') {
+    const minPixels = candidate.engine.inputSchema?.constraints?.minVideoPixelCount;
+    if (minPixels) {
+      const { width, height } = resolved;
+      if (!width || !height || !Number.isSafeInteger(width) || !Number.isSafeInteger(height) || width < 0 || height < 0)
+        fail('references', 'reference_invalid', 'dimensions_unverified');
+      if (width * height < minPixels)
+        fail('references', 'reference_invalid', 'video_dimensions_too_small');
+    }
+  }
   const sizeBytes = resolved.sizeBytes;
   if (typeof sizeBytes !== 'number' || !Number.isSafeInteger(sizeBytes)
     || sizeBytes <= 0 || !resolved.mimeType) {
@@ -975,7 +999,7 @@ function validateReferences(
     );
     if (!fields.length) fail('references', 'reference_invalid');
     validateTrustedReferenceDuration(request, reference, fields, candidate, options);
-    validateTrustedAudioFormat(reference, fields, candidate, options);
+    validateTrustedReferenceFile(reference, fields, candidate, options, !!request.orderedMediaReferences);
     const wanImage = isWan3EngineId(candidate.engine.id) && fields.length === 1 && fields[0]!.type === 'image';
     if (wanImage && reference.kind !== 'asset' && !options.allowUnverifiedReferenceDuration) {
       failWanImageReference(candidate.engine.id, 'dimensions_unverified');

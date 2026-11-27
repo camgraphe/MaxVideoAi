@@ -3,6 +3,7 @@ import { validateMediaFileAgainstConstraint } from './media-file-constraint';
 import type { LibraryMediaKind, LibraryMediaReference } from './media-library-organization';
 import { VIDEO_MEDIA_FIELD_CANDIDATES } from './video-media-field-candidates';
 import type { MobileSiteReference } from './mobile-site-references';
+import { validateKlingEditSourceDimensions } from './video-operation';
 export type Surface = 'video' | 'image';
 export type VideoWorkflow = 'create' | 'modify' | 'extend';
 export type MobileMode = 'a2v' | 'ref2v' | 'fl2v' | 'v2v' | 'extend' | 't2v' | 'i2v' | 'i2v_standard' | 't2i' | 'i2i';
@@ -39,6 +40,7 @@ export interface MobileSettingField {
   default?: SettingValue;
 }
 export interface ModeControls {
+  operation?: 'kling-edit';
   seedanceDraft?: 'native' | 'website';
   settingFields?: MobileSettingField[];
   durationLimits?: { key: 'resolution' | 'fps'; value: SettingValue; max: number }[];
@@ -84,6 +86,7 @@ export interface ModelDetails extends Omit<MobileModel, 'modes'> {
   siteReferences?: MobileSiteReference[];
 }
 export interface GenerationDraft {
+  operation?: ModeControls['operation'];
   seedanceWorkflow?: { step: 'draft' };
   surface: Surface;
   engineId: string;
@@ -109,6 +112,7 @@ export interface GenerationQuote {
   balance: { beforeCents: number; afterCents: number };
   topupRequired: boolean;
   summary: {
+    operation?: ModeControls['operation'];
     outputCount?: number;
     seedanceWorkflow?: { step: 'draft' } | { step: 'final'; draftJobId: string };
     orderedImageReferences?: boolean;
@@ -258,6 +262,8 @@ export function mobileReferenceIssue(
       (limits?.exclusiveMaxSeconds != null && duration >= limits.exclusiveMaxSeconds))
   )
     return 'duration';
+  if (mode.operation === 'kling-edit' && file.width && file.height && validateKlingEditSourceDimensions(file))
+    return 'dimensions';
   if (!limits) return null;
   const name = file.originalUrl ?? file.name;
   const mime = file.mimeType?.split(';', 1)[0].trim().toLowerCase();

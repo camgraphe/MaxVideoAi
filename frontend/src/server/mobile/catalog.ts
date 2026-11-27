@@ -11,6 +11,7 @@ import { getMediaExcerptLimits } from '@/lib/video-excerpt';
 import { projectMobileSiteReferences } from '@/lib/mobile-site-references';
 import { toEngineGenerationMode } from '@/server/agent-api/generation-mode-aliases';
 import { projectAgentModelModeDetails } from '@/server/agent-api/model-details';
+import { resolveVideoOperationEngine } from '@/lib/video-operation';
 import {
   isMobileMode,
   isSourceVideoMode,
@@ -38,8 +39,15 @@ function referenceLimits(
   };
 }
 
-function controls(candidate: AgentPublicCatalogEngine, mediaReferences: boolean, modelSettings: boolean): ModeControls[] {
-  return candidate.publicModes.filter(isMobileMode).flatMap((mode) => {
+function mobileModeCandidate(candidate: AgentPublicCatalogEngine, mode: ModeControls['mode'], videoOperations: boolean): AgentPublicCatalogEngine {
+  if (!videoOperations || mode !== 'v2v' || candidate.engine.operationCaps?.['kling-edit']?.mode !== mode) return candidate;
+  const engine = resolveVideoOperationEngine(candidate.engine, mode, 'kling-edit');
+  return { ...candidate, engine, modeCaps: { ...candidate.modeCaps, [mode]: engine.modeCaps?.[mode] } };
+}
+
+function controls(model: AgentPublicCatalogEngine, mediaReferences: boolean, modelSettings: boolean, videoOperations: boolean): ModeControls[] {
+  return model.publicModes.filter(isMobileMode).flatMap((mode) => {
+    const candidate = mobileModeCandidate(model, mode, videoOperations);
     const audioSource = mode === 'a2v';
     if (audioSource && !mediaReferences) return [];
     const details = projectAgentModelModeDetails(candidate, mode, false);
@@ -135,6 +143,7 @@ function controls(candidate: AgentPublicCatalogEngine, mediaReferences: boolean,
       withControlDefaults(
         {
           mode,
+          ...(candidate.engine.activeVideoOperation === 'kling-edit' ? { operation: 'kling-edit' as const } : {}),
           durations: inheritsDuration ? [] : [...durations],
           ...(needsReference(mode) && ref
             ? {
@@ -192,7 +201,7 @@ function controls(candidate: AgentPublicCatalogEngine, mediaReferences: boolean,
 }
 
 export async function readMobileModels(
-  filter: { surface?: Surface; id?: string; mediaReferences?: boolean; modelSettings?: boolean },
+  filter: { surface?: Surface; id?: string; mediaReferences?: boolean; modelSettings?: boolean; videoOperations?: boolean },
   dependencies?: AgentModelCatalogDeps,
 ): Promise<ModelDetails[]> {
   const candidates = await listPublicAgentCatalogEngines(dependencies);
@@ -207,14 +216,16 @@ export async function readMobileModels(
       const draftModes = candidate.engine.id === 'seedance-2-5' && agentSeedanceWorkflowEnabled()
         ? seedanceWorkflowCandidate({ engineId: candidate.engine.id, seedanceWorkflow: { step: 'draft' } }, candidate).publicModes
         : [];
-      const modes = controls(candidate, !!filter.mediaReferences, !!filter.modelSettings)
+      const videoOperations = !!(filter.modelSettings && filter.videoOperations);
+      const modes = controls(candidate, !!filter.mediaReferences, !!filter.modelSettings, videoOperations)
         .map((control) => {
-          const rawMode = toEngineGenerationMode(candidate.engine.id, control.mode);
+          const active = mobileModeCandidate(candidate, control.mode, videoOperations);
+          const rawMode = toEngineGenerationMode(active.engine.id, control.mode);
           const settings = filter.modelSettings
-            ? projectMobileModelSettings(candidate.engine, rawMode, control, candidate.modeCaps[control.mode]!)
+            ? projectMobileModelSettings(active.engine, rawMode, control, active.modeCaps[control.mode]!)
             : control;
           const projected = filter.mediaReferences
-            ? projectMobileMediaControls(candidate.engine, rawMode, settings)
+            ? projectMobileMediaControls(active.engine, rawMode, settings)
             : settings;
           if (draftModes.includes(control.mode)) projected.seedanceDraft = 'native';
           return projected;

@@ -1,7 +1,7 @@
 import { createQuoteRepository, generationQuoteCodec } from './quote-repository';
 import { hashCanonicalAudioRequest, normalizeAudioGenerationRequest, type CanonicalAudioRequest } from './audio-normalization';
 import type { CanonicalGenerationRequest, GenerationFundingMode } from './generation-types';
-import type { GenerationActor } from './generation-actor';
+import { requireAudioGenerationActor, type GenerationActor } from './generation-actor';
 
 const audioQuoteCodec = {
   surfaces: ['audio'] as const,
@@ -16,9 +16,10 @@ const audioQuoteCodec = {
 
 export const audioQuoteRepository = createQuoteRepository(audioQuoteCodec);
 export function audioQuoteRepositoryForActor(actor: GenerationActor) {
+  requireAudioGenerationActor(actor);
   return createQuoteRepository(audioQuoteCodec, actor.authMethod === 'studio-session'
     ? {origin: 'studio-session', projectId: actor.projectId}
-    : actor.authMethod === 'toolbox-session' ? {origin: 'toolbox-session'} : undefined);
+    : actor.authMethod === 'oauth' ? undefined : {origin: actor.authMethod});
 }
 export type CanonicalAnyGenerationRequest = CanonicalGenerationRequest | CanonicalAudioRequest;
 

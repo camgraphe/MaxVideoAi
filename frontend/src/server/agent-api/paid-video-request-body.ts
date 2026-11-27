@@ -32,6 +32,7 @@ type MaterializedReference = {
   kind: CanonicalReferenceMediaKind;
   role: CanonicalGenerationReference['role'];
   url: string;
+  fieldId?: string;
   slot?: number;
   width?: number | null;
   height?: number | null;
@@ -90,9 +91,11 @@ function materializeReferences(execution: PaidVideoRequestBodyExecution): Materi
     if (!resolved) {
       throw new Error('A verified resolved reference is required before provider submission.');
     }
+    if (reference.fieldId && resolved.mediaKind !== reference.mediaKind) invalidModeReferences();
     usedResolvedKeys.add(key);
     return {
       kind: canonicalMediaKind(resolved.mediaKind),
+      fieldId: reference.fieldId,
       role: reference.role,
       url: controlledHttpsUrl(resolved.storageUrl),
       width: resolved.width,
@@ -123,6 +126,7 @@ export function resolvePaidMembershipTier(
 }
 
 function input(reference: MaterializedReference, slotId: string) {
+  if (reference.fieldId && reference.fieldId !== slotId) invalidModeReferences();
   return {
     ...(reference.assetId ? { assetId: reference.assetId } : {}),
     ...(reference.originalName ? { name: reference.originalName } : {}),
@@ -173,6 +177,9 @@ const EXTRA_INPUT_FIELD_BY_SETTING: Readonly<Record<string, string>> = Object.fr
   promptCameraDirection: 'prompt_camera_direction',
   promptEditInstruction: 'prompt_edit_instruction',
   outputFormat: 'output_format',
+  resizeMode: 'resize_mode',
+  promptOptimizer: 'prompt_optimizer',
+  cameraMotion: 'camera_motion',
   contextSec: 'context',
   cropEndX: 'x_end',
   cropEndY: 'y_end',
