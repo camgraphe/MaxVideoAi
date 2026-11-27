@@ -332,6 +332,95 @@ test('Veo rejects unsupported reference hosts before pricing or persisting a pay
   }
 });
 
+function resolvedBoundaryFrames(lastAssetId = 'opening-frame'): ResolvedReference[] {
+  const opening: ResolvedReference = {
+    assetId: 'opening-frame', role: 'first_frame', mediaKind: 'image',
+    storageUrl: 'https://cdn.maxvideoai.com/private/opening.png?token=fixture',
+    mimeType: 'image/png', width: 1920, height: 1080, durationSec: null,
+    sizeBytes: 500_000, originalName: 'frame.png',
+  };
+  return [
+    opening,
+    {
+      ...opening, role: 'last_frame', assetId: lastAssetId,
+      storageUrl: lastAssetId === opening.assetId
+        ? opening.storageUrl
+        : 'https://cdn.maxvideoai.com/private/ending.png?token=fixture',
+    },
+  ];
+}
+
+for (const [engineId, durationSec, aspectRatio] of [
+  ['flux-3', 5, 'auto'],
+  ['flux-3-draft', 5, 'auto'],
+  ['flux-3-max', 5, 'auto'],
+  ['veo-3-1', 4, '16:9'],
+  ['veo-3-1-fast', 4, '16:9'],
+  ['veo-3-1-lite', 4, '16:9'],
+  ['gemini-omni-flash', 4, '16:9'],
+] as const) {
+  test(`${engineId} rejects a repeated owned boundary frame before quoting`, async () => {
+    const resolved = resolvedBoundaryFrames();
+    const { deps, captures } = baseDependencies({
+      listPublicEngines: async () => [registryCapability(engineId)],
+      resolveGenerationReferences: async () => resolved,
+    });
+    await assert.rejects(prepareGeneration({
+      ...videoInput, engineId, mode: 'fl2v',
+      settings: { durationSec, resolution: '720p', aspectRatio, audio: engineId === 'gemini-omni-flash' },
+      references: resolved.map(({ assetId, role }) => ({ kind: 'asset', assetId, role })),
+    }, principal, deps), (error: unknown) => {
+      assert.ok(error instanceof AgentApiError);
+      assert.equal(error.code, 'REFERENCE_INVALID');
+      assert.equal(error.retryable, false);
+      assert.match(error.message, /different image.*last.frame/i);
+      assert.doesNotMatch(error.message, /opening-frame|cdn\.maxvideoai\.com|token=fixture/);
+      return true;
+    });
+    assert.equal(captures.priced.length, 0);
+    assert.equal(captures.inserted.length, 0);
+    assert.equal(captures.events.includes('wallet'), false);
+  });
+}
+
+test('FLUX rejects the same allowed HTTPS link in both boundary roles before quoting', async () => {
+  const { deps, captures } = baseDependencies({
+    listPublicEngines: async () => [registryCapability('flux-3')],
+  });
+  const url = resolvedBoundaryFrames()[0]!.storageUrl;
+  await assert.rejects(prepareGeneration({
+    ...videoInput, engineId: 'flux-3', mode: 'fl2v',
+    settings: { durationSec: 5, resolution: '720p', aspectRatio: 'auto', audio: false },
+    references: [
+      { kind: 'https', url, mediaKind: 'image', role: 'first_frame' },
+      { kind: 'https', url, mediaKind: 'image', role: 'last_frame' },
+    ],
+  }, principal, deps), (error: unknown) => error instanceof AgentApiError
+    && error.code === 'REFERENCE_INVALID' && /different image.*last.frame/i.test(error.message));
+  assert.equal(captures.priced.length, 0);
+  assert.equal(captures.inserted.length, 0);
+});
+
+for (const [engineId, mode, lastAssetId] of [
+  ['flux-3', 'fl2v', 'ending-frame'],
+  ['wan-3', 'i2v', 'opening-frame'],
+] as const) {
+  test(`${engineId} still prepares a valid ${mode} quote`, async () => {
+    const resolved = resolvedBoundaryFrames(lastAssetId);
+    const { deps, captures } = baseDependencies({
+      listPublicEngines: async () => [registryCapability(engineId)],
+      resolveGenerationReferences: async () => resolved,
+    });
+    await prepareGeneration({
+      ...videoInput, engineId, mode,
+      settings: { durationSec: 5, resolution: '720p', aspectRatio: '16:9', audio: false },
+      references: resolved.map(({ assetId, role }) => ({ kind: 'asset', assetId, role })),
+    }, principal, deps);
+    assert.equal(captures.priced.length, 1);
+    assert.equal(captures.inserted.length, 1);
+  });
+}
+
 test('MiniMax rejects undersized owned start images before pricing or quote creation', async () => {
   const { deps, captures } = baseDependencies({
     listPublicEngines: async () => [registryCapability('minimax-h3')],

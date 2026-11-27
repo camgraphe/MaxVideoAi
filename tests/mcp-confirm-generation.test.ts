@@ -98,6 +98,45 @@ test('confirmation rejects an older payable quote with an unsupported reference 
   assert.equal(captures.providerCalls, 0);
 });
 
+test('confirmation rejects an older Veo quote with the same frame before reserving credits', async () => {
+  const entry = listFalEngines().find((engine) => engine.id === 'veo-3-1-fast');
+  assert.ok(entry);
+  const candidate: AgentPublicGenerationEngine = {
+    engine: entry.engine, surface: 'video', publicModes: ['fl2v'],
+    modeCaps: { fl2v: entry.modes.find((mode) => mode.mode === 'fl2v')!.ui },
+  };
+  const first: ResolvedReference = {
+    assetId: 'shared-frame', role: 'first_frame', mediaKind: 'image',
+    storageUrl: 'https://cdn.maxvideoai.com/private/frame.png',
+    mimeType: 'image/png', width: 1920, height: 1080, durationSec: null,
+  };
+  const resolved: ResolvedReference[] = [first, { ...first, role: 'last_frame' }];
+  const request: CanonicalGenerationRequest = {
+    ...videoRequest, engineId: entry.id, mode: 'fl2v',
+    settings: { ...videoRequest.settings, durationSec: 4, audio: false },
+    references: resolved.map(({ assetId, role }) => ({ kind: 'asset', assetId, role })),
+  };
+  const catalogRevision = computeGenerationCatalogRevision([candidate]);
+  const quote = quoteFor(request, { catalogRevision });
+  const stored = { ...quote, pricingSnapshot: buildGenerationPricingSnapshot({
+    priceCents: quote.priceCents, currency: 'USD',
+    membershipTier: 'member', pricingSnapshot: canonicalPricing(quote.priceCents),
+  }, request, catalogRevision, membership, resolved) };
+  const { dependencies, captures } = baseDependencies(request, {
+    lockOwnedQuote: async () => ({ quote: stored, databaseNow: NOW }),
+    listPublicEngines: async () => [candidate],
+    resolveGenerationReferences: async () => resolved,
+  });
+
+  await assert.rejects(confirmGeneration({ quoteId: QUOTE_ID, confirmed: true }, principal, dependencies),
+    (error: unknown) => error instanceof AgentApiError
+      && error.code === 'REFERENCE_INVALID' && /different image.*last.frame/i.test(error.message));
+  for (const event of ['pricing', 'spending', 'reserve_video', 'claim_quote']) {
+    assert.equal(captures.events.includes(event), false, event);
+  }
+  assert.equal(captures.providerCalls, 0);
+});
+
 test('confirmation pricing preserves the prepared ModelArk extension video-input tier', async () => {
   const entry = listFalEngines().find((candidate) => candidate.id === 'seedance-2-5');
   assert.ok(entry);
