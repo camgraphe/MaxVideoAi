@@ -599,9 +599,10 @@ for (const [engineId, pilot, capCents] of [
       walletChargeReserved: true,
       deps: {
         queryFn,
-        withFailureSettlementFn: async (_jobId: string, _context: unknown, persist: (executor: {query: typeof queryFn}) => Promise<unknown>) => {
+        stopWanPilotWalletJobFn: async ({attemptId}: {attemptId:number|null}) => {
+          assert.equal(attemptId, null);
           rollbacks++;
-          return persist({ query: queryFn });
+          return true;
         },
       },
     });

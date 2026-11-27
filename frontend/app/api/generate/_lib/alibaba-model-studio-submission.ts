@@ -34,6 +34,7 @@ import { buildUserFacingRefundDescription } from '@/server/user-facing-failure-m
 import { createProviderJobTracker } from './provider-job-tracker';
 import { rollbackPendingPayment } from './payment-rollback';
 import { withWalletFailureSettlement } from '@/server/fal-webhook-refunds';
+import { stopWanPilotWalletJob } from '@/server/wan-pilot-refunds';
 import { isDeferredFalSubmission, submitFalGenerateTask, type FalGenerateSubmissionResult } from './fal-submission';
 import { reconcileFalFallbackTerminalResponse } from './fal-fallback-outcome';
 import type { FalInputSummary } from './fal-request';
@@ -54,6 +55,7 @@ type AlibabaSubmissionDeps = {
   queryFn?: QueryFn;
   rollbackPendingPaymentFn?: typeof rollbackPendingPayment;
   withFailureSettlementFn?: typeof withWalletFailureSettlement;
+  stopWanPilotWalletJobFn?: typeof stopWanPilotWalletJob;
 };
 
 export type AlibabaModelStudioGenerateSubmissionResult =
@@ -386,9 +388,12 @@ export async function submitAlibabaModelStudioGenerateTask(params: WanSubmission
   // An unsupported request always retains its established provider contract.
   const active = Boolean(params.purchaseCanary && decision?.canaryEligible);
   const selected = active ? decision?.order[0] : ALIBABA_MODEL_STUDIO_PROVIDER;
+  const stopPilot = deps.stopWanPilotWalletJobFn ?? stopWanPilotWalletJob;
   if (!selected) {
     const message = 'No compatible provider fits the purchase ceiling.';
-    const stopped = await failJobAndRollback({ ...params, message, queryFn, onlyBeforeSubmission: true,
+    const stopped = active && params.paymentMode === 'wallet' && params.walletChargeReserved
+      ? await stopPilot({jobId: params.jobId, userId: params.userId, message, attemptId: null})
+      : await failJobAndRollback({ ...params, message, queryFn, onlyBeforeSubmission: true,
       withFailureSettlementFn: deps.withFailureSettlementFn,
       rollbackPendingPaymentFn: deps.rollbackPendingPaymentFn ?? rollbackPendingPayment });
     if (!stopped) return deferred(params.jobId);
@@ -519,17 +524,16 @@ async function submitWanAttempt(
       error,
       fallbackToFalEnabled: params.fallbackToFalEnabled,
     });
-    try {
-      await markProviderAttemptFailed({
-        attemptId: attempt.id,
-        errorCode: active ? failure.code : normalized.code,
-        errorClass: active ? failure.outcome : normalized.errorClass,
-        fallbackEligible,
-        responseSnapshot: sanitizeDiagnostics(normalized.raw),
-        queryFn,
-      });
-    } catch {
-      // The accepted task identity remains authoritative even if local persistence is degraded.
+    const persistRejection = (execute: QueryFn) => markProviderAttemptFailed({
+      attemptId: attempt.id, errorCode: active ? failure.code : normalized.code,
+      errorClass: active ? failure.outcome : normalized.errorClass, fallbackEligible,
+      responseSnapshot: sanitizeDiagnostics(normalized.raw), queryFn: execute,
+    });
+    const terminalWalletStop = active && !fallbackEligible && !acceptedProviderJobId &&
+      params.paymentMode === 'wallet' && params.walletChargeReserved;
+    if (!terminalWalletStop) {
+      try { await persistRejection(queryFn); }
+      catch { /* Submission ownership remains authoritative if diagnostics cannot be saved. */ }
     }
 
     if (isWanDirectProvider(next)) {
@@ -564,7 +568,13 @@ async function submitWanAttempt(
     const message = provider === 'apimart' && sent
       ? 'The provider declined this generation. Review the request or try again later.'
       : userSafeAlibabaMessage(normalized.errorClass, normalized.code);
-    if (!acceptedProviderJobId) {
+    if (terminalWalletStop) {
+      const stopped = await (deps.stopWanPilotWalletJobFn ?? stopWanPilotWalletJob)({
+        jobId: params.jobId, userId: params.userId, attemptId: attempt.id, message,
+        persistRejection: tx => persistRejection((sql, values) => tx.query(sql, values)),
+      });
+      if (!stopped) return deferred(params.jobId);
+    } else if (!acceptedProviderJobId) {
       await failJobAndRollback({
         jobId: params.jobId,
         engineLabel: params.engineLabel,

@@ -112,6 +112,8 @@ test(
       WAN_PRIME_EXISTING_PROVIDERS_ADMIN_CANARY: '1',
       APIMART_WAN_PRIME_ADMIN_CANARY: '0',
       APIMART_API_KEY: '',
+      ALIBABA_MODEL_STUDIO_POLL_TOKEN: 'offline-cron',
+      ALIBABA_MODEL_STUDIO_ENABLED: '0',
       WAN_PRIME_PURCHASE_CEILING_USD: '',
     };
     const previous = Object.fromEntries(Object.keys(env).map((key) => [key, process.env[key]]));
@@ -379,45 +381,81 @@ test(
       },
     );
 
-    await t.test(
-      'a refund write failure is recoverable without dispatch or an unbacked refunded status',
-      async () => {
-        process.env.WAN_PRIME_PURCHASE_CEILING_USD = '0.55';
-        const id = 'pilot-refund-outage';
-        const balance = (await getWalletBalanceCents(userId)).balanceCents;
-        const before = falPosts.length;
-        let directPosts = 0;
-        const run = request(id, reference, async () => {
-          directPosts++;
-          throw Error('unexpected over-ceiling submission');
-        });
-        assert.equal((await run.reserve()).kind, 'created');
-        await pg.pool.query(`CREATE FUNCTION reject_pilot_refund() RETURNS trigger LANGUAGE plpgsql AS $$
-      BEGIN IF NEW.type='refund' THEN RAISE EXCEPTION 'injected refund outage'; END IF; RETURN NEW; END $$;
-      CREATE TRIGGER refund_outage BEFORE INSERT ON app_receipts FOR EACH ROW EXECUTE FUNCTION reject_pilot_refund();`);
-        try {
-          await run.submit().catch(() => undefined);
-          assert.equal((await job(id)).payment_status, 'paid_wallet');
-          assert.notEqual((await job(id)).status, 'failed');
-          assert.deepEqual(await receipts(id), [{ type: 'charge', amount_cents: 85 }]);
-        } finally {
-          await pg.pool.query('DROP TRIGGER refund_outage ON app_receipts');
-        }
-        await Promise.all([run.submit(), run.submit()]);
-        process.env.WAN_PRIME_PURCHASE_CEILING_USD = '1.00';
-        assert.equal((await run.reserve()).kind, 'existing_job');
-        await run.submit();
-        assert.deepEqual(await receipts(id), [
-          { type: 'charge', amount_cents: 85 },
-          { type: 'refund', amount_cents: 85 },
-        ]);
-        assert.equal((await job(id)).payment_status, 'refunded_wallet');
-        assert.equal((await job(id)).status, 'failed');
-        assert.equal((await getWalletBalanceCents(userId)).balanceCents, balance);
-        assert.deepEqual(await attempts(id), []);
-        assert.equal(directPosts, 0);
-        assert.equal(falPosts.length, before);
-      },
-    );
+    const { GET: runCron } = await import('../frontend/app/api/cron/alibaba-model-studio-poll/route');
+    const cron = () =>
+      runCron(
+        new Request('http://localhost/api/cron/alibaba-model-studio-poll', {
+          headers: { 'x-alibaba-model-studio-poll-token': 'offline-cron' },
+        }),
+      );
+    for (const reason of ['ceiling', 'terminal'] as const) {
+      await t.test(
+        `authenticated cron refunds ${reason} after a receipt outage, without another supplier submission`,
+        async () => {
+          process.env.WAN_PRIME_EXISTING_PROVIDERS_ADMIN_CANARY = '1';
+          process.env.WAN_PRIME_PURCHASE_CEILING_USD = reason === 'ceiling' ? '0.55' : '1.00';
+          const id = 'pilot-outage-' + reason;
+          const before = falPosts.length;
+          const initialBalance = (await getWalletBalanceCents(userId)).balanceCents;
+          let directPosts = 0;
+          const run = request(id, reference, async () => {
+            directPosts++;
+            throw new AlibabaModelStudioError('Invalid input', { status: 422, code: 'InvalidParameter' });
+          });
+          assert.equal((await run.reserve()).kind, 'created');
+          await pg.pool
+            .query(`CREATE OR REPLACE FUNCTION reject_pilot_refund() RETURNS trigger LANGUAGE plpgsql AS $$
+          BEGIN IF NEW.type='refund' THEN RAISE EXCEPTION 'injected refund outage'; END IF; RETURN NEW; END $$;
+          CREATE TRIGGER refund_outage BEFORE INSERT ON app_receipts FOR EACH ROW EXECUTE FUNCTION reject_pilot_refund();`);
+          try {
+            await run.submit().catch(() => undefined);
+            assert.equal((await job(id)).payment_status, 'paid_wallet');
+            assert.notEqual((await job(id)).status, 'failed');
+            assert.deepEqual(await receipts(id), [{ type: 'charge', amount_cents: 85 }]);
+          } finally {
+            await pg.pool.query('DROP TRIGGER refund_outage ON app_receipts');
+          }
+          // Cron can drain an already decided stop after flags, prices or credentials change.
+          process.env.WAN_PRIME_PURCHASE_CEILING_USD = '1.00';
+          process.env.WAN_PRIME_EXISTING_PROVIDERS_ADMIN_CANARY = '0';
+          process.env.VERCEL_ENV = 'production';
+          try {
+            const response = await cron();
+            assert.equal(response.status, 200);
+            assert.deepEqual(await response.json(), { ok: true, enabled: false, checked: 0, updates: 0 });
+            assert.deepEqual(await receipts(id), [{ type: 'charge', amount_cents: 85 }]);
+          } finally {
+            process.env.VERCEL_ENV = 'preview';
+          }
+          await Promise.all([cron(), cron()].map(async (response) => assert.equal((await response).status, 200)));
+          assert.deepEqual(await receipts(id), [
+            { type: 'charge', amount_cents: 85 },
+            { type: 'refund', amount_cents: 85 },
+          ]);
+          assert.equal((await job(id)).status, 'failed');
+          assert.equal((await job(id)).payment_status, 'refunded_wallet');
+          assert.equal((await run.reserve()).kind, 'existing_job');
+          await run.submit();
+          assert.equal((await getWalletBalanceCents(userId)).balanceCents, initialBalance);
+          assert.equal((await attempts(id)).length, reason === 'ceiling' ? 0 : 1);
+          assert.equal(directPosts, reason === 'ceiling' ? 0 : 1);
+          assert.equal(falPosts.length, before);
+          for (const otherId of ['pilot-t2v', 'pilot-ref2v', 'pilot-uncertain']) {
+            assert.equal((await job(otherId)).payment_status, 'paid_wallet');
+            assert.equal((await receipts(otherId)).length, 1);
+          }
+        },
+      );
+    }
+    await t.test('missing recovery evidence leaves the existing poll response available', async () => {
+      await pg.pool.query('ALTER TABLE provider_attempts RENAME TO held_pilot_attempts');
+      try {
+        const response = await cron();
+        assert.equal(response.status, 200);
+        assert.deepEqual(await response.json(), { ok: true, enabled: false, checked: 0, updates: 0 });
+      } finally {
+        await pg.pool.query('ALTER TABLE held_pilot_attempts RENAME TO provider_attempts');
+      }
+    });
   },
 );

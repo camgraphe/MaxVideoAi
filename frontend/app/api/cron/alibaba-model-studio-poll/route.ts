@@ -1,5 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { runAlibabaModelStudioPoll } from '@/server/alibaba-model-studio-poll';
+import { isWanPilotEnvironment } from '@/server/video-providers/router';
+import { reconcileWanPilotWalletStops } from '@/server/wan-pilot-refunds';
 import { authorizeCronRequest } from '@/server/vercel-cron';
 
 export const runtime = 'nodejs';
@@ -7,7 +9,7 @@ export const runtime = 'nodejs';
 const CRON_SECRET = (process.env.CRON_SECRET ?? '').trim();
 const POLL_TOKEN = (process.env.ALIBABA_MODEL_STUDIO_POLL_TOKEN ?? '').trim();
 
-function unauthorized(reason: string, req: NextRequest) {
+function unauthorized(reason: string, req: Request) {
   console.warn('[cron-alibaba-model-studio-poll] unauthorized', {
     reason,
     headers: {
@@ -20,7 +22,7 @@ function unauthorized(reason: string, req: NextRequest) {
   return NextResponse.json({ ok: false, error: 'UNAUTHORIZED' }, { status: 401 });
 }
 
-async function triggerPoll(req: NextRequest) {
+async function triggerPoll(req: Request) {
   const auth = authorizeCronRequest(req.headers, {
     cronSecret: CRON_SECRET,
     deploymentId: process.env.VERCEL_DEPLOYMENT_ID,
@@ -30,6 +32,10 @@ async function triggerPoll(req: NextRequest) {
   });
   if (!auth.ok) return unauthorized(auth.reason, req);
 
+  // Financial recovery runs independently of media polling, including when its preview flags are off.
+  const recovery = isWanPilotEnvironment() ? reconcileWanPilotWalletStops().then(result => {
+    if (result.errors) console.warn('[wan-purchase] refund reconciliation incomplete', result);
+  }).catch(() => console.warn('[wan-purchase] refund reconciliation unavailable')) : undefined;
   try {
     if (!process.env.APIMART_API_KEY?.trim()) return await runAlibabaModelStudioPoll();
     const [alibaba, apimart] = await Promise.all([
@@ -39,13 +45,15 @@ async function triggerPoll(req: NextRequest) {
   } catch (error) {
     console.error('[cron-alibaba-model-studio-poll] failed to run poll', error);
     return NextResponse.json({ ok: false, error: 'Failed to run direct video poll' }, { status: 500 });
+  } finally {
+    await recovery;
   }
 }
 
-export async function GET(req: NextRequest) {
+export async function GET(req: Request) {
   return triggerPoll(req);
 }
 
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
   return triggerPoll(req);
 }

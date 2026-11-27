@@ -40,10 +40,12 @@ export type VideoProviderRoutingEnv = Readonly<Partial<Record<
 
 export type WanPurchaseCanary = 'alibaba-fal' | 'with-apimart';
 
+export function isWanPilotEnvironment(): boolean {
+  return process.env.VERCEL_ENV === 'preview' || (!process.env.VERCEL_ENV && process.env.NODE_ENV !== 'production');
+}
+
 export function configuredWanPurchaseCanary(engineId: string): WanPurchaseCanary | undefined {
-  const preproduction = process.env.VERCEL_ENV === 'preview' ||
-    (!process.env.VERCEL_ENV && process.env.NODE_ENV !== 'production');
-  if (!preproduction) return;
+  if (!isWanPilotEnvironment()) return;
   if (engineId === 'wan-3') {
     return process.env.WAN_STANDARD_EXISTING_PROVIDERS_ADMIN_CANARY === '1' ? 'alibaba-fal' : undefined;
   }
