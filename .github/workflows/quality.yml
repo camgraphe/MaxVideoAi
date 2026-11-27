@@ -44,9 +44,9 @@ jobs:
   fast:
     name: Fast checks
     runs-on: ubuntu-latest
-    # Includes type/lint checks and 1,300+ tools-free test files with full pricing projections.
-    # Preserve their coverage while allowing the suite to finish on hosted runners.
-    timeout-minutes: 30
+    # Setup, type/lint checks and 1,700+ test files share this job budget.
+    # PR #701 reached file 1,638 of 1,760 before the previous 30-minute limit.
+    timeout-minutes: 40
     steps:
       - name: Checkout
         uses: actions/checkout@v5
