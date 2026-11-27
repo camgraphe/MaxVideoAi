@@ -79,7 +79,11 @@ test('keeps document, video and special operations outside the new transport; un
     { hasAudioReference: true },
     { hasEndFrame: true },
     { aspectRatio: '26:15' },
-    { images: 2, mode: 'ref2v' },
+    { images: 11, mode: 'ref2v' },
+    { images: 1, mode: 'i2v', hasStartFrame: false },
+    { images: 2, mode: 'i2v', hasStartFrame: true },
+    { images: 1, mode: 'ref2v', hasStartFrame: true },
+    { hasUnpricedOptions: true },
   ]) {
     assert.ok(!planWanPrimePurchase({ ...textClip, ...overrides }).order.includes('apimart'));
   }

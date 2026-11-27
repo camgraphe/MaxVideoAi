@@ -12,6 +12,8 @@ export type PurchaseRequest = {
   hasAudioReference: boolean;
   hasDocument: boolean;
   hasEndFrame: boolean;
+  hasStartFrame?: boolean;
+  observedVideoTokens?: number;
   audioEnabled?: boolean;
   requiresDirectControls?: boolean;
   hasUnpricedOptions?: boolean;

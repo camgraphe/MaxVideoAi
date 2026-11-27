@@ -91,7 +91,7 @@ test('variant, mode, audio and direct-only features cannot leak a quote to anoth
   ]) {
     assert.deepEqual(planVideoPurchase({ ...request, ...invalid })?.order, []);
   }
-  for (const engineId of ['kling-o3-4k', 'kling-v4', 'seedance-2-5', '__proto__']) {
+  for (const engineId of ['kling-o3-4k', 'kling-v4', 'seedance-2-5-flash', '__proto__']) {
     assert.equal(planVideoPurchase({ ...request, engineId }), null);
   }
   assert.equal(customerPurchaseCeiling({ totalCents: 100, currency: 'EUR' }), -1);

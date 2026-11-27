@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
-import { ApimartSubmitError } from '../frontend/src/server/video-providers/apimart/wan-prime';
+import type { AlibabaVideoPayload } from '../frontend/src/server/video-providers/alibaba-model-studio/types';
+import { ApimartSubmitError, buildApimartWanRequest } from '../frontend/src/server/video-providers/apimart/wan-prime';
 import test from 'node:test';
 
 import type { GeneratePayload, GenerateResult } from '../frontend/src/lib/fal-types';
@@ -455,6 +456,40 @@ test('purchase canary spans three provider attempts on one original job after tw
   assert.ok(attempts.every((q) => q.sql.includes('DO NOTHING')));
   assert.equal(queries.filter((q) => /INSERT INTO app_receipts/.test(q.sql)).length, 0);
 });
+test('funded canary preserves a first/last frame pair while Standard records a shadow comparison on Alibaba', async () => {
+  const first = 'https://private.example/first.png';
+  const last = 'https://private.example/last.png';
+  for (const engineId of ['wan-3-prime', 'wan-3']) {
+    const { queryFn, queries } = createQueryRecorder();
+    const calls: string[] = [];
+    const submit = (provider: string) => async (payload: AlibabaVideoPayload) => {
+      calls.push(provider);
+      if (provider === 'apimart') {
+        const converted = buildApimartWanRequest(payload);
+        assert.deepEqual(converted.image_urls, [first, last]);
+        assert.equal(converted.generation_type, 'frame');
+        assert.equal(converted.audio, false);
+      }
+      return acceptedTask();
+    };
+    const { params } = baseParams({ engineId, mode: 'i2v', imageUrl: first, purchaseCanary: true,
+      falPayload: { ...falPayload, engineId, mode: 'i2v', endImageUrl: last },
+      deps: { queryFn, createOwnedMediaReadUrlFn: async ({ url }: { url: string }) => url,
+        getAlibabaModelStudioClientFn: () => ({ createVideo: submit('alibaba'), getTask: async () => acceptedTask() }),
+        getApimartClientFn: () => ({ createVideo: submit('apimart') }) },
+    });
+    const result = await submitAlibabaModelStudioGenerateTask(params);
+    assert.equal(result.ok, true);
+    assert.deepEqual(calls, [engineId === 'wan-3' ? 'alibaba' : 'apimart']);
+    const attempts = queries.filter(q => q.sql.includes('INSERT INTO provider_attempts'));
+    assert.equal(attempts.length, 1);
+    const snapshot = attempts[0].params.map(value => typeof value === 'string' && value.startsWith('{') ? JSON.parse(value) : null)
+      .find(value => value?.purchaseRouting)?.purchaseRouting;
+    assert.equal(snapshot.mode, engineId === 'wan-3' ? 'shadow' : 'canary');
+    assert.deepEqual(snapshot.order, ['apimart', 'alibaba_model_studio', 'fal']);
+  }
+});
+
 test('ambiguous APIMart acceptance preserves the funded job and never sends a second request', async () => {
   const { queryFn, queries } = createQueryRecorder();
   let calls = 0;

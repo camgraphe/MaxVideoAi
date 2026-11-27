@@ -55,7 +55,6 @@ export function RouteSimulator({
   const fundingExclusion = Object.fromEntries(
     standby.filter((r) => !fundedPacks.includes(r.provider)).map((r) => [r.provider, r.standbyReason!])
   );
-  const preset = presetOverride ?? (standby.length ? 'best' : 'fallback');
   const strategy = policyOverride ?? scenario.strategy;
   const engines = new Map(scenarios.map((item) => [item.engineId, item.engineLabel]));
   function selectProfile(id: string) {
@@ -69,6 +68,7 @@ export function RouteSimulator({
   const ceilingMicros =
     cap === '' ? scenario.ceiling : Math.min(scenario.ceiling, Math.floor(Number(cap) * 1e6));
   const eligible = rankQuotedOffers(scenario.candidates, { ceilingMicros, strategy, unavailable: fundingExclusion });
+  const preset = presetOverride ?? (standby.length || eligible.order.length < 2 ? 'best' : 'fallback');
   const conditions = custom ?? presetConditions(preset, eligible.order);
   const unavailable = Object.fromEntries(
     Object.entries(conditions)
@@ -165,6 +165,7 @@ export function RouteSimulator({
             </span>
             <span className={s.settings}>{scenario.settings}</span>
           </div>
+          {scenario.priceAssumption && <div className={s.funding}>{scenario.priceAssumption}</div>}
           {standby.map((route) => (
             <div className={s.funding} key={route.provider}>
               <span>{route.standbyReason}</span>

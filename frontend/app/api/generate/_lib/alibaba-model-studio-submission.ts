@@ -359,7 +359,7 @@ export async function submitAlibabaModelStudioGenerateTask(params: WanSubmission
     inputVideoDurationSec: media.inputVideoDurationSec ?? undefined,
     resolution,
   });
-  const decision = params.engineId === 'wan-3-prime' ? buildWanPurchaseDecision(params, resolution, media) : null;
+  const decision = route.family === 'wan3' ? buildWanPurchaseDecision(params, resolution, media) : null;
   // An unsupported request always retains its established provider contract.
   const active = Boolean(params.purchaseCanary && decision?.canaryEligible);
   const selected = active ? decision?.order[0] : ALIBABA_MODEL_STUDIO_PROVIDER;

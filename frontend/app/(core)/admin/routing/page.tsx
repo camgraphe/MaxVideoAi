@@ -5,13 +5,14 @@ import { recentRoutingJobs } from './_lib/routing-data';
 import { routingScenarios } from './_lib/routing-scenarios';
 import { RouteSimulator } from './_components/RouteSimulator.client';
 import { installedRoutes } from './_lib/installed-routes';
+import { WanReplay } from './_components/WanReplay';
 import { RoutingHistory } from './_components/RoutingHistory';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 export const metadata = { title: 'Video routing · Admin' };
 
-export default async function AdminVideoRoutingPage({ searchParams }: { searchParams: Promise<{ engine?: string }> }) {
+export default async function AdminVideoRoutingPage({ searchParams }: { searchParams: Promise<{ engine?: string; replay?: string }> }) {
   // The layout owns the redirect. Gate data access independently during parallel rendering.
   try {
     await requireAdmin();
@@ -32,6 +33,7 @@ export default async function AdminVideoRoutingPage({ searchParams }: { searchPa
           ? 'APIMart preproduction canary is configured for eligible admin requests on the Alibaba route.'
           : 'APIMart is available here for price simulation. The submission canary is off.'}
       </p>
+      <WanReplay requested={params.replay === 'wan-prime'} />
       <RoutingHistory jobs={jobs} />
     </div>
   );

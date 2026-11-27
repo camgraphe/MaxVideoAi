@@ -4,7 +4,8 @@ import type { GeneratePayload } from '@/lib/fal';
 import type { VideoProviderKey } from '@/server/video-providers/types';
 import { ApimartSubmitError } from '@/server/video-providers/apimart/wan-prime';
 import { classifyAlibabaModelStudioError } from '@/server/video-providers/alibaba-model-studio/errors';
-import { customerPurchaseCeiling, planWanPrimePurchase, type PurchaseRequest } from '@/server/video-providers/purchase-router';
+import { customerPurchaseCeiling, planWanPurchase, type PurchaseRequest } from '@/server/video-providers/purchase-router';
+import { hasUnreviewedWanOptions } from '@/server/video-providers/apimart/wan-image-mode';
 import type { resolveAlibabaSubmissionMediaInputs } from './alibaba-model-studio-submission';
 
 export function buildWanPurchaseDecision(
@@ -28,16 +29,18 @@ export function buildWanPurchaseDecision(
     resolution,
     aspectRatio: params.aspectRatio ?? params.falPayload.aspectRatio ?? null,
     images: media.referenceImages.length + Number(Boolean(media.startImageUrl)),
-    hasEndFrame: Boolean(media.endImageUrl) || (params.mode === 'ref2v' && Boolean(media.startImageUrl)),
+    hasStartFrame: Boolean(media.startImageUrl),
+    hasEndFrame: Boolean(media.endImageUrl),
     hasVideo: media.referenceVideos.length > 0,
     inputVideoSeconds: media.inputVideoDurationSec,
     hasAudioReference: media.referenceAudio.length > 0,
+    hasUnpricedOptions: hasUnreviewedWanOptions(extras),
     hasDocument: Boolean(extras?.file_url || extras?.web_url),
   };
-  const configured = process.env.WAN_PRIME_PURCHASE_CEILING_USD?.trim();
+  const configured = params.engineId === 'wan-3-prime' ? process.env.WAN_PRIME_PURCHASE_CEILING_USD?.trim() : undefined;
   const serverCap = configured ? Math.floor(Number(configured) * 1e6) : Number.MAX_SAFE_INTEGER;
   const cap = Math.min(serverCap, customerPurchaseCeiling(params.pricing));
-  return planWanPrimePurchase(request, {
+  return planWanPurchase(request, {
     ceilingMicros: cap,
     unavailable: params.fallbackToFalEnabled ? {} : { fal: 'Fal fallback disabled' },
   });

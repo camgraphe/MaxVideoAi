@@ -6,11 +6,12 @@ import {
 } from '@/lib/video-purchase-decision';
 import type { VideoProviderKey } from './types';
 import type { PurchaseRequest, PurchaseOffer } from './purchase/types';
-import { WAN_PRIME_OFFERS } from './purchase/wan-prime';
+import { WAN_OFFERS } from './purchase/wan';
+import { H3_FAL_OFFER, SEEDANCE_25_BYTEPLUS_OFFER } from './purchase/h3-seedance';
 import { KLING_PRO_OFFERS } from './purchase/kling-pro';
 
 export type { PurchaseOffer, PurchaseRequest } from './purchase/types';
-export { WAN_PRIME_OFFERS, APIMART_PRIME_MICROS_PER_SECOND } from './purchase/wan-prime';
+export { WAN_OFFERS as WAN_PRIME_OFFERS, APIMART_PRIME_MICROS_PER_SECOND } from './purchase/wan';
 
 type EnginePurchasePolicy = {
   baseline: VideoProviderKey;
@@ -23,8 +24,12 @@ const kling: EnginePurchasePolicy = {
   strategy: 'preserve-fallback',
   offers: KLING_PRO_OFFERS,
 };
+const wan: EnginePurchasePolicy = { baseline: 'alibaba_model_studio', strategy: 'lowest-cost', offers: WAN_OFFERS };
 const policies = new Map<string, EnginePurchasePolicy>([
-  ['wan-3-prime', { baseline: 'alibaba_model_studio', strategy: 'lowest-cost', offers: WAN_PRIME_OFFERS }],
+  ['wan-3-prime', wan],
+  ['wan-3', wan],
+  ['minimax-h3', { baseline: 'fal', strategy: 'lowest-cost', offers: [H3_FAL_OFFER] }],
+  ['seedance-2-5', { baseline: 'byteplus_modelark', strategy: 'lowest-cost', offers: [SEEDANCE_25_BYTEPLUS_OFFER] }],
   ['kling-3-pro', kling],
   ['kling-o3-pro', kling],
 ]);
@@ -87,12 +92,17 @@ export function planVideoPurchase(request: PurchaseRequest, limits: Partial<Purc
 }
 
 /** The preproduction transport is qualified independently of a price comparison. */
-export function planWanPrimePurchase(request: PurchaseRequest, limits: Partial<PurchaseLimits> = {}) {
-  const quote = request.engineId === 'wan-3-prime' ? quoteVideoPurchase(request) : null;
+export function planWanPurchase(request: PurchaseRequest, limits: Partial<PurchaseLimits> = {}) {
+  const quote = policies.get(request.engineId) === wan ? quoteVideoPurchase(request) : null;
   if (!quote) return { ...rankQuotedOffers([], { ceilingMicros: -1 }), canaryEligible: false };
   const pilot = quote.candidates.find((row) => row.provider === 'apimart');
   const plan = selectPurchasePlan(quote, limits);
-  return { ...plan, canaryEligible: Boolean(pilot && !pilot.excluded && pilot.costMicros !== null) };
+  return { ...plan, canaryEligible: request.engineId === 'wan-3-prime' && Boolean(pilot && !pilot.excluded && pilot.costMicros !== null) };
+}
+
+export function planWanPrimePurchase(request: PurchaseRequest, limits: Partial<PurchaseLimits> = {}) {
+  return request.engineId === 'wan-3-prime' ? planWanPurchase(request, limits)
+    : { ...rankQuotedOffers([], { ceilingMicros: -1 }), canaryEligible: false };
 }
 
 export function customerPurchaseCeiling(pricing: { currency?: string | null; totalCents: number }) {

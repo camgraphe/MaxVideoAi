@@ -1,3 +1,4 @@
+import { wanImageMode } from './wan-image-mode';
 import type { AlibabaVideoPayload } from '../alibaba-model-studio/types';
 import type { NormalizedVideoProviderTask } from '../types';
 import type { SubmitOutcome } from '@/lib/video-purchase-decision';
@@ -23,11 +24,13 @@ export function apimartCanaryAvailable() {
 
 export function buildApimartWanRequest(payload: AlibabaVideoPayload) {
   const media = payload.input.media ?? [];
-  if (
-    payload.model !== 'wan3.0-video-prime' ||
-    media.length > 1 ||
-    media.some((item) => item.type !== 'reference_image')
-  ) {
+  const first = media.filter((item) => item.type === 'first_frame');
+  const last = media.filter((item) => item.type === 'last_frame');
+  const references = media.filter((item) => item.type === 'reference_image');
+  const ordered = [...first, ...last, ...references];
+  const mode = first.length || last.length ? 'i2v' : references.length ? 'ref2v' : 't2v';
+  const type = wanImageMode(mode, first.length + references.length, first.length > 0, last.length > 0);
+  if (payload.model !== 'wan3.0-video-prime' || !type || last.length > 1 || ordered.length !== media.length) {
     throw new ApimartSubmitError('invalid', 'UNSUPPORTED_PILOT_INPUT');
   }
   const p = payload.parameters;
@@ -41,7 +44,7 @@ export function buildApimartWanRequest(payload: AlibabaVideoPayload) {
     prompt_extend: p.prompt_extend,
     seed: p.seed,
     watermark: p.watermark,
-    ...(media.length ? { generation_type: 'reference', image_urls: media.map((item) => item.url) } : {}),
+    ...(type === 'text' ? {} : { generation_type: type, image_urls: ordered.map((item) => item.url) }),
   };
 }
 function record(value: unknown): Record<string, unknown> {

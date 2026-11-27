@@ -1,0 +1,14 @@
+{
+  "startDay": "2026-10-28",
+  "endDay": "2026-11-27",
+  "total": 234,
+  "eligible": 210,
+  "threeRoutes": 210,
+  "missingFacts": 0,
+  "outsideCoverage": 24,
+  "overCeiling": 0,
+  "baselineMicros": 350532000,
+  "purchaseMicros": 260235030,
+  "firstChoices": { "apimart": 210 },
+  "modes": { "t2v": 97, "i2v": 12, "ref2v": 101 }
+}
