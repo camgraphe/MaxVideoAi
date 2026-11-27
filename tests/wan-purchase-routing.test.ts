@@ -7,6 +7,7 @@ import {
 } from '../frontend/src/server/video-providers/apimart/wan-prime';
 import {
   planWanPrimePurchase,
+  planWanPurchase,
   rankPurchaseOffers,
   WAN_PRIME_OFFERS,
   type PurchaseRequest,
@@ -104,7 +105,7 @@ test('Wan Prime pilots require admin preproduction access and keep the installed
     ALIBABA_MODEL_STUDIO_PUBLIC_ROUTING_ENABLED: '1',
     ALIBABA_MODEL_STUDIO_ADMIN_ONLY: '0',
   };
-  const keys = ['VERCEL_ENV', 'WAN_PRIME_EXISTING_PROVIDERS_ADMIN_CANARY', 'APIMART_WAN_PRIME_ADMIN_CANARY', 'APIMART_API_KEY'];
+  const keys = ['VERCEL_ENV', 'WAN_STANDARD_EXISTING_PROVIDERS_ADMIN_CANARY', 'WAN_PRIME_EXISTING_PROVIDERS_ADMIN_CANARY', 'APIMART_WAN_PRIME_ADMIN_CANARY', 'APIMART_API_KEY'];
   const old = keys.map(key => process.env[key]);
   const route = (isAdmin: boolean, engineId = 'wan-3-prime') => {
     const plan = resolveVideoProviderRoutingPlan({ engineId, mode: 't2v', env, isAdmin });
@@ -113,9 +114,11 @@ test('Wan Prime pilots require admin preproduction access and keep the installed
   try {
     process.env.VERCEL_ENV = 'preview';
     delete process.env.WAN_PRIME_EXISTING_PROVIDERS_ADMIN_CANARY;
+    delete process.env.WAN_STANDARD_EXISTING_PROVIDERS_ADMIN_CANARY;
     process.env.APIMART_WAN_PRIME_ADMIN_CANARY = '1';
     process.env.APIMART_API_KEY = 'test';
     assert.equal(route(true), 'with-apimart');
+    assert.equal(route(true, 'wan-3'), undefined);
     assert.equal(route(false), undefined);
     process.env.VERCEL_ENV = 'production';
     assert.equal(route(true), undefined);
@@ -126,6 +129,9 @@ test('Wan Prime pilots require admin preproduction access and keep the installed
     assert.equal(route(true), 'alibaba-fal');
     assert.equal(route(false), undefined);
     assert.equal(route(true, 'wan-3'), undefined);
+    process.env.WAN_STANDARD_EXISTING_PROVIDERS_ADMIN_CANARY = '1';
+    assert.equal(route(true, 'wan-3'), 'alibaba-fal');
+    assert.equal(route(false, 'wan-3'), undefined);
     process.env.APIMART_API_KEY = 'test';
     assert.equal(route(true), 'alibaba-fal');
     process.env.VERCEL_ENV = 'production';
@@ -134,6 +140,10 @@ test('Wan Prime pilots require admin preproduction access and keep the installed
     delete process.env.WAN_PRIME_EXISTING_PROVIDERS_ADMIN_CANARY;
     delete process.env.APIMART_WAN_PRIME_ADMIN_CANARY;
     assert.equal(route(true), undefined);
+    assert.equal(route(true, 'wan-3'), 'alibaba-fal');
+    assert.equal(route(true, 'happyhorse'), undefined);
+    process.env.VERCEL_ENV = 'production';
+    assert.equal(route(true, 'wan-3'), undefined);
     assert.equal(installedRoutes().length, 7);
   } finally {
     for (const [i, k] of keys.entries()) {
@@ -142,6 +152,22 @@ test('Wan Prime pilots require admin preproduction access and keep the installed
     }
   }
 });
+test('Wan Standard qualifies only reviewed requests on the installed pilot, always leaving APIMart out of execution', () => {
+  const request = { ...textClip, engineId: 'wan-3', mode: 'ref2v', images: 1, durationSec: 30, aspectRatio: '9:16' };
+  assert.equal(planWanPurchase(request).canaryEligible, false);
+  assert.equal(planWanPurchase(request, {}, 'with-apimart').canaryEligible, false);
+  const paired = planWanPurchase(request, {}, 'alibaba-fal');
+  assert.equal(paired.canaryEligible, true);
+  assert.deepEqual(paired.order, ['alibaba_model_studio', 'fal']);
+  assert.equal(paired.ceilingMicros, 1_500_000);
+  assert.deepEqual(planWanPurchase(request, { unavailable: { fal: 'disabled' } }, 'alibaba-fal').order, ['alibaba_model_studio']);
+  assert.deepEqual(planWanPurchase(request, { ceilingMicros: 1_499_999 }, 'alibaba-fal').order, []);
+  for (const override of [{hasAudioReference: true}, {hasVideo: true, inputVideoSeconds: 5}, {hasDocument: true},
+    {hasUnpricedOptions: true}, {hasEndFrame: true}, {images: 11}, {durationSec: 1}, {resolution: '2k'}]) {
+    assert.equal(planWanPurchase({ ...request, ...override }, {}, 'alibaba-fal').canaryEligible, false);
+  }
+});
+
 test('APIMart preserves image roles and options, polls an accepted task and stores only safe diagnostics', async () => {
   const refs = {
     ...payload,

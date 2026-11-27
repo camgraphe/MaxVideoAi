@@ -42,7 +42,7 @@ test('Wan canary retains ordered frame roles and accepts up to ten reference ima
 test('observed H3 and Seedance examples retain a single provider and Wan Standard prices are tier-specific', () => {
   const scenarios = routingScenarios();
   for (const [id, first, micros, count] of [
-    ['standard-reference', 'apimart', 986400, 3], ['standard-image', 'apimart', 328750, 3],
+    ['standard-reference', 'apimart', 986400, 4], ['standard-image', 'apimart', 328750, 4],
     ['h3-references', 'fal', 500000, 1], ['h3-text', 'fal', 750000, 1],
     ['seedance-reference', 'byteplus_modelark', 5094270, 1], ['seedance-text', 'byteplus_modelark', 723876, 1],
     ['seedance-image', 'byteplus_modelark', 427219, 1],

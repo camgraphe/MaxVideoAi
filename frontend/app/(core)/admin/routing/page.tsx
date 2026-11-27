@@ -1,9 +1,9 @@
 import { AdminPageHeader } from '@/components/admin-system/shell/AdminPageHeader';
 import { requireAdmin } from '@/server/admin';
-import { configuredWanPrimeCanary } from '@/server/video-providers/router';
+import { configuredWanPurchaseCanary } from '@/server/video-providers/router';
 import { recentRoutingJobs } from './_lib/routing-data';
 import { routingScenarios } from './_lib/routing-scenarios';
-import { RouteSimulator } from './_components/RouteSimulator.client';
+import { RoutingWorkspace } from './_components/RoutingWorkspace.client';
 import { installedRoutes } from './_lib/installed-routes';
 import { WanReplay } from './_components/WanReplay';
 import { RoutingHistory } from './_components/RoutingHistory';
@@ -20,11 +20,10 @@ export default async function AdminVideoRoutingPage({ searchParams }: { searchPa
     return null;
   }
   const [jobs, params] = await Promise.all([recentRoutingJobs().catch(() => null), searchParams]);
-  const pilot = configuredWanPrimeCanary() ?? 'shadow';
-  const pilotDescriptions = {
-    'alibaba-fal': 'Eligible admin Wan Prime requests use the Alibaba pilot. Fal can take over when fallback is enabled. APIMart prices are simulated.',
-    'with-apimart': 'APIMart preproduction canary is configured for eligible admin requests on the Alibaba route.',
-    shadow: 'APIMart is available here for price simulation. The submission canary is off.',
+  const pilotLabels = {
+    'alibaba-fal': 'Alibaba pilot · Fal backup when enabled',
+    'with-apimart': 'APIMart pilot · installed suppliers eligible for fallback',
+    shadow: 'Price simulation only',
   };
   return (
     <div className="flex flex-col gap-5">
@@ -33,10 +32,12 @@ export default async function AdminVideoRoutingPage({ searchParams }: { searchPa
         title="Video routing"
         description="Compare supplier costs, rehearse a fallback and inspect the actual attempts for a generation."
       />
-      <RouteSimulator initialEngine={params.engine} scenarios={routingScenarios()} routes={installedRoutes()} />
-      <p className="text-sm text-text-secondary">
-        {pilotDescriptions[pilot]}
-      </p>
+      <RoutingWorkspace initialEngine={params.engine} scenarios={routingScenarios()} routes={installedRoutes()} />
+      <div className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-text-secondary" aria-label="Admin purchase pilot settings">
+        {([['wan-3', 'Wan Standard'], ['wan-3-prime', 'Wan Prime']] as const).map(([engine, label]) => (
+          <span key={engine}><strong>{label}</strong> · {pilotLabels[configuredWanPurchaseCanary(engine) ?? 'shadow']}</span>
+        ))}
+      </div>
       <WanReplay requested={params.replay === 'wan-prime'} />
       <RoutingHistory jobs={jobs} />
     </div>

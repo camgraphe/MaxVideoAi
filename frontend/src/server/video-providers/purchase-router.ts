@@ -6,7 +6,8 @@ import {
 } from '@/lib/video-purchase-decision';
 import type { VideoProviderKey } from './types';
 import type { PurchaseRequest, PurchaseOffer } from './purchase/types';
-import { WAN_OFFERS } from './purchase/wan';
+import { isReviewedWanPilotRequest, WAN_OFFERS } from './purchase/wan';
+import type { WanPurchaseCanary } from './router';
 import { H3_FAL_OFFER, SEEDANCE_25_BYTEPLUS_OFFER } from './purchase/h3-seedance';
 import { KLING_PRO_OFFERS } from './purchase/kling-pro';
 
@@ -92,17 +93,22 @@ export function planVideoPurchase(request: PurchaseRequest, limits: Partial<Purc
 }
 
 /** The preproduction transport is qualified independently of a price comparison. */
-export function planWanPurchase(request: PurchaseRequest, limits: Partial<PurchaseLimits> = {}) {
+export function planWanPurchase(
+  request: PurchaseRequest, limits: Partial<PurchaseLimits> = {}, pilot?: WanPurchaseCanary
+) {
   const quote = policies.get(request.engineId) === wan ? quoteVideoPurchase(request) : null;
-  if (!quote) return { ...rankQuotedOffers([], { ceilingMicros: -1 }), canaryEligible: false };
-  const pilot = quote.candidates.find((row) => row.provider === 'apimart');
-  const plan = selectPurchasePlan(quote, limits);
-  return { ...plan, canaryEligible: request.engineId === 'wan-3-prime' && Boolean(pilot && !pilot.excluded && pilot.costMicros !== null) };
+  if (!quote) return { ...rankQuotedOffers<VideoProviderKey>([], { ceilingMicros: -1 }), canaryEligible: false };
+  const installedOnly = pilot === 'alibaba-fal';
+  const plan = selectPurchasePlan(quote, installedOnly ? {
+    ...limits, unavailable: { ...limits.unavailable, apimart: 'Outside the Alibaba and Fal pilot' },
+  } : limits);
+  const permitted = request.engineId === 'wan-3-prime' || (request.engineId === 'wan-3' && installedOnly);
+  return { ...plan, canaryEligible: permitted && isReviewedWanPilotRequest(request) };
 }
 
 export function planWanPrimePurchase(request: PurchaseRequest, limits: Partial<PurchaseLimits> = {}) {
   return request.engineId === 'wan-3-prime' ? planWanPurchase(request, limits)
-    : { ...rankQuotedOffers([], { ceilingMicros: -1 }), canaryEligible: false };
+    : { ...rankQuotedOffers<VideoProviderKey>([], { ceilingMicros: -1 }), canaryEligible: false };
 }
 
 export function customerPurchaseCeiling(pricing: { currency?: string | null; totalCents: number }) {

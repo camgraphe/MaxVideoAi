@@ -2,7 +2,7 @@ import type { SubmitOutcome } from '@/lib/video-purchase-decision';
 import type { PricingSnapshot } from '@/types/engines';
 import type { GeneratePayload } from '@/lib/fal';
 import type { VideoProviderKey } from '@/server/video-providers/types';
-import type { WanPrimeCanary } from '@/server/video-providers/router';
+import type { WanPurchaseCanary } from '@/server/video-providers/router';
 import { ApimartSubmitError } from '@/server/video-providers/apimart/wan-prime';
 import { classifyAlibabaModelStudioError } from '@/server/video-providers/alibaba-model-studio/errors';
 import { customerPurchaseCeiling, planWanPurchase, type PurchaseRequest } from '@/server/video-providers/purchase-router';
@@ -17,7 +17,7 @@ export function buildWanPurchaseDecision(
     aspectRatio: string | null;
     falPayload: GeneratePayload;
     fallbackToFalEnabled: boolean;
-    purchaseCanary?: WanPrimeCanary;
+    purchaseCanary?: WanPurchaseCanary;
     pricing: PricingSnapshot;
   },
   resolution: string,
@@ -39,16 +39,15 @@ export function buildWanPurchaseDecision(
     hasUnpricedOptions: hasUnreviewedWanOptions(extras),
     hasDocument: Boolean(extras?.file_url || extras?.web_url),
   };
-  const configured = params.engineId === 'wan-3-prime' ? process.env.WAN_PRIME_PURCHASE_CEILING_USD?.trim() : undefined;
+  const ceiling = params.engineId === 'wan-3-prime' ? process.env.WAN_PRIME_PURCHASE_CEILING_USD
+    : params.purchaseCanary === 'alibaba-fal' ? process.env.WAN_STANDARD_PURCHASE_CEILING_USD : undefined;
+  const configured = ceiling?.trim();
   const serverCap = configured ? Math.floor(Number(configured) * 1e6) : Number.MAX_SAFE_INTEGER;
   const cap = Math.min(serverCap, customerPurchaseCeiling(params.pricing));
   return planWanPurchase(request, {
     ceilingMicros: cap,
-    unavailable: {
-      ...(params.purchaseCanary === 'alibaba-fal' ? { apimart: 'Outside the Alibaba and Fal pilot' } : {}),
-      ...(!params.fallbackToFalEnabled ? { fal: 'Fal fallback disabled' } : {}),
-    },
-  });
+    unavailable: params.fallbackToFalEnabled ? {} : { fal: 'Fal fallback disabled' },
+  }, params.purchaseCanary);
 }
 export function classifyWanPurchaseFailure(
   provider: VideoProviderKey,

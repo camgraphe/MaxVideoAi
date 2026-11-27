@@ -1,11 +1,11 @@
 import { getWanSubmissionClient, isWanDirectProvider, type WanDirectProvider } from '@/server/video-providers/wan-transports';
 import type { createApimartClient } from '@/server/video-providers/apimart/wan-prime';
-import type { WanPrimeCanary } from '@/server/video-providers/router';
+import type { WanPurchaseCanary } from '@/server/video-providers/router';
 import { nextPurchaseProvider, purchaseRoutingSnapshot, type PurchaseDecision } from '@/lib/video-purchase-decision';
 import { buildWanPurchaseDecision, classifyWanPurchaseFailure } from './wan-purchase-routing';
 import type { GeneratePayload, GenerateResult } from '@/lib/fal';
 import { query } from '@/lib/db';
-import type { NormalizedVideoProviderTask } from '@/server/video-providers/types';
+import type { NormalizedVideoProviderTask, VideoProviderKey } from '@/server/video-providers/types';
 import { persistDirectProviderAcceptance } from './direct-provider-acceptance';
 import type { Mode, PricingSnapshot, ProviderClientErrorPolicy } from '@/types/engines';
 import { getAlibabaModelStudioClient } from '@/server/video-providers/alibaba-model-studio/client';
@@ -204,7 +204,7 @@ function falProviderJobId(result: FalGenerateSubmissionResult, getLastProviderJo
 async function submitFalFallback(params: {
   userId: string;
   directAttemptId: number | null;
-  decision?: PurchaseDecision;
+  decision?: PurchaseDecision<VideoProviderKey>;
   attemptIndex?: number;
   claimOnce?: boolean;
   fallbackFrom?: string;
@@ -328,7 +328,7 @@ type WanSubmissionParams = {
   paymentMode: PaymentMode;
   walletChargeReserved: boolean;
   fallbackToFalEnabled: boolean;
-  purchaseCanary?: WanPrimeCanary;
+  purchaseCanary?: WanPurchaseCanary;
   falPayload: GeneratePayload;
   falInputSummary: FalInputSummary;
   isLumaRay2: boolean;
@@ -399,7 +399,7 @@ type WanAttemptContext = {
   resolution: string;
   estimate: ReturnType<typeof estimateAlibabaProviderCost>;
   active: boolean;
-  plan: PurchaseDecision | null;
+  plan: PurchaseDecision<VideoProviderKey> | null;
   deps: AlibabaSubmissionDeps;
   queryFn: QueryFn;
 };

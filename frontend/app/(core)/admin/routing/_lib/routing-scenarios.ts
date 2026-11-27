@@ -1,7 +1,7 @@
-import { type PurchaseRequest, quoteVideoPurchase } from '@/server/video-providers/purchase-router';
+import { type ComparisonRequest, quoteComparisonRequest } from './comparison-offers';
 import { getBaseEngineIncludingHidden } from '@/lib/engines';
 
-const wan: PurchaseRequest = {
+const wan: ComparisonRequest = {
   engineId: 'wan-3-prime',
   mode: 't2v',
   durationSec: 15,
@@ -17,8 +17,8 @@ const wan: PurchaseRequest = {
 };
 const kling = { ...wan, engineId: 'kling-3-pro', durationSec: 5, resolution: '1080p' };
 
-function scenario(id: string, label: string, request: PurchaseRequest) {
-  const quote = quoteVideoPurchase(request);
+function scenario(id: string, label: string, request: ComparisonRequest) {
+  const quote = quoteComparisonRequest(request);
   if (!quote || quote.baselineMicros < 0)
     throw new Error('Missing purchase policy or baseline for scenario ' + id);
   const seconds = request.hasVideo
@@ -65,6 +65,7 @@ export function routingScenarios(): RoutingScenario[] {
     }),
     scenario('two-references', 'Two reference images', { ...wan, mode: 'ref2v', durationSec: 30, images: 2 }),
     scenario('video', 'Reference video', {
+      referenceVideoSeconds: [5],
       ...wan,
       mode: 'ref2v',
       durationSec: 5,
@@ -88,6 +89,23 @@ export function routingScenarios(): RoutingScenario[] {
       resolution: '720p', audioEnabled: false,
     }),
     scenario('standard-text', 'Text to video · list prices', { ...wan, engineId: 'wan-3', durationSec: 30, aspectRatio: '9:16' }),
+    scenario('standard-source', 'Five-second source video', {
+      ...wan, engineId: 'wan-3', mode: 'ref2v', durationSec: 5, resolution: '720p',
+      hasVideo: true, inputVideoSeconds: 5, referenceVideoSeconds: [5],
+    }),
+    scenario('h3-2k', '2K text to video', {
+      ...wan, engineId: 'minimax-h3', resolution: '2K', durationSec: 5, aspectRatio: '21:9', promptCharacters: 120,
+    }),
+    scenario('h3-six-images', 'Six reference images', {
+      ...wan, engineId: 'minimax-h3', mode: 'ref2v', resolution: '768p', images: 6, durationSec: 10, promptCharacters: 120,
+    }),
+    scenario('h3-max-text', 'Text to video', {
+      ...wan, engineId: 'minimax-h3-max', durationSec: 5, resolution: '768p', promptCharacters: 120,
+    }),
+    scenario('h3-max-frame', 'Start frame', {
+      ...wan, engineId: 'minimax-h3-max', mode: 'i2v', hasStartFrame: true, images: 1,
+      aspectRatio: null, resolution: '1080p', durationSec: 10, promptCharacters: 120,
+    }),
     scenario('h3-references', 'Three reference images', {
       ...wan, engineId: 'minimax-h3', mode: 'ref2v', images: 3, durationSec: 10, aspectRatio: '21:9', audioEnabled: undefined,
     }),

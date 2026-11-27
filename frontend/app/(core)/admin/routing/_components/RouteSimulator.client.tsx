@@ -36,25 +36,34 @@ export function RouteSimulator({
   scenarios,
   routes,
   initialEngine,
+  initialProfile,
 }: {
   scenarios: RoutingScenario[];
   routes: InstalledRoute[];
   initialEngine?: string;
+  initialProfile?: string;
 }) {
   const [view, setView] = useState<'simulation' | 'map'>('simulation');
   const [profile, setProfile] = useState(
-    () => (scenarios.find((s) => s.engineId === initialEngine) ?? scenarios[0]).id
+    () => (scenarios.find((s) => s.id === initialProfile) ?? scenarios.find((s) => s.engineId === initialEngine) ?? scenarios[0]).id
   );
   const [cap, setCap] = useState('');
   const [policyOverride, setPolicyOverride] = useState<PurchaseStrategy | null>(null);
   const [presetOverride, setPreset] = useState<Preset | null>(null);
   const [fundedPacks, setFundedPacks] = useState<string[]>([]);
+  const [installedOnly, setInstalledOnly] = useState(false);
   const [custom, setCustom] = useState<Conditions | null>(null);
   const scenario = scenarios.find((item) => item.id === profile) ?? scenarios[0];
   const standby = routes.filter((r) => r.standbyReason && scenario.candidates.some((c) => c.provider === r.provider));
   const fundingExclusion = Object.fromEntries(
     standby.filter((r) => !fundedPacks.includes(r.provider)).map((r) => [r.provider, r.standbyReason!])
   );
+  const installedProviders = new Set<string>(routes.map(r => r.provider));
+  const catalogCandidates = scenario.candidates.filter(c => c.simulationOnly || !installedProviders.has(c.provider));
+  const exclusions = {
+    ...(installedOnly ? Object.fromEntries(catalogCandidates.map(c => [c.provider, 'Outside the installed supplier comparison'])) : {}),
+    ...fundingExclusion,
+  };
   const strategy = policyOverride ?? scenario.strategy;
   const engines = new Map(scenarios.map((item) => [item.engineId, item.engineLabel]));
   function selectProfile(id: string) {
@@ -67,7 +76,7 @@ export function RouteSimulator({
   }
   const ceilingMicros =
     cap === '' ? scenario.ceiling : Math.min(scenario.ceiling, Math.floor(Number(cap) * 1e6));
-  const eligible = rankQuotedOffers(scenario.candidates, { ceilingMicros, strategy, unavailable: fundingExclusion });
+  const eligible = rankQuotedOffers(scenario.candidates, { ceilingMicros, strategy, unavailable: exclusions });
   const preset = presetOverride ?? (standby.length || eligible.order.length < 2 ? 'best' : 'fallback');
   const conditions = custom ?? presetConditions(preset, eligible.order);
   const unavailable = Object.fromEntries(
@@ -76,10 +85,10 @@ export function RouteSimulator({
       .map(([key]) => [key, 'Unavailable before submission'])
   );
   const decision = rankQuotedOffers(scenario.candidates, {
-    ceilingMicros, strategy, unavailable: { ...unavailable, ...fundingExclusion },
+    ceilingMicros, strategy, unavailable: { ...unavailable, ...exclusions },
   });
   const frames = routeFrames(decision, conditions);
-  const runKey = JSON.stringify([profile, ceilingMicros, strategy, conditions, fundingExclusion]);
+  const runKey = JSON.stringify([profile, ceilingMicros, strategy, conditions, exclusions]);
   const simulation = view === 'simulation';
 
   return (
@@ -165,6 +174,15 @@ export function RouteSimulator({
             </span>
             <span className={s.settings}>{scenario.settings}</span>
           </div>
+          {catalogCandidates.length > 0 && <div className={s.funding}>
+            <label>
+              <input type="checkbox" checked={installedOnly} onChange={event => {
+                setInstalledOnly(event.target.checked);
+                setCustom(null);
+              }} />
+              Compare installed suppliers only
+            </label>
+          </div>}
           {scenario.priceAssumption && <div className={s.funding}>{scenario.priceAssumption}</div>}
           {standby.map((route) => (
             <div className={s.funding} key={route.provider}>
@@ -229,8 +247,8 @@ export function RouteSimulator({
                   <span>{PROVIDER_LABELS[row.provider]}</span>
                   <select
                     aria-label={PROVIDER_LABELS[row.provider] + ' response'}
-                    disabled={Boolean(fundingExclusion[row.provider])}
-                    value={fundingExclusion[row.provider] ? 'offline' : conditions[row.provider] ?? 'accepted'}
+                    disabled={Boolean(exclusions[row.provider])}
+                    value={exclusions[row.provider] ? 'offline' : conditions[row.provider] ?? 'accepted'}
                     onChange={(e) => setCustom({ ...conditions, [row.provider]: e.target.value as Response })}
                   >
                     {Object.entries(responseLabels).map(([value, label]) => (
@@ -240,6 +258,7 @@ export function RouteSimulator({
                     ))}
                   </select>
                   <small>{row.excluded ?? row.tariff}</small>
+                  {row.sourceUrl && <a className="text-xs underline" target="_blank" rel="noreferrer" href={row.sourceUrl}>Published rate ↗</a>}
                 </label>
               ))}
             </div>

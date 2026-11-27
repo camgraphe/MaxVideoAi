@@ -411,11 +411,12 @@ test('HappyHorse direct submission remains unchanged and never enters Wan media 
   assert.equal(result.ok, true, JSON.stringify(result));
 });
 
-for (const installedPilot of [false, true]) {
-  test(`Wan Prime without an APIMart key hands off the original reservation (installed-provider pilot ${installedPilot ? 'on' : 'off'})`, async (t) => {
+for (const [engineId, installedPilot] of [['wan-3-prime', false], ['wan-3-prime', true], ['wan-3', true]] as const) {
+  test(`${engineId} without an APIMart key hands off the original reservation (installed-provider pilot ${installedPilot ? 'on' : 'off'})`, async (t) => {
     const originalEnv = {
       VERCEL_ENV: process.env.VERCEL_ENV,
       WAN_PRIME_EXISTING_PROVIDERS_ADMIN_CANARY: process.env.WAN_PRIME_EXISTING_PROVIDERS_ADMIN_CANARY,
+      WAN_STANDARD_EXISTING_PROVIDERS_ADMIN_CANARY: process.env.WAN_STANDARD_EXISTING_PROVIDERS_ADMIN_CANARY,
       APIMART_WAN_PRIME_ADMIN_CANARY: process.env.APIMART_WAN_PRIME_ADMIN_CANARY,
       APIMART_API_KEY: process.env.APIMART_API_KEY,
     };
@@ -426,12 +427,15 @@ for (const installedPilot of [false, true]) {
       }
     });
     process.env.VERCEL_ENV = 'preview';
-    process.env.WAN_PRIME_EXISTING_PROVIDERS_ADMIN_CANARY = installedPilot ? '1' : '0';
+    process.env.WAN_PRIME_EXISTING_PROVIDERS_ADMIN_CANARY = installedPilot && engineId === 'wan-3-prime' ? '1' : '0';
+    process.env.WAN_STANDARD_EXISTING_PROVIDERS_ADMIN_CANARY = installedPilot && engineId === 'wan-3' ? '1' : '0';
     process.env.APIMART_WAN_PRIME_ADMIN_CANARY = '1';
     delete process.env.APIMART_API_KEY;
-    const engineId = 'wan-3-prime';
+    const reference = 'https://assets.example/ref.png';
+    const mode = engineId === 'wan-3' ? 'ref2v' : 't2v';
+    const references = mode === 'ref2v' ? [reference] : [];
     const plan = resolveVideoProviderRoutingPlan({
-      engineId, mode: 't2v', isAdmin: true,
+      engineId, mode, isAdmin: true,
       env: { ALIBABA_MODEL_STUDIO_ENABLED: '1', ALIBABA_MODEL_STUDIO_FALLBACK_TO_FAL_ENABLED: '1' },
     });
     assert.ok(plan.kind === 'alibaba_model_studio_primary');
@@ -439,17 +443,19 @@ for (const installedPilot of [false, true]) {
     const { queryFn, queries } = createQueryRecorder();
     const pendingReceipt = { jobId: 'job_alibaba_test', userId: 'user_123' };
     const { params } = baseParams({
-      engineId, durationSec: 15, effectiveResolution: '480p', audioEnabled: true,
-      falPayload: { ...falPayload, engineId, durationSec: 15, resolution: '480p', audio: true },
+      engineId, mode, durationSec: 15, effectiveResolution: '480p', audioEnabled: true,
+      falPayload: { ...falPayload, engineId, mode, durationSec: 15, resolution: '480p', audio: true, referenceImages: references },
       pendingReceipt, walletChargeReserved: true,
       purchaseCanary: plan.purchaseCanary, fallbackToFalEnabled: plan.fallbackEnabled,
       deps: {
         queryFn,
+        createOwnedMediaReadUrlFn: async (input: { url: string }) => input.url,
         getApimartClientFn: () => assert.fail('Unconfigured supplier was called'),
         getAlibabaModelStudioClientFn: () => ({
           createVideo: async () => { throw new AlibabaModelStudioError('Rate limited', { status: 429 }); },
         }),
-        submitFalGenerateTaskFn: async (input: { jobId: string; pendingReceipt: unknown; walletChargeReserved: boolean }) => {
+        submitFalGenerateTaskFn: async (input: { jobId: string; pendingReceipt: unknown; walletChargeReserved: boolean; falPayload: GeneratePayload }) => {
+          assert.deepEqual(input.falPayload.referenceImages, references);
           assert.equal(input.jobId, pendingReceipt.jobId);
           assert.equal(input.pendingReceipt, pendingReceipt);
           assert.equal(input.walletChargeReserved, true);
@@ -550,8 +556,11 @@ test('funded canary preserves a first/last frame pair while Standard records a s
   }
 });
 
-for (const [pilot, firstProvider] of [['with-apimart', 'apimart'], ['alibaba-fal', 'alibaba_model_studio']] as const) {
-  test(`ambiguous ${firstProvider} acceptance preserves the funded job and never sends a second request`, async () => {
+for (const [engineId, pilot, firstProvider] of [
+  ['wan-3-prime', 'with-apimart', 'apimart'], ['wan-3-prime', 'alibaba-fal', 'alibaba_model_studio'],
+  ['wan-3', 'alibaba-fal', 'alibaba_model_studio'],
+] as const) {
+  test(`ambiguous ${engineId} ${firstProvider} acceptance preserves the funded job and never sends a second request`, async () => {
     const { queryFn, queries } = createQueryRecorder();
     const calls: string[] = [];
     const submit = (provider: string) => async () => {
@@ -559,8 +568,7 @@ for (const [pilot, firstProvider] of [['with-apimart', 'apimart'], ['alibaba-fal
       throw new Error('timeout');
     };
     const { params } = baseParams({
-      engineId: 'wan-3-prime',
-      purchaseCanary: pilot,
+      engineId, purchaseCanary: pilot,
       deps: {
         queryFn,
         getApimartClientFn: () => ({ createVideo: submit('apimart') }),
@@ -577,13 +585,14 @@ for (const [pilot, firstProvider] of [['with-apimart', 'apimart'], ['alibaba-fal
 }
 
 // Four seconds at 720p: APIMart fits 55 cents, but the two installed routes each require 56.
-for (const [pilot, capCents] of [['with-apimart', 1], ['alibaba-fal', 55]] as const) {
-  test(`the ${pilot} canary releases the original reservation once when all available suppliers exceed the ceiling`, async () => {
+for (const [engineId, pilot, capCents] of [
+  ['wan-3-prime', 'with-apimart', 1], ['wan-3-prime', 'alibaba-fal', 55], ['wan-3', 'alibaba-fal', 39],
+] as const) {
+  test(`the ${engineId} ${pilot} canary releases the original reservation once when all available suppliers exceed the ceiling`, async () => {
     const { queryFn, queries } = createQueryRecorder();
     let rollbacks = 0;
     const { params } = baseParams({
-      engineId: 'wan-3-prime',
-      purchaseCanary: pilot,
+      engineId, purchaseCanary: pilot,
       durationSec: 4,
       pricing: { totalCents: capCents, currency: 'USD' },
       pendingReceipt: { jobId: 'job_alibaba_test', userId: 'user_123' },

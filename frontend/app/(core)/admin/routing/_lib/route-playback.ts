@@ -2,12 +2,12 @@ import {
   nextPurchaseProvider,
   PROVIDER_LABELS,
   type PurchaseDecision,
+  type PurchaseProviderKey,
   type SubmitOutcome,
 } from '@/lib/video-purchase-decision';
-import type { VideoProviderKey } from '@/server/video-providers/types';
 
 export type Response = SubmitOutcome | 'offline';
-export type Conditions = Partial<Record<VideoProviderKey, Response>>;
+export type Conditions = Partial<Record<PurchaseProviderKey, Response>>;
 export type Preset = 'best' | 'fallback' | 'double' | 'lost';
 export const presets: Record<Preset, string> = {
   best: 'Best price',
@@ -23,7 +23,7 @@ export const responseLabels: Record<Response, string> = {
   offline: 'Unavailable',
 };
 
-export function presetConditions(preset: Preset, ordered: VideoProviderKey[]): Conditions {
+export function presetConditions(preset: Preset, ordered: PurchaseProviderKey[]): Conditions {
   if (preset === 'best' || !ordered.length) return {};
   if (preset === 'lost') return { [ordered[0]]: 'uncertain' };
   return Object.fromEntries(ordered.slice(0, preset === 'double' ? 2 : 1).map((key) => [key, 'refused']));
@@ -39,7 +39,7 @@ export const dollars = (micros: number) => usd.format(micros / 1e6);
 
 export type Frame = {
   kind: 'intake' | 'sending' | 'empty' | SubmitOutcome;
-  provider?: VideoProviderKey;
+  provider?: PurchaseProviderKey;
   title: string;
   detail: string;
 };
@@ -57,10 +57,10 @@ export function routeFrames(decision: PurchaseDecision, conditions: Conditions):
       ...frames,
       { kind: 'empty', title: 'No eligible route', detail: 'Every offer is excluded. No request is sent.' },
     ];
-  let provider: VideoProviderKey | null = decision.order[0];
+  let provider: PurchaseProviderKey | null = decision.order[0];
   while (provider) {
     const label = PROVIDER_LABELS[provider];
-    const outcome = conditions[provider] ?? 'accepted';
+    const outcome: Response = conditions[provider] ?? 'accepted';
     if (outcome === 'offline') break; // Already filtered by rankQuotedOffers.
     frames.push({
       kind: 'sending',
@@ -73,7 +73,7 @@ export function routeFrames(decision: PurchaseDecision, conditions: Conditions):
             : 'First eligible offer in price order.'
           : 'Next eligible offer under the same ceiling.',
     });
-    const next = nextPurchaseProvider(decision.order, provider, outcome);
+    const next: PurchaseProviderKey | null = nextPurchaseProvider(decision.order, provider, outcome);
     const captions = {
       accepted: ['Accepted by ' + label, 'This provider owns the job. Routing ends here.'],
       refused: [

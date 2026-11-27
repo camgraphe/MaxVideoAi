@@ -44,6 +44,20 @@ function listCost(r: PurchaseRequest) {
   });
   return providerCostUsd == null ? null : Math.round(providerCostUsd * 1_000_000);
 }
+// Both installed-supplier pilots and the optional APIMart transport share these reviewed input roles.
+function wanPilotExclusion(r: PurchaseRequest): string | null {
+  if (r.hasVideo || r.hasAudioReference || r.hasDocument || r.hasUnpricedOptions)
+    return 'Media or options outside pilot coverage';
+  if (r.aspectRatio && !['adaptive', 'auto', '16:9', '9:16', '4:3', '3:4', '1:1'].includes(r.aspectRatio))
+    return 'Aspect ratio outside pilot coverage';
+  return wanImageMode(r.mode, r.images, r.hasStartFrame === true, r.hasEndFrame)
+    ? null : 'Unsupported combination of frames and references';
+}
+
+export function isReviewedWanPilotRequest(request: PurchaseRequest): boolean {
+  return requestIsPriced(request) && wanPilotExclusion(request) === null;
+}
+
 export const WAN_OFFERS: readonly PurchaseOffer[] = [
   { provider: 'alibaba_model_studio', tariff: 'Alibaba Singapore LIST', quote: listCost, exclude: () => null },
   {
@@ -67,14 +81,6 @@ export const WAN_OFFERS: readonly PurchaseOffer[] = [
       const rates = r.engineId === 'wan-3' ? STANDARD_GOLD_MICROS : APIMART_PRIME_MICROS_PER_SECOND;
       return requestIsPriced(r) && !r.hasVideo ? r.durationSec * rates[r.resolution.toLowerCase()] : null;
     },
-    exclude: (r) => {
-      if (r.hasVideo || r.hasAudioReference || r.hasDocument || r.hasUnpricedOptions)
-        return 'Media or options outside pilot coverage';
-      // The preproduction adapter submits a validated Alibaba payload on every route.
-      if (r.aspectRatio && !['adaptive', 'auto', '16:9', '9:16', '4:3', '3:4', '1:1'].includes(r.aspectRatio))
-        return 'Aspect ratio outside pilot coverage';
-      return wanImageMode(r.mode, r.images, r.hasStartFrame === true, r.hasEndFrame)
-        ? null : 'Unsupported combination of frames and references';
-    },
+    exclude: wanPilotExclusion,
   },
 ];

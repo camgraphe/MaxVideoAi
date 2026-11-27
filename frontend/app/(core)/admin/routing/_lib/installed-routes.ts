@@ -1,11 +1,11 @@
 import { getBaseEngineIncludingHidden } from '@/lib/engines';
 import { resolveTrustedPaidGenerateRouteContext } from '@/app/api/generate/_lib/route-context';
-import { PROVIDER_LABELS } from '@/lib/video-purchase-decision';
+import type { VideoProviderKey } from '@/server/video-providers/types';
 import { isKlingDirectV3Funded } from '@/server/video-providers/router';
 import type { Mode } from '@/types/engines';
 
 // Use the same non-submitting resolver as prepared paid requests. Examples cover every installed path.
-const EXAMPLES: ReadonlyArray<[keyof typeof PROVIDER_LABELS, string, Mode]> = [
+const EXAMPLES: ReadonlyArray<[VideoProviderKey, string, Mode]> = [
   ['fal', 'minimax-h3', 'ref2v'],
   ['alibaba_model_studio', 'wan-3-prime', 't2v'],
   ['byteplus_modelark', 'seedance-2-5', 'ref2v'],
