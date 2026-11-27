@@ -18,12 +18,13 @@ export function installedRoutes() {
     const engine = getBaseEngineIncludingHidden(engineId);
     const result =
       engine && resolveTrustedPaidGenerateRouteContext({ engine, body: {}, mode, jobId: 'routing-preview' });
-    let preference = 'Unavailable in this environment';
+    const targets: string[] = [];
     if (result?.ok) {
       const { providerRoutingPlan: plan, providerKey } = result.context;
-      preference = PROVIDER_LABELS[providerKey as keyof typeof PROVIDER_LABELS] ?? providerKey;
-      if ('fallbackEnabled' in plan && plan.fallbackEnabled) preference += ' → Fal';
+      targets.push(providerKey);
+      if ('fallbackEnabled' in plan && plan.fallbackEnabled && providerKey !== 'fal') targets.push('fal');
     }
-    return { provider: PROVIDER_LABELS[provider], engineId, mode, preference };
+    return { provider, engineId, label: engine?.label ?? engineId, mode, targets };
   });
 }
+export type InstalledRoute = ReturnType<typeof installedRoutes>[number];

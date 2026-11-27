@@ -1,6 +1,6 @@
 # Video purchase routing
 
-The first economic route covers Wan 3 Prime text and single-image reference jobs. Existing engines continue through their configured providers. Open **Generations → Video routing** at `/admin/routing` to compare eligible suppliers and trace a job. Its simulator runs in the browser and makes no provider requests.
+The first economic route covers Wan 3 Prime text and single-image reference jobs. Existing engines continue through their configured providers. Open **Generations → Video routing** at `/admin/routing` to compare eligible suppliers and trace a job. Its simulator animates the same price decision and definitive-refusal policy in the browser. Replay a request or step through each submission. Scenario settings include individual provider responses and the purchase ceiling. Reduced-motion users start with the resolved trace. The provider map can be filtered from either end. Installed integrations show representative engine/mode associations. Configured paths come from the local paid-route resolver, including enabled fallbacks. Neither view makes provider requests.
 
 ## Pricing and eligibility
 

@@ -13,6 +13,7 @@ import {
 } from '../frontend/src/server/video-providers/purchase-router';
 import { resolveVideoProviderRoutingPlan } from '../frontend/src/server/video-providers/router';
 import { nextPurchaseProvider } from '../frontend/src/lib/video-purchase-decision';
+import { routeFrames, presetConditions } from '../frontend/app/(core)/admin/routing/_lib/route-playback';
 import { installedRoutes } from '../frontend/app/(core)/admin/routing/_lib/installed-routes';
 
 const textClip: PurchaseRequest = {
@@ -180,4 +181,16 @@ test('structured refusals can fail over, unknown replies stop, and an ACK outran
     Response.json({ data: [{ task_id: 'accepted_2' }] }, { status: 429 })
   ).createVideo(payload);
   assert.equal(acknowledged.providerJobId, 'accepted_2');
+});
+
+test('simulator plays only the attempts allowed by the price decision and the response', () => {
+  const plan = rankPurchaseOffers(textClip, WAN_PRIME_OFFERS, { ceilingMicros: 1_020_000 });
+  const trace = routeFrames(plan, presetConditions('double', plan.order));
+  assert.deepEqual(trace.filter(frame => frame.kind === 'sending').map(frame => frame.provider), plan.order);
+  assert.equal(trace.at(-1)?.kind, 'accepted');
+  assert.equal(trace.at(-1)?.provider, 'fal');
+  const lost = routeFrames(plan, presetConditions('lost', plan.order));
+  assert.deepEqual(lost.map(frame => frame.kind), ['intake', 'sending', 'uncertain']);
+  const blocked = rankPurchaseOffers(textClip, WAN_PRIME_OFFERS, { ceilingMicros: 0 });
+  assert.deepEqual(routeFrames(blocked, {}).map(frame => frame.kind), ['intake', 'empty']);
 });
