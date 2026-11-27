@@ -109,9 +109,11 @@ export function quoteComparisonRequest(request: ComparisonRequest) {
   }
   const quote = quoteVideoPurchase(request);
   if (!quote) return null;
-  const candidates: CatalogueCandidate[] = quote.candidates.map(row =>
-    row.provider === 'apimart' && request.engineId === 'wan-3'
-      ? { ...row, simulationOnly: true, sourceUrl: 'https://apimart.ai/model/wan-3-0' } : row);
+  const candidates = quote.candidates.map<CatalogueCandidate>(row => {
+    if (row.provider !== 'apimart') return row;
+    const prime = request.engineId === 'wan-3-prime';
+    return { ...row, simulationOnly: prime ? undefined : true, sourceUrl: 'https://apimart.ai/model/wan-3-0' + (prime ? '-prime' : '') };
+  });
   if (request.engineId === 'wan-3' || request.engineId === 'wan-3-prime') candidates.push(waveSpeedQuote(request));
   if (request.engineId === 'minimax-h3') candidates.push(h3GoldQuote(request, false));
   return { ...quote, candidates };

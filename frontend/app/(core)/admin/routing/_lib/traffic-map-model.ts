@@ -62,6 +62,26 @@ export function demoProviderNodes(scenarios: RoutingScenario[], routes: Installe
 export function eventKey(e: TrafficEvent) {
   return [e.at, e.engineId, e.provider, e.previousProvider ?? '', e.stage, e.status].join('|');
 }
+
+/** Compare counts: two different anonymous observations can share every exposed field. */
+export function newObservedEvents(previous: RoutingTrafficSnapshot | null, next: RoutingTrafficSnapshot, engine: string) {
+  if (!previous || previous.observedAt >= next.observedAt) return [];
+  const previousCounts = new Map<string, number>();
+  for (const event of previous.events) {
+    const key = eventKey(event);
+    previousCounts.set(key, (previousCounts.get(key) ?? 0) + 1);
+  }
+  const arrivals = next.events.filter(event => {
+    if (engine && event.engineId !== engine) return false;
+    const key = eventKey(event);
+    const remaining = previousCounts.get(key) ?? 0;
+    if (!remaining) return true;
+    previousCounts.set(key, remaining - 1);
+    return false;
+  });
+  return arrivals.sort((a, b) => a.at.localeCompare(b.at));
+}
+
 export function eventTone(e: TrafficEvent): MapTone {
   if (['failed', 'cancelled', 'canceled', 'rejected', 'fallback_failed'].includes(e.status)) return 'failure';
   if (['polling_stalled', 'provider_polling_stalled', 'uncertain'].includes(e.status)) return 'warning';

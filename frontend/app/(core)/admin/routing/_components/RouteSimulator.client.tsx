@@ -20,6 +20,7 @@ import type { RoutingScenario } from '../_lib/routing-scenarios';
 import type { InstalledRoute } from '../_lib/installed-routes';
 import {
   dollars,
+  offerAccessLabel,
   presetConditions,
   presets,
   responseLabels,
@@ -257,7 +258,7 @@ export function RouteSimulator({
                       </option>
                     ))}
                   </select>
-                  <small>{row.excluded ?? row.tariff}</small>
+                  <small>{[row.excluded ?? row.tariff, offerAccessLabel(row, scenario.engineId, installedProviders.has(row.provider))].filter(Boolean).join(' · ')}</small>
                   {row.sourceUrl && <a className="text-xs underline" target="_blank" rel="noreferrer" href={row.sourceUrl}>Published rate ↗</a>}
                 </label>
               ))}

@@ -6,6 +6,7 @@ import type { RoutingScenario } from '../_lib/routing-scenarios';
 import type { RoutingTrafficSnapshot } from '../_lib/routing-traffic-types';
 import { RouteSimulator } from './RouteSimulator.client';
 import { TrafficMap } from './TrafficMap.client';
+import { EngineUsage } from './EngineUsage';
 
 const refreshMs = 30_000;
 
@@ -94,6 +95,10 @@ export function RoutingWorkspace({ scenarios, routes, initialEngine }: {
         </p>
       )}
     </div>
+    {observing && snapshot?.engineUsage && (
+      <EngineUsage engines={snapshot.engineUsage} sampledJobs={snapshot.sampledJobs} windowMinutes={snapshot.windowMinutes}
+        truncated={snapshot.truncated} labels={new Map(scenarios.map(scenario => [scenario.engineId, scenario.engineLabel]))} />
+    )}
     <details open={labOpen} onToggle={event => setLabOpen(event.currentTarget.open)} ref={lab}
       className="scroll-mt-4 rounded-card border border-hairline bg-surface">
       <summary className="cursor-pointer p-4 font-semibold">Scenario lab · prices, outages and fallbacks</summary>

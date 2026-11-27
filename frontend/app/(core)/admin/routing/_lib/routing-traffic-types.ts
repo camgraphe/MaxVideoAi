@@ -1,3 +1,5 @@
+export const ROUTING_TRAFFIC_JOB_LIMIT = 512;
+
 export type RoutingTrafficEvent = {
   engineId: string;
   provider: string;
@@ -18,10 +20,17 @@ export type RoutingTrafficRoute = {
   latestAt: string;
 };
 
+export type RoutingEngineUsage = {
+  engineId: string;
+  jobs: number;
+  jobsWithFallback: number;
+};
+
 export type RoutingTrafficSnapshot = {
   observedAt: string;
   windowMinutes: number;
   sampledJobs: number;
+  engineUsage?: RoutingEngineUsage[];
   truncated: boolean;
   routes: RoutingTrafficRoute[];
   events: RoutingTrafficEvent[];

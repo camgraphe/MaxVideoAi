@@ -1,9 +1,10 @@
 'use client';
 
 import { useId, type CSSProperties } from 'react';
-import { Boxes, Layers3, Waypoints } from 'lucide-react';
+import { Box, Layers3, Route } from 'lucide-react';
 import type { MapNode, MapTone } from '../_lib/traffic-map-model';
-import s from './TrafficMap.module.css';
+import layout from './TrafficMap.module.css';
+import s from './TrafficDiagram.module.css';
 
 type Props = {
   engines: MapNode[];
@@ -19,118 +20,156 @@ type Props = {
   onProvider: (id: string) => void;
 };
 
-const beamTone = (tone?: MapTone) => tone && tone !== 'idle' && tone !== 'candidate' ? tone : undefined;
+const familyColors: [RegExp, string][] = [
+  [/^wan-|^alibaba/, '#8fa7ff'],
+  [/seedance|byteplus/, '#eaa0bc'],
+  [/minimax|hailuo/, '#7cd3b9'],
+  [/kling/, '#efac7e'],
+  [/apimart/, '#d1a4fe'],
+  [/wavespeed/, '#6fcedf'],
+  [/^fal$/, '#efd483'],
+  [/luma/, '#a4d498'],
+  [/veo|vertex|gemini/, '#9bbce9'],
+];
+const familyColor = (key: string) => familyColors.find(([pattern]) => pattern.test(key))?.[1] ?? '#aec9cb';
+const statusLabel: Record<MapTone, string> = {
+  idle: 'In map', candidate: 'In plan', active: 'Selected', success: 'Confirmed',
+  fallback: 'Fallback', failure: 'Failed', warning: 'Uncertain',
+};
+const panelHeight = 49;
 
-function Wire({ path, tone = 'idle', pulse }: { path: string; tone?: MapTone; pulse: boolean }) {
-  return (
-    <g data-tone={tone} aria-hidden="true">
-      {beamTone(tone) && <path className={s.bloom} d={path} />}
-      <path className={s.wire} d={path} />
-      {pulse && <g style={{ offsetPath: 'path("' + path + '")' } as CSSProperties} className={s.packet}>
-        <circle r="8" fill="currentColor" opacity=".18" /><circle r="3.5" fill="currentColor" /><circle r="1.4" fill="#f4fffa" />
-      </g>}
-    </g>
-  );
+function Wire({ path, tone = 'idle', pulse, tail }: { path: string; tone?: MapTone; pulse: boolean; tail: string }) {
+  const active = tone !== 'idle' && tone !== 'candidate';
+  return <g data-tone={tone} aria-hidden="true">
+    {active && <path className={s.halo} d={path}/>}
+    <path className={s.cable} d={path}/>
+    {pulse && [0, 1, 2, 3].map(i => <g key={i} className={s.packet}
+      style={{offsetPath: 'path("' + path + '")', '--lag': (i * 0.075).toFixed(3)} as CSSProperties}>
+      <path d={`M -${29-i*4} 0 H 0`} stroke={`url(#${tail})`} strokeWidth={i ? 1.6 : 3.5} strokeLinecap="round"/>
+      <circle r={i ? 4 : 7} fill="currentColor" opacity=".14"/>
+      <circle r={i ? 1.8 : 3.4} fill="currentColor"/><circle r={i ? .7 : 1.4} fill="#fff"/>
+    </g>)}
+  </g>;
 }
 
-function Socket({ node, x, y, width, type, selected, onClick }: {
-  node: MapNode; x: number; y: number; width: number; type: 'engine' | 'provider'; selected: boolean; onClick: () => void;
+function NodePanel({ node, x, y, width, engine, selected, onClick }: {
+  node: MapNode; x: number; y: number; width: number; engine?: boolean; selected: boolean; onClick: () => void;
 }) {
-  const Glyph = type === 'provider' ? Boxes : Layers3;
-  const maxLabel = Math.max(8, Math.floor((width - 47) / 7.4));
-  const name = node.label.length > maxLabel ? node.label.slice(0, maxLabel - 1) + '…' : node.label;
-  return (
-    <g transform={`translate(${x} ${y})`} role="button" tabIndex={0}
-      aria-label={(type === 'engine' ? 'Show engine ' : 'Inspect provider ') + node.label}
-      aria-pressed={selected} className={s.socket} data-tone={node.tone ?? 'idle'}
-      onClick={onClick} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } }}>
-      <title>{[node.label, node.detail].filter(Boolean).join(' · ')}</title>
-      <rect className={s.node} width={width} height="35" rx="7" />
-      <g transform="translate(10 10)"><Glyph width="15" height="15" strokeWidth="1.5" /></g>
-      <text className={s.nodeText} x="34" y={node.detail ? 14 : 22}>{name}</text>
-      {node.detail && <text className={s.nodeSub} x="34" y="27">{node.detail}</text>}
-      {node.standby
-        ? <path className={s.standbyMark} d={`M ${width-15} 14 v7 m4 -7 v7`} />
-        : <circle cx={width-10} cy="17.5" r="2.1" fill="currentColor" />}
-    </g>
-  );
+  const tone = node.tone ?? 'idle';
+  const Icon = engine ? Layers3 : Box;
+  const recorded = node.detail?.endsWith(' record') || node.detail?.endsWith(' records');
+  const state = node.standby ? 'Standby' : recorded && tone === 'candidate' ? 'Recorded' : statusLabel[tone];
+  const value = node.detail && !node.standby ? node.detail : engine ? node.id : '';
+  // Long labels can occur on historical engines. Preserve the complete label inside its panel.
+  const textWidth = width - 36;
+  const fitLongLabel = node.label.length * 7.4 > textWidth;
+  return <g transform={`translate(${x} ${y})`} role="button" tabIndex={0}
+    aria-label={(engine ? 'Show engine ' : 'Inspect provider ') + node.label} aria-pressed={selected}
+    data-tone={tone} style={{'--family':familyColor(node.id)} as CSSProperties} className={s.panel}
+    onClick={onClick} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } }}>
+    <title>{[node.label, value, state].filter(Boolean).join(' · ')}</title>
+    <rect className={s.panelFrame} width={width} height={panelHeight} rx="5"/>
+    <path className={s.cap} d={`M 5 .5 H ${width-5} Q ${width-.5} .5 ${width-.5} 5 V 22 H .5 V 5 Q .5 .5 5 .5 Z`}/>
+    <g className={s.icon} transform="translate(8 4.5)"><Icon width="13" height="13" strokeWidth="1.8"/></g>
+    <text className={s.name} x="28" y="15.5" textLength={fitLongLabel ? textWidth : undefined}
+      lengthAdjust={fitLongLabel ? 'spacingAndGlyphs' : undefined}>{node.label}</text>
+    <circle className={node.standby ? s.standby : s.light} cx="12" cy="35.5" r="2.9"/>
+    <text className={s.state} x="21" y="39">{state}</text>
+    {value && <text className={s.value} x={width-8} y="39" textAnchor="end"
+      textLength={value.length * 5.8 > width-80 ? width-80 : undefined} lengthAdjust="spacingAndGlyphs">{value}</text>}
+  </g>;
 }
 
-function RouterHub({ x, y, tone, grid }: { x: number; y: number; tone: MapTone; grid: string }) {
-  return (
-    <g transform={`translate(${x} ${y})`} data-tone={tone} aria-hidden="true">
-      <circle fill={`url(#${grid})`} r="74" />
-      <circle className={s.guideRing} r="56" /><circle className={s.outerRing} r="48" />
-      <circle className={s.dial} r="43" strokeDasharray="1 6.5" />
-      <circle className={s.hub} r="35" /><circle className={s.innerRing} r="30" />
-      <g transform="translate(-13 -13)"><Waypoints width="26" height="26" strokeWidth="1.8" /></g>
-      <circle r="2.8" cx="-48" fill="currentColor" /><circle r="2.8" cx="48" fill="currentColor" />
-      <text className={s.hubName} textAnchor="middle" y="76">Purchase router</text>
-    </g>
-  );
+function Hub({ x, y, width, active, target, tone, dim }: {
+  x: number; y: number; width: number; active?: MapNode; target?: MapNode; tone: MapTone; dim: string;
+}) {
+  const half = width/2;
+  return <g transform={`translate(${x} ${y})`} data-tone={tone} aria-hidden="true" className={s.station}>
+    <ellipse rx={half+42} ry="102" fill={`url(#${dim})`}/>
+    <rect className={s.outerFrame} x={-half-5} y="-64" width={width+10} height="128" rx="9"/>
+    <rect className={s.stationFace} x={-half} y="-59" width={width} height="118" rx="7"/>
+    <path className={s.stationCap} d={`M ${-half+7} -59 H ${half-7} Q ${half} -59 ${half} -52 V -37 H ${-half} V -52 Q ${-half} -59 ${-half+7} -59 Z`}/>
+    <g transform={`translate(${-half+10} -55)`}><Route width="14" height="14" strokeWidth="2"/></g>
+    <text className={s.stationKicker} x={-half+31} y="-44">ROUTE CONTROL</text>
+    <g className={s.stationDots}>{[0,1,2].map(i=><circle key={i} cx={half-13-i*6} cy="-48" r="1.5"/>)}</g>
+    <text className={s.stationTitle} textAnchor="middle" y="-8">Purchase router</text>
+    <path className={s.stationRule} d={`M ${-half+11} 4 h${width-22}`}/>
+    <text className={s.stationLabel} x={-half+11} y="23">ENGINE</text>
+    <text className={s.stationValue} x={half-11} y="23" textAnchor="end"
+      textLength={(active?.label.length ?? 0) * 6 > width-76 ? width-76 : undefined}
+      lengthAdjust="spacingAndGlyphs">{active?.label ?? '—'}</text>
+    <text className={s.stationLabel} x={-half+11} y="43">PROVIDER</text>
+    <text className={s.stationValue} x={half-11} y="43" textAnchor="end"
+      textLength={(target?.label.length ?? 0) * 6 > width-76 ? width-76 : undefined}
+      lengthAdjust="spacingAndGlyphs">{target?.label ?? '—'}</text>
+  </g>;
 }
 
 export function TrafficDiagram({ engines, providers, activeEngine, activeProvider, previousProvider, focusedProvider, activityKey, animate, compact, onEngine, onProvider }: Props) {
-  const glow = useId().replace(/:/g, '');
-  const w = compact ? 430 : 1000;
-  const h = compact ? 244 + Math.ceil(providers.length / 2) * 49 : Math.max(357, Math.max(engines.length, providers.length) * 43 + 62);
-  const hx = w / 2, hy = compact ? 130 : h / 2 - 8;
-  const tileW = compact ? 176 : 198;
-  const leftX = compact ? hx - tileW / 2 : 38;
-  const rightX = w - tileW - 38;
-  const active = engines.find(n => n.id === activeEngine);
-  const shownEngines = compact ? active ? [active] : engines.slice(0, 1) : engines;
-  const rowY = (i: number, count: number) => (h - (count - 1) * 43) / 2 + i * 43 - 3;
-  const incoming = shownEngines.map((node, i) => {
-    const x = leftX, y = compact ? 19 : rowY(i, shownEngines.length) - 17;
-    const path = compact ? `M ${hx} ${y+35} V ${hy-48}`
-      : `M ${x+tileW} ${y+17} C ${x+tileW+98} ${y+17} ${hx-104} ${hy} ${hx-48} ${hy}`;
-    return { node, x, y, path };
+  const svgId = useId().replace(/:/g,'');
+  const glow = svgId+'-glow', trail = svgId+'-trail', grid = svgId+'-grid';
+  const w = compact ? 444 : 1040;
+  const h = compact ? 281 + Math.ceil(providers.length/2)*61 : Math.max(387, Math.max(engines.length,providers.length)*60+48);
+  const hx = w/2, hy = compact ? 155 : h/2+5;
+  const hubW = compact ? 212 : 220;
+  const tileW = compact ? 194 : 237;
+  const leftX = compact ? hx-tileW/2 : 35, rightX = w-35-tileW;
+  const active = engines.find(n=>n.id===activeEngine), target = providers.find(n=>n.id===activeProvider);
+  const shownEngines = compact ? active ? [active] : engines.slice(0,1) : engines;
+  const rowY = (i:number, count:number) => hy-(count-1)*30-panelHeight/2+i*60;
+  const portY = (i:number,count:number) => hy+(i-(count-1)/2)*Math.min(8,78/Math.max(1,count-1));
+  const incoming = shownEngines.map((node,i)=>{
+    const y = compact ? 11 : rowY(i,shownEngines.length), py = portY(i,shownEngines.length), endX=hx-hubW/2-6;
+    const path = compact ? `M ${hx} ${y+panelHeight} V ${hy-64}` :
+      `M ${leftX+tileW} ${y+34} h14 C ${leftX+tileW+77} ${y+34} ${endX-65} ${py} ${endX-18} ${py} H ${endX}`;
+    return {node,x:leftX,y,path,py};
   });
-  const outgoing = providers.map((node, i) => {
-    const x = compact ? i % 2 === 0 ? 22 : w - tileW - 22 : rightX;
-    const y = compact ? 241 + Math.floor(i/2)*49 : rowY(i, providers.length)-17;
-    const funnel = i % 2 === 0 ? 1 : -1;
-    const path = compact
-      ? `M ${hx-48*funnel} ${hy} C ${hx-70*funnel} ${hy+13} ${hx-2*funnel} ${y+17} ${x+(i%2===0?tileW:0)} ${y+17}`
-      : `M ${hx+48} ${hy} C ${hx+121} ${hy} ${x-95} ${y+17} ${x} ${y+17}`;
-    return { node, x, y, path };
+  const outgoing = providers.map((node,i)=>{
+    const x = compact ? i%2===0 ? 15 : w-15-tileW : rightX;
+    const y = compact ? 263+Math.floor(i/2)*61 : rowY(i,providers.length);
+    const py = portY(i,providers.length), startX = hx+hubW/2+6;
+    const side = i%2===0 ? -1 : 1;
+    const path = compact ? `M ${hx+side*(hubW/2+6)} ${hy} C ${hx+side*(hubW/2+46)} ${hy+32} ${hx-side*18} ${y+34} ${x+(i%2===0?tileW:0)} ${y+34}` :
+      `M ${startX} ${py} h18 C ${startX+65} ${py} ${x-77} ${y+34} ${x-14} ${y+34} H ${x}`;
+    return {node,x,y,path,py};
   });
-  const previous = outgoing.find(p => p.node.id === previousProvider);
-  const current = outgoing.find(p => p.node.id === activeProvider);
+  const previous = outgoing.find(p=>p.node.id===previousProvider), current = outgoing.find(p=>p.node.id===activeProvider);
   let handoff: string | undefined;
   if (previous && current && previous !== current) {
-    const fromLeft = compact && previous.x < hx, toLeft = compact && current.x < hx;
-    const fromX = previous.x + (fromLeft ? 0 : tileW), toX = current.x + (toLeft ? 0 : tileW);
-    const fromY = previous.y + 17, toY = current.y + 17;
-    if (fromLeft === toLeft) {
-      const gutter = fromX + (fromLeft ? -18 : 22);
-      handoff = `M ${fromX} ${fromY} C ${gutter} ${fromY} ${gutter} ${fromY} ${gutter} ${(fromY+toY)/2} S ${gutter} ${toY} ${toX} ${toY}`;
+    const fromLeft = compact && previous.x<hx, toLeft = compact && current.x<hx;
+    const fromX = previous.x+(fromLeft?0:tileW), toX=current.x+(toLeft?0:tileW);
+    const fromY = previous.y+34, toY=current.y+34;
+    if (fromLeft===toLeft) {
+      const gutter = fromX+(fromLeft?-12:compact?12:22);
+      handoff=`M ${fromX} ${fromY} C ${gutter} ${fromY} ${gutter} ${fromY} ${gutter} ${(fromY+toY)/2} S ${gutter} ${toY} ${toX} ${toY}`;
     } else {
-      const sourceX = previous.x + tileW/2, targetX = current.x + tileW/2;
-      const laneY = Math.max(previous.y, current.y) + 42;
-      handoff = `M ${sourceX} ${previous.y+35} V ${laneY} H ${targetX} V ${current.y+35}`;
+      const lane = Math.max(previous.y,current.y)+54;
+      handoff=`M ${previous.x+tileW/2} ${previous.y+panelHeight} V ${lane} H ${current.x+tileW/2} V ${current.y+panelHeight}`;
     }
   }
-  const hubTone = providers.find(p => p.id === activeProvider)?.tone;
-  return (
-    <svg className={s.svg} viewBox={`0 0 ${w} ${h}`} aria-label="Routing network diagram" role="group">
-      <defs>
-        <radialGradient id={glow}><stop offset="0%" stopColor="#4cc7cd" stopOpacity=".23" /><stop offset="100%" stopColor="#4cc7cd" stopOpacity="0" /></radialGradient>
-      </defs>
-      {!compact && <g className={s.lanes} aria-hidden="true">
-        <text x={leftX} y="23">ENGINES</text><text x={hx} y="23" textAnchor="middle">DECISION</text><text x={rightX} y="23">PROVIDERS</text>
-        <path d={`M ${leftX+70} 19 h125 M ${rightX+92} 19 h102`} />
-      </g>}
-      {incoming.map(({node, path}) => <Wire key={node.id+activityKey} path={path} tone={node.id === activeEngine ? 'active' : 'idle'} pulse={node.id === activeEngine && animate} />)}
-      {outgoing.map(({node,path}) => <Wire key={node.id+activityKey} path={path} tone={node.tone} pulse={node.id === activeProvider && animate} />)}
-      {handoff && <g className={s.handoff}><Wire key={activityKey} path={handoff} tone="fallback" pulse={animate} /></g>}
-      <RouterHub x={hx} y={hy} grid={glow} tone={beamTone(hubTone) ?? (activeEngine ? 'active' : 'idle')} />
-      {compact && <text x="22" y="224" className={s.laneCaption}>PROVIDERS</text>}
-      {incoming.map(({node,x,y}) => <Socket key={node.id} node={{...node, tone: node.id === activeEngine ? 'active' : 'idle'}}
-        x={x} y={y} width={tileW} type="engine" selected={node.id === activeEngine} onClick={() => onEngine(node.id)} />)}
-      {outgoing.map(({node,x,y}) => <Socket key={node.id} node={node} x={x} y={y} width={tileW} type="provider"
-        selected={focusedProvider === node.id} onClick={() => onProvider(node.id)} />)}
-    </svg>
-  );
+  return <svg className={layout.svg+' '+s.board} viewBox={`0 0 ${w} ${h}`} aria-label="Routing network diagram" role="group">
+    <defs>
+      <radialGradient id={glow}><stop offset="0%" stopColor="#d653a4" stopOpacity=".29"/><stop offset="100%" stopColor="#955198" stopOpacity="0"/></radialGradient>
+      <linearGradient id={trail} x1="-30" y1="0" x2="0" y2="0" gradientUnits="userSpaceOnUse">
+        <stop stopColor="currentColor" stopOpacity="0"/><stop offset=".45" stopColor="currentColor" stopOpacity=".53"/><stop offset="1" stopColor="#f9ffff"/>
+      </linearGradient>
+      <pattern id={grid} width="48" height="48" patternUnits="userSpaceOnUse"><path d="M48 0 H0 V48" fill="none" stroke="#b0b7df" strokeOpacity=".065"/></pattern>
+    </defs>
+    <rect width={w} height={h} fill={`url(#${grid})`} aria-hidden="true"/>
+    {!compact && <g className={s.lanes} aria-hidden="true">
+      <text x={leftX} y="21">ENGINES</text><text x={hx} y="21" textAnchor="middle">DECISION</text><text x={rightX} y="21">PROVIDERS</text>
+      <path d={`M ${leftX+61} 17 h${tileW-61} M ${rightX+75} 17 h${tileW-75} M ${hx-139} 34 V ${h-10} M ${hx+139} 34 V ${h-10}`}/>
+    </g>}
+    {incoming.map(({node,path})=><Wire key={node.id+activityKey} path={path} tone={node.id===activeEngine?'active':'idle'} pulse={node.id===activeEngine&&animate} tail={trail}/>)}
+    {outgoing.map(({node,path})=><Wire key={node.id+activityKey} path={path} tone={node.tone} pulse={node.id===activeProvider&&animate} tail={trail}/>)}
+    {handoff && <g className={s.handoff}><Wire key={activityKey} path={handoff} tone="fallback" pulse={animate} tail={trail}/></g>}
+    <Hub x={hx} y={hy} width={hubW} active={active} target={target} tone={target?.tone ?? 'active'} dim={glow}/>
+    {!compact && <g aria-hidden="true">
+      {incoming.map(({node,py})=><circle key={node.id} data-tone={node.id===activeEngine?'active':'idle'} className={s.port} cx={hx-hubW/2-6} cy={py} r="2.5"/>)}
+      {outgoing.map(({node,py})=><circle key={node.id} data-tone={node.tone??'idle'} className={s.port} cx={hx+hubW/2+6} cy={py} r="2.5"/>)}
+    </g>}
+    {compact && <text x="15" y="247" className={s.caption}>PROVIDERS</text>}
+    {incoming.map(({node,x,y})=><NodePanel key={node.id} node={{...node,tone:node.id===activeEngine?'active':'idle'}} engine x={x} y={y} width={tileW} selected={node.id===activeEngine} onClick={()=>onEngine(node.id)}/>)}
+    {outgoing.map(({node,x,y})=><NodePanel key={node.id} node={node} x={x} y={y} width={tileW} selected={focusedProvider===node.id} onClick={()=>onProvider(node.id)}/>)}
+  </svg>;
 }

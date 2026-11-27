@@ -31,13 +31,15 @@ test('routing traffic returns recorded attempts, confirmed handoffs and acknowle
   const empty = await loadRoutingTrafficSnapshot(execute);
   assert.equal(empty.sampledJobs, 0);
   assert.deepEqual(empty.events, []);
+  assert.deepEqual(empty.engineUsage, []);
 
   await execute(`INSERT INTO app_jobs(engine_id,surface,provider,provider_job_id,status) VALUES
     ('wan-3-prime','video','fal','private-remote-task','completed'),
     ('seedance-2-5','video','byteplus_modelark','another-private-task','completed'),
     ('reserved','video','fal',NULL,'pending'),
     ('not-video','image','fal','ignored','completed'),
-    ('stale','video','fal','ignored','completed');
+    ('stale','video','fal','ignored','completed'),
+    ('wan-3-prime','video','alibaba_model_studio',NULL,'pending');
     UPDATE app_jobs SET created_at = NOW() - interval '61 minutes' WHERE engine_id = 'stale';
     INSERT INTO provider_attempts(job_id,attempt_index,provider,status,request_snapshot) VALUES
       (1,1,'alibaba_model_studio','failed','{"prompt":"private-prompt"}'),
@@ -46,7 +48,12 @@ test('routing traffic returns recorded attempts, confirmed handoffs and acknowle
     UPDATE provider_attempts SET fallback_to_attempt_id = 2 WHERE id = 1;`);
 
   const snapshot = await loadRoutingTrafficSnapshot(execute);
-  assert.equal(snapshot.sampledJobs, 3);
+  assert.equal(snapshot.sampledJobs, 4);
+  assert.deepEqual(snapshot.engineUsage, [
+    { engineId: 'wan-3-prime', jobs: 2, jobsWithFallback: 1 },
+    { engineId: 'reserved', jobs: 1, jobsWithFallback: 0 },
+    { engineId: 'seedance-2-5', jobs: 1, jobsWithFallback: 0 },
+  ]);
   assert.equal(snapshot.truncated, false);
   assert.deepEqual(snapshot.events.map(event => event.stage).sort(), ['attempt', 'fallback', 'job', 'primary']);
   assert.equal(snapshot.events.find(event => event.stage === 'fallback')?.previousProvider, 'alibaba_model_studio');
@@ -54,7 +61,8 @@ test('routing traffic returns recorded attempts, confirmed handoffs and acknowle
   assert.deepEqual(fal && [fal.attempts, fal.jobsOnly, fal.fallbacks, fal.uncertain], [2, 0, 1, 1]);
   assert.equal(snapshot.routes.find(route => route.provider === 'byteplus_modelark')?.jobsOnly, 1);
   assert.equal(snapshot.routes.find(route => route.provider === 'alibaba_model_studio')?.failed, 1);
-  assert.doesNotMatch(JSON.stringify(snapshot), /private|reserved|not-video|stale/);
+  assert.doesNotMatch(JSON.stringify(snapshot), /private|not-video|stale/);
+  assert.doesNotMatch(JSON.stringify([snapshot.events, snapshot.routes]), /reserved/);
   assert.deepEqual((await loadRoutingTrafficSnapshot(execute)).events, snapshot.events);
 
   await execute(`INSERT INTO provider_attempts(job_id,attempt_index,provider,status)
@@ -68,4 +76,5 @@ test('routing traffic returns recorded attempts, confirmed handoffs and acknowle
   assert.equal(capped.truncated, true);
   assert.equal(capped.routes[0]?.jobsOnly, 512);
   assert.equal(capped.events.length, 48);
+  assert.deepEqual(capped.engineUsage, [{ engineId: 'large-cohort', jobs: 512, jobsWithFallback: 0 }]);
 });

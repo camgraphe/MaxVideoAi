@@ -35,6 +35,10 @@ test('new suppliers are simulated separately from the canary and historical purc
   const planner = planWanPrimePurchase(textClip);
   assert.deepEqual(planner.candidates.map(r => r.provider).sort(), ['alibaba_model_studio', 'apimart', 'fal']);
   const simulated = quoteComparisonRequest(textClip)!;
+  const primeOffer = candidate('apimart', textClip);
+  assert.equal(primeOffer.sourceUrl, 'https://apimart.ai/model/wan-3-0-prime');
+  assert.equal(primeOffer.simulationOnly, undefined);
+  assert.equal(candidate('apimart', { ...textClip, engineId: 'wan-3' }).simulationOnly, true);
   assert.deepEqual(rankQuotedOffers(simulated.candidates, { ceilingMicros: simulated.baselineMicros, unavailable: { apimart: 'not configured' } }).order,
     ['wavespeed', 'alibaba_model_studio', 'fal']);
   assert.deepEqual(planWanPrimePurchase(textClip, {unavailable: {apimart: 'not configured'}}).order, ['alibaba_model_studio', 'fal']);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import {
   Activity, ArrowRight, ArrowUpRight, ChevronDown, CirclePause, CirclePlay, ExternalLink,
   FlaskConical, GitBranch, Maximize2, Minimize2, Radio, SkipForward, Waypoints, X,
@@ -9,12 +9,13 @@ import { PURCHASE_STRATEGY_LABELS } from '@/lib/video-purchase-decision';
 import type { InstalledRoute } from '../_lib/installed-routes';
 import type { RoutingScenario } from '../_lib/routing-scenarios';
 import type { RoutingTrafficSnapshot } from '../_lib/routing-traffic-types';
-import { dollars, presets, type Preset } from '../_lib/route-playback';
+import { dollars, offerAccessLabel, presets, type Preset } from '../_lib/route-playback';
 import {
-  demoProviderNodes, demoTraces, eventKey, eventTone, observedProviderNodes, providerLabel,
-  type MapNode, type MapTone,
+  demoProviderNodes, demoTraces, eventKey, eventTone, newObservedEvents, observedProviderNodes, providerLabel,
+  type MapNode, type MapTone, type TrafficEvent,
 } from '../_lib/traffic-map-model';
 import { TrafficDiagram } from './TrafficDiagram.client';
+import { RoutingMonitor } from './RoutingMonitor.client';
 import s from './TrafficMap.module.css';
 
 type Props = {
@@ -41,7 +42,8 @@ export function TrafficMap({ scenarios, routes, observed, onInspectScenario, onO
   const [source, setSource] = useState<'demo' | 'observed'>('demo');
   const [engine, setEngine] = useState('');
   const [pinned, pin] = useState('');
-  const [eventId, selectEvent] = useState('');
+  const [manualEvent, selectEvent] = useState<TrafficEvent | null>(null);
+  const [arrivals, setArrivals] = useState<{event: TrafficEvent; id: string; duration: number}[]>([]);
   const [step, setStep] = useState(1);
   const [preset, setPreset] = useState<Preset | 'tour'>('tour');
   const [paused, setPaused] = useState(false);
@@ -52,7 +54,7 @@ export function TrafficMap({ scenarios, routes, observed, onInspectScenario, onO
   const [full, setFull] = useState(false);
   const root = useRef<HTMLElement>(null);
   const previousSnapshot = useRef<RoutingTrafficSnapshot | null>(null);
-  const [arrival, setArrival] = useState('');
+
   const isDemo = source === 'demo';
 
   useEffect(() => {
@@ -94,25 +96,30 @@ export function TrafficMap({ scenarios, routes, observed, onInspectScenario, onO
     return () => clearInterval(t);
   }, [playing, sequence.length]);
   const observedEvents = useMemo(() => observed?.events.filter(e => !engine || e.engineId === engine) ?? [], [observed, engine]);
-  const selectedEvent = observedEvents.find(e => eventKey(e) === eventId) ?? observedEvents[0];
+  const autoObserve = !isDemo && !manualEvent && motion && foreground && visible;
+  const arrival = autoObserve ? arrivals[0] : undefined;
+  const selectedEvent = manualEvent ?? arrival?.event ?? observedEvents[0];
   useEffect(() => {
-    if (isDemo || !observed) {
+    if (!observed || !autoObserve) {
       previousSnapshot.current = null;
-      setArrival('');
+      setArrivals(current => current.length ? [] : current);
       return;
     }
     const previous = previousSnapshot.current;
+    if (previous && previous.observedAt >= observed.observedAt) return;
     previousSnapshot.current = observed;
-    const newest = observed.events[0];
-    if (!newest || !previous || previous.observedAt >= observed.observedAt ||
-        previous.events.some(event => eventKey(event) === eventKey(newest))) {
-      setArrival('');
-      return;
-    }
-    setArrival(eventKey(newest));
-    const timer = setTimeout(() => setArrival(''), tickLength);
+    const events = newObservedEvents(previous, observed, engine);
+    if (!events.length) return;
+    // Drain even a full 48-event sample before the next normal 30-second refresh.
+    const duration = Math.min(tickLength, Math.floor(24_000 / events.length));
+    const batch = events.map((event, i) => ({ event, duration, id: observed.observedAt + '/' + i }));
+    setArrivals(pending => [...pending, ...batch]);
+  }, [observed, autoObserve, engine]);
+  useEffect(() => {
+    if (!arrival) return;
+    const timer = setTimeout(() => setArrivals(current => current[0]?.id === arrival.id ? current.slice(1) : current), arrival.duration);
     return () => clearTimeout(timer);
-  }, [isDemo, observed]);
+  }, [arrival]);
 
   const activeEngine = (isDemo ? trace?.scenario.engineId : selectedEvent?.engineId) ?? engine;
   const activeProvider = isDemo ? frame?.provider : selectedEvent?.provider;
@@ -120,17 +127,52 @@ export function TrafficMap({ scenarios, routes, observed, onInspectScenario, onO
     names([...new Set((observed?.routes ?? []).map(r => r.engineId))], labels);
   const providerNodes = isDemo && trace ? demoProviderNodes(scenarios, routes, trace, at.phase) :
     !isDemo && observed ? observedProviderNodes(observed, engine, selectedEvent) : [];
-  const diagramEngines = visibleWithSelection(allEngines, activeEngine, 9);
+  const scenarioCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const scenario of scenarios) counts.set(scenario.engineId, (counts.get(scenario.engineId) ?? 0) + 1);
+    return counts;
+  }, [scenarios]);
+  const diagramEngines = visibleWithSelection(allEngines.map(node => {
+    const count = isDemo ? scenarioCounts.get(node.id) : observed?.engineUsage?.find(row => row.engineId === node.id)?.jobs;
+    const unit = isDemo ? 'profile' : 'job';
+    return { ...node, detail: count == null ? undefined : count + ' ' + unit + (count === 1 ? '' : 's') };
+  }), activeEngine, 9);
   const diagramProviders = visibleWithSelection(providerNodes, pinned || activeProvider || '', 12);
   const reached = trace?.frames.slice(0, at.phase + 1).filter(f => f.kind === 'sending') ?? [];
   const previousProvider = isDemo ? reached.at(-2)?.provider : selectedEvent?.previousProvider ?? undefined;
   const pickedNode = providerNodes.find(n => n.id === pinned);
   const candidate = trace?.decision.candidates.find(c => c.provider === pinned);
+  const access = candidate && trace
+    ? offerAccessLabel(candidate, trace.scenario.engineId, routes.some(route => route.provider === candidate.provider)) : '';
   const currentCost = trace?.decision.candidates.find(c => c.provider === frame?.provider)?.costMicros;
   const firstCost = trace?.decision.candidates.find(c => c.provider === trace.decision.order[0])?.costMicros;
   const costChange = currentCost != null && firstCost != null ? currentCost - firstCost : 0;
   const pickedRoutes = observed?.routes.filter(r => r.provider === pinned && (!engine || r.engineId === engine)) ?? [];
-  function reset() { setStep(1); pin(''); selectEvent(''); setArrival(''); }
+  const monitorEvents = isDemo && trace ? trace.frames.slice(Math.max(0, at.phase - 3), at.phase + 1).reverse().map(item => ({
+    title: item.title, detail: item.detail, tone: receiptTones[item.kind] ?? 'active',
+  })) : observedEvents.filter(event => !selectedEvent || event.at <= selectedEvent.at).slice(0, 4).map(event => ({
+    title: providerLabel(event.provider) + ' · ' + event.status.replaceAll('_', ' '),
+    detail: clock(event.at) + ' · ' + (labels.get(event.engineId) ?? event.engineId)
+      + (event.previousProvider ? ' · via ' + providerLabel(event.previousProvider) : ''),
+    tone: eventTone(event),
+  }));
+  const monitorOffers = isDemo ? trace?.decision.candidates.map(offer => ({
+    label: providerLabel(offer.provider), costMicros: offer.costMicros, excluded: offer.excluded,
+    selected: offer.provider === activeProvider,
+  })) : undefined;
+  const observedCounts = useMemo(() => {
+    const totals = new Map<string, number>();
+    for (const route of observed?.routes ?? []) {
+      if (!engine || route.engineId === engine)
+        totals.set(route.provider, (totals.get(route.provider) ?? 0) + route.attempts + route.jobsOnly);
+    }
+    return [...totals].map(([id, count]) => ({ label: providerLabel(id), count }))
+      .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
+  }, [observed, engine]);
+  function reset() { setStep(1); pin(''); selectEvent(null); setArrivals([]); previousSnapshot.current = null; }
+  function chooseEvent(event: TrafficEvent | null) {
+    selectEvent(event); pin(''); setArrivals([]); previousSnapshot.current = null;
+  }
   function changeSource(to: 'demo' | 'observed') {
     if (to === source) return;
     setSource(to); setEngine(''); reset(); onObservedChange?.(to === 'observed');
@@ -148,10 +190,11 @@ export function TrafficMap({ scenarios, routes, observed, onInspectScenario, onO
   const detailTitle = isDemo ? frame?.title : selectedEvent ? providerLabel(selectedEvent.provider) : undefined;
   const detailTone = isDemo ? receiptTones[frame?.kind ?? ''] ?? 'active' : selectedEvent ? eventTone(selectedEvent) : 'idle';
   const networkVisible = isDemo ? !!trace : providerNodes.length > 0;
-  const pulse = motion && visible && foreground && (isDemo ? !paused : !!arrival && selectedEvent != null && eventKey(selectedEvent) === arrival);
-  const key = isDemo ? String(step) + preset + engine : arrival;
+  const pulse = motion && visible && foreground && (isDemo ? !paused : Boolean(arrival));
+  const key = isDemo ? String(step) + preset + engine : arrival?.id ?? '';
   return (
-    <section ref={root} className={s.shell} aria-label="Routing network" data-mode={source}>
+    <section ref={root} className={s.shell} aria-label="Routing network" data-mode={source}
+      style={arrival ? { '--packet-duration': (arrival.duration * 0.82) + 'ms' } as CSSProperties : undefined}>
       <header className={s.header}>
         <div className={s.identity}><span className={s.mark}><Waypoints size={24} /></span>
           <div><h2>Routing network</h2><p>{isDemo ? 'Price decisions and fallback paths' : 'Recorded provider activity'}</p></div>
@@ -176,7 +219,14 @@ export function TrafficMap({ scenarios, routes, observed, onInspectScenario, onO
           <button type="button" aria-label={paused ? 'Play simulation' : 'Pause simulation'} title={paused ? 'Play simulation' : 'Pause simulation'}
             onClick={() => setPaused(p => !p)}>{paused ? <CirclePlay size={15}/> : <CirclePause size={15}/>}<span>{paused ? 'Play' : 'Pause'}</span></button>
           <button type="button" aria-label="Next routing step" title="Next step" onClick={() => {setPaused(true); setStep(i => (i+1) % Math.max(sequence.length,1));}}><SkipForward size={15}/></button>
-        </> : observed && <span>{observed.sampledJobs} jobs · {observed.windowMinutes} min{observed.truncated ? ' · partial sample' : ''}</span>}</div>
+        </> : observed && <>
+          <span>{observed.sampledJobs} jobs · {observed.windowMinutes} min{observed.truncated ? ' · partial sample' : ''}</span>
+          {selectedEvent && <button type="button" aria-pressed={!manualEvent}
+            aria-label={manualEvent ? 'Follow latest observed events' : 'Hold the selected observed event'}
+            onClick={() => chooseEvent(manualEvent ? null : selectedEvent)}>
+            {manualEvent ? <CirclePlay size={15}/> : <CirclePause size={15}/>}<span>{manualEvent ? 'Follow latest' : 'Hold'}</span>
+          </button>}
+        </>}</div>
       </div>
       <div className={s.canvas}>
         {networkVisible ? <TrafficDiagram engines={diagramEngines} providers={diagramProviders} activeEngine={activeEngine}
@@ -192,7 +242,7 @@ export function TrafficMap({ scenarios, routes, observed, onInspectScenario, onO
       </div>
       {pickedNode ? <div className={s.inspect} data-tone={pickedNode.tone}><div className={s.inspectHeading}>
         <span className={s.indicator}/><strong>{pickedNode.label}</strong><button type="button" title="Close provider details" aria-label="Close provider details" onClick={() => pin('')}><X size={14}/></button></div>
-        {isDemo ? <p>{candidate ? [candidate.simulationOnly ? 'Catalogue estimate · simulation only' : '', candidate.excluded || 'Eligible for this request', candidate.costMicros == null ? '' : dollars(candidate.costMicros), candidate.tariff].filter(Boolean).join(' · ') :
+        {isDemo ? <p>{candidate ? [access, candidate.excluded || 'Eligible for this request', candidate.costMicros == null ? '' : dollars(candidate.costMicros), candidate.tariff].filter(Boolean).join(' · ') :
           'This provider has no offer for the selected scenario.'}
           {candidate?.sourceUrl && <a href={candidate.sourceUrl} target="_blank" rel="noreferrer">Rate card <ExternalLink size={12}/></a>}</p>
           : <p>{pickedRoutes.reduce((n,r) => n+r.attempts,0)} recorded attempts · {pickedRoutes.reduce((n,r) => n+r.fallbacks,0)} fallbacks · {pickedRoutes.reduce((n,r) => n+r.jobsOnly,0)} jobs with owner only</p>}
@@ -211,10 +261,13 @@ export function TrafficMap({ scenarios, routes, observed, onInspectScenario, onO
         </> : selectedEvent && <>
           <p>{stageNames[selectedEvent.stage]}{selectedEvent.previousProvider ? ' from ' + providerLabel(selectedEvent.previousProvider) : ''} · {selectedEvent.status.replaceAll('_',' ')} · {clock(selectedEvent.at)}</p>
           <div className={s.events} aria-label="Recent recorded events">{observedEvents.slice(0,5).map((e,i) =>
-            <button type="button" key={eventKey(e)+i} data-tone={eventTone(e)} aria-pressed={eventKey(e) === eventKey(selectedEvent)} onClick={() => {selectEvent(eventKey(e));pin('');}}>
+            <button type="button" key={eventKey(e)+i} data-tone={eventTone(e)} aria-pressed={eventKey(e) === eventKey(selectedEvent)} onClick={() => chooseEvent(e)}>
               <i/>{clock(e.at).slice(0,8)}<ArrowRight size={10}/>{providerLabel(e.provider)}</button>)}</div>
         </>}
       </div>}
+      {networkVisible && <RoutingMonitor observed={!isDemo} offers={monitorOffers}
+        ceilingMicros={isDemo ? trace?.decision.ceilingMicros : undefined}
+        events={monitorEvents} counts={observedCounts} />}
     </section>
   );
 }

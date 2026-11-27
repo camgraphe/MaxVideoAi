@@ -1,8 +1,7 @@
 import { isDatabaseConfigured, query, type QueryExecutor } from '@/lib/db';
-import type { RoutingTrafficEvent, RoutingTrafficRoute, RoutingTrafficSnapshot } from './routing-traffic-types';
+import { ROUTING_TRAFFIC_JOB_LIMIT, type RoutingEngineUsage, type RoutingTrafficEvent, type RoutingTrafficRoute, type RoutingTrafficSnapshot } from './routing-traffic-types';
 
 const WINDOW_MINUTES = 60;
-const JOB_LIMIT = 512;
 const ATTEMPT_LIMIT = 8;
 const EVENT_LIMIT = 48;
 
@@ -54,17 +53,23 @@ const trafficQuery = `
 `;
 
 export async function loadRoutingTrafficSnapshot(execute: QueryExecutor['query']): Promise<RoutingTrafficSnapshot> {
-  const rows = await execute<TrafficRow>(trafficQuery, [JOB_LIMIT, WINDOW_MINUTES, ATTEMPT_LIMIT]);
+  const rows = await execute<TrafficRow>(trafficQuery, [ROUTING_TRAFFIC_JOB_LIMIT, WINDOW_MINUTES, ATTEMPT_LIMIT]);
   const observedAt = rows[0].observed_at.toISOString();
   const events: RoutingTrafficEvent[] = [];
   let truncated = rows[0].more_recent_jobs;
   let sampledJobs = 0;
+  const usage = new Map<string, RoutingEngineUsage>();
   for (const row of rows) {
     if (!row.engine_id) continue; // The metadata row also represents an empty window.
     sampledJobs++;
+    const engine = usage.get(row.engine_id) ?? { engineId: row.engine_id, jobs: 0, jobsWithFallback: 0 };
+    engine.jobs++;
+    usage.set(row.engine_id, engine);
     if (row.ledger?.length) {
       if (row.ledger.length > ATTEMPT_LIMIT) truncated = true;
-      for (const entry of row.ledger.slice(0, ATTEMPT_LIMIT)) {
+      const attempts = row.ledger.slice(0, ATTEMPT_LIMIT);
+      if (attempts.some(attempt => attempt.stage === 'fallback')) engine.jobsWithFallback++;
+      for (const entry of attempts) {
         events.push({ ...entry, engineId: row.engine_id, at: new Date(entry.at).toISOString() });
       }
     } else if (row.owner && row.job_status && row.job_at) {
@@ -87,7 +92,8 @@ export async function loadRoutingTrafficSnapshot(execute: QueryExecutor['query']
     if (event.status === 'polling_stalled' || event.status === 'provider_polling_stalled') route.uncertain++;
     routes.set(key, route);
   }
-  return { observedAt, sampledJobs, truncated, windowMinutes: WINDOW_MINUTES, routes: [...routes.values()],
+  const engineUsage = [...usage.values()].sort((a, b) => b.jobs - a.jobs || a.engineId.localeCompare(b.engineId));
+  return { observedAt, sampledJobs, engineUsage, truncated, windowMinutes: WINDOW_MINUTES, routes: [...routes.values()],
     events: events.slice(0, EVENT_LIMIT) };
 }
 

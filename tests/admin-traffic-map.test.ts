@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { demoProviderNodes, demoTraces, eventKey, observedProviderNodes } from '../frontend/app/(core)/admin/routing/_lib/traffic-map-model';
+import { demoProviderNodes, demoTraces, eventKey, newObservedEvents, observedProviderNodes } from '../frontend/app/(core)/admin/routing/_lib/traffic-map-model';
 import { routingScenarios } from '../frontend/app/(core)/admin/routing/_lib/routing-scenarios';
 import type { RoutingTrafficSnapshot } from '../frontend/app/(core)/admin/routing/_lib/routing-traffic-types';
 import type { InstalledRoute } from '../frontend/app/(core)/admin/routing/_lib/installed-routes';
@@ -39,4 +39,25 @@ test('observed inspection lists only recorded providers, separates engine filter
   assert.deepEqual(observedProviderNodes(snapshot, 'seedance-2-5'), []);
   assert.equal(eventKey(snapshot.events[0]), eventKey({ ...snapshot.events[0] }));
   assert.notEqual(eventKey(snapshot.events[0]), eventKey({ ...snapshot.events[0], status: 'failed' }));
+});
+
+test('observed playback queues all new matching rows in chronological order across overlapping samples', () => {
+  const base = { observedAt: '2026-11-27T20:00:10Z', windowMinutes: 60, sampledJobs: 3, truncated: false, routes: [] };
+  const event = (seconds: number, engineId = 'wan') => ({
+    engineId, provider: 'fal', stage: 'primary' as const, previousProvider: null, status: 'submitted',
+    at: '2026-11-27T20:00:' + String(seconds).padStart(2, '0') + 'Z',
+  });
+  const old = event(9), a = event(11), b = event(14), other = event(12, 'kling');
+  const previous = { ...base, events: [old] };
+  const next = { ...base, observedAt: '2026-11-27T20:00:30Z', events: [b, other, a, old] };
+  assert.deepEqual(newObservedEvents(null, next, ''), []);
+  assert.deepEqual(newObservedEvents(previous, next, 'wan'), [a, b]);
+  assert.deepEqual(newObservedEvents(previous, next, ''), [a, other, b]);
+  assert.deepEqual(newObservedEvents(next, next, ''), []);
+  assert.deepEqual(newObservedEvents(next, previous, ''), []);
+  assert.deepEqual(newObservedEvents(next, { ...next, observedAt: '2026-11-27T20:01:00Z' }, ''), []);
+  // Indistinguishable projected rows still represent separate records; only the excess is new.
+  const duplicate = { ...previous, events: [old, old] };
+  assert.deepEqual(newObservedEvents(duplicate, { ...next, events: [b, a, old, old, old] }, ''), [old, a, b]);
+  assert.deepEqual(newObservedEvents(duplicate, { ...next, events: [old, old] }, ''), []);
 });

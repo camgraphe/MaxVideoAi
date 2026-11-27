@@ -1,10 +1,18 @@
 import {
   nextPurchaseProvider,
   PROVIDER_LABELS,
+  type PurchaseCandidate,
   type PurchaseDecision,
   type PurchaseProviderKey,
   type SubmitOutcome,
 } from '@/lib/video-purchase-decision';
+
+export function offerAccessLabel(offer: PurchaseCandidate<PurchaseProviderKey>, engineId: string, installed: boolean): string {
+  if (offer.simulationOnly) return 'Catalogue estimate · simulation only';
+  if (offer.provider === 'apimart' && engineId === 'wan-3-prime' && !installed)
+    return 'Optional admin pilot · access required';
+  return '';
+}
 
 export type Response = SubmitOutcome | 'offline';
 export type Conditions = Partial<Record<PurchaseProviderKey, Response>>;

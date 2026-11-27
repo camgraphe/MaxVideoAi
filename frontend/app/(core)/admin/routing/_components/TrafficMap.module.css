@@ -57,7 +57,7 @@
 .handoff .wire { stroke-dasharray: 4 3; stroke-width: 1.7; }
 .handoff .bloom { opacity: .06; }
 .bloom { stroke: var(--wire); stroke-width: 6px; opacity: .13; }
-.packet { color: var(--glow); pointer-events: none; animation: packet 1.35s cubic-bezier(.3,.06,.62,.96) both; }
+.packet { color: var(--glow); pointer-events: none; animation: packet var(--packet-duration, 1.35s) cubic-bezier(.3,.06,.62,.96) both; }
 @keyframes packet { 0% { offset-distance: 0%; opacity: 0; } 8% { opacity: 1; } 87% { opacity: 1; } 100% { offset-distance: 100%; opacity: 0; } }
 .guideRing { stroke: #5c829052; stroke-dasharray: 28 4 1 4; }
 .outerRing { stroke: var(--wire); stroke-width: 1.35; }
