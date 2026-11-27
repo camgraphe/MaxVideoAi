@@ -1,3 +1,4 @@
+import { apimartCanaryAvailable } from './apimart/wan-prime';
 import { videoOperationEndpoint } from '@/lib/video-operation';
 import type { Mode } from '@/types/engines';
 import { isAlibabaDirectEngine, isAlibabaDirectModeSupported, isAlibabaFalFallbackCompatible } from './alibaba-model-studio/model-map';
@@ -45,6 +46,7 @@ export type VideoProviderRoutingPlan =
     }
   | {
       kind: 'alibaba_model_studio_primary';
+      purchaseCanary?: true;
       primaryProvider: 'alibaba_model_studio';
       fallbackProvider: 'fal';
       fallbackEnabled: boolean;
@@ -133,6 +135,7 @@ export function resolveVideoProviderRoutingPlan(params: {
 
     return {
       kind: 'alibaba_model_studio_primary',
+      ...(params.isAdmin && params.engineId === 'wan-3-prime' && apimartCanaryAvailable() ? { purchaseCanary: true as const } : {}),
       primaryProvider: 'alibaba_model_studio',
       fallbackProvider: 'fal',
       fallbackEnabled:

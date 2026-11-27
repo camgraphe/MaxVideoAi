@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { startDisposablePostgres, missingDisposablePostgresCommand } from './helpers/disposable-postgres';
-import { markProviderAttemptAccepted, markProviderAttemptFailed, markProviderAttemptFinished, syncProviderAttemptTerminalStatus } from '../frontend/src/server/video-providers/provider-attempts';
+import { createProviderAttempt, ProviderAttemptAlreadyClaimed, markProviderAttemptAccepted, markProviderAttemptFailed, markProviderAttemptFinished, syncProviderAttemptTerminalStatus } from '../frontend/src/server/video-providers/provider-attempts';
 
 test('provider attempt completion clears stale failure metadata, preserves genuine history and survives late responses', async t => {
   const missing = missingDisposablePostgresCommand();
@@ -21,6 +21,33 @@ test('provider attempt completion clears stale failure metadata, preserves genui
       (3,1,3,'fal','failed','other-request','real_rejection','422',false,'{"error":"rejected"}',2.5)`, [status]);
   }
   const rows = async () => (await database.pool.query('SELECT * FROM provider_attempts ORDER BY id')).rows;
+  await t.test('concurrent purchase submissions obtain only one claim for the job and attempt', async () => {
+    const claim = () =>
+      createProviderAttempt({
+        publicJobId: 'job-recovery',
+        attemptIndex: 9,
+        provider: 'apimart',
+        claimOnce: true,
+        queryFn,
+      });
+    const results = await Promise.allSettled([claim(), claim()]);
+    assert.equal(results.filter((result) => result.status === 'fulfilled').length, 1);
+    assert.ok(
+      results.some(
+        (result) => result.status === 'rejected' && result.reason instanceof ProviderAttemptAlreadyClaimed
+      )
+    );
+    await assert.rejects(
+      createProviderAttempt({
+        publicJobId: 'missing-job',
+        attemptIndex: 1,
+        provider: 'apimart',
+        claimOnce: true,
+        queryFn,
+      }),
+      /missing job/
+    );
+  });
   await t.test('terminal reconciliation clears the recovered attempt only', async () => {
     await seed(); const before = await rows();
     await syncProviderAttemptTerminalStatus({ publicJobId: 'job-recovery', provider: 'fal', providerJobId: 'fal-request', queryFn });

@@ -1,3 +1,7 @@
+import { getWanSubmissionClient, isWanDirectProvider, type WanDirectProvider } from '@/server/video-providers/wan-transports';
+import type { createApimartClient } from '@/server/video-providers/apimart/wan-prime';
+import { nextPurchaseProvider, type PurchaseDecision } from '@/lib/video-purchase-decision';
+import { buildWanPurchaseDecision, classifyWanPurchaseFailure } from './wan-purchase-routing';
 import type { GeneratePayload, GenerateResult } from '@/lib/fal';
 import { query } from '@/lib/db';
 import type { NormalizedVideoProviderTask } from '@/server/video-providers/types';
@@ -19,7 +23,7 @@ import type { createOwnedMediaReadUrl } from '@/server/owned-media-read-access';
 import { sanitizeProviderMediaDiagnostics } from '@/server/provider-media-diagnostics';
 import type { AlibabaReferenceAsset } from '@/server/video-providers/alibaba-model-studio/types';
 import {
-  createProviderAttempt,
+  createProviderAttempt, ProviderAttemptAlreadyClaimed,
   linkProviderFallbackAttempt,
   markProviderAttemptAccepted,
   markProviderAttemptFailed,
@@ -41,6 +45,7 @@ type LogMetricFn = (
 
 type AlibabaSubmissionClient = Pick<ReturnType<typeof getAlibabaModelStudioClient>, 'createVideo' | 'getTask'>;
 type AlibabaSubmissionDeps = {
+  getApimartClientFn?: typeof createApimartClient;
   createOwnedMediaReadUrlFn?: typeof createOwnedMediaReadUrl;
   getAlibabaModelStudioClientFn?: () => AlibabaSubmissionClient;
   submitFalGenerateTaskFn?: typeof submitFalGenerateTask;
@@ -159,18 +164,23 @@ async function failJobAndRollback(params: {
   walletChargeReserved: boolean;
   queryFn: QueryFn;
   rollbackPendingPaymentFn: typeof rollbackPendingPayment;
+  onlyBeforeSubmission?: boolean;
 }) {
   const paymentStatusOverride = params.pendingReceipt
     ? params.paymentMode === 'wallet' ? 'refunded_wallet' : 'refunded'
     : null;
-  await params.queryFn(
+  const rows = await params.queryFn(
     `UPDATE app_jobs
         SET status = 'failed', progress = 0, message = $2, provisional = FALSE,
             payment_status = CASE WHEN $3::text IS NOT NULL THEN $3 ELSE payment_status END,
             updated_at = NOW()
-      WHERE job_id = $1`,
+      WHERE job_id = $1
+        ${params.onlyBeforeSubmission ? `AND provider_job_id IS NULL AND status IN ('queued','pending')
+          AND NOT EXISTS (SELECT 1 FROM provider_attempts a WHERE a.job_id = app_jobs.id)
+          RETURNING job_id` : ''}`,
     [params.jobId, params.message, paymentStatusOverride]
   );
+  if (params.onlyBeforeSubmission && !rows.length) return false;
   if (params.pendingReceipt) {
     await params.rollbackPendingPaymentFn({
       pendingReceipt: params.pendingReceipt,
@@ -182,6 +192,7 @@ async function failJobAndRollback(params: {
       }),
     });
   }
+  return true;
 }
 
 function falProviderJobId(result: FalGenerateSubmissionResult, getLastProviderJobId: () => string | null): string | null {
@@ -191,7 +202,11 @@ function falProviderJobId(result: FalGenerateSubmissionResult, getLastProviderJo
 
 async function submitFalFallback(params: {
   userId: string;
-  directAttemptId: number;
+  directAttemptId: number | null;
+  decision?: PurchaseDecision;
+  attemptIndex?: number;
+  claimOnce?: boolean;
+  fallbackFrom?: string;
   reason: string;
   errorCode: string | null;
   jobId: string;
@@ -213,18 +228,19 @@ async function submitFalFallback(params: {
 }): Promise<AlibabaModelStudioGenerateSubmissionResult> {
   const attempt = await createProviderAttempt({
     publicJobId: params.jobId,
-    attemptIndex: 2,
+    attemptIndex: params.attemptIndex ?? 2,
+    claimOnce: params.claimOnce,
     provider: 'fal',
     providerModel: params.falPayload.engineId,
-    status: 'fallback_started',
-    requestSnapshot: {
-      fallbackFrom: ALIBABA_MODEL_STUDIO_PROVIDER,
+    status: params.directAttemptId === null ? 'submit_started' : 'fallback_started',
+    requestSnapshot: params.directAttemptId === null ? { purchaseRouting: { ...params.decision, version: 1, mode: 'canary' } } : {
+      fallbackFrom: params.fallbackFrom ?? ALIBABA_MODEL_STUDIO_PROVIDER,
       fallbackReason: params.reason,
       fallbackErrorCode: params.errorCode,
     },
     queryFn: params.queryFn,
   });
-  await linkProviderFallbackAttempt({
+  if (params.directAttemptId !== null) await linkProviderFallbackAttempt({
     fromAttemptId: params.directAttemptId,
     toAttemptId: attempt.id,
     queryFn: params.queryFn,
@@ -291,7 +307,7 @@ async function submitFalFallback(params: {
   return { ok: true, kind: 'fal_result', generationResult: result.generationResult };
 }
 
-export async function submitAlibabaModelStudioGenerateTask(params: {
+type WanSubmissionParams = {
   jobId: string;
   userId: string;
   engineId: string;
@@ -311,6 +327,7 @@ export async function submitAlibabaModelStudioGenerateTask(params: {
   paymentMode: PaymentMode;
   walletChargeReserved: boolean;
   fallbackToFalEnabled: boolean;
+  purchaseCanary?: boolean;
   falPayload: GeneratePayload;
   falInputSummary: FalInputSummary;
   isLumaRay2: boolean;
@@ -324,7 +341,9 @@ export async function submitAlibabaModelStudioGenerateTask(params: {
   logMetricFn: LogMetricFn;
   clientErrorPolicy?: ProviderClientErrorPolicy;
   deps?: AlibabaSubmissionDeps;
-}): Promise<AlibabaModelStudioGenerateSubmissionResult> {
+};
+
+export async function submitAlibabaModelStudioGenerateTask(params: WanSubmissionParams): Promise<AlibabaModelStudioGenerateSubmissionResult> {
   const deps = params.deps ?? {};
   const queryFn = deps.queryFn ?? query;
   const route = resolveAlibabaModelRoute(params.engineId, params.mode);
@@ -340,10 +359,60 @@ export async function submitAlibabaModelStudioGenerateTask(params: {
     inputVideoDurationSec: media.inputVideoDurationSec ?? undefined,
     resolution,
   });
+  const decision = params.engineId === 'wan-3-prime' ? buildWanPurchaseDecision(params, resolution, media) : null;
+  // An unsupported request always retains its established provider contract.
+  const active = Boolean(params.purchaseCanary && decision?.canaryEligible);
+  const selected = active ? decision?.order[0] : ALIBABA_MODEL_STUDIO_PROVIDER;
+  if (!selected) {
+    const message = 'No compatible provider fits the purchase ceiling.';
+    const stopped = await failJobAndRollback({ ...params, message, queryFn, onlyBeforeSubmission: true,
+      rollbackPendingPaymentFn: deps.rollbackPendingPaymentFn ?? rollbackPendingPayment });
+    if (!stopped) return deferred(params.jobId);
+    return { ok: false, status: 503, body: { ok: false, error: 'NO_ELIGIBLE_VIDEO_PROVIDER', message } };
+  }
+  const context = { params, route, media, resolution, estimate, active, plan: decision, deps, queryFn };
+  try {
+    if (selected === 'fal') {
+      return await submitFalFallback({ ...params, directAttemptId: null, attemptIndex: 1, decision: decision ?? undefined,
+        claimOnce: true, reason: 'lowest_cost', errorCode: null, queryFn,
+        submitFalGenerateTaskFn: deps.submitFalGenerateTaskFn ?? submitFalGenerateTask });
+    }
+    if (!isWanDirectProvider(selected)) throw new Error('Unsupported primary Wan transport');
+    return await submitWanAttempt(context, selected, 1, null);
+  } catch (error) {
+    if (error instanceof ProviderAttemptAlreadyClaimed) return deferred(params.jobId);
+    throw error;
+  }
+}
+
+function deferred(jobId: string): AlibabaModelStudioGenerateSubmissionResult {
+  return { ok: true, kind: 'accepted', body: {
+    ok: true, jobId, status: 'running', deferred: true, message: 'Submission is being reconciled. Do not submit again.',
+  } };
+}
+
+type WanAttemptContext = {
+  params: WanSubmissionParams;
+  route: NonNullable<ReturnType<typeof resolveAlibabaModelRoute>>;
+  media: ReturnType<typeof resolveAlibabaSubmissionMediaInputs>;
+  resolution: string;
+  estimate: ReturnType<typeof estimateAlibabaProviderCost>;
+  active: boolean;
+  plan: PurchaseDecision | null;
+  deps: AlibabaSubmissionDeps;
+  queryFn: QueryFn;
+};
+
+async function submitWanAttempt(
+  context: WanAttemptContext, provider: WanDirectProvider, attemptIndex: number, previousAttemptId: number | null,
+): Promise<AlibabaModelStudioGenerateSubmissionResult> {
+  const { params, route, media, resolution, estimate, active, plan, deps, queryFn } = context;
+  const costMicros = plan?.candidates.find(candidate => candidate.provider === provider)?.costMicros;
   const attempt = await createProviderAttempt({
     publicJobId: params.jobId,
-    attemptIndex: 1,
-    provider: ALIBABA_MODEL_STUDIO_PROVIDER,
+    attemptIndex,
+    claimOnce: active,
+    provider,
     providerModel: route.model,
     requestSnapshot: {
       engineId: params.engineId,
@@ -360,11 +429,14 @@ export async function submitAlibabaModelStudioGenerateTask(params: {
       referenceVideoCount: media.referenceVideos.length,
       referenceAudioCount: media.referenceAudio.length,
       promptLength: params.prompt.length,
-      estimatedProviderCostUsd: estimate.providerCostUsd,
+      estimatedProviderCostUsd: costMicros == null ? estimate.providerCostUsd : costMicros / 1e6,
+      ...(plan ? { purchaseRouting: { ...plan, version: 1, mode: active ? 'canary' : 'shadow' } } : {}),
     },
     queryFn,
   });
 
+  if (previousAttemptId != null) await linkProviderFallbackAttempt({ fromAttemptId: previousAttemptId, toAttemptId: attempt.id, queryFn });
+  let sent = false;
   let acceptedTask: NormalizedVideoProviderTask;
   let acceptedProviderJobId: string | null = null;
   let sanitizeDiagnostics: (value: unknown) => unknown = route.family === 'wan3'
@@ -395,12 +467,30 @@ export async function submitAlibabaModelStudioGenerateTask(params: {
     });
     const transport = await createWanMediaTransport({ payload, userId: params.userId }, { read: deps.createOwnedMediaReadUrlFn });
     sanitizeDiagnostics = transport.sanitize;
-    const task = await (deps.getAlibabaModelStudioClientFn ?? getAlibabaModelStudioClient)().createVideo(transport.payload);
+    const client = getWanSubmissionClient(provider, {
+      apimart: deps.getApimartClientFn, alibaba_model_studio: deps.getAlibabaModelStudioClientFn,
+    });
+    sent = true;
+    const task = await client.createVideo(transport.payload);
     acceptedProviderJobId = task.providerJobId;
     acceptedTask = task;
   } catch (error) {
     const normalized = classifyAlibabaModelStudioError(error);
-    const fallbackEligible = route.fallbackCompatible && shouldFallbackFromAlibabaSubmit({
+    const failure = sent ? classifyWanPurchaseFailure(provider, error) : { outcome: 'invalid' as const, code: normalized.code ?? normalized.errorClass };
+    const next = active && plan ? nextPurchaseProvider(plan.order, provider, failure.outcome) : null;
+    if (active && failure.outcome === 'uncertain') {
+      // No ACK: preserve the original reservation and leave the operator a durable reconciliation record.
+      const message = 'Provider acceptance is unknown. Reconcile this submission before retrying.';
+      await queryFn(`UPDATE app_jobs SET provider = $2, status = 'provider_polling_stalled', message = $3,
+          provisional = FALSE, updated_at = NOW() WHERE job_id = $1 AND provider_job_id IS NULL
+          AND status IN ('pending','queued','running')`, [params.jobId, provider, message])
+        .catch(() => console.warn('[wan-purchase] job reconciliation write deferred', { jobId: params.jobId }));
+      await markProviderAttemptFinished({ attemptId: attempt.id, status: 'polling_stalled',
+        responseSnapshot: { reason: failure.code }, queryFn }).catch(() =>
+        console.warn('[wan-purchase] attempt reconciliation write deferred', { jobId: params.jobId }));
+      return deferred(params.jobId);
+    }
+    const fallbackEligible = active ? next !== null : route.fallbackCompatible && shouldFallbackFromAlibabaSubmit({
       acceptedProviderJobId,
       error,
       fallbackToFalEnabled: params.fallbackToFalEnabled,
@@ -408,8 +498,8 @@ export async function submitAlibabaModelStudioGenerateTask(params: {
     try {
       await markProviderAttemptFailed({
         attemptId: attempt.id,
-        errorCode: normalized.code,
-        errorClass: normalized.errorClass,
+        errorCode: active ? failure.code : normalized.code,
+        errorClass: active ? failure.outcome : normalized.errorClass,
         fallbackEligible,
         responseSnapshot: sanitizeDiagnostics(normalized.raw),
         queryFn,
@@ -418,12 +508,16 @@ export async function submitAlibabaModelStudioGenerateTask(params: {
       // The accepted task identity remains authoritative even if local persistence is degraded.
     }
 
+    if (isWanDirectProvider(next)) {
+      return submitWanAttempt(context, next, attemptIndex + 1, attempt.id);
+    }
     if (fallbackEligible) {
       return submitFalFallback({
+        attemptIndex: attemptIndex + 1, fallbackFrom: provider, claimOnce: active,
         userId: params.userId,
         directAttemptId: attempt.id,
-        reason: normalized.errorClass,
-        errorCode: normalized.code,
+        reason: active ? failure.outcome : normalized.errorClass,
+        errorCode: active ? failure.code : normalized.code,
         jobId: params.jobId,
         engineId: params.engineId,
         engineLabel: params.engineLabel,
@@ -443,7 +537,9 @@ export async function submitAlibabaModelStudioGenerateTask(params: {
       });
     }
 
-    const message = userSafeAlibabaMessage(normalized.errorClass, normalized.code);
+    const message = provider === 'apimart' && sent
+      ? 'The provider declined this generation. Review the request or try again later.'
+      : userSafeAlibabaMessage(normalized.errorClass, normalized.code);
     if (!acceptedProviderJobId) {
       await failJobAndRollback({
         jobId: params.jobId,
@@ -460,14 +556,14 @@ export async function submitAlibabaModelStudioGenerateTask(params: {
     params.logMetricFn('failed', {
       jobId: params.jobId,
       errorCode: normalized.code ?? normalized.errorClass,
-      meta: { provider: ALIBABA_MODEL_STUDIO_PROVIDER, errorClass: normalized.errorClass, accepted: Boolean(acceptedProviderJobId) },
+      meta: { provider, errorClass: normalized.errorClass, accepted: Boolean(acceptedProviderJobId) },
     });
     return {
       ok: false,
       status: statusForAlibabaError(normalized.errorClass),
       body: {
         ok: false,
-        error: normalized.code ?? 'ALIBABA_MODEL_STUDIO_SUBMIT_FAILED',
+        error: active ? failure.code : normalized.code ?? 'ALIBABA_MODEL_STUDIO_SUBMIT_FAILED',
         message,
         ...(acceptedProviderJobId ? { jobId: params.jobId, providerJobId: acceptedProviderJobId } : {}),
       },
@@ -482,11 +578,11 @@ export async function submitAlibabaModelStudioGenerateTask(params: {
   const status = acceptedTask.status === 'running' ? 'running' : 'queued';
   const progress = acceptedTask.status === 'running' ? 30 : 10;
   return { ok: true, kind: 'accepted', body: await persistDirectProviderAcceptance({
-    jobId: params.jobId, provider: ALIBABA_MODEL_STUDIO_PROVIDER, providerJobId: acceptedTask.providerJobId,
+    jobId: params.jobId, provider, providerJobId: acceptedTask.providerJobId,
     attemptId: attempt.id, responseSnapshot, status, progress,
     localKey: params.localKey, queryFn,
     logAccepted: () => params.logMetricFn('accepted', { jobId: params.jobId,
-      meta: { provider: ALIBABA_MODEL_STUDIO_PROVIDER, providerJobId: acceptedTask.providerJobId, providerModel: route.model } }),
+      meta: { provider, providerJobId: acceptedTask.providerJobId, providerModel: route.model } }),
     acceptedBody: {
       ok: true,
       jobId: params.jobId,
@@ -497,7 +593,7 @@ export async function submitAlibabaModelStudioGenerateTask(params: {
       progress,
       pricing: params.pricing,
       paymentStatus: params.paymentStatus,
-      provider: ALIBABA_MODEL_STUDIO_PROVIDER,
+      provider,
       providerJobId: acceptedTask.providerJobId,
       batchId: params.batchId,
       groupId: params.groupId,

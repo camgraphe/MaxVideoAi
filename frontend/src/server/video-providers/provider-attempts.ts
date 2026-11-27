@@ -100,7 +100,10 @@ function snapshotParam(value: unknown): string | null {
   return value === undefined || value === null ? null : JSON.stringify(sanitizeSnapshotValue(value));
 }
 
+export class ProviderAttemptAlreadyClaimed extends Error {}
+
 export async function createProviderAttempt(params: {
+  claimOnce?: boolean;
   publicJobId: string;
   attemptIndex: number;
   provider: VideoProviderKey;
@@ -124,13 +127,13 @@ export async function createProviderAttempt(params: {
        FROM app_jobs
       WHERE job_id = $1
      ON CONFLICT (job_id, attempt_index)
-     DO UPDATE SET
+     ${params.claimOnce ? 'DO NOTHING' : `DO UPDATE SET
        provider = EXCLUDED.provider,
        provider_model = EXCLUDED.provider_model,
        status = EXCLUDED.status,
        started_at = COALESCE(provider_attempts.started_at, EXCLUDED.started_at),
        request_snapshot = EXCLUDED.request_snapshot,
-       updated_at = NOW()
+       updated_at = NOW()`}
      RETURNING id, attempt_index`,
     [
       params.publicJobId,
@@ -143,6 +146,14 @@ export async function createProviderAttempt(params: {
   );
   const row = rows[0];
   if (!row) {
+    if (params.claimOnce) {
+      const existing = await queryFn<{ id: number }>(
+        `SELECT a.id FROM provider_attempts a JOIN app_jobs j ON j.id = a.job_id
+          WHERE j.job_id = $1 AND a.attempt_index = $2`,
+        [params.publicJobId, params.attemptIndex],
+      );
+      if (existing.length) throw new ProviderAttemptAlreadyClaimed();
+    }
     throw new Error(`Unable to create provider attempt for missing job ${params.publicJobId}.`);
   }
   return { id: Number(row.id), attemptIndex: Number(row.attempt_index) };

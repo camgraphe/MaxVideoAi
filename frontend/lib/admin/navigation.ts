@@ -47,6 +47,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
     label: 'Generations',
     items: [
       { id: 'jobs', label: 'Generations', href: '/admin/jobs', icon: 'jobs' },
+      { id: 'video-routing', label: 'Video routing', href: '/admin/routing', icon: 'engines' },
       { id: 'engines', label: 'Model activity', href: '/admin/engines', icon: 'engines' },
     ],
   },

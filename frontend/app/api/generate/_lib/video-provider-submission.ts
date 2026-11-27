@@ -84,6 +84,7 @@ export async function submitGenerateProviderTask(params: {
       pendingReceipt: params.pendingReceipt,
       paymentMode: params.paymentMode,
       walletChargeReserved: params.walletChargeReserved,
+      purchaseCanary: params.providerRoutingPlan.purchaseCanary,
       fallbackToFalEnabled: params.providerRoutingPlan.fallbackEnabled,
       falPayload: params.falPayload,
       falInputSummary: params.falInputSummary,

@@ -31,7 +31,11 @@ async function triggerPoll(req: NextRequest) {
   if (!auth.ok) return unauthorized(auth.reason, req);
 
   try {
-    return await runAlibabaModelStudioPoll();
+    if (!process.env.APIMART_API_KEY?.trim()) return await runAlibabaModelStudioPoll();
+    const [alibaba, apimart] = await Promise.all([
+      runAlibabaModelStudioPoll(), runAlibabaModelStudioPoll({ provider: 'apimart' }),
+    ]);
+    return NextResponse.json({ alibaba: await alibaba.json(), apimart: await apimart.json() });
   } catch (error) {
     console.error('[cron-alibaba-model-studio-poll] failed to run poll', error);
     return NextResponse.json({ ok: false, error: 'Failed to run direct video poll' }, { status: 500 });
