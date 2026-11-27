@@ -26,6 +26,9 @@ export type VideoGenerationReservationOptions =
     };
 
 export type VideoGenerationResponse = {
+  /** Server-side provenance for projecting upstream errors onto the customer API. */
+  origin?: 'submission';
+  storedEngineId?: string;
   body: Record<string, unknown>;
   status?: number;
 };

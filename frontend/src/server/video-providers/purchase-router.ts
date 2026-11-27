@@ -2,6 +2,7 @@ import {
   rankQuotedOffers,
   type PurchaseCandidate,
   type PurchaseLimits,
+  type PurchaseRoutingEngineId,
   type PurchaseStrategy,
 } from '@/lib/video-purchase-decision';
 import type { VideoProviderKey } from './types';
@@ -33,7 +34,7 @@ const policies = new Map<string, EnginePurchasePolicy>([
   ['seedance-2-5', { baseline: 'byteplus_modelark', strategy: 'lowest-cost', offers: [SEEDANCE_25_BYTEPLUS_OFFER] }],
   ['kling-3-pro', kling],
   ['kling-o3-pro', kling],
-]);
+] satisfies [PurchaseRoutingEngineId, EnginePurchasePolicy][]);
 
 export function usesPurchaseBaseline(engineId: string, provider: VideoProviderKey) {
   return policies.get(engineId)?.baseline === provider;

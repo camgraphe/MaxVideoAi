@@ -7,6 +7,7 @@ import type { AudioGenerateRequestBody, AudioGenerateResponse } from '@/lib/audi
 import type { GenerateAttachment } from '@/lib/fal';
 import type { SoraRequest } from '@/lib/sora';
 import type { PreflightRequest, PreflightResponse } from '@/types/engines';
+import type { CustomerPricingSnapshot } from '@/lib/customer-pricing-snapshot';
 import type { PricingSnapshot } from '@maxvideoai/pricing';
 import type { VideoAsset } from '@/types/render';
 import type { CharacterBuilderRequest, CharacterBuilderResponse } from '@/types/character-builder';
@@ -68,7 +69,7 @@ type GeneratePayload = {
 
 type GenerateOptions = {
   token?: string;
-  pricingSnapshot?: PricingSnapshot | null;
+  pricingSnapshot?: PricingSnapshot | CustomerPricingSnapshot | null;
 };
 
 type GenerateResult = {
@@ -79,10 +80,10 @@ type GenerateResult = {
   thumbUrl: string | null;
   status: 'pending' | 'completed' | 'failed';
   progress: number;
-  pricing?: PricingSnapshot;
+  pricing?: CustomerPricingSnapshot;
+  provider?: string;
+  providerJobId?: string | null;
   paymentStatus: string;
-  provider: string;
-  providerJobId: string | null;
   batchId?: string | null;
   groupId?: string | null;
   iterationIndex?: number | null;

@@ -1,4 +1,7 @@
 import { normalizeMediaUrl } from '@/lib/media';
+import { customerPricingSnapshot } from '@/lib/customer-pricing-snapshot';
+import { isPurchaseRoutingEngine } from '@/lib/video-purchase-decision';
+import { projectRoutedVideoSettings } from '@/server/generations/routed-video-client-fields';
 import { publicExampleGenerationMode, publicExampleRequestedResolution } from '@/lib/example-recreation';
 import { normalizeVideoOperation, type VideoOperation } from '@/lib/video-operation';
 import { normalizeJobKeyframeUrls, type JobKeyframeUrls } from '@/server/video-keyframes';
@@ -64,7 +67,7 @@ export type GalleryVideo = {
   canUpscale: boolean;
   finalPriceCents?: number | null;
   currency?: string | null;
-  pricingSnapshot?: PricingSnapshot;
+  pricingSnapshot?: PricingSnapshot | NonNullable<ReturnType<typeof customerPricingSnapshot>>;
   settingsSnapshot?: unknown;
   recreationSnapshot?: unknown;
   playlistOrder?: number | null;
@@ -87,13 +90,18 @@ export function mapGalleryVideoRow(row: VideoRow): GalleryVideo {
       // Invalid historical metadata cannot select an unrelated source operation.
     }
   }
-  const recipe = sanitizePublicRecreationSnapshot(row.recreation_snapshot);
+  const routed = isPurchaseRoutingEngine(row.engine_id);
+  const creativeSettings = (raw: unknown) => routed ? projectRoutedVideoSettings(row.engine_id, raw) : raw;
+  const recipe = sanitizePublicRecreationSnapshot(creativeSettings(row.recreation_snapshot));
+  const settings = creativeSettings(row.settings_snapshot);
+  const personal = row.visibility === 'private' && row.recreation_snapshot == null;
   const recreationSnapshot = operation && recipe && typeof recipe === 'object' && !Array.isArray(recipe)
     && !Object.hasOwn(recipe, 'operation')
     && (recipe as Record<string, unknown>).engineId === row.engine_id
     && (recipe as Record<string, unknown>).inputMode === generationMode
     ? { ...recipe, operation } : recipe;
-  const pricingSnapshot = row.visibility === 'private' && row.recreation_snapshot == null
+  const pricingSnapshot = routed ? customerPricingSnapshot(row.pricing_snapshot)
+    : personal
     ? row.pricing_snapshot
     : sanitizePublicVideoPricingSnapshot(row.pricing_snapshot);
   const historicalPrice = row.final_price_cents == null ? findLaunchExamplePrice({
@@ -128,7 +136,7 @@ export function mapGalleryVideoRow(row: VideoRow): GalleryVideo {
     finalPriceCents: row.final_price_cents ?? historicalPrice?.totalCents ?? undefined,
     currency: row.currency ?? historicalPrice?.currency ?? undefined,
     pricingSnapshot: pricingSnapshot ?? undefined,
-    settingsSnapshot: row.settings_snapshot ?? undefined,
+    settingsSnapshot: routed && !personal ? sanitizePublicRecreationSnapshot(settings) ?? undefined : settings ?? undefined,
     recreationSnapshot: recreationSnapshot ?? undefined,
     playlistOrder: typeof row.order_index === 'number' ? row.order_index : null,
   };

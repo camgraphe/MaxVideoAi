@@ -2,6 +2,7 @@ import { requireCurrentWebPricingPolicy } from '@/server/pricing/web-pricing-pol
 export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
+import { customerGenerationResponse } from './_lib/customer-generation-response';
 import { createGenerateMetricLogger } from './_lib/metric-logger';
 import { buildGenerateRequestOptions } from './_lib/request-options';
 import { resolveGenerateUserGate } from './_lib/auth-idempotency';
@@ -24,7 +25,7 @@ export async function POST(req: NextRequest) {
   let workflowUserGate;
   if (body.seedanceWorkflow !== undefined) {
     workflowUserGate = await resolveGenerateUserGate({ req, body });
-    if (workflowUserGate.kind === 'response') return NextResponse.json(workflowUserGate.body, { status: workflowUserGate.status });
+    if (workflowUserGate.kind === 'response') return NextResponse.json(customerGenerationResponse(workflowUserGate.body, body.engineId, undefined, workflowUserGate.storedEngineId), { status: workflowUserGate.status });
     try {
       seedanceWorkflow = await resolveSeedanceWorkflowRequest({ body, userId: workflowUserGate.userId,
         engineId: String(body.engineId), enabled: seedanceWorkflowEnabled(req.url) });
@@ -37,7 +38,7 @@ export async function POST(req: NextRequest) {
   const routeContext = await resolveGenerateRouteContext({ body, req, seedanceWorkflow: seedanceWorkflow ?? undefined });
   if (!routeContext.ok) {
     await logPreflightRejection(body, routeContext);
-    return NextResponse.json(routeContext.body, { status: routeContext.status });
+    return NextResponse.json(customerGenerationResponse(routeContext.body, body.engineId), { status: routeContext.status });
   }
   const { engine, isBytePlusV1a, jobId, providerRoutingPlan } = routeContext.context;
   const { mode } = routeContext.context;
@@ -49,7 +50,7 @@ export async function POST(req: NextRequest) {
   const userGate = workflowUserGate ?? await resolveGenerateUserGate({ req, body });
   if (userGate.kind === 'response') {
     if (userGate.metric) logMetric('rejected', userGate.metric);
-    return NextResponse.json(userGate.body, { status: userGate.status });
+    return NextResponse.json(customerGenerationResponse(userGate.body, engine.id, undefined, userGate.storedEngineId), { status: userGate.status });
   }
   try {
     seedanceWorkflow ??= await resolveSeedanceWorkflowRequest({ body, userId: userGate.userId,
@@ -63,7 +64,7 @@ export async function POST(req: NextRequest) {
   const requestOptionsResult = buildGenerateRequestOptions({ body, engine, mode, isBytePlusV1a });
   if (!requestOptionsResult.ok) {
     if (requestOptionsResult.metric) logMetric('rejected', requestOptionsResult.metric);
-    return NextResponse.json(requestOptionsResult.body, { status: requestOptionsResult.status });
+    return NextResponse.json(customerGenerationResponse(requestOptionsResult.body, engine.id), { status: requestOptionsResult.status });
   }
   const normalizedResolution = normalizeProviderRoutedResolution({
     providerRoutingPlan,
@@ -93,5 +94,5 @@ export async function POST(req: NextRequest) {
     adapters: videoGenerationAdapters,
     seedanceWorkflow: seedanceWorkflow ?? undefined,
   });
-  return NextResponse.json(result.body, result.status === undefined ? undefined : { status: result.status });
+  return NextResponse.json(customerGenerationResponse(result.body, engine.id, result.origin, result.storedEngineId), result.status === undefined ? undefined : { status: result.status });
 }

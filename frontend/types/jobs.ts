@@ -1,3 +1,4 @@
+import type { CustomerPricingSnapshot } from '@/lib/customer-pricing-snapshot';
 import type { ImageRenderEntry } from '@/lib/image-renders';
 import type { GenerationObservation } from '@/lib/generation-observation';
 import type { Mode, PricingSnapshot } from '@/types/engines';
@@ -51,7 +52,7 @@ export interface Job {
   etaLabel?: string | null;
   finalPriceCents?: number;
   currency?: string;
-  pricingSnapshot?: PricingSnapshot;
+  pricingSnapshot?: PricingSnapshot | CustomerPricingSnapshot;
   vendorAccountId?: string;
   paymentStatus?: string;
   stripePaymentIntentId?: string;

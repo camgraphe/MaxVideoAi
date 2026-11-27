@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { isPurchaseRoutingEngine } from '@/lib/video-purchase-decision';
+import { customerPreflightResponse } from './customer-preflight';
 
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { resolveMediaAwarePreflight } from './media-aware-preflight';
@@ -60,7 +62,9 @@ export function createPreflightPostHandler(dependencies: PreflightPostDependenci
       resolveUserId: async () => launchCanaryContext?.principal.userId
         ?? (await getRouteAuthContextFn(req)).userId,
     }, dependencies.mediaAwarePreflightDependencies);
-    return NextResponse.json(response, {
+    const customerResponse = isPurchaseRoutingEngine(request.engine) || isPurchaseRoutingEngine(response.caps?.id)
+      ? customerPreflightResponse(response) : response;
+    return NextResponse.json(customerResponse, {
       status: response.ok ? 200 : response.error?.code === 'RATE_LIMITED' ? 429 : 400,
       headers: { 'Cache-Control': 'private, no-store' },
     });

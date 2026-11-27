@@ -59,6 +59,7 @@ export type PendingReceipt = {
 };
 
 export type ExistingVideoJobRow = {
+  engine_id?: string | null;
   job_id: string;
   user_id: string | null;
   status: string | null;
@@ -305,6 +306,7 @@ export async function createInitialVideoJobInExecutor(
     `SELECT
        job_id,
        user_id,
+       engine_id,
        status,
        video_url,
        thumb_url,

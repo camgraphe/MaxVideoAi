@@ -262,6 +262,7 @@ test('video lifecycle adapters preserve existing, async, direct, and error respo
     onReservationError: async () => ({ body: { ok: false }, status: 500 }),
   });
   assert.deepEqual(providerError, {
+    origin: 'submission',
     status: 502,
     body: {
       ok: false,

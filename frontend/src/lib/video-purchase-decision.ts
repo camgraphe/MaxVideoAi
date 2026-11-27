@@ -1,5 +1,15 @@
 import type { VideoProviderKey } from '../server/video-providers/types';
 
+export const PURCHASE_ROUTING_ENGINE_IDS = [
+  'wan-3', 'wan-3-prime', 'minimax-h3', 'minimax-h3-max', 'seedance-2-5', 'kling-3-pro', 'kling-o3-pro',
+] as const;
+export type PurchaseRoutingEngineId = (typeof PURCHASE_ROUTING_ENGINE_IDS)[number];
+const purchaseRoutingEngines = new Set<string>(PURCHASE_ROUTING_ENGINE_IDS);
+
+export function isPurchaseRoutingEngine(engineId: unknown): engineId is PurchaseRoutingEngineId {
+  return typeof engineId === 'string' && purchaseRoutingEngines.has(engineId);
+}
+
 /** Catalogue-only suppliers cannot be used as live provider keys. */
 export type PurchaseProviderKey = VideoProviderKey | 'wavespeed';
 

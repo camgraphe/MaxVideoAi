@@ -1,3 +1,4 @@
+import { PURCHASE_ROUTING_ENGINE_IDS } from '@/lib/video-purchase-decision';
 import { ADMIN_EXCLUDED_USER_IDS } from '@/lib/admin/exclusions';
 import { query, type QueryExecutor } from '@/lib/db';
 import { KLING_DIRECT_ONLY_FAL_EXTRA_KEYS } from '@/lib/kling-direct-extra-values';
@@ -12,7 +13,7 @@ const seconds = (expression: string) => `CASE WHEN jsonb_typeof(${expression}) =
 const bool = (expression: string) => `CASE WHEN jsonb_typeof(${expression}) = 'boolean' THEN (${expression})::text::boolean END`;
 const directKeys = arrayOfKeys([...KLING_DIRECT_ONLY_FAL_EXTRA_KEYS]);
 const wanExtras = arrayOfKeys(WAN_REVIEWED_EXTRA_KEYS);
-const supported = "('wan-3','wan-3-prime','kling-3-pro','kling-o3-pro','seedance-2-5','minimax-h3','minimax-h3-max')";
+const supported = arrayOfKeys(PURCHASE_ROUTING_ENGINE_IDS);
 
 // Private media values exist only inside aggregates to deduplicate duplicated attachment projections.
 // No raw settings, URLs, prompt text, job/account IDs, or provider task IDs enter the grouped result.
@@ -143,7 +144,7 @@ export const HISTORICAL_REPLAY_QUERY = `WITH population AS (
     ${seconds("a->'inputVideoDurationSec'")} AS total_secs, ${nonnegativeInt("a->'referenceVideoCount'")} AS n_videos
   FROM evidence
 ), profiles AS (
-  SELECT *, CASE WHEN engine IN ${supported} AND snapshot_ok AND mode IS NOT NULL AND sec > 0 AND res IS NOT NULL
+  SELECT *, CASE WHEN engine = ANY(${supported}) AND snapshot_ok AND mode IS NOT NULL AND sec > 0 AND res IS NOT NULL
       AND ref_images IS NOT NULL AND has_video IS NOT NULL AND has_start IS NOT NULL AND has_end IS NOT NULL AND has_audio_ref IS NOT NULL
       AND unpriced IS NOT NULL THEN
     jsonb_strip_nulls(jsonb_build_object('engineId',engine,'mode',mode,'durationSec',sec,'resolution',res,
@@ -162,7 +163,7 @@ export const HISTORICAL_REPLAY_QUERY = `WITH population AS (
   SELECT bucket, jsonb_build_object('engineId',engine,'status',status,'paidWallet',paid,'source',source,
     'bucketAt',to_char(bucket,'YYYY-MM-DD"T"HH24:00:00"Z"'),'historicalProvider',owner,'mode',mode,'resolution',res,'durationSec',sec,
     'request',request,'ceilingMicros',ceiling) ||
-    CASE WHEN request IS NULL THEN jsonb_build_object('missingReason',CASE WHEN engine NOT IN ${supported}
+    CASE WHEN request IS NULL THEN jsonb_build_object('missingReason',CASE WHEN engine <> ALL(${supported})
       THEN 'No reviewed tariff for this engine' WHEN snapshot_ok IS NOT TRUE THEN 'Settings snapshot incomplete'
       ELSE 'Incomplete media roles or generation settings' END) ELSE '{}'::jsonb END AS profile
   FROM profiles

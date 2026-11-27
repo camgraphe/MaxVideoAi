@@ -1,3 +1,6 @@
+import { customerPricingSnapshot } from '@/lib/customer-pricing-snapshot';
+import { isPurchaseRoutingEngine } from '@/lib/video-purchase-decision';
+import { projectRoutedVideoSettings, routedVideoJobMessage } from './routed-video-client-fields';
 import { readOwnedSeedanceWorkflowView } from '@/server/seedance-workflow-view';
 import { agentSeedanceWorkflowEnabled } from '@/server/agent-api/seedance-workflow';
 import type { SeedanceWorkflowView } from '@/lib/seedance-workflow-contract';
@@ -234,7 +237,9 @@ export function mapGenerationStatusRecordToWeb(
     videoUrl: record.video_url,
     renderIds: record.render_ids,
   });
-  const useFallbackSettingsSnapshot = overrides.useFallbackSettingsSnapshot !== false;
+  const routed = isPurchaseRoutingEngine(record.engine_id);
+  const settings = record.settings_snapshot && typeof record.settings_snapshot === 'object' ? record.settings_snapshot
+    : overrides.useFallbackSettingsSnapshot !== false ? buildFallbackSettingsSnapshot(record) : undefined;
   const override = <K extends keyof GenerationStatusWebOverrides>(
     key: K,
     fallback: GenerationStatusWebOverrides[K]
@@ -263,17 +268,12 @@ export function mapGenerationStatusRecordToWeb(
     audioUrl: normalizeMediaUrl(override('audioUrl', record.audio_url)) ?? undefined,
     thumbUrl: normalizeMediaUrl(override('thumbUrl', record.thumb_url)) ?? undefined,
     aspectRatio: record.aspect_ratio ?? undefined,
-    pricing: record.pricing_snapshot ?? undefined,
-    settingsSnapshot:
-      record.settings_snapshot && typeof record.settings_snapshot === 'object'
-        ? record.settings_snapshot
-        : useFallbackSettingsSnapshot
-          ? buildFallbackSettingsSnapshot(record)
-          : undefined,
+    pricing: routed ? customerPricingSnapshot(record.pricing_snapshot) : record.pricing_snapshot ?? undefined,
+    settingsSnapshot: routed ? projectRoutedVideoSettings(record.engine_id,settings) : settings,
     finalPriceCents: record.final_price_cents ?? undefined,
     currency: record.currency ?? 'USD',
     paymentStatus: record.payment_status ?? undefined,
-    vendorAccountId: record.vendor_account_id ?? undefined,
+    vendorAccountId: routed ? undefined : record.vendor_account_id ?? undefined,
     stripePaymentIntentId: record.stripe_payment_intent_id ?? undefined,
     stripeChargeId: record.stripe_charge_id ?? undefined,
     batchId: record.batch_id ?? undefined,
@@ -285,7 +285,8 @@ export function mapGenerationStatusRecordToWeb(
     imageRenders: parsedRenders.hasStructuredEntries ? parsedRenders.entries : undefined,
     heroRenderId: record.hero_render_id ?? undefined,
     localKey: record.local_key ?? undefined,
-    message: override('message', message ?? undefined) ?? undefined,
+    message: routed ? routedVideoJobMessage(override('status', record.status ?? undefined), override('message', record.message ?? undefined), record.settings_snapshot)
+      : override('message', message ?? undefined) ?? undefined,
     etaSeconds: record.eta_seconds ?? undefined,
     etaLabel: record.eta_label ?? undefined,
   };
