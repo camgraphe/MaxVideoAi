@@ -98,34 +98,45 @@ test('keeps document, video and special operations outside the new transport; un
     assert.equal(nextPurchaseProvider(['apimart', 'fal'], 'apimart', outcome), null);
   }
 });
-test('real submission requires admin + preproduction + explicit switch + key', () => {
+test('Wan Prime pilots require admin preproduction access and keep the installed-provider pilot independent of APIMart', () => {
   const env = {
     ALIBABA_MODEL_STUDIO_ENABLED: '1',
     ALIBABA_MODEL_STUDIO_PUBLIC_ROUTING_ENABLED: '1',
     ALIBABA_MODEL_STUDIO_ADMIN_ONLY: '0',
   };
-  const old = [process.env.VERCEL_ENV, process.env.APIMART_WAN_PRIME_ADMIN_CANARY, process.env.APIMART_API_KEY];
+  const keys = ['VERCEL_ENV', 'WAN_PRIME_EXISTING_PROVIDERS_ADMIN_CANARY', 'APIMART_WAN_PRIME_ADMIN_CANARY', 'APIMART_API_KEY'];
+  const old = keys.map(key => process.env[key]);
+  const route = (isAdmin: boolean, engineId = 'wan-3-prime') => {
+    const plan = resolveVideoProviderRoutingPlan({ engineId, mode: 't2v', env, isAdmin });
+    return plan.kind === 'alibaba_model_studio_primary' ? plan.purchaseCanary : undefined;
+  };
   try {
     process.env.VERCEL_ENV = 'preview';
+    delete process.env.WAN_PRIME_EXISTING_PROVIDERS_ADMIN_CANARY;
     process.env.APIMART_WAN_PRIME_ADMIN_CANARY = '1';
     process.env.APIMART_API_KEY = 'test';
-    const route = (isAdmin: boolean) => {
-      const p = resolveVideoProviderRoutingPlan({ engineId: 'wan-3-prime', mode: 't2v', env, isAdmin });
-      return p.kind === 'alibaba_model_studio_primary' && p.purchaseCanary === true;
-    };
-    assert.equal(route(true), true);
-    assert.equal(route(false), false);
+    assert.equal(route(true), 'with-apimart');
+    assert.equal(route(false), undefined);
     process.env.VERCEL_ENV = 'production';
-    assert.equal(route(true), false);
+    assert.equal(route(true), undefined);
     process.env.VERCEL_ENV = 'preview';
     delete process.env.APIMART_API_KEY;
-    assert.equal(route(true), false);
+    assert.equal(route(true), undefined);
+    process.env.WAN_PRIME_EXISTING_PROVIDERS_ADMIN_CANARY = '1';
+    assert.equal(route(true), 'alibaba-fal');
+    assert.equal(route(false), undefined);
+    assert.equal(route(true, 'wan-3'), undefined);
     process.env.APIMART_API_KEY = 'test';
+    assert.equal(route(true), 'alibaba-fal');
+    process.env.VERCEL_ENV = 'production';
+    assert.equal(route(true), undefined);
+    process.env.VERCEL_ENV = 'preview';
+    delete process.env.WAN_PRIME_EXISTING_PROVIDERS_ADMIN_CANARY;
     delete process.env.APIMART_WAN_PRIME_ADMIN_CANARY;
-    assert.equal(route(true), false);
+    assert.equal(route(true), undefined);
     assert.equal(installedRoutes().length, 7);
   } finally {
-    for (const [i, k] of ['VERCEL_ENV', 'APIMART_WAN_PRIME_ADMIN_CANARY', 'APIMART_API_KEY'].entries()) {
+    for (const [i, k] of keys.entries()) {
       if (old[i] == null) delete process.env[k];
       else process.env[k] = old[i];
     }

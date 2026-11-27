@@ -2,6 +2,7 @@ import type { SubmitOutcome } from '@/lib/video-purchase-decision';
 import type { PricingSnapshot } from '@/types/engines';
 import type { GeneratePayload } from '@/lib/fal';
 import type { VideoProviderKey } from '@/server/video-providers/types';
+import type { WanPrimeCanary } from '@/server/video-providers/router';
 import { ApimartSubmitError } from '@/server/video-providers/apimart/wan-prime';
 import { classifyAlibabaModelStudioError } from '@/server/video-providers/alibaba-model-studio/errors';
 import { customerPurchaseCeiling, planWanPurchase, type PurchaseRequest } from '@/server/video-providers/purchase-router';
@@ -16,6 +17,7 @@ export function buildWanPurchaseDecision(
     aspectRatio: string | null;
     falPayload: GeneratePayload;
     fallbackToFalEnabled: boolean;
+    purchaseCanary?: WanPrimeCanary;
     pricing: PricingSnapshot;
   },
   resolution: string,
@@ -42,7 +44,10 @@ export function buildWanPurchaseDecision(
   const cap = Math.min(serverCap, customerPurchaseCeiling(params.pricing));
   return planWanPurchase(request, {
     ceilingMicros: cap,
-    unavailable: params.fallbackToFalEnabled ? {} : { fal: 'Fal fallback disabled' },
+    unavailable: {
+      ...(params.purchaseCanary === 'alibaba-fal' ? { apimart: 'Outside the Alibaba and Fal pilot' } : {}),
+      ...(!params.fallbackToFalEnabled ? { fal: 'Fal fallback disabled' } : {}),
+    },
   });
 }
 export function classifyWanPurchaseFailure(

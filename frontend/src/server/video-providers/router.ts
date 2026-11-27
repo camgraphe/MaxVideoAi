@@ -1,4 +1,3 @@
-import { apimartCanaryAvailable } from './apimart/wan-prime';
 import { videoOperationEndpoint } from '@/lib/video-operation';
 import type { Mode } from '@/types/engines';
 import { isAlibabaDirectEngine, isAlibabaDirectModeSupported, isAlibabaFalFallbackCompatible } from './alibaba-model-studio/model-map';
@@ -39,6 +38,16 @@ export type VideoProviderRoutingEnv = Readonly<Partial<Record<
   string | undefined
 >>>;
 
+export type WanPrimeCanary = 'alibaba-fal' | 'with-apimart';
+
+export function configuredWanPrimeCanary(): WanPrimeCanary | undefined {
+  const preproduction = process.env.VERCEL_ENV === 'preview' ||
+    (!process.env.VERCEL_ENV && process.env.NODE_ENV !== 'production');
+  if (!preproduction) return;
+  if (process.env.WAN_PRIME_EXISTING_PROVIDERS_ADMIN_CANARY === '1') return 'alibaba-fal';
+  if (process.env.APIMART_WAN_PRIME_ADMIN_CANARY === '1' && process.env.APIMART_API_KEY?.trim()) return 'with-apimart';
+}
+
 export type VideoProviderRoutingPlan =
   | {
       kind: 'fal_only';
@@ -47,7 +56,7 @@ export type VideoProviderRoutingPlan =
     }
   | {
       kind: 'alibaba_model_studio_primary';
-      purchaseCanary?: true;
+      purchaseCanary?: WanPrimeCanary;
       primaryProvider: 'alibaba_model_studio';
       fallbackProvider: 'fal';
       fallbackEnabled: boolean;
@@ -139,9 +148,10 @@ export function resolveVideoProviderRoutingPlan(params: {
         : { kind: 'alibaba_model_studio_unavailable', reason: 'public_routing_disabled' };
     }
 
+    const canary = params.isAdmin && params.engineId === 'wan-3-prime' ? configuredWanPrimeCanary() : undefined;
     return {
       kind: 'alibaba_model_studio_primary',
-      ...(params.isAdmin && params.engineId === 'wan-3-prime' && apimartCanaryAvailable() ? { purchaseCanary: true as const } : {}),
+      ...(canary ? { purchaseCanary: canary } : {}),
       primaryProvider: 'alibaba_model_studio',
       fallbackProvider: 'fal',
       fallbackEnabled:

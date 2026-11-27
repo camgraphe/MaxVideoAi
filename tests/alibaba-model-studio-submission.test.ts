@@ -5,6 +5,7 @@ import test from 'node:test';
 
 import type { GeneratePayload, GenerateResult } from '../frontend/src/lib/fal-types';
 import { AlibabaModelStudioError } from '../frontend/src/server/video-providers/alibaba-model-studio/errors';
+import { resolveVideoProviderRoutingPlan } from '../frontend/src/server/video-providers/router';
 import type { NormalizedVideoProviderTask } from '../frontend/src/server/video-providers/types';
 import { submitAlibabaModelStudioGenerateTask } from '../frontend/app/api/generate/_lib/alibaba-model-studio-submission';
 
@@ -410,12 +411,71 @@ test('HappyHorse direct submission remains unchanged and never enters Wan media 
   assert.equal(result.ok, true, JSON.stringify(result));
 });
 
+for (const installedPilot of [false, true]) {
+  test(`Wan Prime without an APIMart key hands off the original reservation (installed-provider pilot ${installedPilot ? 'on' : 'off'})`, async (t) => {
+    const originalEnv = {
+      VERCEL_ENV: process.env.VERCEL_ENV,
+      WAN_PRIME_EXISTING_PROVIDERS_ADMIN_CANARY: process.env.WAN_PRIME_EXISTING_PROVIDERS_ADMIN_CANARY,
+      APIMART_WAN_PRIME_ADMIN_CANARY: process.env.APIMART_WAN_PRIME_ADMIN_CANARY,
+      APIMART_API_KEY: process.env.APIMART_API_KEY,
+    };
+    t.after(() => {
+      for (const [name, value] of Object.entries(originalEnv)) {
+        if (value === undefined) delete process.env[name];
+        else process.env[name] = value;
+      }
+    });
+    process.env.VERCEL_ENV = 'preview';
+    process.env.WAN_PRIME_EXISTING_PROVIDERS_ADMIN_CANARY = installedPilot ? '1' : '0';
+    process.env.APIMART_WAN_PRIME_ADMIN_CANARY = '1';
+    delete process.env.APIMART_API_KEY;
+    const engineId = 'wan-3-prime';
+    const plan = resolveVideoProviderRoutingPlan({
+      engineId, mode: 't2v', isAdmin: true,
+      env: { ALIBABA_MODEL_STUDIO_ENABLED: '1', ALIBABA_MODEL_STUDIO_FALLBACK_TO_FAL_ENABLED: '1' },
+    });
+    assert.ok(plan.kind === 'alibaba_model_studio_primary');
+    assert.equal(plan.purchaseCanary, installedPilot ? 'alibaba-fal' : undefined);
+    const { queryFn, queries } = createQueryRecorder();
+    const pendingReceipt = { jobId: 'job_alibaba_test', userId: 'user_123' };
+    const { params } = baseParams({
+      engineId, durationSec: 15, effectiveResolution: '480p', audioEnabled: true,
+      falPayload: { ...falPayload, engineId, durationSec: 15, resolution: '480p', audio: true },
+      pendingReceipt, walletChargeReserved: true,
+      purchaseCanary: plan.purchaseCanary, fallbackToFalEnabled: plan.fallbackEnabled,
+      deps: {
+        queryFn,
+        getApimartClientFn: () => assert.fail('Unconfigured supplier was called'),
+        getAlibabaModelStudioClientFn: () => ({
+          createVideo: async () => { throw new AlibabaModelStudioError('Rate limited', { status: 429 }); },
+        }),
+        submitFalGenerateTaskFn: async (input: { jobId: string; pendingReceipt: unknown; walletChargeReserved: boolean }) => {
+          assert.equal(input.jobId, pendingReceipt.jobId);
+          assert.equal(input.pendingReceipt, pendingReceipt);
+          assert.equal(input.walletChargeReserved, true);
+          return { ok: true, generationResult: { provider: 'fal', providerJobId: 'fal_accepted', status: 'queued' } };
+        },
+      },
+    });
+    const result = await submitAlibabaModelStudioGenerateTask(params);
+    assert.ok(result.ok && result.kind === 'fal_result');
+    const attempts = queries.filter(q => q.sql.includes('INSERT INTO provider_attempts'));
+    assert.deepEqual(attempts.map(q => q.params.slice(0, 3)), [
+      [params.jobId, 1, 'alibaba_model_studio'], [params.jobId, 2, 'fal'],
+    ]);
+    const snapshot = attempts[0].params.map(value => typeof value === 'string' && value.startsWith('{') ? JSON.parse(value) : null)
+      .find(value => value?.purchaseRouting)?.purchaseRouting;
+    assert.equal(snapshot.mode, installedPilot ? 'canary' : 'shadow');
+    assert.deepEqual(snapshot.order, installedPilot ? ['alibaba_model_studio', 'fal'] : ['apimart', 'alibaba_model_studio', 'fal']);
+  });
+}
+
 test('purchase canary spans three provider attempts on one original job after two explicit refusals', async () => {
   const { queryFn, queries } = createQueryRecorder();
   const submits: string[] = [];
   const { params } = baseParams({
     engineId: 'wan-3-prime',
-    purchaseCanary: true,
+    purchaseCanary: 'with-apimart',
     deps: {
       queryFn,
       getApimartClientFn: () => ({
@@ -472,7 +532,7 @@ test('funded canary preserves a first/last frame pair while Standard records a s
       }
       return acceptedTask();
     };
-    const { params } = baseParams({ engineId, mode: 'i2v', imageUrl: first, purchaseCanary: true,
+    const { params } = baseParams({ engineId, mode: 'i2v', imageUrl: first, purchaseCanary: 'with-apimart',
       falPayload: { ...falPayload, engineId, mode: 'i2v', endImageUrl: last },
       deps: { queryFn, createOwnedMediaReadUrlFn: async ({ url }: { url: string }) => url,
         getAlibabaModelStudioClientFn: () => ({ createVideo: submit('alibaba'), getTask: async () => acceptedTask() }),
@@ -490,50 +550,54 @@ test('funded canary preserves a first/last frame pair while Standard records a s
   }
 });
 
-test('ambiguous APIMart acceptance preserves the funded job and never sends a second request', async () => {
-  const { queryFn, queries } = createQueryRecorder();
-  let calls = 0;
-  const { params } = baseParams({
-    engineId: 'wan-3-prime',
-    purchaseCanary: true,
-    deps: {
-      queryFn,
-      getApimartClientFn: () => ({
-        createVideo: async () => {
-          calls++;
-          throw new Error('timeout');
-        },
-      }),
-      getAlibabaModelStudioClientFn: () => {
-        throw new Error('unexpected fallback');
+for (const [pilot, firstProvider] of [['with-apimart', 'apimart'], ['alibaba-fal', 'alibaba_model_studio']] as const) {
+  test(`ambiguous ${firstProvider} acceptance preserves the funded job and never sends a second request`, async () => {
+    const { queryFn, queries } = createQueryRecorder();
+    const calls: string[] = [];
+    const submit = (provider: string) => async () => {
+      calls.push(provider);
+      throw new Error('timeout');
+    };
+    const { params } = baseParams({
+      engineId: 'wan-3-prime',
+      purchaseCanary: pilot,
+      deps: {
+        queryFn,
+        getApimartClientFn: () => ({ createVideo: submit('apimart') }),
+        getAlibabaModelStudioClientFn: () => ({ createVideo: submit('alibaba_model_studio') }),
+        submitFalGenerateTaskFn: submit('fal'),
       },
-    },
+    });
+    const result = await submitAlibabaModelStudioGenerateTask(params);
+    assert.ok(result.ok && result.kind === 'accepted' && result.body.deferred);
+    assert.deepEqual(calls, [firstProvider]);
+    assert.ok(queries.some((q) => q.sql.includes("status = 'provider_polling_stalled'")));
+    assert.ok(!queries.some((q) => q.sql.includes("status = 'failed'")));
   });
-  const result = await submitAlibabaModelStudioGenerateTask(params);
-  assert.ok(result.ok && result.kind === 'accepted' && result.body.deferred);
-  assert.equal(calls, 1);
-  assert.ok(queries.some((q) => q.sql.includes("status = 'provider_polling_stalled'")));
-  assert.ok(!queries.some((q) => q.sql.includes("status = 'failed'")));
-});
+}
 
-test('the canary refuses an unaffordable clip before any supplier call and releases the original reservation once', async () => {
-  const { queryFn, queries } = createQueryRecorder();
-  let rollbacks = 0;
-  const { params } = baseParams({
-    engineId: 'wan-3-prime',
-    purchaseCanary: true,
-    pricing: { totalCents: 1, currency: 'USD' },
-    pendingReceipt: { jobId: 'job_alibaba_test', userId: 'user_123' },
-    walletChargeReserved: true,
-    deps: {
-      queryFn,
-      rollbackPendingPaymentFn: async () => {
-        rollbacks++;
+// Four seconds at 720p: APIMart fits 55 cents, but the two installed routes each require 56.
+for (const [pilot, capCents] of [['with-apimart', 1], ['alibaba-fal', 55]] as const) {
+  test(`the ${pilot} canary releases the original reservation once when all available suppliers exceed the ceiling`, async () => {
+    const { queryFn, queries } = createQueryRecorder();
+    let rollbacks = 0;
+    const { params } = baseParams({
+      engineId: 'wan-3-prime',
+      purchaseCanary: pilot,
+      durationSec: 4,
+      pricing: { totalCents: capCents, currency: 'USD' },
+      pendingReceipt: { jobId: 'job_alibaba_test', userId: 'user_123' },
+      walletChargeReserved: true,
+      deps: {
+        queryFn,
+        rollbackPendingPaymentFn: async () => {
+          rollbacks++;
+        },
       },
-    },
+    });
+    const result = await submitAlibabaModelStudioGenerateTask(params);
+    assert.ok(!result.ok && result.body.error === 'NO_ELIGIBLE_VIDEO_PROVIDER');
+    assert.equal(rollbacks, 1);
+    assert.ok(!queries.some((q) => q.sql.includes('INSERT INTO provider_attempts')));
   });
-  const result = await submitAlibabaModelStudioGenerateTask(params);
-  assert.ok(!result.ok && result.body.error === 'NO_ELIGIBLE_VIDEO_PROVIDER');
-  assert.equal(rollbacks, 1);
-  assert.ok(!queries.some((q) => q.sql.includes('INSERT INTO provider_attempts')));
-});
+}

@@ -1,6 +1,6 @@
 import { AdminPageHeader } from '@/components/admin-system/shell/AdminPageHeader';
 import { requireAdmin } from '@/server/admin';
-import { apimartCanaryAvailable } from '@/server/video-providers/apimart/wan-prime';
+import { configuredWanPrimeCanary } from '@/server/video-providers/router';
 import { recentRoutingJobs } from './_lib/routing-data';
 import { routingScenarios } from './_lib/routing-scenarios';
 import { RouteSimulator } from './_components/RouteSimulator.client';
@@ -20,6 +20,12 @@ export default async function AdminVideoRoutingPage({ searchParams }: { searchPa
     return null;
   }
   const [jobs, params] = await Promise.all([recentRoutingJobs().catch(() => null), searchParams]);
+  const pilot = configuredWanPrimeCanary() ?? 'shadow';
+  const pilotDescriptions = {
+    'alibaba-fal': 'Eligible admin Wan Prime requests use the Alibaba pilot. Fal can take over when fallback is enabled. APIMart prices are simulated.',
+    'with-apimart': 'APIMart preproduction canary is configured for eligible admin requests on the Alibaba route.',
+    shadow: 'APIMart is available here for price simulation. The submission canary is off.',
+  };
   return (
     <div className="flex flex-col gap-5">
       <AdminPageHeader
@@ -29,9 +35,7 @@ export default async function AdminVideoRoutingPage({ searchParams }: { searchPa
       />
       <RouteSimulator initialEngine={params.engine} scenarios={routingScenarios()} routes={installedRoutes()} />
       <p className="text-sm text-text-secondary">
-        {apimartCanaryAvailable()
-          ? 'APIMart preproduction canary is configured for eligible admin requests on the Alibaba route.'
-          : 'APIMart is available here for price simulation. The submission canary is off.'}
+        {pilotDescriptions[pilot]}
       </p>
       <WanReplay requested={params.replay === 'wan-prime'} />
       <RoutingHistory jobs={jobs} />

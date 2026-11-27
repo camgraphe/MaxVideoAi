@@ -44,7 +44,14 @@ MiniMax H3 uses the existing Fal cost calculator for reviewed text and image-ref
 
 The default mode saves a simulated purchase decision to the existing Wan Standard or Prime Alibaba attempt. The experimental APIMart submission path is restricted to Wan Prime. The viewer marks this **Price simulation** and shows actual attempts separately. There is no extra database round trip to record a decision. Historical jobs without a decision retain their actual job/attempt information.
 
-For a paid administrator canary on an isolated preview with qualified Gold pricing and SaaS/media rights, use the existing Alibaba direct gates plus server-only `APIMART_API_KEY` and `APIMART_WAN_PRIME_ADMIN_CANARY=1`. Actual Fal fallback also needs the existing `ALIBABA_MODEL_STUDIO_FALLBACK_TO_FAL_ENABLED` switch. An optional `WAN_PRIME_PURCHASE_CEILING_USD` applies to each eligible canary clip, including subsequent attempts. Missing credentials, public users and production deployments keep the existing submission policy. The viewer's response and balance controls are local simulations. Real canaries advance on explicit provider refusals.
+The Wan Prime pilot can also exercise the purchase router with the two installed suppliers. To rehearse for free, open the admin simulator, select **Wan 3 Prime**, open **Scenario settings**, and set **APIMart Gold** to **Unavailable**. An explicit Alibaba refusal should reach Fal. A lost Alibaba response should end at reconciliation. Try the 15-second text and 4-second image-reference profiles. Their installed-provider ceilings at list price are $1.02 and $0.56 respectively. Reducing either ceiling below both offers should produce zero attempts.
+
+For an actual administrator submission on an isolated preview, the existing Alibaba direct gates must allow the request. Select one server-side pilot:
+
+- `WAN_PRIME_EXISTING_PROVIDERS_ADMIN_CANARY=1` uses Alibaba and the configured Fal fallback for the reviewed Wan Prime profiles. APIMart is excluded before ranking, even if its own switch and key are present. This mode takes precedence when both switches are set.
+- `APIMART_WAN_PRIME_ADMIN_CANARY=1` with a valid `APIMART_API_KEY` adds APIMart after its price and commercial terms have been verified. Leave the installed-provider pilot switch off for this mode.
+
+Actual Fal fallback requires `ALIBABA_MODEL_STUDIO_FALLBACK_TO_FAL_ENABLED`. The optional `WAN_PRIME_PURCHASE_CEILING_USD` can reduce each eligible canary clip’s purchase ceiling, including on fallback. Public users, production deployments and requests outside the pilot retain the established policy. The viewer's response and balance controls only affect its animation. Each paid pilot submission goes through the actual generation flow. Disable the corresponding pilot switch after testing.
 
 APIMart accepts `POST /v1/videos/generations` and returns a task ID. The same authenticated cron as Alibaba and the authorized per-job refresher poll `GET /v1/tasks/{id}`, copy the completed video to owned storage, and use the existing delivery and terminal-failure paths. Disable the canary switch to stop new submissions. Keep the credential until accepted tasks have drained. The purchase estimate at completion is marked as a list estimate.
 
@@ -60,5 +67,15 @@ A known balance or throttling refusal can start the next eligible attempt under 
 Run the focused tests from the repository root.
 
 ```sh
-pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/wan-purchase-routing.test.ts tests/kling-purchase-routing.test.ts tests/alibaba-*.test.ts tests/provider-attempt*.test.ts
+pnpm exec tsx --tsconfig frontend/tsconfig.json --test \
+  tests/wan-purchase-routing.test.ts tests/kling-purchase-routing.test.ts tests/wan-routing-replay.test.ts \
+  tests/alibaba-*.test.ts tests/provider-attempt*.test.ts tests/fal-provider-fallback-enqueue-postgres.test.ts \
+  tests/kling-provider-routing.test.ts tests/fal-fallback-attempt-recovery.test.ts tests/generate-route-context.test.ts \
+  tests/fal-credential-alias.test.ts tests/video-provider-mode-matrix.test.ts tests/byteplus-provider-architecture.test.ts
 ```
+
+### Pilot checkpoint · November 27, 2026
+
+All 244 checks above passed locally with simulated supplier responses and disposable PostgreSQL. The frontend type check and lint on the modified frontend files passed. The two-supplier pilot and the APIMart pilot were left off. No paid render was submitted. Kling Direct remains on standby.
+
+To resume, open branch `codex/video-provider-router` and the **Preproduction operation** section above. APIMart pricing and rights discussions are tracked in OUTREACH as `INB-012`. A proposed first paid comparison is the same four-second, 720p Wan Prime request with one reference image and audio on Alibaba and Fal. Its two list-price estimates total $1.12. Record the delivered media, serving model when exposed, latency and actual supplier charge for each completed render.

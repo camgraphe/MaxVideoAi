@@ -1,5 +1,6 @@
 import { getWanSubmissionClient, isWanDirectProvider, type WanDirectProvider } from '@/server/video-providers/wan-transports';
 import type { createApimartClient } from '@/server/video-providers/apimart/wan-prime';
+import type { WanPrimeCanary } from '@/server/video-providers/router';
 import { nextPurchaseProvider, purchaseRoutingSnapshot, type PurchaseDecision } from '@/lib/video-purchase-decision';
 import { buildWanPurchaseDecision, classifyWanPurchaseFailure } from './wan-purchase-routing';
 import type { GeneratePayload, GenerateResult } from '@/lib/fal';
@@ -327,7 +328,7 @@ type WanSubmissionParams = {
   paymentMode: PaymentMode;
   walletChargeReserved: boolean;
   fallbackToFalEnabled: boolean;
-  purchaseCanary?: boolean;
+  purchaseCanary?: WanPrimeCanary;
   falPayload: GeneratePayload;
   falInputSummary: FalInputSummary;
   isLumaRay2: boolean;

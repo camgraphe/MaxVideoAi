@@ -12,16 +12,6 @@ export class ApimartSubmitError extends Error {
   }
 }
 
-export function apimartCanaryAvailable() {
-  const preproduction =
-    process.env.VERCEL_ENV === 'preview' || (!process.env.VERCEL_ENV && process.env.NODE_ENV !== 'production');
-  return (
-    preproduction &&
-    process.env.APIMART_WAN_PRIME_ADMIN_CANARY === '1' &&
-    Boolean(process.env.APIMART_API_KEY?.trim())
-  );
-}
-
 export function buildApimartWanRequest(payload: AlibabaVideoPayload) {
   const media = payload.input.media ?? [];
   const first = media.filter((item) => item.type === 'first_frame');
