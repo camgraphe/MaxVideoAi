@@ -5,16 +5,10 @@ import { audioModeIds } from '@/lib/mobile-audio-contract';
 import { listAudioCapabilities } from '@/server/agent-api/audio-capabilities';
 import { canonicalAudioRequestSchema } from '@/server/agent-api/audio-normalization';
 import { audioQuoteRepositoryForActor } from '@/server/agent-api/audio-quote-repository';
-import {
-  createConfirmAudioGenerationForActorService,
-  type ConfirmAudioGenerationDependencies,
-} from '@/server/agent-api/confirm-audio-generation';
+import type { ConfirmAudioGenerationDependencies } from '@/server/agent-api/confirm-audio-generation';
 import { AgentApiError } from '@/server/agent-api/errors';
 import type { MobileGenerationActor } from '@/server/agent-api/generation-actor';
-import {
-  createPrepareAudioGenerationForActorService,
-  type PrepareAudioGenerationDependencies,
-} from '@/server/agent-api/prepare-audio-generation';
+import type { PrepareAudioGenerationDependencies } from '@/server/agent-api/prepare-audio-generation';
 import { acceptsMobileAudioSetting, readMobileAudioCatalog } from './audio-catalog';
 import { readMobileJob } from './generations';
 import { recoverScopedMobileQuote } from './quote-recovery';
@@ -77,6 +71,7 @@ export async function prepareMobileAudioQuote(
   }
   const initial = await mobileSourceEvidence(userId, references.map(ref => ref.asset.assetId));
   const quotes = audioQuoteRepositoryForActor(actor(userId));
+  const { createPrepareAudioGenerationForActorService } = await import('@/server/agent-api/prepare-audio-generation');
   const prepare = createPrepareAudioGenerationForActorService(accountUrl, {
     ...dependencies,
     insertPreparedQuote: async (quote, deps) => quotes.insertPreparedQuote({
@@ -101,6 +96,7 @@ export async function confirmMobileAudioQuote(
       'Confirm the exact Audio quote before generating.',
     );
   const quotes = audioQuoteRepositoryForActor(actor(userId));
+  const { createConfirmAudioGenerationForActorService } = await import('@/server/agent-api/confirm-audio-generation');
   const confirm = createConfirmAudioGenerationForActorService(accountUrl, {
     ...dependencies,
     lockOwnedQuote: async (owner, deps) => checkLockedMobileQuoteSources(await quotes.lockOwnedQuote(owner, deps), deps.executor),

@@ -8,14 +8,8 @@ import {
 } from './reference-visibility';
 import { z } from 'zod';
 import { AgentApiError } from '@/server/agent-api/errors';
-import {
-  createPrepareGenerationForActorService,
-  type PrepareGenerationDependencies,
-} from '@/server/agent-api/prepare-generation';
-import {
-  createConfirmGenerationForActorService,
-  type ConfirmGenerationDependencies,
-} from '@/server/agent-api/confirm-generation';
+import type { PrepareGenerationDependencies } from '@/server/agent-api/prepare-generation';
+import type { ConfirmGenerationDependencies } from '@/server/agent-api/confirm-generation';
 import { createQuoteRepository, generationQuoteCodec } from '@/server/agent-api/quote-repository';
 import type { MobileGenerationActor } from '@/server/agent-api/generation-actor';
 import { readMobileModels } from './catalog';
@@ -81,6 +75,7 @@ export async function prepareMobileQuote(
     dependencies?: Partial<PrepareGenerationDependencies>;
   } = {},
 ) {
+  const { createPrepareGenerationForActorService } = await import('@/server/agent-api/prepare-generation');
   const final = seedanceFinal.safeParse(body);
   if (final.success) {
     // The shared actor verifies ownership and eligibility and inherits creative settings from the Draft.
@@ -216,6 +211,7 @@ export async function confirmMobileQuote(
   const input = approved.safeParse(body);
   if (!input.success)
     throw new AgentApiError('CONFIRMATION_REQUIRED', 'Confirm the exact quote before generating.');
+  const { createConfirmGenerationForActorService } = await import('@/server/agent-api/confirm-generation');
   const confirm = createConfirmGenerationForActorService(accountUrl, context, {
     ...dependencies,
     paidGenerationEnabled: () => true,
