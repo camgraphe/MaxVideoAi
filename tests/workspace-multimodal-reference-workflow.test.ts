@@ -110,7 +110,7 @@ test('unsupported audio slots still trigger the guard instead of gaining a famil
   }
 });
 
-function generationGuard(id: string, inputAssets: Record<string, (ReferenceAsset | null)[]>, mode: Mode = 't2v', extraInputValues: Record<string, unknown> = {}) {
+function prepareWorkspaceInputs(id: string, inputAssets: Record<string, (ReferenceAsset | null)[]>, mode: Mode, extraInputValues: Record<string, unknown>) {
   const { engine, workflow, summary } = project(id, inputAssets, mode, extraInputValues);
   const fieldsWithRole = (role: string) => new Set(summary.assetFields.filter((entry) => entry.role === role).map(({ field }) => field.id));
   const form = { ...coerceFormState(engine, workflow.submissionMode, null), extraInputValues };
@@ -119,6 +119,11 @@ function generationGuard(id: string, inputAssets: Record<string, (ReferenceAsset
     primaryAssetFieldIds: fieldsWithRole('primary'), referenceAssetFieldIds: fieldsWithRole('reference'),
     genericImageFieldIds: new Set(), frameAssetFieldIds: fieldsWithRole('frame'),
     referenceAudioFieldIds: new Set(['reference_audio_urls']), klingElements: [], multiPromptActive: false, multiPromptScenes: [] });
+  return { engine, workflow, prepared };
+}
+
+function generationGuard(id: string, inputAssets: Record<string, (ReferenceAsset | null)[]>, mode: Mode = 't2v', extraInputValues: Record<string, unknown> = {}) {
+  const { engine, workflow, prepared } = prepareWorkspaceInputs(id, inputAssets, mode, extraInputValues);
   if (!prepared.ok) return prepared.message;
   return getGenerationIterationGuardMessage({ selectedEngineId: id, inputSchema: engine.inputSchema, ...workflow, ...prepared,
     primaryAssetFieldLabel: 'Start image', extendOrRetakeSourceVideoMessage: 'Add a source video' });
@@ -199,12 +204,14 @@ test('H3 Max Create retains native frames plus ordered multimodal references thr
     ['reference_image_urls','image'],['reference_video_urls','video'],['reference_audio_urls','audio'],
   ].map(([id,kind]) => [id,[asset(id,kind as ReferenceAsset['kind'])]]));
   const extras = {middle_frame_time:2.5,reference_order:'video1,image1,audio1'};
-  const result = project('minimax-h3-max', inputAssets, 't2v', extras);
-  assert.equal(result.workflow.submissionMode, 'ref2v');
+  const { workflow, prepared } = prepareWorkspaceInputs('minimax-h3-max', inputAssets, 't2v', extras);
+  assert.equal(workflow.submissionMode, 'ref2v');
+  if (!prepared.ok) assert.fail(prepared.message);
+  assert.deepEqual(prepared.referenceImageUrls, ['https://example.com/reference_image_urls']);
   assert.equal(generationGuard('minimax-h3-max',inputAssets,'t2v',extras),null);
-  const payload = {engineId:'minimax-h3-max',mode:result.workflow.submissionMode,prompt:'Animate the scene',
-    durationSec:5,resolution:'768P',extraInputValues:extras,
-    inputs:Object.entries(inputAssets).map(([slotId,[item]])=>({slotId,kind:item.kind,url:item.url}))};
+  const payload = { engineId: 'minimax-h3-max', mode: workflow.submissionMode, prompt: 'Animate the scene',
+    durationSec: 5, resolution: '768P', extraInputValues: prepared.extraInputValues,
+    inputs: prepared.inputsPayload, referenceImages: prepared.referenceImageUrls };
   const built = buildMinimaxH3MaxFalRequestFromPayload(payload);
   assert.equal(built.model,'minimax/h3-max/reference-to-video');
   assert.equal(built.requestBody.image_url,'https://example.com/image_url');

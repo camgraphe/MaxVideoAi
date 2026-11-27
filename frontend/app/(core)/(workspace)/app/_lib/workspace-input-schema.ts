@@ -43,7 +43,8 @@ export function resolveAssetFieldRole(field: EngineInputField, required: boolean
     id.includes('first_frame') ||
     id.includes('last_frame') ||
     id.includes('start_image') ||
-    id.includes('end_image')
+    id.includes('end_image') ||
+    id === 'middle_image_url'
   ) {
     return 'frame';
   }

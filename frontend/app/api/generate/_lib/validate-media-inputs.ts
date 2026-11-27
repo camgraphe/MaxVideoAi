@@ -601,6 +601,8 @@ function validateRef2vInputs(engineId: string, payload: Record<string, unknown>)
   const audioUrls = referenceAudioUrls.length ? referenceAudioUrls : genericAudioUrls;
   const startImageUrls = normalizeStringArray(payload['start_image_url']);
   const endImageUrls = normalizeStringArray(payload['end_image_url']);
+  const hasH3MaxFrame = engineId === 'minimax-h3-max'
+    && (normalizeStringArray(payload['image_url']).length > 0 || endImageUrls.length > 0);
   const imageFieldId = schemaImageUrls.length
     ? configured.imageFieldId
     : referenceImageUrls.length ||
@@ -652,6 +654,7 @@ function validateRef2vInputs(engineId: string, payload: Record<string, unknown>)
     && !imageUrls.length
     && !videoUrls.length
     && !audioUrls.length
+    && !hasH3MaxFrame
     && !normalizeStringArray(payload['file_url']).length
     && !normalizeStringArray(payload['web_url']).length
   ) {

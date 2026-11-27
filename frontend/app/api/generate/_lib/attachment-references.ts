@@ -171,11 +171,19 @@ export function deriveGenerationAttachmentReferences(params: AttachmentReference
     })
     .map((attachment) => attachment.url!.trim())
     .filter((url) => url.length > 0);
-  const directImageReferences = normalizeStringList(referenceImagesInput);
+  // Older workspace clients also sent the middle frame in the flat reference image list.
+  const middleFrameUrl = params.engineId === 'minimax-h3-max' && params.mode === 'ref2v'
+    ? params.attachments.find((attachment) => (
+      attachment.kind === 'image' && attachment.slotId?.trim() === 'middle_image_url'
+    ))?.url?.trim()
+    : undefined;
+  const directReferenceImages = normalizeStringList(referenceImagesInput).filter(
+    (url) => url !== middleFrameUrl || attachmentReferenceImageUrls.includes(url)
+  );
   const normalizedReferenceImages = ['flux-3-max','flux-3','flux-3-draft'].includes(params.engineId) && params.mode === 'ref2v'
     || (['kling-v4', 'kling-v4-flash'].includes(params.engineId) && ['ref2v', 'v2v'].includes(params.mode))
-    ? mergeOrderedImageProjections(directImageReferences, attachmentReferenceImageUrls)
-    : Array.from(new Set([...directImageReferences, ...attachmentReferenceImageUrls]));
+    ? mergeOrderedImageProjections(directReferenceImages, attachmentReferenceImageUrls)
+    : Array.from(new Set([...directReferenceImages, ...attachmentReferenceImageUrls]));
   const sourceOrderedEdit = params.mode === 'v2v' && ['seedance-2-5','seedance-2-5-flash','seedance-2-0','seedance-2-0-fast','seedance-2-0-mini'].includes(params.engineId);
   const rawVideoUrls = params.attachments
     .filter((attachment) => attachment.kind === 'video' && typeof attachment.url === 'string')
@@ -340,7 +348,6 @@ export function deriveGenerationAttachmentReferences(params: AttachmentReference
         ) &&
         (!field.modes?.length || field.modes.includes(params.mode))
     )?.id ?? (params.mode === 'v2v' ? 'reference_image_urls' : 'image_urls');
-  const directReferenceImages = normalizeStringList(referenceImagesInput);
   appendProjectionOnlyValues(
     directReferenceImageFieldId,
     directReferenceImages,
