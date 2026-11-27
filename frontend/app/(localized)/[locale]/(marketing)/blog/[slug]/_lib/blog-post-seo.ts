@@ -1,3 +1,4 @@
+import { BRAND_SOCIAL_IMAGE } from '@/lib/seo/social-preview-images';
 import type { Metadata } from 'next';
 import type { ContentEntry } from '@/lib/content/markdown';
 import type { AppLocale } from '@/i18n/locales';
@@ -25,7 +26,7 @@ export type BlogPostLocalization = {
 };
 
 function resolveAbsoluteImageUrl(image?: string | null) {
-  const candidate = typeof image === 'string' && image.trim().length > 0 ? image.trim() : '/og/brand-2026-09-25.png';
+  const candidate = typeof image === 'string' && image.trim().length > 0 ? image.trim() : BRAND_SOCIAL_IMAGE;
   if (candidate.startsWith('http://') || candidate.startsWith('https://')) {
     return candidate;
   }

@@ -1,3 +1,4 @@
+import { BRAND_SOCIAL_IMAGE } from '@/lib/seo/social-preview-images';
 import type { Metadata } from 'next';
 import '@/components/marketing/public-prose.css';
 import { notFound } from 'next/navigation';
@@ -143,7 +144,7 @@ export async function generateMetadata(props: { params: Promise<Params> }): Prom
     locale,
     title: `${doc.title} — MaxVideo AI Docs`,
     description: doc.description,
-    image: doc.image ?? '/og/brand-2026-09-25.png',
+    image: doc.image ?? BRAND_SOCIAL_IMAGE,
     imageAlt: doc.title,
     ogType: 'article',
     englishPath: `/docs/${doc.slug}`,

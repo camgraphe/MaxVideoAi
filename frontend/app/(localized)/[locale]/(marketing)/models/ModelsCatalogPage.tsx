@@ -1,3 +1,4 @@
+import { pageSocialImage } from '@/lib/seo/social-preview-images';
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { getTranslations } from 'next-intl/server';
@@ -101,8 +102,8 @@ export async function generateModelsMetadata({
       : {
           englishPath: getModelsScopeEnglishPath(scope),
         }),
-    image: '/og/models-2026-09-25.png',
-    imageAlt: 'MaxVideoAI video, image and audio model directory.',
+    image: pageSocialImage(scope === 'all' ? 'models' : `models-${scope}`, locale),
+    imageAlt: scope === 'all' ? t!('title') : scopeDefaults.metaTitle,
   });
   return meta;
 }

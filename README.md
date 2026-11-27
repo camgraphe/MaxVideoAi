@@ -45,7 +45,7 @@ MaxVideoAI compares AI video engines by workflow, supported inputs, duration, re
 
 The broader [model directory](https://maxvideoai.com/models) adds recommended starting points and routes for video, image, audio, and preparation work.
 
-![September 2026 MaxVideoAI model-directory hero with MiniMax and Kling examples beside model discovery actions](plugins/maxvideoai/assets/screenshots/maxvideoai-model-directory-live.webp)
+![MaxVideoAI model-directory hero with model artwork, Browse models and Compare engines actions](plugins/maxvideoai/assets/screenshots/maxvideoai-model-directory-live.webp)
 
 Model families such as Sora, Veo, Kling, Seedance, LTX, MiniMax, Wan, Happy Horse, Gemini Omni, and Pika are examples rather than a frozen catalogue. Use the live directory for current availability and pricing.
 

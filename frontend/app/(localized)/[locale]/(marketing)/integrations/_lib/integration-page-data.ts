@@ -1,3 +1,4 @@
+import { pageSocialImage } from '@/lib/seo/social-preview-images';
 import type { Metadata } from 'next';
 
 import { localeRegions, type AppLocale } from '@/i18n/locales';
@@ -45,6 +46,7 @@ export function buildIntegrationMetadata({
     title: copy.meta.title,
     description: copy.meta.description,
     englishPath: getMcpIntegration(client).englishPath,
+    image: client === 'chatgpt' ? pageSocialImage('chatgpt', locale) : undefined,
     imageAlt: copy.hero.title,
     robots: { index: publication.indexable, follow: publication.renderPublicPage },
   });

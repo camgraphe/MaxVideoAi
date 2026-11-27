@@ -1,3 +1,4 @@
+import { BRAND_SOCIAL_IMAGE, modelSocialImage } from '@/lib/seo/social-preview-images';
 import { modelExamplePlaylistKeys, projectModelPageGallery } from '@/server/model-gallery-projection';
 import '@/styles/marketing-models.css';
 import '@/styles/marketing-models-cinematic.css';
@@ -136,7 +137,7 @@ export async function generateMetadata(props: PageParams): Promise<Metadata> {
     engine.seo.description ??
     'Explore availability, prompts, pricing, and render policies for this model on MaxVideoAI.';
   const ogImagePath =
-    localized.seo.image ?? MODEL_OG_IMAGE_MAP[canonicalSlug] ?? engine.media?.imagePath ?? '/og/brand-2026-09-25.png';
+    modelSocialImage(canonicalSlug, locale) ?? localized.seo.image ?? MODEL_OG_IMAGE_MAP[canonicalSlug] ?? engine.media?.imagePath ?? BRAND_SOCIAL_IMAGE;
   return buildSeoMetadata({
     locale,
     title,

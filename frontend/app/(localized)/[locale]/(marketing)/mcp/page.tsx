@@ -1,3 +1,4 @@
+import { pageSocialImage } from '@/lib/seo/social-preview-images';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { FEATURES } from '@/content/feature-flags';
@@ -32,6 +33,7 @@ export async function generateMetadata({
     title: copy.meta.title,
     description: copy.meta.description,
     englishPath: '/mcp',
+    image: pageSocialImage('mcp', locale),
     imageAlt: copy.hero.title,
     robots: {
       index: publication.indexable,

@@ -1,3 +1,4 @@
+import { pageSocialImage } from '@/lib/seo/social-preview-images';
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/navigation';
@@ -39,7 +40,7 @@ export async function generateMetadata(props: { params: Promise<{ locale: AppLoc
     description: t('description'),
     hreflangGroup: 'compare',
     slugMap: COMPARE_SLUG_MAP,
-    image: '/og/compare-2026-09-25.png',
+    image: pageSocialImage('compare', locale),
     imageAlt: t('title'),
     ogType: 'website',
     titleBranding: 'none',

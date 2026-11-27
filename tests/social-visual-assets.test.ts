@@ -1,18 +1,16 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import path from 'node:path';
 import test from 'node:test';
 
+import cards from '../frontend/config/social-preview-images.json';
+import { locales } from '../frontend/i18n/locales';
+import { BRAND_SOCIAL_IMAGE, modelSocialImage, pageSocialImage, socialPreviewPages } from '../frontend/lib/seo/social-preview-images';
+import { readImageDimensions, validateImageDecode } from '../scripts/register-github-asset.mjs';
+
 const root = process.cwd();
 const publicRoot = path.join(root, 'frontend/public');
-const version = '2026-09-25';
-
-function pngSize(file: string): [number, number] {
-  const bytes = readFileSync(path.join(publicRoot, file));
-  assert.equal(bytes.subarray(1, 4).toString('ascii'), 'PNG');
-  return [bytes.readUInt32BE(16), bytes.readUInt32BE(20)];
-}
-
 function webpSize(file: string): [number, number] {
   const bytes = readFileSync(path.join(publicRoot, file));
   assert.equal(bytes.toString('ascii', 0, 4), 'RIFF');
@@ -21,28 +19,53 @@ function webpSize(file: string): [number, number] {
   return [bytes.readUInt16LE(26) & 0x3fff, bytes.readUInt16LE(28) & 0x3fff];
 }
 
-test('current social cards keep crawler dimensions and versioned route references', () => {
-  const routes = [
-    ['brand', 'frontend/lib/seo/metadata.ts'],
-    ['home', 'frontend/app/(localized)/[locale]/(marketing)/(home)/page.tsx'],
-    ['models', 'frontend/app/(localized)/[locale]/(marketing)/models/ModelsCatalogPage.tsx'],
-    ['compare', 'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/page.tsx'],
-    ['pricing', 'frontend/app/(localized)/[locale]/(marketing)/pricing/page.tsx'],
-  ] as const;
-
-  for (const [name, source] of routes) {
-    const file = `/og/${name}-${version}.png`;
-    assert.deepEqual(pngSize(file), [1200, 630], file);
-    assert.match(readFileSync(path.join(root, source), 'utf8'), new RegExp(file.replaceAll('.', '\\.')));
+test('every reviewed page, model and archive card decodes at the declared social size', async () => {
+  const paths = new Set([BRAND_SOCIAL_IMAGE]);
+  for (const locale of locales) {
+    for (const page of socialPreviewPages) paths.add(pageSocialImage(page, locale));
+    for (const slug of [...cards.modelCards, ...cards.archiveCards]) {
+      const image = modelSocialImage(slug, locale);
+      assert.ok(image, slug);
+      paths.add(image);
+    }
+  }
+  const files = readdirSync(path.join(publicRoot, cards.directory), { recursive: true, withFileTypes: true })
+    .filter(entry => entry.isFile())
+    .map(entry => '/' + path.relative(publicRoot, path.join(entry.parentPath, entry.name)).split(path.sep).join('/'));
+  assert.deepEqual([...paths].sort(), files.sort());
+  for (const image of paths) {
+    const bytes = readFileSync(path.join(publicRoot, image));
+    assert.deepEqual(readImageDimensions(bytes), { width: 1200, height: 630, format: 'jpeg' }, image);
+    await validateImageDecode(bytes);
   }
 });
 
-test('social cards retain the dated production captures used as their source', () => {
-  for (const name of ['home-overview', 'home-player', 'models', 'compare', 'pricing']) {
-    const file = path.join(root, 'frontend/scripts/social-card-sources', `${name}-${version}.jpg`);
-    const bytes = readFileSync(file);
-    assert.equal(bytes.readUInt16BE(0), 0xffd8, file);
-    assert.ok(bytes.byteLength > 20_000, file);
+test('model social images distinguish current examples, localized archives and unreviewed models', () => {
+  const first = modelSocialImage('kling-v4', 'fr');
+  assert.ok(first);
+  assert.equal(first, modelSocialImage('kling-v4', 'en'));
+  assert.notEqual(first, modelSocialImage('wan-3-prime', 'fr'));
+  assert.notEqual(modelSocialImage('sora-2', 'fr'), modelSocialImage('sora-2', 'es'));
+  assert.equal(modelSocialImage('seedance-2-5', 'en'), undefined);
+  assert.equal(modelSocialImage('unknown', 'en'), undefined);
+});
+
+test('previously shared screenshot URLs redirect to their reviewed replacements', async () => {
+  const require = createRequire(import.meta.url);
+  const rules: { source: string; destination: string; permanent?: boolean }[] =
+    await require('../frontend/next.config.js').redirects();
+  const expected = new Map<string, string>();
+  for (const page of ['home', 'models', 'compare', 'pricing'] as const) {
+    expected.set(`/og/${page}-2026-09-25.png`, pageSocialImage(page, 'en'));
+    expected.set(`/og/${page}-hub.png`, pageSocialImage(page, 'en'));
+  }
+  for (const url of ['/og-default.jpg', '/og/brand-2026-09-25.png', '/og/price-before.png', '/assets/branding/og-image.png']) {
+    expected.set(url, BRAND_SOCIAL_IMAGE);
+  }
+  for (const [source, destination] of expected) {
+    const rule = rules.find(rule => rule.source === source);
+    assert.equal(rule?.destination, destination, source);
+    assert.equal(rule?.permanent, false, source);
   }
 });
 

@@ -164,7 +164,7 @@ test('examples answer producer intents without inventing spend or host proof', (
   const expectedAssets: Record<(typeof scenarioFiles)[number], string> = {
     'examples/product-launch-plan.md': '../assets/demos/brief-to-video-workflow.webp',
     'examples/creator-budget-comparison.md': '../assets/demos/model-choice-and-budget.webp',
-    'examples/reference-to-video.md': '../assets/screenshots/maxvideoai-workspace-production.jpg',
+    'examples/reference-to-video.md': '../assets/screenshots/maxvideoai-workspace-live.webp',
     'examples/recover-a-generation.md': '../assets/demos/library-continuity.webp',
   };
 

@@ -1,3 +1,4 @@
+import { modelSocialImage } from '@/lib/seo/social-preview-images';
 import type { RuntimeModelEntry } from '@/config/model-runtime';
 import type { AppLocale } from '@/i18n/locales';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
@@ -9,6 +10,7 @@ export function buildModelArchiveMetadata(model: RuntimeModelEntry, value: unkno
   return buildSeoMetadata({
     locale, title: content.title, description: content.intro,
     slugMap: buildDetailSlugMap(model.slug), englishPath: `/models/${model.slug}`,
+    image: modelSocialImage(model.slug, locale),
     ogType: 'article', robots: { index: model.publication.model.indexable, follow: true },
   });
 }

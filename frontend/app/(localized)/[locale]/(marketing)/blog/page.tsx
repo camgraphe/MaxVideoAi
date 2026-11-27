@@ -1,3 +1,4 @@
+import { BRAND_SOCIAL_IMAGE } from '@/lib/seo/social-preview-images';
 import type { Metadata } from 'next';
 import { serializeJsonLd } from '@/lib/seo/jsonld';
 import Image from 'next/image';
@@ -73,7 +74,7 @@ function getBlogLinkProps(locale: AppLocale, post: Pick<ContentEntry, 'slug' | '
 function normalizeImageSrc(src?: string | null) {
   const trimmed = typeof src === 'string' ? src.trim() : '';
   if (!trimmed) {
-    return '/og/brand-2026-09-25.png';
+    return BRAND_SOCIAL_IMAGE;
   }
   if (trimmed.startsWith('http')) {
     return trimmed;
