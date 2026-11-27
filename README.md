@@ -10,7 +10,9 @@ MaxVideoAI is a multi-model AI video production platform for turning a brief int
 
 [Plugin repository](https://github.com/camgraphe/maxvideoai-plugin) · [Plugin releases](https://github.com/camgraphe/maxvideoai-plugin/releases)
 
-![Cinematic MaxVideoAI production direction with a professional camera and five distinct visual worlds](plugins/maxvideoai/assets/brand/maxvideoai-github-hero-v2.webp)
+<picture>
+  <img src="plugins/maxvideoai/assets/brand/maxvideoai-github-hero-v2.webp" data-asset-role="editorial" alt="Editorial illustration: Cinema camera with five distinct visual worlds">
+</picture>
 
 ## What does the MaxVideoAI workspace bring together?
 

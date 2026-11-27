@@ -79,6 +79,7 @@ export function buildGenerateValidationPayload(params: {
   const validateRequestFn = params.deps?.validateRequestFn ?? validateRequest;
   const payload: Record<string, unknown> = {};
   const isMinimaxH3 = isMinimaxH3EngineId(params.engineId);
+  const isH3MaxReferenceMode = params.engineId === 'minimax-h3-max' && params.mode === 'ref2v';
 
   if (params.prompt.length > 0) {
     payload.prompt = params.prompt;
@@ -227,6 +228,12 @@ export function buildGenerateValidationPayload(params: {
   } else if (params.mode === 'ref2v' && params.endImageUrl) {
     payload.end_image_url = params.endImageUrl;
   }
+  if (isH3MaxReferenceMode) {
+    for (const fieldId of ['image_url', 'middle_image_url', 'end_image_url']) {
+      const url = params.referenceValuesByField[fieldId]?.[0];
+      if (url) payload[fieldId] = url;
+    }
+  }
 
   const needsImage = params.mode === 'i2v' || params.mode === 'i2i';
   const needsReferenceImages = params.mode === 'ref2v';
@@ -245,6 +252,7 @@ export function buildGenerateValidationPayload(params: {
     needsFirstLastFrames,
     needsAudio,
     needsSourceVideoEdit,
+    hasNativeFrameReference: isH3MaxReferenceMode && Boolean(payload.image_url || payload.end_image_url),
     initialImageUrl: params.initialImageUrl,
     resolvedFirstFrameUrl: params.resolvedFirstFrameUrl,
     lastFrameUrl: params.lastFrameUrl,
@@ -333,6 +341,7 @@ function validateRequiredInputs(params: {
   needsFirstLastFrames: boolean;
   needsAudio: boolean;
   needsSourceVideoEdit: boolean;
+  hasNativeFrameReference: boolean;
   initialImageUrl: string | null | undefined;
   resolvedFirstFrameUrl: string | null | undefined;
   lastFrameUrl: string | null | undefined;
@@ -385,6 +394,7 @@ function validateRequiredInputs(params: {
         || params.videoUrls.length
         || params.audioUrls.length
         || params.resolvedAudioUrl
+        || params.hasNativeFrameReference
         || params.inputSchema.constraints.atLeastOneReferenceField.some((fieldId) => {
           const value = params.validatedExtraInputValues?.[fieldId];
           return typeof value === 'string' ? value.trim().length > 0 : Array.isArray(value) && value.length > 0;

@@ -8,6 +8,7 @@ import {
   resolveSourceVideoDurationSec,
 } from '../frontend/app/api/generate/_lib/attachment-references';
 import type { NormalizedAttachment } from '../frontend/app/api/generate/_lib/attachments';
+import { MINIMAX_H3_MAX_ENGINE } from '../frontend/src/config/fal-engines/minimax-h3-max';
 
 const root = process.cwd();
 const routePath = join(root, 'frontend/app/api/generate/route.ts');
@@ -27,6 +28,33 @@ const attachment = (overrides: Partial<NormalizedAttachment>): NormalizedAttachm
   type: 'application/octet-stream',
   size: 0,
   ...overrides,
+});
+
+test('MiniMax H3 Max counts the middle image as a character reference only when it has that slot too', () => {
+  const middle = 'https://example.test/middle.png';
+  const characters = ['https://example.test/character-1.png', 'https://example.test/character-2.png'];
+  const params = {
+    engineId: MINIMAX_H3_MAX_ENGINE.id,
+    inputSchema: MINIMAX_H3_MAX_ENGINE.inputSchema,
+    mode: 'ref2v' as const,
+    attachments: [
+      attachment({ kind: 'image', slotId: 'middle_image_url', url: middle }),
+      ...characters.map((url) => attachment({ kind: 'image', slotId: 'reference_image_urls', url })),
+    ],
+    referenceImages: [middle, ...characters],
+  };
+
+  const projected = deriveGenerationAttachmentReferences(params);
+  assert.deepEqual(projected.referenceValuesByField.middle_image_url, [middle]);
+  assert.deepEqual(projected.referenceValuesByField.reference_image_urls, characters);
+  assert.deepEqual(projected.normalizedReferenceImages, characters);
+
+  const explicit = deriveGenerationAttachmentReferences({
+    ...params,
+    attachments: [...params.attachments, attachment({ kind: 'image', slotId: 'reference_image_urls', url: middle })],
+  });
+  assert.deepEqual(explicit.referenceValuesByField.reference_image_urls, [...characters, middle]);
+  assert.deepEqual(explicit.normalizedReferenceImages, [middle, ...characters]);
 });
 
 test('Seedance Edit selects its exact source slot instead of an earlier reference or preview video', () => {

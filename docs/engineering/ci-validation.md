@@ -57,10 +57,10 @@ validation. The second partition reported 176 passing tests before the job
 canceled between browser validation and admin smoke. The 50-minute limit
 allows the browser and admin steps to finish after a cold setup.
 
-The fast job has a 30-minute limit, including setup, audits, type checking and
-lint. Its 1,300+ tools-free test files include complete pricing projections;
-the former 20-minute job limit canceled a still-progressing suite on hosted
-runners. This time allowance does not change lane selection or test coverage.
+The fast job has a 40-minute limit, including setup, audits, type checking and
+lint. Its 1,700+ tools-free test files include complete pricing projections.
+On 2026-11-27, the previous 30-minute limit stopped PR #701 after it reported
+file 1,638 of 1,760, with no test failures reported before cancellation.
 
 ## Change selection and conservative fallback
 

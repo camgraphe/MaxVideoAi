@@ -6,6 +6,7 @@ import test from 'node:test';
 import { buildGenerateValidationPayload } from '../frontend/app/api/generate/_lib/validation-payload';
 import type { ReferenceProvenanceIssue } from '../frontend/app/api/generate/_lib/attachment-references';
 import type { ReferenceBudgetMediaItem } from '../frontend/lib/reference-budget';
+import { MINIMAX_H3_MAX_ENGINE } from '../frontend/src/config/fal-engines/minimax-h3-max';
 import type { EngineInputSchema } from '../frontend/types/engines';
 
 const root = process.cwd();
@@ -48,6 +49,69 @@ const baseParams = {
   referenceMediaItems: [],
   referenceProvenanceIssues: [],
 };
+
+const h3KeyframeSlots = {
+  image_url: ['https://example.test/start.png'],
+  middle_image_url: ['https://example.test/middle.png'],
+  end_image_url: ['https://example.test/end.png'],
+};
+
+const h3ReferenceSlots = {
+  ...h3KeyframeSlots,
+  reference_image_urls: ['https://example.test/character-1.png', 'https://example.test/character-2.png'],
+};
+
+const h3ReferenceParams: Parameters<typeof buildGenerateValidationPayload>[0] = {
+  ...baseParams,
+  engineId: MINIMAX_H3_MAX_ENGINE.id,
+  mode: 'ref2v',
+  effectiveResolution: '768P',
+  audioEnabled: undefined,
+  validationDuration: 10,
+  lastFrameUrl: h3ReferenceSlots.end_image_url[0],
+  normalizedReferenceImages: h3ReferenceSlots.reference_image_urls,
+  inputSchema: MINIMAX_H3_MAX_ENGINE.inputSchema,
+  referenceValuesByField: h3ReferenceSlots,
+  referenceMediaItems: Object.entries(h3ReferenceSlots).flatMap(([fieldId, urls]) =>
+    urls.map((url) => ({ fieldId, kind: 'image', url }))
+  ),
+};
+
+test('MiniMax H3 Max accepts a timed middle frame with both ends and two character references', () => {
+  const result = buildGenerateValidationPayload({
+    ...h3ReferenceParams,
+    validatedExtraInputValues: { middle_frame_time: 5 },
+  });
+
+  if (!result.ok) assert.fail(String(result.body.message ?? result.body.error));
+  assert.equal(result.payload.image_url, h3ReferenceSlots.image_url[0]);
+  assert.equal(result.payload.middle_image_url, h3ReferenceSlots.middle_image_url[0]);
+  assert.equal(result.payload.end_image_url, h3ReferenceSlots.end_image_url[0]);
+  assert.equal(result.payload.middle_frame_time, 5);
+  assert.deepEqual(result.payload.reference_image_urls, h3ReferenceSlots.reference_image_urls);
+});
+
+test('MiniMax H3 Max keyframes satisfy the reference requirement by themselves', () => {
+  const result = buildGenerateValidationPayload({
+    ...h3ReferenceParams,
+    normalizedReferenceImages: [],
+    referenceValuesByField: h3KeyframeSlots,
+    referenceMediaItems: h3ReferenceParams.referenceMediaItems.filter(({ fieldId }) => fieldId !== 'reference_image_urls'),
+    validatedExtraInputValues: { middle_frame_time: 5 },
+  });
+
+  if (!result.ok) assert.fail(String(result.body.message ?? result.body.error));
+  assert.equal(result.payload.middle_image_url, h3KeyframeSlots.middle_image_url[0]);
+});
+
+test('MiniMax H3 Max rejects a middle frame with no time during request validation', () => {
+  const result = buildGenerateValidationPayload(h3ReferenceParams);
+
+  if (result.ok) assert.fail('Missing middle frame time passed request validation');
+  assert.equal(result.status, 400);
+  assert.equal(result.body.error, 'ENGINE_CONSTRAINT');
+  assert.match(String(result.body.message), /middle frame time/i);
+});
 
 test('generate route delegates validation payload and required input checks', () => {
   assert.ok(existsSync(helperPath), 'validation payload building should live in the generate route _lib folder');
