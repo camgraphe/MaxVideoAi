@@ -10,8 +10,13 @@ import {
   SlidersHorizontal,
   Waypoints,
 } from 'lucide-react';
-import { PROVIDER_LABELS, rankQuotedOffers } from '@/lib/video-purchase-decision';
-import type { RoutingScenario } from '../_lib/routing-data';
+import {
+  PROVIDER_LABELS,
+  PURCHASE_STRATEGY_LABELS,
+  rankQuotedOffers,
+  type PurchaseStrategy,
+} from '@/lib/video-purchase-decision';
+import type { RoutingScenario } from '../_lib/routing-scenarios';
 import type { InstalledRoute } from '../_lib/installed-routes';
 import {
   dollars,
@@ -30,28 +35,41 @@ import s from './routing.module.css';
 export function RouteSimulator({
   scenarios,
   routes,
+  initialEngine,
 }: {
   scenarios: RoutingScenario[];
   routes: InstalledRoute[];
+  initialEngine?: string;
 }) {
   const [view, setView] = useState<'simulation' | 'map'>('simulation');
-  const [profile, setProfile] = useState(scenarios[0].id);
+  const [profile, setProfile] = useState(
+    () => (scenarios.find((s) => s.engineId === initialEngine) ?? scenarios[0]).id
+  );
   const [cap, setCap] = useState('');
+  const [policyOverride, setPolicyOverride] = useState<PurchaseStrategy | null>(null);
   const [preset, setPreset] = useState<Preset>('fallback');
   const [custom, setCustom] = useState<Conditions | null>(null);
   const scenario = scenarios.find((item) => item.id === profile) ?? scenarios[0];
+  const strategy = policyOverride ?? scenario.strategy;
+  const engines = new Map(scenarios.map((item) => [item.engineId, item.engineLabel]));
+  function selectProfile(id: string) {
+    setProfile(id);
+    setCap('');
+    setCustom(null);
+    setPolicyOverride(null);
+  }
   const ceilingMicros =
     cap === '' ? scenario.ceiling : Math.min(scenario.ceiling, Math.floor(Number(cap) * 1e6));
-  const eligible = rankQuotedOffers(scenario.candidates, { ceilingMicros });
+  const eligible = rankQuotedOffers(scenario.candidates, { ceilingMicros, strategy });
   const conditions = custom ?? presetConditions(preset, eligible.order);
   const unavailable = Object.fromEntries(
     Object.entries(conditions)
       .filter(([, state]) => state === 'offline')
-      .map(([key]) => [key, 'Unavailable before submission']),
+      .map(([key]) => [key, 'Unavailable before submission'])
   );
-  const decision = rankQuotedOffers(scenario.candidates, { ceilingMicros, unavailable });
+  const decision = rankQuotedOffers(scenario.candidates, { ceilingMicros, strategy, unavailable });
   const frames = routeFrames(decision, conditions);
-  const runKey = JSON.stringify([profile, ceilingMicros, conditions]);
+  const runKey = JSON.stringify([profile, ceilingMicros, strategy, conditions]);
   const simulation = view === 'simulation';
 
   return (
@@ -87,17 +105,49 @@ export function RouteSimulator({
             </span>
             <span className={s.scenario}>
               <select
-                aria-label="Wan 3 Prime scenario"
-                value={profile}
+                aria-label="Engine"
+                value={scenario.engineId}
                 onChange={(e) => {
-                  setProfile(e.target.value);
-                  setCap('');
+                  const first = scenarios.find((item) => item.engineId === e.target.value);
+                  if (first) selectProfile(first.id);
+                }}
+              >
+                {Array.from(engines, ([id, label]) => (
+                  <option key={id} value={id}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown size={13} />
+            </span>
+            <span className={s.scenario}>
+              <select
+                aria-label={scenario.engineLabel + ' scenario'}
+                value={profile}
+                onChange={(e) => selectProfile(e.target.value)}
+              >
+                {scenarios
+                  .filter((item) => item.engineId === scenario.engineId)
+                  .map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.label}
+                    </option>
+                  ))}
+              </select>
+              <ChevronDown size={13} />
+            </span>
+            <span className={s.scenario}>
+              <select
+                aria-label="Routing strategy"
+                value={strategy}
+                onChange={(e) => {
+                  setPolicyOverride(e.target.value as PurchaseStrategy);
                   setCustom(null);
                 }}
               >
-                {scenarios.map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {item.label}
+                {Object.entries(PURCHASE_STRATEGY_LABELS).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
                   </option>
                 ))}
               </select>
@@ -118,7 +168,7 @@ export function RouteSimulator({
                     setPreset(id);
                   }}
                 >
-                  {presets[id]}
+                  {id === 'best' && strategy === 'preserve-fallback' ? 'All accept' : presets[id]}
                 </button>
               ))}
             </div>

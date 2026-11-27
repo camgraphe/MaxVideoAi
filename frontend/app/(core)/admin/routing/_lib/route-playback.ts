@@ -68,7 +68,9 @@ export function routeFrames(decision: PurchaseDecision, conditions: Conditions):
       title: 'Sending to ' + label,
       detail:
         frames.length === 1
-          ? 'First eligible offer in price order.'
+          ? decision.strategy === 'preserve-fallback' && decision.order.length > 1
+            ? 'This provider can hand off to a backup within the ceiling.'
+            : 'First eligible offer in price order.'
           : 'Next eligible offer under the same ceiling.',
     });
     const next = nextPurchaseProvider(decision.order, provider, outcome);

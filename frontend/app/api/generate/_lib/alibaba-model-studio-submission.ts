@@ -1,6 +1,6 @@
 import { getWanSubmissionClient, isWanDirectProvider, type WanDirectProvider } from '@/server/video-providers/wan-transports';
 import type { createApimartClient } from '@/server/video-providers/apimart/wan-prime';
-import { nextPurchaseProvider, type PurchaseDecision } from '@/lib/video-purchase-decision';
+import { nextPurchaseProvider, purchaseRoutingSnapshot, type PurchaseDecision } from '@/lib/video-purchase-decision';
 import { buildWanPurchaseDecision, classifyWanPurchaseFailure } from './wan-purchase-routing';
 import type { GeneratePayload, GenerateResult } from '@/lib/fal';
 import { query } from '@/lib/db';
@@ -233,7 +233,7 @@ async function submitFalFallback(params: {
     provider: 'fal',
     providerModel: params.falPayload.engineId,
     status: params.directAttemptId === null ? 'submit_started' : 'fallback_started',
-    requestSnapshot: params.directAttemptId === null ? { purchaseRouting: { ...params.decision, version: 1, mode: 'canary' } } : {
+    requestSnapshot: params.directAttemptId === null && params.decision ? { purchaseRouting: purchaseRoutingSnapshot(params.decision, 'canary') } : {
       fallbackFrom: params.fallbackFrom ?? ALIBABA_MODEL_STUDIO_PROVIDER,
       fallbackReason: params.reason,
       fallbackErrorCode: params.errorCode,
@@ -430,7 +430,7 @@ async function submitWanAttempt(
       referenceAudioCount: media.referenceAudio.length,
       promptLength: params.prompt.length,
       estimatedProviderCostUsd: costMicros == null ? estimate.providerCostUsd : costMicros / 1e6,
-      ...(plan ? { purchaseRouting: { ...plan, version: 1, mode: active ? 'canary' : 'shadow' } } : {}),
+      ...(plan ? { purchaseRouting: purchaseRoutingSnapshot(plan, active ? 'canary' : 'shadow') } : {}),
     },
     queryFn,
   });

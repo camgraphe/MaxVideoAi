@@ -4,7 +4,7 @@ import type { GeneratePayload } from '@/lib/fal';
 import type { VideoProviderKey } from '@/server/video-providers/types';
 import { ApimartSubmitError } from '@/server/video-providers/apimart/wan-prime';
 import { classifyAlibabaModelStudioError } from '@/server/video-providers/alibaba-model-studio/errors';
-import { planWanPrimePurchase, type PurchaseRequest } from '@/server/video-providers/purchase-router';
+import { customerPurchaseCeiling, planWanPrimePurchase, type PurchaseRequest } from '@/server/video-providers/purchase-router';
 import type { resolveAlibabaSubmissionMediaInputs } from './alibaba-model-studio-submission';
 
 export function buildWanPurchaseDecision(
@@ -36,11 +36,7 @@ export function buildWanPurchaseDecision(
   };
   const configured = process.env.WAN_PRIME_PURCHASE_CEILING_USD?.trim();
   const serverCap = configured ? Math.floor(Number(configured) * 1e6) : Number.MAX_SAFE_INTEGER;
-  const quotedUsdMicros =
-    params.pricing.currency?.toUpperCase() === 'USD' && Number.isSafeInteger(params.pricing.totalCents)
-      ? params.pricing.totalCents * 10_000
-      : -1;
-  const cap = Math.min(serverCap, quotedUsdMicros);
+  const cap = Math.min(serverCap, customerPurchaseCeiling(params.pricing));
   return planWanPrimePurchase(request, {
     ceilingMicros: cap,
     unavailable: params.fallbackToFalEnabled ? {} : { fal: 'Fal fallback disabled' },

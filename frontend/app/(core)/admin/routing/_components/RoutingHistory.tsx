@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { AdminSection } from '@/components/admin-system/shell/AdminSection';
-import { PROVIDER_LABELS } from '@/lib/video-purchase-decision';
+import { PROVIDER_LABELS, PURCHASE_STRATEGY_LABELS } from '@/lib/video-purchase-decision';
 import type { RoutingJob } from '../_lib/routing-data';
 
 function label(provider: string) {
@@ -48,6 +48,7 @@ export function RoutingHistory({ jobs }: { jobs: RoutingJob[] | null }) {
                       <>
                         <span className="font-medium">
                           {job.purchase_mode === 'canary' ? 'Canary' : 'Price simulation'}
+                          {job.strategy && ' · ' + (PURCHASE_STRATEGY_LABELS[job.strategy] ?? job.strategy)}
                         </span>
                         <p>{job.ranked?.length ? job.ranked.map(label).join(' → ') : 'No eligible route'}</p>
                         {Array.isArray(job.candidates) && (

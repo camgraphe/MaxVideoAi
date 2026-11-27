@@ -11,7 +11,15 @@ export const PROVIDER_LABELS = {
   google_vertex_omni_direct: 'Google Vertex · Omni',
 } satisfies Record<VideoProviderKey, string>;
 
+export type PurchaseStrategy = 'lowest-cost' | 'preserve-fallback';
+
+export const PURCHASE_STRATEGY_LABELS: Record<PurchaseStrategy, string> = {
+  'lowest-cost': 'Lowest cost',
+  'preserve-fallback': 'Keep a fallback',
+};
+
 export type PurchaseLimits = {
+  strategy?: PurchaseStrategy;
   ceilingMicros: number;
   unavailable?: Partial<Record<VideoProviderKey, string>>;
 };
@@ -20,12 +28,25 @@ export type PurchaseCandidate = {
   tariff: string;
   costMicros: number | null;
   excluded: string | null;
+  terminal?: boolean;
 };
 export function rankQuotedOffers(quotes: readonly PurchaseCandidate[], limits: PurchaseLimits) {
-  const candidates = quotes.map((row) => {
+  // The fallback cursor identifies a supplier by provider key. Duplicate keys could loop back to a previous send.
+  const unique = new Map<VideoProviderKey, PurchaseCandidate>();
+  for (const quote of quotes) {
+    if (unique.has(quote.provider)) {
+      unique.set(quote.provider, {
+        ...quote,
+        costMicros: null,
+        excluded: 'Conflicting offers for this provider',
+      });
+    } else unique.set(quote.provider, quote);
+  }
+  const candidates = Array.from(unique.values(), (row) => {
     let excluded = row.excluded ?? limits.unavailable?.[row.provider] ?? null;
     const cost = row.costMicros;
-    if (!excluded && (cost === null || !Number.isSafeInteger(cost) || cost < 0)) excluded = 'Cost unavailable';
+    if (!excluded && (cost === null || !Number.isSafeInteger(cost) || cost < 0))
+      excluded = 'Cost unavailable';
     if (
       !excluded &&
       (cost === null ||
@@ -37,14 +58,31 @@ export function rankQuotedOffers(quotes: readonly PurchaseCandidate[], limits: P
     return { ...row, excluded };
   });
   const eligible = candidates.filter((row) => !row.excluded);
-  eligible.sort((a, b) => Number(a.costMicros) - Number(b.costMicros));
-  // Fal's queue owns final failure and payment reconciliation. It must be the last send.
-  const terminal = eligible.findIndex(row => row.provider === 'fal');
-  const reachable = terminal < 0 ? eligible : eligible.slice(0, terminal + 1);
-  for (const row of eligible.slice(reachable.length)) row.excluded = 'After terminal Fal submission';
-  return { ceilingMicros: limits.ceilingMicros, candidates, order: reachable.map((row) => row.provider) };
+  const strategy = limits.strategy ?? 'lowest-cost';
+  // Older attempt snapshots predate the terminal capability. Their Fal queue already owned final settlement.
+  const terminal = (row: PurchaseCandidate) => row.provider === 'fal' || row.terminal === true;
+  eligible.sort((a, b) => {
+    if (strategy === 'preserve-fallback' && terminal(a) !== terminal(b))
+      return Number(terminal(a)) - Number(terminal(b));
+    return Number(a.costMicros) - Number(b.costMicros);
+  });
+  const end = eligible.findIndex(terminal);
+  const reachable = end < 0 ? eligible : eligible.slice(0, end + 1);
+  for (const row of eligible.slice(reachable.length)) {
+    row.excluded = 'After terminal ' + PROVIDER_LABELS[eligible[end].provider] + ' submission';
+  }
+  return {
+    strategy,
+    ceilingMicros: limits.ceilingMicros,
+    candidates,
+    order: reachable.map((row) => row.provider),
+  };
 }
 export type PurchaseDecision = ReturnType<typeof rankQuotedOffers>;
+export function purchaseRoutingSnapshot<T extends PurchaseDecision>(decision: T, mode: 'shadow' | 'canary') {
+  return { ...decision, version: 2, mode };
+}
+
 export type SubmitOutcome = 'accepted' | 'refused' | 'uncertain' | 'invalid';
 /** Only a definitive operational refusal may advance the original job to the next provider. */
 export function nextPurchaseProvider(

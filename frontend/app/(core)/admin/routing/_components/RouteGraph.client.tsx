@@ -18,7 +18,7 @@ import {
   X,
 } from 'lucide-react';
 import { PROVIDER_LABELS, type PurchaseDecision } from '@/lib/video-purchase-decision';
-import type { RoutingScenario } from '../_lib/routing-data';
+import type { RoutingScenario } from '../_lib/routing-scenarios';
 import { dollars, type Frame } from '../_lib/route-playback';
 import s from './routing.module.css';
 
@@ -114,9 +114,11 @@ export function RouteGraph({
     return () => window.clearTimeout(timer);
   }, [playing, finished, atEnd, step, frame.kind]);
 
-  const ordered = [...decision.candidates].sort(
-    (a, b) => (a.costMicros ?? Infinity) - (b.costMicros ?? Infinity),
-  );
+  const byProvider = new Map(decision.candidates.map(row => [row.provider, row]));
+  const ordered = [
+    ...decision.order.map(provider => byProvider.get(provider)!),
+    ...decision.candidates.filter(row => row.excluded),
+  ];
   const count = ordered.length;
   const compact = width < 610;
   const height = Math.max(compact ? 294 : 272, count * (compact ? 88 : 78) + 30);
@@ -162,7 +164,7 @@ export function RouteGraph({
           <div className={s.source}>
             <Film aria-hidden="true" size={21} />
           </div>
-          <span className={s.stationLabel}>Wan 3 Prime</span>
+          <span className={s.stationLabel}>{scenario.engineLabel}</span>
         </div>
         <div className={s.station} style={pos(hubX, hubY)} data-tone="violet">
           <div className={s.hub}>
