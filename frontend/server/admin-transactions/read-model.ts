@@ -1,5 +1,6 @@
 import { isNativeGenerationPlatform } from '@/server/agent-api/native-generation-platform';
 import { transactionSelectForCurrentSchema } from './projection';
+import { receiptVideoPurchase } from './video-purchase';
 import { query } from '@/lib/db';
 import { isMiloPackTransaction } from '@/lib/admin/transaction-review';
 import { normalizeMediaUrl } from '@/lib/media';
@@ -39,6 +40,7 @@ export function mapAdminTransactionRow(row: RawTransactionRow, userEmail: string
   const refundableStatus = row.job_id ? (jobExists ? isRefundablePaymentStatus(row.job_payment_status) : true) : true;
 
   return {
+    ...(row.job_purchase === undefined ? {} : { videoPurchase: row.job_purchase && !isMiloPack ? receiptVideoPurchase(row.job_purchase) : null }),
     receiptId: row.receipt_id,
     userId: row.user_id,
     userEmail,

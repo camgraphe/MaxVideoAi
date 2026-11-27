@@ -126,6 +126,8 @@ export async function createProviderAttempt(params: {
      SELECT id, $2::integer, $3::text, $4::text, $5::text, NOW(), $6::jsonb
        FROM app_jobs
       WHERE job_id = $1
+        ${params.claimOnce ? `AND status IN ('pending','queued','running','processing','in_progress')
+                             AND provider_job_id IS NULL FOR UPDATE` : ''}
      ON CONFLICT (job_id, attempt_index)
      ${params.claimOnce ? 'DO NOTHING' : `DO UPDATE SET
        provider = EXCLUDED.provider,
@@ -148,8 +150,9 @@ export async function createProviderAttempt(params: {
   if (!row) {
     if (params.claimOnce) {
       const existing = await queryFn<{ id: number }>(
-        `SELECT a.id FROM provider_attempts a JOIN app_jobs j ON j.id = a.job_id
-          WHERE j.job_id = $1 AND a.attempt_index = $2`,
+        `SELECT j.id FROM app_jobs j WHERE j.job_id = $1
+            AND (j.provider_job_id IS NOT NULL OR j.status NOT IN ('pending','queued','running','processing','in_progress')
+                 OR EXISTS (SELECT 1 FROM provider_attempts a WHERE a.job_id = j.id AND a.attempt_index = $2))`,
         [params.publicJobId, params.attemptIndex],
       );
       if (existing.length) throw new ProviderAttemptAlreadyClaimed();

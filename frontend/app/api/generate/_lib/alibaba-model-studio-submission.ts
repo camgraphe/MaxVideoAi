@@ -33,6 +33,7 @@ import {
 import { buildUserFacingRefundDescription } from '@/server/user-facing-failure-messages';
 import { createProviderJobTracker } from './provider-job-tracker';
 import { rollbackPendingPayment } from './payment-rollback';
+import { withWalletFailureSettlement } from '@/server/fal-webhook-refunds';
 import { isDeferredFalSubmission, submitFalGenerateTask, type FalGenerateSubmissionResult } from './fal-submission';
 import { reconcileFalFallbackTerminalResponse } from './fal-fallback-outcome';
 import type { FalInputSummary } from './fal-request';
@@ -52,6 +53,7 @@ type AlibabaSubmissionDeps = {
   submitFalGenerateTaskFn?: typeof submitFalGenerateTask;
   queryFn?: QueryFn;
   rollbackPendingPaymentFn?: typeof rollbackPendingPayment;
+  withFailureSettlementFn?: typeof withWalletFailureSettlement;
 };
 
 export type AlibabaModelStudioGenerateSubmissionResult =
@@ -166,32 +168,52 @@ async function failJobAndRollback(params: {
   queryFn: QueryFn;
   rollbackPendingPaymentFn: typeof rollbackPendingPayment;
   onlyBeforeSubmission?: boolean;
+  withFailureSettlementFn?: typeof withWalletFailureSettlement;
 }) {
-  const paymentStatusOverride = params.pendingReceipt
-    ? params.paymentMode === 'wallet' ? 'refunded_wallet' : 'refunded'
-    : null;
-  const rows = await params.queryFn(
+  const persistFailure = (execute: QueryFn) => execute(
     `UPDATE app_jobs
-        SET status = 'failed', progress = 0, message = $2, provisional = FALSE,
-            payment_status = CASE WHEN $3::text IS NOT NULL THEN $3 ELSE payment_status END,
-            updated_at = NOW()
-      WHERE job_id = $1
-        ${params.onlyBeforeSubmission ? `AND provider_job_id IS NULL AND status IN ('queued','pending')
-          AND NOT EXISTS (SELECT 1 FROM provider_attempts a WHERE a.job_id = app_jobs.id)
-          RETURNING job_id` : ''}`,
-    [params.jobId, params.message, paymentStatusOverride]
+        SET status = 'failed', progress = 0, message = $2, provisional = FALSE, updated_at = NOW()
+      WHERE job_id = $1 AND provider_job_id IS NULL
+        AND (status IN ('queued','pending','running','processing','in_progress') OR (status = 'failed' AND message = $2))
+        ${params.onlyBeforeSubmission ? 'AND NOT EXISTS (SELECT 1 FROM provider_attempts a WHERE a.job_id = app_jobs.id)' : ''}
+      RETURNING job_id`,
+    [params.jobId, params.message]
   );
-  if (params.onlyBeforeSubmission && !rows.length) return false;
-  if (params.pendingReceipt) {
+  if (params.paymentMode === 'wallet' && params.walletChargeReserved) {
+    const settle = params.withFailureSettlementFn ?? withWalletFailureSettlement;
+    const staleFailure = new Error('Job no longer qualifies for this failure settlement.');
+    try {
+      await settle(params.jobId, {
+        engineLabel: params.engineLabel, failureMessage: params.message, failureOrigin: 'submission_rejected',
+      }, async executor => {
+        const rows = await persistFailure((sql, values) => executor.query(sql, values));
+        if (!rows.length) throw staleFailure;
+      });
+      return true;
+    } catch (error) {
+      if (error === staleFailure) return false;
+      throw error;
+    }
+  }
+  const rows = await persistFailure(params.queryFn);
+  if (!rows.length) return false;
+  const receipt = params.pendingReceipt;
+  if (receipt && params.paymentMode !== 'wallet') {
     await params.rollbackPendingPaymentFn({
-      pendingReceipt: params.pendingReceipt,
-      walletChargeReserved: params.walletChargeReserved,
+      pendingReceipt: receipt, walletChargeReserved: false,
       refundDescription: buildUserFacingRefundDescription({
-        engineLabel: params.engineLabel,
-        durationSec: params.durationSec,
-        reason: params.message,
+        engineLabel: params.engineLabel, durationSec: params.durationSec, reason: params.message,
       }),
     });
+    // A card refund is confirmed only by a matching receipt with a Stripe refund ID.
+    await params.queryFn(
+      `UPDATE app_jobs j SET payment_status = 'refunded', updated_at = NOW()
+        WHERE j.job_id = $1 AND j.user_id = $2 AND j.status = 'failed'
+          AND EXISTS (SELECT 1 FROM app_receipts r WHERE r.job_id = j.job_id AND r.user_id = j.user_id
+                      AND r.type = 'refund' AND r.amount_cents = $3 AND UPPER(r.currency) = UPPER($4)
+                      AND r.stripe_refund_id IS NOT NULL)`,
+      [params.jobId, receipt.userId, receipt.amountCents, receipt.currency],
+    );
   }
   return true;
 }
@@ -367,6 +389,7 @@ export async function submitAlibabaModelStudioGenerateTask(params: WanSubmission
   if (!selected) {
     const message = 'No compatible provider fits the purchase ceiling.';
     const stopped = await failJobAndRollback({ ...params, message, queryFn, onlyBeforeSubmission: true,
+      withFailureSettlementFn: deps.withFailureSettlementFn,
       rollbackPendingPaymentFn: deps.rollbackPendingPaymentFn ?? rollbackPendingPayment });
     if (!stopped) return deferred(params.jobId);
     return { ok: false, status: 503, body: { ok: false, error: 'NO_ELIGIBLE_VIDEO_PROVIDER', message } };
@@ -551,6 +574,7 @@ async function submitWanAttempt(
         paymentMode: params.paymentMode,
         walletChargeReserved: params.walletChargeReserved,
         queryFn,
+        withFailureSettlementFn: deps.withFailureSettlementFn,
         rollbackPendingPaymentFn: deps.rollbackPendingPaymentFn ?? rollbackPendingPayment,
       });
     }

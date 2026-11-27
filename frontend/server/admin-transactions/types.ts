@@ -1,6 +1,15 @@
 import type { NativeGenerationPlatform } from '@/server/agent-api/native-generation-platform';
 
+import type { ReceiptVideoEvidence } from './video-purchase';
+
+export type VideoPurchase = {
+  quote: { cents: number; currency: string } | null;
+  provider: string | null;
+  estimate: { usd: number; basis: 'completed_list' | 'routing_quote' } | null;
+};
+
 export type RawTransactionRow = {
+  job_purchase?: ReceiptVideoEvidence | null;
   receipt_id: number;
   user_id: string | null;
   type: string;
@@ -30,6 +39,7 @@ export type RawTransactionRow = {
 };
 
 export type AdminTransactionRecord = {
+  videoPurchase?: VideoPurchase | null;
   receiptId: number;
   userId: string | null;
   userEmail: string | null;

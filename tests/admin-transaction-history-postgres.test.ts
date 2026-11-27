@@ -165,6 +165,43 @@ test('history filters before pagination, retains precision and resolves receipts
     assert.equal(legacyPack?.canRefund, false);
     assert.equal((await fetchTransactionReceipt('143'))?.canRefund, true, 'real historical missing-media eligibility is unchanged');
     assert.equal((await fetchTransactionReceipt('123'))?.canRefund, true, 'real paid media remains refundable');
+    assert.equal((await fetchTransactionReceipt('123'))?.videoPurchase, null, 'receipts remain readable on a legacy schema');
+    await db.pool.query(`ALTER TABLE app_jobs ADD COLUMN id bigserial UNIQUE, ADD COLUMN user_id text,
+      ADD COLUMN surface text, ADD COLUMN engine_id text, ADD COLUMN final_price_cents int, ADD COLUMN currency text,
+      ADD COLUMN provider text, ADD COLUMN provider_job_id text, ADD COLUMN cost_breakdown_usd jsonb;
+      CREATE TABLE provider_attempts(id bigint PRIMARY KEY, job_id bigint, provider text, provider_job_id text,
+        attempt_index int, status text, accepted_at timestamptz, request_snapshot jsonb, fallback_to_attempt_id bigint)`);
+    await db.pool.query(`UPDATE app_jobs SET user_id=$1, surface='video', engine_id='wan-3-prime',
+      final_price_cents=500, currency='EUR', provider='fal', provider_job_id='fal-task',
+      cost_breakdown_usd='{"provider":"alibaba_model_studio","provider_cost_status":"list_estimate_from_verified_durations","provider_cost_usd":9}'
+      WHERE job_id='mcp-job';
+    `, [owner]);
+    const snapshot = JSON.stringify({purchaseRouting: {mode:'canary', engineId:'wan-3-prime',
+      order:['alibaba_model_studio','fal'],candidates:[
+        {provider:'fal',excluded:null,costMicros:560000},{provider:'alibaba_model_studio',excluded:null,costMicros:300000},
+      ]}});
+    await db.pool.query(`INSERT INTO provider_attempts(id,job_id,provider,attempt_index,status,request_snapshot,fallback_to_attempt_id)
+      SELECT 1,id,'alibaba_model_studio',1,'failed',$1,2 FROM app_jobs WHERE job_id='mcp-job'`, [snapshot]);
+    await db.pool.query(`INSERT INTO provider_attempts(id,job_id,provider,provider_job_id,attempt_index,status)
+      SELECT 2,id,'fal','fal-task',2,'completed' FROM app_jobs WHERE job_id='mcp-job'`);
+    const handoff = await fetchTransactionReceipt('123');
+    assert.equal(handoff?.amountCents, 500);
+    assert.equal(handoff?.currency, 'USD', 'the ledger always displays its own currency');
+    assert.deepEqual(handoff?.videoPurchase, {quote:{cents:500,currency:'EUR'},provider:'fal',
+      estimate:{usd:0.56,basis:'routing_quote'}});
+    assert.equal((await fetchTransactionHistory({period:'all',query:'mcp-job',type:'charge',limit:10},now))
+      .transactions[0]?.videoPurchase, undefined, 'the paginated ledger does not load purchase details');
+    await db.pool.query("UPDATE provider_attempts SET fallback_to_attempt_id=NULL WHERE id=1");
+    assert.equal((await fetchTransactionReceipt('123'))?.videoPurchase?.estimate, null, 'foreign supplier costs and unlinked plans cannot price a fallback');
+    await db.pool.query("UPDATE app_jobs SET provider='apimart',provider_job_id='apimart-task',cost_breakdown_usd=$1 WHERE job_id='mcp-job'", [
+      JSON.stringify({provider:'apimart',provider_cost_status:'list_estimate_from_verified_durations',provider_cost_usd:0.41144})]);
+    assert.equal((await fetchTransactionReceipt('123'))?.videoPurchase?.provider, null, 'conflicting accepted ownership hides supplier economics');
+    await db.pool.query("UPDATE provider_attempts SET provider='apimart',provider_job_id='apimart-task' WHERE id=2");
+    assert.deepEqual((await fetchTransactionReceipt('123'))?.videoPurchase?.estimate, {usd:0.41144,basis:'completed_list'});
+    await db.pool.query("UPDATE app_jobs SET user_id='foreign-account' WHERE job_id='mcp-job'");
+    assert.equal((await fetchTransactionReceipt('123'))?.videoPurchase, null, 'receipt scope must match the generation owner');
+    assert.equal((await fetchTransactionReceipt('141'))?.videoPurchase, null, 'Milo packs do not project a supplier');
+
   } finally {
     await getDb().end();
     await db.cleanup();

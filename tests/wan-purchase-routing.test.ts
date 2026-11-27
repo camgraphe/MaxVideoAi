@@ -14,6 +14,12 @@ import {
 } from '../frontend/src/server/video-providers/purchase-router';
 import { resolveVideoProviderRoutingPlan } from '../frontend/src/server/video-providers/router';
 import { nextPurchaseProvider } from '../frontend/src/lib/video-purchase-decision';
+import { computeCanonicalBillingSnapshot } from '../frontend/server/pricing/quote-billing';
+import { getFalEngineById } from '../frontend/src/config/falEngines';
+import { WAN_3_PRIME_FAL_ENGINE_REGISTRY } from '../frontend/src/config/fal-engines/wan-3-prime';
+import { WAN_3_PRIME_FAL_USD_PER_SECOND } from '../frontend/src/lib/wan3-prime-fal-rates';
+import { buildBillingPricingFacts } from '../frontend/src/lib/pricing-billing-facts';
+import { buildManualTariffScenario } from '../frontend/src/lib/pricing-manual-scenario';
 import { routeFrames, presetConditions } from '../frontend/app/(core)/admin/routing/_lib/route-playback';
 import { installedRoutes } from '../frontend/app/(core)/admin/routing/_lib/installed-routes';
 
@@ -74,6 +80,38 @@ test('ranks compatible suppliers at exact procurement prices and respects the sa
   ];
   assert.equal(rankPurchaseOffers(textClip, extra, { ceilingMicros: 1020000 }).order[0], 'kling_direct');
 });
+test('a change to Fal procurement reroutes Wan Prime without changing its published context or a new customer quote', async t => {
+  const engine = getFalEngineById('wan-3-prime')!.engine;
+  const context = { engine, mode: 't2v' as const, durationSec: 15, resolution: '480p', aspectRatio: '16:9', audioEnabled: true };
+  const selector = buildManualTariffScenario(context, buildBillingPricingFacts(context, engine.pricingDetails, 'USD').facts).selector;
+  const cell = { id: 'wan-approved-sale-price', source: 'versioned' as const, version: 1, currency: 'USD',
+    effectiveFrom: '2026-01-01T00:00:00Z', selector, price: { kind: 'fixed' as const, customerCents: 200 } };
+  async function customerQuote(active: boolean) {
+    const snapshot = await computeCanonicalBillingSnapshot(context, {
+      pricingPolicy: { loadOverrides: async () => ({ status: 'loaded', rules: [] }) },
+      loadCustomerTariffState: async () => ({ status: 'loaded', active, revision: 7, databaseCells: [], versionedCells: [cell] }),
+    });
+    return [snapshot.currency, snapshot.totalCents];
+  }
+
+  const legacyQuote = await customerQuote(false);
+  assert.deepEqual(await customerQuote(true), ['USD', 200]);
+  const commercialRates = WAN_3_PRIME_FAL_ENGINE_REGISTRY[0].engine.pricing!.byResolution;
+  const commercial480p = commercialRates?.['480p'];
+  assert.equal(commercial480p, 0.068);
+  assert.equal(planWanPrimePurchase(textClip).order[0], 'apimart');
+
+  const original = WAN_3_PRIME_FAL_USD_PER_SECOND['480p'];
+  t.after(() => { Object.assign(WAN_3_PRIME_FAL_USD_PER_SECOND, { '480p': original }); });
+  Object.assign(WAN_3_PRIME_FAL_USD_PER_SECOND, { '480p': 0.01 });
+  const cheaperFal = planWanPrimePurchase(textClip);
+  assert.equal(cheaperFal.order[0], 'fal');
+  assert.equal(cheaperFal.candidates.find(offer => offer.provider === 'fal')?.costMicros, 150_000);
+  assert.equal(commercialRates?.['480p'], commercial480p);
+  assert.deepEqual(await customerQuote(false), legacyQuote);
+  assert.deepEqual(await customerQuote(true), ['USD', 200]);
+});
+
 test('keeps document, video and special operations outside the new transport; unknown duration cannot win', () => {
   for (const overrides of [
     { hasDocument: true },

@@ -22,9 +22,10 @@ test('provider attempt completion clears stale failure metadata, preserves genui
   }
   const rows = async () => (await database.pool.query('SELECT * FROM provider_attempts ORDER BY id')).rows;
   await t.test('concurrent purchase submissions obtain only one claim for the job and attempt', async () => {
+    await database.pool.query("INSERT INTO app_jobs(id,job_id,status) VALUES(2,'job-claim','pending')");
     const claim = () =>
       createProviderAttempt({
-        publicJobId: 'job-recovery',
+        publicJobId: 'job-claim',
         attemptIndex: 9,
         provider: 'apimart',
         claimOnce: true,
@@ -37,6 +38,9 @@ test('provider attempt completion clears stale failure metadata, preserves genui
         (result) => result.status === 'rejected' && result.reason instanceof ProviderAttemptAlreadyClaimed
       )
     );
+    await assert.rejects(createProviderAttempt({
+      publicJobId: 'job-recovery', attemptIndex: 1, provider: 'apimart', claimOnce: true, queryFn,
+    }), ProviderAttemptAlreadyClaimed);
     await assert.rejects(
       createProviderAttempt({
         publicJobId: 'missing-job',

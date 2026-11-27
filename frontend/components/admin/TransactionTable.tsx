@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState, useTransition } from 'react';
 import Link from 'next/link';
+import { TransactionVideoPurchase } from './transactions/TransactionVideoPurchase';
 import { TransactionHistoryControls } from './transactions/TransactionHistoryControls';
 import type { TransactionHistoryQuery } from '@/lib/admin/transaction-history';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -287,6 +288,10 @@ export function AdminTransactionTable({
                 <p className="mt-1 text-xs text-text-secondary">
                   {selected.jobStatus ?? (isMissingJobRecord(selected) ? 'Job record missing' : 'Status unavailable')}
                 </p>
+                {(selected.type === 'charge' || selected.type === 'refund') && !isMissingJobRecord(selected) ? (
+                  <TransactionVideoPurchase key={selected.receiptId} receipt={selected}
+                    initial={String(initialReceipt?.receiptId) === String(selected.receiptId) ? initialReceipt?.videoPurchase : undefined} />
+                ) : null}
                 {selectedDuration ? (
                   <p className="mt-1 text-xs text-text-secondary">Duration: {selectedDuration}</p>
                 ) : null}

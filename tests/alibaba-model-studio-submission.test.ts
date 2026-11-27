@@ -599,8 +599,9 @@ for (const [engineId, pilot, capCents] of [
       walletChargeReserved: true,
       deps: {
         queryFn,
-        rollbackPendingPaymentFn: async () => {
+        withFailureSettlementFn: async (_jobId: string, _context: unknown, persist: (executor: {query: typeof queryFn}) => Promise<unknown>) => {
           rollbacks++;
+          return persist({ query: queryFn });
         },
       },
     });

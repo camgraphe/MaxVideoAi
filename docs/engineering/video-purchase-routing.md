@@ -90,6 +90,16 @@ APIMart accepts `POST /v1/videos/generations` and returns a task ID. The same au
 
 A known balance or throttling refusal can start the next eligible attempt under the ceiling. Invalid inputs or moderation stop the chain. A timeout or unreadable acknowledgement after sending moves the job to reconciliation. Keep the reservation until the first submission can be accounted for. An accepted task is polled only at its owning provider. The ledger claims each canary attempt once using the existing unique job/attempt index. It links each definitive rejection to the next attempt.
 
+### Wan Prime rollout and accounting
+
+Run `pnpm test:routing:wan-pilot` from the repository root to exercise the admin-only Alibaba → Fal pilot with simulated transports and disposable PostgreSQL. The fixture reserves a wallet charge through the normal job initializer and compares the original receipt, job price, currency, balance and provider-attempt chain after concurrent submissions. The 4-second 720p image-reference fixture reserves $0.85 and quotes $0.56 for Fal. The 15-second 480p text fixture reserves $1.47 and quotes $1.02 for Fal. These selling prices are test inputs.
+
+The accepted quote sets the charge. Supplier selection reads the quote as a ceiling and operates on the purchase tariff cards. A price-card edit can change the selected supplier and the estimated margin. Publishing a different customer tariff is a separate pricing operation for new quotes. The purchase pilot uses its own Fal rate source even when the environment uses legacy commercial rules.
+
+* **Transactions** keeps one customer charge per job. Open the receipt to inspect the job price, serving provider and attributable purchase estimate. A recorded refund uses the original charge in its original currency. Supplier attempts are visible in Routing and Jobs.
+* **Pricing** owns the customer tariff. Its supplier comparisons and the 30-day replay are estimates. Invoice reconciliation is needed to report realized procurement savings.
+* **Release** starts with a private preview on Wan Prime with the installed Alibaba and direct Fal accounts. First compare delivery on the four-second, 720p reference+audio case and capture actual cost and elapsed time. A paid comparison requires its own spending approval. Qualify APIMart Gold rate, rights and output parity before adding it to the private pilot. The production dispatch switch is a subsequent change.
+
 ## Extending the route
 
 1. Define a provider offer beside its rate source under `frontend/src/server/video-providers/purchase/`. Match exact engine and input roles, deny unreviewed combinations and return integer USD microdollars. One provider appears once for a given engine. Distinct endpoints for different modes belong to the capability/quote function. Mark transports that own final settlement as terminal.

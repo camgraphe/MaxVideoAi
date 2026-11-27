@@ -1,4 +1,3 @@
-import { WAN_3_PRIME_FAL_USD_PER_SECOND } from '../../lib/wan3-prime-fal-rates';
 import type { RawFalEngineEntry } from './types';
 import { createWan3Engine, WAN_3_MODE_CAPS } from './wan-3-shared';
 
@@ -15,7 +14,8 @@ const engine = createWan3Engine({
   label: 'Wan 3 Prime',
   version: '3.0 Prime',
   perSecondCents: { '480p': 6.8, '720p': 14, '1080p': 28 },
-  perSecondUsd: WAN_3_PRIME_FAL_USD_PER_SECOND,
+  // Commercial reference for quotes and previews. Live supplier offers belong to the purchase router.
+  perSecondUsd: { '480p': 0.068, '720p': 0.14, '1080p': 0.28 },
 });
 
 export const WAN_3_PRIME_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [{

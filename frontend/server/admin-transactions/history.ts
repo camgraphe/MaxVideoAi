@@ -89,7 +89,7 @@ export async function fetchTransactionHistory(
 }
 export async function fetchTransactionReceipt(id: string) {
   if (!validId(id)) throw new TransactionHistoryInputError('Invalid receipt ID');
-  const transactionSelect = await transactionSelectForCurrentSchema();
+  const transactionSelect = await transactionSelectForCurrentSchema(true);
   const rows = await query<RawTransactionRow>(`${transactionSelect} WHERE r.id=$1::bigint`, [id]);
   return (await hydrateTransactionRows(rows))[0] ?? null;
 }

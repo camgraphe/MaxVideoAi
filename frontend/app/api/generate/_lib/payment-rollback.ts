@@ -135,7 +135,7 @@ export async function rollbackPendingPayment(params: {
       return;
     }
     const refundId = await issueStripeRefund(pendingReceipt);
-    await recordRefundReceipt(pendingReceipt, refundDescription, refundId);
+    if (refundId) await recordRefundReceipt(pendingReceipt, refundDescription, refundId);
   } catch (error) {
     console.warn('[payments] failed to rollback pending payment', error);
   }
