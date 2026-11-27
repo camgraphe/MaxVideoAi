@@ -106,6 +106,7 @@ test('frame-pair discovery requires two distinct declared roles and opt-in, and 
     m.modes.some((c) => c.mode === 'fl2v'),
   );
   assert.ok(paired.length > 1);
+  assert.ok(paired.some(model => model.id === 'gemini-omni-flash'));
   assert.equal(visibleMobileMode('fl2v', new URLSearchParams('sourceVideo=1')), false);
   assert.equal(visibleMobileMode('fl2v', new URLSearchParams('framePair=1')), true);
   for (const m of paired) {
@@ -188,5 +189,22 @@ test('ordered native reference bindings cannot enter another quote channel', asy
       await assert.rejects(prepare({ ...input, prompt: 'Use this reference.', settings: {} }, actor),
         { code: 'PARAMETER_INVALID', message: 'Native reference bindings require a mobile Create session.' });
     }
+  }
+});
+
+test('Create keeps selectable legacy models admitted by the generation engine', async () => {
+  for (const [surface, legacyId] of [['video', 'wan-2-6'], ['image', 'gpt-image-2']] as const) {
+    const deps = {
+      listEngines: async () => getBaseEnginesByCategory(surface),
+      surfaceByEngineId: () => surface,
+    };
+    const models = await readMobileModels({ surface, modelSettings: true }, deps);
+    const engine = (await listPublicAgentGenerationEngines(deps)).find(entry => entry.engine.id === legacyId);
+    assert.ok(engine);
+    const model = models.find(entry => entry.id === legacyId);
+    assert.ok(model?.modes.length);
+    assert.ok(model.modes.every(control => engine.publicModes.includes(control.mode)));
+    const disabled = await readMobileModels({ surface, id: legacyId }, { ...deps, isEngineExecutable: () => false });
+    assert.deepEqual(disabled, []);
   }
 });

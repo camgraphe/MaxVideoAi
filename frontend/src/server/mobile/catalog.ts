@@ -57,8 +57,9 @@ function controls(model: AgentPublicCatalogEngine, mediaReferences: boolean, mod
     if (audioSource && (details.durationPolicy !== 'source_audio' || requiredRefs.length !== 1
       || requiredRefs[0].type !== 'audio' || !requiredRefs[0].roles.includes('source'))) return [];
     const framePair = mode === 'fl2v' && phoneFrameFields(candidate.engine.inputSchema);
-    const first = requiredRefs.find((field) => field.type === 'image' && field.roles.includes('first_frame'));
     const last = requiredRefs.find((field) => field.type === 'image' && field.roles.includes('last_frame'));
+    const first = requiredRefs.find((field) => field.type === 'image' && field !== last &&
+      (field.roles.includes('first_frame') || (framePair && field.roles.includes('reference'))));
     if (
       mode === 'fl2v' &&
       (!framePair ||
@@ -88,7 +89,7 @@ function controls(model: AgentPublicCatalogEngine, mediaReferences: boolean, mod
     )
       return [];
     const ref = (seriesRef || (framePair ? first : requiredRefs[0])) ?? details.references.find(usable);
-    const role = ref?.roles.find(
+    const role = framePair ? 'first_frame' : ref?.roles.find(
       (item): item is NonNullable<ModeControls['referenceRole']> =>
         item === 'first_frame' || item === 'source' || item === 'reference',
     );
@@ -204,7 +205,7 @@ export async function readMobileModels(
   filter: { surface?: Surface; id?: string; mediaReferences?: boolean; modelSettings?: boolean; videoOperations?: boolean },
   dependencies?: AgentModelCatalogDeps,
 ): Promise<ModelDetails[]> {
-  const candidates = await listPublicAgentCatalogEngines(dependencies);
+  const candidates = await listPublicAgentCatalogEngines(dependencies, { includeExecutableLegacy: true });
   return candidates
     .filter(
       (candidate) =>
