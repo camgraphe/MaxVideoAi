@@ -1,3 +1,4 @@
+import { BRAND_SOCIAL_IMAGE } from '@/lib/seo/social-preview-images';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { resolveDictionary } from '@/lib/i18n/server';
@@ -25,7 +26,7 @@ export async function generateMetadata(props: { params: Promise<{ locale: AppLoc
   const description =
     metaCopy.description ??
     'Start here for onboarding, price system and refunds. Learn about brand-safe filters and see webhook/API references. Deeper guides live in the authenticated workspace.';
-  const ogImage = `${SITE}/og/brand-2026-09-25.png`;
+  const ogImage = `${SITE}${BRAND_SOCIAL_IMAGE}`;
 
   return buildSeoMetadata({
     locale,

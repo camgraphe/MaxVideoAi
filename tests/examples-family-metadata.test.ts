@@ -82,13 +82,13 @@ test('default family metadata takes its preview from the gallery page; other vie
 
 test('empty metadata reads keep the brand image without retrying the catalog', async () => {
   const calls = fixture([]);
-  assert.match(ogImage(await metadata()), /\/og\/brand-2026-09-25\.png$/);
+  assert.match(ogImage(await metadata()), /\/og\/2026-11-27\/brand\.jpg$/);
   assert.deepEqual(calls.map(call => call.limit), [24]);
 });
 
 test('a playable first video without a thumbnail keeps the brand image ahead of later posters', async () => {
   const calls = fixture([video('first', undefined, ''), video('later')]);
-  assert.match(ogImage(await metadata()), /\/og\/brand-2026-09-25\.png$/);
+  assert.match(ogImage(await metadata()), /\/og\/2026-11-27\/brand\.jpg$/);
   assert.deepEqual(calls.map(call => call.limit), [24]);
 });
 
@@ -107,7 +107,7 @@ test('normalized empty sources retry the original selection window, including it
 test('metadata does not search beyond the existing sixty-item window', async () => {
   const items = Array.from({ length: 61 }, (_, index) => ({ ...video(String(index + 1)), videoUrl: index < 60 ? undefined : 'https://media.maxvideoai.com/61.mp4' }));
   const calls = fixture(items);
-  assert.match(ogImage(await metadata()), /\/og\/brand-2026-09-25\.png$/);
+  assert.match(ogImage(await metadata()), /\/og\/2026-11-27\/brand\.jpg$/);
   assert.deepEqual(calls.map(call => call.limit), [24, 60]);
 });
 

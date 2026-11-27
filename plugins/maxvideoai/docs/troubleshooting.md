@@ -4,7 +4,7 @@
 
 ## OAuth opens, but the connection does not finish
 
-![Current public MaxVideoAI home page with pay-as-you-go messaging and a colorful MiniMax H3 Max video frame](../assets/screenshots/maxvideoai-workspace-production.jpg)
+![MaxVideoAI home page with the FLUX 3 Max film preview and pay-as-you-go creation actions](../assets/screenshots/maxvideoai-workspace-live.webp)
 
 This is current public MaxVideoAI product proof, not native host proof. It confirms only the public product entry point, not a host OAuth screen, account connection, or generation result.
 

@@ -1,5 +1,6 @@
 const path = require('path');
 const modelRegistry = require('./config/model-registry.json');
+const { directory: socialPreviewDirectory } = require('./config/social-preview-images.json');
 const { buildModelRegistryRedirects } = require('./config/model-registry-redirects.cjs');
 const isPreviewDeployment = process.env.VERCEL_ENV === 'preview';
 const repoRoot = path.join(__dirname, '..');
@@ -151,7 +152,21 @@ const nextConfig = {
     '*': [...CONTENT_GLOBS, ...SITEMAP_RUNTIME_GLOBS],
   },
   async redirects() {
+    // Old embeds can still request these paths directly. Use temporary redirects so the next refresh can move them.
+    const legacySocialImages = {
+      '/og/brand-2026-09-25.png': 'brand.jpg',
+      '/og/price-before.png': 'brand.jpg',
+      '/og-default.jpg': 'brand.jpg',
+      '/assets/branding/og-image.png': 'brand.jpg',
+    };
+    for (const page of ['home', 'models', 'pricing', 'compare']) {
+      legacySocialImages[`/og/${page}-hub.png`] = `en/${page}.jpg`;
+      legacySocialImages[`/og/${page}-2026-09-25.png`] = `en/${page}.jpg`;
+    }
     return [
+      ...Object.entries(legacySocialImages).map(([source, image]) => ({
+        source, destination: `${socialPreviewDirectory}/${image}`, permanent: false,
+      })),
       {
         source: '/pricing-calculator',
         destination: '/pricing',

@@ -6,7 +6,7 @@ Start with the connected MaxVideoAI Library. Reuse an owned reference when it is
 
 Animate an owned product reference while keeping private media, model validation, spend approval, and the completed result inside a recoverable MaxVideoAI workflow.
 
-![Current public MaxVideoAI home page with pay-as-you-go messaging and a colorful MiniMax H3 Max video frame](../assets/screenshots/maxvideoai-workspace-production.jpg)
+![MaxVideoAI home page with the FLUX 3 Max film preview and pay-as-you-go creation actions](../assets/screenshots/maxvideoai-workspace-live.webp)
 
 *This visual proves only the current public MaxVideoAI entry point and featured video. It does not prove model selection, reference upload, private-media selection, quote, approval, or native host behavior.*
 

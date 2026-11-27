@@ -1,3 +1,4 @@
+import { BRAND_SOCIAL_IMAGE } from '@/lib/seo/social-preview-images';
 import type { Metadata } from 'next';
 import { permanentRedirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
@@ -68,7 +69,7 @@ export async function generateMetadata(
   const paginationSeo = getExamplesPaginationSeo(searchParams);
   const latest = await listExamples('date-desc', 20);
   const firstWithThumb = latest.find((video) => Boolean(video.thumbUrl));
-  const ogImage = toAbsoluteUrl(firstWithThumb?.thumbUrl) ?? `${SITE}/og/brand-2026-09-25.png`;
+  const ogImage = toAbsoluteUrl(firstWithThumb?.thumbUrl) ?? `${SITE}${BRAND_SOCIAL_IMAGE}`;
   const canonicalExampleSlug = resolveExampleCanonicalSlug(collapsedEngineParam);
   const shouldNoindex = !paginationSeo.index;
   const effectiveEngineLabel = canonicalExampleSlug ? engineLabel : null;

@@ -1,3 +1,4 @@
+import { pageSocialImage } from '@/lib/seo/social-preview-images';
 import type { Metadata } from 'next';
 import type { AppLocale } from '@/i18n/locales';
 import { buildMetadataUrls } from '@/lib/metadataUrls';
@@ -27,7 +28,7 @@ export async function generateMetadata(props: { params: Promise<{ locale: AppLoc
     title: meta.title,
     description: meta.description,
     englishPath: PAYG_PAGE_PATH,
-    image: '/og/home-2026-09-25.png',
+    image: pageSocialImage('payg', locale),
     imageAlt: meta.imageAlt,
     keywords: meta.keywords,
   });

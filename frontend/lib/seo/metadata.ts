@@ -1,10 +1,10 @@
+import { BRAND_SOCIAL_IMAGE } from '@/lib/seo/social-preview-images';
 import type { Metadata } from 'next';
 import type { AppLocale } from '@/i18n/locales';
 import { buildMetadataUrls, SITE_BASE_URL, type LocaleSlugMap } from '@/lib/metadataUrls';
 import { getHreflangEnglishPath, type HreflangGroupKey } from '@/lib/seo/hreflang';
 import { buildMetaDescription, buildMetaTitle } from '@/lib/seo/meta';
 
-const DEFAULT_OG_IMAGE = '/og/brand-2026-09-25.png';
 const DEFAULT_OG_WIDTH = 1200;
 const DEFAULT_OG_HEIGHT = 630;
 const SITE_NAME = 'MaxVideoAI';
@@ -56,7 +56,7 @@ type BuildSeoMetadataOptions = {
 };
 
 function resolveImageUrl(image?: string) {
-  const candidate = typeof image === 'string' && image.trim().length ? image.trim() : DEFAULT_OG_IMAGE;
+  const candidate = typeof image === 'string' && image.trim().length ? image.trim() : BRAND_SOCIAL_IMAGE;
   if (candidate.startsWith('http://') || candidate.startsWith('https://')) {
     return candidate;
   }

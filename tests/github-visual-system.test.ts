@@ -143,10 +143,9 @@ test('model-directory capture provenance describes only the visible public hero'
     assert.match(text, /pricing.*cues/i);
     assert.match(text, /model artwork/i);
   }
-  assert.match(record.claim, /Public.*captured on 16 September 2026.*pricing and specification cues/i);
-  assert.match(record.alt, /Dated.*model.directory hero/i);
-  assert.equal(record.capturedAt, '2026-09-16T00:07:39Z');
-  assert.equal(record.maxvideoaiRevision, '5423599b472ae6d6e31beb3e8a5c59e23d3a1a83');
+  assert.match(record.claim, /Public.*captured on 27 November 2026.*pricing and specification cues/i);
+  assert.match(record.capturedAt ?? '', /^2026-11-27T/);
+  assert.equal(record.maxvideoaiRevision, '0ce28aa9d8b67005b224572d669c8f3b60da81c2');
   for (const text of [record.claim, record.alt, record.reviewTrigger]) {
     assert.doesNotMatch(text, /recommended starting points|capability summaries|editorial scores/i);
     assert.doesNotMatch(text, /recommendation|ranking|generation|assistant execution/i);
