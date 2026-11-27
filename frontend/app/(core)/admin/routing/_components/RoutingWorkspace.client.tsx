@@ -62,10 +62,11 @@ function useObservedTraffic(enabled: boolean) {
   return { snapshot, state };
 }
 
-export function RoutingWorkspace({ scenarios, routes, initialEngine }: {
+export function RoutingWorkspace({ scenarios, routes, initialEngine, initialReplay }: {
   scenarios: RoutingScenario[];
   routes: InstalledRoute[];
   initialEngine?: string;
+  initialReplay?: boolean;
 }) {
   const [observing, setObserving] = useState(false);
   const { snapshot, state } = useObservedTraffic(observing);
@@ -82,10 +83,10 @@ export function RoutingWorkspace({ scenarios, routes, initialEngine }: {
     }
   }
 
-  const [labOpen, setLabOpen] = useState(Boolean(initialEngine));
+  const [labOpen, setLabOpen] = useState(Boolean(initialEngine) && !initialReplay);
   return <>
     <div>
-      <TrafficMap scenarios={scenarios} routes={routes} observed={snapshot}
+      <TrafficMap scenarios={scenarios} routes={routes} observed={snapshot} initialReplay={initialReplay} initialReplayEngine={initialEngine}
         onObservedChange={setObserving} onInspectScenario={inspect} />
       {observing && state !== 'ready' && (
         <p role="status" className="mt-2 text-sm text-text-secondary">

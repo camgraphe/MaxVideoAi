@@ -58,7 +58,7 @@ function NodePanel({ node, x, y, width, engine, selected, onClick }: {
   const tone = node.tone ?? 'idle';
   const Icon = engine ? Layers3 : Box;
   const recorded = node.detail?.endsWith(' record') || node.detail?.endsWith(' records');
-  const state = node.standby ? 'Standby' : recorded && tone === 'candidate' ? 'Recorded' : statusLabel[tone];
+  const state = node.stateLabel ?? (node.standby ? 'Standby' : recorded && tone === 'candidate' ? 'Recorded' : statusLabel[tone]);
   const value = node.detail && !node.standby ? node.detail : engine ? node.id : '';
   // Long labels can occur on historical engines. Preserve the complete label inside its panel.
   const textWidth = width - 36;

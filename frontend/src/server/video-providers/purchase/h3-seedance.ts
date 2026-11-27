@@ -19,7 +19,8 @@ export const H3_FAL_OFFER: PurchaseOffer = {
   exclude: (r) => simpleMedia(r, 9) ? null : 'Outside reviewed H3 media profiles',
   quote: (r) => {
     const resolution = MINIMAX_H3_RESOLUTIONS.find((value) => value === r.resolution.toUpperCase());
-    if (!resolution || !MINIMAX_H3_ASPECT_RATIOS.some((value) => value === r.aspectRatio)
+    const inheritsImageRatio = r.mode === 'i2v' && r.hasStartFrame && r.aspectRatio === null;
+    if (!resolution || (!inheritsImageRatio && !MINIMAX_H3_ASPECT_RATIOS.some((value) => value === r.aspectRatio))
       || !Number.isInteger(r.durationSec) || r.durationSec < 5 || r.durationSec > 15) return null;
     const { subtotalUsd } = calculateMinimaxH3ProviderPrice({ resolution, durationSec: r.durationSec, referenceImageCount: r.images });
     return Math.round(subtotalUsd * 1e6);

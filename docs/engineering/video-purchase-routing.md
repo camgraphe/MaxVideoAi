@@ -38,6 +38,30 @@ For Kling 3 Pro five seconds of text with audio on costs an estimated $0.84 on b
 
 The Kling comparison is attached to the existing first direct attempt. It models verified credit refusal and respects the configured credit-fallback flag. The established Kling handler controls dispatch, retries and customer billing. It can still retry certain ambiguous failures. The new simulator stops on those events. Compare the recorded plan with the actual attempt chain before enabling any new Kling execution policy. Version 2 snapshots record the policy. Older snapshots and jobs without a purchase decision stay readable. Use `/admin/routing?engine=kling-o3-pro` for the worked example. The browser receives scenario prices and capabilities only. The recorded job history belongs to the authenticated admin view.
 
+## Replaying the last 30 complete days
+
+Open `/admin/routing?view=replay`. Add `&engine=wan-3-prime` to open a particular engine. The timeline groups anonymized profiles by their recorded time bucket and settings. Use the historical owner, installed suppliers or candidate suppliers view to compare the same request. The playback depicts a counterfactual selection. Actual failed handoffs are available in the separate recorded-traffic view.
+
+The cohort consists of all non-admin jobs recorded on the video surface in the previous 30 complete Europe/Madrid calendar days. A completed wallet payment, confirmed owner, compatible request, trusted USD ceiling and known purchase rate are required for the economic totals. Amounts use the local tariff cards in integer USD microdollars. The recorded owner is repriced at the same tariff basis as the hypothetical first choice. The calculation estimates the cost of the selected first choice. For a completed Fal job the saved core aspect ratio can describe the output. Prefer the initial attempt or matched Fal submission for the requested framing. A size observed on the output cannot qualify a competing supplier. BytePlus profiles use recorded provider tokens when available. Actual negotiated invoices, charges on previous attempts and the new suppliers’ acceptance rates can change the result.
+
+The baseline uses installed suppliers; APIMart and WaveSpeed each have their own single-addition comparison. The integration ranking first selects the supplier with the largest saving across the cohort, then values the next supplier only where it further reduces the cost. Volume on profiles with only one reachable route highlights which combinations deserve a new quote. A separate tariff scenario applies an assumed 30% discount to Alibaba Wan Standard on both sides. Kling Direct follows its funding declaration.
+
+The admin-only `GET /api/admin/routing/replay` loads the cohort on demand. The current environment’s read uses a fixed calendar window and shares a five-minute in-process cache across report pages. Engine, day and status filters operate before pagination. The default local development source can be set with `VIDEO_ROUTING_REPLAY_ARCHIVE` pointing to an anonymized capture outside the repository and the public web root. The source selector can explicitly query the environment database instead. The page shows the selected source, capture time, period, coverage and exclusion counts. Browser responses are private and uncached. The replay has no submission path.
+
+For an offline local review, `scripts/export-routing-replay-sql.ts START_DAY END_DAY` emits the same SELECT as the endpoint with an `:admin_ids` placeholder. Run it through OUTREACH’s `scripts/read_v2_sql.py` with the environment file and `frontend/lib/admin/exclusions.ts`. Pipe its CSV into `python3 scripts/save-routing-replay-archive.py START_DAY END_DAY /private/path/replay.json`. Use `set -o pipefail` in a shell pipeline and keep the destination outside the repository. Each capture is written atomically with owner-only permissions. Verify the distinct monthly job counts by engine before using the estimates.
+
+### Archived 30-day comparison, October 29 through November 27, 2026
+
+The archive contains 2,021 requests across 27 engines, of which 1,662 completed with a wallet payment. The router can compare 1,267 purchases. At published rates the observed suppliers would cost $1,321.84 on that subset. Choosing the lowest qualified offer including candidates reduces the estimate to $1,165.72. Installed suppliers alone project zero savings. Both scenarios assume access to APIMart Gold.
+
+| Additional supplier | Saving at list | Saving with assumed Alibaba Wan Standard discount |
+| --- | ---: | ---: |
+| APIMart alone | $154.27 on 383 jobs | $95.42 on 383 jobs |
+| WaveSpeed after APIMart | $1.85 on 14 jobs | $0.16 on 2 jobs |
+| Combined | $156.12 | $95.58 |
+
+H3 reference-to-video at 480p has 686 comparable jobs with Fal as the sole eligible route, worth an estimated $464.61. This is the largest group for which to seek another compatible quote. Access to the candidate tariffs, exact feature equivalence and commercial rights still need confirmation before a live trial.
+
 ## Historical replay and additional engines
 
 The admin viewer includes a saved purchase audit and an on-demand replay for the previous 30 complete Europe/Madrid calendar days in the current environment. The query aggregates request settings for paid, completed, non-admin Wan Prime jobs. It reads no prompts or media URLs into the report. The replay uses first-attempt media roles and mode, the recorded USD customer ceiling, and the same purchase planner as the canary. A missing first-attempt record, ambiguous media counts or unsupported currency cannot contribute savings. At replay time all three suppliers are assumed available, the APIMart Gold rate is assumed accessible and the historical spend uses Alibaba Singapore LIST as its comparison. Manual session caps and invoice discounts are outside this estimate.

@@ -68,11 +68,12 @@ test('WaveSpeed ref2v verifies each video, rounds their combined duration once a
 });
 
 test('MiniMax comparisons keep editions, billable references, native frame ratios and supported options distinct', () => {
-  const h3 = { ...textClip, engineId: 'minimax-h3', resolution: '768P', promptCharacters: 200 };
+  const h3 = { ...textClip, engineId: 'minimax-h3', resolution: '768P', promptCharacters: 200, h3PromptExpansion: 'disabled' };
   const max = { ...h3, engineId: 'minimax-h3-max' };
   for (const request of [
     {...h3, resolution: '480p'}, {...h3, resolution: '4K'}, {...max, resolution: '2K'}, {...max, mode: 'i2v', hasStartFrame: true, images: 1},
-    {...h3, audioEnabled: false}, {...h3, promptCharacters: 7001}, {...h3, promptCharacters: undefined}, {...h3, mode: 'ref2v', images: 10},
+    {...h3, audioEnabled: false}, {...h3, h3PromptExpansion: 'balanced'}, {...h3, h3PromptExpansion: undefined},
+    {...h3, promptCharacters: 7001}, {...h3, promptCharacters: undefined}, {...h3, mode: 'ref2v', images: 10},
   ]) assert.ok(candidate('apimart', request).excluded);
   assert.equal(candidate('apimart', {...max, mode: 'i2v', hasStartFrame: true, images: 1, aspectRatio: null}).excluded, null);
   assert.equal(candidate('fal', {...max, durationSec: 5, resolution: '480p'}).costMicros, 250_000);

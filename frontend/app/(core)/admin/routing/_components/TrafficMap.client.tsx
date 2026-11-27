@@ -1,9 +1,10 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import {
   Activity, ArrowRight, ArrowUpRight, ChevronDown, CirclePause, CirclePlay, ExternalLink,
-  FlaskConical, GitBranch, Maximize2, Minimize2, Radio, SkipForward, Waypoints, X,
+  FlaskConical, GitBranch, History, Maximize2, Minimize2, Radio, SkipForward, Waypoints, X,
 } from 'lucide-react';
 import { PURCHASE_STRATEGY_LABELS } from '@/lib/video-purchase-decision';
 import type { InstalledRoute } from '../_lib/installed-routes';
@@ -18,10 +19,15 @@ import { TrafficDiagram } from './TrafficDiagram.client';
 import { RoutingMonitor } from './RoutingMonitor.client';
 import s from './TrafficMap.module.css';
 
+const HistoricalReplay = dynamic(() => import('./HistoricalReplay.client').then(module => module.HistoricalReplay));
+
+type Source = 'demo' | 'observed' | 'replay';
 type Props = {
   scenarios: RoutingScenario[];
   routes: InstalledRoute[];
   observed: RoutingTrafficSnapshot | null;
+  initialReplay?: boolean;
+  initialReplayEngine?: string;
   onInspectScenario?: (id: string) => void;
   onObservedChange?: (active: boolean) => void;
 };
@@ -38,8 +44,8 @@ const visibleWithSelection = (nodes: MapNode[], selected: string, limit: number)
   return first;
 };
 
-export function TrafficMap({ scenarios, routes, observed, onInspectScenario, onObservedChange }: Props) {
-  const [source, setSource] = useState<'demo' | 'observed'>('demo');
+export function TrafficMap({ scenarios, routes, observed, initialReplay, initialReplayEngine, onInspectScenario, onObservedChange }: Props) {
+  const [source, setSource] = useState<Source>(initialReplay ? 'replay' : 'demo');
   const [engine, setEngine] = useState('');
   const [pinned, pin] = useState('');
   const [manualEvent, selectEvent] = useState<TrafficEvent | null>(null);
@@ -96,7 +102,7 @@ export function TrafficMap({ scenarios, routes, observed, onInspectScenario, onO
     return () => clearInterval(t);
   }, [playing, sequence.length]);
   const observedEvents = useMemo(() => observed?.events.filter(e => !engine || e.engineId === engine) ?? [], [observed, engine]);
-  const autoObserve = !isDemo && !manualEvent && motion && foreground && visible;
+  const autoObserve = source === 'observed' && !manualEvent && motion && foreground && visible;
   const arrival = autoObserve ? arrivals[0] : undefined;
   const selectedEvent = manualEvent ?? arrival?.event ?? observedEvents[0];
   useEffect(() => {
@@ -173,7 +179,7 @@ export function TrafficMap({ scenarios, routes, observed, onInspectScenario, onO
   function chooseEvent(event: TrafficEvent | null) {
     selectEvent(event); pin(''); setArrivals([]); previousSnapshot.current = null;
   }
-  function changeSource(to: 'demo' | 'observed') {
+  function changeSource(to: Source) {
     if (to === source) return;
     setSource(to); setEngine(''); reset(); onObservedChange?.(to === 'observed');
   }
@@ -197,17 +203,19 @@ export function TrafficMap({ scenarios, routes, observed, onInspectScenario, onO
       style={arrival ? { '--packet-duration': (arrival.duration * 0.82) + 'ms' } as CSSProperties : undefined}>
       <header className={s.header}>
         <div className={s.identity}><span className={s.mark}><Waypoints size={24} /></span>
-          <div><h2>Routing network</h2><p>{isDemo ? 'Price decisions and fallback paths' : 'Recorded provider activity'}</p></div>
+          <div><h2>Routing network</h2><p>{isDemo ? 'Price decisions and fallback paths' : source === 'observed' ? 'Recorded provider activity' : 'Historical demand at today’s estimated purchase prices'}</p></div>
         </div>
         <div className={s.headerActions}><div className={s.sourceTabs} aria-label="Traffic source">
           <button type="button" aria-pressed={isDemo} onClick={() => changeSource('demo')}><FlaskConical size={14} />Simulation</button>
-          <button type="button" aria-pressed={!isDemo} onClick={() => changeSource('observed')}><Radio size={15} />Observed</button>
+          <button type="button" aria-pressed={source === 'observed'} onClick={() => changeSource('observed')}><Radio size={15} />Observed</button>
+          <button type="button" aria-pressed={source === 'replay'} onClick={() => changeSource('replay')}><History size={15}/>Replay 30d</button>
         </div>
         <button type="button" className={s.expand} onClick={() => void toggleFull().catch(() => {})}
           aria-label={full ? 'Exit full screen' : 'Enter full screen'} title={full ? 'Exit full screen' : 'Full screen'}>
           {full ? <Minimize2 size={16}/> : <Maximize2 size={16}/>}
         </button></div>
       </header>
+      {source === 'replay' ? <HistoricalReplay initialEngine={initialReplayEngine} labels={labels} compact={compact} motion={motion} visible={visible && foreground} /> : <>
       <div className={s.tools}>
         <label className={s.select}><Activity size={13} /><select aria-label="Filter traffic by engine" value={engine}
           onChange={e => chooseEngine(e.target.value)}><option value="">All engines</option>
@@ -268,6 +276,7 @@ export function TrafficMap({ scenarios, routes, observed, onInspectScenario, onO
       {networkVisible && <RoutingMonitor observed={!isDemo} offers={monitorOffers}
         ceilingMicros={isDemo ? trace?.decision.ceilingMicros : undefined}
         events={monitorEvents} counts={observedCounts} />}
+      </>}
     </section>
   );
 }

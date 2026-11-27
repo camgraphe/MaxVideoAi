@@ -1,6 +1,6 @@
 # Admin video purchase comparisons
 
-The admin simulator includes these additional supplier quotes, checked on 2026-11-27. Each comparison-only candidate carries its rate source. Console prices are published estimates in USD. The paid dispatch path and the historical Wan replay continue using the offer set in the purchase router.
+The admin simulator and economic replay use these supplier quotes, checked on 2026-11-27. Each comparison-only candidate carries its rate source. Purchases are estimated in USD using the matching supplier tariff. The dated Wan Prime study and paid dispatch use the offer set in the purchase router.
 
 ## WaveSpeedAI
 
@@ -18,3 +18,5 @@ WaveSpeedAI publishes these promotional rates for text, first-frame or paired-fr
 The APIMart Gold quote uses the USD equivalent of the published credits. H3 supports 768p at $0.05712/s and 2K at $0.09144/s. Each reference image beyond the first five adds $0.02288. H3 Max supports 480p at $0.03768/s, 768p at $0.05712/s and 1080p at $0.128/s. Each reference image beyond the first two adds $0.05712. The editions have separate scenarios. The comparison requires a prompt within APIMart's 7,000-character limit, native audio, and text or reviewed image roles. An initial frame inherits its input aspect ratio. H3 Max comparisons with Fal currently show text and initial-frame cases because Fal reference mode requires a trusted reference-token budget.
 
 [APIMart H3](https://apimart.ai/model/minimax-h3) · [APIMart H3 Max](https://apimart.ai/model/minimax-h3-max) · [Fal H3 text](https://fal.ai/models/minimax/h3/text-to-video) · [Fal H3 references](https://fal.ai/models/minimax/h3/reference-to-video) · [Fal H3 Max text](https://fal.ai/models/minimax/h3-max/text-to-video) · [Fal H3 Max frames](https://fal.ai/models/minimax/h3-max/image-to-video).
+
+Fal exposes several prompt expansion modes. The APIMart comparison requires evidence that Fal prompt expansion was disabled. The H3 simulator profiles with a Gold quote make this assumption explicit. [Fal H3 image input schema](https://fal.ai/models/minimax/h3/image-to-video/api) · [APIMart H3 generation schema](https://docs.apimart.ai/en/api-reference/videos/minimax-h3/generation) · [APIMart H3 Max generation schema](https://docs.apimart.ai/en/api-reference/videos/minimax-h3/max).

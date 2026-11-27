@@ -5,7 +5,7 @@ import type { RoutingScenario } from './routing-scenarios';
 import type { RoutingTrafficSnapshot } from './routing-traffic-types';
 
 export type MapTone = 'idle' | 'candidate' | 'active' | 'success' | 'fallback' | 'failure' | 'warning';
-export type MapNode = { id: string; label: string; detail?: string; tone?: MapTone; standby?: boolean };
+export type MapNode = { id: string; label: string; detail?: string; stateLabel?: string; tone?: MapTone; standby?: boolean };
 export type TrafficEvent = RoutingTrafficSnapshot['events'][number];
 
 export function providerLabel(id: string) {

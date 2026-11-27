@@ -29,6 +29,7 @@ function scenario(id: string, label: string, request: ComparisonRequest) {
     request.resolution,
     request.aspectRatio,
     typeof request.audioEnabled === 'boolean' ? (request.audioEnabled ? 'audio on' : 'audio off') : '',
+    request.h3PromptExpansion === 'disabled' ? 'prompt expansion off' : '',
     request.observedVideoTokens ? request.observedVideoTokens.toLocaleString('en-US') + ' observed tokens' : '',
   ]
     .filter(Boolean)
@@ -94,17 +95,17 @@ export function routingScenarios(): RoutingScenario[] {
       hasVideo: true, inputVideoSeconds: 5, referenceVideoSeconds: [5],
     }),
     scenario('h3-2k', '2K text to video', {
-      ...wan, engineId: 'minimax-h3', resolution: '2K', durationSec: 5, aspectRatio: '21:9', promptCharacters: 120,
+      ...wan, engineId: 'minimax-h3', resolution: '2K', durationSec: 5, aspectRatio: '21:9', promptCharacters: 120, h3PromptExpansion: 'disabled',
     }),
     scenario('h3-six-images', 'Six reference images', {
-      ...wan, engineId: 'minimax-h3', mode: 'ref2v', resolution: '768p', images: 6, durationSec: 10, promptCharacters: 120,
+      ...wan, engineId: 'minimax-h3', mode: 'ref2v', resolution: '768p', images: 6, durationSec: 10, promptCharacters: 120, h3PromptExpansion: 'disabled',
     }),
     scenario('h3-max-text', 'Text to video', {
-      ...wan, engineId: 'minimax-h3-max', durationSec: 5, resolution: '768p', promptCharacters: 120,
+      ...wan, engineId: 'minimax-h3-max', durationSec: 5, resolution: '768p', promptCharacters: 120, h3PromptExpansion: 'disabled',
     }),
     scenario('h3-max-frame', 'Start frame', {
       ...wan, engineId: 'minimax-h3-max', mode: 'i2v', hasStartFrame: true, images: 1,
-      aspectRatio: null, resolution: '1080p', durationSec: 10, promptCharacters: 120,
+      aspectRatio: null, resolution: '1080p', durationSec: 10, promptCharacters: 120, h3PromptExpansion: 'disabled',
     }),
     scenario('h3-references', 'Three reference images', {
       ...wan, engineId: 'minimax-h3', mode: 'ref2v', images: 3, durationSec: 10, aspectRatio: '21:9', audioEnabled: undefined,

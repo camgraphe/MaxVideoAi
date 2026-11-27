@@ -5,10 +5,13 @@ import type { PurchaseCandidate, PurchaseProviderKey } from '@/lib/video-purchas
 import { wanImageMode } from '@/server/video-providers/apimart/wan-image-mode';
 import { quoteVideoPurchase, type PurchaseRequest } from '@/server/video-providers/purchase-router';
 
-/** These facts describe the scenario. They never enter a submission or a historical replay. */
+/** Extra facts for admin simulations and economic replays of observed profiles. */
 export type ComparisonRequest = PurchaseRequest & {
   referenceVideoSeconds?: readonly number[];
   promptCharacters?: number;
+  h3PromptExpansion?: string;
+  requestedRatioVerified?: boolean;
+  observedAspectRatio?: string;
 };
 
 type CatalogueCandidate = PurchaseCandidate<PurchaseProviderKey>;
@@ -77,6 +80,8 @@ function h3GoldQuote(request: ComparisonRequest, max: boolean): CatalogueCandida
   const rate = (max ? h3MaxRates : h3Rates)[request.resolution.toUpperCase()];
   let excluded = h3Profile(request);
   if (!excluded && !Number.isSafeInteger(rate)) excluded = 'Resolution absent from the APIMart Gold rate card';
+  if (!excluded && request.h3PromptExpansion !== 'disabled')
+    excluded = 'APIMart has no reviewed equivalent for the Fal prompt expansion setting';
   if (!excluded && (!Number.isInteger(request.promptCharacters) || !request.promptCharacters || request.promptCharacters < 1 || request.promptCharacters > 7000))
     excluded = 'APIMart requires a known prompt length of 1 to 7,000 characters';
   const extraImages = Math.max(0, request.images - (max ? 2 : 5));
@@ -100,7 +105,7 @@ function h3MaxFalQuote(request: ComparisonRequest): PurchaseCandidate<'fal'> {
     costMicros: cost ? Math.round(cost.providerCostUsd * 1e6) : null };
 }
 
-/** Import only in the admin lab. Transport and saved-replay planners retain their own reviewed offer set. */
+/** Used by the admin simulator and economic replay. The paid router and dated Wan study have separate offer sets. */
 export function quoteComparisonRequest(request: ComparisonRequest) {
   if (request.engineId === 'minimax-h3-max') {
     const baseline = h3MaxFalQuote(request);

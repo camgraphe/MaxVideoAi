@@ -12,7 +12,7 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 export const metadata = { title: 'Video routing · Admin' };
 
-export default async function AdminVideoRoutingPage({ searchParams }: { searchParams: Promise<{ engine?: string; replay?: string }> }) {
+export default async function AdminVideoRoutingPage({ searchParams }: { searchParams: Promise<{ engine?: string; replay?: string; view?: string }> }) {
   // The layout owns the redirect. Gate data access independently during parallel rendering.
   try {
     await requireAdmin();
@@ -32,7 +32,7 @@ export default async function AdminVideoRoutingPage({ searchParams }: { searchPa
         title="Video routing"
         description="Compare supplier costs, rehearse a fallback and inspect the actual attempts for a generation."
       />
-      <RoutingWorkspace initialEngine={params.engine} scenarios={routingScenarios()} routes={installedRoutes()} />
+      <RoutingWorkspace initialReplay={params.view === 'replay'} initialEngine={params.engine} scenarios={routingScenarios()} routes={installedRoutes()} />
       <div className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-text-secondary" aria-label="Admin purchase pilot settings">
         {([['wan-3', 'Wan Standard'], ['wan-3-prime', 'Wan Prime']] as const).map(([engine, label]) => (
           <span key={engine}><strong>{label}</strong> · {pilotLabels[configuredWanPurchaseCanary(engine) ?? 'shadow']}</span>
