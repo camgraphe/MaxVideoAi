@@ -101,6 +101,7 @@ test('direct video providers require their own effective credentials', () => {
       id: 'kling-3-pro',
       flags: {
         KLING_DIRECT_ENABLED: 'true',
+        KLING_DIRECT_V3_FUNDED: 'true',
         KLING_DIRECT_PUBLIC_ROUTING_ENABLED: 'true',
         KLING_DIRECT_ADMIN_ONLY: 'false',
       },

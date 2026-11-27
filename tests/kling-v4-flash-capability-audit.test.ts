@@ -20,7 +20,7 @@ test('Kling direct flags cannot reroute Flash or its production V4 precedent to 
     for (const mode of ['t2v', 'i2v', 'ref2v']) {
       for (const isAdmin of [false, true]) {
         assert.deepEqual(resolveVideoProviderRoutingPlan({ engineId, mode, isAdmin, env: {
-          KLING_DIRECT_ENABLED: 'true', KLING_DIRECT_PUBLIC_ROUTING_ENABLED: 'true',
+          KLING_DIRECT_ENABLED: 'true', KLING_DIRECT_V3_FUNDED: 'true', KLING_DIRECT_PUBLIC_ROUTING_ENABLED: 'true',
           KLING_DIRECT_ADMIN_ONLY: 'false', KLING_DIRECT_FALLBACK_TO_FAL_ENABLED: 'true',
           KLING_DIRECT_FALLBACK_ON_CREDITS_DEPLETED_ENABLED: 'true', KLING_DIRECT_ELEMENT_REGISTRATION_ENABLED: 'true',
         } }), { kind: 'fal_only', primaryProvider: 'fal', fallbackEnabled: false });

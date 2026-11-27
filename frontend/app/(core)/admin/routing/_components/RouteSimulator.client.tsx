@@ -47,29 +47,39 @@ export function RouteSimulator({
   );
   const [cap, setCap] = useState('');
   const [policyOverride, setPolicyOverride] = useState<PurchaseStrategy | null>(null);
-  const [preset, setPreset] = useState<Preset>('fallback');
+  const [presetOverride, setPreset] = useState<Preset | null>(null);
+  const [fundedPacks, setFundedPacks] = useState<string[]>([]);
   const [custom, setCustom] = useState<Conditions | null>(null);
   const scenario = scenarios.find((item) => item.id === profile) ?? scenarios[0];
+  const standby = routes.filter((r) => r.standbyReason && scenario.candidates.some((c) => c.provider === r.provider));
+  const fundingExclusion = Object.fromEntries(
+    standby.filter((r) => !fundedPacks.includes(r.provider)).map((r) => [r.provider, r.standbyReason!])
+  );
+  const preset = presetOverride ?? (standby.length ? 'best' : 'fallback');
   const strategy = policyOverride ?? scenario.strategy;
   const engines = new Map(scenarios.map((item) => [item.engineId, item.engineLabel]));
   function selectProfile(id: string) {
     setProfile(id);
     setCap('');
+    setFundedPacks([]);
+    setPreset(null);
     setCustom(null);
     setPolicyOverride(null);
   }
   const ceilingMicros =
     cap === '' ? scenario.ceiling : Math.min(scenario.ceiling, Math.floor(Number(cap) * 1e6));
-  const eligible = rankQuotedOffers(scenario.candidates, { ceilingMicros, strategy });
+  const eligible = rankQuotedOffers(scenario.candidates, { ceilingMicros, strategy, unavailable: fundingExclusion });
   const conditions = custom ?? presetConditions(preset, eligible.order);
   const unavailable = Object.fromEntries(
     Object.entries(conditions)
       .filter(([, state]) => state === 'offline')
       .map(([key]) => [key, 'Unavailable before submission'])
   );
-  const decision = rankQuotedOffers(scenario.candidates, { ceilingMicros, strategy, unavailable });
+  const decision = rankQuotedOffers(scenario.candidates, {
+    ceilingMicros, strategy, unavailable: { ...unavailable, ...fundingExclusion },
+  });
   const frames = routeFrames(decision, conditions);
-  const runKey = JSON.stringify([profile, ceilingMicros, strategy, conditions]);
+  const runKey = JSON.stringify([profile, ceilingMicros, strategy, conditions, fundingExclusion]);
   const simulation = view === 'simulation';
 
   return (
@@ -155,6 +165,25 @@ export function RouteSimulator({
             </span>
             <span className={s.settings}>{scenario.settings}</span>
           </div>
+          {standby.map((route) => (
+            <div className={s.funding} key={route.provider}>
+              <span>{route.standbyReason}</span>
+              <label>
+                <input
+                  type="checkbox"
+                  aria-label={'Simulate a funded pack for ' + PROVIDER_LABELS[route.provider]}
+                  checked={fundedPacks.includes(route.provider)}
+                  onChange={(e) => {
+                    setFundedPacks(e.target.checked
+                      ? [...fundedPacks, route.provider]
+                      : fundedPacks.filter((provider) => provider !== route.provider));
+                    setCustom(null);
+                  }}
+                />
+                Simulate a funded pack
+              </label>
+            </div>
+          ))}
           <RouteGraph key={runKey} frames={frames} scenario={scenario} decision={decision} />
           <div className={s.experiments}>
             <span>Simulate</span>
@@ -199,7 +228,8 @@ export function RouteSimulator({
                   <span>{PROVIDER_LABELS[row.provider]}</span>
                   <select
                     aria-label={PROVIDER_LABELS[row.provider] + ' response'}
-                    value={conditions[row.provider] ?? 'accepted'}
+                    disabled={Boolean(fundingExclusion[row.provider])}
+                    value={fundingExclusion[row.provider] ? 'offline' : conditions[row.provider] ?? 'accepted'}
                     onChange={(e) => setCustom({ ...conditions, [row.provider]: e.target.value as Response })}
                   >
                     {Object.entries(responseLabels).map(([value, label]) => (

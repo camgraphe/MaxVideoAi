@@ -13,6 +13,7 @@ import { resolveVideoProviderRoutingPlan } from '../frontend/src/server/video-pr
 
 const directFirstEnv = {
   KLING_DIRECT_ENABLED: 'true',
+  KLING_DIRECT_V3_FUNDED: 'true',
   KLING_DIRECT_PUBLIC_ROUTING_ENABLED: 'true',
   KLING_DIRECT_ADMIN_ONLY: 'false',
   KLING_DIRECT_FALLBACK_TO_FAL_ENABLED: 'true',

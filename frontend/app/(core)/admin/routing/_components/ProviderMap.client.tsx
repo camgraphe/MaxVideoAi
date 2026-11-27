@@ -12,6 +12,7 @@ type Selection = { engine: string } | { provider: string };
 export function ProviderMap({ routes }: { routes: InstalledRoute[] }) {
   const [configured, setConfigured] = useState(false);
   const [selected, setSelected] = useState<Selection | null>(null);
+  const standby = new Map(routes.filter((r) => r.standbyReason).map((r) => [String(r.provider), r.standbyReason]));
   const providers = [...new Set(routes.flatMap((r) => [r.provider, ...r.targets]))].sort((a, b) =>
     name(a).localeCompare(name(b), 'en'),
   );
@@ -62,7 +63,7 @@ export function ProviderMap({ routes }: { routes: InstalledRoute[] }) {
             const a = y(link.engineIndex, routes.length),
               b = y(providers.indexOf(link.provider), providers.length);
             const d = `M 373 ${a} C 527 ${a}, 479 ${b}, 626 ${b}`;
-            const active = matching.includes(link);
+            const active = matching.includes(link) && !standby.has(link.provider);
             return (
               <g key={link.engine + link.provider}>
                 <path
@@ -103,7 +104,7 @@ export function ProviderMap({ routes }: { routes: InstalledRoute[] }) {
         })}
         {providers.map((key, i) => {
           const current = provider === key;
-          const active = current || matching.some((link) => link.provider === key);
+          const active = !standby.has(key) && (current || matching.some((link) => link.provider === key));
           return (
             <button
               key={key}
@@ -114,7 +115,7 @@ export function ProviderMap({ routes }: { routes: InstalledRoute[] }) {
               onClick={() => pick({ provider: key }, current)}
             >
               <span className={s.port} />
-              <strong>{name(key)}</strong>
+              <strong>{name(key)}{standby.has(key) && <small className={s.standby}>Standby · No funds</small>}</strong>
             </button>
           );
         })}
@@ -126,6 +127,7 @@ export function ProviderMap({ routes }: { routes: InstalledRoute[] }) {
             {engine?.label ??
               (provider ? name(provider) : configured ? 'Configured routes' : 'Installed integrations')}
           </strong>
+          {provider && standby.get(provider) && <p>{standby.get(provider)}</p>}
           <p>
             {engine
               ? matching.length

@@ -26,6 +26,7 @@ import {
 } from '@/server/video-providers/byteplus-modelark';
 import { requiresBytePlusSeedanceEarlyGate } from '@/server/video-providers/byteplus-modelark-profile-policy';
 import {
+  isKlingDirectV3Funded,
   resolveVideoProviderRoutingPlan,
   shouldRouteKlingDirectSourceElementsToFal,
   type VideoProviderRoutingEnv,
@@ -34,6 +35,7 @@ import {
 import { isGoogleVertexOmniEngine } from '@/server/video-providers/google-vertex-omni/model-map';
 import { isAlibabaDirectEngine } from '@/server/video-providers/alibaba-model-studio/model-map';
 import { isGoogleVertexVeoEngine } from '@/server/video-providers/google-vertex-veo/model-map';
+import { requiresKlingDirectControls } from '@/server/video-providers/kling-direct/capabilities';
 import { isKlingDirectEngine } from '@/server/video-providers/kling-direct/model-map';
 import { isLumaAgentsVideoEngine } from '@/server/video-providers/luma-agents/model-map';
 import { isMinimaxH3MaxEngineId, isMinimaxH3MaxRuntimeModeAvailable } from '@/lib/minimax-h3-max';
@@ -84,6 +86,33 @@ const defaultGenerateRouteContextBoundaries: GenerateRouteContextBoundaries = {
   requireAdmin,
   resolveLaunchCanaryRequestContext,
 };
+
+function resolveGenerateProviderPlan(params: {
+  engineId: string;
+  mode: Mode;
+  body: Record<string, unknown>;
+  isBytePlusV1a: boolean;
+  isAdmin: boolean;
+  env?: VideoProviderRoutingEnv;
+}): { ok: true; providerRoutingPlan: VideoProviderRoutingPlan } | Extract<GenerateRouteContextResult, { ok: false }> {
+  const { body, engineId, mode, isAdmin, env } = params;
+  const falOnly = { kind: 'fal_only', primaryProvider: 'fal', fallbackEnabled: false } as const;
+  let providerRoutingPlan = params.isBytePlusV1a ? falOnly
+    : resolveVideoProviderRoutingPlan({ engineId, mode, operation: body.operation, isAdmin, env });
+  if (shouldRouteKlingDirectSourceElementsToFal({
+    providerRoutingPlan,
+    elementCount: Array.isArray(body.elements) ? body.elements.length : 0,
+  })) providerRoutingPlan = falOnly;
+  if (providerRoutingPlan.kind === 'fal_only' && isKlingDirectEngine(engineId)
+    && requiresKlingDirectControls(body.extraInputValues)) {
+    return { ok: false, status: 503, body: {
+      ok: false,
+      error: 'KLING_DIRECT_CONTROLS_UNAVAILABLE',
+      message: 'The selected controls are currently unavailable. Remove them to generate this video.',
+    } };
+  }
+  return { ok: true, providerRoutingPlan };
+}
 
 export function resolveTrustedPaidGenerateRouteContext(params: {
   body: Record<string, unknown>;
@@ -144,15 +173,9 @@ export function resolveTrustedPaidGenerateRouteContext(params: {
     return { ok: false, status: 400, body: { ok: false, error: 'Engine unavailable' } };
   }
 
-  let providerRoutingPlan: VideoProviderRoutingPlan = isBytePlusV1a
-    ? { kind: 'fal_only', primaryProvider: 'fal', fallbackEnabled: false }
-    : resolveVideoProviderRoutingPlan({ engineId: engine.id, mode, operation: body.operation, isAdmin: false, env: providerEnv });
-  if (shouldRouteKlingDirectSourceElementsToFal({
-    providerRoutingPlan,
-    elementCount: Array.isArray(body.elements) ? body.elements.length : 0,
-  })) {
-    providerRoutingPlan = { kind: 'fal_only', primaryProvider: 'fal', fallbackEnabled: false };
-  }
+  const routing = resolveGenerateProviderPlan({ engineId: engine.id, mode, body, isBytePlusV1a, isAdmin: false, env: providerEnv });
+  if (!routing.ok) return routing;
+  const { providerRoutingPlan } = routing;
   if (
     providerRoutingPlan.kind === 'google_vertex_unavailable'
     || providerRoutingPlan.kind === 'luma_agents_unavailable'
@@ -389,7 +412,7 @@ export async function resolveGenerateRouteContext(params: {
   if (
     !isBytePlusV1a &&
     (isAlibabaDirectEngine(engine.id) ||
-      isKlingDirectEngine(engine.id) ||
+      (isKlingDirectEngine(engine.id) && isKlingDirectV3Funded()) ||
       isGoogleVertexVeoEngine(engine.id) ||
       isGoogleVertexOmniEngine(engine.id) ||
       isLumaAgentsVideoEngine(engine.id))
@@ -401,17 +424,9 @@ export async function resolveGenerateRouteContext(params: {
       isAdminForDirectProvider = false;
     }
   }
-  let providerRoutingPlan: VideoProviderRoutingPlan = isBytePlusV1a
-    ? ({ kind: 'fal_only', primaryProvider: 'fal', fallbackEnabled: false } as const)
-    : resolveVideoProviderRoutingPlan({ engineId: engine.id, mode, operation: body.operation, isAdmin: isAdminForDirectProvider });
-  if (
-    shouldRouteKlingDirectSourceElementsToFal({
-      providerRoutingPlan,
-      elementCount: Array.isArray(body.elements) ? body.elements.length : 0,
-    })
-  ) {
-    providerRoutingPlan = { kind: 'fal_only', primaryProvider: 'fal', fallbackEnabled: false };
-  }
+  const routing = resolveGenerateProviderPlan({ engineId: engine.id, mode, body, isBytePlusV1a, isAdmin: isAdminForDirectProvider });
+  if (!routing.ok) return routing;
+  const { providerRoutingPlan } = routing;
   if (
     providerRoutingPlan.kind === 'google_vertex_unavailable'
     || providerRoutingPlan.kind === 'luma_agents_unavailable'

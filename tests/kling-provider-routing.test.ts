@@ -61,6 +61,29 @@ test('Kling Modify preserves requested duration, source, references and keep-aud
   }
 });
 
+test('Kling 3, Turbo and O3 skip direct admission for public and admin requests until explicitly funded', () => {
+  const legacyFlags = {
+    KLING_DIRECT_ENABLED: 'true',
+    KLING_DIRECT_PUBLIC_ROUTING_ENABLED: 'true',
+    KLING_DIRECT_ADMIN_ONLY: 'false',
+    KLING_DIRECT_FALLBACK_TO_FAL_ENABLED: 'true',
+  };
+  for (const { id } of listFalEngines().filter((entry) => isKlingDirectEngine(entry.id))) {
+    for (const isAdmin of [false, true]) {
+      for (const declared of [undefined, 'false', 'unknown', 'true']) {
+        const plan = resolveVideoProviderRoutingPlan({
+          engineId: id, mode: 't2v', isAdmin, env: { ...legacyFlags, KLING_DIRECT_V3_FUNDED: declared },
+        });
+        assert.equal(plan.kind, declared === 'true' ? 'kling_direct_primary' : 'fal_only', id);
+      }
+    }
+  }
+  const fundedOnly = { KLING_DIRECT_V3_FUNDED: 'true', KLING_DIRECT_ENABLED: 'false' };
+  assert.equal(resolveVideoProviderRoutingPlan({
+    engineId: 'kling-o3-pro', mode: 'ref2v', isAdmin: true, env: fundedOnly,
+  }).kind, 'fal_only');
+});
+
 test('Kling direct router selects admin-only primary routing for V3 and O3 public engine slugs', () => {
   const klingEngineIds = [
     'kling-3-standard',
@@ -81,6 +104,7 @@ test('Kling direct router selects admin-only primary routing for V3 and O3 publi
       isAdmin: true,
       env: {
         KLING_DIRECT_ENABLED: 'true',
+        KLING_DIRECT_V3_FUNDED: 'true',
         KLING_DIRECT_PUBLIC_ROUTING_ENABLED: 'false',
         KLING_DIRECT_ADMIN_ONLY: 'true',
         KLING_DIRECT_FALLBACK_TO_FAL_ENABLED: 'true',
@@ -106,6 +130,7 @@ test('Kling direct routes source subject references to Fal unless element regist
     isAdmin: true,
     env: {
       KLING_DIRECT_ENABLED: 'true',
+      KLING_DIRECT_V3_FUNDED: 'true',
       KLING_DIRECT_PUBLIC_ROUTING_ENABLED: 'false',
       KLING_DIRECT_ADMIN_ONLY: 'true',
       KLING_DIRECT_FALLBACK_TO_FAL_ENABLED: 'true',
@@ -119,6 +144,7 @@ test('Kling direct routes source subject references to Fal unless element regist
     isAdmin: true,
     env: {
       KLING_DIRECT_ENABLED: 'true',
+      KLING_DIRECT_V3_FUNDED: 'true',
       KLING_DIRECT_PUBLIC_ROUTING_ENABLED: 'false',
       KLING_DIRECT_ADMIN_ONLY: 'true',
       KLING_DIRECT_FALLBACK_TO_FAL_ENABLED: 'true',
@@ -143,6 +169,7 @@ test('Kling direct router falls back to existing Fal routing for public users an
       isAdmin: false,
       env: {
         KLING_DIRECT_ENABLED: 'true',
+        KLING_DIRECT_V3_FUNDED: 'true',
         KLING_DIRECT_PUBLIC_ROUTING_ENABLED: 'false',
         KLING_DIRECT_ADMIN_ONLY: 'true',
       },
@@ -157,6 +184,7 @@ test('Kling direct router falls back to existing Fal routing for public users an
       isAdmin: true,
       env: {
         KLING_DIRECT_ENABLED: 'true',
+        KLING_DIRECT_V3_FUNDED: 'true',
         KLING_DIRECT_PUBLIC_ROUTING_ENABLED: 'true',
       },
     }),
@@ -170,6 +198,7 @@ test('Kling direct router falls back to existing Fal routing for public users an
       isAdmin: true,
       env: {
         KLING_DIRECT_ENABLED: 'true',
+        KLING_DIRECT_V3_FUNDED: 'true',
         KLING_DIRECT_PUBLIC_ROUTING_ENABLED: 'true',
       },
     }),
@@ -399,7 +428,7 @@ test('Kling 3.0 Omni catalog exposes video-to-video for Standard, Pro and fal-on
   const native4k = entriesById.get('kling-o3-4k');
   assert.ok(native4k);
   assert.equal(native4k.engine.modes.includes('extend'), false);
-  assert.equal(resolveVideoProviderRoutingPlan({ engineId: 'kling-o3-4k', mode: 'v2v', isAdmin: true, env: { KLING_DIRECT_ENABLED: 'true', KLING_DIRECT_PUBLIC_ROUTING_ENABLED: 'true' } }).kind, 'fal_only');
+  assert.equal(resolveVideoProviderRoutingPlan({ engineId: 'kling-o3-4k', mode: 'v2v', isAdmin: true, env: { KLING_DIRECT_ENABLED: 'true', KLING_DIRECT_V3_FUNDED: 'true', KLING_DIRECT_PUBLIC_ROUTING_ENABLED: 'true' } }).kind, 'fal_only');
   assert.equal(native4k.engine.modes.includes('v2v'), true);
   assert.equal(native4k.modes.some((mode) => mode.mode === 'v2v'), true);
 });
@@ -414,6 +443,7 @@ test('Kling direct is preferred for Kling 3.0 Omni video-to-video with Fal fallb
       isAdmin: true,
       env: {
         KLING_DIRECT_ENABLED: 'true',
+        KLING_DIRECT_V3_FUNDED: 'true',
         KLING_DIRECT_PUBLIC_ROUTING_ENABLED: 'true',
         KLING_DIRECT_FALLBACK_TO_FAL_ENABLED: 'true',
       },

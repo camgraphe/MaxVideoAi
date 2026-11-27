@@ -12,6 +12,7 @@ import {
 
 export type VideoProviderRoutingEnv = Readonly<Partial<Record<
   | 'KLING_DIRECT_ENABLED'
+  | 'KLING_DIRECT_V3_FUNDED'
   | 'ALIBABA_MODEL_STUDIO_ENABLED'
   | 'ALIBABA_MODEL_STUDIO_PUBLIC_ROUTING_ENABLED'
   | 'ALIBABA_MODEL_STUDIO_ADMIN_ONLY'
@@ -96,6 +97,11 @@ function readEnv(
   key: keyof VideoProviderRoutingEnv,
 ): string | undefined {
   return env?.[key] ?? process.env[key];
+}
+
+/** Operator declaration for new V3/O3 purchases. Polling accepted jobs is independent. */
+export function isKlingDirectV3Funded(env?: VideoProviderRoutingEnv): boolean {
+  return flagEnabled((env ?? process.env).KLING_DIRECT_V3_FUNDED);
 }
 
 function isGcsUriConfigured(value: string | undefined): boolean {
@@ -202,7 +208,7 @@ export function resolveVideoProviderRoutingPlan(params: {
 
   if (isKlingDirectEngine(params.engineId)) {
     if (!isKlingDirectModeSupported(params.engineId, params.mode)) return falOnly;
-    if (!flagEnabled(readEnv(params.env, 'KLING_DIRECT_ENABLED'))) return falOnly;
+    if (!isKlingDirectV3Funded(params.env) || !flagEnabled(readEnv(params.env, 'KLING_DIRECT_ENABLED'))) return falOnly;
 
     const publicRoutingEnabled = flagEnabled(readEnv(params.env, 'KLING_DIRECT_PUBLIC_ROUTING_ENABLED'));
     const adminOnly = flagEnabled(readEnv(params.env, 'KLING_DIRECT_ADMIN_ONLY') ?? 'true');

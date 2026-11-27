@@ -60,6 +60,52 @@ test('trusted paid context refuses unavailable direct-only Luma modes before pro
   }
 });
 
+test('paid Kling requests preserve direct-only controls through standby and restoration', () => {
+  const engine = getFalEngineById('kling-3-pro')!.engine;
+  const flags = { KLING_DIRECT_ENABLED: 'true', KLING_DIRECT_ADMIN_ONLY: 'false', KLING_DIRECT_PUBLIC_ROUTING_ENABLED: 'true' };
+  function route(extraInputValues: Record<string, unknown>, declared?: string) {
+    return resolveTrustedPaidGenerateRouteContext({
+      body: { extraInputValues, KLING_DIRECT_V3_FUNDED: 'true', provider: 'kling_direct' },
+      engine, mode: 'i2v', jobId: 'standby-test', providerEnv: { ...flags, KLING_DIRECT_V3_FUNDED: declared },
+    });
+  }
+  const compatible = route({ dynamic_masks: [], watermark_enabled: false });
+  assert.equal(compatible.ok && compatible.context.providerKey, 'fal');
+  for (const controls of [{ camera_control: { type: 'simple' } }, { static_mask: 'mask' }, { element_list: [{ element_id: 'e' }] }]) {
+    const paused = route(controls);
+    assert.equal(paused.ok ? 'submitted' : paused.body.error, 'KLING_DIRECT_CONTROLS_UNAVAILABLE');
+    const funded = route(controls, 'true');
+    assert.equal(funded.ok && funded.context.providerKey, 'kling_direct');
+  }
+});
+
+test('site skips the direct admin check and preserves controls when the Kling pack is empty', async () => {
+  const previous = process.env.KLING_DIRECT_V3_FUNDED;
+  process.env.KLING_DIRECT_V3_FUNDED = 'false';
+  try {
+    const engine = getFalEngineById('kling-3-pro')!.engine;
+    let adminLookups = 0;
+    const context = (extraInputValues: Record<string, unknown>) => resolveGenerateRouteContext({
+      body: { engineId: engine.id, mode: 'i2v', extraInputValues, KLING_DIRECT_V3_FUNDED: true },
+      req: new NextRequest('http://localhost/api/generate', { method: 'POST' }),
+      boundaryOverrides: {
+        getConfiguredEngine: async () => engine,
+        isDatabaseConfigured: () => true,
+        ensureBillingSchema: async () => {},
+        requireAdmin: async () => { adminLookups++; throw new Error('Unexpected admin lookup'); },
+      },
+    });
+    const compatible = await context({});
+    assert.equal(compatible.ok && compatible.context.providerKey, 'fal');
+    const exclusive = await context({ camera_control: { type: 'simple' } });
+    assert.equal(exclusive.ok ? 'submitted' : exclusive.body.error, 'KLING_DIRECT_CONTROLS_UNAVAILABLE');
+    assert.equal(adminLookups, 0);
+  } finally {
+    if (previous === undefined) delete process.env.KLING_DIRECT_V3_FUNDED;
+    else process.env.KLING_DIRECT_V3_FUNDED = previous;
+  }
+});
+
 test('generate route delegates engine, provider, db, and admin context', () => {
   assert.ok(existsSync(helperPath), 'route context should live in the generate route _lib folder');
   assert.match(routeSource, /from '\.\/_lib\/route-context'/);

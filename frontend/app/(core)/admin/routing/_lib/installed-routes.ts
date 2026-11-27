@@ -1,6 +1,7 @@
 import { getBaseEngineIncludingHidden } from '@/lib/engines';
 import { resolveTrustedPaidGenerateRouteContext } from '@/app/api/generate/_lib/route-context';
 import { PROVIDER_LABELS } from '@/lib/video-purchase-decision';
+import { isKlingDirectV3Funded } from '@/server/video-providers/router';
 import type { Mode } from '@/types/engines';
 
 // Use the same non-submitting resolver as prepared paid requests. Examples cover every installed path.
@@ -24,7 +25,10 @@ export function installedRoutes() {
       targets.push(providerKey);
       if ('fallbackEnabled' in plan && plan.fallbackEnabled && providerKey !== 'fal') targets.push('fal');
     }
-    return { provider, engineId, label: engine?.label ?? engineId, mode, targets };
+    const standbyReason = provider === 'kling_direct' && !isKlingDirectV3Funded()
+      ? 'Kling 3 API pack declared out of funds'
+      : null;
+    return { provider, engineId, label: engine?.label ?? engineId, mode, targets, standbyReason };
   });
 }
 export type InstalledRoute = ReturnType<typeof installedRoutes>[number];
