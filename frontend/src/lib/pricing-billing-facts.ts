@@ -55,10 +55,9 @@ import {
 } from '@/lib/seedance-2-pricing';
 import type { EnginePricingDetails } from '@/types/engines';
 import { isMinimaxH3EngineId } from '@/lib/minimax-h3';
-import { calculateMinimaxH3ProviderPrice } from '@/lib/minimax-h3-pricing';
+import { h3QuoteReferences, h3MaxQuoteReferences } from '@/lib/minimax-h3-commercial-reference';
 import { isMinimaxH3MaxEngineId } from '@/lib/minimax-h3-max';
 import {
-  calculateMinimaxH3MaxProviderCost,
   MINIMAX_H3_MAX_PRICING_SOURCE,
 } from '@/lib/minimax-h3-max-pricing';
 import {
@@ -85,6 +84,7 @@ function resultFromFacts(params: {
   engineId: string;
   currency: string;
   vendorSubtotalExactCents: number;
+  legacyRetailBasisExactCents?: number;
   base: PricingSnapshot['base'];
   addons?: PricingSnapshot['addons'];
   meta?: Record<string, unknown>;
@@ -96,6 +96,8 @@ function resultFromFacts(params: {
       engineId: params.engineId,
       currency: params.currency,
       vendorSubtotalExactCents: params.vendorSubtotalExactCents,
+      ...(params.legacyRetailBasisExactCents !== undefined && params.legacyRetailBasisExactCents !== params.vendorSubtotalExactCents
+        ? { legacyRetailBasisExactCents: params.legacyRetailBasisExactCents } : {}),
       unit: params.base.unit ?? 'sec',
       quantity: params.base.seconds,
       ...(params.factsMetadata ? { metadata: params.factsMetadata } : {}),
@@ -251,7 +253,7 @@ function buildBillingPricingFactsInternal(
   }
 
   if (isMinimaxH3MaxEngineId(engine.id)) {
-    const reference = calculateMinimaxH3MaxProviderCost({
+    const { reference, legacyRetailBasisExactCents } = h3MaxQuoteReferences({
       mode: mode as 't2v' | 'i2v' | 'ref2v',
       durationSec,
       resolution: resolution as '480P' | '768P' | '1080P',
@@ -272,6 +274,7 @@ function buildBillingPricingFactsInternal(
       addons: referenceTokenCents > 0
         ? [{ type: 'reference_tokens_above_4096', amountCents: referenceTokenCents }]
         : [],
+      legacyRetailBasisExactCents,
       compatibilityProfileId: 'provider-reference-current',
       meta: {
         pricing_model: 'minimax_h3_max_output_plus_reference_tokens',
@@ -287,7 +290,7 @@ function buildBillingPricingFactsInternal(
   }
 
   if (isMinimaxH3EngineId(engine.id)) {
-    const reference = calculateMinimaxH3ProviderPrice({
+    const { reference, legacyRetailBasisExactCents } = h3QuoteReferences({
       durationSec,
       resolution: resolution as '480P' | '768P' | '2K' | '4K',
       referenceImageCount: context.referenceImageCount,
@@ -307,6 +310,7 @@ function buildBillingPricingFactsInternal(
       addons: surchargeCents > 0
         ? [{ type: 'reference_images_above_five', amountCents: surchargeCents }]
         : [],
+      legacyRetailBasisExactCents,
       compatibilityProfileId: 'provider-reference-current',
       meta: {
         pricing_model: 'fal_h3_resolution_plus_reference_images',
