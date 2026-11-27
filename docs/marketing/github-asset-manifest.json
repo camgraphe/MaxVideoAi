@@ -188,7 +188,7 @@
       "id": "maxvideoai-github-hero-v2",
       "path": "plugins/maxvideoai/assets/brand/maxvideoai-github-hero-v2.webp",
       "kind": "editorial",
-      "state": "publishable_proof",
+      "state": "draft_editorial",
       "capturedAt": "2026-08-28T22:55:00Z",
       "sourceEnvironment": "generated_editorial",
       "host": null,
@@ -201,7 +201,7 @@
       "placements": [
         "root_readme"
       ],
-      "alt": "Cinematic MaxVideoAI production direction with a professional camera and five distinct visual worlds",
+      "alt": "Editorial illustration: Cinema camera with five distinct visual worlds",
       "reviewTrigger": "Refresh after an approved README art-direction change; never cite this editorial image as product or host proof.",
       "approvedBy": "MaxVideoAI owner",
       "lastReviewedAt": "2026-11-02T22:48:49Z",

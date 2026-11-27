@@ -4,6 +4,8 @@ import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
+import { validateReleaseReadmeAssets } from '../scripts/check-github-assets.mjs';
+
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const read = (relativePath: string) => readFileSync(path.join(repositoryRoot, relativePath), 'utf8');
 
@@ -64,21 +66,12 @@ test('every local README destination resolves inside the repository', () => {
   }
 });
 
-test('every root README image is approved for root placement', () => {
-  const readme = read('README.md');
-  const manifest = JSON.parse(read('docs/marketing/github-asset-manifest.json')) as {
-    assets: Array<{ path: string; state: string; placements: string[] }>;
-  };
-  const htmlSources = [...readme.matchAll(/<(?:img|source)\b[^>]*\bsrc=["']([^"']+)["'][^>]*>/gi)].map((match) => match[1]);
-  const imagePaths = [
-    ...[...readme.matchAll(/!\[[^\]]*\]\(([^)]+)\)/g)].map((match) => match[1]),
-    ...htmlSources,
-  ].filter((destination) => !/^(?:[a-z]+:|#)/i.test(destination));
-  for (const imagePath of imagePaths) {
-    const record = manifest.assets.find((asset) => asset.path === imagePath);
-    assert.equal(record?.state, 'publishable_proof', `README image must be publishable: ${imagePath}`);
-    assert.ok(record?.placements.includes('root_readme'), `README image must approve root_readme placement: ${imagePath}`);
-  }
+test('every root README image meets the release placement requirements', async () => {
+  const manifest = JSON.parse(read('docs/marketing/github-asset-manifest.json'));
+  assert.deepEqual(await validateReleaseReadmeAssets(manifest, {
+    repositoryRoot,
+    readmePaths: [path.join(repositoryRoot, 'README.md')],
+  }), []);
 });
 
 test('the flagship README tells the commercial story before contributor setup', () => {

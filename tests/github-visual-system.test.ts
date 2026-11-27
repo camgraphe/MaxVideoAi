@@ -214,7 +214,7 @@ test('ships a dedicated editorial hero without presenting it as product or host 
   const record = manifest.assets.find((asset) => asset.path === brandHeroPath);
   assert.ok(record);
   assert.equal(record.kind, 'editorial');
-  assert.equal(record.state, 'publishable_proof');
+  assert.equal(record.state, 'draft_editorial');
   assert.equal(record.sha256, sha256(bytes));
   assert.deepEqual(record.placements, ['root_readme']);
   assert.match(record.claim, /not product UI or native host proof/i);
