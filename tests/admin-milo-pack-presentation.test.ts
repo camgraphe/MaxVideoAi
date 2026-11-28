@@ -11,7 +11,7 @@ import type { AdminTransactionRecord } from '../frontend/server/admin-transactio
 const table = build({
   stdin: { contents: "export { AdminTransactionTable } from './frontend/components/admin/TransactionTable';", resolveDir: process.cwd() },
   bundle: true, write: false, platform: 'node', format: 'cjs', jsx: 'automatic',
-  tsconfig: 'frontend/tsconfig.json', external: ['react', 'react/jsx-runtime', 'react-dom'],
+  tsconfig: 'frontend/tsconfig.json', external: ['react', 'react/jsx-runtime', 'react-dom', 'next/image'],
   plugins: [{ name: 'next-route-context', setup(builder) {
     builder.onResolve({ filter: /^next\/(navigation|link)$/ }, args => ({ path: args.path, namespace: 'route-context' }));
     builder.onLoad({ filter: /.*/, namespace: 'route-context' }, args => ({ contents: args.path.endsWith('navigation')
@@ -28,7 +28,7 @@ function receipt(overrides: Partial<AdminTransactionRecord> = {}): AdminTransact
     receiptId: 10, userId: 'synthetic-account', userEmail: null, type: 'charge', amountCents: 500, currency: 'USD',
     description: 'Synthetic purchase', refundReason: null, billingProductKey: null, jobId: null,
     jobStatus: null, jobPaymentStatus: null, jobEngineLabel: null, jobVideoUrl: null, jobDurationSec: null,
-    isMcpGeneration: false, isStudioGeneration: false, isCreateGeneration: false, confirmationPlatform: null, jobCreatedAt: null, jobProgress: null, jobMessage: null,
+    isMcpGeneration: false, mcpClientFamily: null, isStudioGeneration: false, isCreateGeneration: false, confirmationPlatform: null, jobCreatedAt: null, jobProgress: null, jobMessage: null,
     createdAt: '2026-09-22T10:00:00Z', hasRefund: false, latestChargeId: 10, isLatestCharge: true,
     canRefund: true, ...overrides,
   };
@@ -89,5 +89,24 @@ test('generation badges identify the native confirmation platform accessibly whe
     const badge = dom.window.document.querySelector('tbody [title="Generation submitted from ' + source + '"]')!;
     assert.ok(badge?.textContent?.includes(source));
     assert.equal(badge.querySelector('svg[role="img"]')?.getAttribute('aria-label') ?? null, label);
+  }
+});
+
+test('ChatGPT receipts and refunds show the mark in the row and inspector', async () => {
+  for (const [type, family, expectedLabel] of [
+    ['charge', 'chatgpt', 'ChatGPT'],
+    ['refund', 'chatgpt', 'ChatGPT'],
+    ['charge', 'codex', 'MCP'],
+    ['charge', null, 'MCP'],
+  ] as const) {
+    const dom = await render(receipt({ type, isMcpGeneration: true, mcpClientFamily: family }));
+    try {
+      const document = dom.window.document;
+      for (const root of ['tbody', 'aside']) {
+        const badge = document.querySelector(`${root} [title^="Generation "]`);
+        assert.equal(badge?.textContent, expectedLabel);
+        assert.equal(Boolean(badge?.querySelector('[data-mcp-integration-mark="chatgpt"]')), family === 'chatgpt');
+      }
+    } finally { dom.window.close(); }
   }
 });

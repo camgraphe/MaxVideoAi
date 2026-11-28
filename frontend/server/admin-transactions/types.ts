@@ -1,4 +1,5 @@
 import type { NativeGenerationPlatform } from '@/server/agent-api/native-generation-platform';
+import type { McpClientFamily } from '@/server/mcp/client-family';
 
 export type RawTransactionRow = {
   receipt_id: number;
@@ -22,6 +23,8 @@ export type RawTransactionRow = {
   job_created_at: string | null;
   job_duration_sec: number | null;
   is_mcp_generation: boolean;
+  mcp_oauth_client_id: string | null;
+  mcp_client_family: string | null;
   is_studio_generation: boolean;
   is_create_generation: boolean;
   confirmation_platform: string | null;
@@ -46,6 +49,7 @@ export type AdminTransactionRecord = {
   jobVideoUrl: string | null;
   jobDurationSec: number | null;
   isMcpGeneration: boolean;
+  mcpClientFamily: McpClientFamily | null;
   isStudioGeneration: boolean;
   isCreateGeneration: boolean;
   confirmationPlatform: NativeGenerationPlatform | null;

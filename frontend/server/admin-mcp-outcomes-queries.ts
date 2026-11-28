@@ -29,7 +29,7 @@ export const MCP_OUTCOME_RELATIONS_SQL = `/* admin-mcp:outcome-relations */
       WHERE table_schema = 'public' AND table_name = 'mcp_generation_quotes'
         AND column_name = 'auth_origin') AS "quoteAuthOrigin"`;
 
-export function buildMcpGenerationItemsSql(relations: McpOutcomeRelations): string {
+export function buildMcpClientEvidenceSql(relations: Pick<McpOutcomeRelations, 'clientFamily' | 'funnel'>): string {
   const reportedClients = relations.clientFamily
     ? `SELECT user_id, oauth_client_id, client_family AS client,
               created_at AS observed_at, 0 AS priority
@@ -47,13 +47,16 @@ export function buildMcpGenerationItemsSql(relations: McpOutcomeRelations): stri
         WHERE event_type = 'oauth_connection_completed'
           AND acquisition_client IN ('chatgpt', 'claude', 'codex')`
     : '';
+  return `${reportedClients} ${landingClients}`;
+}
+
+export function buildMcpGenerationItemsSql(relations: McpOutcomeRelations): string {
   return `/* admin-mcp:generation-items */
   WITH auth_clients AS (
     SELECT * FROM jsonb_to_recordset($3::jsonb -> 'clients')
       AS c(oauth_client_id text, family text)
   ), client_evidence AS (
-    ${reportedClients}
-    ${landingClients}
+    ${buildMcpClientEvidenceSql(relations)}
   ), attributed_jobs AS (
     SELECT DISTINCT ON (job.job_id)
            job.job_id,
@@ -93,23 +96,12 @@ export function buildMcpGenerationItemsSql(relations: McpOutcomeRelations): stri
 
 // Only fixed SQL fragments depend on schema readiness. All reporting dates are parameters.
 export function buildMcpOutcomesSql(relations: McpOutcomeRelations): string {
-  const reportedClients = relations.clientFamily
-    ? `SELECT user_id, oauth_client_id, client_family AS client, created_at AS observed_at, 0 AS priority
-         FROM mcp_audit_events WHERE event_type = 'connection_initialized'
-          AND outcome = 'success' AND client_family IN (${REPORTED_CLIENTS_SQL})`
-    : `SELECT NULL::text AS user_id, NULL::text AS oauth_client_id, NULL::text AS client,
-         NULL::timestamptz AS observed_at, 0 AS priority WHERE FALSE`;
-  const landingClients = relations.funnel
-    ? `UNION ALL SELECT user_id, oauth_client_id, acquisition_client, occurred_at, 1
-         FROM mcp_funnel_events WHERE event_type = 'oauth_connection_completed'
-          AND acquisition_client IN ('chatgpt', 'claude', 'codex')`
-    : '';
   return `/* admin-mcp:outcomes */
     WITH auth_profiles AS (
       SELECT * FROM jsonb_to_recordset($3::jsonb -> 'profiles') AS p(user_id text, registered_at timestamptz)
     ), auth_clients AS (
       SELECT * FROM jsonb_to_recordset($3::jsonb -> 'clients') AS c(oauth_client_id text, family text)
-    ), client_evidence AS (${reportedClients} ${landingClients}),
+    ), client_evidence AS (${buildMcpClientEvidenceSql(relations)}),
     excluded_quote_origins AS (
       SELECT COUNT(*) FILTER (WHERE auth_origin = 'studio-session') AS studio,
              COUNT(*) FILTER (WHERE auth_origin = 'toolbox-session') AS toolbox,
