@@ -11,6 +11,8 @@ import { LumaAgentsError } from '../frontend/src/server/video-providers/luma-age
 import { AlibabaModelStudioError } from '../frontend/src/server/video-providers/alibaba-model-studio/errors';
 import { createPaidGenerationTestSchema, startDisposablePostgres } from './helpers/disposable-postgres';
 import { waitForPostgresBlock } from './helpers/postgres-row-lock';
+import { withDbTransaction } from '../frontend/src/lib/db';
+import { withWalletFailureSettlement } from '../frontend/server/fal-webhook-refunds';
 
 type QueryFn = <T = unknown>(sql: string, values?: unknown[]) => Promise<T[]>;
 const owners = [
@@ -26,6 +28,7 @@ function submit(owner: Owner, jobId: string, queryFn: QueryFn, hooks: {
   onFallback(): void;
   onRollback(): void;
   onMetric?(): void;
+  withFailureSettlementFn?: typeof withWalletFailureSettlement;
 }) {
   const durationSec = owner.key === 'veo' ? 8 : 5;
   const common = {
@@ -65,6 +68,7 @@ function submit(owner: Owner, jobId: string, queryFn: QueryFn, hooks: {
               return hooks.createTask();
             } })) as never } })
         : submitAlibabaModelStudioGenerateTask({ ...common, deps: { ...deps,
+            withFailureSettlementFn: hooks.withFailureSettlementFn,
             getAlibabaModelStudioClientFn: (() => ({ createVideo: hooks.createTask })) as never } });
 }
 
@@ -259,9 +263,19 @@ test('validated direct acknowledgments survive local persistence outages and ter
             });
           },
           onFallback: () => { falCalls++; }, onRollback: () => { rollbackCalls++; },
+          withFailureSettlementFn: (id, context, persist) => withWalletFailureSettlement(id, context, persist, {
+            withTransaction: (fn) => withDbTransaction(fn, { pool: db.pool }),
+          }),
         });
         assert.equal(falCalls, eligible ? 1 : 0);
-        assert.equal(rollbackCalls, eligible ? 0 : 1);
+        assert.equal(rollbackCalls, eligible || owner.key === 'alibaba' ? 0 : 1);
+        if (owner.key === 'alibaba' && !eligible) {
+          assert.equal((await read(jobId)).payment_status, 'refunded_wallet');
+          assert.deepEqual(await receipts(jobId), [
+            { type: 'charge', amount_cents: 125, currency: 'USD' },
+            { type: 'refund', amount_cents: 125, currency: 'USD' },
+          ]);
+        }
         assert.equal(result.ok, eligible);
       });
     }

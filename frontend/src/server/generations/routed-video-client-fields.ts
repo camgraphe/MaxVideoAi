@@ -131,6 +131,9 @@ export function projectRoutedVideoSettings(engineId: string, value: unknown): Fi
       }
       const ids = [...(schema?.required ?? []), ...(schema?.optional ?? [])].map((field) => field.id);
       const projected = fields(extras, ids);
+      // Older publication recipes stored creative element media here, including on Wan videos.
+      const elements = objects(extras.elements, [...elementKeys, 'frontal_image', 'frontal_image_url', 'reference_image_urls', 'video_url']);
+      if (elements) projected.elements = elements;
       if (typeof extras.strength === 'number' && Number.isFinite(extras.strength))
         projected.strength = extras.strength;
       clean.extraInputValues = projected;
