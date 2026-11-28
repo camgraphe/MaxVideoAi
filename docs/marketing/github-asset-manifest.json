@@ -739,6 +739,94 @@
       ],
       "editorialSourceId": "maxvideoai-editorial-branch-converge-source",
       "compositionMethod": "Deterministic Sharp composition using two complete downscaled public captures, client-path copy, and a restrained light editorial background."
+    },
+    {
+      "id": "campaign-paper-run",
+      "path": "plugins/maxvideoai/assets/campaign/paper-run.webp",
+      "kind": "editorial",
+      "state": "draft_editorial",
+      "capturedAt": "2026-11-28",
+      "sourceEnvironment": "generated_editorial",
+      "host": null,
+      "hostVersion": null,
+      "maxvideoaiRevision": "5677f44e089b20fe18466d713fac199ab60f093c",
+      "width": 1672,
+      "height": 941,
+      "sha256": "f98370a1179bf3c8348f7aac3240a22bb64db160579a68cd2e8c1188654406da",
+      "claim": "Generated editorial still for the Paper Run skateboard shot brief.",
+      "placements": [
+        "plugin_readme"
+      ],
+      "alt": "Editorial illustration: a crouching skateboarder rolls right beneath a bridge as orange, pink and blue paper unfolds behind him",
+      "reviewTrigger": "Re-review for a change of artwork, placement or caption. Use as editorial illustration.",
+      "approvedBy": "MaxVideoAI owner, GitHub publication authorized after verification on 2026-11-28",
+      "generationMethod": "OpenAI ImageGen"
+    },
+    {
+      "id": "campaign-city-car",
+      "path": "docs/media/campaign/city-car.webp",
+      "kind": "editorial",
+      "state": "draft_editorial",
+      "capturedAt": "2026-11-28",
+      "sourceEnvironment": "generated_editorial",
+      "host": null,
+      "hostVersion": null,
+      "maxvideoaiRevision": "5677f44e089b20fe18466d713fac199ab60f093c",
+      "width": 1536,
+      "height": 1024,
+      "sha256": "d72d458f46f4827fbe408c55fa415ee0cbb5bc8fbe4670f3ef81b9e6ab7dc8b3",
+      "claim": "Editorial source image of a fictional driver and a sage-green city car.",
+      "placements": [
+        "root_readme"
+      ],
+      "alt": "Editorial illustration: a woman with short curls and a cobalt T-shirt sits at the wheel of a parked sage-green city car",
+      "reviewTrigger": "Re-review for a change of artwork, placement or caption. Use as editorial illustration.",
+      "approvedBy": "MaxVideoAI owner, GitHub publication authorized after verification on 2026-11-28",
+      "generationMethod": "OpenAI ImageGen"
+    },
+    {
+      "id": "campaign-supercar",
+      "path": "docs/media/campaign/supercar.webp",
+      "kind": "editorial",
+      "state": "draft_editorial",
+      "capturedAt": "2026-11-28",
+      "sourceEnvironment": "generated_editorial",
+      "host": null,
+      "hostVersion": null,
+      "maxvideoaiRevision": "5677f44e089b20fe18466d713fac199ab60f093c",
+      "width": 1536,
+      "height": 1024,
+      "sha256": "0e170603b7d51be53b2a73b42a71e52398fadcbaff1d524349f1ba7478de43f7",
+      "claim": "Editorial image edit of the fictional driver in an orange sports coupe on the same street.",
+      "placements": [
+        "root_readme"
+      ],
+      "alt": "Editorial illustration: the same driver at the wheel of a bright orange coupe with wide fenders on the same street",
+      "reviewTrigger": "Re-review for a change of artwork, placement or caption. Use as editorial illustration.",
+      "approvedBy": "MaxVideoAI owner, GitHub publication authorized after verification on 2026-11-28",
+      "generationMethod": "OpenAI ImageGen edit of the City Car image"
+    },
+    {
+      "id": "campaign-pigment-stage",
+      "path": "docs/media/campaign/pigment-stage.webp",
+      "kind": "editorial",
+      "state": "draft_editorial",
+      "capturedAt": "2026-11-28",
+      "sourceEnvironment": "generated_editorial",
+      "host": null,
+      "hostVersion": null,
+      "maxvideoaiRevision": "5677f44e089b20fe18466d713fac199ab60f093c",
+      "width": 1921,
+      "height": 819,
+      "sha256": "0c84d8215f8d7e1a7368e821bb66deaec0a969d0ad6fdfd42465f713ba3ff404",
+      "claim": "Editorial opening still of a percussion performance on a red film set.",
+      "placements": [
+        "root_readme"
+      ],
+      "alt": "Editorial illustration: a drummer raises a stick over a floor tom amid blue pigment on a red film set, with a cinema camera in the foreground.",
+      "reviewTrigger": "Re-review for a change of artwork, placement or caption. Use as editorial illustration.",
+      "approvedBy": "MaxVideoAI owner, GitHub publication authorized after verification on 2026-11-28",
+      "generationMethod": "OpenAI ImageGen"
     }
   ]
 }

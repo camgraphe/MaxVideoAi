@@ -1,28 +1,28 @@
-# MaxVideoAI workflow examples
+<a id="maxvideoai-workflow-examples" name="maxvideoai-workflow-examples"></a>
 
-These examples show how a producer can move from a brief to a deliberate, recoverable AI video request. Each path separates no-spend planning from a fresh exact quote and explicit approval, then keeps the accepted job connected to the MaxVideoAI Library.
+# MaxVideoAI workflows
 
-![Public MaxVideoAI home page paired with the public MCP Claude-result section](../assets/demos/readme-proof-hero.webp)
+Start with *Paper Run*, a night-skating brief built around an illustrated reference. Choose the unfolding shot, compare models and review a real price estimate before preparing your own quote. [Open the Paper Run brief](codex-video-production.md)
 
-*This composite proves only that the public home page and Claude-specific public result evidence with a saved-to-Library label are shown together. It does not prove the workflows below, native Codex or ChatGPT execution, or behavior on every Claude surface.*
+```text
+Help me plan the three unfolding paper folds as one shot. Check which models
+accept my image and compare two ways to price that take.
+```
 
-## Which outcome matches your next job?
+<a id="which-outcome-matches-your-next-job" name="which-outcome-matches-your-next-job"></a>
 
-- [Plan a multi-shot product launch](product-launch-plan.md) — compare a quality-first route with a genuinely comparable lower-cost route before selecting one shot.
-- [Compare models and price a creator project](creator-budget-comparison.md) — use live model facts and named budgets without spending credits.
-- [Turn a private reference into video](reference-to-video.md) — select from the Library first, or use the secure upload handoff when the asset is missing.
-- [Recover an approved generation](recover-a-generation.md) — find the accepted or recent job before considering another paid request.
-- [Compare current AI video models](compare-ai-video-models.md) — choose between named routes before a paid request is prepared.
-- [Price an AI video project](price-a-video-project.md) — turn a shot list into comparable budgets, then request one exact quote.
-- [Plan a Claude video-production request](claude-video-production.md) — validate the no-spend path in an eligible Claude account.
-- [Run a Codex video-production workflow](codex-video-production.md) — install the reviewed package, compare, and recover deliberately.
+## Choose a task
 
-**Example**: Start with the outcome closest to your project, copy its prompt, and keep the no-spend and paid-action boundaries intact.
+- [Animate a product photo](reference-to-video.md). Pick a reference, describe the movement and check model support.
+- [Plan a launch](product-launch-plan.md). Divide the shoot into takes and record the assumptions behind the budget.
+- [Compare AI video models](compare-ai-video-models.md). Compare the same settings where both routes support them.
+- [Price a multi-shot project](price-a-video-project.md) or [compare two budgets](creator-budget-comparison.md).
+- [Recover an accepted generation](recover-a-generation.md). Find the result if the conversation stops.
 
-## Where should setup and safety questions go?
+<a id="where-should-setup-and-safety-questions-go" name="where-should-setup-and-safety-questions-go"></a>
 
-Use the guide for your surface: [Claude](../docs/claude.md), [Codex](../docs/codex.md), [ChatGPT](../docs/chatgpt.md), or a [generic remote MCP client](../docs/generic-mcp.md). Review [privacy and permissions](../docs/privacy-and-permissions.md) before connecting, and check the [current compatibility evidence](https://maxvideoai.com/docs/mcp) before relying on a host-specific path.
+For the custom connector, see the [Claude production example](claude-video-production.md).
 
-For interrupted work, [troubleshoot without duplicating spend](../docs/troubleshooting.md). Current model capabilities, availability, and prices come from the live MaxVideoAI workflow rather than these examples.
+## Connect your account
 
-Last reviewed: 2026-08-28.
+Follow the [ChatGPT setup](../docs/chatgpt.md) or the [Codex setup](../docs/codex.md). See the public hub for other supported connections. [MaxVideoAI integration hub](https://maxvideoai.com/mcp)

@@ -13,44 +13,22 @@ function headingOffset(readme: string, heading: string) {
   return readme.indexOf(`## ${heading}`);
 }
 
-test('the flagship README opens with the product outcome, three destinations, and current proof', () => {
+test('the flagship README opens with Create, pricing and a published video', () => {
   const readme = read('README.md');
-  const opening = readme.split(/\r?\n/).slice(0, 60).join('\n');
-  const manifest = JSON.parse(read('docs/marketing/github-asset-manifest.json')) as {
-    assets: Array<{ path: string; kind: string; state: string; placements: string[] }>;
-  };
-  const openingImages = [...opening.matchAll(/!\[[^\]]+\]\(([^)]+)\)/g)].map((match) => match[1]);
-  const approvedProductProof = openingImages.some((imagePath) => {
-    const record = manifest.assets.find((asset) => asset.path === imagePath);
-    return record?.kind === 'product_proof'
-      && record.state === 'publishable_proof'
-      && record.placements.includes('root_readme');
-  });
+  const intro = readme.slice(0, headingOffset(readme, 'What does the MaxVideoAI workspace bring together?'));
+  assert.match(intro, /^# MaxVideoAI\s*$/m);
+  assert.match(intro, /pay-as-you-go, multi-model AI video generator/i);
+  const create = intro.indexOf('[Create an AI video](https://maxvideoai.com/app?utm_source=github&utm_medium=repository&utm_campaign=maxvideoai_product&utm_content=hero_try)');
+  const pricing = intro.indexOf('[See pricing](https://maxvideoai.com/pricing)');
+  const film = intro.indexOf('https://maxvideoai.com/video/kling-4-character-reference-the-next-one');
+  const hero = intro.indexOf('<img src="docs/media/campaign/pigment-stage.webp"');
+  assert.ok(create >= 0 && create < pricing && pricing < film && film < hero);
+  assert.match(intro, /<img src="docs\/media\/campaign\/pigment-stage\.webp"[^>]+data-asset-role="editorial"/);
+  assert.match(intro, /\[Watch the 14-second MaxVideoAI walkthrough\]\(docs\/media\/campaign\/create-video-walkthrough\.mp4\)/);
+  assert.doesNotMatch(intro, /<video|autoplay|pigment-(?:take|motion)/i);
 
-  assert.match(readme, /^# MaxVideoAI\s*$/m);
-  assert.doesNotMatch(opening, /Generate Page Mock & Frontend/i);
-  assert.match(opening, /multi-model AI video production/i);
-  const trackedDestinations = [
-    '[Plan a video with MaxVideoAI](https://maxvideoai.com/mcp?utm_source=github&utm_medium=repository&utm_campaign=maxvideoai_product&utm_content=hero_try)',
-    '[Compare current models](https://maxvideoai.com/models?utm_source=github&utm_medium=repository&utm_campaign=maxvideoai_product&utm_content=models)',
-    '[Connect MaxVideoAI to your assistant or automation](https://maxvideoai.com/mcp?utm_source=github&utm_medium=repository&utm_campaign=maxvideoai_product&utm_content=plugin_callout)',
-  ];
-  let previousDestination = -1;
-  for (const destination of trackedDestinations) {
-    const currentDestination = opening.indexOf(destination);
-    assert.ok(currentDestination > previousDestination, `${destination} must appear in the reviewed opening order`);
-    previousDestination = currentDestination;
-  }
-  assert.doesNotMatch(opening, /\[Try MaxVideoAI\]\(https:\/\/maxvideoai\.com\/app\)/);
-  assert.doesNotMatch(opening, /\[Explore models\]\(https:\/\/maxvideoai\.com\/models\)/);
-  assert.match(opening, /\[Plugin repository\]\(https:\/\/github\.com\/camgraphe\/maxvideoai-plugin\)/);
-  assert.match(opening, /\[Plugin releases\]\(https:\/\/github\.com\/camgraphe\/maxvideoai-plugin\/releases\)/);
-  assert.doesNotMatch(opening, /Latest public release:/i);
-  assert.doesNotMatch(opening, /\[Use[^\]]*ChatGPT[^\]]*\]\(https:\/\/github\.com\/camgraphe\/maxvideoai-plugin\)/i);
-  assert.doesNotMatch(opening, /release pending/i);
-  assert.match(opening, /<img src="plugins\/maxvideoai\/assets\/logo-mark\.svg"[^>]+>/);
-  assert.doesNotMatch(opening, /logo-wordmark\.svg/);
-  assert.ok(approvedProductProof, 'the first 60 lines must include manifest-approved current product proof');
+  const walkthrough = readFileSync(path.join(repositoryRoot, 'docs/media/campaign/create-video-walkthrough.mp4'));
+  assert.equal(walkthrough.toString('ascii', 4, 8), 'ftyp');
 });
 
 test('every local README destination resolves inside the repository', () => {
@@ -96,13 +74,15 @@ test('the flagship README tells the commercial story before contributor setup', 
     previous = current;
   }
 
-  assert.match(readme, /Sora[\s\S]*Veo[\s\S]*Kling[\s\S]*Seedance[\s\S]*LTX[\s\S]*MiniMax[\s\S]*Wan/i);
-  assert.match(readme, /current availability and pricing/i);
-  assert.match(readme, /five public paths[\s\S]*Claude[\s\S]*ChatGPT[\s\S]*Codex[\s\S]*OpenClaw[\s\S]*n8n/i);
-  assert.match(readme, /OpenClaw[\s\S]*tested with limits[\s\S]*ClawHub/i);
-  assert.match(readme, /n8n[\s\S]*self-hosted[\s\S]*manual setup/i);
-  assert.match(readme, /Cursor[\s\S]*GitHub Copilot[\s\S]*Gemini CLI[\s\S]*Microsoft Copilot[\s\S]*in preparation/i);
-  assert.match(readme, /plugin repository[\s\S]*tagged, checksum-backed releases[\s\S]*release page for the current installable package/i);
+  assert.match(readme, /https:\/\/maxvideoai\.com\/models\?utm_source=github/);
+  assert.match(readme, /https:\/\/maxvideoai\.com\/pay-as-you-go-ai-video-generator/);
+  assert.match(readme, /https:\/\/maxvideoai\.com\/ai-video-engines\/wan-3-vs-wan-3-prime/);
+  assert.match(readme, /https:\/\/chatgpt\.com\/plugins\/plugin_asdk_app_6af7c45d28c48191982cf5be6eb7e058/);
+  for (const host of ['claude', 'openclaw', 'n8n']) {
+    assert.ok(readme.includes(`https://maxvideoai.com/integrations/${host}`), host);
+  }
+  assert.match(readme, /https:\/\/maxvideoai\.com\/mcp\?utm_source=github[^\s)]*plugin_callout/);
+  assert.match(readme, /\[Plugin releases\]\(https:\/\/github\.com\/camgraphe\/maxvideoai-plugin\/releases\)/);
   assert.doesNotMatch(readme, /next source candidate|closed candidate/i);
   assert.doesNotMatch(readme, /first release lands|bootstrap-only|no tagged release/i);
   assert.doesNotMatch(readme, /\b\d+\s+(?:current\s+)?(?:AI\s+)?video models\b/i);
@@ -111,24 +91,13 @@ test('the flagship README tells the commercial story before contributor setup', 
 
 test('the flagship README keeps a varied product story before the engineering depth', () => {
   const readme = read('README.md');
-  const expectedVisuals = [
-    'maxvideoai-github-hero-v2.webp',
-    'maxvideoai-workspace-live.webp',
-    'maxvideoai-examples-gallery-live.webp',
-    'maxvideoai-engine-scoreboard-live.webp',
-    'maxvideoai-model-directory-live.webp',
-    'maxvideoai-pricing-comparison-live.webp',
-    'maxvideoai-tools-workflow-live.webp',
-    'maxvideoai-library-continuity-production.jpg',
-    'maxvideoai-assistant-workflow-live.webp',
-  ];
-  const positions = expectedVisuals.map((visual) => {
-    const position = readme.indexOf(visual);
-    assert.ok(position >= 0, `${visual} must appear in the flagship README`);
-    return position;
-  });
-  assert.equal(new Set(expectedVisuals).size, expectedVisuals.length);
-  assert.deepEqual([...positions].sort((left, right) => left - right), positions, 'visuals must follow the reviewed product journey');
+  const hero = readme.indexOf('docs/media/campaign/pigment-stage.webp');
+  const proof = headingOffset(readme, 'Watch a video made with MaxVideoAI');
+  const edit = headingOffset(readme, 'Turn a city car into a supercar');
+  const engineering = headingOffset(readme, 'How is MaxVideoAI built?');
+  assert.ok(hero >= 0 && hero < proof && proof < edit && edit < engineering);
+  assert.ok(readme.indexOf('docs/media/campaign/city-car.webp', edit) > edit);
+  assert.ok(readme.indexOf('docs/media/campaign/supercar.webp', edit) > edit);
 
   for (const technicalSignal of [
     'Next.js App Router',
@@ -139,7 +108,7 @@ test('the flagship README keeps a varied product story before the engineering de
     'Neon Postgres',
     'Amazon S3',
     'Stripe',
-    'Remote Streamable HTTP MCP',
+    'remote Streamable HTTP MCP',
     'Playwright browser checks',
   ]) {
     assert.match(readme, new RegExp(technicalSignal.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));

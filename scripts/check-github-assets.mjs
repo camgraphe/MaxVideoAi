@@ -59,6 +59,15 @@ function validateRequiredProvenance(record, state, rootDirectory, now, prefix, e
   }
 }
 
+export function validateDraftEditorialApproval(record, rootDirectory = repositoryRoot, now = new Date()) {
+  const errors = [];
+  const prefix = record.id;
+  if (record.kind !== 'editorial' || record.sourceEnvironment !== 'generated_editorial') errors.push(`${prefix}: draft_editorial must be generated editorial, never proof`);
+  if (!/editorial/i.test(record.claim ?? '')) errors.push(`${prefix}: draft_editorial claim must explicitly identify editorial use`);
+  validateRequiredProvenance(record, 'draft_editorial', rootDirectory, now, prefix, errors);
+  return errors;
+}
+
 async function validateRecord(record, rootDirectory, now, seenIds, seenPaths) {
   if (!record || typeof record !== 'object' || Array.isArray(record)) return ['Asset record must be an object'];
   const errors = [];
@@ -111,11 +120,7 @@ async function validateRecord(record, rootDirectory, now, seenIds, seenPaths) {
       for (const field of ['host', 'hostVersion']) if (!isNonEmptyString(record[field])) errors.push(`${prefix}: publishable host_proof requires ${field}`);
     }
   }
-  if (record.state === 'draft_editorial') {
-    if (record.kind !== 'editorial' || record.sourceEnvironment !== 'generated_editorial') errors.push(`${prefix}: draft_editorial must be generated editorial, never proof`);
-    if (!/editorial/i.test(record.claim ?? '')) errors.push(`${prefix}: draft_editorial claim must explicitly identify editorial use`);
-    validateRequiredProvenance(record, 'draft_editorial', rootDirectory, now, prefix, errors);
-  }
+  if (record.state === 'draft_editorial') errors.push(...validateDraftEditorialApproval(record, rootDirectory, now));
   return errors;
 }
 
@@ -359,7 +364,7 @@ function readmePlacement(readmePath, rootDirectory) {
   return 'readme';
 }
 
-function validateEditorialUsage(record, usage, prefix, errors) {
+export function validateEditorialUsage(usage, prefix, errors) {
   if (usage.source !== 'html_img' || usage.role !== 'editorial' || !/^Editorial illustration:\s+\S/i.test(usage.alt) || !validateAlt(usage.alt)) {
     errors.push(`${prefix}: draft_editorial README use must be an HTML img with data-asset-role="editorial" and alt beginning "Editorial illustration:"`);
   }
@@ -379,7 +384,7 @@ export async function validateReleaseReadmeAssets(manifest, { repositoryRoot: ro
       if (!record.placements?.includes(placement)) errors.push(`${record.id}: ${placement} is not an approved placement`);
       if (record.state === 'publishable_proof') continue;
       if (record.state === 'draft_editorial') {
-        for (const usage of entry.usages) validateEditorialUsage(record, usage, record.id, errors);
+        for (const usage of entry.usages) validateEditorialUsage(usage, record.id, errors);
         continue;
       }
       errors.push(`${record.id}: README release assets must be publishable_proof or explicitly labeled draft_editorial decorative assets`);

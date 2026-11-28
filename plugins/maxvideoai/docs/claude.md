@@ -1,69 +1,48 @@
 # Connect MaxVideoAI to Claude
 
-**Short answer:** Claude currently documents custom remote MCP connectors for Free, Pro, Max, Team, and Enterprise plans. Free users are limited to one custom connector. Individual users start from **Customize → Connectors → + → Add custom connector**; Team and Enterprise owners first add the connector for their organization. Complete browser OAuth, then verify with a no-spend planning prompt.
-
-## What does this guide prove today?
-
-![Public MaxVideoAI home page paired with the public MCP Claude-result section](../assets/demos/brief-to-video-workflow.webp)
-
-This composite proves only that the public home page and Claude-specific public result evidence with a saved-to-Library label are shown together. It does not prove installation, OAuth, a quote, approval, or execution in every Claude surface. Use the steps below to validate your own eligible Claude account.
-
-## Who can currently use this route?
-
-Anthropic's current documentation lists Claude, Cowork, and Claude Desktop users on Free, Pro, Max, Team, and Enterprise plans. Free users are limited to one custom connector. On Team and Enterprise, an Owner or Primary Owner adds the connector for the organization; each member then connects it to their own authorized MaxVideoAI account.
+Use MaxVideoAI in Claude by adding its custom remote MCP connector and authorizing your account. This is the direct setup path documented by MaxVideoAI. Its submission record describes the Anthropic Connectors Directory entry as unsubmitted. [MaxVideoAI setup and compatibility](https://maxvideoai.com/integrations/claude) · [Directory submission record](https://github.com/camgraphe/MaxVideoAi/blob/5677f44e089b20fe18466d713fac199ab60f093c/docs/marketing/mcp-directory-submissions.md#anthropic-direct-claude-custom-connector)
 
 ## How do I add the Claude connector?
 
-**Free, Pro, and Max:** **Customize → Connectors → + → Add custom connector**.
-
-1. Enter `MaxVideoAI` and `https://api.maxvideoai.com/mcp` exactly. Do not add a token, query string, password, or API key.
-2. Choose **Add**, then **Connect**.
-3. Complete MaxVideoAI OAuth in the browser. Sign in or create the account you want Claude to use.
-
-**Team and Enterprise owners:** **Organization settings → Connectors → Add → Custom → Web**.
-
-1. Enter `https://api.maxvideoai.com/mcp` exactly and choose **Add**.
-2. Members then open **Customize → Connectors**, find MaxVideoAI, and choose **Connect**.
-3. Each member completes OAuth with their own authorized MaxVideoAI account.
-
-In a conversation, use **+ → Connectors** to enable MaxVideoAI only where it is relevant.
+In an individual account with custom connectors, open **Customize → Connectors**, choose **+ → Add custom connector** and name it MaxVideoAI. Enter this URL exactly.
 
 ```text
-Remote MCP URL: https://api.maxvideoai.com/mcp
-Authentication: browser OAuth
+https://api.maxvideoai.com/mcp
 ```
 
-## What OAuth and permissions should I expect?
+Choose **Connect**, sign in to MaxVideoAI in the browser and review the permissions. In a managed Team or Enterprise workspace, a permitted administrator adds the custom connector in **Organization settings → Connectors**. Members then choose **Connect** under **Customize → Connectors**. [Anthropic’s connector instructions](https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp)
 
-OAuth lets you grant access without sharing your MaxVideoAI password with Claude. MaxVideoAI can read current model facts, your authorized account state, and private Library media when the workflow needs them. Preparing a quote does not spend credits. Only explicit approval of an exact quote authorizes one paid generation attempt.
+## What does this guide prove today?
 
-Review Claude's tool request before allowing it. Anthropic recommends connecting only trusted servers, limiting enabled tools, and paying particular attention to actions that write data or spend money.
+Claude Web Free was checked in production on **19 October 2026**. The test covered OAuth, model discovery, a quote and recovery of an existing result. The **26 August 2026** Desktop staging check on **1.37937.1** showed a completed video inline. Claude Code awaits a production check. [MaxVideoAI Claude evidence](https://maxvideoai.com/integrations/claude) · [Dated host checks](https://github.com/camgraphe/MaxVideoAi/blob/5677f44e089b20fe18466d713fac199ab60f093c/docs/operations/mcp-host-compatibility-matrix.md)
+
+### Who can currently use this route?
+
+Anthropic documents custom connectors for Free, Pro, Max, Ultra, Team and Enterprise. Free users can add one custom connector. Workspace permissions govern managed access. [Claude custom connectors](https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp)
+
+### What OAuth and permissions should I expect?
+
+Sign in to the intended MaxVideoAI account and review the permissions. Account access lets Claude look up available models and quote concrete requests. An exact quote and your explicit approval are required for a paid generation. [MaxVideoAI permissions](privacy-and-permissions.md) · [MaxVideoAI integration guide](https://maxvideoai.com/mcp)
 
 ## How do I verify the connection safely?
 
-Start with a no-spend planning request. Confirm that Claude can return current model options and that it does not ask for generation approval.
-
-**Example**: “Use MaxVideoAI to compare current models for a three-shot product film. Create two named budgets, but do not prepare or approve a generation.”
-
-If tools are missing, reopen **Customize → Connectors**, confirm MaxVideoAI is connected, enable it from **+ → Connectors**, then start a new conversation. Treat success in your account as local verification; do not infer support for every Claude device or future interface.
+```text
+Show the MaxVideoAI account I connected and compare two models for a
+five-second shot. Give me an estimate and wait for me to choose a model.
+```
 
 ## How do I disconnect or revoke access?
 
-Open **Customize → Connectors**, find MaxVideoAI, then use **Remove** or the adjacent menu to disconnect it. Team and Enterprise owners can remove the organization entry from **Organization settings → Connectors**. To end the authorization as well, revoke the matching Claude OAuth connection from your MaxVideoAI account connection settings. Reconnect through OAuth if you need it later.
+Remove the connector under **Customize → Connectors** in Claude. Revoke the matching OAuth connection in your MaxVideoAI account settings. [MaxVideoAI connection help](https://maxvideoai.com/integrations/claude)
 
-```text
-Disconnect in Claude → revoke the Claude OAuth connection in MaxVideoAI → reconnect only when needed
-```
+### Which practical examples should I use?
 
-## Which practical examples should I use?
-
-- [Compare current AI video models](../examples/compare-ai-video-models.md) before selecting a route.
-- [Price an AI video project](../examples/price-a-video-project.md) before preparing a request.
-- [Plan a Claude video-production request](../examples/claude-video-production.md) for the no-spend workflow shape.
+[Compare models for the same shot](../examples/compare-ai-video-models.md), [price a project](../examples/price-a-video-project.md), [prepare a shot in Claude](../examples/claude-video-production.md) or [recover the accepted job](../examples/recover-a-generation.md).
 
 ## Sources
 
-- [Claude Help Center: Get started with custom connectors using remote MCP](https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp)
-- [MaxVideoAI compatibility evidence](https://maxvideoai.com/docs/mcp)
+- [MaxVideoAI’s Claude setup and recorded checkpoints](https://maxvideoai.com/integrations/claude)
+- [Anthropic’s custom connector instructions](https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp)
+- [Generic MaxVideoAI MCP Registry record](https://registry.modelcontextprotocol.io/v0.1/servers/com.maxvideoai%2Fmaxvideoai/versions/latest)
 
-Last reviewed: 2026-08-28.
+Last reviewed: 2026-11-28.

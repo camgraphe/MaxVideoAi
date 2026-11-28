@@ -388,24 +388,15 @@ test('the package explains the customer-facing account and library journey', () 
   const readme = read('README.md');
   const safety = read('skills/generate/references/generation-safety.md');
 
-  assert.match(readme, /^# MaxVideoAI for assistants, agents, and automations$/m);
-  assert.match(readme, /MaxVideoAI is a multi-model AI production service exposed through one remote MCP server/i);
-  assert.match(readme, /plan video and image work/i);
-  assert.match(readme, /Plan\. Compare\. Price\. Approve\. Generate\./);
-  assert.match(readme, /existing MaxVideoAI credits/i);
-  assert.match(readme, /MaxVideoAI\s+Library/i);
-  assert.match(readme, /sign in or create/i);
-  assert.match(readme, /free to connect/i);
-  assert.match(readme, /Setup guides: \[Claude\][^\n]*· \[ChatGPT\][^\n]*· \[Codex\]/i);
-  assert.match(readme, /https:\/\/maxvideoai\.com\/docs\/mcp/);
-  assert.match(readme, /Try asking/i);
-  assert.match(readme, /private.*(?:attachment|generated result).*asset/is);
-  assert.match(readme, /Codex.*Claude Code.*local helper|local helper.*Codex.*Claude Code/is);
-  assert.match(readme, /without.*public URL.*Computer Use/is);
-  assert.match(readme, /codex plugin marketplace add camgraphe\/maxvideoai-plugin --ref v\d+\.\d+\.\d+/);
-  assert.match(readme, /codex plugin add maxvideoai@maxvideoai/);
-  assert.doesNotMatch(readme, /Designed for ChatGPT|works with ChatGPT|available in ChatGPT|verified today in Claude and Codex/i);
-  assert.doesNotMatch(readme, /does not establish online availability|does not verify an online connection|branch package/i);
+  assert.match(readme, /^# MaxVideoAI for ChatGPT, Codex and MCP$/m);
+  assert.match(readme, /Connecting is free, and your existing MaxVideoAI credits and private Library follow the account you authorize/i);
+  assert.match(readme, /review the exact quote and approve one paid attempt/i);
+  assert.match(readme, /Completed media is saved to your MaxVideoAI Library/i);
+  assert.match(readme, /import an authorized attachment privately/i);
+  assert.match(readme, /Codex or Claude Code upload helper[^.]*authorized MaxVideoAI upload destination/i);
+  assert.match(readme, /keep the original file off the public web/i);
+  assert.match(readme, /Find the last job I approved/i);
+  assert.match(readme, /creative retry or a replacement after a refund requires a new quote and new approval/i);
 
   assert.match(safety, /get_account_status.*credit balance.*trial.*spending limit/is);
   assert.match(safety, /create_topup_link.*returned.*destination/is);
@@ -431,9 +422,9 @@ test('the package ships current setup, privacy, workflow, and recovery guides', 
     'how-it-works.md',
   ] as const;
   const expectedReviewDates: Record<(typeof guideNames)[number], string> = {
-    'chatgpt.md': '2026-09-16',
-    'claude.md': '2026-08-28',
-    'codex.md': '2026-10-04',
+    'chatgpt.md': '2026-11-28',
+    'claude.md': '2026-11-28',
+    'codex.md': '2026-11-28',
     'generic-mcp.md': '2026-08-28',
     'privacy-and-permissions.md': '2026-10-03',
     'troubleshooting.md': '2026-09-16',
@@ -441,16 +432,16 @@ test('the package ships current setup, privacy, workflow, and recovery guides', 
   };
   const guideJourneyContracts: Record<string, { expectedBehavior: RegExp; disconnectPath: RegExp }> = {
     'chatgpt.md': {
-      expectedBehavior: /Example[\s\S]{0,240}stop before any paid generation/i,
-      disconnectPath: /Settings[^\n]*Apps[\s\S]{0,260}disconnect[\s\S]{0,260}revoke[^.]*OAuth connection/i,
+      expectedBehavior: /wait for me to choose a model/i,
+      disconnectPath: /disconnect the MaxVideoAI account[\s\S]{0,160}revoke the authorization in MaxVideoAI/i,
     },
     'claude.md': {
-      expectedBehavior: /Example[\s\S]{0,240}do not prepare or approve a generation/i,
-      disconnectPath: /Customize[^\n]*Connectors[\s\S]{0,260}Remove[\s\S]{0,320}revoke[^.]*OAuth connection/i,
+      expectedBehavior: /estimate and wait for me to choose a model/i,
+      disconnectPath: /Remove the connector[^.]*Claude[\s\S]{0,100}Revoke the matching OAuth connection/i,
     },
     'codex.md': {
-      expectedBehavior: /no-spend plan[\s\S]{0,260}Example/i,
-      disconnectPath: /plugin manager[\s\S]{0,220}remove `maxvideoai@maxvideoai`[\s\S]{0,320}Revoke[^.]*OAuth connection/i,
+      expectedBehavior: /Wait for me to choose/i,
+      disconnectPath: /Remove or disable the MaxVideoAI package[^.]*plugin manager[\s\S]{0,180}Revoke the corresponding OAuth connection/i,
     },
     'generic-mcp.md': {
       expectedBehavior: /Example[\s\S]{0,240}do not prepare or approve paid work/i,
@@ -479,41 +470,34 @@ test('the package ships current setup, privacy, workflow, and recovery guides', 
       [`Last reviewed: ${expectedReviewDates[guideName]}.`],
       `${guideName} must expose its exact current review date once`,
     );
-    assert.match(guide, /!\[[^\]]{12,}\]\(\.\.\/assets\//, `${guideName} needs a useful visual`);
-    assert.match(
-      guide,
-      /not (?:a )?[^.\n]{0,140}(?:capture|proof|screen)|does not prove/i,
-      `${guideName} must label the visual boundary`,
-    );
-    assert.match(guide, /\*\*Example\*\*:\s*“[^”]{20,}”/, `${guideName} needs a concrete first prompt`);
+    if (guideName === 'chatgpt.md' || guideName === 'claude.md' || guideName === 'codex.md') {
+      assert.match(guide, /\x60\x60\x60text\n[\s\S]+?\x60\x60\x60/, `${guideName} needs a concrete first prompt`);
+    } else {
+      assert.match(guide, /!\[[^\]]{12,}\]\(\.\.\/assets\//, `${guideName} needs a useful visual`);
+      assert.match(guide, /not (?:a )?[^.\n]{0,140}(?:capture|proof|screen)|does not prove/i);
+      assert.match(guide, /\*\*Example\*\*:\s*“[^”]{20,}”/);
+    }
     assert.match(guide, guideJourneyContracts[guideName].expectedBehavior, `${guideName} must state the expected safe behavior`);
     assert.match(guide, guideJourneyContracts[guideName].disconnectPath, `${guideName} must explain disconnect plus OAuth revocation`);
   }
 
   const claude = read('docs/claude.md');
-  assert.match(claude, /Free, Pro, Max, Team, and Enterprise/i);
-  assert.match(claude, /Free users?[^.]*limited to one custom connector/i);
-  assert.match(claude, /Customize[^\n]*Connectors[^\n]*\+[^\n]*Add custom connector/i);
-  assert.match(claude, /Organization settings[^\n]*Connectors[^\n]*Add[^\n]*Custom[^\n]*Web/i);
-  assert.match(claude, /members?[\s\S]*Customize[^\n]*Connectors[^\n]*Connect/i);
+  assert.match(claude, /Free, Pro, Max, Ultra, Team and Enterprise/i);
+  assert.match(claude, /Free users can add one custom connector/i);
+  assert.match(claude, /Customize → Connectors[^\n]*Add custom connector/i);
+  assert.match(claude, /Desktop staging check[\s\S]*Claude Code awaits a production check/i);
   assert.match(claude, /https:\/\/support\.claude\.com\/en\/articles\/11175166-get-started-with-custom-connectors-using-remote-mcp/);
-  assert.doesNotMatch(claude, /support\.anthropic\.com|11503834/);
   assert.doesNotMatch(claude, /claude_desktop_config\.json/);
 
   const chatgpt = read('docs/chatgpt.md');
-  assert.match(chatgpt, /Business and Enterprise\/Edu/i);
-  assert.match(chatgpt, /Pro[^\n]*(?:read\/fetch|read and fetch)/i);
-  assert.match(chatgpt, /Enable developer mode[\s\S]{0,240}\*\*Apps → Create\*\*/i);
-  assert.match(chatgpt, /OAuth authentication[\s\S]{0,180}\*\*Scan Tools\*\*/i);
-  assert.match(chatgpt, /https:\/\/help\.openai\.com\/en\/articles\/12584461-developer-mode-apps-and-full-mcp-connectors-in-chatgpt-beta/);
-  assert.match(chatgpt, /https:\/\/help\.openai\.com\/en\/articles\/11487775-connectors-in-chatgpt/);
-  assert.doesNotMatch(chatgpt, /Designed for ChatGPT|works with ChatGPT|available in ChatGPT/i);
+  assert.match(chatgpt, /Install the MaxVideoAI plugin from the ChatGPT directory/i);
+  assert.match(chatgpt, /Add custom MCP server[\s\S]*Select OAuth[\s\S]*permissions/i);
+  assert.match(chatgpt, /https:\/\/help\.openai\.com\/en\/articles\/12584461-connecting-custom-mcp-servers-in-chatgpt/);
 
   const codex = read('docs/codex.md');
   assert.match(codex, /codex plugin marketplace add camgraphe\/maxvideoai-plugin --ref v\d+\.\d+\.\d+/);
   assert.match(codex, /codex plugin add maxvideoai@maxvideoai/);
-  assert.match(codex, /package\/repository installation instructions/i);
-  assert.match(codex, /not external marketplace approval/i);
+  assert.match(codex, /Package discovery, tool discovery and OAuth are separate/i);
   assert.match(codex, /\$maxvideoai:plan/);
   assert.match(codex, /\$maxvideoai:generate/);
   assert.doesNotMatch(codex, /with `\$(?:plan|generate)`/);

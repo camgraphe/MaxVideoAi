@@ -161,7 +161,7 @@ test('GitHub Markdown links match the exact per-file campaign contract and keep 
     exampleModels, examplePricing, exampleClaude, exampleCodex, releaseConnect, releaseDocs,
   ] = links as string[];
   const expectedByPath: Record<(typeof markdownPaths)[number], string[]> = {
-    'README.md': [rootHero, rootModels, rootPlugin],
+    'README.md': [rootHero.replace('/mcp?', '/app?'), rootModels, rootPlugin],
     'plugins/maxvideoai/README.md': [pluginConnect, pluginPricing, pluginLibrary],
     'plugins/maxvideoai/examples/compare-ai-video-models.md': [exampleModels],
     'plugins/maxvideoai/examples/price-a-video-project.md': [examplePricing],

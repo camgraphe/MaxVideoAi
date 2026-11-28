@@ -1,122 +1,75 @@
-# Install the MaxVideoAI package in Codex
+<a id="install-the-maxvideoai-package-in-codex" name="install-the-maxvideoai-package-in-codex"></a>
+<a id="who-can-currently-use-this-route" name="who-can-currently-use-this-route"></a>
 
-**Short answer:** add the tagged MaxVideoAI repository as a Codex plugin marketplace, install the package, then start a new task and invoke `$maxvideoai:plan` or `$maxvideoai:generate`. These are package/repository installation instructions validated against the current plugin creator tooling and checked-in package, not external marketplace approval or native Codex host proof.
+# Install MaxVideoAI in Codex
 
-## What does this guide prove today?
-
-![Current MaxVideoAI home page paired with the public MCP section showing a completed video result in Claude](../assets/demos/readme-proof-hero.webp)
-
-This is current public MaxVideoAI product proof plus Claude-specific evidence, not native Codex host proof. Codex service behavior was exercised during launch work, but no fresh privacy-reviewed native Codex capture is published here.
-
-## Who can currently use this route?
-
-Use this route in a Codex build that exposes plugin marketplace installation and can load the checked-in MaxVideoAI package. Command availability can vary by build. If `codex plugin` is not recognized, your local host has not verified this path; update or use the plugin manager available in that Codex surface.
+In a Codex build with plugin marketplace support, add the public MaxVideoAI marketplace, install the plugin and open a new task. The published package is v0.3.8. [Tagged release](https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.8) · [MaxVideoAI Codex guide](https://maxvideoai.com/integrations/codex)
 
 ## How do I install the Codex plugin?
 
-These commands track this source version. First confirm that its matching tag appears in [public releases](https://github.com/camgraphe/maxvideoai-plugin/releases); otherwise use the guide from an existing public release. Once the matching tag is published, run:
-
 ```sh
-codex plugin marketplace add camgraphe/maxvideoai-plugin --ref v0.3.9
+codex plugin marketplace add camgraphe/maxvideoai-plugin --ref v0.3.8
 codex plugin add maxvideoai@maxvideoai
 ```
 
-Then:
+This tag identifies the Codex package. ChatGPT has its own native plugin version, and the generic server has its own MCP Registry record. [MCP Registry entry](https://registry.modelcontextprotocol.io/v0.1/servers/com.maxvideoai%2Fmaxvideoai/versions/latest)
 
-1. Start a new Codex task so it discovers the newly installed package.
-2. Invoke `$maxvideoai:plan` for model comparison and project budgeting, or `$maxvideoai:generate` for a concrete request.
-3. Complete MaxVideoAI OAuth in the browser when the first live action asks you to connect.
-4. Sign in or create the MaxVideoAI account whose credits and Library you want to use.
-
-The tagged reference keeps the marketplace definition, two skills, and remote MCP endpoint aligned to the same reviewed package version.
+Start a new task so Codex can discover the installed package. Invoke a MaxVideoAI skill and follow browser OAuth when prompted. Sign in or create the MaxVideoAI account whose credits and Library you want to use. [Codex installation steps](https://maxvideoai.com/integrations/codex)
 
 ## What OAuth and permissions should I expect?
 
-The package contains no embedded token, password, copied model catalogue, pricing table, or customer data. OAuth connects Codex to the MaxVideoAI account you choose. `$maxvideoai:plan` reads current model facts and calculates budgets without spending credits. `$maxvideoai:generate` can prepare an exact quote; only your explicit approval authorizes one paid attempt.
+OAuth connects the package to the account you choose. Planning compares models and budgets without spending credits. Generation requires an exact quote and your explicit approval for one paid attempt.
 
-Review the request before approval. If a response is interrupted after submission, recover the accepted job instead of authorizing a duplicate.
+<a id="how-do-i-verify-the-installation" name="how-do-i-verify-the-installation"></a>
 
-## How do I verify the installation?
+## How do I verify without spending credits?
 
-Start a new task and ask for a no-spend plan. A valid response should compare current executable model options and produce named budgets without preparing paid work.
+```text
+Use $maxvideoai:plan to compare two ways to film a skateboarder rolling
+under a bridge with a paper ribbon unfolding behind the board. Show which models accept my opening frame
+and estimate one take at the same settings. Wait for me to choose.
+```
 
-**Example**: “Use `$maxvideoai:plan` to compare current models for a cinematic product reveal. Give me a quality-first budget and a lower-cost budget.”
-
-If `$maxvideoai:plan` is not discovered, verify the tagged marketplace and package are enabled, then start another new task. Package discovery alone is not proof that OAuth or the full production path completed.
+Once you choose a shot, use `$maxvideoai:generate` to prepare the exact quote. Explicit approval authorizes one paid attempt. [Paper Run brief and measured estimates](../examples/codex-video-production.md)
 
 ## Why can an installed plugin have no tools?
 
-Package discovery, tool discovery, and OAuth authentication are separate states.
-The two skills allow implicit invocation, but the host decides whether a request
-matches them. You can also explicitly select `$maxvideoai:plan` or
-`$maxvideoai:generate`. Neither route bypasses account authentication.
+Package discovery, tool discovery and OAuth are separate. Enable the tagged package and open a new task. If MaxVideoAI tools still do not appear, check the connection and use the host’s reconnect action. [Troubleshooting](troubleshooting.md)
+
+### What if the installation source disappeared?
+
+If the package manager points to a missing local source, add the tagged GitHub marketplace again using the [installation command above](#how-do-i-install-the-codex-plugin).
+
+### How do local reference files reach my Library?
+
+When the host cannot pass an attachment, request a private upload destination and use the browser or the package’s local helper. [Reference inputs and local helper](../skills/generate/references/reference-inputs.md)
+
+## What if a job is already running?
+
+Ask Codex for the accepted job.
 
 ```text
-Package installed → tools discovered → account connected → workflow ready
-                                           ↑
-                              Reconnect here if OAuth is rejected
+Find the job I already approved and give me the finished clip when it is ready.
 ```
+ Review the completed clip in your Library before pricing another take. [Recovery guide](../examples/recover-a-generation.md) · [MaxVideoAI Library](https://maxvideoai.com/app/library)
 
-If the skill is present but its tools are missing:
+<a id="how-do-i-remove-or-disconnect-it" name="how-do-i-remove-or-disconnect-it"></a>
 
-1. Search available or deferred tools for MaxVideoAI. An empty MCP resource list
-   does not prove tools are missing.
-2. Inspect the connection status. For OAuth reauthentication, use the host's
-   reconnect action or `codex mcp login maxvideoai`, then sign in to the intended
-   account in the browser.
-3. Check `codex --version` if that fails. The terminal CLI may be older than the
-   desktop app. Use the app's plugin manager or verified bundled CLI; do not
-   change configuration to accommodate an obsolete binary.
-4. Rediscover tools and resume the saved brief. If unavailable, start a new task
-   with that brief and report the connection error. Lost authentication alone
-   does not require reinstallation.
+## Disconnect your account
 
-## What if the installation source disappeared?
+Remove or disable the MaxVideoAI package in the Codex plugin manager. Revoke the corresponding OAuth connection in your MaxVideoAI account settings if you want to end its access. [Permissions and account access](privacy-and-permissions.md)
 
-If the marketplace itself points to a missing local or temporary directory,
-repair its source using the tagged Git repository in the installation command
-above. A cached plugin can remain installed after its original local source has
-disappeared; that source cannot reliably supply later updates.
+### Which practical examples should I use?
 
-No sign-in or reconnection authorizes generation. An exact quote and explicit
-approval are still required before a paid attempt.
+Start with [model comparison](../examples/compare-ai-video-models.md) or [project budgeting](../examples/price-a-video-project.md).
 
-## How do local reference files reach my Library?
+### What does this guide prove today?
 
-When the host cannot expose an attachment handle, create one upload destination
-per file with `create_reference_upload_link`. Run the included helper with Node.js
-from the installed package root:
-
-```sh
-node scripts/import-reference-files.mjs --upload '<returned upload URL>' '/absolute/path/reference.png'
-```
-
-Replace the placeholders with the returned destination and the authorized local
-file. Repeat `--upload` for up to eight files, each with its own destination.
-Keep successful asset IDs and retry only failed files with fresh destinations.
-The local path stays on the machine; the helper uploads into the account's private
-Library. If Node.js is unavailable, use the returned browser destination.
-
-## How do I remove or disconnect it?
-
-Use the plugin manager in the Codex build that installed MaxVideoAI and remove `maxvideoai@maxvideoai`. If your build offers CLI removal, check its own `codex plugin --help` output rather than guessing a command. Revoke the Codex OAuth connection in your MaxVideoAI account connection settings to end account access.
-
-```text
-Remove the package in Codex → revoke the Codex OAuth connection in MaxVideoAI → reconnect only when needed
-```
-
-## Which practical examples should I use?
-
-- [Compare current AI video models](../examples/compare-ai-video-models.md) before selecting a route.
-- [Price an AI video project](../examples/price-a-video-project.md) before preparing a request.
-- [Run a Codex video-production workflow](../examples/codex-video-production.md) for package and recovery context.
+The tagged package and its manifest document the installable Codex configuration. For tests by host, see the [MaxVideoAI compatibility guide](https://maxvideoai.com/docs/mcp).
 
 ## Sources
 
-- [MaxVideoAI package repository](https://github.com/camgraphe/maxvideoai-plugin)
-- [MaxVideoAI compatibility evidence](https://maxvideoai.com/docs/mcp)
-- This package’s `.claude-plugin/marketplace.json` and `.codex-plugin/plugin.json`, matching the source version `0.3.9`; public tag availability is checked separately above
+- [Published Codex package manifest](https://github.com/camgraphe/maxvideoai-plugin/blob/v0.3.8/.codex-plugin/plugin.json)
+- [MaxVideoAI host compatibility evidence](https://maxvideoai.com/docs/mcp)
 
-Last reviewed: 2026-10-04.
-
-Installation version checked: 2026-11-13; the host workflow evidence date above is unchanged.
+Last reviewed: 2026-11-28.
