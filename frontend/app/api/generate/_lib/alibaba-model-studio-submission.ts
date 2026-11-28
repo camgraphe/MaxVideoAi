@@ -1,8 +1,8 @@
-import { getWanSubmissionClient, isWanDirectProvider, type WanDirectProvider } from '@/server/video-providers/wan-transports';
+import { getWanSubmissionClient, isWanDirectProvider, wanTransports, type WanDirectProvider } from '@/server/video-providers/wan-transports';
 import type { createApimartClient } from '@/server/video-providers/apimart/wan-prime';
 import type { WanPurchaseCanary } from '@/server/video-providers/router';
 import { nextPurchaseProvider, purchaseRoutingSnapshot, type PurchaseDecision } from '@/lib/video-purchase-decision';
-import { buildWanPurchaseDecision, classifyWanPurchaseFailure } from './wan-purchase-routing';
+import { buildWanPurchaseDecision } from './wan-purchase-routing';
 import type { GeneratePayload, GenerateResult } from '@/lib/fal';
 import { query } from '@/lib/db';
 import type { NormalizedVideoProviderTask, VideoProviderKey } from '@/server/video-providers/types';
@@ -436,17 +436,18 @@ async function submitWanAttempt(
   context: WanAttemptContext, provider: WanDirectProvider, attemptIndex: number, previousAttemptId: number | null,
 ): Promise<AlibabaModelStudioGenerateSubmissionResult> {
   const { params, route, media, resolution, estimate, active, plan, deps, queryFn } = context;
+  const providerModel = wanTransports[provider].modelId(route);
   const costMicros = plan?.candidates.find(candidate => candidate.provider === provider)?.costMicros;
   const attempt = await createProviderAttempt({
     publicJobId: params.jobId,
     attemptIndex,
     claimOnce: active,
     provider,
-    providerModel: route.model,
+    providerModel,
     requestSnapshot: {
       engineId: params.engineId,
       mode: params.mode,
-      providerModel: route.model,
+      providerModel,
       durationSec: params.durationSec,
       inputVideoDurationSec: media.inputVideoDurationSec,
       aspectRatio: params.aspectRatio,
@@ -494,6 +495,7 @@ async function submitWanAttempt(
           : undefined,
       seed: params.falPayload.seed,
     });
+    if (!providerModel) throw new Error('No reviewed provider model for this route');
     const transport = await createWanMediaTransport({ payload, userId: params.userId }, { read: deps.createOwnedMediaReadUrlFn });
     sanitizeDiagnostics = transport.sanitize;
     const client = getWanSubmissionClient(provider, {
@@ -505,7 +507,7 @@ async function submitWanAttempt(
     acceptedTask = task;
   } catch (error) {
     const normalized = classifyAlibabaModelStudioError(error);
-    const failure = sent ? classifyWanPurchaseFailure(provider, error) : { outcome: 'invalid' as const, code: normalized.code ?? normalized.errorClass };
+    const failure = sent ? wanTransports[provider].classifyFailure(error) : { outcome: 'invalid' as const, code: normalized.code ?? normalized.errorClass };
     const next = active && plan ? nextPurchaseProvider(plan.order, provider, failure.outcome) : null;
     if (active && failure.outcome === 'uncertain') {
       // No ACK: preserve the original reservation and leave the operator a durable reconciliation record.
@@ -519,7 +521,7 @@ async function submitWanAttempt(
         console.warn('[wan-purchase] attempt reconciliation write deferred', { jobId: params.jobId }));
       return deferred(params.jobId);
     }
-    const fallbackEligible = active ? next !== null : route.fallbackCompatible && shouldFallbackFromAlibabaSubmit({
+    const fallbackEligible = active ? next === 'fal' || isWanDirectProvider(next) : route.fallbackCompatible && shouldFallbackFromAlibabaSubmit({
       acceptedProviderJobId,
       error,
       fallbackToFalEnabled: params.fallbackToFalEnabled,
@@ -565,7 +567,7 @@ async function submitWanAttempt(
       });
     }
 
-    const message = provider === 'apimart' && sent
+    const message = provider !== ALIBABA_MODEL_STUDIO_PROVIDER && sent
       ? 'The provider declined this generation. Review the request or try again later.'
       : userSafeAlibabaMessage(normalized.errorClass, normalized.code);
     if (terminalWalletStop) {
@@ -617,7 +619,7 @@ async function submitWanAttempt(
     attemptId: attempt.id, responseSnapshot, status, progress,
     localKey: params.localKey, queryFn,
     logAccepted: () => params.logMetricFn('accepted', { jobId: params.jobId,
-      meta: { provider, providerJobId: acceptedTask.providerJobId, providerModel: route.model } }),
+      meta: { provider, providerJobId: acceptedTask.providerJobId, providerModel } }),
     acceptedBody: {
       ok: true,
       jobId: params.jobId,

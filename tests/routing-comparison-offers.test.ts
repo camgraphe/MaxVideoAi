@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { quoteComparisonRequest, type ComparisonRequest } from '../frontend/app/(core)/admin/routing/_lib/comparison-offers';
+import type { CatalogueCard } from '../frontend/app/(core)/admin/routing/_lib/catalogue/types';
+import { offerAccessLabel } from '../frontend/app/(core)/admin/routing/_lib/route-playback';
 import { routingScenarios } from '../frontend/app/(core)/admin/routing/_lib/routing-scenarios';
 import { rankQuotedOffers } from '../frontend/src/lib/video-purchase-decision';
 import { planVideoPurchase, planWanPrimePurchase } from '../frontend/src/server/video-providers/purchase-router';
@@ -78,4 +80,31 @@ test('MiniMax comparisons keep editions, billable references, native frame ratio
   assert.equal(candidate('apimart', {...max, mode: 'i2v', hasStartFrame: true, images: 1, aspectRatio: null}).excluded, null);
   assert.equal(candidate('fal', {...max, durationSec: 5, resolution: '480p'}).costMicros, 250_000);
   assert.ok(candidate('fal', {...max, mode: 'ref2v', images: 3}).excluded);
+});
+
+test('registering a supplier card qualifies only its declared engines in the admin', () => {
+  // Reuse a known supplier identity to model a new negotiated H3 Max offer.
+  const card: CatalogueCard = {
+    provider: 'wavespeed', engines: ['minimax-h3-max'],
+    quote: r => ({
+      tariff: 'Contract fixture', sourceUrl: 'https://example.test/contract',
+      costMicros: r.mode === 't2v' ? r.durationSec * 1000 : null,
+      excluded: r.mode === 't2v' ? null : 'Text only',
+    }),
+  };
+  const request = { ...textClip, engineId: 'minimax-h3-max', durationSec: 5, resolution: '480p' };
+  const simulate = (r: ComparisonRequest, cards = [card]) => {
+    const quote = quoteComparisonRequest(r, cards)!;
+    return rankQuotedOffers(quote.candidates, {ceilingMicros: quote.baselineMicros});
+  };
+  const winner = simulate(request);
+  assert.deepEqual(winner.order, ['wavespeed', 'fal']);
+  const offer = winner.candidates.find(r => r.provider === 'wavespeed')!;
+  assert.equal(offer.costMicros, 5000);
+  assert.match(offerAccessLabel(offer, true), /simulation only/);
+  assert.equal(simulate(request, [card, card]).order.includes('wavespeed'), false);
+  assert.equal(simulate({ ...request, mode: 'i2v', hasStartFrame: true, aspectRatio: null, images: 1 }).order.includes('wavespeed'), false);
+  assert.equal(simulate(textClip).candidates.some(r => r.provider === 'wavespeed'), false);
+  assert.equal(planVideoPurchase(request), null);
+  assert.match(offerAccessLabel(candidate('apimart', textClip), false), /admin pilot/);
 });

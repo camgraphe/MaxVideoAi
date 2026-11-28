@@ -1,3 +1,4 @@
+import type { SubmitOutcome } from '@/lib/video-purchase-decision';
 import type { NormalizedProviderError } from '../types';
 import { ALIBABA_MODEL_STUDIO_PROVIDER } from './model-map';
 
@@ -157,4 +158,19 @@ export function shouldFallbackFromAlibabaSubmit(params: {
 }): boolean {
   if (!params.fallbackToFalEnabled || params.acceptedProviderJobId) return false;
   return classifyAlibabaModelStudioError(params.error).fallbackEligible;
+}
+
+export function classifyAlibabaPurchaseFailure(error: unknown): { outcome: Exclude<SubmitOutcome, 'accepted'>; code: string } {
+  const failure = classifyAlibabaModelStudioError(error);
+  const code = failure.code ?? failure.errorClass;
+  if (
+    failure.status === 429 ||
+    (failure.status != null &&
+      [400, 402, 403].includes(failure.status) &&
+      ['Arrearage', 'PrepaidBillOverdue', 'InsufficientBalance'].includes(code))
+  )
+    return { outcome: 'refused', code };
+  if (failure.status != null && [400, 401, 403, 413, 422].includes(failure.status))
+    return { outcome: 'invalid', code };
+  return { outcome: 'uncertain', code };
 }

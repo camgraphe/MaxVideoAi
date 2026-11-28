@@ -77,6 +77,9 @@ export const WAN_OFFERS: readonly PurchaseOffer[] = [
   {
     provider: 'apimart',
     tariff: 'APIMart Gold · 2026-11-27',
+    comparisonAccess: r => r.engineId === 'wan-3-prime'
+      ? { pilotOnly: true, sourceUrl: 'https://apimart.ai/model/wan-3-0-prime' }
+      : { simulationOnly: true, sourceUrl: 'https://apimart.ai/model/wan-3-0' },
     quote: (r) => {
       const rates = r.engineId === 'wan-3' ? STANDARD_GOLD_MICROS : APIMART_PRIME_MICROS_PER_SECOND;
       return requestIsPriced(r) && !r.hasVideo ? r.durationSec * rates[r.resolution.toLowerCase()] : null;

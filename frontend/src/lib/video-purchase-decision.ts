@@ -10,9 +10,6 @@ export function isPurchaseRoutingEngine(engineId: unknown): engineId is Purchase
   return typeof engineId === 'string' && purchaseRoutingEngines.has(engineId);
 }
 
-/** Catalogue-only suppliers cannot be used as live provider keys. */
-export type PurchaseProviderKey = VideoProviderKey | 'wavespeed';
-
 export const PROVIDER_LABELS = {
   wavespeed: 'WaveSpeedAI',
   apimart: 'APIMart Gold',
@@ -23,7 +20,10 @@ export const PROVIDER_LABELS = {
   luma_agents_direct: 'Luma Agents',
   google_vertex_veo_direct: 'Google Vertex · Veo',
   google_vertex_omni_direct: 'Google Vertex · Omni',
-} satisfies Record<PurchaseProviderKey, string>;
+} satisfies Record<VideoProviderKey, string> & Record<string, string>;
+
+/** Adding a display name enables comparison. Live adapters have a separate key type. */
+export type PurchaseProviderKey = keyof typeof PROVIDER_LABELS;
 
 export type PurchaseStrategy = 'lowest-cost' | 'preserve-fallback';
 
@@ -40,6 +40,7 @@ export type PurchaseLimits = {
 export type PurchaseCandidate<P extends PurchaseProviderKey = VideoProviderKey> = {
   provider: P;
   simulationOnly?: true;
+  pilotOnly?: true;
   sourceUrl?: string;
   tariff: string;
   costMicros: number | null;

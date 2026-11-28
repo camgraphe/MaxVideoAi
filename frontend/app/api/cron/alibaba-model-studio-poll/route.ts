@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { runAlibabaModelStudioPoll } from '@/server/alibaba-model-studio-poll';
+import { enabledWanPollProviders } from '@/server/video-providers/wan-transports';
 import { isWanPilotEnvironment } from '@/server/video-providers/router';
 import { reconcileWanPilotWalletStops } from '@/server/wan-pilot-refunds';
 import { authorizeCronRequest } from '@/server/vercel-cron';
@@ -37,11 +38,13 @@ async function triggerPoll(req: Request) {
     if (result.errors) console.warn('[wan-purchase] refund reconciliation incomplete', result);
   }).catch(() => console.warn('[wan-purchase] refund reconciliation unavailable')) : undefined;
   try {
-    if (!process.env.APIMART_API_KEY?.trim()) return await runAlibabaModelStudioPoll();
-    const [alibaba, apimart] = await Promise.all([
-      runAlibabaModelStudioPoll(), runAlibabaModelStudioPoll({ provider: 'apimart' }),
-    ]);
-    return NextResponse.json({ alibaba: await alibaba.json(), apimart: await apimart.json() });
+    const additional = enabledWanPollProviders().filter(provider => provider !== 'alibaba_model_studio');
+    if (!additional.length) return await runAlibabaModelStudioPoll();
+    const results = await Promise.all(['alibaba_model_studio' as const, ...additional].map(async provider => {
+      const response = await runAlibabaModelStudioPoll({ provider });
+      return [provider === 'alibaba_model_studio' ? 'alibaba' : provider, await response.json()];
+    }));
+    return NextResponse.json(Object.fromEntries(results));
   } catch (error) {
     console.error('[cron-alibaba-model-studio-poll] failed to run poll', error);
     return NextResponse.json({ ok: false, error: 'Failed to run direct video poll' }, { status: 500 });

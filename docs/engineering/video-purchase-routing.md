@@ -106,10 +106,18 @@ The accepted quote sets the charge. Supplier selection reads the quote as a ceil
 
 ## Extending the route
 
-1. Define a provider offer beside its rate source under `frontend/src/server/video-providers/purchase/`. Match exact engine and input roles, deny unreviewed combinations and return integer USD microdollars. One provider appears once for a given engine. Distinct endpoints for different modes belong to the capability/quote function. Mark transports that own final settlement as terminal.
-2. Register the engine's baseline, offers and default strategy in `purchase-router.ts`. The decision engine resolves prices locally. Normalize the provider's validated submission inputs before comparing offers, and use the existing attempt write to record the decision. A missing policy returns no comparison and keeps the existing owner in control.
-3. Add representative requests to the admin routing scenarios. The viewer derives its providers, policies, costs and branches from the same quote and ranking functions. Stage observable decisions before enabling a transport.
-4. A live adapter additionally needs server-only activation, a durable attempt claim, definitive/uncertain error classification, provider-specific polling, settlement and media delivery. Wan direct submit factories are registered in `wan-transports.ts`. Verify retries, concurrency, budget boundaries, duplicate offers, direct-only options and single charging.
+### Compare an offer on an existing engine
+
+1. Add the supplier's operator-facing name to `PROVIDER_LABELS` if it is new.
+2. Add a `CatalogueCard` under `frontend/app/(core)/admin/routing/_lib/catalogue/` and register it in `comparison-offers.ts`. [WaveSpeedAI on Wan](../../frontend/app/(core)/admin/routing/_lib/catalogue/wavespeed-wan.ts) is a working example. Specify the exact engine editions. The quote returns the tariff and source, total purchase cost in integer USD microdollars, or an exclusion for an unsupported or unpriced request. Keep the tariff date or negotiated revision in the tariff label. The same supplier can offer several modes on an engine through a single matching card.
+3. Open **Generations → Video routing**, select the engine, then replay the last 30 days with candidate suppliers. Existing matching scenarios and replay groups pick up the card automatically. Add a scenario only when a new mode needs illustrating. Compare projected gains and the number of comparable jobs.
+
+### Qualify a Wan supplier for real requests
+
+1. Implement its server-side API client and register the direct transport in `wan-transports.ts`. Provide submission, status retrieval, polling readiness, cost attribution and submit-error classification. Declare a live provider key. Map exact input roles, provider model identifiers and reference delivery to the supplier's endpoints. Keep the credential on the server. The shared poller, cron and manual job refresh use the registration. Fal uses its existing terminal queue.
+2. Attach its purchase offer to the engine policy in `purchase-router.ts` using the same rate calculation. When promoting a catalogue card, move its comparison metadata onto that purchase offer and remove the overlapping card. Two simultaneous offers with the same provider identity on an engine are excluded as conflicting.
+3. Enroll only the reviewed suppliers in a named pilot. Its server-side activation controls the eligible engines, profiles, environment and admin audience. New credentials or a lower price alone do not enroll a supplier. Preserve the original customer quote, reservation and job ID. Advance only on a confirmed pre-acceptance refusal. Keep status retrieval available for accepted tasks when pausing new purchases.
+4. Run `pnpm test:routing:provider` locally. It exercises offer registration, replay, handoffs, uncertain acknowledgements, wallet settlement, supplier polling and the accounting report with test responses and disposable PostgreSQL. Add vendor-specific response fixtures. Before sending real demand, confirm the account tariff, balance, usage rights, delivered output and the charge for a matching private pilot request.
 
 Run the focused tests from the repository root.
 

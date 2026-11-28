@@ -299,8 +299,10 @@ test('Alibaba polling is isolated from Fal and protected by its own cron route',
   assert.equal(existsSync(pollPath), true);
   assert.equal(existsSync(routePath), true);
   const source = readFileSync(pollPath, 'utf8');
-  assert.match(source, /getAlibabaModelStudioClient/);
-  assert.match(source, /normalizeAlibabaTask/);
+  assert.match(source, /wanTransports\[provider\]\.readTask/);
+  const transports = readFileSync(join(root, 'frontend/src/server/video-providers/wan-transports.ts'), 'utf8');
+  assert.match(transports, /getAlibabaModelStudioClient/);
+  assert.match(transports, /normalizeAlibabaPolledTask/);
   assert.match(source, /ensureFastStartVideo/);
   assert.doesNotMatch(source, /submitFalGenerateTask/);
   const route = readFileSync(routePath, 'utf8');

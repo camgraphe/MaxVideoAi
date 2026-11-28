@@ -7,9 +7,9 @@ import {
   type SubmitOutcome,
 } from '@/lib/video-purchase-decision';
 
-export function offerAccessLabel(offer: PurchaseCandidate<PurchaseProviderKey>, engineId: string, installed: boolean): string {
+export function offerAccessLabel(offer: PurchaseCandidate<PurchaseProviderKey>, installed: boolean): string {
   if (offer.simulationOnly) return 'Catalogue estimate · simulation only';
-  if (offer.provider === 'apimart' && engineId === 'wan-3-prime' && !installed)
+  if (offer.pilotOnly && !installed)
     return 'Optional admin pilot · access required';
   return '';
 }

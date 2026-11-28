@@ -1,5 +1,4 @@
-import { createApimartClient } from '@/server/video-providers/apimart/wan-prime';
-import { APIMART_PRIME_MICROS_PER_SECOND } from '@/server/video-providers/purchase-router';
+import { wanTransports, type WanDirectProvider, type WanPollOverrides } from '@/server/video-providers/wan-transports';
 import { claimGenerationPoll } from '@/server/generation-poll-state';
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
@@ -21,15 +20,11 @@ import {
   buildUserFacingRefundDescription,
   toUserFacingFailureMessage,
 } from '@/server/user-facing-failure-messages';
-import { getAlibabaModelStudioClient } from '@/server/video-providers/alibaba-model-studio/client';
-import { estimateAlibabaJobCost } from '@/server/alibaba-job-accounting';
 import { classifyAlibabaModelStudioError } from '@/server/video-providers/alibaba-model-studio/errors';
 import {
   ALIBABA_MODEL_STUDIO_PROVIDER,
   resolveAlibabaModelRoute,
 } from '@/server/video-providers/alibaba-model-studio/model-map';
-import { normalizeAlibabaTask } from '@/server/video-providers/alibaba-model-studio/response';
-import { sanitizeProviderMediaDiagnostics } from '@/server/provider-media-diagnostics';
 import {
   findProviderAttemptForJob,
   markProviderAttemptFailed,
@@ -39,12 +34,9 @@ import {
 import type { NormalizedVideoProviderTask } from '@/server/video-providers/types';
 
 type QueryFn = <T = unknown>(sql: string, params?: unknown[]) => Promise<T[]>;
-type AlibabaPollClient = { getTask(id: string): Promise<unknown> };
-
-type WanPollProvider = 'alibaba_model_studio' | 'apimart';
 
 type AlibabaPendingJob = {
-  provider?: WanPollProvider;
+  provider?: WanDirectProvider;
   job_id: string;
   user_id: string | null;
   engine_id: string;
@@ -66,11 +58,9 @@ type AlibabaPendingJob = {
   created_at: string;
 };
 
-type AlibabaPollDeps = {
+type AlibabaPollDeps = WanPollOverrides & {
   queryFn?: QueryFn;
-  getApimartClientFn?: typeof createApimartClient;
   claimPollFn?: typeof claimGenerationPoll;
-  getAlibabaModelStudioClientFn?: () => AlibabaPollClient;
   ensureFastStartVideoFn?: typeof ensureFastStartVideo;
   detectVideoDimensionsFn?: typeof detectVideoDimensions;
   ensureJobThumbnailFn?: typeof ensureJobThumbnail;
@@ -83,10 +73,6 @@ const POLL_INITIAL_DELAY_MS = 5_000;
 const DEFAULT_POLL_MAX_DURATION_MINUTES = 185;
 const ACTIVE_JOB_STATUSES = ['pending', 'queued', 'running', 'processing', 'in_progress'];
 const STALLED_MESSAGE = 'This render needs manual review before retrying or refunding.';
-
-function flagEnabled(value: string | undefined): boolean {
-  return ['1', 'true', 'yes', 'on'].includes((value ?? '').trim().toLowerCase());
-}
 
 function positiveInt(value: string | undefined, fallback: number): number {
   const parsed = Number(value);
@@ -119,21 +105,17 @@ function resolutionForJob(job: AlibabaPendingJob): string {
 }
 
 function costForJob(job: AlibabaPendingJob, task?: NormalizedVideoProviderTask) {
-  if (job.provider !== 'apimart') return estimateAlibabaJobCost(job, task);
-  // The pilot only accepts image references or text. The supplier invoice is not known here.
-  const rate = APIMART_PRIME_MICROS_PER_SECOND[resolutionForJob(job).toLowerCase()];
-  const cost = rate == null ? null : rate * job.duration_sec / 1e6;
-  return { providerCostUsd: cost, providerCostUnits: job.duration_sec, source: 'apimart_gold_2026_11_27',
-    status: 'list_estimate_from_verified_durations', inputVideoDurationSec: 0, outputVideoDurationSec: job.duration_sec };
+  return wanTransports[job.provider ?? ALIBABA_MODEL_STUDIO_PROVIDER].estimateCost(job, task, resolutionForJob(job));
 }
 
 function costBreakdown(job: AlibabaPendingJob, task: NormalizedVideoProviderTask) {
   const estimate = costForJob(job, task);
   const route = resolveAlibabaModelRoute(job.engine_id, modeForJob(job));
+  const provider = job.provider ?? ALIBABA_MODEL_STUDIO_PROVIDER;
   return {
-    provider: job.provider ?? ALIBABA_MODEL_STUDIO_PROVIDER,
+    provider,
     provider_cost_source: estimate.source,
-    provider_model: route?.model ?? null,
+    provider_model: route ? wanTransports[provider].modelId(route) : null,
     mode: modeForJob(job),
     duration_sec: job.duration_sec,
     has_audio: job.has_audio === true,
@@ -145,21 +127,6 @@ function costBreakdown(job: AlibabaPendingJob, task: NormalizedVideoProviderTask
     provider_cost_usd: estimate.providerCostUsd,
     provider_cost_usd_effective: null,
     vendor_cost_usd: estimate.providerCostUsd,
-  };
-}
-
-function normalizePolledTask(raw: unknown, providerJobId: string, isWan: boolean): NormalizedVideoProviderTask {
-  const record = asRecord(raw);
-  const providerRaw = record && 'raw' in record ? record.raw : raw;
-  const task = normalizeAlibabaTask(providerRaw, providerJobId);
-  if (!isWan) return task;
-  // Keep signed output videoUrl intact for the durable copy; only diagnostics are sanitized.
-  return {
-    ...task,
-    raw: sanitizeProviderMediaDiagnostics(task.raw),
-    message: task.status === 'failed' && task.errorCode === 'InvalidParameter'
-      && /^Failed to download\b/i.test(task.message ?? '')
-      ? 'Reference media could not be read.' : sanitizeProviderMediaDiagnostics(task.message) as string | null,
   };
 }
 
@@ -321,13 +288,11 @@ async function deferStorageCopyRetry(
   );
 }
 
-export async function runAlibabaModelStudioPoll(options: { jobId?: string; provider?: WanPollProvider; deps?: AlibabaPollDeps } = {}) {
+export async function runAlibabaModelStudioPoll(options: { jobId?: string; provider?: WanDirectProvider; deps?: AlibabaPollDeps } = {}) {
   const deps = options.deps ?? {};
   const queryFn = deps.queryFn ?? query;
   const provider = options.provider ?? ALIBABA_MODEL_STUDIO_PROVIDER;
-  // Continue to drain accepted APIMart jobs after the submission switch is turned off.
-  const enabled = provider === 'apimart' ? Boolean(process.env.APIMART_API_KEY?.trim()) : flagEnabled(process.env.ALIBABA_MODEL_STUDIO_ENABLED);
-  if (!enabled && !deps.queryFn) {
+  if (!wanTransports[provider].pollEnabled() && !deps.queryFn) {
     return NextResponse.json({ ok: true, enabled: false, checked: 0, updates: 0 });
   }
   const rows = await queryFn<AlibabaPendingJob>(
@@ -345,10 +310,6 @@ export async function runAlibabaModelStudioPoll(options: { jobId?: string; provi
   );
   if (!rows.length) return NextResponse.json({ ok: true, enabled: true, checked: 0, updates: 0 });
 
-  const pollTask = provider === 'apimart'
-    ? (deps.getApimartClientFn ?? createApimartClient)().getTask
-    : async (id: string, isWan: boolean) => normalizePolledTask(
-        await (deps.getAlibabaModelStudioClientFn ?? getAlibabaModelStudioClient)().getTask(id), id, isWan);
   const ensureFastStartVideoFn = deps.ensureFastStartVideoFn ?? ensureFastStartVideo;
   const detectVideoDimensionsFn = deps.detectVideoDimensionsFn ?? detectVideoDimensions;
   const ensureJobThumbnailFn = deps.ensureJobThumbnailFn ?? ensureJobThumbnail;
@@ -374,8 +335,8 @@ export async function runAlibabaModelStudioPoll(options: { jobId?: string; provi
     if (!pollClaim) continue;
     try {
       const attempt = await findAttempt(job, queryFn);
-      const task = await pollTask(job.provider_job_id,
-        resolveAlibabaModelRoute(job.engine_id, modeForJob(job))?.family === 'wan3');
+      const task = await wanTransports[provider].readTask(job.provider_job_id,
+        resolveAlibabaModelRoute(job.engine_id, modeForJob(job))?.family === 'wan3', deps);
       await pollClaim.checked();
       const estimate = costForJob(job, task);
       if (task.status === 'queued' || task.status === 'running') {

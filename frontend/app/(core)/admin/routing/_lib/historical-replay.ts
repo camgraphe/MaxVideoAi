@@ -4,10 +4,12 @@ import { calculateMinimaxH3MaxProviderCost } from '@/lib/minimax-h3-max-pricing'
 import { MINIMAX_H3_RESOLUTIONS } from '@/config/fal-engines/minimax-h3';
 import { MINIMAX_H3_MAX_RESOLUTIONS } from '@/config/fal-engines/minimax-h3-max';
 import { quoteComparisonRequest, type ComparisonRequest } from './comparison-offers';
+import type { CatalogueCard } from './catalogue/types';
 import type { HistoricalReplayGroup, HistoricalReplayReport, ReplayChoice, ReplayOpportunity, ReplayTotals, ReplayTrace } from './historical-replay-types';
 
 type Candidate = PurchaseCandidate<PurchaseProviderKey>;
 type ReplayOptions = {
+  cards?: readonly CatalogueCard[];
   engineId?: string;
   page?: number;
   pageSize?: number;
@@ -16,8 +18,7 @@ type ReplayOptions = {
 };
 
 function additionalOffer(offer: Candidate) {
-  // The optional APIMart Prime admin-preview adapter is also a new commercial supplier.
-  return offer.simulationOnly || offer.provider === 'apimart';
+  return offer.simulationOnly || offer.pilotOnly;
 }
 
 function firstChoice(ranking: ReturnType<typeof rankQuotedOffers<PurchaseProviderKey>>): ReplayChoice | null {
@@ -97,16 +98,15 @@ function evaluate(group: HistoricalReplayGroup, options: ReplayOptions): ReplayT
   trace.historicalMicros = paidFalH3;
   // The original frame can be missing after the delivery webhook replaced it by a measured ratio.
   // Retain the proven owner only when the competing supplier is excluded for every possible original ratio.
-  const goldExcludedWithoutRatio = (r.engineId === 'minimax-h3' && ['480P','4K'].includes(r.resolution.toUpperCase())) ||
-    ['balanced','quality','fast'].includes(r.h3PromptExpansion ?? '');
-  const retainFal = !verifiedRatio && !inheritedRatio && paidFalH3 != null && goldExcludedWithoutRatio;
+  const quote = quoteComparisonRequest(r, options.cards);
+  if (!quote) return exclude('Engine has no reviewed purchase policy');
+  const retainFal = !verifiedRatio && !inheritedRatio && paidFalH3 != null &&
+    quote.candidates.every(offer => offer.provider === 'fal' || (offer.excluded && offer.excludedAtEveryRatio));
   if (!verifiedRatio && !inheritedRatio && !retainFal) return exclude('Original requested aspect ratio is unverified');
   if (retainFal) trace.basisNote = 'Delivered by Fal. Its tariff is independent of framing, and no additional supplier qualifies at any frame ratio.';
   const ceiling = group.ceilingMicros;
   if (ceiling == null || !Number.isSafeInteger(ceiling) || ceiling < 0)
     return exclude('Trusted USD purchase ceiling is missing');
-  const quote = quoteComparisonRequest(r);
-  if (!quote) return exclude('Engine has no reviewed purchase policy');
 
   const candidates = quote.candidates.map(c => {
     if (retainFal && c.provider === 'fal') return {...c, costMicros: paidFalH3, excluded: null};

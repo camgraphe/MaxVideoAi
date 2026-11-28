@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { buildHistoricalReplay } from '../frontend/app/(core)/admin/routing/_lib/historical-replay';
 import type { HistoricalReplayGroup } from '../frontend/app/(core)/admin/routing/_lib/historical-replay-types';
+import type { CatalogueCard } from '../frontend/app/(core)/admin/routing/_lib/catalogue/types';
+import { apimartH3 } from '../frontend/app/(core)/admin/routing/_lib/catalogue/minimax-h3';
 import type { ComparisonRequest } from '../frontend/app/(core)/admin/routing/_lib/comparison-offers';
 
 const textClip: ComparisonRequest = {
@@ -124,4 +126,25 @@ test('H3 handles the inherited start-frame ratio and compares Gold only with pro
   assert.equal(report.singleRouteProfiles[0].jobs, 3);
   assert.deepEqual(buildHistoricalReplay([...data].reverse(), {pageSize:1}).traces,
     buildHistoricalReplay(data, {pageSize:1}).traces);
+});
+
+test('a new supplier flows into replay savings and needs its own evidence when original framing is missing', () => {
+  const negotiatedCard: CatalogueCard = {
+    provider: 'wavespeed', engines: ['minimax-h3'],
+    quote: r => ({
+      tariff: 'Negotiated fixture', sourceUrl: 'https://example.test/contract',
+      costMicros: r.aspectRatio === '16:9' ? 100_000 : null,
+      excluded: r.aspectRatio === '16:9' ? null : 'Only 16:9 reviewed',
+    }),
+  };
+  const r = { ...textClip, engineId: 'minimax-h3', resolution: '480P', h3PromptExpansion: 'balanced', promptCharacters: 120 };
+  const report = buildHistoricalReplay([
+    group(r, {jobs: 3, historicalProvider: 'fal'}),
+    group({ ...r, requestedRatioVerified: false, aspectRatio: null }, {historicalProvider: 'fal'}),
+  ], {cards: [apimartH3, negotiatedCard]});
+  assert.equal(report.totals.comparableJobs, 3);
+  assert.ok(report.totals.additionalSavingsMicros > 0);
+  assert.equal(report.opportunities[0].provider, 'wavespeed');
+  assert.equal(report.opportunities[0].jobsImproved, 3);
+  assert.match(report.traces.find(t => t.jobs === 1)?.excludedReason ?? '', /ratio is unverified/);
 });

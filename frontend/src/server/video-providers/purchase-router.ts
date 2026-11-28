@@ -40,12 +40,13 @@ export function usesPurchaseBaseline(engineId: string, provider: VideoProviderKe
   return policies.get(engineId)?.baseline === provider;
 }
 
-function quoteOffers(request: PurchaseRequest, offers: readonly PurchaseOffer[]): PurchaseCandidate[] {
+function quoteOffers(request: PurchaseRequest, offers: readonly PurchaseOffer[], purpose: 'routing' | 'comparison' = 'routing'): PurchaseCandidate[] {
   return offers.map((offer) => ({
     provider: offer.provider,
     tariff: offer.tariff,
     costMicros: offer.quote(request),
     excluded: offer.exclude(request),
+    ...(purpose === 'comparison' ? offer.comparisonAccess?.(request) : {}),
     ...(offer.terminal ? { terminal: true } : {}),
   }));
 }
@@ -59,10 +60,10 @@ export function rankPurchaseOffers(
 }
 
 /** Retain raw capability/price facts so the simulator can reapply availability, budget and ordering. */
-export function quoteVideoPurchase(request: PurchaseRequest) {
+export function quoteVideoPurchase(request: PurchaseRequest, purpose: 'routing' | 'comparison' = 'routing') {
   const policy = policies.get(request.engineId);
   if (!policy) return null;
-  const candidates = quoteOffers(request, policy.offers);
+  const candidates = quoteOffers(request, policy.offers, purpose);
   const baseline = candidates.find((row) => row.provider === policy.baseline);
   return {
     engineId: request.engineId,
@@ -93,6 +94,12 @@ export function planVideoPurchase(request: PurchaseRequest, limits: Partial<Purc
   return quote ? selectPurchasePlan(quote, limits) : null;
 }
 
+// Adding an offer or transport never enrolls it in an existing pilot.
+const pilotSuppliers: Record<WanPurchaseCanary, ReadonlySet<VideoProviderKey>> = {
+  'alibaba-fal': new Set(['alibaba_model_studio', 'fal']),
+  'with-apimart': new Set(['alibaba_model_studio', 'fal', 'apimart']),
+};
+
 /** The preproduction transport is qualified independently of a price comparison. */
 export function planWanPurchase(
   request: PurchaseRequest, limits: Partial<PurchaseLimits> = {}, pilot?: WanPurchaseCanary
@@ -100,9 +107,13 @@ export function planWanPurchase(
   const quote = policies.get(request.engineId) === wan ? quoteVideoPurchase(request) : null;
   if (!quote) return { ...rankQuotedOffers<VideoProviderKey>([], { ceilingMicros: -1 }), canaryEligible: false };
   const installedOnly = pilot === 'alibaba-fal';
-  const plan = selectPurchasePlan(quote, installedOnly ? {
-    ...limits, unavailable: { ...limits.unavailable, apimart: 'Outside the Alibaba and Fal pilot' },
-  } : limits);
+  const unavailable = { ...limits.unavailable };
+  if (pilot) {
+    for (const offer of quote.candidates) {
+      if (!pilotSuppliers[pilot].has(offer.provider)) unavailable[offer.provider] ??= 'Outside the selected Wan pilot';
+    }
+  }
+  const plan = selectPurchasePlan(quote, { ...limits, unavailable });
   const permitted = request.engineId === 'wan-3-prime' || (request.engineId === 'wan-3' && installedOnly);
   return { ...plan, canaryEligible: permitted && isReviewedWanPilotRequest(request) };
 }

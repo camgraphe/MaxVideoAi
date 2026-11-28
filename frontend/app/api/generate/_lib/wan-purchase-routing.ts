@@ -1,10 +1,6 @@
-import type { SubmitOutcome } from '@/lib/video-purchase-decision';
 import type { PricingSnapshot } from '@/types/engines';
 import type { GeneratePayload } from '@/lib/fal';
-import type { VideoProviderKey } from '@/server/video-providers/types';
 import type { WanPurchaseCanary } from '@/server/video-providers/router';
-import { ApimartSubmitError } from '@/server/video-providers/apimart/wan-prime';
-import { classifyAlibabaModelStudioError } from '@/server/video-providers/alibaba-model-studio/errors';
 import { customerPurchaseCeiling, planWanPurchase, type PurchaseRequest } from '@/server/video-providers/purchase-router';
 import { hasUnreviewedWanOptions } from '@/server/video-providers/apimart/wan-image-mode';
 import type { resolveAlibabaSubmissionMediaInputs } from './alibaba-model-studio-submission';
@@ -48,28 +44,4 @@ export function buildWanPurchaseDecision(
     ceilingMicros: cap,
     unavailable: params.fallbackToFalEnabled ? {} : { fal: 'Fal fallback disabled' },
   }, params.purchaseCanary);
-}
-export function classifyWanPurchaseFailure(
-  provider: VideoProviderKey,
-  error: unknown
-): {
-  outcome: Exclude<SubmitOutcome, 'accepted'>;
-  code: string;
-} {
-  if (provider === 'apimart')
-    return error instanceof ApimartSubmitError
-      ? error
-      : { outcome: 'uncertain', code: 'SUBMISSION_UNCONFIRMED' };
-  const failure = classifyAlibabaModelStudioError(error);
-  const code = failure.code ?? failure.errorClass;
-  if (
-    failure.status === 429 ||
-    (failure.status != null &&
-      [400, 402, 403].includes(failure.status) &&
-      ['Arrearage', 'PrepaidBillOverdue', 'InsufficientBalance'].includes(code))
-  )
-    return { outcome: 'refused', code };
-  if (failure.status != null && [400, 401, 403, 413, 422].includes(failure.status))
-    return { outcome: 'invalid', code };
-  return { outcome: 'uncertain', code };
 }

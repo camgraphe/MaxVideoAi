@@ -258,7 +258,7 @@ export function RouteSimulator({
                       </option>
                     ))}
                   </select>
-                  <small>{[row.excluded ?? row.tariff, offerAccessLabel(row, scenario.engineId, installedProviders.has(row.provider))].filter(Boolean).join(' · ')}</small>
+                  <small>{[row.excluded ?? row.tariff, offerAccessLabel(row, installedProviders.has(row.provider))].filter(Boolean).join(' · ')}</small>
                   {row.sourceUrl && <a className="text-xs underline" target="_blank" rel="noreferrer" href={row.sourceUrl}>Published rate ↗</a>}
                 </label>
               ))}

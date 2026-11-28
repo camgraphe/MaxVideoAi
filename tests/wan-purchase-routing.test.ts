@@ -11,7 +11,10 @@ import {
   rankPurchaseOffers,
   WAN_PRIME_OFFERS,
   type PurchaseRequest,
+  type PurchaseOffer,
 } from '../frontend/src/server/video-providers/purchase-router';
+import { isWanDirectProvider, enabledWanPollProviders, wanTransports } from '../frontend/src/server/video-providers/wan-transports';
+import { resolveAlibabaModelRoute } from '../frontend/src/server/video-providers/alibaba-model-studio/model-map';
 import { resolveVideoProviderRoutingPlan } from '../frontend/src/server/video-providers/router';
 import { nextPurchaseProvider } from '../frontend/src/lib/video-purchase-decision';
 import { computeCanonicalBillingSnapshot } from '../frontend/server/pricing/quote-billing';
@@ -272,4 +275,43 @@ test('simulator plays only the attempts allowed by the price decision and the re
   assert.deepEqual(lost.map(frame => frame.kind), ['intake', 'sending', 'uncertain']);
   const blocked = rankPurchaseOffers(textClip, WAN_PRIME_OFFERS, { ceilingMicros: 0 });
   assert.deepEqual(routeFrames(blocked, {}).map(frame => frame.kind), ['intake', 'empty']);
+});
+
+test('an additional executable offer cannot enter a previously qualified Wan pilot', t => {
+  const offers = WAN_PRIME_OFFERS as PurchaseOffer[];
+  offers.push({ provider: 'kling_direct', tariff: 'Test offer', quote: () => 100, exclude: () => null });
+  t.after(() => { offers.pop(); });
+  assert.equal(planWanPrimePurchase(textClip).order[0], 'kling_direct');
+  for (const pilot of ['alibaba-fal', 'with-apimart'] as const) {
+    const plan = planWanPurchase(textClip, {}, pilot);
+    assert.ok(plan.canaryEligible);
+    assert.ok(!plan.order.includes('kling_direct'));
+    assert.match(plan.candidates.find(r => r.provider === 'kling_direct')?.excluded ?? '', /Outside the selected Wan pilot/);
+  }
+});
+
+test('registered transports own accepted tasks, supplier model names and accounting independently of new dispatch', t => {
+  const key = process.env.APIMART_API_KEY;
+  const gate = process.env.APIMART_WAN_PRIME_ADMIN_CANARY;
+  t.after(() => {
+    if (key === undefined) delete process.env.APIMART_API_KEY;
+    else process.env.APIMART_API_KEY = key;
+    if (gate === undefined) delete process.env.APIMART_WAN_PRIME_ADMIN_CANARY;
+    else process.env.APIMART_WAN_PRIME_ADMIN_CANARY = gate;
+  });
+  process.env.APIMART_WAN_PRIME_ADMIN_CANARY = '0';
+  delete process.env.APIMART_API_KEY;
+  assert.ok(!enabledWanPollProviders().includes('apimart'));
+  process.env.APIMART_API_KEY = 'offline-test-only';
+  assert.ok(enabledWanPollProviders().includes('apimart'));
+  assert.equal(isWanDirectProvider('wavespeed'), false);
+  const prime = resolveAlibabaModelRoute('wan-3-prime', 't2v')!;
+  const standard = resolveAlibabaModelRoute('wan-3', 't2v')!;
+  assert.equal(wanTransports.apimart.modelId(prime), 'wan3.0-video-prime');
+  assert.equal(wanTransports.apimart.modelId(standard), null);
+  assert.equal(wanTransports.alibaba_model_studio.modelId(standard), 'wan3.0-video');
+  const job = {engine_id: 'wan-3-prime', duration_sec: 4, settings_snapshot: {}, pricing_snapshot: {}};
+  assert.equal(wanTransports.apimart.estimateCost(job, undefined, '720p').providerCostUsd, 0.41144);
+  assert.equal(wanTransports.apimart.estimateCost(job, undefined, '2K').providerCostUsd, null);
+  assert.equal(wanTransports.apimart.estimateCost({...job, engine_id: 'wan-3'}, undefined, '720p').providerCostUsd, null);
 });

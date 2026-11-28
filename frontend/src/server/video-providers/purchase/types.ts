@@ -22,6 +22,9 @@ export type PurchaseOffer = {
   provider: VideoProviderKey;
   tariff: string;
   terminal?: boolean;
+  comparisonAccess?: (request: PurchaseRequest) => (
+    { simulationOnly: true } | { pilotOnly: true }
+  ) & { sourceUrl: string };
   /** Declared in preference order for equal costs. All estimates are integer microdollars. */
   quote: (request: PurchaseRequest) => number | null;
   exclude: (request: PurchaseRequest) => string | null;

@@ -149,7 +149,7 @@ export function TrafficMap({ scenarios, routes, observed, initialReplay, initial
   const pickedNode = providerNodes.find(n => n.id === pinned);
   const candidate = trace?.decision.candidates.find(c => c.provider === pinned);
   const access = candidate && trace
-    ? offerAccessLabel(candidate, trace.scenario.engineId, routes.some(route => route.provider === candidate.provider)) : '';
+    ? offerAccessLabel(candidate, routes.some(route => route.provider === candidate.provider)) : '';
   const currentCost = trace?.decision.candidates.find(c => c.provider === frame?.provider)?.costMicros;
   const firstCost = trace?.decision.candidates.find(c => c.provider === trace.decision.order[0])?.costMicros;
   const costChange = currentCost != null && firstCost != null ? currentCost - firstCost : 0;
