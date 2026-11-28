@@ -14,6 +14,7 @@ import { getWalletBalanceCents } from '../frontend/src/lib/wallet';
 import { AlibabaModelStudioError } from '../frontend/src/server/video-providers/alibaba-model-studio/errors';
 import type { AlibabaVideoPayload } from '../frontend/src/server/video-providers/alibaba-model-studio/types';
 import { createVideoRouterClient } from '../frontend/src/server/video-providers/videorouter/wan-prime';
+import { reconcileVideoRouterCosts } from '../frontend/src/server/video-providers/videorouter/settlement';
 import type { NormalizedVideoProviderTask } from '../frontend/src/server/video-providers/types';
 import { resolveVideoProviderRoutingPlan } from '../frontend/src/server/video-providers/router';
 import { createPaidGenerationTestSchema, startDisposablePostgres } from './helpers/disposable-postgres';
@@ -317,6 +318,65 @@ test(
         if (existingKey === undefined) delete process.env.VIDEOROUTER_API_KEY;
         else process.env.VIDEOROUTER_API_KEY = existingKey;
       }
+    });
+
+    await t.test('a host-prefixed VideoRouter acknowledgement keeps the original job and one wallet charge', async (t) => {
+      const previousMode = process.env.WAN_PRIME_VIDEOROUTER_CANARY;
+      const previousKey = process.env.VIDEOROUTER_API_KEY;
+      process.env.WAN_PRIME_VIDEOROUTER_CANARY = 'public';
+      process.env.VIDEOROUTER_API_KEY = 'offline';
+      t.after(() => {
+        if (previousMode === undefined) delete process.env.WAN_PRIME_VIDEOROUTER_CANARY;
+        else process.env.WAN_PRIME_VIDEOROUTER_CANARY = previousMode;
+        if (previousKey === undefined) delete process.env.VIDEOROUTER_API_KEY;
+        else process.env.VIDEOROUTER_API_KEY = previousKey;
+      });
+      const id = 'pilot-videorouter-accepted';
+      const supplierId = 'botsmart-wanprime:00000000-1111-2222-3333-444444444444';
+      const paths: string[] = [];
+      const transport: typeof fetch = async (input) => {
+        const path = new URL(String(input)).pathname;
+        paths.push(path);
+        if (path === '/v1/pricing/estimate') return Response.json({
+          object: 'pricing.estimate', type: 'video', currency: 'USD', model: 'botsmart/wan-3.0-prime',
+          estimated_cost_usd: 0.080392, max_cost_usd: 0.080392,
+          assumptions: { duration_secs: 2, resolution: '480p', aspect_ratio: '16:9' },
+        });
+        if (path === '/v1/videos') return Response.json({ id: supplierId, status: 'queued' });
+        assert.equal(path, '/v1/videos/' + encodeURIComponent(supplierId));
+        return Response.json({ id: supplierId, status: 'completed', data: [{ url: 'https://example.test/clip.mp4' }], cost_usd: 0.080393 });
+      };
+      const run = request(id, { ...text, seconds: 2, quoteCents: 19, supplierMicros: 136000 },
+        async () => assert.fail('a second supplier must never be called after acceptance'), transport);
+      await run.reserve();
+      await Promise.all([run.submit(), run.submit()]);
+      const saved = await job(id);
+      assert.equal(saved.provider, 'videorouter');
+      assert.equal(saved.provider_job_id, supplierId);
+      const client = createVideoRouterClient('offline', transport);
+      const completed = await client.getTask(saved.provider_job_id);
+      assert.equal(completed.status, 'completed');
+      assert.equal(completed.providerCostUsd, 0.080393);
+      assert.equal(completed.videoUrl, 'https://example.test/clip.mp4');
+      await assert.rejects(client.getTask('https://other.example/video'), /Invalid VideoRouter job ID/);
+      assert.deepEqual(paths, ['/v1/pricing/estimate', '/v1/videos', '/v1/videos/' + encodeURIComponent(supplierId)]);
+      assert.deepEqual(await receipts(id), [{ type: 'charge', amount_cents: 19 }]);
+
+      // The output was delivered before the upstream billing amount arrived.
+      await read("UPDATE app_jobs SET status='completed',cost_breakdown_usd=$2::jsonb WHERE job_id=$1",
+        [id, JSON.stringify({ provider_cost_status: 'provider_cost_pending', duration_sec: 2 })]);
+      await read("UPDATE provider_attempts SET status='completed',finished_at=now() WHERE provider_job_id=$1", [supplierId]);
+      const reconcilers = await Promise.all([reconcileVideoRouterCosts(read, client), reconcileVideoRouterCosts(read, client)]);
+      assert.equal(reconcilers.reduce((sum, batch) => sum + batch.checked, 0), 1);
+      assert.ok(reconcilers.every(batch => batch.errors === 0));
+      const costs = await read<{ delivered: string; ledger: string; effective: string; seconds: string }>(
+        `SELECT j.status AS delivered, a.provider_cost_usd::text AS ledger,
+           j.cost_breakdown_usd->>'provider_cost_usd_effective' AS effective,
+           j.cost_breakdown_usd->>'duration_sec' AS seconds
+         FROM provider_attempts a JOIN app_jobs j ON a.job_id=j.id WHERE j.job_id=$1`, [id]);
+      assert.deepEqual(costs, [{ delivered: 'completed', ledger: '0.080393', effective: '0.080393', seconds: '2' }]);
+      assert.deepEqual(await reconcileVideoRouterCosts(read, client), { checked: 0, errors: 0 });
+      assert.deepEqual(await receipts(id), [{ type: 'charge', amount_cents: 19 }]);
     });
 
     const profiles: Profile[] = [text, reference, { ...reference, audio: false }];

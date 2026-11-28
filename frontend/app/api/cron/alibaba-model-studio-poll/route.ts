@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { runAlibabaModelStudioPoll } from '@/server/alibaba-model-studio-poll';
 import { enabledWanPollProviders } from '@/server/video-providers/wan-transports';
+import { reconcileVideoRouterCosts } from '@/server/video-providers/videorouter/settlement';
 import { reconcileWanPilotWalletStops } from '@/server/wan-pilot-refunds';
 import { authorizeCronRequest } from '@/server/vercel-cron';
 
@@ -43,6 +44,10 @@ async function triggerPoll(req: Request) {
       const response = await runAlibabaModelStudioPoll({ provider });
       return [provider === 'alibaba_model_studio' ? 'alibaba' : provider, await response.json()];
     }));
+    if (additional.includes('videorouter')) {
+      const costs = await reconcileVideoRouterCosts().catch(() => ({ checked: 0, errors: 1 }));
+      if (costs.errors) console.warn('[wan-purchase] VideoRouter cost reconciliation pending', costs);
+    }
     return NextResponse.json(Object.fromEntries(results));
   } catch (error) {
     console.error('[cron-alibaba-model-studio-poll] failed to run poll', error);

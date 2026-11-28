@@ -8,7 +8,9 @@ export function reviewedBotSmartDuration(seconds: number) {
   return Number.isInteger(seconds) && ((seconds >= 2 && seconds <= 5) || seconds === 15);
 }
 export const botSmartCostMicros = (seconds: number) => Math.ceil(seconds * 39700 * 1025 / 1000);
-const taskId = (id: unknown): id is string => typeof id === 'string' && /^[A-Za-z0-9_-]{1,200}$/.test(id);
+// The host can namespace its opaque job ID, e.g. botsmart-wanprime:<uuid>.
+const taskId = (id: unknown): id is string =>
+  typeof id === 'string' && id.length <= 200 && /^[A-Za-z0-9_-]+(?::[A-Za-z0-9_-]+)*$/.test(id);
 const amount = (n: unknown): n is number => typeof n === 'number' && Number.isFinite(n) && n >= 0;
 function record(v: unknown): Record<string, unknown> {
   return v !== null && typeof v === 'object' && !Array.isArray(v) ? v as Record<string, unknown> : {};
