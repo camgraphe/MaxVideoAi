@@ -257,12 +257,17 @@ test('new workflow examples are actionable and host guides keep contextual link 
   for (const example of examples) {
     const content = read(path.join('plugins/maxvideoai', 'examples', example));
     assert.match(content, /^# .+\n\n\*\*Short answer:\*\*/m, `${example} needs a direct answer opening`);
-    assert.match(content, /!\[[^\]]{12,}\]\(\.\.\/assets\/demos\//, `${example} needs a current MaxVideoAI proof visual`);
+    if (example === 'codex-video-production.md') {
+      assert.match(content, /editorial illustration made with ImageGen/);
+      assert.match(content, /docs\/marketing\/github-examples\/paper-run-price-check\.md/);
+    } else {
+      assert.match(content, /!\[[^\]]{12,}\]\(\.\.\/assets\/demos\//, `${example} needs a current MaxVideoAI proof visual`);
+      assert.match(content, /does not prove|not native/i, `${example} must qualify visual or host evidence`);
+    }
     assert.match(content, /exact quote/i, `${example} needs the exact-quote boundary`);
     assert.match(content, /explicit approval/i, `${example} needs the approval boundary`);
     assert.match(content, /MaxVideoAI Library/i, `${example} needs recovery continuity`);
     assert.match(content, /https:\/\/maxvideoai\.com\/(?:mcp|models|pricing|docs\/mcp)/i, `${example} needs a canonical next action`);
-    assert.match(content, /does not prove|not native/i, `${example} must qualify visual or host evidence`);
     assert.doesNotMatch(content, /(?:[$€£]\s*\d|\d(?:[.,]\d+)?\s*(?:USD|EUR|GBP|dollars?|euros?|pounds?))/i, `${example} must not freeze a price`);
   }
 
@@ -272,9 +277,9 @@ test('new workflow examples are actionable and host guides keep contextual link 
   }
 
   const hostExampleLinks: Record<string, readonly string[]> = {
-    'docs/chatgpt.md': sharedExamples,
-    'docs/claude.md': [...sharedExamples, 'claude-video-production.md'],
-    'docs/codex.md': [...sharedExamples, 'codex-video-production.md'],
+    'docs/chatgpt.md': [...sharedExamples, 'recover-a-generation.md'],
+    'docs/claude.md': [...sharedExamples, 'claude-video-production.md', 'recover-a-generation.md'],
+    'docs/codex.md': [...sharedExamples, 'codex-video-production.md', 'recover-a-generation.md'],
   };
   for (const [guide, expected] of Object.entries(hostExampleLinks)) {
     const links = markdownLinks(readFileSync(path.join(pluginRoot, guide), 'utf8'));

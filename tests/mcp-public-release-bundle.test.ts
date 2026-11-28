@@ -133,6 +133,7 @@ function expectedPublicFilesForVersion(version: string): string[] {
     ...(major > 0 || minor >= 3
       ? version03ExpectedPublicFiles
       : []),
+    ...(major > 0 || minor > 3 || (minor === 3 && patch >= 9) ? ['assets/campaign/paper-run.webp'] : []),
     ...(major === 0 && minor === 3 && patch < 5 ? [`assets/social/release-${version}.png`] : []),
   ].sort();
 }
@@ -182,8 +183,16 @@ function setMarketplacePluginVersion(sourcePath: string, version: string): void 
   writeFileSync(manifestPath, `${JSON.stringify(marketplace, null, 2)}\n`);
 }
 
+function removePaperRunImage(sourcePath: string): void {
+  const readmePath = join(sourcePath, 'README.md');
+  const readme = readFileSync(readmePath, 'utf8');
+  const historicReadme = readme.split('\n').filter((line) => !line.startsWith('<img src="assets/campaign/paper-run.webp"'));
+  writeFileSync(readmePath, historicReadme.join('\n'));
+}
+
 function addVersion03Metadata(sourcePath: string): void {
   setPackageVersion(sourcePath, '0.3.0');
+  removePaperRunImage(sourcePath);
   setMarketplacePluginVersion(sourcePath, '0.3.0');
   mkdirSync(join(sourcePath, 'docs'), { recursive: true });
   writeFileSync(join(sourcePath, 'docs', 'discovery.md'), '# MaxVideoAI discovery metadata\n');
@@ -315,6 +324,7 @@ test('0.3.5 exports current proof without a release card and preserves the cance
   const fixture = join(temporary, 'source');
   cpSync(source, fixture, { recursive: true });
   setPackageVersion(fixture, '0.3.5');
+  removePaperRunImage(fixture);
   setMarketplacePluginVersion(fixture, '0.3.5');
   const serverPath = join(fixture, 'server.json');
   const server = JSON.parse(readFileSync(serverPath, 'utf8'));
@@ -871,6 +881,22 @@ function version03ManifestFixture(temporary: string): string {
   });
   return path;
 }
+
+test('Paper Run requires a recorded editorial approval even when the asset is on the export list', (t) => {
+  const temporary = mkdtempSync(join(safeTemporaryRoot, 'maxvideoai-plugin-editorial-'));
+  t.after(() => rmSync(temporary, { recursive: true, force: true }));
+  for (const state of ['reference_only', 'publishable_proof', 'draft_editorial']) {
+    const manifestPath = join(temporary, `${state}.json`);
+    writeManifestFixture(manifestPath, (manifest) => {
+      const asset = manifest.assets.find((entry) => entry.path === 'plugins/maxvideoai/assets/campaign/paper-run.webp')!;
+      asset.state = state;
+      asset.approvedBy = null;
+    });
+    const result = runBuilder(source, join(temporary, 'out'), manifestPath);
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, state === 'draft_editorial' ? /draft_editorial requires approvedBy/ : /Paper Run requires draft_editorial approval/);
+  }
+});
 
 test('historical release artwork cannot authorize a new versioned bundle', (t) => {
   const temporary = mkdtempSync(join(safeTemporaryRoot, 'maxvideoai-plugin-archival-'));

@@ -219,7 +219,7 @@ test('ships a dedicated editorial hero without presenting it as product or host 
   assert.match(record.claim, /not product UI or native host proof/i);
 
   const rootReadme = readFileSync('README.md', 'utf8');
-  assert.match(rootReadme, /maxvideoai-github-hero-v2\.webp/);
+  assert.match(rootReadme, /<img src="docs\/media\/campaign\/pigment-stage\.webp"[^>]+data-asset-role="editorial"/);
 });
 
 test('pins the built-in ImageGen source as draft editorial, never product proof', async () => {
