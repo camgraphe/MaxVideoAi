@@ -1,7 +1,7 @@
 import type { VideoPurchase } from './types';
 
 type Plan = {
-  mode?: string; engineId?: string; order?: unknown;
+  mode?: string; engineId?: string; baselineProvider?: string; order?: unknown;
   candidates?: { provider?: string; excluded?: string | null; costMicros?: number }[];
 };
 export type ReceiptVideoEvidence = {
@@ -48,14 +48,21 @@ export function receiptVideoPurchase(row: ReceiptVideoEvidence): VideoPurchase {
     result.estimate = { usd: row.listUsd, basis: 'completed_list' };
     return result;
   }
+  const micros = quotedServingMicros(row);
+  if (micros !== null) result.estimate = { usd: micros / 1_000_000, basis: 'routing_quote' };
+  return result;
+}
+
+export function quotedServingMicros(row: Pick<ReceiptVideoEvidence, 'provider' | 'engine' | 'route'>): number | null {
   const plan = row.route;
+  if (!row.provider) return null;
   if (plan?.mode !== 'canary' || plan.engineId !== row.engine || !Array.isArray(plan.order)
-    || !plan.order.includes(row.provider) || !Array.isArray(plan.candidates)) return result;
+    || !plan.order.includes(row.provider) || !Array.isArray(plan.candidates)) return null;
   const matches = plan.candidates.filter(candidate => candidate?.provider === row.provider);
   const offer = matches[0];
   if (matches.length === 1 && offer.excluded === null && typeof offer.costMicros === 'number'
     && Number.isSafeInteger(offer.costMicros) && offer.costMicros >= 0) {
-    result.estimate = { usd: offer.costMicros / 1_000_000, basis: 'routing_quote' };
+    return offer.costMicros;
   }
-  return result;
+  return null;
 }

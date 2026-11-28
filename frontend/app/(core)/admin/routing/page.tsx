@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { AdminPageHeader } from '@/components/admin-system/shell/AdminPageHeader';
 import { requireAdmin } from '@/server/admin';
 import { configuredWanPurchaseCanary } from '@/server/video-providers/router';
@@ -32,6 +33,10 @@ export default async function AdminVideoRoutingPage({ searchParams }: { searchPa
         title="Video routing"
         description="Compare supplier costs, rehearse a fallback and inspect the actual attempts for a generation."
       />
+      <Link href="/admin/routing/summary" prefetch={false} className="flex flex-wrap items-center justify-between gap-2 rounded-card border border-hairline bg-surface px-5 py-3 hover:bg-surface-2">
+        <span className="font-semibold">Routing economics →</span>
+        <span className="text-sm text-text-secondary">Average cost, savings and accounting exports</span>
+      </Link>
       <RoutingWorkspace initialReplay={params.view === 'replay'} initialEngine={params.engine} scenarios={routingScenarios()} routes={installedRoutes()} />
       <div className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-text-secondary" aria-label="Admin purchase pilot settings">
         {([['wan-3', 'Wan Standard'], ['wan-3-prime', 'Wan Prime']] as const).map(([engine, label]) => (

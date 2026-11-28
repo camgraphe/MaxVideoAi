@@ -17,6 +17,8 @@ test('five operator work areas, secondary settings and no obsolete site map', ()
   assert.equal(ADMIN_EXTERNAL_LINKS.filter((item) => item.href === '/').length, 1);
 });
 test('detail routes resolve to their work area without false prefix matches', () => {
+  assert.equal(findAdminNavMatch('/admin/routing/summary', ADMIN_NAV_GROUPS)?.group.id, 'transactions');
+  assert.equal(findAdminNavMatch('/admin/routing', ADMIN_NAV_GROUPS)?.group.id, 'generations');
   assert.equal(findAdminNavMatch('/admin/users/person', ADMIN_NAV_GROUPS)?.group.id, 'users');
   assert.equal(findAdminNavMatch('/admin/editorial/article', ADMIN_NAV_GROUPS)?.group.id, 'content');
   assert.equal(findAdminNavMatch('/admin/mcp', ADMIN_NAV_GROUPS)?.group.id, 'overview');
