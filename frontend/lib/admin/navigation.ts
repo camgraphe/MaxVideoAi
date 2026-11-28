@@ -39,6 +39,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
     label: 'Transactions',
     items: [
       { id: 'transactions', label: 'Wallet activity', href: '/admin/transactions', icon: 'transactions' },
+      { id: 'routing-economics', label: 'Routing economics', href: '/admin/routing/summary', icon: 'insights' },
       { id: 'checkout-report', label: 'Checkout review', href: '/admin/checkout-report', icon: 'shield' },
     ],
   },
@@ -47,6 +48,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
     label: 'Generations',
     items: [
       { id: 'jobs', label: 'Generations', href: '/admin/jobs', icon: 'jobs' },
+      { id: 'video-routing', label: 'Video routing', href: '/admin/routing', icon: 'engines' },
       { id: 'engines', label: 'Model activity', href: '/admin/engines', icon: 'engines' },
     ],
   },

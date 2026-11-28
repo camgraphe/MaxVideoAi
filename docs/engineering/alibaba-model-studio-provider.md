@@ -2,6 +2,8 @@
 
 This guide owns the operational contract for the direct Alibaba Model Studio video path. The code remains disabled by default, while the production deployment has been publicly enabled since 2026-09-14 after administrator canaries and the release gates below passed.
 
+The [video purchase routing guide](video-purchase-routing.md) covers the Wan Prime price comparison, isolated administrator canary and admin viewer.
+
 ## Ownership and model mapping
 
 The integration reuses the shared video-provider boundaries:

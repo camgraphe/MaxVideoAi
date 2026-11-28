@@ -1,0 +1,153 @@
+# Video purchase routing
+
+The Wan 3 Prime pilot supports text, a start frame, paired first/last frames and one to ten reference images. Kling 3 Pro (text or start image) and Kling O3 Pro (image references) also record purchase decisions in shadow mode on the direct submission path. Open **Generations → Video routing** at `/admin/routing` to compare eligible suppliers and trace a job. Its simulator animates the same price decision and definitive-refusal policy in the browser. Replay a request or step through each submission. Scenario settings include individual provider responses and the purchase ceiling. Reduced-motion users start with the resolved trace. The provider map can be filtered from either end. Installed integrations show representative engine/mode associations. Configured paths come from the local paid-route resolver, including enabled fallbacks. Neither view makes provider requests.
+
+## Routing network in the admin
+
+Open **Generations → Video routing** and select an engine on the map. In **Simulation**, the moving path follows a decision from request to supplier. Select **Two refusals** to follow two handoffs, or step through the trace. The receipt gives the selected offer, purchase ceiling and price difference from the first choice. Each engine card shows the number of scenarios and each supplier card exposes its state. The console beneath the network shows the latest steps and compares offers against the same ceiling. In Observed mode it shows recent recorded states and provider counts. Click a provider to inspect its eligibility and published rate where available. **Inspect scenario** opens the same request in the scenario lab, where **Compare installed suppliers only** rehearses the paths available without adding an integration.
+
+**Observed** reads the recorded attempts for video jobs created in the last hour. The admin client refreshes every 30 seconds while this view is selected and the browser tab is visible. The query samples the newest 512 jobs across surfaces, keeps up to eight attempts per video job and returns the 48 latest status records plus route counts. The map signals when the job or attempt sample was truncated. A legacy job with a recorded remote task can show its owner. A handoff arc requires a linked predecessor. The monitor plays new recorded events in chronological order within the current filter. Hold an event to inspect it, then choose **Follow latest** to resume. The initial sample and unchanged samples stay still. The volume ranking counts each sampled video job once per engine, including jobs without a confirmed provider. Its fallback count includes only jobs with an observed handoff. Prompts, media URLs, remote task identifiers and customer identifiers are excluded from the feed.
+
+The lab covers Wan Standard, Wan Prime, MiniMax H3, MiniMax H3 Max, Seedance 2.5, Kling 3 Pro and Kling O3 Pro. The new WaveSpeedAI quotes on Wan and APIMart quotes on H3 are available for simulation only. Rate sources and supported input combinations are listed in the [comparison catalogue](video-routing-comparison-offers.md).
+
+## Pricing and eligibility
+
+The router filters by exact engine, mode, media, resolution and aspect ratio. It ranks eligible offers by the cost of the whole request in USD microdollars. At equal cost the existing direct route takes priority. It uses local rate cards at submission time. The accepted customer quote, job identifier and wallet reservation are reused for every attempt.
+
+| Scenario | APIMart Gold | Alibaba Singapore | Fal |
+| --- | ---: | ---: | ---: |
+| 15 s, 480p, text, 16:9, audio | $0.77145 | $1.02 | $1.02 |
+| 4 s, 720p, one reference image, 16:9, audio | $0.41144 | $0.56 | $0.56 |
+
+These figures use the published rates checked on 2026-11-27. APIMart Gold costs $0.05143, $0.10286 and $0.20571 per output second at 480p, 720p and 1080p respectively. The pilot excludes input video, audio references, documents, webpages, mixed frame/reference roles and unmapped extra options from APIMart. Frame and reference arrays retain their distinct generation types and ordering. The canary ceiling is the lower of the existing direct provider’s estimate and the trusted USD customer quote. A server-configured ceiling can reduce it further. The simulator uses the direct estimate as its starting ceiling. [APIMart Wan Prime](https://apimart.ai/model/wan-3-0-prime) · [Alibaba model pricing](https://www.alibabacloud.com/help/en/model-studio/model-pricing) · [Fal Wan Prime](https://fal.ai/models/alibaba/wan-3.0-prime/reference-to-video)
+
+## Model policies and secondary routes
+
+The engine ID selects an exact purchase policy. Each policy declares its offers, baseline supplier and ordering. Capability checks, the customer-approved USD ceiling and supplier availability apply before ordering. The default maximum is the baseline estimate. The Fal queue owns settlement after submission, so a plan cannot continue beyond Fal. A newly offline provider is removed before submission and the remaining raw offers are ranked again in the simulator.
+
+- **Lowest cost**, the Wan Prime default, sends to the cheapest eligible supplier. An equal-price tie follows the declared offer order.
+- **Keep a fallback**, the Kling default for the shadow comparison, orders suppliers capable of handing off before terminal queues, then selects by cost within each group. A cheaper terminal supplier can still be the only route under a tight ceiling.
+
+Kling Direct starts on standby for new purchases. The operator has declared the Kling 3 API pack out of funds. Compatible Kling 3, 3 Turbo and O3 requests go straight to the existing Fal queue, which prioritizes the direct Fal account credential. Controls exclusive to Kling Direct are rejected before provider submission. The admin map shows the declared status. The simulator can rehearse a funded pack locally.
+
+Once the pack for the account behind the V3 API credentials has been verified and funded, set server-side `KLING_DIRECT_V3_FUNDED=true` in the intended environment to make the integration eligible under its existing enable, audience and fallback settings. Recheck supplier pricing before enabling it. The declaration is manual. Clear it to stop new direct purchases. Keep the existing polling credentials and polling switch for tasks already accepted by Kling. Kling 4 and 4 Flash use separate Fal routes.
+
+With a funded pack, for Kling O3 Pro with two image references, ten seconds at 1080p and audio on, the existing Kling unit estimate is $1.68. The Fal reference endpoint lists $1.40. Preserving a fallback projects Kling Direct followed by Fal. Minimizing purchase cost projects Fal only. At a ceiling of $1.40 both policies admit Fal only. A price estimate does not establish the account's net invoiced rate. [Fal O3 Pro references](https://fal.ai/models/fal-ai/kling-video/o3/pro/reference-to-video)
+
+For Kling 3 Pro five seconds of text with audio on costs an estimated $0.84 on both paths. A start image with audio off is $0.56 on both paths. Camera control is direct-only. Requests with voice, source video or unreviewed complex inputs have no comparable offer here. [Fal V3 text](https://fal.ai/models/fal-ai/kling-video/v3/pro/text-to-video) · [Fal V3 image](https://fal.ai/models/fal-ai/kling-video/v3/pro/image-to-video)
+
+The Kling comparison is attached to the existing first direct attempt. It models verified credit refusal and respects the configured credit-fallback flag. The established Kling handler controls dispatch, retries and customer billing. It can still retry certain ambiguous failures. The new simulator stops on those events. Compare the recorded plan with the actual attempt chain before enabling any new Kling execution policy. Version 2 snapshots record the policy. Older snapshots and jobs without a purchase decision stay readable. Use `/admin/routing?engine=kling-o3-pro` for the worked example. The browser receives scenario prices and capabilities only. The recorded job history belongs to the authenticated admin view.
+
+## Replaying the last 30 complete days
+
+Open `/admin/routing?view=replay`. Add `&engine=wan-3-prime` to open a particular engine. The timeline groups anonymized profiles by their recorded time bucket and settings. Use the historical owner, installed suppliers or candidate suppliers view to compare the same request. The playback depicts a counterfactual selection. Actual failed handoffs are available in the separate recorded-traffic view.
+
+The cohort consists of all non-admin jobs recorded on the video surface in the previous 30 complete Europe/Madrid calendar days. A completed wallet payment, confirmed owner, compatible request, trusted USD ceiling and known purchase rate are required for the economic totals. Amounts use the local tariff cards in integer USD microdollars. The recorded owner is repriced at the same tariff basis as the hypothetical first choice. The calculation estimates the cost of the selected first choice. For a completed Fal job the saved core aspect ratio can describe the output. Prefer the initial attempt or matched Fal submission for the requested framing. A size observed on the output cannot qualify a competing supplier. BytePlus profiles use recorded provider tokens when available. Actual negotiated invoices, charges on previous attempts and the new suppliers’ acceptance rates can change the result.
+
+The baseline uses installed suppliers; APIMart and WaveSpeed each have their own single-addition comparison. The integration ranking first selects the supplier with the largest saving across the cohort, then values the next supplier only where it further reduces the cost. Volume on profiles with only one reachable route highlights which combinations deserve a new quote. A separate tariff scenario applies an assumed 30% discount to Alibaba Wan Standard on both sides. Kling Direct follows its funding declaration.
+
+The admin-only `GET /api/admin/routing/replay` loads the cohort on demand. The current environment’s read uses a fixed calendar window and shares a five-minute in-process cache across report pages. Engine, day and status filters operate before pagination. The default local development source can be set with `VIDEO_ROUTING_REPLAY_ARCHIVE` pointing to an anonymized capture outside the repository and the public web root. The source selector can explicitly query the environment database instead. The page shows the selected source, capture time, period, coverage and exclusion counts. Browser responses are private and uncached. The replay has no submission path.
+
+For an offline local review, `scripts/export-routing-replay-sql.ts START_DAY END_DAY` emits the same SELECT as the endpoint with an `:admin_ids` placeholder. Run it through OUTREACH’s `scripts/read_v2_sql.py` with the environment file and `frontend/lib/admin/exclusions.ts`. Pipe its CSV into `python3 scripts/save-routing-replay-archive.py START_DAY END_DAY /private/path/replay.json`. Use `set -o pipefail` in a shell pipeline and keep the destination outside the repository. Each capture is written atomically with owner-only permissions. Verify the distinct monthly job counts by engine before using the estimates.
+
+### Archived 30-day comparison, October 29 through November 27, 2026
+
+The archive contains 2,021 requests across 27 engines, of which 1,662 completed with a wallet payment. The router can compare 1,267 purchases. At published rates the observed suppliers would cost $1,321.84 on that subset. Choosing the lowest qualified offer including candidates reduces the estimate to $1,165.72. Installed suppliers alone project zero savings. Both scenarios assume access to APIMart Gold.
+
+| Additional supplier | Saving at list | Saving with assumed Alibaba Wan Standard discount |
+| --- | ---: | ---: |
+| APIMart alone | $154.27 on 383 jobs | $95.42 on 383 jobs |
+| WaveSpeed after APIMart | $1.85 on 14 jobs | $0.16 on 2 jobs |
+| Combined | $156.12 | $95.58 |
+
+H3 reference-to-video at 480p has 686 comparable jobs with Fal as the sole eligible route, worth an estimated $464.61. This is the largest group for which to seek another compatible quote. Access to the candidate tariffs, exact feature equivalence and commercial rights still need confirmation before a live trial.
+
+## Historical replay and additional engines
+
+The admin viewer includes a saved purchase audit and an on-demand replay for the previous 30 complete Europe/Madrid calendar days in the current environment. The query aggregates request settings for paid, completed, non-admin Wan Prime jobs. It reads no prompts or media URLs into the report. The replay uses first-attempt media roles and mode, the recorded USD customer ceiling, and the same purchase planner as the canary. A missing first-attempt record, ambiguous media counts or unsupported currency cannot contribute savings. At replay time all three suppliers are assumed available, the APIMart Gold rate is assumed accessible and the historical spend uses Alibaba Singapore LIST as its comparison. Manual session caps and invoice discounts are outside this estimate.
+
+The November 27 audit covers 234 purchases created October 28 through November 26 inclusive. The earlier text/single-reference scope covers 163. Adding start frames, paired frames and multiple references covers 210, including 97 text, 12 frame and 101 image-reference jobs. All three offers fit each of the 210 recorded customer ceilings. The comparable Alibaba estimate is $350.53200. The APIMart estimate is $260.23503, giving a projected difference of $90.29697. The 24 outside the pilot include 21 with video inputs and 3 with audio references. The earlier supplier study compared rates on 211 purchases. Its broader media filter included the three audio-reference jobs, while its saved-mode filter missed two jobs whose first Alibaba attempt explicitly recorded reference mode. The simulator and replay do not generate provider tasks. [APIMart Prime media roles and rate card](https://apimart.ai/model/wan-3-0-prime)
+
+Wan Standard compares the list prices of Alibaba and Fal with the public APIMart Gold rate. On 30 seconds at 480p this gives $1.50, $1.50 and $0.98640 respectively. If the 30% Alibaba account discount applies, the comparator becomes $1.05 and the projected difference is $0.06360. Its route comparison is recorded in shadow mode by default. An independent admin preview switch can exercise the purchase router through Alibaba and its eligible Fal fallback. [APIMart Standard rates](https://apimart.ai/model/wan-3-0) · [Alibaba pricing](https://www.alibabacloud.com/help/en/model-studio/model-pricing)
+
+MiniMax H3 uses the existing Fal cost calculator for reviewed text and image-reference profiles. For example, three reference images, ten seconds and 480p give $0.50. Seedance 2.5 stays with BytePlus. Its admin examples use observed token counts and the existing ModelArk list rate. The 22-second reference example used 476,100 tokens at 720p, giving $5.09427. Future jobs can consume a different number of tokens. Single-supplier scenarios show a stop after an explicit refusal. [Fal H3](https://fal.ai/models/minimax/h3/reference-to-video) · [BytePlus ModelArk pricing](https://docs.byteplus.com/en/docs/modelark/model-pricing)
+
+## Preproduction operation
+
+The default mode saves a simulated purchase decision to the existing Wan Standard or Prime Alibaba attempt. The experimental APIMart submission path is restricted to Wan Prime. The viewer marks this **Price simulation** and shows actual attempts separately. There is no extra database round trip to record a decision. Historical jobs without a decision retain their actual job/attempt information.
+
+Both Wan editions can exercise the purchase router with the two installed suppliers. To rehearse for free, open the scenario lab, select **Wan 3 Prime**, and turn on **Compare installed suppliers only**. An explicit Alibaba refusal should reach Fal. A lost Alibaba response should end at reconciliation. Try the 15-second text and 4-second image-reference profiles. Their installed-provider ceilings at list price are $1.02 and $0.56 respectively. Reducing either ceiling below both offers should produce zero attempts.
+
+For an actual administrator submission on an isolated preview, the existing Alibaba direct gates must allow the request. Set the server-side pilot for the intended edition:
+
+- `WAN_STANDARD_EXISTING_PROVIDERS_ADMIN_CANARY=1` uses the existing Alibaba and configured Fal transports for the reviewed Wan Standard profiles. Standard cannot select APIMart or WaveSpeed. Set `WAN_STANDARD_PURCHASE_CEILING_USD` to tighten its ceiling independently.
+- `WAN_PRIME_EXISTING_PROVIDERS_ADMIN_CANARY=1` uses Alibaba and the configured Fal fallback for the reviewed Wan Prime profiles. APIMart is excluded before ranking, even if its own switch and key are present. This mode takes precedence when both switches are set.
+- `APIMART_WAN_PRIME_ADMIN_CANARY=1` with a valid `APIMART_API_KEY` adds APIMart after its price and commercial terms have been verified. Leave the installed-provider pilot switch off for this mode.
+
+Actual Fal fallback requires `ALIBABA_MODEL_STUDIO_FALLBACK_TO_FAL_ENABLED`. The optional `WAN_PRIME_PURCHASE_CEILING_USD` can reduce an eligible Wan Prime canary clip’s purchase ceiling, including on fallback. Public users, production deployments and requests outside the pilot retain the established policy. The viewer's response and balance controls only affect its animation. Each paid pilot submission goes through the actual generation flow. Disable the corresponding pilot switch after testing.
+
+APIMart accepts `POST /v1/videos/generations` and returns a task ID. The same authenticated cron as Alibaba and the authorized per-job refresher poll `GET /v1/tasks/{id}`, copy the completed video to owned storage, and use the existing delivery and terminal-failure paths. Disable the canary switch to stop new submissions. Keep the credential until accepted tasks have drained. The purchase estimate at completion is marked as a list estimate.
+
+The Wan pilot relies on each provider to enforce its own rate and concurrency limits. Submit to the first eligible route in the purchase plan. When the adapter confirms a pre-acceptance quota or balance refusal, proceed immediately to the next eligible route within the purchase ceiling, using the same job and wallet reservation. A task accepted into the provider’s queue stays with that provider, even during a traffic spike.
+
+Invalid inputs or moderation stop the chain. A timeout or unreadable acknowledgement after sending moves the job to reconciliation. Keep the reservation until the first submission can be accounted for. The ledger claims each canary attempt once using the existing unique job/attempt index. It links each definitive rejection to the next attempt.
+
+### Wan Prime rollout and accounting
+
+Run `pnpm test:routing:wan-pilot` from the repository root to exercise the admin-only Alibaba → Fal pilot with simulated transports and disposable PostgreSQL. The fixture reserves a wallet charge through the normal job initializer and compares the original receipt, job price, currency, balance and provider-attempt chain after concurrent submissions. The 4-second 720p image-reference fixture reserves $0.85 and quotes $0.56 for Fal. The 15-second 480p text fixture reserves $1.47 and quotes $1.02 for Fal. These selling prices are test inputs.
+
+The accepted quote sets the charge. Supplier selection reads the quote as a ceiling and operates on the purchase tariff cards. A price-card edit can change the selected supplier and the estimated margin. Publishing a different customer tariff is a separate pricing operation for new quotes. The purchase pilot uses its own Fal rate source even when the environment uses legacy commercial rules. H3 and H3 Max also keep separate selling-price references for legacy quotes. Their purchase cards can change the margin, including reference media charges. When the current supplier would exceed the approved selling price, the guard declines a new quote before payment.
+
+* **Transactions** keeps one customer charge per job. Open the receipt to inspect the job price, serving provider and attributable purchase estimate. A recorded refund uses the original charge in its original currency. Supplier attempts are visible in Routing and Jobs. In the private Wan pilot, a definite terminal refusal or empty plan commits evidence before the wallet refund is attempted. If that receipt cannot be written, the authenticated Alibaba poll can finish the settlement after recovery, including after the pilot switches are turned off. An ambiguous acceptance remains pending reconciliation.
+* **Customer visibility** keeps the routing map, supplier order, purchase estimates and margin in the authenticated admin. Customer-facing video responses project the selling price, currency and relevant discounts. The receipt export keeps the customer's billing records and payment references. Historical videos pass through the same customer projection when displayed or reused.
+  For routed engines, the workspace catalog exposes the model brand, creative settings and mode availability. If a mode becomes unavailable, both the normal catalog and its fallback return the same public status. The server retains the reason, such as missing credentials. The picker compares customer quotes for the selected settings.
+* **Pricing** owns the customer tariff. Its supplier comparisons and the 30-day replay are estimates. Invoice reconciliation is needed to report realized procurement savings.
+* **Routing economics** opens from the top of the map. Select up to 31 inclusive UTC dates, or use Previous month. The report covers the registered routing engines. Internal accounts are excluded by default. The purchase CSV contains one row per job created in the window and a supplier task reference where attribution is confirmed. Its USD estimates come from a stored routing quote, published usage rates or converted Kling units. A linked fallback is counted once per job. Savings compare the recorded baseline and selected offer on the same completed job. Missing evidence leaves amount cells empty. The separate receipt journal uses posting dates, signed usage in cents and original currency; refunds can refer to an older job. Wallet usage and top-ups represent different events. Use supplier invoices to reconcile purchases before booking the expense.
+  Open the same report under **Transactions → Routing economics**. The period summary CSV preserves the on-screen totals, currencies and counts. The attempt CSV includes failed and ambiguous submissions with their recorded references for matching against invoices. Each CSV row includes its UTC extraction time. A later supplier update or receipt can change a subsequent extract.
+* **Release** starts with a private preview on Wan Prime with the installed Alibaba and direct Fal accounts. First compare delivery on the four-second, 720p reference+audio case and capture actual cost and elapsed time. A paid comparison requires its own spending approval. Qualify APIMart Gold rate, rights and output parity before adding it to the private pilot. The production dispatch switch is a subsequent change.
+
+## Extending the route
+
+### Compare an offer on an existing engine
+
+1. Add the supplier's operator-facing name to `PROVIDER_LABELS` if it is new.
+2. Add a `CatalogueCard` under `frontend/app/(core)/admin/routing/_lib/catalogue/` and register it in `comparison-offers.ts`. [WaveSpeedAI on Wan](../../frontend/app/(core)/admin/routing/_lib/catalogue/wavespeed-wan.ts) is a working example. Specify the exact engine editions. The quote returns the tariff and source, total purchase cost in integer USD microdollars, or an exclusion for an unsupported or unpriced request. Keep the tariff date or negotiated revision in the tariff label. The same supplier can offer several modes on an engine through a single matching card.
+3. Open **Generations → Video routing**, select the engine, then replay the last 30 days with candidate suppliers. Existing matching scenarios and replay groups pick up the card automatically. Add a scenario only when a new mode needs illustrating. Compare projected gains and the number of comparable jobs.
+
+### Qualify option compatibility
+
+Start from an actual MaxVideoAI request on an existing engine. Keep the exact edition, duration, resolution, framing, generated audio, prompt expansion, seed and media roles. A first frame, last frame, image reference, source video and audio reference have distinct meanings. The shared [input profile](../../frontend/src/lib/video-routing/input-profile.ts) describes the combinations a supplier supports. A named profile can be narrower than the published API.
+
+For Wan, register the reviewed profile, field names and inherited aspect ratio representation in [wan-request.ts](../../frontend/src/lib/video-routing/wan-request.ts). Flat APIs share an encoder. Alibaba and APIMart use their own nested or ordered media bodies and share the normalized controls. The field names and defaults for image-to-video are documented by [Fal](https://fal.ai/models/alibaba/wan-3.0-prime/image-to-video/api) and [WaveSpeed](https://wavespeed.ai/models/alibaba/wan-3.0-prime/image-to-video). Wire transformations must preserve explicit false, zero, image order and each role. An unknown control, conflicting frame, unsupported combination or missing required evidence excludes the route. Normal billing, transport credentials and live pilot enrollment have separate owners.
+
+Run `pnpm test:routing:provider`. Extend `tests/wan-option-contract.test.ts` with a representative request, both enabled and disabled options, and a case the provider must reject. In the admin scenario lab, **Compare API inputs** shows the Fal pilot and WaveSpeed simulation encoders with example prompts and synthetic media. WaveSpeed quotes use the same compatibility check as its preview. Archived profiles without evidence of a nonempty prompt have no WaveSpeed quote. Test actual delivery and account pricing separately before enrolling a live route.
+
+### Qualify a Wan supplier for real requests
+
+1. Implement its server-side API client and register the direct transport in `wan-transports.ts`. Provide submission, status retrieval, polling readiness, cost attribution and submit-error classification. Declare a live provider key. Map exact input roles, provider model identifiers and reference delivery to the supplier's endpoints. Keep the credential on the server. The shared poller, cron and manual job refresh use the registration. Fal uses its existing terminal queue.
+2. Attach its purchase offer to the engine policy in `purchase-router.ts` using the same rate calculation. When promoting a catalogue card, move its comparison metadata onto that purchase offer and remove the overlapping card. Two simultaneous offers with the same provider identity on an engine are excluded as conflicting.
+3. Enroll only the reviewed suppliers in a named pilot. Its server-side activation controls the eligible engines, profiles, environment and admin audience. New credentials or a lower price alone do not enroll a supplier. Preserve the original customer quote, reservation and job ID. Advance only on a confirmed pre-acceptance refusal. Keep status retrieval available for accepted tasks when pausing new purchases.
+4. Run `pnpm test:routing:provider` locally. It exercises offer registration, replay, handoffs, uncertain acknowledgements, wallet settlement, supplier polling and the accounting report with test responses and disposable PostgreSQL. Add vendor-specific response fixtures. Before sending real demand, confirm the account tariff, balance, usage rights, delivered output and the charge for a matching private pilot request.
+
+Run the focused tests from the repository root.
+
+```sh
+pnpm exec tsx --tsconfig frontend/tsconfig.json --test \
+  tests/wan-purchase-routing.test.ts tests/kling-purchase-routing.test.ts tests/wan-routing-replay.test.ts \
+  tests/alibaba-*.test.ts tests/provider-attempt*.test.ts tests/fal-provider-fallback-enqueue-postgres.test.ts \
+  tests/kling-provider-routing.test.ts tests/fal-fallback-attempt-recovery.test.ts tests/generate-route-context.test.ts \
+  tests/fal-credential-alias.test.ts tests/video-provider-mode-matrix.test.ts tests/byteplus-provider-architecture.test.ts \
+  tests/routing-comparison-offers.test.ts tests/admin-traffic-map.test.ts tests/admin-routing-traffic-postgres.test.ts
+```
+
+### Pilot checkpoint · November 27, 2026
+
+The expanded suite passed 256 checks locally with simulated supplier responses and disposable PostgreSQL. The two browser workflows in `tests/e2e/admin-routing-traffic.spec.ts` also passed on the isolated local admin. The Wan Standard, Wan Prime and APIMart pilot switches were left off. No paid render was submitted. Kling Direct remains on standby.
+
+To resume, open branch `codex/video-provider-router` and the **Preproduction operation** section above. APIMart pricing and rights discussions are tracked in OUTREACH as `INB-012`. A proposed first paid comparison is the same four-second, 720p Wan Prime request with one reference image and audio on Alibaba and Fal. Its two list-price estimates total $1.12. Record the delivered media, serving model when exposed, latency and actual supplier charge for each completed render.
+
+## VideoRouter on Wan Prime
+
+`WAN_PRIME_VIDEOROUTER_CANARY=public` permits BotSmart on paid Wan Prime text requests when Alibaba direct routing already admits the caller. `admin` restricts this route to administrators. An unset switch disables new submissions. The server credential is `VIDEOROUTER_API_KEY`. Keep it valid for polling jobs already accepted. The admission profile is 2–5 seconds or exactly 15 seconds, native 480p, 16:9, with generated audio and prompt expansion, without a seed, source media or extra controls. Other requests keep their existing routing. There is no time window or request-count cutoff.
+
+A free authenticated estimate must identify BotSmart and the requested output within its regular purchase tariff before the app submits a paid job. The request disables VideoRouter's internal fallback. An explicit concurrency, rate-limit, balance or spend-cap refusal hands off within the original customer ceiling to Alibaba, then to the configured fal path. A missing acknowledgement after a paid POST goes to reconciliation. Accepted jobs remain with their recorded owner. The completed job's reported USD cost is saved for accounting. The admin scenario lab includes the two-second profile and the historical 15-second text profile.

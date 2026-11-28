@@ -1,3 +1,4 @@
+import type { CustomerPricingSnapshot } from '@/lib/customer-pricing-snapshot';
 import { normalizeGenerationObservation, type GenerationObservation } from '@/lib/generation-observation';
 import { isPlaceholderMediaUrl } from '@/lib/media';
 import type { PreflightResponse } from '@/types/engines';
@@ -30,7 +31,7 @@ export type LocalRender = {
   hasAudio?: boolean;
   priceCents?: number;
   currency?: string;
-  pricingSnapshot?: PreflightResponse['pricing'];
+  pricingSnapshot?: PreflightResponse['pricing'] | CustomerPricingSnapshot;
   paymentStatus?: string;
   failedAt?: number;
   etaSeconds?: number;

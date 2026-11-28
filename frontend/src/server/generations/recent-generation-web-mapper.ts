@@ -1,3 +1,6 @@
+import { customerPricingSnapshot } from '@/lib/customer-pricing-snapshot';
+import { isPurchaseRoutingEngine } from '@/lib/video-purchase-decision';
+import { projectRoutedVideoSettings, routedVideoJobMessage } from './routed-video-client-fields';
 import { deriveJobSurface } from '@/lib/job-surface';
 import { extractRenderIds, extractRenderThumbUrls, parseStoredImageRenders } from '@/lib/image-renders';
 import { normalizeMediaUrl } from '@/lib/media';
@@ -24,11 +27,12 @@ export function mapRecentGenerationRecordToWeb(record: RecentGenerationRecord) {
     videoUrl: record.video_url,
     renderIds: record.render_ids,
   });
+  const routed = isPurchaseRoutingEngine(record.engine_id);
   return {
     jobId: record.job_id,
     surface,
     billingProductKey: record.billing_product_key ?? undefined,
-    settingsSnapshot: record.settings_snapshot ?? undefined,
+    settingsSnapshot: routed ? projectRoutedVideoSettings(record.engine_id,record.settings_snapshot) : record.settings_snapshot ?? undefined,
     engineLabel: record.engine_label,
     durationSec: record.duration_sec,
     prompt: record.prompt,
@@ -52,8 +56,8 @@ export function mapRecentGenerationRecordToWeb(record: RecentGenerationRecord) {
     previewFrame: record.preview_frame ?? undefined,
     finalPriceCents: record.final_price_cents ?? undefined,
     currency: record.currency ?? 'USD',
-    pricingSnapshot: record.pricing_snapshot ?? undefined,
-    vendorAccountId: record.vendor_account_id ?? undefined,
+    pricingSnapshot: routed ? customerPricingSnapshot(record.pricing_snapshot) : record.pricing_snapshot ?? undefined,
+    vendorAccountId: routed ? undefined : record.vendor_account_id ?? undefined,
     paymentStatus: record.payment_status ?? undefined,
     stripePaymentIntentId: record.stripe_payment_intent_id ?? undefined,
     stripeChargeId: record.stripe_charge_id ?? undefined,
@@ -68,7 +72,7 @@ export function mapRecentGenerationRecordToWeb(record: RecentGenerationRecord) {
     localKey: record.local_key ?? undefined,
     status: record.status ?? undefined,
     progress: typeof record.progress === 'number' ? record.progress : undefined,
-    message: (record.status?.toLowerCase() === 'failed'
+    message: routed ? routedVideoJobMessage(record.status, record.message, record.settings_snapshot) : (record.status?.toLowerCase() === 'failed'
       ? getKnownGenerationFailureMessage({
           failureCode: getVideoFailureCodeFromSettingsSnapshot(record.settings_snapshot),
           message: record.message,

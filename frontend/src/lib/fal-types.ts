@@ -25,6 +25,8 @@ export type GeneratePayload = {
   /** Server materialization only; never copied from a caller request. */
   trustedFluxDraftCache?: {url:string;fingerprint:string;sourceJobId?:string;sourceOutputId?:string};
   operation?: import('@/lib/video-operation').VideoOperation;
+  /** Set by the server after admission to the private Wan purchase pilot. */
+  reviewedWanPilot?: true;
   /** Internal execution policy; MCP returns after queue acceptance. */
   submissionMode?: 'enqueue';
   engineId: string;

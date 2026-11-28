@@ -1,6 +1,14 @@
+import { getWanSubmissionClient, isWanDirectProvider, wanTransports, type WanDirectProvider } from '@/server/video-providers/wan-transports';
+import type { createVideoRouterClient } from '@/server/video-providers/videorouter/wan-prime';
+import type { createApimartClient } from '@/server/video-providers/apimart/wan-prime';
+import type { WanPurchaseCanary } from '@/server/video-providers/router';
+import { nextPurchaseProvider, purchaseRoutingSnapshot, type PurchaseDecision } from '@/lib/video-purchase-decision';
+export { resolveWanMediaInputs as resolveAlibabaSubmissionMediaInputs } from '@/lib/video-routing/wan-media';
+import { wanRequestFacts, type WanRequestFacts } from '@/lib/video-routing/wan-request';
+import { buildWanPurchaseDecision } from './wan-purchase-routing';
 import type { GeneratePayload, GenerateResult } from '@/lib/fal';
 import { query } from '@/lib/db';
-import type { NormalizedVideoProviderTask } from '@/server/video-providers/types';
+import type { NormalizedVideoProviderTask, VideoProviderKey } from '@/server/video-providers/types';
 import { persistDirectProviderAcceptance } from './direct-provider-acceptance';
 import type { Mode, PricingSnapshot, ProviderClientErrorPolicy } from '@/types/engines';
 import { getAlibabaModelStudioClient } from '@/server/video-providers/alibaba-model-studio/client';
@@ -17,9 +25,9 @@ import { buildAlibabaVideoPayload } from '@/server/video-providers/alibaba-model
 import { createWanMediaTransport } from '@/server/video-providers/alibaba-model-studio/media-access';
 import type { createOwnedMediaReadUrl } from '@/server/owned-media-read-access';
 import { sanitizeProviderMediaDiagnostics } from '@/server/provider-media-diagnostics';
-import type { AlibabaReferenceAsset } from '@/server/video-providers/alibaba-model-studio/types';
+import { resolveWanMediaInputs } from '@/lib/video-routing/wan-media';
 import {
-  createProviderAttempt,
+  createProviderAttempt, ProviderAttemptAlreadyClaimed,
   linkProviderFallbackAttempt,
   markProviderAttemptAccepted,
   markProviderAttemptFailed,
@@ -28,6 +36,8 @@ import {
 import { buildUserFacingRefundDescription } from '@/server/user-facing-failure-messages';
 import { createProviderJobTracker } from './provider-job-tracker';
 import { rollbackPendingPayment } from './payment-rollback';
+import { withWalletFailureSettlement } from '@/server/fal-webhook-refunds';
+import { stopWanPilotWalletJob } from '@/server/wan-pilot-refunds';
 import { isDeferredFalSubmission, submitFalGenerateTask, type FalGenerateSubmissionResult } from './fal-submission';
 import { reconcileFalFallbackTerminalResponse } from './fal-fallback-outcome';
 import type { FalInputSummary } from './fal-request';
@@ -41,11 +51,15 @@ type LogMetricFn = (
 
 type AlibabaSubmissionClient = Pick<ReturnType<typeof getAlibabaModelStudioClient>, 'createVideo' | 'getTask'>;
 type AlibabaSubmissionDeps = {
+  getVideoRouterClientFn?: typeof createVideoRouterClient;
+  getApimartClientFn?: typeof createApimartClient;
   createOwnedMediaReadUrlFn?: typeof createOwnedMediaReadUrl;
   getAlibabaModelStudioClientFn?: () => AlibabaSubmissionClient;
   submitFalGenerateTaskFn?: typeof submitFalGenerateTask;
   queryFn?: QueryFn;
   rollbackPendingPaymentFn?: typeof rollbackPendingPayment;
+  withFailureSettlementFn?: typeof withWalletFailureSettlement;
+  stopWanPilotWalletJobFn?: typeof stopWanPilotWalletJob;
 };
 
 export type AlibabaModelStudioGenerateSubmissionResult =
@@ -55,73 +69,6 @@ export type AlibabaModelStudioGenerateSubmissionResult =
 
 function cleanUrl(value: unknown): string | null {
   return typeof value === 'string' && value.trim() ? value.trim() : null;
-}
-
-function addUniqueAsset(assets: AlibabaReferenceAsset[], value: unknown, metadata?: Partial<AlibabaReferenceAsset>) {
-  const url = cleanUrl(value);
-  if (!url) return;
-  const existing = assets.find((asset) => asset.url === url);
-  if (existing) {
-    if (metadata?.mimeType) existing.mimeType = metadata.mimeType;
-    if (typeof metadata?.durationSec === 'number') existing.durationSec = metadata.durationSec;
-    return;
-  }
-  assets.push({ url, ...metadata });
-}
-
-export function resolveAlibabaSubmissionMediaInputs(params: {
-  imageUrl: string | null | undefined;
-  falPayload: GeneratePayload;
-}): {
-  startImageUrl: string | null;
-  endImageUrl: string | null;
-  referenceImages: AlibabaReferenceAsset[];
-  referenceVideos: AlibabaReferenceAsset[];
-  referenceAudio: AlibabaReferenceAsset[];
-  inputVideoDurationSec: number | null;
-} {
-  let startImageUrl = cleanUrl(params.imageUrl) ?? cleanUrl(params.falPayload.imageUrl);
-  let endImageUrl = cleanUrl(params.falPayload.endImageUrl);
-  const referenceImages: AlibabaReferenceAsset[] = [];
-  const referenceVideos: AlibabaReferenceAsset[] = [];
-  const referenceAudio: AlibabaReferenceAsset[] = [];
-
-  for (const url of params.falPayload.referenceImages ?? []) addUniqueAsset(referenceImages, url);
-  addUniqueAsset(referenceVideos, params.falPayload.videoUrl);
-  addUniqueAsset(referenceAudio, params.falPayload.audioUrl);
-
-  for (const input of params.falPayload.inputs ?? []) {
-    const url = cleanUrl(input.url) ?? cleanUrl(input.dataUrl);
-    if (!url) continue;
-    const slotId = input.slotId?.trim().toLowerCase() ?? '';
-    const metadata = { mimeType: cleanUrl(input.type), durationSec: input.durationSec ?? null };
-    if (input.kind === 'image' && ['image_url', 'start_image_url', 'first_frame_url'].includes(slotId)) {
-      startImageUrl ??= url;
-    } else if (input.kind === 'image' && ['end_image_url', 'last_frame_url'].includes(slotId)) {
-      endImageUrl ??= url;
-    } else if (input.kind === 'image') {
-      addUniqueAsset(referenceImages, url, metadata);
-    } else if (input.kind === 'video') {
-      addUniqueAsset(referenceVideos, url, metadata);
-    } else if (input.kind === 'audio') {
-      addUniqueAsset(referenceAudio, url, metadata);
-    }
-  }
-
-  const knownVideoDurations = referenceVideos
-    .map((asset) => asset.durationSec)
-    .filter((value): value is number => typeof value === 'number' && Number.isFinite(value));
-  return {
-    startImageUrl,
-    endImageUrl,
-    referenceImages,
-    referenceVideos,
-    referenceAudio,
-    inputVideoDurationSec:
-      referenceVideos.length > 0 && knownVideoDurations.length === referenceVideos.length
-        ? knownVideoDurations.reduce((sum, duration) => sum + duration, 0)
-        : null,
-  };
 }
 
 function userSafeAlibabaMessage(errorClass: string, errorCode?: string | null): string {
@@ -159,29 +106,55 @@ async function failJobAndRollback(params: {
   walletChargeReserved: boolean;
   queryFn: QueryFn;
   rollbackPendingPaymentFn: typeof rollbackPendingPayment;
+  onlyBeforeSubmission?: boolean;
+  withFailureSettlementFn?: typeof withWalletFailureSettlement;
 }) {
-  const paymentStatusOverride = params.pendingReceipt
-    ? params.paymentMode === 'wallet' ? 'refunded_wallet' : 'refunded'
-    : null;
-  await params.queryFn(
+  const persistFailure = (execute: QueryFn) => execute(
     `UPDATE app_jobs
-        SET status = 'failed', progress = 0, message = $2, provisional = FALSE,
-            payment_status = CASE WHEN $3::text IS NOT NULL THEN $3 ELSE payment_status END,
-            updated_at = NOW()
-      WHERE job_id = $1`,
-    [params.jobId, params.message, paymentStatusOverride]
+        SET status = 'failed', progress = 0, message = $2, provisional = FALSE, updated_at = NOW()
+      WHERE job_id = $1 AND provider_job_id IS NULL
+        AND (status IN ('queued','pending','running','processing','in_progress') OR (status = 'failed' AND message = $2))
+        ${params.onlyBeforeSubmission ? 'AND NOT EXISTS (SELECT 1 FROM provider_attempts a WHERE a.job_id = app_jobs.id)' : ''}
+      RETURNING job_id`,
+    [params.jobId, params.message]
   );
-  if (params.pendingReceipt) {
+  if (params.paymentMode === 'wallet' && params.walletChargeReserved) {
+    const settle = params.withFailureSettlementFn ?? withWalletFailureSettlement;
+    const staleFailure = new Error('Job no longer qualifies for this failure settlement.');
+    try {
+      await settle(params.jobId, {
+        engineLabel: params.engineLabel, failureMessage: params.message, failureOrigin: 'submission_rejected',
+      }, async executor => {
+        const rows = await persistFailure((sql, values) => executor.query(sql, values));
+        if (!rows.length) throw staleFailure;
+      });
+      return true;
+    } catch (error) {
+      if (error === staleFailure) return false;
+      throw error;
+    }
+  }
+  const rows = await persistFailure(params.queryFn);
+  if (!rows.length) return false;
+  const receipt = params.pendingReceipt;
+  if (receipt && params.paymentMode !== 'wallet') {
     await params.rollbackPendingPaymentFn({
-      pendingReceipt: params.pendingReceipt,
-      walletChargeReserved: params.walletChargeReserved,
+      pendingReceipt: receipt, walletChargeReserved: false,
       refundDescription: buildUserFacingRefundDescription({
-        engineLabel: params.engineLabel,
-        durationSec: params.durationSec,
-        reason: params.message,
+        engineLabel: params.engineLabel, durationSec: params.durationSec, reason: params.message,
       }),
     });
+    // A card refund is confirmed only by a matching receipt with a Stripe refund ID.
+    await params.queryFn(
+      `UPDATE app_jobs j SET payment_status = 'refunded', updated_at = NOW()
+        WHERE j.job_id = $1 AND j.user_id = $2 AND j.status = 'failed'
+          AND EXISTS (SELECT 1 FROM app_receipts r WHERE r.job_id = j.job_id AND r.user_id = j.user_id
+                      AND r.type = 'refund' AND r.amount_cents = $3 AND UPPER(r.currency) = UPPER($4)
+                      AND r.stripe_refund_id IS NOT NULL)`,
+      [params.jobId, receipt.userId, receipt.amountCents, receipt.currency],
+    );
   }
+  return true;
 }
 
 function falProviderJobId(result: FalGenerateSubmissionResult, getLastProviderJobId: () => string | null): string | null {
@@ -191,7 +164,11 @@ function falProviderJobId(result: FalGenerateSubmissionResult, getLastProviderJo
 
 async function submitFalFallback(params: {
   userId: string;
-  directAttemptId: number;
+  directAttemptId: number | null;
+  decision?: PurchaseDecision<VideoProviderKey>;
+  attemptIndex?: number;
+  claimOnce?: boolean;
+  fallbackFrom?: string;
   reason: string;
   errorCode: string | null;
   jobId: string;
@@ -213,18 +190,19 @@ async function submitFalFallback(params: {
 }): Promise<AlibabaModelStudioGenerateSubmissionResult> {
   const attempt = await createProviderAttempt({
     publicJobId: params.jobId,
-    attemptIndex: 2,
+    attemptIndex: params.attemptIndex ?? 2,
+    claimOnce: params.claimOnce,
     provider: 'fal',
     providerModel: params.falPayload.engineId,
-    status: 'fallback_started',
-    requestSnapshot: {
-      fallbackFrom: ALIBABA_MODEL_STUDIO_PROVIDER,
+    status: params.directAttemptId === null ? 'submit_started' : 'fallback_started',
+    requestSnapshot: params.directAttemptId === null && params.decision ? { purchaseRouting: purchaseRoutingSnapshot(params.decision, 'canary') } : {
+      fallbackFrom: params.fallbackFrom ?? ALIBABA_MODEL_STUDIO_PROVIDER,
       fallbackReason: params.reason,
       fallbackErrorCode: params.errorCode,
     },
     queryFn: params.queryFn,
   });
-  await linkProviderFallbackAttempt({
+  if (params.directAttemptId !== null) await linkProviderFallbackAttempt({
     fromAttemptId: params.directAttemptId,
     toAttemptId: attempt.id,
     queryFn: params.queryFn,
@@ -291,7 +269,7 @@ async function submitFalFallback(params: {
   return { ok: true, kind: 'fal_result', generationResult: result.generationResult };
 }
 
-export async function submitAlibabaModelStudioGenerateTask(params: {
+type WanSubmissionParams = {
   jobId: string;
   userId: string;
   engineId: string;
@@ -311,6 +289,7 @@ export async function submitAlibabaModelStudioGenerateTask(params: {
   paymentMode: PaymentMode;
   walletChargeReserved: boolean;
   fallbackToFalEnabled: boolean;
+  purchaseCanary?: WanPurchaseCanary;
   falPayload: GeneratePayload;
   falInputSummary: FalInputSummary;
   isLumaRay2: boolean;
@@ -324,14 +303,16 @@ export async function submitAlibabaModelStudioGenerateTask(params: {
   logMetricFn: LogMetricFn;
   clientErrorPolicy?: ProviderClientErrorPolicy;
   deps?: AlibabaSubmissionDeps;
-}): Promise<AlibabaModelStudioGenerateSubmissionResult> {
+};
+
+export async function submitAlibabaModelStudioGenerateTask(params: WanSubmissionParams): Promise<AlibabaModelStudioGenerateSubmissionResult> {
   const deps = params.deps ?? {};
   const queryFn = deps.queryFn ?? query;
   const route = resolveAlibabaModelRoute(params.engineId, params.mode);
   if (!route) {
     return { ok: false, status: 400, body: { ok: false, error: 'ALIBABA_MODEL_MODE_UNSUPPORTED' } };
   }
-  const media = resolveAlibabaSubmissionMediaInputs({ imageUrl: params.imageUrl, falPayload: params.falPayload });
+  const media = resolveWanMediaInputs({ imageUrl: params.imageUrl, falPayload: params.falPayload });
   const resolution = params.effectiveResolution ?? params.falPayload.resolution ?? '720p';
   const estimate = estimateAlibabaProviderCost({
     engineId: params.engineId,
@@ -340,15 +321,80 @@ export async function submitAlibabaModelStudioGenerateTask(params: {
     inputVideoDurationSec: media.inputVideoDurationSec ?? undefined,
     resolution,
   });
+  // Resolve once using the original job settings, before choosing a supplier or handing off.
+  const wanPayload = {
+    ...params.falPayload, engineId: params.engineId, mode: params.mode, prompt: params.prompt,
+    durationSec: params.durationSec, resolution, aspectRatio: params.aspectRatio ?? params.falPayload.aspectRatio,
+    audio: params.audioEnabled ?? params.falPayload.audio ?? false,
+    imageUrl: media.startImageUrl ?? undefined, endImageUrl: media.endImageUrl ?? undefined,
+  };
+  const facts = route.family === 'wan3' ? wanRequestFacts(wanPayload, media, params.negativePrompt) : null;
+  const decision = facts ? buildWanPurchaseDecision(params, facts) : null;
+  const active = Boolean(params.purchaseCanary && decision?.canaryEligible);
+  if (params.purchaseCanary === 'with-videorouter' && !active) params = { ...params, purchaseCanary: undefined };
+  if (active) params = { ...params, audioEnabled: wanPayload.audio, falPayload: { ...wanPayload, reviewedWanPilot: true } };
+  const selected = active ? decision?.order[0] : ALIBABA_MODEL_STUDIO_PROVIDER;
+  const stopPilot = deps.stopWanPilotWalletJobFn ?? stopWanPilotWalletJob;
+  if (!selected) {
+    const message = 'No compatible provider fits the purchase ceiling.';
+    const stopped = active && params.paymentMode === 'wallet' && params.walletChargeReserved
+      ? await stopPilot({jobId: params.jobId, userId: params.userId, message, attemptId: null})
+      : await failJobAndRollback({ ...params, message, queryFn, onlyBeforeSubmission: true,
+      withFailureSettlementFn: deps.withFailureSettlementFn,
+      rollbackPendingPaymentFn: deps.rollbackPendingPaymentFn ?? rollbackPendingPayment });
+    if (!stopped) return deferred(params.jobId);
+    return { ok: false, status: 503, body: { ok: false, error: 'NO_ELIGIBLE_VIDEO_PROVIDER', message } };
+  }
+  const context = { params, route, media, resolution, estimate, active, facts, plan: decision, deps, queryFn };
+  try {
+    if (selected === 'fal') {
+      return await submitFalFallback({ ...params, directAttemptId: null, attemptIndex: 1, decision: decision ?? undefined,
+        claimOnce: true, reason: 'lowest_cost', errorCode: null, queryFn,
+        submitFalGenerateTaskFn: deps.submitFalGenerateTaskFn ?? submitFalGenerateTask });
+    }
+    if (!isWanDirectProvider(selected)) throw new Error('Unsupported primary Wan transport');
+    return await submitWanAttempt(context, selected, 1, null);
+  } catch (error) {
+    if (error instanceof ProviderAttemptAlreadyClaimed) return deferred(params.jobId);
+    throw error;
+  }
+}
+
+function deferred(jobId: string): AlibabaModelStudioGenerateSubmissionResult {
+  return { ok: true, kind: 'accepted', body: {
+    ok: true, jobId, status: 'running', deferred: true, message: 'Submission is being reconciled. Do not submit again.',
+  } };
+}
+
+type WanAttemptContext = {
+  params: WanSubmissionParams;
+  route: NonNullable<ReturnType<typeof resolveAlibabaModelRoute>>;
+  media: ReturnType<typeof resolveWanMediaInputs>;
+  resolution: string;
+  estimate: ReturnType<typeof estimateAlibabaProviderCost>;
+  active: boolean;
+  facts: WanRequestFacts | null;
+  plan: PurchaseDecision<VideoProviderKey> | null;
+  deps: AlibabaSubmissionDeps;
+  queryFn: QueryFn;
+};
+
+async function submitWanAttempt(
+  context: WanAttemptContext, provider: WanDirectProvider, attemptIndex: number, previousAttemptId: number | null,
+): Promise<AlibabaModelStudioGenerateSubmissionResult> {
+  const { params, route, media, resolution, estimate, active, plan, deps, queryFn } = context;
+  const providerModel = wanTransports[provider].modelId(route);
+  const costMicros = plan?.candidates.find(candidate => candidate.provider === provider)?.costMicros;
   const attempt = await createProviderAttempt({
     publicJobId: params.jobId,
-    attemptIndex: 1,
-    provider: ALIBABA_MODEL_STUDIO_PROVIDER,
-    providerModel: route.model,
+    attemptIndex,
+    claimOnce: active,
+    provider,
+    providerModel,
     requestSnapshot: {
       engineId: params.engineId,
       mode: params.mode,
-      providerModel: route.model,
+      providerModel,
       durationSec: params.durationSec,
       inputVideoDurationSec: media.inputVideoDurationSec,
       aspectRatio: params.aspectRatio,
@@ -360,11 +406,16 @@ export async function submitAlibabaModelStudioGenerateTask(params: {
       referenceVideoCount: media.referenceVideos.length,
       referenceAudioCount: media.referenceAudio.length,
       promptLength: params.prompt.length,
-      estimatedProviderCostUsd: estimate.providerCostUsd,
+      ...(context.facts ? { trimmedPromptLength: context.facts.promptCharacters,
+        unreviewedWanOptions: context.facts.hasUnpricedOptions } : {}),
+      estimatedProviderCostUsd: costMicros == null ? estimate.providerCostUsd : costMicros / 1e6,
+      ...(plan ? { purchaseRouting: purchaseRoutingSnapshot(plan, active ? 'canary' : 'shadow') } : {}),
     },
     queryFn,
   });
 
+  if (previousAttemptId != null) await linkProviderFallbackAttempt({ fromAttemptId: previousAttemptId, toAttemptId: attempt.id, queryFn });
+  let sent = false;
   let acceptedTask: NormalizedVideoProviderTask;
   let acceptedProviderJobId: string | null = null;
   let sanitizeDiagnostics: (value: unknown) => unknown = route.family === 'wan3'
@@ -393,37 +444,59 @@ export async function submitAlibabaModelStudioGenerateTask(params: {
           : undefined,
       seed: params.falPayload.seed,
     });
+    if (!providerModel) throw new Error('No reviewed provider model for this route');
     const transport = await createWanMediaTransport({ payload, userId: params.userId }, { read: deps.createOwnedMediaReadUrlFn });
     sanitizeDiagnostics = transport.sanitize;
-    const task = await (deps.getAlibabaModelStudioClientFn ?? getAlibabaModelStudioClient)().createVideo(transport.payload);
+    const client = getWanSubmissionClient(provider, {
+      videorouter: deps.getVideoRouterClientFn, apimart: deps.getApimartClientFn, alibaba_model_studio: deps.getAlibabaModelStudioClientFn,
+    });
+    sent = true;
+    const task = await client.createVideo(transport.payload);
     acceptedProviderJobId = task.providerJobId;
     acceptedTask = task;
   } catch (error) {
     const normalized = classifyAlibabaModelStudioError(error);
-    const fallbackEligible = route.fallbackCompatible && shouldFallbackFromAlibabaSubmit({
+    const failure = sent ? wanTransports[provider].classifyFailure(error) : { outcome: 'invalid' as const, code: normalized.code ?? normalized.errorClass };
+    const next = active && plan ? nextPurchaseProvider(plan.order, provider, failure.outcome) : null;
+    if (active && failure.outcome === 'uncertain') {
+      // No ACK: preserve the original reservation and leave the operator a durable reconciliation record.
+      const message = 'Provider acceptance is unknown. Reconcile this submission before retrying.';
+      await queryFn(`UPDATE app_jobs SET provider = $2, status = 'provider_polling_stalled', message = $3,
+          provisional = FALSE, updated_at = NOW() WHERE job_id = $1 AND provider_job_id IS NULL
+          AND status IN ('pending','queued','running')`, [params.jobId, provider, message])
+        .catch(() => console.warn('[wan-purchase] job reconciliation write deferred', { jobId: params.jobId }));
+      await markProviderAttemptFinished({ attemptId: attempt.id, status: 'polling_stalled',
+        responseSnapshot: { reason: failure.code }, queryFn }).catch(() =>
+        console.warn('[wan-purchase] attempt reconciliation write deferred', { jobId: params.jobId }));
+      return deferred(params.jobId);
+    }
+    const fallbackEligible = active ? next === 'fal' || isWanDirectProvider(next) : !params.purchaseCanary && route.fallbackCompatible && shouldFallbackFromAlibabaSubmit({
       acceptedProviderJobId,
       error,
       fallbackToFalEnabled: params.fallbackToFalEnabled,
     });
-    try {
-      await markProviderAttemptFailed({
-        attemptId: attempt.id,
-        errorCode: normalized.code,
-        errorClass: normalized.errorClass,
-        fallbackEligible,
-        responseSnapshot: sanitizeDiagnostics(normalized.raw),
-        queryFn,
-      });
-    } catch {
-      // The accepted task identity remains authoritative even if local persistence is degraded.
+    const persistRejection = (execute: QueryFn) => markProviderAttemptFailed({
+      attemptId: attempt.id, errorCode: active ? failure.code : normalized.code,
+      errorClass: active ? failure.outcome : normalized.errorClass, fallbackEligible,
+      responseSnapshot: sanitizeDiagnostics(normalized.raw), queryFn: execute,
+    });
+    const terminalWalletStop = active && !fallbackEligible && !acceptedProviderJobId &&
+      params.paymentMode === 'wallet' && params.walletChargeReserved;
+    if (!terminalWalletStop) {
+      try { await persistRejection(queryFn); }
+      catch { /* Submission ownership remains authoritative if diagnostics cannot be saved. */ }
     }
 
+    if (isWanDirectProvider(next)) {
+      return submitWanAttempt(context, next, attemptIndex + 1, attempt.id);
+    }
     if (fallbackEligible) {
       return submitFalFallback({
+        attemptIndex: attemptIndex + 1, fallbackFrom: provider, claimOnce: active,
         userId: params.userId,
         directAttemptId: attempt.id,
-        reason: normalized.errorClass,
-        errorCode: normalized.code,
+        reason: active ? failure.outcome : normalized.errorClass,
+        errorCode: active ? failure.code : normalized.code,
         jobId: params.jobId,
         engineId: params.engineId,
         engineLabel: params.engineLabel,
@@ -443,8 +516,16 @@ export async function submitAlibabaModelStudioGenerateTask(params: {
       });
     }
 
-    const message = userSafeAlibabaMessage(normalized.errorClass, normalized.code);
-    if (!acceptedProviderJobId) {
+    const message = provider !== ALIBABA_MODEL_STUDIO_PROVIDER && sent
+      ? 'The provider declined this generation. Review the request or try again later.'
+      : userSafeAlibabaMessage(normalized.errorClass, normalized.code);
+    if (terminalWalletStop) {
+      const stopped = await (deps.stopWanPilotWalletJobFn ?? stopWanPilotWalletJob)({
+        jobId: params.jobId, userId: params.userId, attemptId: attempt.id, message,
+        persistRejection: tx => persistRejection((sql, values) => tx.query(sql, values)),
+      });
+      if (!stopped) return deferred(params.jobId);
+    } else if (!acceptedProviderJobId) {
       await failJobAndRollback({
         jobId: params.jobId,
         engineLabel: params.engineLabel,
@@ -454,20 +535,21 @@ export async function submitAlibabaModelStudioGenerateTask(params: {
         paymentMode: params.paymentMode,
         walletChargeReserved: params.walletChargeReserved,
         queryFn,
+        withFailureSettlementFn: deps.withFailureSettlementFn,
         rollbackPendingPaymentFn: deps.rollbackPendingPaymentFn ?? rollbackPendingPayment,
       });
     }
     params.logMetricFn('failed', {
       jobId: params.jobId,
       errorCode: normalized.code ?? normalized.errorClass,
-      meta: { provider: ALIBABA_MODEL_STUDIO_PROVIDER, errorClass: normalized.errorClass, accepted: Boolean(acceptedProviderJobId) },
+      meta: { provider, errorClass: normalized.errorClass, accepted: Boolean(acceptedProviderJobId) },
     });
     return {
       ok: false,
       status: statusForAlibabaError(normalized.errorClass),
       body: {
         ok: false,
-        error: normalized.code ?? 'ALIBABA_MODEL_STUDIO_SUBMIT_FAILED',
+        error: active ? failure.code : normalized.code ?? 'ALIBABA_MODEL_STUDIO_SUBMIT_FAILED',
         message,
         ...(acceptedProviderJobId ? { jobId: params.jobId, providerJobId: acceptedProviderJobId } : {}),
       },
@@ -482,11 +564,11 @@ export async function submitAlibabaModelStudioGenerateTask(params: {
   const status = acceptedTask.status === 'running' ? 'running' : 'queued';
   const progress = acceptedTask.status === 'running' ? 30 : 10;
   return { ok: true, kind: 'accepted', body: await persistDirectProviderAcceptance({
-    jobId: params.jobId, provider: ALIBABA_MODEL_STUDIO_PROVIDER, providerJobId: acceptedTask.providerJobId,
+    jobId: params.jobId, provider, providerJobId: acceptedTask.providerJobId,
     attemptId: attempt.id, responseSnapshot, status, progress,
     localKey: params.localKey, queryFn,
     logAccepted: () => params.logMetricFn('accepted', { jobId: params.jobId,
-      meta: { provider: ALIBABA_MODEL_STUDIO_PROVIDER, providerJobId: acceptedTask.providerJobId, providerModel: route.model } }),
+      meta: { provider, providerJobId: acceptedTask.providerJobId, providerModel } }),
     acceptedBody: {
       ok: true,
       jobId: params.jobId,
@@ -497,7 +579,7 @@ export async function submitAlibabaModelStudioGenerateTask(params: {
       progress,
       pricing: params.pricing,
       paymentStatus: params.paymentStatus,
-      provider: ALIBABA_MODEL_STUDIO_PROVIDER,
+      provider,
       providerJobId: acceptedTask.providerJobId,
       batchId: params.batchId,
       groupId: params.groupId,

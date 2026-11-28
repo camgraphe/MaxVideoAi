@@ -1,3 +1,4 @@
+import { sanitizeProviderMediaDiagnostics } from '@/server/provider-media-diagnostics';
 import type { NormalizedVideoProviderStatus, NormalizedVideoProviderTask } from '../types';
 import { AlibabaModelStudioError } from './errors';
 
@@ -77,4 +78,19 @@ export async function parseAlibabaJsonResponse(response: Response): Promise<unkn
   } catch {
     return { message: text.slice(0, 2_000) };
   }
+}
+
+export function normalizeAlibabaPolledTask(raw: unknown, providerJobId: string, isWan: boolean): NormalizedVideoProviderTask {
+  const record = asRecord(raw);
+  const providerRaw = record && 'raw' in record ? record.raw : raw;
+  const task = normalizeAlibabaTask(providerRaw, providerJobId);
+  if (!isWan) return task;
+  // Keep signed output videoUrl intact for the durable copy; only diagnostics are sanitized.
+  return {
+    ...task,
+    raw: sanitizeProviderMediaDiagnostics(task.raw),
+    message: task.status === 'failed' && task.errorCode === 'InvalidParameter'
+      && /^Failed to download\b/i.test(task.message ?? '')
+      ? 'Reference media could not be read.' : sanitizeProviderMediaDiagnostics(task.message) as string | null,
+  };
 }

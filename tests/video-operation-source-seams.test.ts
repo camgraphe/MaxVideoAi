@@ -309,7 +309,7 @@ test('FAST accepts the measured value just below 15 even when stored timing roun
 
 test('operation discovery cannot lend Edit credentials to a historical Reference submission', () => {
   const engine = getFalEngineById('kling-o3-pro')!.engine;
-  const env = { ...environment, providerEnv: { KLING_DIRECT_ENABLED: 'true', KLING_DIRECT_PUBLIC_ROUTING_ENABLED: 'true', KLING_DIRECT_ADMIN_ONLY: 'false' } };
+  const env = { ...environment, providerEnv: { KLING_DIRECT_ENABLED: 'true', KLING_DIRECT_V3_FUNDED: 'true', KLING_DIRECT_PUBLIC_ROUTING_ENABLED: 'true', KLING_DIRECT_ADMIN_ONLY: 'false' } };
   for (const operation of [undefined, 'kling-reference'] as const) {
     const request = normalizeGenerationRequest({ surface: 'video', engineId: engine.id, mode: 'v2v', operation, prompt: 'Reference',
       settings: { resolution: '1080p', durationSec: 5, aspectRatio: '16:9' }, references: [] });

@@ -6,6 +6,8 @@ export type PricingFacts = {
   engineId: string;
   currency: string;
   vendorSubtotalExactCents: number;
+  /** Fixed commercial reference for legacy percentage pricing when it differs from current procurement. */
+  legacyRetailBasisExactCents?: number;
   unit: string;
   quantity: number;
   metadata?: Record<string, unknown>;
@@ -61,6 +63,7 @@ export type CanonicalPricingQuote = {
 
 export type PricingDomainErrorCode =
   | 'invalid_facts'
+  | 'below_cost'
   | 'invalid_scenario'
   | 'currency_mismatch'
   | 'unknown_surcharge';
@@ -117,13 +120,14 @@ export function quoteCanonicalPricing(input: {
   }
 
   const commercialAdjustment = scenario.commercialAdjustment;
-  const pricingBasisExactCents = commercialAdjustment?.pricingBasisExactCents ?? facts.vendorSubtotalExactCents;
+  const legacyRetailBasis = facts.legacyRetailBasisExactCents;
+  const pricingBasisExactCents = commercialAdjustment?.pricingBasisExactCents ?? legacyRetailBasis ?? facts.vendorSubtotalExactCents;
   const minimumCustomerTotalCents = commercialAdjustment?.minimumCustomerTotalCents ?? 0;
   const fixedCustomerCents = commercialAdjustment?.fixedCustomerCents ?? 0;
   assertFiniteNonNegative(pricingBasisExactCents, 'invalid_scenario', 'pricingBasisExactCents');
   assertFiniteNonNegative(minimumCustomerTotalCents, 'invalid_scenario', 'minimumCustomerTotalCents');
   assertFiniteNonNegative(fixedCustomerCents, 'invalid_scenario', 'fixedCustomerCents');
-  if (pricingBasisExactCents > facts.vendorSubtotalExactCents) {
+  if (commercialAdjustment && pricingBasisExactCents > facts.vendorSubtotalExactCents) {
     throw new PricingDomainError(
       'invalid_scenario',
       'pricingBasisExactCents cannot exceed vendorSubtotalExactCents'
@@ -182,18 +186,22 @@ export function quoteCanonicalPricing(input: {
     0,
     roundCents(subtotalBeforeDiscountExactCents - discountCents, compatibilityProfile.totalRounding)
   );
+  if (legacyRetailBasis !== undefined && customerTotalCents < Math.ceil(facts.vendorSubtotalExactCents - CENT_EPSILON)) {
+    throw new PricingDomainError('below_cost', 'The approved customer price no longer covers the supplier cost.');
+  }
+  const settleAtSupplierCost = Boolean(commercialAdjustment) || legacyRetailBasis !== undefined;
   const commercialCents = marginCents + surchargeCents;
   const discountAppliedToCommercial = Math.min(commercialCents, discountCents);
-  const platformFeeCents = commercialAdjustment
+  const platformFeeCents = settleAtSupplierCost
     ? Math.max(0, customerTotalCents - vendorSubtotalCents)
     : Math.max(0, commercialCents - discountAppliedToCommercial);
   const vendorShareCents =
     compatibilityProfile.vendorShareMode === 'zero'
       ? 0
-      : commercialAdjustment
+      : settleAtSupplierCost
         ? Math.min(customerTotalCents, vendorSubtotalCents)
         : Math.max(0, customerTotalCents - platformFeeCents);
-  if (commercialAdjustment) {
+  if (settleAtSupplierCost) {
     marginCents = platformFeeCents;
     surchargeCents = 0;
   }
@@ -219,7 +227,7 @@ export function quoteCanonicalPricing(input: {
       marginFlatCents,
       surchargePercent,
       discountPercent,
-      ...(commercialAdjustment
+      ...(settleAtSupplierCost
         ? {
             pricingBasisExactCents,
             minimumCustomerTotalCents,

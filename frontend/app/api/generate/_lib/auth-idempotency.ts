@@ -22,6 +22,7 @@ export type GenerateUserGateResult =
       status: number;
       body: Record<string, unknown>;
       metric?: GenerateAuthMetric;
+      storedEngineId?: string;
     };
 
 type ResolveGenerateUserIdDeps = {
@@ -94,7 +95,7 @@ export async function resolveGenerateUserGate(params: {
     const queryFn = deps.queryFn ?? query;
     const existingJobs = await queryFn<ExistingVideoJobRow>(
       `
-        SELECT job_id, user_id, status, video_url, thumb_url, provider_job_id, progress, message,
+        SELECT job_id, user_id, engine_id, status, video_url, thumb_url, provider_job_id, progress, message,
                batch_id, group_id, iteration_index, iteration_count, render_ids, hero_render_id
           FROM app_jobs
          WHERE user_id = $1
@@ -113,6 +114,7 @@ export async function resolveGenerateUserGate(params: {
         kind: 'response',
         status: 200,
         body: buildResponseFromExistingVideoJobFn(existing, localKey),
+        ...(existing.engine_id ? { storedEngineId: existing.engine_id } : {}),
       };
     }
   }

@@ -9,6 +9,8 @@ import {
   isKlingDirectFalFallbackCompatible,
   sanitizeKlingDirectFalFallbackPayload,
 } from '@/server/video-providers/kling-direct/capabilities';
+import { purchaseRoutingSnapshot } from '@/lib/video-purchase-decision';
+import { observeKlingPurchase } from './kling-purchase-routing';
 import { estimateKlingDirectCost } from '@/server/video-providers/kling-direct/cost';
 import { ensureKlingDirectElementsForPayload } from '@/server/video-providers/kling-direct/elements';
 import {
@@ -289,6 +291,7 @@ export async function submitKlingDirectGenerateTask(params: {
     durationSec: params.durationSec,
     audioEnabled: params.audioEnabled,
   });
+  const purchase = observeKlingPurchase(params, basePayload, mediaInputs);
   const klingAttempt = await createProviderAttempt({
     publicJobId: params.jobId,
     attemptIndex: 1,
@@ -324,6 +327,7 @@ export async function submitKlingDirectGenerateTask(params: {
       ),
       elementRegistrationEnabled: params.elementRegistrationEnabled,
       promptLength: params.prompt.length,
+      ...(purchase ? { purchaseRouting: purchaseRoutingSnapshot(purchase, 'shadow') } : {}),
       estimatedProviderCostUnits: estimate.providerCostUnits,
       estimatedProviderCostUsd: estimate.providerCostUsd,
     },

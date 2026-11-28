@@ -1,3 +1,4 @@
+import { wanTransports, type WanDirectProvider, type WanPollOverrides } from '@/server/video-providers/wan-transports';
 import { claimGenerationPoll } from '@/server/generation-poll-state';
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
@@ -19,15 +20,11 @@ import {
   buildUserFacingRefundDescription,
   toUserFacingFailureMessage,
 } from '@/server/user-facing-failure-messages';
-import { getAlibabaModelStudioClient } from '@/server/video-providers/alibaba-model-studio/client';
-import { estimateAlibabaJobCost } from '@/server/alibaba-job-accounting';
 import { classifyAlibabaModelStudioError } from '@/server/video-providers/alibaba-model-studio/errors';
 import {
   ALIBABA_MODEL_STUDIO_PROVIDER,
   resolveAlibabaModelRoute,
 } from '@/server/video-providers/alibaba-model-studio/model-map';
-import { normalizeAlibabaTask } from '@/server/video-providers/alibaba-model-studio/response';
-import { sanitizeProviderMediaDiagnostics } from '@/server/provider-media-diagnostics';
 import {
   findProviderAttemptForJob,
   markProviderAttemptFailed,
@@ -37,9 +34,9 @@ import {
 import type { NormalizedVideoProviderTask } from '@/server/video-providers/types';
 
 type QueryFn = <T = unknown>(sql: string, params?: unknown[]) => Promise<T[]>;
-type AlibabaPollClient = { getTask(id: string): Promise<unknown> };
 
 type AlibabaPendingJob = {
+  provider?: WanDirectProvider;
   job_id: string;
   user_id: string | null;
   engine_id: string;
@@ -61,10 +58,9 @@ type AlibabaPendingJob = {
   created_at: string;
 };
 
-type AlibabaPollDeps = {
+type AlibabaPollDeps = WanPollOverrides & {
   queryFn?: QueryFn;
   claimPollFn?: typeof claimGenerationPoll;
-  getAlibabaModelStudioClientFn?: () => AlibabaPollClient;
   ensureFastStartVideoFn?: typeof ensureFastStartVideo;
   detectVideoDimensionsFn?: typeof detectVideoDimensions;
   ensureJobThumbnailFn?: typeof ensureJobThumbnail;
@@ -77,10 +73,6 @@ const POLL_INITIAL_DELAY_MS = 5_000;
 const DEFAULT_POLL_MAX_DURATION_MINUTES = 185;
 const ACTIVE_JOB_STATUSES = ['pending', 'queued', 'running', 'processing', 'in_progress'];
 const STALLED_MESSAGE = 'This render needs manual review before retrying or refunding.';
-
-function flagEnabled(value: string | undefined): boolean {
-  return ['1', 'true', 'yes', 'on'].includes((value ?? '').trim().toLowerCase());
-}
 
 function positiveInt(value: string | undefined, fallback: number): number {
   const parsed = Number(value);
@@ -112,15 +104,18 @@ function resolutionForJob(job: AlibabaPendingJob): string {
   return cleanString(nestedValue(job.settings_snapshot, 'resolution')) ?? '720p';
 }
 
-const costForJob = estimateAlibabaJobCost;
+function costForJob(job: AlibabaPendingJob, task?: NormalizedVideoProviderTask) {
+  return wanTransports[job.provider ?? ALIBABA_MODEL_STUDIO_PROVIDER].estimateCost(job, task, resolutionForJob(job));
+}
 
 function costBreakdown(job: AlibabaPendingJob, task: NormalizedVideoProviderTask) {
   const estimate = costForJob(job, task);
   const route = resolveAlibabaModelRoute(job.engine_id, modeForJob(job));
+  const provider = job.provider ?? ALIBABA_MODEL_STUDIO_PROVIDER;
   return {
-    provider: ALIBABA_MODEL_STUDIO_PROVIDER,
+    provider,
     provider_cost_source: estimate.source,
-    provider_model: route?.model ?? null,
+    provider_model: route ? wanTransports[provider].modelId(route) : null,
     mode: modeForJob(job),
     duration_sec: job.duration_sec,
     has_audio: job.has_audio === true,
@@ -130,30 +125,15 @@ function costBreakdown(job: AlibabaPendingJob, task: NormalizedVideoProviderTask
     input_video_duration_sec: estimate.inputVideoDurationSec,
     output_video_duration_sec: estimate.outputVideoDurationSec,
     provider_cost_usd: estimate.providerCostUsd,
-    provider_cost_usd_effective: null,
+    provider_cost_usd_effective: estimate.status === 'provider_reported' ? estimate.providerCostUsd : null,
     vendor_cost_usd: estimate.providerCostUsd,
-  };
-}
-
-function normalizePolledTask(raw: unknown, providerJobId: string, isWan: boolean): NormalizedVideoProviderTask {
-  const record = asRecord(raw);
-  const providerRaw = record && 'raw' in record ? record.raw : raw;
-  const task = normalizeAlibabaTask(providerRaw, providerJobId);
-  if (!isWan) return task;
-  // Keep signed output videoUrl intact for the durable copy; only diagnostics are sanitized.
-  return {
-    ...task,
-    raw: sanitizeProviderMediaDiagnostics(task.raw),
-    message: task.status === 'failed' && task.errorCode === 'InvalidParameter'
-      && /^Failed to download\b/i.test(task.message ?? '')
-      ? 'Reference media could not be read.' : sanitizeProviderMediaDiagnostics(task.message) as string | null,
   };
 }
 
 async function findAttempt(job: AlibabaPendingJob, queryFn: QueryFn) {
   return findProviderAttemptForJob({
     publicJobId: job.job_id,
-    provider: ALIBABA_MODEL_STUDIO_PROVIDER,
+    provider: job.provider ?? ALIBABA_MODEL_STUDIO_PROVIDER,
     providerJobId: job.provider_job_id,
     queryFn,
   });
@@ -271,7 +251,7 @@ async function markJobStalled(job: AlibabaPendingJob, queryFn: QueryFn) {
     job,
     attempt: await findAttempt(job, queryFn),
     status: 'polling_stalled',
-    errorCode: 'ALIBABA_MODEL_STUDIO_POLLING_STALLED',
+    errorCode: (job.provider ?? ALIBABA_MODEL_STUDIO_PROVIDER).toUpperCase() + '_POLLING_STALLED',
     errorClass: 'polling_stalled',
     responseSnapshot: { message: STALLED_MESSAGE },
     queryFn,
@@ -308,14 +288,15 @@ async function deferStorageCopyRetry(
   );
 }
 
-export async function runAlibabaModelStudioPoll(options: { jobId?: string; deps?: AlibabaPollDeps } = {}) {
+export async function runAlibabaModelStudioPoll(options: { jobId?: string; provider?: WanDirectProvider; deps?: AlibabaPollDeps } = {}) {
   const deps = options.deps ?? {};
   const queryFn = deps.queryFn ?? query;
-  if (!flagEnabled(process.env.ALIBABA_MODEL_STUDIO_ENABLED) && !deps.queryFn) {
+  const provider = options.provider ?? ALIBABA_MODEL_STUDIO_PROVIDER;
+  if (!wanTransports[provider].pollEnabled() && !deps.queryFn) {
     return NextResponse.json({ ok: true, enabled: false, checked: 0, updates: 0 });
   }
   const rows = await queryFn<AlibabaPendingJob>(
-    `SELECT job_id, user_id, engine_id, engine_label, provider_job_id, status, duration_sec, thumb_url,
+    `SELECT job_id, user_id, engine_id, engine_label, provider_job_id, status, duration_sec, thumb_url, provider,
             to_jsonb(app_jobs)->>'preview_video_url' AS preview_video_url,
             to_jsonb(app_jobs)->'keyframe_urls' AS keyframe_urls,
             aspect_ratio, has_audio, final_price_cents, pricing_snapshot, settings_snapshot,
@@ -325,11 +306,10 @@ export async function runAlibabaModelStudioPoll(options: { jobId?: string; deps?
       AND ($3::text IS NULL OR job_id = $3)
       ORDER BY updated_at ASC
       LIMIT 10`,
-    [ALIBABA_MODEL_STUDIO_PROVIDER, ACTIVE_JOB_STATUSES, options.jobId ?? null]
+    [provider, ACTIVE_JOB_STATUSES, options.jobId ?? null]
   );
   if (!rows.length) return NextResponse.json({ ok: true, enabled: true, checked: 0, updates: 0 });
 
-  const client = (deps.getAlibabaModelStudioClientFn ?? getAlibabaModelStudioClient)();
   const ensureFastStartVideoFn = deps.ensureFastStartVideoFn ?? ensureFastStartVideo;
   const detectVideoDimensionsFn = deps.detectVideoDimensionsFn ?? detectVideoDimensions;
   const ensureJobThumbnailFn = deps.ensureJobThumbnailFn ?? ensureJobThumbnail;
@@ -355,8 +335,8 @@ export async function runAlibabaModelStudioPoll(options: { jobId?: string; deps?
     if (!pollClaim) continue;
     try {
       const attempt = await findAttempt(job, queryFn);
-      const task = normalizePolledTask(await client.getTask(job.provider_job_id), job.provider_job_id,
-        resolveAlibabaModelRoute(job.engine_id, modeForJob(job))?.family === 'wan3');
+      const task = await wanTransports[provider].readTask(job.provider_job_id,
+        resolveAlibabaModelRoute(job.engine_id, modeForJob(job))?.family === 'wan3', deps);
       await pollClaim.checked();
       const estimate = costForJob(job, task);
       if (task.status === 'queued' || task.status === 'running') {

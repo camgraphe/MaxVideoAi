@@ -1,3 +1,4 @@
+import { exportCustomerReceipt } from './dsar-receipt';
 import { query } from '@/lib/db';
 import { getProfileSnapshot, type ProfileSnapshot } from '@/server/profile';
 import { getUserIdentity } from '@/server/supabase-admin';
@@ -18,8 +19,6 @@ type ReceiptRow = {
   metadata: unknown;
   job_id: string | null;
   pricing_snapshot: unknown;
-  application_fee_cents: number | null;
-  vendor_account_id: string | null;
   stripe_payment_intent_id: string | null;
   stripe_charge_id: string | null;
   stripe_refund_id: string | null;
@@ -93,7 +92,7 @@ export async function buildDsarPayload(userId: string): Promise<DsraExportPayloa
     ),
     query<ReceiptRow>(
       `SELECT id, type, amount_cents, currency, description, metadata, job_id, pricing_snapshot,
-              application_fee_cents, vendor_account_id, stripe_payment_intent_id, stripe_charge_id,
+              stripe_payment_intent_id, stripe_charge_id,
               stripe_refund_id, created_at
        FROM app_receipts
        WHERE user_id = $1
@@ -119,7 +118,7 @@ export async function buildDsarPayload(userId: string): Promise<DsraExportPayloa
       profile: mapProfile(profile),
       preferences: preferencesRows[0] ?? null,
     },
-    receipts,
+    receipts: receipts.map(exportCustomerReceipt),
     consents,
   };
 }

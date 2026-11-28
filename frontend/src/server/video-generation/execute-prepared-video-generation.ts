@@ -232,6 +232,7 @@ export async function executePreparedVideoGeneration(params: ExecutePreparedVide
     },
     mapExisting: (job: ExistingVideoJobRow) => ({
       body: buildResponseFromExistingVideoJob(job, localKey),
+      ...(job.engine_id ? { storedEngineId: job.engine_id } : {}),
     }),
     onReservationError: async (error) => {
       if (error instanceof VideoInitialJobError) {

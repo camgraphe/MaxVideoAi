@@ -2,6 +2,7 @@ import { useEffect, useMemo } from 'react';
 import useSWR from 'swr';
 import type { EnginesResponse } from '@/types/engines';
 import type { GenerationTimingCell } from './generation-timing';
+import { customerEngineCatalogEntry } from '@/lib/customer-engine-catalog';
 import { authFetch } from '@/src/lib/authFetch';
 
 export type EngineCategory = 'video' | 'image' | 'all';
@@ -19,7 +20,7 @@ export type UseEnginesOptions = {
 
 async function loadFallbackEngines(category: EngineCategory): Promise<EnginesResponse['engines']> {
   const { getBaseEnginesByCategory } = await import('@/lib/engines');
-  return getBaseEnginesByCategory(category);
+  return getBaseEnginesByCategory(category).map(customerEngineCatalogEntry);
 }
 
 export function useEngines(category: EngineCategory = 'video', options?: UseEnginesOptions) {

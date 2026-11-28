@@ -3,7 +3,8 @@ import test from 'node:test';
 import { getDb, withDbTransaction } from '../frontend/src/lib/db';
 import { getWalletBalanceCents, getWalletBalancesByCurrency, reserveWalletChargeInExecutor } from '../frontend/src/lib/wallet';
 import { getWalletSummary } from '../frontend/src/server/wallet-summary';
-import { persistRefundReceipt } from '../frontend/app/api/generate/_lib/payment-rollback';
+import { ENV } from '../frontend/src/lib/env';
+import { persistRefundReceipt, rollbackPendingPayment } from '../frontend/app/api/generate/_lib/payment-rollback';
 import { startDisposablePostgres, createPaidGenerationTestSchema } from './helpers/disposable-postgres';
 
 test('card charges and refunds cannot debit, credit or fund the wallet; wallet receipts still do', async () => {
@@ -14,6 +15,18 @@ test('card charges and refunds cannot debit, credit or fund the wallet; wallet r
     await db.pool.query("INSERT INTO app_receipts (user_id,type,amount_cents,currency) VALUES ('user_1','topup',1000,'USD')");
     await db.pool.query("INSERT INTO app_receipts (user_id,type,amount_cents,currency,job_id,stripe_payment_intent_id) VALUES ('user_1','charge',200,'USD','card_job','pi_card')");
     assert.equal((await getWalletBalanceCents('user_1')).balanceCents, 1000);
+    // A failed card refund must leave the original charge visible for reconciliation.
+    const previousStripeKey = ENV.STRIPE_SECRET_KEY;
+    try {
+      ENV.STRIPE_SECRET_KEY = '';
+      await rollbackPendingPayment({ pendingReceipt: {
+        userId: 'user_1', jobId: 'card_job', amountCents: 200, currency: 'USD', description: 'Card', snapshot: {},
+        applicationFeeCents: null, vendorAccountId: null, stripePaymentIntentId: 'pi_card',
+      }, walletChargeReserved: false, refundDescription: 'Card refund' });
+      assert.deepEqual((await db.pool.query("SELECT type FROM app_receipts WHERE job_id='card_job'")).rows, [{type:'charge'}]);
+    } finally {
+      ENV.STRIPE_SECRET_KEY = previousStripeKey;
+    }
     await persistRefundReceipt({ receipt: { userId: 'user_1', jobId: 'card_job', amountCents: 200, currency: 'USD', description: 'Card', snapshot: {},
       applicationFeeCents: null, vendorAccountId: null, stripePaymentIntentId: 'pi_card' }, description: 'Card refund', stripeRefundId: 're_card', priceOnly: true,
       queryFn: async (sql, params) => (await db.pool.query(sql, params)).rows });

@@ -83,3 +83,32 @@ test('public row normalization removes private lineage from existing recipes wit
     assert.equal(video.operation, 'luma-extend');
   }
 });
+
+test('routed videos keep creative settings and the customer total across private reuse and public copies', () => {
+  const settings = {
+    schemaVersion: 1, surface: 'video', engineId: 'wan-3-prime', inputMode: 'ref2v', prompt: 'A blue sail',
+    core: { durationSec: 4, resolution: '720p', aspectRatio: '16:9' },
+    refs: { inputs: [{ slotId: 'reference_image_urls', kind: 'image', url: 'https://media.example/reference.png' }] },
+    purchaseRouting: { order: ['private-purchase-trace'] }, wanPilotWalletStop: { attemptId: 'private-attempt' },
+  };
+  const pricing = {
+    totalCents: 85, currency: 'USD', subtotalBeforeDiscountCents: 85,
+    platformFeeCents: 29, vendorShareCents: 56, margin: { amountCents: 29 },
+    meta: { cost_breakdown_usd: { provider: 'private-purchase-trace' } },
+  };
+  const job = { job_id: 'wan-creative', engine_id: settings.engineId, status: 'completed', surface: 'video',
+    duration_sec: 4, prompt: settings.prompt, video_url: 'https://media.example/wan.mp4',
+    settings_snapshot: settings, pricing_snapshot: pricing };
+  const published = prepareMarketingSnapshot({ job });
+  for (const object of [published.publication, ...['private', 'public'].map(visibility => {
+    const video = mapGalleryVideoRow({ ...job, visibility, recreation_snapshot: settings } as unknown as VideoRow);
+    assert.equal(video.pricingSnapshot?.totalCents, 85);
+    assert.equal((video.settingsSnapshot as typeof settings).prompt, settings.prompt);
+    assert.equal((video.recreationSnapshot as typeof settings).core.resolution, '720p');
+    return video;
+  }), mapGalleryVideoRow({ ...job, visibility:'private' } as unknown as VideoRow)]) {
+    assert.doesNotMatch(JSON.stringify(object), /private-purchase-trace|private-attempt|wanPilotWalletStop|purchaseRouting|vendorShareCents|platformFeeCents|cost_breakdown_usd|"margin"/);
+  }
+  assert.equal((published.publication.pricing_snapshot as { currency:string }).currency, 'USD');
+  assert.deepEqual(published.sourceSnapshot, settings);
+});

@@ -28,10 +28,11 @@ export async function executeVideoGenerationLifecycle<TJob, TCreated extends { k
   }
   const providerResult = await params.submitProvider(initialState);
   if (providerResult.kind === 'error_response') {
-    return { body: providerResult.body, status: providerResult.status };
+    return { body: providerResult.body, status: providerResult.status, origin: 'submission' };
   }
   if (providerResult.kind === 'accepted_response') {
     return { body: providerResult.body };
   }
-  return params.completeDirect(providerResult.generationResult);
+  const completed = await params.completeDirect(providerResult.generationResult);
+  return completed.body.ok === false ? { ...completed, origin: 'submission' } : completed;
 }

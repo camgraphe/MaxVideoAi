@@ -5,6 +5,7 @@ import {
 } from '@/server/engines';
 import { fetchEngineAverageDurations } from '@/server/generate-metrics';
 import { loadAppEngineScoreMap, loadAppEngineScoreReviewMap } from '@/server/engine-scores';
+import { customerEngineCatalogEntry } from '@/lib/customer-engine-catalog';
 import { getBaseEnginesByCategory } from '@/lib/engines';
 import { resolveLaunchCanaryRequestContext } from '@/server/model-launch-canary-request';
 import { createAgentGenerationExecutabilityEnvironment, resolveAgentGenerationModeExecutability } from '@/server/agent-runtime/model-executability';
@@ -97,7 +98,7 @@ export function createEnginesGetHandler(
         generationEnvironment,
       ));
       const payload = [...publicWorkspaceEngines, ...privateEngines].map((engine) => ({
-        ...engine,
+        ...customerEngineCatalogEntry(engine),
         avgDurationMs: averageMap.get(engine.id)?.averageDurationMs ?? null,
         durationSampleCount: averageMap.get(engine.id)?.completedCount ?? null,
         durationSource: averageMap.get(engine.id)?.source ?? null,
@@ -114,11 +115,11 @@ export function createEnginesGetHandler(
     } catch (error) {
       console.error('[api/engines] failed to load configured engines, falling back to base registry', error);
       const payload = getBaseEnginesByCategory(category).map((engine) => ({
-        ...projectSeedance25ModeAvailability(isMinimaxH3MaxEngineId(engine.id)
+        ...customerEngineCatalogEntry(projectSeedance25ModeAvailability(isMinimaxH3MaxEngineId(engine.id)
           ? workspaceModeProjection(engine, engine.modes.filter(isMinimaxH3MaxRuntimeModeAvailable) as Mode[])
           : isKling3TurboEngineId(engine.id)
             ? workspaceModeProjection(engine, engine.modes)
-          : engine, dependencies.getGenerationEnvironment()),
+          : engine, dependencies.getGenerationEnvironment())),
         avgDurationMs: null,
       }));
       return NextResponse.json(

@@ -100,7 +100,10 @@ function snapshotParam(value: unknown): string | null {
   return value === undefined || value === null ? null : JSON.stringify(sanitizeSnapshotValue(value));
 }
 
+export class ProviderAttemptAlreadyClaimed extends Error {}
+
 export async function createProviderAttempt(params: {
+  claimOnce?: boolean;
   publicJobId: string;
   attemptIndex: number;
   provider: VideoProviderKey;
@@ -123,14 +126,17 @@ export async function createProviderAttempt(params: {
      SELECT id, $2::integer, $3::text, $4::text, $5::text, NOW(), $6::jsonb
        FROM app_jobs
       WHERE job_id = $1
+        ${params.claimOnce ? `AND status IN ('pending','queued','running','processing','in_progress')
+                             AND provider_job_id IS NULL FOR UPDATE` : ''}
      ON CONFLICT (job_id, attempt_index)
-     DO UPDATE SET
+     ${params.claimOnce ? 'DO NOTHING' : `DO UPDATE SET
        provider = EXCLUDED.provider,
        provider_model = EXCLUDED.provider_model,
        status = EXCLUDED.status,
        started_at = COALESCE(provider_attempts.started_at, EXCLUDED.started_at),
        request_snapshot = EXCLUDED.request_snapshot,
        updated_at = NOW()
+       WHERE provider_attempts.request_snapshot #>> '{purchaseRouting,mode}' IS DISTINCT FROM 'canary'`}
      RETURNING id, attempt_index`,
     [
       params.publicJobId,
@@ -143,6 +149,14 @@ export async function createProviderAttempt(params: {
   );
   const row = rows[0];
   if (!row) {
+    // Also protect an already claimed routing attempt after a flag change or credential rotation.
+    const existing = await queryFn<{ id: number }>(
+      `SELECT j.id FROM app_jobs j WHERE j.job_id = $1
+          AND (j.provider_job_id IS NOT NULL OR j.status NOT IN ('pending','queued','running','processing','in_progress')
+               OR EXISTS (SELECT 1 FROM provider_attempts a WHERE a.job_id = j.id AND a.attempt_index = $2))`,
+      [params.publicJobId, params.attemptIndex],
+    );
+    if (existing.length) throw new ProviderAttemptAlreadyClaimed();
     throw new Error(`Unable to create provider attempt for missing job ${params.publicJobId}.`);
   }
   return { id: Number(row.id), attemptIndex: Number(row.attempt_index) };

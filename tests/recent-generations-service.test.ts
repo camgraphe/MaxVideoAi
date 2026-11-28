@@ -1,5 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { mapGenerationStatusRecordToWeb, type GenerationStatusRecord } from '../frontend/src/server/generations/generation-status';
+import { snapshotReferenceInputs } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-snapshot-reference-inputs';
+import { getFalEngineById } from '../frontend/src/config/falEngines';
+
 
 import {
   RecentGenerationInputError,
@@ -463,4 +467,46 @@ test('web recent mapper keeps a stored image render thumbnail ahead of a legacy 
   );
 
   assert.equal(payload.thumbUrl, 'https://cdn.maxvideoai.com/render-thumb.webp');
+});
+
+
+test('routed job list and detail retain the customer quote and a reusable Wan recipe, and hide supplier evidence', () => {
+  const ref = 'https://cdn.maxvideoai.com/owned/reference.png';
+  const media = {name:'ref.png', type:'image/png', kind:'image', size:120, slotId:'reference_image_urls', url:ref, assetId:'own-asset', segment:{start:1,end:4}};
+  const settings = {schemaVersion:1,surface:'video',engineId:'wan-3-prime',inputMode:'ref2v',prompt:'Hold the frame.',
+    core:{resolution:'720p',durationSec:4,aspectRatio:'16:9',audio:true,providerAccount:'upstream-account'},
+    advanced:{seed:42,extraInputValues:{enable_prompt_expansion:false,strength:0.7,upstreamRate:0.41144}},
+    refs:{referenceImages:[ref],inputs:[{...media,providerJobId:'upstream-123'}]},meta:{purchaseRouting:{order:['apimart','fal']}},
+    providerFailure:{provider:'apimart',providerErrorCode:'upstream-account'},wanPilotWalletStop:{kind:'terminal_refusal',attemptId:'911'},
+    providerVideoCopy:{providerJobId:'upstream-123'},falQueueReceipt:{route:'upstream-route'}};
+  const record = recentRecord({engine_id:'wan-3-prime', settings_snapshot:settings, engine_label:'Wan 3 Prime',
+    message:'upstream-account apimart returned $0.41144 on upstream-123',status:'failed',
+    pricing_snapshot:{totalCents:85,currency:'USD',meta:{purchaseRouting:{order:['apimart']},cost_breakdown_usd:{provider_cost_usd:0.41144}},
+      base:{seconds:4,rate:14,amountCents:56},addons:[],subtotalBeforeDiscountCents:85,margin:{amountCents:29}}});
+  const collection = mapRecentGenerationRecordToWeb(record);
+  const detail = mapGenerationStatusRecordToWeb(record as GenerationStatusRecord, {message:'upstream-account upstream-123'});
+  for (const output of [collection,detail]) {
+    assert.equal(output.jobId,record.job_id);
+    assert.doesNotMatch(JSON.stringify(output), /apimart|upstream-|wanPilotWalletStop|cost_breakdown_usd|purchaseRouting|providerVideoCopy|acct_private|providerAccount|upstreamRate|0\.41144|falQueueReceipt/);
+    assert.deepEqual(output.settingsSnapshot, {
+      schemaVersion:1,surface:'video',engineId:'wan-3-prime',inputMode:'ref2v',prompt:'Hold the frame.',
+      core:{resolution:'720p',durationSec:4,aspectRatio:'16:9',audio:true},
+      advanced:{seed:42,extraInputValues:{enable_prompt_expansion:false,strength:0.7}},refs:{referenceImages:[ref],inputs:[media]},meta:{},
+    });
+    const refs = (output.settingsSnapshot as typeof settings).refs;
+    assert.deepEqual(snapshotReferenceInputs(refs,getFalEngineById('wan-3-prime')!.engine,'ref2v'),[media]);
+  }
+  assert.deepEqual(collection.pricingSnapshot,{totalCents:85,currency:'USD',subtotalBeforeDiscountCents:85});
+  assert.deepEqual(detail.pricing,collection.pricingSnapshot);
+  assert.ok(settings.providerFailure && settings.wanPilotWalletStop,'private evidence remains available for reconciliation');
+});
+
+test('routed history keeps a specific public failure reason and the workspace can identify Seedance drafts',()=>{
+  const record = recentRecord({engine_id:'seedance-2-5',status:'failed',settings_snapshot:{
+    seedanceWorkflow:{step:'final',draftJobId:'own-draft',mediaFacts:{providerTaskId:'private-task'}},
+    providerFailure:{provider:'byteplus_modelark',providerErrorCode:'OutputAudioSensitiveContentDetected'},
+  }});
+  const detail = mapGenerationStatusRecordToWeb(record as GenerationStatusRecord);
+  assert.match(detail.message ?? '', /audio.*blocked/i);
+  assert.deepEqual(detail.settingsSnapshot,{seedanceWorkflow:{step:'final',draftJobId:'own-draft'},providerFailure:{failureCode:'seedance_output_audio_blocked'}});
 });

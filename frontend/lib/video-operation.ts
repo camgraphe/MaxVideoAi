@@ -97,9 +97,12 @@ export function resolveVideoOperationEngine(engine: EngineCaps, mode: Mode, valu
   if (!operation || operation === 'luma-extend' || operation === 'flux-keyframes') return engine;
   const caps = engine.operationCaps?.[operation];
   if (!caps || caps.mode !== mode) throw new Error('Video operation capabilities are unavailable.');
+  const sourceDurationLimit = operation === 'kling-edit' || isH3SourceOperation(operation)
+    ? caps.inputSchema.required?.find(field => field.id === 'video_url')?.maxDurationSec
+    : caps.transport === 'fal' ? (operation === 'ltx23-reframe' ? 60 : 15) : undefined;
   return { ...engine, activeVideoOperation: operation, ...(isH3SourceOperation(operation) ? {maxDurationSec:operation==='h3-recast'?30:15} : {}), inputSchema: caps.inputSchema, resolutions: operation === 'kling-edit' || isH3SourceOperation(operation) || isFluxLtxSourceOperation(operation)
       ? (caps.ui.resolution as EngineCaps['resolutions'] | undefined) ?? engine.resolutions : engine.resolutions,
-    inputLimits: { ...engine.inputLimits, ...(caps.promptMaxChars!==undefined?{promptMaxChars:caps.promptMaxChars}:{}), ...(isH3SourceOperation(operation) ? {promptMaxChars:operation==='h3-recast'?2000:0} : {}), ...(caps.transport === 'fal' ? { videoMaxDurationSec: operation === 'ltx23-reframe' ? 60 : operation === 'h3-recast' ? 30 : 15 } : {}) },
+    inputLimits: { ...engine.inputLimits, ...(caps.promptMaxChars!==undefined?{promptMaxChars:caps.promptMaxChars}:{}), ...(isH3SourceOperation(operation) ? {promptMaxChars:operation==='h3-recast'?2000:0} : {}), ...(sourceDurationLimit !== undefined ? { videoMaxDurationSec: sourceDurationLimit } : {}) },
     modeCaps: { ...engine.modeCaps, [mode]: caps.ui } };
 }
 

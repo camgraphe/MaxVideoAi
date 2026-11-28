@@ -1,11 +1,14 @@
+import { receiptPurchaseProjection, receiptRouteJoin } from './video-purchase';
 import { query } from '@/lib/db';
 import { buildMcpClientEvidenceSql } from '@/server/admin-mcp-outcomes-queries';
 
-export async function transactionSelectForCurrentSchema() {
+export async function transactionSelectForCurrentSchema(receiptDetail = false) {
   const [schema] = await query<{
     available: boolean;
     has_origin: boolean;
     has_platform: boolean;
+    has_jobs: boolean;
+    has_attempts: boolean;
     has_oauth_client: boolean;
     clientFamily: boolean;
     funnel: boolean;
@@ -19,7 +22,10 @@ export async function transactionSelectForCurrentSchema() {
          AND attname='oauth_client_id' AND NOT attisdropped) AS has_oauth_client,
        EXISTS (SELECT FROM pg_attribute WHERE attrelid=to_regclass('public.mcp_audit_events')
          AND attname='client_family' AND NOT attisdropped) AS "clientFamily",
-       to_regclass('public.mcp_funnel_events') IS NOT NULL AS funnel`,
+       to_regclass('public.mcp_funnel_events') IS NOT NULL AS funnel
+       ${receiptDetail ? `, (SELECT count(*)=9 FROM pg_attribute WHERE attrelid=to_regclass('public.app_jobs')
+           AND NOT attisdropped AND attname IN ('id','user_id','surface','engine_id','final_price_cents','currency','provider','provider_job_id','cost_breakdown_usd')) AS has_jobs,
+          to_regclass('public.provider_attempts') IS NOT NULL AS has_attempts` : ''}`,
   );
   const origin = schema?.has_origin ? "COALESCE(quote.auth_origin, 'oauth')" : "'oauth'::text";
   const platform = schema?.has_platform ? 'quote.confirmation_platform' : 'NULL::text';
@@ -33,6 +39,7 @@ export async function transactionSelectForCurrentSchema() {
   const hasClientEvidence = hasOAuthOrigin && (schema.clientFamily || schema.funnel);
   return `SELECT
        r.id AS receipt_id,
+       ${receiptDetail ? (schema?.has_jobs ? receiptPurchaseProjection(schema.has_attempts) : 'NULL::jsonb') + ' AS job_purchase,' : ''}
        r.user_id,
        r.type,
        r.amount_cents,
@@ -77,6 +84,7 @@ export async function transactionSelectForCurrentSchema() {
        ) AS latest_charge_id
      FROM app_receipts r
      LEFT JOIN app_jobs j ON j.job_id = r.job_id
+     ${receiptDetail && schema?.has_jobs && schema.has_attempts ? receiptRouteJoin : ''}
      ${schema?.available ? `LEFT JOIN LATERAL (
        SELECT bool_or(${origin} = 'oauth') AS mcp, bool_or(${origin} = 'studio-session') AS studio,
          bool_or(${origin} = 'mobile-session') AS mobile_create,

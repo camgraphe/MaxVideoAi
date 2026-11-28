@@ -1,5 +1,8 @@
 import authoredSources from '@/config/public-video-sources.json';
 import { createHash } from 'node:crypto';
+import { customerPricingSnapshot } from '@/lib/customer-pricing-snapshot';
+import { isPurchaseRoutingEngine } from '@/lib/video-purchase-decision';
+import { projectRoutedVideoSettings } from '@/server/generations/routed-video-client-fields';
 import type { MarketingMediaFile } from '@/lib/marketing-media';
 import { normalizeMediaUrl } from '@/lib/media';
 import { sanitizePublicRecreationSnapshot } from './public-recreation';
@@ -78,7 +81,8 @@ export function prepareMarketingSnapshot(
     throw new MarketingMediaError(
       'This video depends on a provider interaction. Its complete inputs must be restored before copying.',
     );
-  const recreationSnapshot = sanitizePublicRecreationSnapshot(Object.fromEntries(
+  const routed = typeof job.engine_id === 'string' && isPurchaseRoutingEngine(job.engine_id);
+  const portableSettings = sanitizePublicRecreationSnapshot(Object.fromEntries(
     [
       'schemaVersion',
       'surface',
@@ -107,7 +111,9 @@ export function prepareMarketingSnapshot(
       rejectCredentials(item);
     }
   }
-  rejectCredentials(recreationSnapshot);
+  rejectCredentials(portableSettings);
+  const recreationSnapshot = routed ? projectRoutedVideoSettings(String(job.engine_id), portableSettings) : portableSettings;
+  if (!recreationSnapshot) throw new MarketingMediaError('Generation settings unavailable for publication.');
   const publication: RecordValue = Object.fromEntries(
     [
       'job_id',
@@ -135,7 +141,8 @@ export function prepareMarketingSnapshot(
       .map((key) => [key, structuredClone(job[key])]),
   );
   if (Object.hasOwn(publication, 'pricing_snapshot')) {
-    publication.pricing_snapshot = sanitizePublicVideoPricingSnapshot(publication.pricing_snapshot);
+    publication.pricing_snapshot = routed ? customerPricingSnapshot(publication.pricing_snapshot)
+      : sanitizePublicVideoPricingSnapshot(publication.pricing_snapshot);
   }
   publication.prompt = typeof job.prompt === 'string' ? job.prompt : saved.prompt;
   publication.thumb_url = text(job.thumb_url) || source.poster_url || null;

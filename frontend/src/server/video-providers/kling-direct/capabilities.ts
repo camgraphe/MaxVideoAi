@@ -113,15 +113,13 @@ function isMeaningfulDirectOnlyValue(value: unknown): boolean {
   return true;
 }
 
+export function requiresKlingDirectControls(extraInputValues: unknown): boolean {
+  if (!extraInputValues || typeof extraInputValues !== 'object' || Array.isArray(extraInputValues)) return false;
+  return Object.entries(extraInputValues).some(
+    ([key, value]) => KLING_DIRECT_ONLY_FAL_EXTRA_KEYS.has(key) && isMeaningfulDirectOnlyValue(value)
+  );
+}
+
 export function isKlingDirectFalFallbackCompatible(payload: GeneratePayload): boolean {
-  const extraInputValues = payload.extraInputValues ?? {};
-
-  for (const [key, value] of Object.entries(extraInputValues)) {
-    if (!KLING_DIRECT_ONLY_FAL_EXTRA_KEYS.has(key) || !isMeaningfulDirectOnlyValue(value)) {
-      continue;
-    }
-    return false;
-  }
-
-  return true;
+  return !requiresKlingDirectControls(payload.extraInputValues);
 }

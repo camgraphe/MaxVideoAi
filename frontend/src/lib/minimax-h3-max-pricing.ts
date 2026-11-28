@@ -34,12 +34,25 @@ export const MINIMAX_H3_MAX_INCLUDED_REFERENCE_TOKENS = 4_096;
 export const MINIMAX_H3_MAX_REFERENCE_USD_PER_1K_TOKENS = 0.02;
 export const MINIMAX_H3_MAX_PRICING_SOURCE = 'minimax_h3_max_documented_pricing';
 
+export type MinimaxH3MaxRateCard = {
+  readonly perSecondUsd: Readonly<Record<MinimaxH3MaxResolution, number>>;
+  readonly includedReferenceTokens: number;
+  readonly extraReferenceUsdPer1k: number;
+};
+
+export const MINIMAX_H3_MAX_FAL_RATES: MinimaxH3MaxRateCard = {
+  perSecondUsd: MINIMAX_H3_MAX_NORMAL_RATE_PER_SECOND_USD,
+  includedReferenceTokens: MINIMAX_H3_MAX_INCLUDED_REFERENCE_TOKENS,
+  extraReferenceUsdPer1k: MINIMAX_H3_MAX_REFERENCE_USD_PER_1K_TOKENS,
+};
+
 function precise(value: number, decimals = 8): number {
   return Number(value.toFixed(decimals));
 }
 
 export function calculateMinimaxH3MaxProviderCost(
   input: MinimaxH3MaxPricingInput,
+  rates = MINIMAX_H3_MAX_FAL_RATES,
 ): MinimaxH3MaxProviderCost {
   if (input.mode !== 't2v' && input.mode !== 'i2v' && input.mode !== 'ref2v') {
     throw new Error(`Unsupported MiniMax H3 Max mode: ${String(input.mode)}`);
@@ -62,17 +75,17 @@ export function calculateMinimaxH3MaxProviderCost(
     throw new Error('MiniMax H3 Max reference token count is only valid for reference-to-video pricing.');
   }
 
-  const ratePerSecondUsd = MINIMAX_H3_MAX_NORMAL_RATE_PER_SECOND_USD[input.resolution];
+  const ratePerSecondUsd = rates.perSecondUsd[input.resolution];
   const verifiedReferenceTokenCount = input.mode === 'ref2v'
     ? tokenCount!
     : 0;
   const excessReferenceTokenCount = Math.max(
     0,
-    verifiedReferenceTokenCount - MINIMAX_H3_MAX_INCLUDED_REFERENCE_TOKENS,
+    verifiedReferenceTokenCount - rates.includedReferenceTokens,
   );
   const outputSubtotalUsd = precise(ratePerSecondUsd * input.durationSec);
   const referenceTokenSubtotalUsd = precise(
-    excessReferenceTokenCount * MINIMAX_H3_MAX_REFERENCE_USD_PER_1K_TOKENS / 1_000,
+    excessReferenceTokenCount * rates.extraReferenceUsdPer1k / 1_000,
   );
   const providerCostUsd = precise(outputSubtotalUsd + referenceTokenSubtotalUsd);
   const providerCostExactCents = precise(providerCostUsd * 100, 6);
@@ -86,7 +99,7 @@ export function calculateMinimaxH3MaxProviderCost(
     ratePerSecondUsd,
     outputSubtotalUsd,
     ...(input.referenceTokenBudget === undefined ? { verifiedReferenceTokenCount } : {}),
-    includedReferenceTokenCount: MINIMAX_H3_MAX_INCLUDED_REFERENCE_TOKENS,
+    includedReferenceTokenCount: rates.includedReferenceTokens,
     excessReferenceTokenCount,
     referenceTokenSubtotalUsd,
     providerCostUsd,

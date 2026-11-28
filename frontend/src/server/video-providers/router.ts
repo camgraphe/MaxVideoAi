@@ -11,6 +11,7 @@ import {
 
 export type VideoProviderRoutingEnv = Readonly<Partial<Record<
   | 'KLING_DIRECT_ENABLED'
+  | 'KLING_DIRECT_V3_FUNDED'
   | 'ALIBABA_MODEL_STUDIO_ENABLED'
   | 'ALIBABA_MODEL_STUDIO_PUBLIC_ROUTING_ENABLED'
   | 'ALIBABA_MODEL_STUDIO_ADMIN_ONLY'
@@ -37,6 +38,26 @@ export type VideoProviderRoutingEnv = Readonly<Partial<Record<
   string | undefined
 >>>;
 
+export type WanPurchaseCanary = 'alibaba-fal' | 'with-apimart' | 'with-videorouter';
+
+export function isWanPilotEnvironment(): boolean {
+  return process.env.VERCEL_ENV === 'preview' || (!process.env.VERCEL_ENV && process.env.NODE_ENV !== 'production');
+}
+
+export function configuredWanPurchaseCanary(engineId: string, isAdmin = true): WanPurchaseCanary | undefined {
+  const audience = process.env.WAN_PRIME_VIDEOROUTER_CANARY;
+  if (engineId === 'wan-3-prime' && process.env.VIDEOROUTER_API_KEY?.trim() &&
+      (audience === 'public' || (isAdmin && audience === 'admin'))) return 'with-videorouter';
+  if (!isAdmin) return;
+  if (!isWanPilotEnvironment()) return;
+  if (engineId === 'wan-3') {
+    return process.env.WAN_STANDARD_EXISTING_PROVIDERS_ADMIN_CANARY === '1' ? 'alibaba-fal' : undefined;
+  }
+  if (engineId !== 'wan-3-prime') return;
+  if (process.env.WAN_PRIME_EXISTING_PROVIDERS_ADMIN_CANARY === '1') return 'alibaba-fal';
+  if (process.env.APIMART_WAN_PRIME_ADMIN_CANARY === '1' && process.env.APIMART_API_KEY?.trim()) return 'with-apimart';
+}
+
 export type VideoProviderRoutingPlan =
   | {
       kind: 'fal_only';
@@ -45,6 +66,7 @@ export type VideoProviderRoutingPlan =
     }
   | {
       kind: 'alibaba_model_studio_primary';
+      purchaseCanary?: WanPurchaseCanary;
       primaryProvider: 'alibaba_model_studio';
       fallbackProvider: 'fal';
       fallbackEnabled: boolean;
@@ -96,6 +118,11 @@ function readEnv(
   return env?.[key] ?? process.env[key];
 }
 
+/** Operator declaration for new V3/O3 purchases. Polling accepted jobs is independent. */
+export function isKlingDirectV3Funded(env?: VideoProviderRoutingEnv): boolean {
+  return flagEnabled((env ?? process.env).KLING_DIRECT_V3_FUNDED);
+}
+
 function isGcsUriConfigured(value: string | undefined): boolean {
   return /^gs:\/\/[^/]+(?:\/.*)?$/i.test((value ?? '').trim());
 }
@@ -131,8 +158,10 @@ export function resolveVideoProviderRoutingPlan(params: {
         : { kind: 'alibaba_model_studio_unavailable', reason: 'public_routing_disabled' };
     }
 
+    const canary = configuredWanPurchaseCanary(params.engineId, params.isAdmin);
     return {
       kind: 'alibaba_model_studio_primary',
+      ...(canary ? { purchaseCanary: canary } : {}),
       primaryProvider: 'alibaba_model_studio',
       fallbackProvider: 'fal',
       fallbackEnabled:
@@ -199,7 +228,7 @@ export function resolveVideoProviderRoutingPlan(params: {
 
   if (isKlingDirectEngine(params.engineId)) {
     if (!isKlingDirectModeSupported(params.engineId, params.mode)) return falOnly;
-    if (!flagEnabled(readEnv(params.env, 'KLING_DIRECT_ENABLED'))) return falOnly;
+    if (!isKlingDirectV3Funded(params.env) || !flagEnabled(readEnv(params.env, 'KLING_DIRECT_ENABLED'))) return falOnly;
 
     const publicRoutingEnabled = flagEnabled(readEnv(params.env, 'KLING_DIRECT_PUBLIC_ROUTING_ENABLED'));
     const adminOnly = flagEnabled(readEnv(params.env, 'KLING_DIRECT_ADMIN_ONLY') ?? 'true');

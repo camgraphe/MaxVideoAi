@@ -14,13 +14,14 @@ const engine = createWan3Engine({
   label: 'Wan 3 Prime',
   version: '3.0 Prime',
   perSecondCents: { '480p': 6.8, '720p': 14, '1080p': 28 },
+  // Commercial reference for quotes and previews. Live supplier offers belong to the purchase router.
   perSecondUsd: { '480p': 0.068, '720p': 0.14, '1080p': 0.28 },
 });
 
 export const WAN_3_PRIME_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [{
   id: 'wan-3-prime', marketingName: 'Wan 3 Prime', cardTitle: 'Wan 3 Prime', provider: 'Alibaba', brandId: 'wan',
   versionLabel: '3.0 Prime', availability: 'available', logoPolicy: 'textOnly',
-  billingNote: 'Provider cost uses input video plus generated output seconds at $0.068 (480p), $0.14 (720p), or $0.28 (1080p). Customer quotes include the configured margin and verified input-video duration.',
+  billingNote: 'Your quote uses the selected resolution, the generated duration, and the duration of any input video.',
   engine,
   modes: [
     { mode: 't2v', falModelId: WAN_3_PRIME_ENDPOINTS.t2v, ui: WAN_3_MODE_CAPS.t2v! },

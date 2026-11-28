@@ -49,7 +49,8 @@ test('Alibaba submission and polling reuse shared attempts and durable media own
   assert.match(poll, /provider-output-policy/);
   assert.match(poll, /ensureFastStartVideo/);
   assert.match(poll, /upsertLegacyJobOutputs/);
-  assert.match(poll, /server\/alibaba-job-accounting/);
+  assert.match(poll, /wanTransports\[.*?\]\.estimateCost\(/);
+  assert.match(source(join(providerDirectory, '../wan-transports.ts')), /server\/alibaba-job-accounting/);
   assert.doesNotMatch(poll, /actualUnits - job.duration_sec/);
   assert.match(source(providerAttemptsPath), /sanitizeSnapshotValue/);
 });

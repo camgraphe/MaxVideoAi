@@ -18,9 +18,9 @@ test('closed V4 profile cannot reach configuration, pricing, billing, canary or 
         ensureBillingSchema: forbidden, requireAdmin: forbidden, resolveLaunchCanaryRequestContext: forbidden } });
     assert.deepEqual(result, { ok: false, status: 503, body: { ok: false, error: 'KLING_V4_NOT_QUALIFIED' } });
     assert.deepEqual(resolveTrustedPaidGenerateRouteContext({ body: request, engine, mode, jobId: 'old-approved-quote',
-      providerEnv: { KLING_DIRECT_ENABLED: 'true', KLING_DIRECT_ADMIN_ONLY: 'false', KLING_DIRECT_PUBLIC_ROUTING_ENABLED: 'true' } }), result);
+      providerEnv: { KLING_DIRECT_ENABLED: 'true', KLING_DIRECT_V3_FUNDED: 'true', KLING_DIRECT_ADMIN_ONLY: 'false', KLING_DIRECT_PUBLIC_ROUTING_ENABLED: 'true' } }), result);
     assert.deepEqual(resolveAgentGenerationModeExecutability(engine, mode, { bytePlusEnabled: false, bytePlusApiKey: undefined, falApiKey: 'test-only',
-      providerEnv: { KLING_DIRECT_ENABLED: 'true', KLING_ACCESS_KEY: 'test-only', KLING_SECRET_KEY: 'test-only' } }), { executable: false, reason: 'provider_disabled' });
+      providerEnv: { KLING_DIRECT_ENABLED: 'true', KLING_DIRECT_V3_FUNDED: 'true', KLING_ACCESS_KEY: 'test-only', KLING_SECRET_KEY: 'test-only' } }), { executable: false, reason: 'provider_disabled' });
     const preflight = await resolveMediaAwarePreflight({ request: { engine: engine.id, mode, durationSec: 5, resolution: '1080p' } },
       { getConfiguredEngineFn: forbidden, getConfiguredEngineIncludingHiddenFn: forbidden, computeConfiguredPreflightFn: forbidden });
     assert.equal(preflight.ok, false);

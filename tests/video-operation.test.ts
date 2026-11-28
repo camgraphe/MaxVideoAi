@@ -43,7 +43,7 @@ test('real Edit builders use fal endpoint and omit requested timing, ratio and f
   assert.equal(result.requestBody.video_url, 'https://example.com/source.mp4');
   assert.equal(result.requestBody.keep_audio, false);
   for (const isAdmin of [false, true]) assert.equal(resolveVideoProviderRoutingPlan({ engineId, mode: 'v2v', operation: 'kling-edit', isAdmin,
-   env: { KLING_DIRECT_ENABLED: 'true', KLING_DIRECT_PUBLIC_ROUTING_ENABLED: 'true' } }).kind, 'fal_only');
+   env: { KLING_DIRECT_ENABLED: 'true', KLING_DIRECT_V3_FUNDED: 'true', KLING_DIRECT_PUBLIC_ROUTING_ENABLED: 'true' } }).kind, 'fal_only');
  }
 });
 test('real tariff selector preserves Reference and separates new endpoints', () => {

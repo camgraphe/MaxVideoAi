@@ -299,12 +299,75 @@ test('Alibaba polling is isolated from Fal and protected by its own cron route',
   assert.equal(existsSync(pollPath), true);
   assert.equal(existsSync(routePath), true);
   const source = readFileSync(pollPath, 'utf8');
-  assert.match(source, /getAlibabaModelStudioClient/);
-  assert.match(source, /normalizeAlibabaTask/);
+  assert.match(source, /wanTransports\[provider\]\.readTask/);
+  const transports = readFileSync(join(root, 'frontend/src/server/video-providers/wan-transports.ts'), 'utf8');
+  assert.match(transports, /getAlibabaModelStudioClient/);
+  assert.match(transports, /normalizeAlibabaPolledTask/);
   assert.match(source, /ensureFastStartVideo/);
   assert.doesNotMatch(source, /submitFalGenerateTask/);
   const route = readFileSync(routePath, 'utf8');
   assert.match(route, /x-alibaba-model-studio-poll-token/);
   assert.match(route, /runAlibabaModelStudioPoll/);
   assert.match(readFileSync(vercelConfigPath, 'utf8'), /alibaba-model-studio-poll/);
+});
+
+test('APIMart completed clip uses its own ID, cost basis and durable delivery after the canary is off', async () => {
+  const job = {
+    ...baseJob,
+    provider: 'apimart',
+    provider_job_id: 'task_pilot',
+    engine_id: 'wan-3-prime',
+    duration_sec: 15,
+    settings_snapshot: { inputMode: 't2v', core: { resolution: '480p' } },
+  };
+  const sqlCalls: Array<{ sql: string; values: unknown[] }> = [];
+  const queryFn = async <T>(sql: string, values: unknown[] = []): Promise<T[]> => {
+    sqlCalls.push({ sql, values });
+    if (sql.includes('SELECT job_id, user_id')) return [job] as T[];
+    if (sql.includes("SET status = 'completed'")) return [{ job_id: job.job_id }] as T[];
+    return [];
+  };
+  const copied: string[] = [];
+  const response = await runAlibabaModelStudioPoll({
+    provider: 'apimart',
+    jobId: job.job_id,
+    deps: {
+      queryFn,
+      claimPollFn: allowGenerationPoll,
+      getApimartClientFn: () => ({
+        createVideo: async () => {
+          throw new Error('unexpected submit');
+        },
+        getTask: async (id: string) => {
+          assert.equal(id, 'task_pilot');
+          return {
+            providerJobId: id,
+            rawStatus: 'completed',
+            status: 'completed',
+            videoUrl: 'https://supplier.test/clip',
+            message: null,
+            usage: null,
+            raw: { status: 'completed' },
+          };
+        },
+      }),
+      ensureFastStartVideoFn: async ({ videoUrl }) => {
+        copied.push(videoUrl);
+        return 'https://local.test/persisted.mp4';
+      },
+      detectVideoDimensionsFn: async () => null,
+      ensureJobThumbnailFn: async () => null,
+      upsertLegacyJobOutputsFn: async () => {},
+      generateAndPersistJobPreviewVideoFn: async () => null,
+      generateAndPersistJobKeyframesFn: async () => [],
+    },
+  });
+  assert.equal((await response.json()).updates, 1);
+  assert.deepEqual(copied, ['https://supplier.test/clip']);
+  const cost = JSON.parse(
+    String(sqlCalls.find((call) => call.sql.includes("SET status = 'completed'"))?.values[3])
+  );
+  assert.equal(cost.provider, 'apimart');
+  assert.equal(cost.provider_cost_usd, 0.77145);
+  assert.equal(cost.provider_cost_usd_effective, null);
 });
