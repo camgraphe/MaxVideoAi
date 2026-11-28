@@ -65,7 +65,7 @@
     "sources:check": "node scripts/sources-check.mjs",
     "engine:catalog": "./frontend/node_modules/.bin/tsx scripts/build-engine-catalog.ts",
     "jobs:export": "tsx scripts/export-latest-jobs.ts",
-    "test:routing:provider": "node scripts/run-postgres-tests.mjs pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/routing-comparison-offers.test.ts tests/historical-routing-replay.test.ts tests/wan-purchase-routing.test.ts tests/alibaba-model-studio-submission.test.ts tests/alibaba-model-studio-poll.test.ts tests/wan-prime-installed-pilot-postgres.test.ts tests/admin-routing-finance-postgres.test.ts",
+    "test:routing:provider": "node scripts/run-postgres-tests.mjs pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/wan-option-contract.test.ts tests/routing-comparison-offers.test.ts tests/historical-routing-replay.test.ts tests/wan-purchase-routing.test.ts tests/alibaba-model-studio-submission.test.ts tests/alibaba-model-studio-poll.test.ts tests/wan-prime-installed-pilot-postgres.test.ts tests/admin-routing-finance-postgres.test.ts",
     "test:routing:wan-pilot": "node scripts/run-postgres-tests.mjs pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/wan-purchase-routing.test.ts tests/alibaba-model-studio-submission.test.ts tests/wan-prime-installed-pilot-postgres.test.ts",
     "test:admin-smoke": "playwright test -c playwright.admin.config.ts",
     "test-videos:process": "node scripts/process-video-gallery.mjs",

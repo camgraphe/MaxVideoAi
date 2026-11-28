@@ -1,7 +1,9 @@
+import { wanInputExamples } from './wan-input-examples';
 import { type ComparisonRequest, quoteComparisonRequest } from './comparison-offers';
 import { getBaseEngineIncludingHidden } from '@/lib/engines';
 
 const wan: ComparisonRequest = {
+  promptCharacters: 'Example prompt'.length,
   engineId: 'wan-3-prime',
   mode: 't2v',
   durationSec: 15,
@@ -38,6 +40,7 @@ function scenario(id: string, label: string, request: ComparisonRequest) {
     id,
     label,
     settings,
+    inputExamples: wanInputExamples(request),
     engineId: request.engineId,
     engineLabel: getBaseEngineIncludingHidden(request.engineId)?.label ?? request.engineId,
     priceAssumption: request.engineId === 'wan-3'

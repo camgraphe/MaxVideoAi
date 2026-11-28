@@ -8,6 +8,7 @@ import { rankQuotedOffers } from '../frontend/src/lib/video-purchase-decision';
 import { planVideoPurchase, planWanPrimePurchase } from '../frontend/src/server/video-providers/purchase-router';
 
 const textClip: ComparisonRequest = {
+  promptCharacters: 40,
   engineId: 'wan-3-prime', mode: 't2v', durationSec: 15, resolution: '480p', aspectRatio: '16:9',
   audioEnabled: true, images: 0, hasVideo: false, hasEndFrame: false, inputVideoSeconds: 0,
   hasAudioReference: false, hasDocument: false,

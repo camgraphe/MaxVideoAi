@@ -1,3 +1,4 @@
+import { DIRECT_WAN_FIELDS, encodeWanControls, wanControls } from '@/lib/video-routing/wan-options';
 import { AlibabaModelStudioError } from './errors';
 import { resolveAlibabaModelRoute } from './model-map';
 import { WAN_3_REFERENCE_AUDIO_MIME_TYPES } from '../../../config/fal-engines/wan-3-shared';
@@ -203,8 +204,7 @@ function buildWanPayload(input: AlibabaVideoPayloadInput, model: 'wan3.0-video' 
       resolution: normalizeResolution(input.resolution),
       ratio: normalizeRatio(input.aspectRatio),
       duration,
-      audio: input.audioEnabled === true,
-      prompt_extend: input.promptExtend ?? input.mode !== 'v2v',
+      ...encodeWanControls(DIRECT_WAN_FIELDS, wanControls(input.mode, input.audioEnabled === true, input.promptExtend)),
       watermark: false,
       ...(typeof input.seed === 'number' ? { seed: input.seed } : {}),
     },

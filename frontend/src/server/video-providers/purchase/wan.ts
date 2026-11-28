@@ -1,5 +1,6 @@
 import { WAN_3_PRIME_FAL_USD_PER_SECOND } from '@/lib/wan3-prime-fal-rates';
-import { wanImageMode } from '../apimart/wan-image-mode';
+import { WAN_PILOT_INPUTS } from '@/lib/video-routing/wan-options';
+import { unsupportedVideoInput } from '@/lib/video-routing/input-profile';
 import { isWan3EngineId, validateWan3PricingDuration } from '@/lib/wan3-pricing';
 import { estimateAlibabaProviderCost } from '../alibaba-model-studio/cost';
 import { isAlibabaFalFallbackCompatible } from '../alibaba-model-studio/model-map';
@@ -46,12 +47,7 @@ function listCost(r: PurchaseRequest) {
 }
 // Both installed-supplier pilots and the optional APIMart transport share these reviewed input roles.
 function wanPilotExclusion(r: PurchaseRequest): string | null {
-  if (r.hasVideo || r.hasAudioReference || r.hasDocument || r.hasUnpricedOptions)
-    return 'Media or options outside pilot coverage';
-  if (r.aspectRatio && !['adaptive', 'auto', '16:9', '9:16', '4:3', '3:4', '1:1'].includes(r.aspectRatio))
-    return 'Aspect ratio outside pilot coverage';
-  return wanImageMode(r.mode, r.images, r.hasStartFrame === true, r.hasEndFrame)
-    ? null : 'Unsupported combination of frames and references';
+  return unsupportedVideoInput(r, WAN_PILOT_INPUTS);
 }
 
 export function isReviewedWanPilotRequest(request: PurchaseRequest): boolean {
@@ -70,7 +66,7 @@ export const WAN_OFFERS: readonly PurchaseOffer[] = [
       return seconds == null ? null : Math.round(seconds * rates[r.resolution.toLowerCase()] * 1e6);
     },
     exclude: (r) =>
-      isAlibabaFalFallbackCompatible(r.engineId, r.mode) && !r.hasDocument
+      isAlibabaFalFallbackCompatible(r.engineId, r.mode) && !r.hasDocument && !r.hasUnpricedOptions && !r.requiresDirectControls
         ? null
         : 'Direct-only inputs or operation',
   },

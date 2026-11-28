@@ -27,7 +27,12 @@ test('inspect a simulated route and switch to the recorded activity feed', async
   await map.getByRole('button', { name: 'Inspect scenario' }).click();
   const lab = page.getByRole('region', { name: 'Video routing explorer' });
   await expect(lab.getByRole('combobox', { name: 'Engine', exact: true })).toHaveValue('wan-3-prime');
+  await lab.getByText('Compare API inputs').click();
+  await expect(lab.locator('pre').filter({ hasText: '"generate_audio": true' })).toBeVisible();
+  await expect(lab.locator('pre').filter({ hasText: '"audio": true' })).toBeVisible();
   await lab.getByLabel('Compare installed suppliers only').check();
+  await expect(lab.locator('pre').filter({ hasText: '"generate_audio"' })).toHaveCount(0);
+  await expect(lab.locator('pre').filter({ hasText: '"audio": true' })).toBeVisible();
   await lab.getByText('Scenario settings').click();
   await expect(lab.getByLabel('WaveSpeedAI response')).toBeDisabled();
   expect(reads).toBe(0);

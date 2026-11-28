@@ -61,6 +61,7 @@ export function RouteSimulator({
   );
   const installedProviders = new Set<string>(routes.map(r => r.provider));
   const catalogCandidates = scenario.candidates.filter(c => c.simulationOnly || !installedProviders.has(c.provider));
+  const inputExamples = scenario.inputExamples.filter(example => !installedOnly || !catalogCandidates.some(c => c.provider === example.provider));
   const exclusions = {
     ...(installedOnly ? Object.fromEntries(catalogCandidates.map(c => [c.provider, 'Outside the installed supplier comparison'])) : {}),
     ...fundingExclusion,
@@ -264,6 +265,16 @@ export function RouteSimulator({
               ))}
             </div>
           </details>
+          {inputExamples.length > 0 && <details className={s.details}>
+            <summary>Compare API inputs <ChevronDown size={15} /></summary>
+            <p className="px-3 text-sm">Example prompt and media for this scenario.</p>
+            <div className="grid gap-3 p-3 lg:grid-cols-2">
+              {inputExamples.map(({ provider, input }) => <div className="min-w-0" key={provider}>
+                <strong>{PROVIDER_LABELS[provider]}{catalogCandidates.some(c => c.provider === provider) && ' · Simulation only'}</strong>
+                <pre className="mt-2 overflow-x-auto text-xs">{JSON.stringify(input, null, 2)}</pre>
+              </div>)}
+            </div>
+          </details>}
         </>
       ) : (
         <ProviderMap routes={routes} />

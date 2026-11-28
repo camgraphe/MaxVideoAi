@@ -68,8 +68,15 @@ test('Madrid boundaries, private media roles, final owner, credits and measured 
   const multiple=await insert({engine:wan,settings:ws});
   await attempt(multiple,1,'alibaba_model_studio','failed',{...media,referenceVideoCount:2});
   const clipsId=await insert({engine:wan,settings:{...ws,refs:{...ws.refs,inputs:[
-    {kind:'video',url:'private-clip-one',durationSec:1.5},{kind:'video',url:'private-clip-two',durationSec:2}]}}});
+    {kind:'video',slotId:'reference_video_urls',url:'private-clip-one',durationSec:1.5},{kind:'video',slotId:'reference_video_urls',url:'private-clip-two',durationSec:2}]}}});
   await attempt(clipsId,1,'alibaba_model_studio','failed',{...media,referenceVideoCount:2});
+  for (const [price,settings,snapshot] of [
+    [333,{...ws,advanced:{...ws.advanced,safetyChecker:false}},media],
+    [334,ws,{...media,unreviewedWanOptions:true}],
+  ] as const) {
+    const id=await insert({engine:wan,settings,price:{currency:'USD',totalCents:price}});
+    await attempt(id,1,'alibaba_model_studio','failed',snapshot);
+  }
   for (const costStatus of ['list_estimate_from_provider_usage','list_estimate_from_dimensions'])
     await insert({engine:seed,provider:'byteplus_modelark',settings:{...basicSettings(seed),inputMode:'ref2v',advanced:{extraInputValues:{output_format:'mp4'}},
       refs:{...basicSettings(seed).refs,inputs:[{kind:'image',slotId:'image_urls',url:'private-ref'}],referenceImages:['private-ref']}},cost:{provider_cost_status:costStatus,provider_tokens:30000,generate_audio:true}});
@@ -85,7 +92,7 @@ test('Madrid boundaries, private media roles, final owner, credits and measured 
   await execute("INSERT INTO fal_queue_log VALUES($1,$2,'fal','private-remote',$3),($1,$2,'fal','private-remote',$4)",
     [cfg,kling,{request:{aspectRatio:'16:9'}},{request:{aspectRatio:'1:1'}}]);
   const groups=await loadHistoricalReplayGroups('2026-10-02','2026-11-01',execute);
-  assert.equal(groups.reduce((sum,g)=>sum+g.jobs,0),19);
+  assert.equal(groups.reduce((sum,g)=>sum+g.jobs,0),21);
   assert.equal(groups.find(g=>g.engineId===h3 && g.jobs===2)?.bucketAt,'2026-10-25T01:00:00Z');
   assert.equal(groups[0].bucketAt,'2026-10-01T22:00:00Z');
   const text=groups[0].request!;
@@ -97,7 +104,8 @@ test('Madrid boundaries, private media roles, final owner, credits and measured 
   assert.equal(groups.find(g=>g.status==='failed')?.historicalProvider,null);
   assert.equal(groups.find(g=>g.status==='failed')?.paidWallet,false);
   assert.equal(groups.find(g=>g.ceilingMicros===4440000)?.historicalProvider,null);
-  const wanGroups=groups.filter(g=>g.engineId===wan);
+  assert.ok([3330000,3340000].every(cap=>groups.find(g=>g.ceilingMicros===cap)?.request?.hasUnpricedOptions===true));
+  const wanGroups=groups.filter(g=>g.engineId===wan && g.ceilingMicros===1000000);
   assert.equal(wanGroups.length,3); assert.ok(wanGroups.every(g=>g.historicalProvider==='fal' && g.request?.inputVideoSeconds===3.5));
   assert.deepEqual(wanGroups.map(g=>g.request!.referenceVideoSeconds??[]).sort((a,b)=>a.length-b.length),[[],[3.5],[1.5,2]]);
   assert.ok(groups.filter(g=>g.engineId===seed && g.ceilingMicros===1000000).every(g=>g.request?.hasUnpricedOptions===false && g.request?.images===1));

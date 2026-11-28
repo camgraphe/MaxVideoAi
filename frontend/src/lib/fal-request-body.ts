@@ -1,3 +1,4 @@
+import { encodeWanFlatRequest } from './video-routing/wan-request';
 import { buildKlingV4FlashFalRequest, isKlingV4FlashEngineId } from '@/lib/kling-v4-flash';
 import { buildFluxLtxRequest } from './flux-ltx-request';
 import { resolveVideoOperationEngine, videoOperationEndpoint } from '@/lib/video-operation';
@@ -34,10 +35,32 @@ import {
   VIDEO_MEDIA_FIELD_CANDIDATES,
 } from '@/lib/video-input-schema';
 
+function attachFalMetadata(payload: GeneratePayload, requestBody: Record<string, unknown>) {
+  const metadataPayload: Record<string, unknown> = {};
+  if (payload.jobId) {
+    metadataPayload.app_job_id = payload.jobId;
+  }
+  if (payload.localKey) {
+    metadataPayload.app_local_key = payload.localKey;
+  }
+  if (Object.keys(metadataPayload).length) {
+    const existing =
+      requestBody.metadata && typeof requestBody.metadata === 'object' && !Array.isArray(requestBody.metadata)
+        ? (requestBody.metadata as Record<string, unknown>)
+        : {};
+    requestBody.metadata = { ...existing, ...metadataPayload };
+  }
+}
+
 export function buildFalGenerationRequest(
   payload: GeneratePayload,
   defaultModel: string
 ): { model: string; requestBody: Record<string, unknown> } {
+  if (payload.reviewedWanPilot) {
+    const requestBody = encodeWanFlatRequest('fal', payload);
+    attachFalMetadata(payload, requestBody);
+    return { model: defaultModel, requestBody };
+  }
   if (isKlingV4FlashEngineId(payload.engineId)) return buildKlingV4FlashFalRequest(payload);
   if (isKlingV4EngineId(payload.engineId)) return buildKlingV4FalRequest(payload);
   const operationEndpoint = videoOperationEndpoint(payload.engineId, payload.mode ?? 't2v', payload.operation);
@@ -457,20 +480,7 @@ export function buildFalGenerationRequest(
 
   applyFalLegacyVideoContracts(payload, requestBody);
 
-  const metadataPayload: Record<string, unknown> = {};
-  if (payload.jobId) {
-    metadataPayload.app_job_id = payload.jobId;
-  }
-  if (payload.localKey) {
-    metadataPayload.app_local_key = payload.localKey;
-  }
-  if (Object.keys(metadataPayload).length) {
-    const existing =
-      requestBody.metadata && typeof requestBody.metadata === 'object' && !Array.isArray(requestBody.metadata)
-        ? (requestBody.metadata as Record<string, unknown>)
-        : {};
-    requestBody.metadata = { ...existing, ...metadataPayload };
-  }
+  attachFalMetadata(payload, requestBody);
 
   if (operationEndpoint) {
     if (!requestBody.video_url && payload.videoUrl) requestBody.video_url = payload.videoUrl;

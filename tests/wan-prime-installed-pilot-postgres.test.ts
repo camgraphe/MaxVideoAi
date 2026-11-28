@@ -24,7 +24,7 @@ const reference = {
   supplierMicros: 560_000,
   quoteCents: 85,
 } as const;
-type Profile = typeof text | typeof reference;
+type Profile = (typeof text | typeof reference) & { audio?: boolean };
 const engineId = 'wan-3-prime';
 const userId = 'pilot-owner';
 const refUrl = 'https://example.test/reference.png';
@@ -71,7 +71,7 @@ function initialJob(jobId: string, profile: Profile) {
       prompt,
       thumbUrl: '/thumb.svg',
       aspectRatio: '16:9',
-      hasAudio: true,
+      hasAudio: profile.audio ?? true,
       canUpscale: false,
       previewFrame: '/thumb.svg',
       batchId: null,
@@ -208,7 +208,7 @@ test(
           prompt,
           durationSec: profile.seconds,
           aspectRatio: '16:9',
-          audioEnabled: true,
+          audioEnabled: profile.audio ?? true,
           effectiveResolution: profile.resolution,
           imageUrl: null,
           placeholderThumb: '/thumb.svg',
@@ -227,7 +227,8 @@ test(
             durationSec: profile.seconds,
             resolution: profile.resolution,
             aspectRatio: '16:9',
-            audio: true,
+            audio: profile.audio ?? true,
+            seed: 0, extraInputValues: { enable_prompt_expansion: false },
             referenceImages: hasImage ? [refUrl] : [],
           },
           falInputSummary: {
@@ -262,11 +263,12 @@ test(
       return { submit, pricing, reserve: () => createAtomicInitialVideoJob(initial) };
     }
 
-    for (const profile of [text, reference]) {
+    const profiles: Profile[] = [text, reference, { ...reference, audio: false }];
+    for (const profile of profiles) {
       await t.test(
-        `${profile.mode} ${profile.seconds}s ${profile.resolution} · concurrent submit, explicit refusal and one Fal handoff`,
+        `${profile.mode} ${profile.seconds}s ${profile.resolution} ${profile.audio === false ? 'muted' : 'with audio'} · concurrent submit, explicit refusal and one Fal handoff`,
         async () => {
-          const id = 'pilot-' + profile.mode;
+          const id = 'pilot-' + profile.mode + (profile.audio === false ? '-muted' : '');
           const before = falPosts.length;
           const directPosts: AlibabaVideoPayload[] = [];
           const run = request(id, profile, async (payload) => {
@@ -291,7 +293,7 @@ test(
           assert.ok(pair.some((result) => result.ok && result.kind === 'accepted' && result.body.deferred));
           assert.equal(directPosts.length, 1);
           assert.equal(directPosts[0].parameters.duration, profile.seconds);
-          assert.equal(directPosts[0].parameters.audio, true);
+          assert.equal(directPosts[0].parameters.audio, profile.audio ?? true);
           assert.deepEqual(
             directPosts[0].input.media ?? [],
             profile.mode === 'ref2v' ? [{ type: 'reference_image', url: refUrl }] : [],
@@ -304,7 +306,11 @@ test(
           );
           assert.equal(Number(post.body.duration), profile.seconds);
           assert.equal(String(post.body.resolution).toLowerCase(), profile.resolution);
-          assert.equal(post.body.audio ?? post.body.generate_audio, true);
+          assert.equal(post.body.audio, directPosts[0].parameters.audio);
+          assert.equal(post.body.enable_prompt_expansion, false);
+          assert.equal(post.body.enable_prompt_expansion, directPosts[0].parameters.prompt_extend);
+          assert.equal(post.body.seed, 0);
+          assert.equal(post.body.seed, directPosts[0].parameters.seed);
           if (profile.mode === 'ref2v')
             assert.deepEqual(post.body.image_urls ?? post.body.reference_image_urls, [refUrl]);
           const ledger = await attempts(id);

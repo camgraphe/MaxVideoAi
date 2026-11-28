@@ -1,6 +1,6 @@
 import { ADMIN_EXCLUDED_USER_IDS } from '@/lib/admin/exclusions';
 import { query } from '@/lib/db';
-import { WAN_REVIEWED_EXTRA_KEYS } from '@/server/video-providers/apimart/wan-image-mode';
+import { WAN_REVIEWED_EXTRA_KEYS } from '@/lib/video-routing/wan-options';
 import { customerPurchaseCeiling, planWanPrimePurchase } from '@/server/video-providers/purchase-router';
 
 export type ReplayGroup = {
@@ -83,6 +83,7 @@ export async function loadWanPrimeReplay() {
       CASE WHEN jsonb_typeof(j.settings_snapshot) = 'object' THEN
         nullif(trim(j.settings_snapshot#>>'{advanced,extraInputValues,file_url}'),'') IS NOT NULL OR
         nullif(trim(j.settings_snapshot#>>'{advanced,extraInputValues,web_url}'),'') IS NOT NULL END AS document,
+      coalesce(a.request_snapshot->'unreviewedWanOptions' = 'true'::jsonb, false) OR
       CASE WHEN jsonb_typeof(j.settings_snapshot#>'{advanced,extraInputValues}') = 'object' THEN
         jsonb_strip_nulls(j.settings_snapshot#>'{advanced,extraInputValues}') - $4::text[] <> '{}'::jsonb OR
         coalesce(jsonb_typeof(j.settings_snapshot#>'{advanced,extraInputValues,enable_prompt_expansion}'), 'null') NOT IN ('boolean','null')

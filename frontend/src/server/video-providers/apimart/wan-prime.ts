@@ -1,4 +1,5 @@
-import { wanImageMode } from './wan-image-mode';
+import { WAN_PILOT_INPUTS, DIRECT_WAN_FIELDS, encodeWanControls, wanControls } from '@/lib/video-routing/wan-options';
+import { unsupportedVideoInput } from '@/lib/video-routing/input-profile';
 import type { AlibabaVideoPayload } from '../alibaba-model-studio/types';
 import type { NormalizedVideoProviderTask } from '../types';
 import type { SubmitOutcome } from '@/lib/video-purchase-decision';
@@ -19,19 +20,22 @@ export function buildApimartWanRequest(payload: AlibabaVideoPayload) {
   const references = media.filter((item) => item.type === 'reference_image');
   const ordered = [...first, ...last, ...references];
   const mode = first.length || last.length ? 'i2v' : references.length ? 'ref2v' : 't2v';
-  const type = wanImageMode(mode, first.length + references.length, first.length > 0, last.length > 0);
-  if (payload.model !== 'wan3.0-video-prime' || !type || last.length > 1 || ordered.length !== media.length) {
-    throw new ApimartSubmitError('invalid', 'UNSUPPORTED_PILOT_INPUT');
-  }
   const p = payload.parameters;
+  const excluded = unsupportedVideoInput({
+    engineId: 'wan-3-prime', mode, resolution: p.resolution, durationSec: p.duration, aspectRatio: p.ratio ?? null,
+    images: first.length + references.length, hasStartFrame: first.length > 0, hasEndFrame: last.length > 0,
+    hasDocument: false, hasAudioReference: false, hasVideo: false, inputVideoSeconds: 0,
+  }, WAN_PILOT_INPUTS);
+  if (payload.model !== 'wan3.0-video-prime' || excluded || last.length > 1 || ordered.length !== media.length)
+    throw new ApimartSubmitError('invalid', 'UNSUPPORTED_PILOT_INPUT');
+  const type = { t2v: 'text', i2v: 'frame', ref2v: 'reference' }[mode];
   return {
     model: payload.model,
     prompt: payload.input.prompt,
     duration: p.duration,
     resolution: p.resolution,
     size: p.ratio,
-    audio: p.audio,
-    prompt_extend: p.prompt_extend,
+    ...encodeWanControls(DIRECT_WAN_FIELDS, wanControls(mode, p.audio === true, p.prompt_extend)),
     seed: p.seed,
     watermark: p.watermark,
     ...(type === 'text' ? {} : { generation_type: type, image_urls: ordered.map((item) => item.url) }),

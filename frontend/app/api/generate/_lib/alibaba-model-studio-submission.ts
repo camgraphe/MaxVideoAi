@@ -2,6 +2,8 @@ import { getWanSubmissionClient, isWanDirectProvider, wanTransports, type WanDir
 import type { createApimartClient } from '@/server/video-providers/apimart/wan-prime';
 import type { WanPurchaseCanary } from '@/server/video-providers/router';
 import { nextPurchaseProvider, purchaseRoutingSnapshot, type PurchaseDecision } from '@/lib/video-purchase-decision';
+export { resolveWanMediaInputs as resolveAlibabaSubmissionMediaInputs } from '@/lib/video-routing/wan-media';
+import { wanRequestFacts, type WanRequestFacts } from '@/lib/video-routing/wan-request';
 import { buildWanPurchaseDecision } from './wan-purchase-routing';
 import type { GeneratePayload, GenerateResult } from '@/lib/fal';
 import { query } from '@/lib/db';
@@ -22,7 +24,7 @@ import { buildAlibabaVideoPayload } from '@/server/video-providers/alibaba-model
 import { createWanMediaTransport } from '@/server/video-providers/alibaba-model-studio/media-access';
 import type { createOwnedMediaReadUrl } from '@/server/owned-media-read-access';
 import { sanitizeProviderMediaDiagnostics } from '@/server/provider-media-diagnostics';
-import type { AlibabaReferenceAsset } from '@/server/video-providers/alibaba-model-studio/types';
+import { resolveWanMediaInputs } from '@/lib/video-routing/wan-media';
 import {
   createProviderAttempt, ProviderAttemptAlreadyClaimed,
   linkProviderFallbackAttempt,
@@ -65,73 +67,6 @@ export type AlibabaModelStudioGenerateSubmissionResult =
 
 function cleanUrl(value: unknown): string | null {
   return typeof value === 'string' && value.trim() ? value.trim() : null;
-}
-
-function addUniqueAsset(assets: AlibabaReferenceAsset[], value: unknown, metadata?: Partial<AlibabaReferenceAsset>) {
-  const url = cleanUrl(value);
-  if (!url) return;
-  const existing = assets.find((asset) => asset.url === url);
-  if (existing) {
-    if (metadata?.mimeType) existing.mimeType = metadata.mimeType;
-    if (typeof metadata?.durationSec === 'number') existing.durationSec = metadata.durationSec;
-    return;
-  }
-  assets.push({ url, ...metadata });
-}
-
-export function resolveAlibabaSubmissionMediaInputs(params: {
-  imageUrl: string | null | undefined;
-  falPayload: GeneratePayload;
-}): {
-  startImageUrl: string | null;
-  endImageUrl: string | null;
-  referenceImages: AlibabaReferenceAsset[];
-  referenceVideos: AlibabaReferenceAsset[];
-  referenceAudio: AlibabaReferenceAsset[];
-  inputVideoDurationSec: number | null;
-} {
-  let startImageUrl = cleanUrl(params.imageUrl) ?? cleanUrl(params.falPayload.imageUrl);
-  let endImageUrl = cleanUrl(params.falPayload.endImageUrl);
-  const referenceImages: AlibabaReferenceAsset[] = [];
-  const referenceVideos: AlibabaReferenceAsset[] = [];
-  const referenceAudio: AlibabaReferenceAsset[] = [];
-
-  for (const url of params.falPayload.referenceImages ?? []) addUniqueAsset(referenceImages, url);
-  addUniqueAsset(referenceVideos, params.falPayload.videoUrl);
-  addUniqueAsset(referenceAudio, params.falPayload.audioUrl);
-
-  for (const input of params.falPayload.inputs ?? []) {
-    const url = cleanUrl(input.url) ?? cleanUrl(input.dataUrl);
-    if (!url) continue;
-    const slotId = input.slotId?.trim().toLowerCase() ?? '';
-    const metadata = { mimeType: cleanUrl(input.type), durationSec: input.durationSec ?? null };
-    if (input.kind === 'image' && ['image_url', 'start_image_url', 'first_frame_url'].includes(slotId)) {
-      startImageUrl ??= url;
-    } else if (input.kind === 'image' && ['end_image_url', 'last_frame_url'].includes(slotId)) {
-      endImageUrl ??= url;
-    } else if (input.kind === 'image') {
-      addUniqueAsset(referenceImages, url, metadata);
-    } else if (input.kind === 'video') {
-      addUniqueAsset(referenceVideos, url, metadata);
-    } else if (input.kind === 'audio') {
-      addUniqueAsset(referenceAudio, url, metadata);
-    }
-  }
-
-  const knownVideoDurations = referenceVideos
-    .map((asset) => asset.durationSec)
-    .filter((value): value is number => typeof value === 'number' && Number.isFinite(value));
-  return {
-    startImageUrl,
-    endImageUrl,
-    referenceImages,
-    referenceVideos,
-    referenceAudio,
-    inputVideoDurationSec:
-      referenceVideos.length > 0 && knownVideoDurations.length === referenceVideos.length
-        ? knownVideoDurations.reduce((sum, duration) => sum + duration, 0)
-        : null,
-  };
 }
 
 function userSafeAlibabaMessage(errorClass: string, errorCode?: string | null): string {
@@ -375,7 +310,7 @@ export async function submitAlibabaModelStudioGenerateTask(params: WanSubmission
   if (!route) {
     return { ok: false, status: 400, body: { ok: false, error: 'ALIBABA_MODEL_MODE_UNSUPPORTED' } };
   }
-  const media = resolveAlibabaSubmissionMediaInputs({ imageUrl: params.imageUrl, falPayload: params.falPayload });
+  const media = resolveWanMediaInputs({ imageUrl: params.imageUrl, falPayload: params.falPayload });
   const resolution = params.effectiveResolution ?? params.falPayload.resolution ?? '720p';
   const estimate = estimateAlibabaProviderCost({
     engineId: params.engineId,
@@ -384,9 +319,17 @@ export async function submitAlibabaModelStudioGenerateTask(params: WanSubmission
     inputVideoDurationSec: media.inputVideoDurationSec ?? undefined,
     resolution,
   });
-  const decision = route.family === 'wan3' ? buildWanPurchaseDecision(params, resolution, media) : null;
-  // An unsupported request always retains its established provider contract.
+  // Resolve once using the original job settings, before choosing a supplier or handing off.
+  const wanPayload = {
+    ...params.falPayload, engineId: params.engineId, mode: params.mode, prompt: params.prompt,
+    durationSec: params.durationSec, resolution, aspectRatio: params.aspectRatio ?? params.falPayload.aspectRatio,
+    audio: params.audioEnabled ?? params.falPayload.audio ?? false,
+    imageUrl: media.startImageUrl ?? undefined, endImageUrl: media.endImageUrl ?? undefined,
+  };
+  const facts = route.family === 'wan3' ? wanRequestFacts(wanPayload, media, params.negativePrompt) : null;
+  const decision = facts ? buildWanPurchaseDecision(params, facts) : null;
   const active = Boolean(params.purchaseCanary && decision?.canaryEligible);
+  if (active) params = { ...params, audioEnabled: wanPayload.audio, falPayload: { ...wanPayload, reviewedWanPilot: true } };
   const selected = active ? decision?.order[0] : ALIBABA_MODEL_STUDIO_PROVIDER;
   const stopPilot = deps.stopWanPilotWalletJobFn ?? stopWanPilotWalletJob;
   if (!selected) {
@@ -399,7 +342,7 @@ export async function submitAlibabaModelStudioGenerateTask(params: WanSubmission
     if (!stopped) return deferred(params.jobId);
     return { ok: false, status: 503, body: { ok: false, error: 'NO_ELIGIBLE_VIDEO_PROVIDER', message } };
   }
-  const context = { params, route, media, resolution, estimate, active, plan: decision, deps, queryFn };
+  const context = { params, route, media, resolution, estimate, active, facts, plan: decision, deps, queryFn };
   try {
     if (selected === 'fal') {
       return await submitFalFallback({ ...params, directAttemptId: null, attemptIndex: 1, decision: decision ?? undefined,
@@ -423,10 +366,11 @@ function deferred(jobId: string): AlibabaModelStudioGenerateSubmissionResult {
 type WanAttemptContext = {
   params: WanSubmissionParams;
   route: NonNullable<ReturnType<typeof resolveAlibabaModelRoute>>;
-  media: ReturnType<typeof resolveAlibabaSubmissionMediaInputs>;
+  media: ReturnType<typeof resolveWanMediaInputs>;
   resolution: string;
   estimate: ReturnType<typeof estimateAlibabaProviderCost>;
   active: boolean;
+  facts: WanRequestFacts | null;
   plan: PurchaseDecision<VideoProviderKey> | null;
   deps: AlibabaSubmissionDeps;
   queryFn: QueryFn;
@@ -459,6 +403,8 @@ async function submitWanAttempt(
       referenceVideoCount: media.referenceVideos.length,
       referenceAudioCount: media.referenceAudio.length,
       promptLength: params.prompt.length,
+      ...(context.facts ? { trimmedPromptLength: context.facts.promptCharacters,
+        unreviewedWanOptions: context.facts.hasUnpricedOptions } : {}),
       estimatedProviderCostUsd: costMicros == null ? estimate.providerCostUsd : costMicros / 1e6,
       ...(plan ? { purchaseRouting: purchaseRoutingSnapshot(plan, active ? 'canary' : 'shadow') } : {}),
     },
@@ -521,7 +467,7 @@ async function submitWanAttempt(
         console.warn('[wan-purchase] attempt reconciliation write deferred', { jobId: params.jobId }));
       return deferred(params.jobId);
     }
-    const fallbackEligible = active ? next === 'fal' || isWanDirectProvider(next) : route.fallbackCompatible && shouldFallbackFromAlibabaSubmit({
+    const fallbackEligible = active ? next === 'fal' || isWanDirectProvider(next) : !params.purchaseCanary && route.fallbackCompatible && shouldFallbackFromAlibabaSubmit({
       acceptedProviderJobId,
       error,
       fallbackToFalEnabled: params.fallbackToFalEnabled,

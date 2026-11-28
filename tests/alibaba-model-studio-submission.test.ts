@@ -267,6 +267,28 @@ test('Alibaba submission falls back once for a retryable error before acceptance
   assert.equal(queries.some((entry) => entry.params.includes('fallback_started')), true);
 });
 
+test('the installed pilot keeps unreviewed controls with the original supplier after an explicit refusal', async () => {
+  const { queries, queryFn } = createQueryRecorder();
+  let directCalls = 0;
+  const {params} = baseParams({
+    purchaseCanary: 'alibaba-fal',
+    falPayload: {...falPayload, safetyChecker: false},
+    deps: {
+      queryFn,
+      getAlibabaModelStudioClientFn: () => ({
+        createVideo: async () => { directCalls++; throw new AlibabaModelStudioError('Rate limited', {status: 429}); },
+      }),
+      submitFalGenerateTaskFn: () => assert.fail('Unreviewed control crossed supplier boundary'),
+    },
+  });
+  const result = await submitAlibabaModelStudioGenerateTask(params);
+  assert.equal(result.ok, false);
+  assert.equal(directCalls, 1);
+  const attempts = queries.filter(q => q.sql.includes('INSERT INTO provider_attempts'));
+  assert.equal(attempts.length, 1);
+  assert.ok(attempts[0].params.some(value => typeof value === 'string' && value.includes('"unreviewedWanOptions":true')));
+});
+
 test('Alibaba submission never falls back after a provider task ID was accepted', async () => {
   const { queryFn, queries } = createQueryRecorder({ failAppJobUpdateAfterAcceptance: true });
   let falCalls = 0;

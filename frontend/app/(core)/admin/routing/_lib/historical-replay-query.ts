@@ -2,7 +2,7 @@ import { PURCHASE_ROUTING_ENGINE_IDS } from '@/lib/video-purchase-decision';
 import { ADMIN_EXCLUDED_USER_IDS } from '@/lib/admin/exclusions';
 import { query, type QueryExecutor } from '@/lib/db';
 import { KLING_DIRECT_ONLY_FAL_EXTRA_KEYS } from '@/lib/kling-direct-extra-values';
-import { WAN_REVIEWED_EXTRA_KEYS } from '@/server/video-providers/apimart/wan-image-mode';
+import { WAN_REVIEWED_EXTRA_KEYS } from '@/lib/video-routing/wan-options';
 import type { HistoricalReplayGroup } from './historical-replay-types';
 
 // All fragments below are built from code-owned identifiers. Dates and account exclusions are bound.
@@ -122,7 +122,15 @@ export const HISTORICAL_REPLAY_QUERY = `WITH population AS (
     CASE WHEN h3 AND mode IN ('t2v','i2v','ref2v') THEN true
       ELSE COALESCE(${bool("a->'audioEnabled'")}, ${bool("cost->'generate_audio'")}, ${bool("core->'audio'")}) END AS output_audio,
     NULLIF(btrim(options->>'file_url'),'') IS NOT NULL OR NULLIF(btrim(options->>'web_url'),'') IS NOT NULL AS doc,
-    CASE WHEN wan THEN options - ${wanExtras} <> '{}'::jsonb OR COALESCE(jsonb_typeof(options->'enable_prompt_expansion'),'null') NOT IN ('boolean','null')
+    CASE WHEN wan THEN COALESCE(${bool("a->'unreviewedWanOptions'")}, unreviewed_attachment
+        OR (jsonb_strip_nulls(adv) - ARRAY['extraInputValues','shotType','seed']) <> '{}'::jsonb
+        OR (adv->>'shotType' IS NOT NULL AND NOT (mode='i2v' AND adv->>'shotType'='customize'))
+        OR (adv->>'seed' IS NOT NULL AND NOT (jsonb_typeof(adv->'seed')='number'
+          AND (adv->'seed')::text ~ '^[0-9]{1,10}$' AND (adv->'seed') <= '2147483647'::jsonb))
+        OR (core->>'fps' IS NOT NULL AND core->>'fps'<>'30') OR core->>'numFrames' IS NOT NULL
+        OR (core->>'durationOption' IS NOT NULL AND regexp_replace(core->>'durationOption','s$','') <> sec::text)
+        OR NULLIF(btrim(s->>'negativePrompt'),'') IS NOT NULL OR (r->>'elements' IS NOT NULL AND r->'elements' <> '[]'))
+      OR options - ${wanExtras} <> '{}'::jsonb OR COALESCE(jsonb_typeof(options->'enable_prompt_expansion'),'null') NOT IN ('boolean','null')
       ELSE unreviewed_attachment OR NOT refs_ok OR
         (CASE WHEN h3 THEN options - 'prompt_expansion_mode' WHEN kling THEN options - ${directKeys} - 'generate_audio'
           WHEN engine='seedance-2-5' AND options->>'output_format'='mp4' THEN options - 'output_format' ELSE options END <> '{}'::jsonb)
@@ -136,7 +144,8 @@ export const HISTORICAL_REPLAY_QUERY = `WITH population AS (
       END AS unpriced,
     CASE WHEN kling THEN EXISTS (SELECT 1 FROM jsonb_each(options) extra WHERE key=ANY(${directKeys})
       AND value NOT IN ('false','null','""','[]','{}')) ELSE false END AS direct,
-    CASE WHEN h3 AND jsonb_typeof(s->'prompt')='string' THEN char_length(btrim(s->>'prompt')) END AS prompt_chars,
+    CASE WHEN (h3 OR wan) AND jsonb_typeof(s->'prompt')='string' THEN char_length(btrim(s->>'prompt'))
+      WHEN wan THEN ${nonnegativeInt("a->'trimmedPromptLength'")} END AS prompt_chars,
     CASE WHEN h3 AND options->>'prompt_expansion_mode' IN ('disabled','fast','balanced','quality') THEN options->>'prompt_expansion_mode'
       WHEN h3 AND NOT (options ? 'prompt_expansion_mode') THEN 'balanced' END AS expansion,
     CASE WHEN engine='seedance-2-5' AND owner='byteplus_modelark' AND cost->>'provider_cost_status'='list_estimate_from_provider_usage'

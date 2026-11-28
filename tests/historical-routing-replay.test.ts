@@ -7,6 +7,7 @@ import { apimartH3 } from '../frontend/app/(core)/admin/routing/_lib/catalogue/m
 import type { ComparisonRequest } from '../frontend/app/(core)/admin/routing/_lib/comparison-offers';
 
 const textClip: ComparisonRequest = {
+  promptCharacters: 40,
   engineId: 'wan-3-prime', mode: 't2v', durationSec: 15, resolution: '480p', aspectRatio: '16:9',
   audioEnabled: true, images: 0, hasVideo: false, hasStartFrame: false, hasEndFrame: false, inputVideoSeconds: 0,
   hasAudioReference: false, hasDocument: false, requiresDirectControls: false, hasUnpricedOptions: false, requestedRatioVerified: true,
