@@ -12,6 +12,8 @@
   min-width: 0;
   max-width: 100%;
   overflow-x: auto;
+  /* Let names such as create_reference_upload_link size their column. */
+  overflow-wrap: normal;
   overscroll-behavior-inline: contain;
 }
 
