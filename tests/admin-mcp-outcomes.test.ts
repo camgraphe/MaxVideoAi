@@ -186,3 +186,21 @@ test('Auth fallbacks retain only dates and coarse client families, with bounded 
   await readMcpAuthMetadata(Array.from({ length: 101 }, (_, i) => String(i)), [], getAdmin);
   assert.equal(calls, 6, 'large missing cohorts must not trigger unbounded auth requests');
 });
+
+test('an exact ChatGPT connector callback identifies a generically named OAuth application', async () => {
+  const redirects = new Map([
+    ['directory', ['https://chatgpt.com/connector/oauth/sample_app-id']],
+    ['host-lookalike', ['https://chatgpt.com.example.com/connector/oauth/sample']],
+    ['different-path', ['https://chatgpt.com/connectors/oauth/sample']],
+    ['wrong-scheme', ['http://chatgpt.com/connector/oauth/sample']],
+    ['extra-path', ['https://chatgpt.com/connector/oauth/sample/another']],
+  ]);
+  const getAdmin = (() => ({ auth: { admin: { oauth: {
+    getClient: async (id: string) => ({ data: {
+      client_id: id, client_name: 'MaxVideoAI', redirect_uris: redirects.get(id),
+    }, error: null }),
+  } } } })) as unknown as NonNullable<Parameters<typeof readMcpAuthMetadata>[2]>;
+  const result = await readMcpAuthMetadata([], [...redirects.keys()], getAdmin);
+  assert.deepEqual(result.clients, [{ oauth_client_id: 'directory', family: 'chatgpt' }]);
+  assert.doesNotMatch(JSON.stringify(result), /sample|redirect_uris/);
+});
