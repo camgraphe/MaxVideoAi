@@ -42,6 +42,7 @@ function rawTransaction(overrides: Partial<RawTransactionRow> = {}): RawTransact
     job_created_at: '2026-07-14T09:59:00.000Z',
     job_duration_sec: 8,
     is_mcp_generation: false,
+    mcp_oauth_client_id: null, mcp_client_family: null,
     is_studio_generation: false,
     is_create_generation: false, confirmation_platform: null,
     has_refund: false,

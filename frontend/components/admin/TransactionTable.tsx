@@ -9,6 +9,7 @@ import { X } from 'lucide-react';
 import { needsTransactionReview as needsReview, isMissingJobRecord, isMiloPackTransaction } from '@/lib/admin/transaction-review';
 import clsx from 'clsx';
 import { AdminDataTable } from '@/components/admin-system/surfaces/AdminDataTable';
+import { McpIntegrationMark } from '@/components/marketing/mcp/McpIntegrationMark';
 import type { AdminTransactionRecord } from '@/server/admin-transactions';
 import { Button } from '@/components/ui/Button';
 
@@ -231,8 +232,9 @@ export function AdminTransactionTable({
                 <X size={16} />
               </button>
             </div>
-            <p className="my-4 text-2xl font-semibold tabular-nums">
+            <p className="my-4 flex flex-wrap items-center gap-2 text-2xl font-semibold tabular-nums">
               {formatCurrency(selected.amountCents, selected.currency)}
+              <TransactionSourceBadge row={selected} />
             </p>
             <dl className="space-y-4 text-sm">
               <div>
@@ -347,29 +349,41 @@ function GenerationPlatformIcon({ platform }: { platform: NonNullable<AdminTrans
   );
 }
 
+function TransactionSourceBadge({ row }: { row: AdminTransactionRecord }) {
+  const source = row.isStudioGeneration ? 'Studio' : row.isCreateGeneration ? 'Create' : row.isMcpGeneration ? 'MCP' : null;
+  if (!source || isMiloPackTransaction(row)) return null;
+
+  const isChatGpt = source === 'MCP' && row.mcpClientFamily === 'chatgpt';
+  const title = isChatGpt
+    ? 'Generation attributed to ChatGPT via MCP'
+    : source === 'MCP' ? 'Generation submitted via MCP' : `Generation submitted from ${source}`;
+
+  return (
+    <span
+      className={clsx(
+        'inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-[10px] font-semibold leading-none',
+        source === 'Studio'
+          ? 'border-violet-500/20 bg-violet-500/10 text-violet-600 dark:text-violet-400'
+          : 'border-brand/20 bg-brand/10 text-brand',
+      )}
+      title={title}
+    >
+      {isChatGpt && <McpIntegrationMark integration="chatgpt" size={12} className="h-3 w-3" />}
+      {isChatGpt ? 'ChatGPT' : source}
+      {row.confirmationPlatform && source !== 'MCP' && <GenerationPlatformIcon platform={row.confirmationPlatform} />}
+    </span>
+  );
+}
+
 function TransactionAmount({ row }: { row: AdminTransactionRecord }) {
   const isMiloPack = isMiloPackTransaction(row);
-  const source = row.isStudioGeneration ? 'Studio' : row.isCreateGeneration ? 'Create' : row.isMcpGeneration ? 'MCP' : null;
   const model = isMiloPack ? MILO_PACK_LABEL : row.jobId ? row.jobEngineLabel?.trim() : null;
   const duration = !isMiloPack && row.jobId ? formatJobDuration(row.jobDurationSec) : null;
   return (
     <td className="whitespace-nowrap px-3 py-2.5 font-medium tabular-nums">
       <div className="flex items-center gap-2">
         <span>{formatCurrency(row.amountCents, row.currency)}</span>
-        {!isMiloPack && source ? (
-          <span
-            className={clsx(
-              'inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-[10px] font-semibold leading-none',
-              row.isStudioGeneration
-                ? 'border-violet-500/20 bg-violet-500/10 text-violet-600 dark:text-violet-400'
-                : 'border-brand/20 bg-brand/10 text-brand',
-            )}
-            title={source === 'MCP' ? 'Generation submitted via MCP' : `Generation submitted from ${source}`}
-          >
-            {source}
-            {row.confirmationPlatform && source !== 'MCP' && <GenerationPlatformIcon platform={row.confirmationPlatform} />}
-          </span>
-        ) : null}
+        <TransactionSourceBadge row={row} />
       </div>
       {model || duration ? (
         <div className="mt-0.5 flex max-w-[180px] items-center gap-1 text-xs font-normal text-text-secondary">

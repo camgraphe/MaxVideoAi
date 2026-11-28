@@ -1,3 +1,4 @@
+import { McpIntegrationMark } from '@/components/marketing/mcp/McpIntegrationMark';
 import { AdminNotice } from '@/components/admin-system/feedback/AdminNotice';
 import { AdminEmptyState } from '@/components/admin-system/feedback/AdminEmptyState';
 import { AdminSection } from '@/components/admin-system/shell/AdminSection';
@@ -51,7 +52,7 @@ export function McpGenerationOverview({ outcomes, activity, pollingCalls }: McpG
                 <tbody className="divide-y divide-hairline">
                   {outcomes.clients.map((row) => (
                     <tr key={row.client}>
-                      <th scope="row" className="whitespace-nowrap px-4 py-3 font-medium text-text-primary">{MCP_CLIENT_LABELS[row.client]}</th>
+                      <th scope="row" className="whitespace-nowrap px-4 py-3 font-medium text-text-primary"><McpApplicationName client={row.client} /></th>
                       {[row.accounts, row.newSignups, row.generators, row.videos, row.imageGenerators, row.images].map((value, index) => <td key={index} className="px-4 py-3 tabular-nums text-text-secondary">{formatMcpNumber(value)}</td>)}
                     </tr>
                   ))}
@@ -101,9 +102,18 @@ function GenerationRow({ generation }: { generation: McpGenerationItem }) {
       <td className="px-4 py-3"><span className={generation.surface === 'image' ? 'rounded-full border border-info-border bg-info-bg px-2 py-1 text-xs font-semibold text-info' : 'rounded-full border border-border bg-accent-subtle px-2 py-1 text-xs font-semibold text-text-primary'}>{generation.surface}</span></td>
       <td className="px-4 py-3 text-text-primary"><span>{model}</span>{generation.engineLabel && generation.engineId ? <span className="ml-2 font-mono text-xs text-text-muted">{generation.engineId}</span> : null}</td>
       <td className="px-4 py-3"><span className="rounded-full border border-border bg-surface px-2 py-1 text-xs font-semibold text-text-secondary">{status}</span></td>
-      <td className="px-4 py-3 text-xs text-text-secondary">{MCP_CLIENT_LABELS[generation.client]}</td>
+      <td className="px-4 py-3 text-xs text-text-secondary"><McpApplicationName client={generation.client} /></td>
       <td className="px-4 py-3"><Link href={`/admin/jobs?jobId=${encodeURIComponent(generation.jobId)}`} className="font-mono text-xs text-brand underline-offset-2 hover:underline">{generation.jobId}</Link></td>
     </tr>
+  );
+}
+
+function McpApplicationName({ client }: { client: McpGenerationItem['client'] }) {
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      {client === 'chatgpt' && <McpIntegrationMark integration="chatgpt" size={14} className="h-3.5 w-3.5" />}
+      {MCP_CLIENT_LABELS[client]}
+    </span>
   );
 }
 
