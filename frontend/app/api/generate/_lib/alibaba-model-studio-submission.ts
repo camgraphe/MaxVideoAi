@@ -1,4 +1,5 @@
 import { getWanSubmissionClient, isWanDirectProvider, wanTransports, type WanDirectProvider } from '@/server/video-providers/wan-transports';
+import { ownedMediaStorageKeyForUrl } from '@/server/storage-read';
 import type { createVideoRouterClient } from '@/server/video-providers/videorouter/wan-prime';
 import type { createApimartClient } from '@/server/video-providers/apimart/wan-prime';
 import type { WanPurchaseCanary } from '@/server/video-providers/router';
@@ -54,6 +55,7 @@ type AlibabaSubmissionDeps = {
   getVideoRouterClientFn?: typeof createVideoRouterClient;
   getApimartClientFn?: typeof createApimartClient;
   createOwnedMediaReadUrlFn?: typeof createOwnedMediaReadUrl;
+  ownedMediaStorageKeyForUrlFn?: typeof ownedMediaStorageKeyForUrl;
   getAlibabaModelStudioClientFn?: () => AlibabaSubmissionClient;
   submitFalGenerateTaskFn?: typeof submitFalGenerateTask;
   queryFn?: QueryFn;
@@ -329,6 +331,10 @@ export async function submitAlibabaModelStudioGenerateTask(params: WanSubmission
     imageUrl: media.startImageUrl ?? undefined, endImageUrl: media.endImageUrl ?? undefined,
   };
   const facts = route.family === 'wan3' ? wanRequestFacts(wanPayload, media, params.negativePrompt) : null;
+  if (facts?.mode === 'ref2v' && media.referenceImages.length) {
+    facts.ownedReferenceImages = media.referenceImages.every(image =>
+      Boolean((deps.ownedMediaStorageKeyForUrlFn ?? ownedMediaStorageKeyForUrl)({ url: image.url, userId: params.userId })));
+  }
   const decision = facts ? buildWanPurchaseDecision(params, facts) : null;
   const active = Boolean(params.purchaseCanary && decision?.canaryEligible);
   if (params.purchaseCanary === 'with-videorouter' && !active) params = { ...params, purchaseCanary: undefined };
@@ -407,7 +413,8 @@ async function submitWanAttempt(
       referenceAudioCount: media.referenceAudio.length,
       promptLength: params.prompt.length,
       ...(context.facts ? { trimmedPromptLength: context.facts.promptCharacters,
-        unreviewedWanOptions: context.facts.hasUnpricedOptions } : {}),
+        ownedReferenceImages: context.facts.ownedReferenceImages, hasSeed: context.facts.hasSeed,
+        promptExpansionEnabled: context.facts.promptExpansionEnabled, unreviewedWanOptions: context.facts.hasUnpricedOptions } : {}),
       estimatedProviderCostUsd: costMicros == null ? estimate.providerCostUsd : costMicros / 1e6,
       ...(plan ? { purchaseRouting: purchaseRoutingSnapshot(plan, active ? 'canary' : 'shadow') } : {}),
     },

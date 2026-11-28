@@ -185,7 +185,10 @@ test('Wan Prime pilots require admin preproduction access and keep the installed
     assert.equal(route(true, 'happyhorse'), undefined);
     process.env.VERCEL_ENV = 'production';
     assert.equal(route(true, 'wan-3'), undefined);
-    assert.equal(installedRoutes().length, 7);
+    const map = installedRoutes();
+    assert.equal(map.length, 9);
+    assert.deepEqual(map.find(row => row.engineId === 'kling-v4')?.installedTargets, ['videorouter', 'fal']);
+    assert.deepEqual(map.find(row => row.engineId === 'wan-3')?.installedTargets, ['videorouter', 'alibaba_model_studio']);
   } finally {
     for (const [i, k] of keys.entries()) {
       if (old[i] == null) delete process.env[k];

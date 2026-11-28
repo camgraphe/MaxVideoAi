@@ -45,8 +45,8 @@ export function isWanPilotEnvironment(): boolean {
 }
 
 export function configuredWanPurchaseCanary(engineId: string, isAdmin = true): WanPurchaseCanary | undefined {
-  const audience = process.env.WAN_PRIME_VIDEOROUTER_CANARY;
-  if (engineId === 'wan-3-prime' && process.env.VIDEOROUTER_API_KEY?.trim() &&
+  const audience = engineId === 'wan-3' ? process.env.WAN_STANDARD_VIDEOROUTER_CANARY : process.env.WAN_PRIME_VIDEOROUTER_CANARY;
+  if ((engineId === 'wan-3-prime' || engineId === 'wan-3') && process.env.VIDEOROUTER_API_KEY?.trim() &&
       (audience === 'public' || (isAdmin && audience === 'admin'))) return 'with-videorouter';
   if (!isAdmin) return;
   if (!isWanPilotEnvironment()) return;

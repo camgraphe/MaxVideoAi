@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { HISTORICAL_REPLAY_QUERY, assertHistoricalReplayWindow, loadHistoricalReplayGroups } from '../frontend/app/(core)/admin/routing/_lib/historical-replay-query';
+import { buildHistoricalReplay } from '../frontend/app/(core)/admin/routing/_lib/historical-replay';
 import { ADMIN_EXCLUDED_USER_IDS } from '../frontend/lib/admin/exclusions';
 import { missingDisposablePostgresCommand, startDisposablePostgres } from './helpers/disposable-postgres';
 
@@ -42,8 +43,8 @@ test('Madrid boundaries, private media roles, final owner, credits and measured 
     await execute('UPDATE app_jobs SET job_id=$1::text WHERE id=$1::bigint',[id]);
     return id;
   }
-  const attempt = (id:string,index:number,provider:string,status:string,snapshot:unknown={},remote:string|null=null) => execute(
-    'INSERT INTO provider_attempts(job_id,attempt_index,provider,status,request_snapshot,provider_job_id) VALUES($1,$2,$3,$4,$5,$6)',[id,index,provider,status,snapshot,remote]);
+  const attempt = (id:string,index:number,provider:string,status:string,snapshot:unknown={},remote:string|null=null,model:string|null=null) => execute(
+    'INSERT INTO provider_attempts(job_id,attempt_index,provider,status,request_snapshot,provider_job_id,provider_model) VALUES($1,$2,$3,$4,$5,$6,$7)',[id,index,provider,status,snapshot,remote,model]);
   // 30 Madrid days spanning the switch back to CET: the repeated 02:00 is two separate UTC buckets.
   await insert({created:'2026-10-01T21:59:59Z'});
   await insert({created:'2026-10-01T22:00:00Z'});
@@ -117,4 +118,84 @@ test('Madrid boundaries, private media roles, final owner, credits and measured 
   assert.equal(groups.find(g=>g.engineId==='unpriced-engine')?.ceilingMicros,null);
   assert.doesNotMatch(JSON.stringify(groups),/private|https|Private text/);
   assert.deepEqual(await loadHistoricalReplayGroups('2026-10-02','2026-11-01',execute),groups);
+
+  await t.test('priced Kling and Wan attempts replay their attested options independently of the final owner', async () => {
+    const created = '2026-10-29T15:20:00Z';
+    const settings = (engineId: string, images: number, resolution: string, aspectRatio: string) => {
+      const base = basicSettings(engineId);
+      return { ...base, inputMode: 'ref2v', core: { ...base.core, resolution, aspectRatio },
+        refs: { ...base.refs, inputs: Array.from({ length: images }, (_, i) => ({
+          slotId: engineId === 'kling-v4' ? 'image_urls' : 'reference_image_urls', kind: 'image', url: 'private-image-' + i,
+        })) } };
+    };
+    const exact = { engineId: 'kling-v4', mode: 'ref2v', durationSec: 5, resolution: '720p', aspectRatio: '16:9',
+      promptLength: 14, ownedReferenceImages: true, hasSeed: false, unreviewedOptions: false, audioEnabled: true,
+      hasStartImage: false, hasEndImage: false, referenceImageCount: 3, referenceVideoCount: 0, referenceAudioCount: 0 };
+    const fal = 'kling/v4/reference-to-video', sandbase = 'kuaishou/kling-v4.0/sandbase';
+    const scenario = { engine: exact.engineId, created, settings: settings(exact.engineId, 3, '720p', '16:9') };
+    const native = await insert(scenario);
+    await attempt(native, 1, 'fal', 'completed', exact, 'private-remote', fal);
+    const fallback = await insert(scenario);
+    await attempt(fallback, 1, 'videorouter', 'failed', exact, null, sandbase);
+    await attempt(fallback, 2, 'fal', 'completed', { fallbackFrom: 'videorouter' }, 'private-remote', fal);
+    const hosted = await insert({ ...scenario, provider: 'videorouter' });
+    await attempt(hosted, 1, 'videorouter', 'completed', exact, 'private-remote', sandbase);
+    const legacy = await insert({ ...scenario, settings: { ...scenario.settings, ownedReferenceImages: true, hasSeed: false } });
+    await execute("INSERT INTO fal_queue_log VALUES($1,'kling-v4','fal','private-remote',$2)", [legacy, { request: { aspectRatio: '16:9' } }]);
+
+    const wanScenario = { engine: 'wan-3', created, provider: 'alibaba_model_studio',
+      settings: settings('wan-3', 1, '480p', '9:16') };
+    const wanSnapshot = { ...media, engineId: 'wan-3', resolution: '480p', aspectRatio: '9:16', referenceImageCount: 1,
+      inputVideoDurationSec: 0, referenceVideoCount: 0, unreviewedWanOptions: false, trimmedPromptLength: 14 };
+    const wanNative = await insert(wanScenario);
+    await attempt(wanNative, 1, wanScenario.provider, 'completed',
+      { ...wanSnapshot, ownedReferenceImages: true, hasSeed: false, promptExpansionEnabled: true }, 'private-remote', 'wan3.0-video');
+    const wanLegacy = await insert(wanScenario);
+    await attempt(wanLegacy, 1, wanScenario.provider, 'completed', wanSnapshot, 'private-remote', 'wan3.0-video');
+    const legacyText = await insert({ engine: 'wan-3-prime', created, provider: 'alibaba_model_studio',
+      settings: { ...basicSettings('wan-3-prime'), inputMode: 't2v', advanced: { seed: null, extraInputValues: { enable_prompt_expansion: true } } } });
+    await attempt(legacyText, 1, 'alibaba_model_studio', 'completed',
+      { ...wanSnapshot, engineId: 'wan-3-prime', mode:'t2v', resolution:'720p', aspectRatio:'16:9', referenceImageCount:0 },
+      'private-remote', 'wan3.0-video-prime');
+    const rows = (await loadHistoricalReplayGroups('2026-10-02','2026-11-01',execute))
+      .filter(row => row.bucketAt === '2026-10-29T15:00:00Z');
+    assert.equal(rows.reduce((n, row) => n + row.jobs, 0), 7);
+    assert.equal(rows.filter(row => row.engineId === 'kling-v4' && row.request?.ownedReferenceImages)
+      .reduce((n, row) => n + row.jobs, 0), 3);
+    assert.equal(rows.filter(row => row.engineId === 'wan-3' && row.request?.ownedReferenceImages).length, 1);
+    assert.doesNotMatch(JSON.stringify(rows), /private|https/);
+    for (const row of rows) {
+      assert.equal(row.request?.hasUnpricedOptions, false);
+      const report = buildHistoricalReplay([row]);
+      const trace = report.traces[0];
+      assert.equal(trace.excludedReason, null);
+      if (row.engineId === 'kling-v4') {
+        assert.equal(row.request?.images, 3);
+        if (row.request?.ownedReferenceImages) {
+          assert.equal(row.jobs, row.historicalProvider === 'fal' ? 2 : 1);
+          assert.equal(row.request.hasSeed, false);
+          assert.equal(trace.installed?.provider, 'videorouter');
+          assert.equal(trace.historicalMicros, row.historicalProvider === 'fal' ? 785_000 : 683_932);
+          assert.equal(trace.installed.costMicros, 683_932);
+        } else {
+          assert.equal(row.request?.hasSeed, undefined);
+          assert.deepEqual(trace.installed?.order, ['fal']);
+          assert.equal(report.totals.installedSavingsMicros, 0);
+        }
+      } else if (row.engineId === 'wan-3-prime') {
+        assert.equal(row.request?.hasSeed, false);
+        assert.equal(row.request?.promptExpansionEnabled, true);
+        assert.equal(trace.installed?.provider, 'videorouter');
+      } else if (row.request?.ownedReferenceImages) {
+        assert.equal(row.request.hasSeed, false);
+        assert.equal(row.request.promptExpansionEnabled, true);
+        assert.equal(row.request.promptCharacters, 14);
+        assert.equal(trace.installed?.provider, 'videorouter');
+        assert.equal(trace.installed.costMicros, 113_263);
+      } else {
+        assert.equal(row.request?.promptExpansionEnabled, undefined);
+        assert.equal(trace.offers.some(offer => offer.provider === 'videorouter'), false);
+      }
+    }
+  });
 });

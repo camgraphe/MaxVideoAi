@@ -4,6 +4,8 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import test from 'node:test';
 
+import type { TransactionQueryExecutor } from '../frontend/src/lib/db';
+import type { WalletFailureSettlementDependencies } from '../frontend/server/fal-webhook-refunds';
 import { runAlibabaModelStudioPoll } from '../frontend/server/alibaba-model-studio-poll';
 
 const root = process.cwd();
@@ -32,6 +34,22 @@ const baseJob = {
   updated_at: new Date(Date.now() - 20_000).toISOString(),
   created_at: new Date(Date.now() - 60_000).toISOString(),
 };
+
+function failureSettlement(
+  job: typeof baseJob,
+  queries: Array<{ sql: string; params?: unknown[] }>,
+): WalletFailureSettlementDependencies {
+  return { withTransaction: callback => callback({ query: async (sql: string, params: unknown[]) => {
+    queries.push({ sql, params });
+    if (sql.includes('SELECT status, payment_status')) return [{ ...job, status: 'failed' }];
+    if (sql.includes("type = 'charge'")) return [{ id: 1, user_id: job.user_id, wallet_funded: true,
+      amount_cents: job.final_price_cents, pricing_snapshot: job.pricing_snapshot, currency: 'USD', surface: 'video' }];
+    if (sql.includes("SET status = 'failed'")) return [{ job_id: job.job_id }];
+    if (sql.includes('INSERT INTO app_receipts')) return [{ id: 2 }];
+    if (sql.includes('RETURNING payment_status')) return [{ payment_status: 'refunded_wallet' }];
+    return [];
+  } } as unknown as TransactionQueryExecutor) };
+}
 
 test('Alibaba poll copies the expiring provider output before completing the existing job', async () => {
   const queries: Array<{ sql: string; params?: unknown[] }> = [];
@@ -103,13 +121,12 @@ for (const engineId of ['wan-3', 'wan-3-prime']) {
     const source = 'https://source.example/video-excerpts-private-v3-source.mp4?X-Amz-Signature=source-private-signature&X-Amz-Credential=source-private-access&X-Amz-Expires=3600';
     let copies = 0;
     const response = await runAlibabaModelStudioPoll({ deps: {
+      settlement: failureSettlement(job, queries),
       claimPollFn: allowGenerationPoll,
       queryFn: async (sql, params) => {
         queries.push({ sql, params });
         if (/FROM app_jobs/.test(sql) && /provider = \$1/.test(sql)) return [job] as never;
         if (/FROM provider_attempts/.test(sql)) return [{ id: 33, attempt_index: 1 }] as never;
-        if (/SET status = 'failed'/.test(sql)) return [{ job_id: job.job_id }] as never;
-        if (/INSERT INTO app_receipts/.test(sql)) return [{ id: 'reference_refund' }] as never;
         return [] as never;
       },
       getAlibabaModelStudioClientFn: () => ({ getTask: async () => ({ output: {
@@ -140,13 +157,12 @@ for (const engineId of ['wan-3', 'wan-3-prime']) {
     const job = { ...baseJob, engine_id: engineId };
     const signedSource = 'https://s.example/input.mp4?X-Amz-Signature=secret&X-Amz-Expires=3600';
     const response = await runAlibabaModelStudioPoll({ deps: {
+      settlement: failureSettlement(job, queries),
       claimPollFn: allowGenerationPoll,
       queryFn: async (sql, params) => {
         queries.push({ sql, params });
         if (/FROM app_jobs/.test(sql) && /provider = \$1/.test(sql)) return [job] as never;
         if (/FROM provider_attempts/.test(sql)) return [{ id: 35, attempt_index: 1 }] as never;
-        if (/SET status = 'failed'/.test(sql)) return [{ job_id: job.job_id }] as never;
-        if (/INSERT INTO app_receipts/.test(sql)) return [{ id: 'bad_media_refund' }] as never;
         return [] as never;
       },
       getAlibabaModelStudioClientFn: () => ({ getTask: async () => ({ output: {
@@ -213,13 +229,12 @@ test('Alibaba poll refunds a terminally failed paid-wallet job once', async () =
   const queries: Array<{ sql: string; params?: unknown[] }> = [];
   const response = await runAlibabaModelStudioPoll({
     deps: {
+      settlement: failureSettlement(baseJob, queries),
       claimPollFn: allowGenerationPoll,
       queryFn: async (sql, params) => {
         queries.push({ sql, params });
         if (/FROM app_jobs/.test(sql) && /provider = \$1/.test(sql)) return [baseJob] as never;
         if (/FROM provider_attempts/.test(sql)) return [{ id: 32, attempt_index: 1 }] as never;
-        if (/SET status = 'failed'/.test(sql)) return [{ job_id: baseJob.job_id }] as never;
-        if (/INSERT INTO app_receipts/.test(sql)) return [{ id: 'refund_1' }] as never;
         return [] as never;
       },
       getAlibabaModelStudioClientFn: () => ({
@@ -255,13 +270,12 @@ for (const engineId of ['wan-3', 'wan-3-prime']) {
     const queries: Array<{ sql: string; params?: unknown[] }> = [];
     const job = { ...baseJob, engine_id: engineId };
     const response = await runAlibabaModelStudioPoll({ deps: {
+      settlement: failureSettlement(job, queries),
       claimPollFn: allowGenerationPoll,
       queryFn: async (sql, params) => {
         queries.push({ sql, params });
         if (/FROM app_jobs/.test(sql) && /provider = \$1/.test(sql)) return [job] as never;
         if (/FROM provider_attempts/.test(sql)) return [{ id: 36, attempt_index: 1 }] as never;
-        if (/SET status = 'failed'/.test(sql)) return [{ job_id: job.job_id }] as never;
-        if (/INSERT INTO app_receipts/.test(sql)) return [{ id: 'dimensions-refund' }] as never;
         return [] as never;
       },
       getAlibabaModelStudioClientFn: () => ({ getTask: async () => ({ output: {

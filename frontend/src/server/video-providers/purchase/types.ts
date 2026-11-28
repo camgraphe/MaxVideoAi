@@ -17,6 +17,8 @@ export type PurchaseRequest = {
   audioEnabled?: boolean;
   hasSeed?: boolean;
   promptExpansionEnabled?: boolean;
+  ownedReferenceImages?: boolean;
+  promptCharacters?: number;
   requiresDirectControls?: boolean;
   hasUnpricedOptions?: boolean;
 };
