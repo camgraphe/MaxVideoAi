@@ -2,6 +2,8 @@ import { isNativeGenerationPlatform } from '@/server/agent-api/native-generation
 import { transactionSelectForCurrentSchema } from './projection';
 import { receiptVideoPurchase } from './video-purchase';
 import { query } from '@/lib/db';
+import { readMcpAuthMetadata } from '@/server/admin-mcp-auth-metadata';
+import { MCP_CLIENT_FAMILIES, type McpClientFamily } from '@/server/mcp/client-family';
 import { isMiloPackTransaction } from '@/lib/admin/transaction-review';
 import { normalizeMediaUrl } from '@/lib/media';
 import { ensureBillingSchema } from '@/lib/schema';
@@ -29,7 +31,11 @@ function refundReason(reasonCode: string | null, refundNote: string | null): str
   return [label, note].filter(Boolean).join(' — ') || null;
 }
 
-export function mapAdminTransactionRow(row: RawTransactionRow, userEmail: string | null): AdminTransactionRecord {
+export function mapAdminTransactionRow(
+  row: RawTransactionRow,
+  userEmail: string | null,
+  fallbackClient?: McpClientFamily,
+): AdminTransactionRecord {
   const type = row.type as AdminTransactionRecord['type'];
   const isMiloPack = isMiloPackTransaction({ billingProductKey: row.billing_product_key, jobId: row.job_id });
   const jobExists = Boolean(
@@ -57,6 +63,9 @@ export function mapAdminTransactionRow(row: RawTransactionRow, userEmail: string
     jobVideoUrl: row.job_video_url ? (normalizeMediaUrl(row.job_video_url) ?? row.job_video_url) : null,
     jobDurationSec: row.job_duration_sec ?? null,
     isMcpGeneration: row.is_mcp_generation,
+    mcpClientFamily: row.is_mcp_generation
+      ? (MCP_CLIENT_FAMILIES.find((family) => family === row.mcp_client_family) ?? fallbackClient ?? null)
+      : null,
     isStudioGeneration: row.is_studio_generation,
     isCreateGeneration: row.is_create_generation,
     confirmationPlatform: isNativeGenerationPlatform(row.confirmation_platform) ? row.confirmation_platform : null,
@@ -87,6 +96,12 @@ export async function hydrateTransactionRows(rows: RawTransactionRow[]): Promise
     new Set(rows.map((row) => row.user_id).filter((value): value is string => Boolean(value))),
   );
   const userEmailMap = new Map<string, string | null>();
+  const unresolvedClientIds = new Set(rows.flatMap((row) =>
+    row.mcp_oauth_client_id && !row.mcp_client_family ? [row.mcp_oauth_client_id] : [],
+  ));
+  const authMetadata = process.env.SUPABASE_SERVICE_ROLE_KEY && unresolvedClientIds.size
+    ? readMcpAuthMetadata([], [...unresolvedClientIds])
+    : null;
   if (uniqueUserIds.length && process.env.SUPABASE_SERVICE_ROLE_KEY) {
     await Promise.all(
       uniqueUserIds.map(async (userId) => {
@@ -96,7 +111,13 @@ export async function hydrateTransactionRows(rows: RawTransactionRow[]): Promise
     );
   }
 
-  return rows.map((row) => mapAdminTransactionRow(row, row.user_id ? (userEmailMap.get(row.user_id) ?? null) : null));
+  const metadata = await authMetadata;
+  const clients = new Map(metadata?.clients.map((client) => [client.oauth_client_id, client.family]));
+  return rows.map((row) => mapAdminTransactionRow(
+    row,
+    row.user_id ? (userEmailMap.get(row.user_id) ?? null) : null,
+    row.mcp_oauth_client_id ? clients.get(row.mcp_oauth_client_id) : undefined,
+  ));
 }
 
 export async function fetchTransactionAnomalies(): Promise<TransactionAnomalies> {

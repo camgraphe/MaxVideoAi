@@ -51,6 +51,7 @@ function invalidParameter(field?: string): never {
 // Fixed public guidance only. Never forward stored names, URLs, IDs or provider fields.
 const REFERENCE_CONSTRAINT_MESSAGES: Record<ReferenceConstraintFailure, string> = {
   metadata_unverified: 'Reference file metadata is unverified. Re-import the original file before preparing another quote.',
+  video_dimensions_too_small: 'Choose a higher-resolution source video for this workflow.',
   dimensions_unverified: 'Reference dimensions are unverified. Re-import the original file before preparing another quote.',
   duration_unverified: 'Reference duration is unverified. Re-import the original file before preparing another quote.',
   duration_unsupported: 'Reference duration is outside the selected model mode limits. Check get_model_details and choose a supported clip.',
@@ -180,6 +181,9 @@ export function buildGenerationPricingSnapshot(
 /** Shared read-only verification and canonical pricing. No quote, wallet or reservation writes. */
 export async function readGenerationPricing(request: CanonicalGenerationRequest,principal: GenerationActor,dependencies: GenerationPricingReadDependencies) {
   requireGenerationActor(principal);
+  if (principal.authMethod !== 'mobile-session' && (request.orderedMediaReferences || request.orderedImageReferences)) {
+    throw new AgentApiError('PARAMETER_INVALID', 'Native reference bindings require a mobile Create session.');
+  }
   const fluxDraftSource = await (dependencies.resolveFluxLineage ?? resolveCanonicalFluxLineage)(request,principal);
   const lumaSource = await resolveCanonicalLumaLineage(request, principal);
   const inherited = await resolveAgentSeedanceWorkflow(request, principal.userId);
@@ -211,6 +215,12 @@ export async function readGenerationPricing(request: CanonicalGenerationRequest,
         ?? ((currentRequest, currentPrincipal) =>
           resolveGenerationReferencesForActor(currentRequest, currentPrincipal));
       resolvedReferences = await resolveReferences(request, principal);
+      if (request.mode === 'a2v' && request.orderedMediaReferences && request.settings.durationSec === undefined) {
+        const audio = resolvedReferences.find(ref => ref.role === 'source' && ref.mediaKind === 'audio');
+        if (!audio?.durationSec || !Number.isFinite(audio.durationSec) || audio.durationSec <= 0)
+          throw new AgentApiError('REFERENCE_INVALID', REFERENCE_CONSTRAINT_MESSAGES.duration_unverified);
+        request = { ...request, settings: { ...request.settings, durationSec: Math.ceil(audio.durationSec) } };
+      }
       if (request.surface === 'video' && request.operation !== 'kling-edit' && !isH3SourceOperation(request.operation) && !isFluxLtxSourceOperation(request.operation) && request.settings.durationSec === undefined
         && videoDurationPolicy(candidate.engine, request.mode, candidate.modeCaps[request.mode]) === 'source_video') {
         const source = resolvedReferences.filter(reference => reference.role === 'source' && reference.mediaKind === 'video');

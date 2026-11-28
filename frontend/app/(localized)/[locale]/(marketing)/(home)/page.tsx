@@ -1,3 +1,4 @@
+import { pageSocialImage } from '@/lib/seo/social-preview-images';
 import '@/styles/marketing-home.css';
 import { Suspense } from 'react';
 import { buildHomeComparisonData, buildHomeComparisonLinks } from './_lib/home-comparison-data';
@@ -49,7 +50,7 @@ export async function generateMetadata(props: { params: Promise<{ locale: string
     title: t('title'),
     description: t('description'),
     hreflangGroup: 'home',
-    image: '/og/home-2026-09-25.png',
+    image: pageSocialImage('home', locale),
     imageAlt: t('title'),
   });
 }

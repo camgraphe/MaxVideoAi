@@ -26,11 +26,11 @@ export type McpGenerationQuoteState =
 
 export type GenerationQuoteScope =
   | { origin: 'oauth' }
-  | { origin: 'toolbox-session' }
+  | { origin: 'toolbox-session' | 'mobile-session' }
   | { origin: 'studio-session'; projectId: string };
 
 export type McpGenerationQuote<Request = CanonicalGenerationRequest> = {
-  authOrigin?: 'oauth' | 'studio-session' | 'toolbox-session';
+  authOrigin?: GenerationQuoteScope['origin'];
   studioProjectId?: string | null;
   quoteId: string;
   userId: string;
@@ -272,7 +272,7 @@ export function createQuoteRepository<Request>(codec: {
   hash(value: Request): string;
   parseFunding(snapshot: Record<string, unknown>, priceCents: number, currency: string, mode: GenerationFundingMode, request: Request, persistedRead?: boolean): IncludedTrialFundingSnapshot | null;
 }, scope: GenerationQuoteScope = { origin: 'oauth' }) {
-  if (scope.origin !== 'oauth' && scope.origin !== 'toolbox-session' && (scope.origin !== 'studio-session' || !isBoundedText(scope.projectId, 128))) {
+  if (scope.origin !== 'oauth' && scope.origin !== 'toolbox-session' && scope.origin !== 'mobile-session' && (scope.origin !== 'studio-session' || !isBoundedText(scope.projectId, 128))) {
     throw new Error('Invalid quote scope.');
   }
   const studio = scope.origin === 'studio-session';

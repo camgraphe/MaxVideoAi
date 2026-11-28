@@ -1,3 +1,4 @@
+import { BRAND_SOCIAL_IMAGE } from '@/lib/seo/social-preview-images';
 import { isArchivedGenerationModel, archivedGenerationMessage } from '@/lib/model-generation-policy';
 import { SITE_ORIGIN } from '@/lib/siteOrigin';
 import type { getVideoWatchPageDataById } from '@/server/video-seo';
@@ -7,8 +8,8 @@ export type AspectRatio = { width: number; height: number } | null;
 export type DetailRow = { key: string; label: string; value: string };
 
 export const SITE = SITE_ORIGIN.replace(/\/$/, '');
-export const FALLBACK_THUMB = `${SITE}/og/brand-2026-09-25.png`;
-export const FALLBACK_POSTER = `${SITE}/og/brand-2026-09-25.png`;
+export const FALLBACK_THUMB = `${SITE}${BRAND_SOCIAL_IMAGE}`;
+export const FALLBACK_POSTER = `${SITE}${BRAND_SOCIAL_IMAGE}`;
 export const TITLE_SUFFIX = ' — MaxVideoAI';
 
 const TRAILING_BRAND_SUFFIX = /\s+[—-]\s*MaxVideo\s*AI\s*$/i;

@@ -1,3 +1,4 @@
+import { BRAND_SOCIAL_IMAGE } from '@/lib/seo/social-preview-images';
 import type { Metadata } from 'next';
 import { notFound, permanentRedirect } from 'next/navigation';
 import { localePathnames, locales, type AppLocale } from '@/i18n/locales';
@@ -85,7 +86,7 @@ export async function generateMetadata(
   const paginationSeo = getExamplesPaginationSeo(searchParams ?? {});
   const usesFirstGalleryPage = canonical === normalized && searchParams?.page === undefined && paginationSeo.index;
   const heroVideo = await selectFamilyMetadataVideo(canonical, usesFirstGalleryPage ? readFirstFamilyGalleryPage : undefined);
-  const ogImage = toAbsoluteUrl(heroVideo?.thumbUrl) ?? `${SITE}/og/brand-2026-09-25.png`;
+  const ogImage = toAbsoluteUrl(heroVideo?.thumbUrl) ?? `${SITE}${BRAND_SOCIAL_IMAGE}`;
   const familyPageConfig = getExampleFamilyPageConfig(canonical);
   const noindex = !paginationSeo.index || familyPageConfig?.stage === 'public_noindex';
 

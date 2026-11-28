@@ -1,19 +1,42 @@
 import { receiptPurchaseProjection, receiptRouteJoin } from './video-purchase';
 import { query } from '@/lib/db';
+import { buildMcpClientEvidenceSql } from '@/server/admin-mcp-outcomes-queries';
 
 export async function transactionSelectForCurrentSchema(receiptDetail = false) {
-  const [schema] = await query<{ available: boolean; has_origin: boolean; has_platform: boolean; has_jobs: boolean; has_attempts: boolean }>(
+  const [schema] = await query<{
+    available: boolean;
+    has_origin: boolean;
+    has_platform: boolean;
+    has_jobs: boolean;
+    has_attempts: boolean;
+    has_oauth_client: boolean;
+    clientFamily: boolean;
+    funnel: boolean;
+  }>(
     `SELECT to_regclass('public.mcp_generation_quotes') IS NOT NULL AS available,
        EXISTS (SELECT FROM pg_attribute WHERE attrelid=to_regclass('public.mcp_generation_quotes')
          AND attname='auth_origin' AND NOT attisdropped) AS has_origin,
        EXISTS (SELECT FROM pg_attribute WHERE attrelid=to_regclass('public.mcp_generation_quotes')
-         AND attname='confirmation_platform' AND NOT attisdropped) AS has_platform
+         AND attname='confirmation_platform' AND NOT attisdropped) AS has_platform,
+       EXISTS (SELECT FROM pg_attribute WHERE attrelid=to_regclass('public.mcp_generation_quotes')
+         AND attname='oauth_client_id' AND NOT attisdropped) AS has_oauth_client,
+       EXISTS (SELECT FROM pg_attribute WHERE attrelid=to_regclass('public.mcp_audit_events')
+         AND attname='client_family' AND NOT attisdropped) AS "clientFamily",
+       to_regclass('public.mcp_funnel_events') IS NOT NULL AS funnel
        ${receiptDetail ? `, (SELECT count(*)=9 FROM pg_attribute WHERE attrelid=to_regclass('public.app_jobs')
            AND NOT attisdropped AND attname IN ('id','user_id','surface','engine_id','final_price_cents','currency','provider','provider_job_id','cost_breakdown_usd')) AS has_jobs,
           to_regclass('public.provider_attempts') IS NOT NULL AS has_attempts` : ''}`,
   );
   const origin = schema?.has_origin ? "COALESCE(quote.auth_origin, 'oauth')" : "'oauth'::text";
   const platform = schema?.has_platform ? 'quote.confirmation_platform' : 'NULL::text';
+  // The compact label is safe only when every matching OAuth quote identifies the same app.
+  const hasOAuthOrigin = schema?.has_oauth_client && schema.has_origin;
+  const oauthClient = hasOAuthOrigin ? `CASE WHEN r.type IN ('charge','refund')
+    AND COUNT(*) FILTER (WHERE quote.auth_origin = 'oauth') = COUNT(quote.oauth_client_id) FILTER (WHERE quote.auth_origin = 'oauth')
+    AND COUNT(DISTINCT quote.oauth_client_id) FILTER (WHERE quote.auth_origin = 'oauth') = 1
+    THEN MIN(quote.oauth_client_id) FILTER (WHERE quote.auth_origin = 'oauth')
+  END` : 'NULL::text';
+  const hasClientEvidence = hasOAuthOrigin && (schema.clientFamily || schema.funnel);
   return `SELECT
        r.id AS receipt_id,
        ${receiptDetail ? (schema?.has_jobs ? receiptPurchaseProjection(schema.has_attempts) : 'NULL::jsonb') + ' AS job_purchase,' : ''}
@@ -40,6 +63,8 @@ export async function transactionSelectForCurrentSchema(receiptDetail = false) {
        COALESCE(provenance.studio, FALSE) AS is_studio_generation,
        COALESCE(provenance.mobile_create, FALSE) AS is_create_generation,
        provenance.platform AS confirmation_platform,
+       provenance.oauth_client_id AS mcp_oauth_client_id,
+       ${hasClientEvidence ? 'identity.client' : 'NULL::text'} AS mcp_client_family,
        EXISTS (
          SELECT 1
          FROM app_receipts r2
@@ -65,9 +90,19 @@ export async function transactionSelectForCurrentSchema(receiptDetail = false) {
          bool_or(${origin} = 'mobile-session') AS mobile_create,
          CASE WHEN COUNT(*) = 1 AND r.type IN ('charge','refund')
            THEN MIN(CASE WHEN ${origin} IN ('studio-session','mobile-session') THEN ${platform} END)
-         END AS platform
+         END AS platform,
+         ${oauthClient} AS oauth_client_id
        FROM mcp_generation_quotes quote WHERE quote.job_id = r.job_id AND quote.user_id = r.user_id::text
-     ) provenance ON TRUE` : `LEFT JOIN (SELECT FALSE AS mcp, FALSE AS studio, FALSE AS mobile_create, NULL::text AS platform)
+     ) provenance ON TRUE` : `LEFT JOIN (SELECT FALSE AS mcp, FALSE AS studio, FALSE AS mobile_create, NULL::text AS platform, NULL::text AS oauth_client_id)
        provenance ON TRUE`}
+     ${hasClientEvidence ? `LEFT JOIN LATERAL (
+       SELECT evidence.client
+       FROM (${buildMcpClientEvidenceSql(schema)}) evidence
+       WHERE evidence.user_id = r.user_id::text
+         AND evidence.oauth_client_id = provenance.oauth_client_id
+         AND evidence.observed_at <= j.created_at
+       ORDER BY evidence.priority, evidence.observed_at DESC, evidence.client
+       LIMIT 1
+     ) identity ON TRUE` : ''}
 `;
 }

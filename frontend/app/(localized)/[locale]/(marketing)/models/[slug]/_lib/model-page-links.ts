@@ -1,3 +1,4 @@
+import { BRAND_SOCIAL_IMAGE } from '@/lib/seo/social-preview-images';
 import type { LocalizedLinkHref } from '@/i18n/navigation';
 import { locales, type AppLocale } from '@/i18n/locales';
 import { buildSlugMap } from '@/lib/i18nSlugs';
@@ -136,7 +137,7 @@ export function buildDetailSlugMap(slug: string) {
 }
 
 export function toAbsoluteUrl(url?: string | null): string {
-  if (!url) return `${SITE}/og/brand-2026-09-25.png`;
+  if (!url) return `${SITE}${BRAND_SOCIAL_IMAGE}`;
   if (url.startsWith('http://') || url.startsWith('https://')) return url;
   if (url.startsWith('//')) return `https:${url}`;
   if (url.startsWith('/')) return `${SITE}${url}`;

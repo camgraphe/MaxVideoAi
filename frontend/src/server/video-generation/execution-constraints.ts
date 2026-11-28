@@ -225,9 +225,9 @@ function validateSeedance25Constraints(params: {
     if (!images || !videos || !audio) {
       return minimaxH3Error('references', 'Seedance references must use typed URL arrays.');
     }
-    return images.length || videos.length
+    return images.length || videos.length || audio.length
       ? { ok: true }
-      : minimaxH3Error('references', 'Seedance reference mode requires visual media.');
+      : minimaxH3Error('references', 'Seedance reference mode requires an image, video or audio reference.');
   }
   if (normalizedMode === 'v2v') {
     return typeof payload.video_url === 'string' && payload.video_url.trim()

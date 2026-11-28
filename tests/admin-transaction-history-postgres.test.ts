@@ -137,6 +137,38 @@ test('history filters before pagination, retains precision and resolves receipts
     await db.pool.query(`INSERT INTO mcp_generation_quotes(job_id,user_id,auth_origin,confirmation_platform)
       VALUES ('studio-image',$1,'studio-session','android')`, [owner]);
     assert.equal((await fetchTransactionReceipt('125'))?.confirmationPlatform, null, 'ambiguous provenance');
+    await db.pool.query(`
+      ALTER TABLE mcp_generation_quotes ADD COLUMN oauth_client_id text;
+      UPDATE mcp_generation_quotes SET oauth_client_id='client-a' WHERE job_id IN ('mcp-job','studio-audio','app-job');
+      CREATE TABLE mcp_audit_events (user_id text, oauth_client_id text, event_type text,
+        outcome text, client_family text, created_at timestamptz);
+      CREATE TABLE mcp_funnel_events (user_id text, oauth_client_id text, event_type text,
+        acquisition_client text, occurred_at timestamptz);
+      INSERT INTO app_receipts(id,user_id,type,amount_cents,currency,job_id,created_at) VALUES
+        (132,'${owner}','refund',500,'USD','mcp-job','2026-09-22T10:01:00Z'),
+        (133,'${owner}','topup',500,'USD',NULL,'2026-09-22T10:02:00Z');
+      INSERT INTO mcp_audit_events VALUES
+        ('22222222-2222-4222-8222-222222222222','client-a','connection_initialized','success','claude','2026-09-22T09:58:00Z'),
+        ('${owner}','client-a','connection_initialized','success','codex','2026-09-22T10:00:30Z');
+      INSERT INTO mcp_funnel_events VALUES
+        ('${owner}','client-a','oauth_connection_completed','chatgpt','2026-09-22T09:58:00Z');
+    `);
+    const chatgptHistory = await fetchTransactionHistory({ period: 'all', query: 'mcp-job', type: 'all', limit: 50 }, now);
+    assert.deepEqual(chatgptHistory.transactions.map((row) => [row.type, row.mcpClientFamily]), [
+      ['refund', 'chatgpt'], ['charge', 'chatgpt'],
+    ]);
+    for (const id of ['124', '127', '133']) {
+      assert.equal((await fetchTransactionReceipt(id))?.mcpClientFamily, null);
+    }
+    await db.pool.query(`INSERT INTO mcp_audit_events VALUES
+      ($1,'client-a','connection_initialized','success','codex','2026-09-22T09:59:00Z')`, [owner]);
+    assert.equal((await fetchTransactionReceipt('132'))?.mcpClientFamily, 'codex', 'use host evidence available when the job was submitted');
+    await db.pool.query(`INSERT INTO mcp_generation_quotes(job_id,user_id,auth_origin,oauth_client_id)
+      VALUES ('mcp-job',$1,'oauth','client-b')`, [owner]);
+    assert.equal((await fetchTransactionReceipt('123'))?.mcpClientFamily, null, 'conflicting quotes stay generic');
+    await db.pool.query(`DELETE FROM mcp_generation_quotes WHERE oauth_client_id='client-b';
+      DELETE FROM app_receipts WHERE id=132`);
+
     // The first reader has no product column: historical prefix identity must still work.
     await db.pool.query(`INSERT INTO app_receipts(id,user_id,type,amount_cents,currency,job_id,created_at)
       VALUES (140,$1,'charge',500,'USD','studio-sol-pack:synthetic-pack','2026-09-22T10:05:00Z')`, [owner]);

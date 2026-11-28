@@ -1,82 +1,53 @@
-# Use MaxVideoAI with ChatGPT
+<a id="use-maxvideoai-with-chatgpt" name="use-maxvideoai-with-chatgpt"></a>
+<a id="how-do-i-install-or-connect-maxvideoai" name="how-do-i-install-or-connect-maxvideoai"></a>
 
-ChatGPT and Codex use the same MaxVideoAI MCP connection. Connect it in ChatGPT developer mode, then complete OAuth on the first use. From there, you can compare current video models, prepare an exact quote, approve one paid attempt, and recover finished work in the MaxVideoAI Library.
+# Connect MaxVideoAI in ChatGPT
 
-For a safe first request, jump to the [no-spend verification](#how-do-i-verify-without-spending-credits).
+Install the MaxVideoAI plugin from the ChatGPT directory and connect your MaxVideoAI account. [Open the official ChatGPT listing](https://chatgpt.com/plugins/plugin_asdk_app_6af7c45d28c48191982cf5be6eb7e058)
 
-```text
-Connect direct MCP → OAuth on first use → review tools → plan without spending → approve one quoted attempt → recover from the Library
-```
+<a id="what-happens-after-oauth" name="what-happens-after-oauth"></a>
 
-## Which ChatGPT plans and permissions support the connection?
+Choose **Install plugin**, then sign in or create the MaxVideoAI account whose credits and Library you want to use. The published listing identifies MaxVideoAI Plan and MaxVideoAI Generation. It offers image and video creation, voices and sound effects, character creation and reuse, Recast scenes, Studio editing, subtitles and downloading finished media. [ChatGPT plugin details](https://chatgpt.com/plugins/plugin_asdk_app_6af7c45d28c48191982cf5be6eb7e058)
 
-OpenAI's current beta documentation says full MCP, including write and modify actions, is available on ChatGPT web for Business and Enterprise/Edu workspaces. Business admins or owners enable developer mode and create apps. Enterprise/Edu admins can grant developer access through role controls; admins or owners publish apps.
-
-Pro users can enable developer mode for MCPs limited to read/fetch permissions. That permission set supports discovery and planning, but not the complete MaxVideoAI generation journey.
-
-```text
-Full MCP beta: Business and Enterprise/Edu on ChatGPT web
-Pro: read/fetch MCP permissions in developer mode
-```
-
-## How do I install or connect MaxVideoAI?
-
-MaxVideoAI is deliberately not submitted to the OpenAI directory under the current commerce policy. This directory decision is separate from direct MCP availability and does not disable the live developer-mode setup below.
-
-### Direct developer MCP connection
-
-For eligible workspaces, the developer-mode MCP endpoint is `https://api.maxvideoai.com/mcp`:
-
-1. Confirm that your plan and role permit developer mode under OpenAI's current beta rules.
-2. Enable developer mode from the Apps advanced settings or workspace permissions available to your role.
-3. Open **Apps → Create** from workspace or user settings, as permitted.
-4. Enter the MaxVideoAI name and `https://api.maxvideoai.com/mcp`.
-5. Select OAuth authentication. Never add a token, query string, password, or API key to the endpoint.
-6. Choose **Scan Tools**, complete MaxVideoAI browser OAuth, review the discovered tools, and create the connection.
-
-```text
-Remote MCP endpoint: https://api.maxvideoai.com/mcp
-Authentication: OAuth on first use
-OpenAI directory: not submitted under the current commerce policy
-```
-
-## What happens after OAuth?
-
-OAuth opens MaxVideoAI in your browser so you can sign in or create an account without giving ChatGPT your password. The connection then uses that MaxVideoAI account, its credits, and its Library. Review the scanned tools and the permissions ChatGPT presents before continuing.
-
-Planning reads current product facts and can calculate named budgets without spending credits. Generation tools prepare the selected model, prompt, settings, and supported references, then return an exact quote. Only an explicit approval authorizes one paid attempt; a changed request needs a fresh quote.
-
-![Current MaxVideoAI home page paired with the public MCP result section for Claude](../assets/demos/brief-to-video-workflow.webp)
-
-*MaxVideoAI product proof: this composite pairs the current public home page with Claude-specific result and saved-to-Library evidence from the public MCP page. It is not native ChatGPT host proof and does not prove a ChatGPT quote, approval, or generation.*
+Start with the [no-spend verification](#how-do-i-verify-without-spending-credits).
 
 ## How do I verify without spending credits?
 
-Start with a planning request that cannot spend credits:
+```text
+For a skater trailing a ribbon of folded paper at night, compare two
+image-to-video models that accept a still image. Keep duration and framing
+the same where supported. Show the estimated price for one take on each
+route. Wait for me to choose a model.
+```
 
-**Example**: “Use MaxVideoAI to compare current AI video models for a 15-second product film. Give me two named budgets and stop before any paid generation.”
+You can plan before uploading the reference. When you choose the take, select a private reference from your MaxVideoAI Library or attach a file by a supported route. Check the exact quote and connected account before approving one paid attempt. Retrieve the finished output in your MaxVideoAI Library. [MaxVideoAI integration guide](https://maxvideoai.com/mcp) · [Compare video models](../examples/compare-ai-video-models.md) · [Price a video project](../examples/price-a-video-project.md)
 
-Then move to a concrete request only when the model, prompt, settings, and supported references are ready. Review the exact quote before approving one attempt. If a response is interrupted after submission, check the accepted job or recent generations before considering another paid request.
+## How do I find a clip after an interrupted reply?
 
-- [Compare current AI video models](../examples/compare-ai-video-models.md) before selecting a route.
-- [Price an AI video project](../examples/price-a-video-project.md) before preparing work.
-- [Review the complete workflow](how-it-works.md) before a first paid generation.
+Ask ChatGPT for the status of the generation you already approved. Use the accepted job to retrieve the result. [Recovery guide](../examples/recover-a-generation.md) · [Open your MaxVideoAI Library](https://maxvideoai.com/app/library)
 
-## How do I disconnect and revoke access?
+<a id="which-chatgpt-plans-and-permissions-support-the-connection" name="which-chatgpt-plans-and-permissions-support-the-connection"></a>
+<a id="direct-developer-mcp-connection" name="direct-developer-mcp-connection"></a>
 
-**App connection:** users manage the app connection or connected account from **Settings → Apps**, or from the connection surface where shown for their account, then choose **Disconnect** when available. Workspace admins manage workspace connections through the controls available to their role.
+## Advanced setup for a custom MCP connection
 
-**Authorization:** revoke the corresponding MaxVideoAI OAuth connection from your MaxVideoAI account connection settings. Disconnecting the app connection in ChatGPT does not replace that MaxVideoAI-side revocation.
+The official installation starts with the ChatGPT directory button above. An administrator building a separate, workspace-managed MCP connection can use the generic remote endpoint below.
 
 ```text
-Disconnect the app connection → revoke the MaxVideoAI OAuth connection
+https://api.maxvideoai.com/mcp
 ```
+
+In ChatGPT web, open **Plugins**, choose **+**, then **Add custom MCP server** when available. Select OAuth and review the account permissions. Workspace eligibility and controls depend on the host. [OpenAI’s custom MCP guide](https://help.openai.com/en/articles/12584461-connecting-custom-mcp-servers-in-chatgpt) · [MaxVideoAI technical reference](https://maxvideoai.com/docs/mcp)
+
+<a id="how-do-i-disconnect-and-revoke-access" name="how-do-i-disconnect-and-revoke-access"></a>
+
+## Disconnect your account
+
+Open the plugin or connected-app settings in ChatGPT and disconnect the MaxVideoAI account. To revoke the authorization in MaxVideoAI, remove the matching connection from your account settings. [Permissions](privacy-and-permissions.md) · [Troubleshooting](troubleshooting.md)
 
 ## Sources
 
-- [OpenAI: Developer mode and MCP apps in ChatGPT](https://help.openai.com/en/articles/12584461-developer-mode-apps-and-full-mcp-connectors-in-chatgpt-beta)
-- [OpenAI: Apps in ChatGPT](https://help.openai.com/en/articles/11487775-connectors-in-chatgpt)
-- [OpenAI: Plugins in ChatGPT and Codex](https://help.openai.com/en/articles/20001256-plugins-in-codex)
-- [MaxVideoAI compatibility evidence](https://maxvideoai.com/docs/mcp)
+- [Published ChatGPT listing](https://chatgpt.com/plugins/plugin_asdk_app_6af7c45d28c48191982cf5be6eb7e058)
+- [MaxVideoAI integration hub](https://maxvideoai.com/mcp)
 
-Last reviewed: 2026-09-16.
+Last reviewed: 2026-11-28.

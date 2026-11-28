@@ -7,7 +7,7 @@ export type McpAuthMetadata = {
 };
 
 // Bounded, read-only fallback for unsynchronized profiles and legacy client attribution.
-// No account details, raw client names or client secrets leave this server module.
+// Only the coarse client family is returned. Names, OAuth callbacks and secrets stay in this module.
 export async function readMcpAuthMetadata(
   userIds: string[],
   clientIds: string[],
@@ -28,7 +28,12 @@ export async function readMcpAuthMetadata(
       ...clientIds.map((clientId) => async () => {
         const { data, error } = await admin.auth.admin.oauth.getClient(clientId);
         if (error || !data || data.client_id !== clientId) return;
-        const family = classifyMcpClient({ params: { clientInfo: { name: data.client_name } } });
+        const declaredFamily = classifyMcpClient({ params: { clientInfo: { name: data.client_name } } });
+        // The directory registration can use the app's name and still have ChatGPT's connector callback.
+        const chatGptCallback = data.redirect_uris?.some((uri) =>
+          /^https:\/\/chatgpt\.com\/connector\/oauth\/[A-Za-z0-9_-]+$/u.test(uri),
+        );
+        const family = declaredFamily === 'other' && chatGptCallback ? 'chatgpt' : declaredFamily;
         if (family !== 'other') result.clients.push({ oauth_client_id: clientId, family });
       }),
     ];

@@ -54,6 +54,9 @@ export type CanonicalGenerationReference =
   | {
       kind: 'asset';
       assetId: string;
+      /** Explicit native field binding, checked against the owned original and current model. */
+      fieldId?: string;
+      mediaKind?: CanonicalReferenceMediaKind;
       role: CanonicalGenerationReferenceRole;
       slot?: number;
     }
@@ -83,6 +86,8 @@ export type SeedanceGenerationWorkflow = { step: 'draft' } | { step: 'final'; dr
 
 export type CanonicalGenerationRequest = {
   schemaVersion: 1;
+  orderedImageReferences?: true;
+  orderedMediaReferences?: true;
   sourceJobId?: string;
   sourceOutputId?: string;
   elements?: import('@/lib/kling-owned-elements').KlingOwnedElements;

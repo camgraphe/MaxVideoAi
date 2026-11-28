@@ -1,3 +1,4 @@
+import { pageSocialImage } from '@/lib/seo/social-preview-images';
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
@@ -26,8 +27,8 @@ export async function generateMetadata(props: { params: Promise<{ locale: AppLoc
     description: t('description'),
     hreflangGroup: 'pricing',
     slugMap: PRICING_SLUG_MAP,
-    image: '/og/pricing-2026-09-25.png',
-    imageAlt: 'MaxVideoAI pricing: see the price before creating.',
+    image: pageSocialImage('pricing', locale),
+    imageAlt: t('title'),
   });
 }
 

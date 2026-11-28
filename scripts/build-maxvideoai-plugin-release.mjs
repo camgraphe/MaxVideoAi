@@ -15,7 +15,7 @@ import {
 import { basename, dirname, extname, isAbsolute, join, parse, relative, resolve, sep } from 'node:path';
 import { homedir, tmpdir } from 'node:os';
 
-import { findReadmeImageUsages } from './check-github-assets.mjs';
+import { findReadmeImageUsages, validateDraftEditorialApproval, validateEditorialUsage } from './check-github-assets.mjs';
 import { readImageDimensions } from './register-github-asset.mjs';
 
 const CURRENT_PUBLIC_FILES = [
@@ -78,6 +78,8 @@ const CURRENT_PUBLIC_FILES = [
   'skills/plan/agents/openai.yaml',
   'skills/plan/references/budget-planning.md',
 ];
+
+const PAPER_RUN_EDITORIAL = 'assets/campaign/paper-run.webp';
 
 const VERSION_0_3_PUBLIC_FILES = [
   'docs/discovery.md',
@@ -515,7 +517,13 @@ function inspectAsset(name, contents, assetRecords, exportedFiles) {
   if (typeof record.sha256 !== 'string' || record.sha256 !== sha256(contents)) {
     fail(`asset manifest hash mismatch at ${name}`);
   }
-  if (exportedFiles.has(name) && record.state !== 'publishable_proof') {
+  if (exportedFiles.has(name) && name === PAPER_RUN_EDITORIAL) {
+    if (record.state !== 'draft_editorial' || !Array.isArray(record.placements) || !record.placements.includes('plugin_readme')) {
+      fail(`Paper Run requires draft_editorial approval for plugin_readme: ${name}`);
+    }
+    const errors = validateDraftEditorialApproval(record);
+    if (errors.length) fail(errors.join('; '));
+  } else if (exportedFiles.has(name) && record.state !== 'publishable_proof') {
     fail(`exported asset must be publishable_proof: ${name}`);
   }
   let image;
@@ -567,6 +575,12 @@ function resolveMarkdownImageReferences(source, publicFiles) {
         fail(`local Markdown image reference is unsafe in ${documentName}: ${usage.path.slice(8)}`);
       }
       const referencedName = usage.path;
+      if (referencedName === PAPER_RUN_EDITORIAL) {
+        if (documentName !== 'README.md') fail(`Paper Run is approved only for plugin_readme: ${documentName}`);
+        const errors = [];
+        for (const image of usage.usages) validateEditorialUsage(image, referencedName, errors);
+        if (errors.length) fail(errors.join('; '));
+      }
       if (!publicFileSet.has(referencedName)) {
         fail(`Markdown image reference is not allowlisted in ${documentName}: ${referencedName}`);
       }
@@ -634,6 +648,7 @@ function publicFilesForVersion(version) {
   if (versionAtLeast(version, '0.3.0') && !versionAtLeast(version, '0.3.5')) {
     files.push(`assets/social/release-${version}.png`);
   }
+  if (versionAtLeast(version, '0.3.9')) files.push(PAPER_RUN_EDITORIAL);
   return files.sort();
 }
 

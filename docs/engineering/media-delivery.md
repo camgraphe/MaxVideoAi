@@ -7,6 +7,31 @@ For authenticated organization, collection, Trash and identity ownership, read
 
 For sharing generated videos or public examples, also read `docs/engineering/video-sharing.md`.
 
+## Public link previews
+
+Open Graph and Twitter use the same image selected by the route metadata.
+`frontend/config/social-preview-images.json` registers the reviewed edition and
+model cards. `frontend/lib/seo/social-preview-images.ts` resolves the localized
+page captures, language-independent model artwork, localized archive notices
+and fallback brand mark. Keep these assets separate from the original hero,
+gallery, download and structured-data media. An unregistered model continues
+to use its authored SEO or engine artwork.
+
+The 27 November 2026 edition comes from production revision
+`0ce28aa9d8b67005b224572d669c8f3b60da81c2`. Page and archive captures
+use the public English, French and Spanish routes. Each of the 32 model cards
+uses the actual opening image of that model's public detail page. The finished
+1200 × 630 JPEGs under `frontend/public/og/2026-11-27` are the approved masters.
+
+For a refresh, capture the public page while signed out. Dismiss consent with
+the visible reject action. Wait for fonts and visible media to decode, check
+that dialogs are closed, and inspect the final crop in each language. Review
+the candidate beside the currently advertised image before switching metadata.
+Give changed images a new URL. The legacy screenshot redirects in
+`frontend/next.config.js` keep previously shared image links working. Run
+`tests/social-visual-assets.test.ts` and verify the rendered tags and actual image
+responses in Preview.
+
 ## Browser video uploads
 
 Every browser video import uses `frontend/lib/client-video-upload.ts` and its

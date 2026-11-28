@@ -1,142 +1,125 @@
-<p align="center"><img src="plugins/maxvideoai/assets/logo-mark.svg" width="88" alt="MaxVideoAI white monogram on a dark rounded square"></p>
-
 # MaxVideoAI
 
-**Compare AI video models. Know the price. Create in one workspace.**
+MaxVideoAI is a pay-as-you-go, multi-model AI video generator with tools for images and audio. Start with a prompt or a product photo, choose a model and see the price before you generate.
 
-MaxVideoAI is a multi-model AI video production platform for turning a brief into finished, reusable work. Explore real examples, compare current engines side by side, review model capabilities and pricing, prepare characters and shots with production tools, generate video, image, or audio, and keep outputs and references together in the MaxVideoAI Library.
+[Create an AI video](https://maxvideoai.com/app?utm_source=github&utm_medium=repository&utm_campaign=maxvideoai_product&utm_content=hero_try) · [See pricing](https://maxvideoai.com/pricing) · [Watch a 28-second MaxVideoAI film](https://maxvideoai.com/video/kling-4-character-reference-the-next-one)
 
-[Plan a video with MaxVideoAI](https://maxvideoai.com/mcp?utm_source=github&utm_medium=repository&utm_campaign=maxvideoai_product&utm_content=hero_try) · [Compare current models](https://maxvideoai.com/models?utm_source=github&utm_medium=repository&utm_campaign=maxvideoai_product&utm_content=models) · [Connect MaxVideoAI to your assistant or automation](https://maxvideoai.com/mcp?utm_source=github&utm_medium=repository&utm_campaign=maxvideoai_product&utm_content=plugin_callout)
+<img src="docs/media/campaign/pigment-stage.webp" width="100%" data-asset-role="editorial" alt="Editorial illustration: a drummer raises a stick over a floor tom amid blue pigment on a red film set, with a cinema camera in the foreground.">
 
-[Plugin repository](https://github.com/camgraphe/maxvideoai-plugin) · [Plugin releases](https://github.com/camgraphe/maxvideoai-plugin/releases)
+*Pigment Stage.* A campaign still created with ImageGen.
 
-<picture>
-  <img src="plugins/maxvideoai/assets/brand/maxvideoai-github-hero-v2.webp" data-asset-role="editorial" alt="Editorial illustration: Cinema camera with five distinct visual worlds">
-</picture>
+## Watch a video made with MaxVideoAI
+
+In *The Next One*, two strangers meet in a tram doorway. The same two faces appear across five shots, from the platform to an imagined morning in a kitchen. The film page includes the 28-second Kling 4.0 result and the prompt that assigns a separate portrait to each character. [Watch The Next One and read the shot directions](https://maxvideoai.com/video/kling-4-character-reference-the-next-one)
+
+In the Create walkthrough, a drummer and a cloud of blue pigment are the starting brief. Selecting Wan 3 for a five-second, 720p, 16:9 take with audio showed **$0.65 USD** on November 28, 2026. The recording stops at the price. Open Create for the current price of your own settings. [Watch the 14-second MaxVideoAI walkthrough](docs/media/campaign/create-video-walkthrough.mp4)
 
 ## What does the MaxVideoAI workspace bring together?
 
-MaxVideoAI brings model choice, prompts, references, settings, live pricing, previews, results, and next-shot context into one production workspace. That workspace is the main product; the GitHub plugin extends the same production path to Claude, ChatGPT, Codex, OpenClaw, and a bounded self-hosted n8n workflow later in this page.
-
-![Public MaxVideoAI home page with a FLUX 3 Max film preview and pay-as-you-go creation actions](plugins/maxvideoai/assets/screenshots/maxvideoai-workspace-live.webp)
-
-*Public homepage captured from production on November 15, 2026.*
+| Where to work | How to take a shot from brief to result |
+| --- | --- |
+| [Create](https://maxvideoai.com/app) | Choose the model yourself, enter a prompt, add supported references and review the price before launching from the web. |
+| [Studio](https://maxvideoai.com/studio) | Develop the brief with Milo, work from media in your Library and arrange finished clips on the timeline. |
+| An assistant | [Install the official ChatGPT plugin](https://chatgpt.com/plugins/plugin_asdk_app_6af7c45d28c48191982cf5be6eb7e058), [connect Claude through MCP](https://maxvideoai.com/integrations/claude) or [set up Codex](https://maxvideoai.com/integrations/codex). Use the same MaxVideoAI account for quotes, credits and finished work. |
 
 ## What can you make with MaxVideoAI?
 
-Use MaxVideoAI to develop a single shot, animate an image, build a multi-shot sequence, create supporting images or audio, and continue from earlier work. The workspace keeps model selection, prompts, references, settings, price, previews, results, and the Library in one production path instead of scattering them across provider tabs.
+Generate a video from text, animate a still, create images for a storyboard or add audio to a sequence. To see how a shot was made, open a video in the examples gallery. Its page shows the prompt, model and available settings, along with a price estimate for recreating the setup. [Browse AI video examples](https://maxvideoai.com/examples)
 
-![MaxVideoAI examples gallery with brand filters and four opening video cards for Wan, Seedance and Kling](plugins/maxvideoai/assets/screenshots/maxvideoai-examples-gallery-live.webp)
+## Turn a city car into a supercar
 
-Every public example opens into its prompt, settings, model, duration, and current price estimate. Browse the [AI video examples gallery](https://maxvideoai.com/examples), then recreate a useful starting point in your own workspace.
-
-| Production goal | Start here |
+| Before · a worn sage-green city car | After · a bright orange sports coupe |
 | --- | --- |
-| Find a visual direction | Preview varied examples and inspect the prompt and settings behind them. |
-| Build with references | Choose a workflow that supports the image, video, or audio material you want to use. |
-| Plan several shots | Keep one brief visible while comparing a consistent route with an intentional model mix. |
-| Continue finished work | Recover outputs and reusable media from the MaxVideoAI Library. |
+| <img src="docs/media/campaign/city-car.webp" data-asset-role="editorial" alt="Editorial illustration: a woman with short curls and a cobalt T-shirt sits at the wheel of a parked sage-green city car"> | <img src="docs/media/campaign/supercar.webp" data-asset-role="editorial" alt="Editorial illustration: the same driver at the wheel of a bright orange coupe with wide fenders on the same street"> |
+
+Look at the driver’s elbow resting on the open window and the shutter behind her. The worn hatchback gives way to a low orange coupe with wide fenders, dark open-spoke wheels and a bucket seat. Both images were created with ImageGen for this README, using the first as the reference for the second.
+
+For your own product photo, try a new lighting setup in MaxVideoAI and compare the edit with the original. [Open Product Photo Editor](https://maxvideoai.com/tools/product-photo-editor)
+
+If your starting material is a video, choose a passage from one continuous shot, describe the change in lighting or style and compare both clips in motion. Check lettering and product details across the full passage. [Edit a product video](https://maxvideoai.com/tools/product-video-editor)
 
 ## How do you compare current AI video models?
 
-MaxVideoAI compares AI video engines by workflow, supported inputs, duration, resolution, audio, pricing, strengths, and a documented editorial score. The side-by-side hub is designed for an actual production decision: choose two engines, inspect the trade-offs, open the detailed matchup, and move to the model that fits the shot.
+Choose the workflow first. A text-to-video model can start from a description. To animate the driver in the orange coupe, look for an image-to-video mode that accepts your starting frame. The directory lists the modes and inputs for each model. [Compare current models](https://maxvideoai.com/models?utm_source=github&utm_medium=repository&utm_campaign=maxvideoai_product&utm_content=models)
 
-![MaxVideoAI comparison page showing MiniMax H3 and Seedance 2.5 editorial scores, higher-rated areas and independent video examples](plugins/maxvideoai/assets/screenshots/maxvideoai-engine-scoreboard-live.webp)
+| What to compare | How to make it a fair test |
+| --- | --- |
+| Inputs and movement | Give both models the same frame and camera instruction. Check whether each supports the reference and motion controls you need. |
+| Output and price | Match duration, resolution, aspect ratio and audio settings wherever both support them. If one offers only a longer take, include the cost of the full take you would have to buy. |
+| Image quality | Look at the details that matter to the shot, such as the driver’s face, wheel shape or motion between frames. Inspect examples alongside the specifications. |
 
-The broader [model directory](https://maxvideoai.com/models) adds recommended starting points and routes for video, image, audio, and preparation work.
-
-![September 2026 MaxVideoAI model-directory hero with MiniMax and Kling examples beside model discovery actions](plugins/maxvideoai/assets/screenshots/maxvideoai-model-directory-live.webp)
-
-Model families such as Sora, Veo, Kling, Seedance, LTX, MiniMax, Wan, Happy Horse, Gemini Omni, and Pika are examples rather than a frozen catalogue. Use the live directory for current availability and pricing.
+The comparison hub includes matchups such as Wan 3 versus Wan 3 Prime, with model capabilities, editorial assessments and examples. Use the live pages when you choose a model or check a price. [Compare Wan 3 and Wan 3 Prime](https://maxvideoai.com/ai-video-engines/wan-3-vs-wan-3-prime) · [All side-by-side comparisons](https://maxvideoai.com/ai-video-engines)
 
 ## How do project pricing and approval work?
 
-MaxVideoAI is pay as you go. The pricing surface compares common scenarios across video, image, audio, and production tools, while the workspace shows the live price for the selected request before launch. In the assistant workflow, a concrete request becomes an exact quote and one explicit approval authorizes one paid attempt.
+MaxVideoAI lets you generate AI video with prepaid credits and review the price before you start. No subscription is required. [How pay-as-you-go video works](https://maxvideoai.com/pay-as-you-go-ai-video-generator)
 
-![MaxVideoAI pricing captured on November 15, 2026 with three video starting points and video, image, audio and tools navigation](plugins/maxvideoai/assets/screenshots/maxvideoai-pricing-comparison-live.webp)
+For a sequence, list the shots, duration, references and audio needs. Ask the assistant to estimate the whole sequence with one model, then price a second version using a different model for the demanding shot. This gives you two project budgets before you commit to a take. [Project budgeting example](https://github.com/camgraphe/maxvideoai-plugin/blob/main/examples/price-a-video-project.md)
 
-1. Choose the model, mode, duration, resolution, and supported extras.
-2. Compare the current [AI video pricing](https://maxvideoai.com/pricing).
-3. Review the live workspace price or assistant quote.
-4. Launch from the web app, or explicitly approve one prepared assistant attempt.
+```text
+Plan three shots: the driver at the window, a close-up of the wheel,
+and a wide view of the parked car. Compare the cost of one take per shot
+with the cost of adding a second take of the wheel. Show the assumptions.
+```
+
+Once you select a shot, the assistant prepares an exact quote for its model, inputs and settings. Your explicit approval authorizes one paid attempt. If you change the request, review the new quote. In Studio, Milo assistance credits are accounted for separately from the quote for generating media. [AI video pricing](https://maxvideoai.com/pricing) · [Studio pricing and approval](https://maxvideoai.com/studio)
 
 ## What can you prepare before generation?
 
-The public [production toolbox](https://maxvideoai.com/tools) brings repeatable preparation and finishing work into the same product path. Build a consistent character sheet, explore camera angles, refine or remove an image background, and finish a video without pretending that every useful step needs a new generation model.
-
-![MaxVideoAI tools page showing a Character Studio portrait and camera-angle and upscale presentation examples](plugins/maxvideoai/assets/screenshots/maxvideoai-tools-workflow-live.webp)
-
-Tool availability and price still come from the live product. The exact input, output, and billing boundary is shown before a tool runs.
+| Starting material | Next step | Tool |
+| --- | --- | --- |
+| A still with the right subject but the wrong viewpoint | Adjust the camera angle, choose a new view and use that still as the opening frame of a video. | [Angle](https://maxvideoai.com/tools/angle) |
+| A recurring character | Save the identity and create another look. In Recast, select a passage from a motion-reference clip to guide the performance. | [Character Studio and Recast](https://maxvideoai.com/tools/character-builder#recast) |
+| A clip with dialogue | Transcribe speech, correct the words and timing, then download SRT or VTT subtitles or export the captioned video. | [Video subtitles](https://maxvideoai.com/tools/subtitles) |
+| Several shots and a brief | Work through the prompt with Milo, add references from your Library and arrange ready clips and audio on the Studio timeline. | [Explore Studio](https://maxvideoai.com/studio) |
 
 ## How do references and continuity work?
 
-Supported workflows can use image, video, or audio references for composition, subject, motion, timing, or sound direction. The selected model and mode determine the accepted reference roles and limits. Finished results and reusable assets remain in the connected MaxVideoAI Library, ready for the next shot or another production route.
+The model and mode determine which references a shot can use. An image can establish the first frame, a video can supply movement for Recast, and a voice recording can guide a lip-sync workflow. Check the supported input types, counts and limits before choosing a model. Reuse the same owned image from your MaxVideoAI Library when the next shot needs the same character or object. [Reference-to-video guide](https://github.com/camgraphe/maxvideoai-plugin/blob/main/examples/reference-to-video.md) · [Production tools](https://maxvideoai.com/tools)
 
-![September 2026 public-page capture of a controlled Claude Desktop staging result saved to the connected MaxVideoAI Library](plugins/maxvideoai/assets/screenshots/maxvideoai-library-continuity-production.jpg)
-
-*Controlled Claude Desktop staging test from August 26, 2026; public-page capture from September 16, revalidated November 15. This dated demonstration does not certify current host execution or pricing.*
-
-[Open the Library](https://maxvideoai.com/app/library) to browse saved media and continue where the production stopped.
+Completed media returns to the Library of the connected account. If an assistant reply stops after you approve a generation, ask for the status of the accepted job or for your recent generations. Recover a completed result there. If the job was refunded, any replacement requires a fresh quote and approval. [Open your Library](https://maxvideoai.com/app/library) · [Recover an accepted generation](https://github.com/camgraphe/maxvideoai-plugin/blob/main/examples/recover-a-generation.md)
 
 ## Which assistants, agents and automations can use MaxVideoAI?
 
-MaxVideoAI exposes one remote MCP production service through five public paths: Claude, ChatGPT, Codex, OpenClaw, and a tested self-hosted n8n workflow. A connected assistant or automation can help shape the brief, compare current model options, calculate project budgets, prepare an exact quote, wait for explicit approval, and recover the accepted result in the same MaxVideoAI account.
+**ChatGPT has a published MaxVideoAI plugin.** Select **Install plugin** in the ChatGPT directory and connect the MaxVideoAI account whose credits and Library you want to use. The listing includes image and video creation, voices and sound effects, characters, Recast, Studio editing and subtitles. [Install MaxVideoAI in ChatGPT](https://chatgpt.com/plugins/plugin_asdk_app_6af7c45d28c48191982cf5be6eb7e058)
 
-![Public MaxVideoAI MCP integration grid for Claude, ChatGPT, Codex, OpenClaw, and n8n on a light background](plugins/maxvideoai/assets/screenshots/maxvideoai-assistant-workflow-live.webp)
-
-[Claude setup](plugins/maxvideoai/docs/claude.md) · [ChatGPT setup](plugins/maxvideoai/docs/chatgpt.md) · [Codex setup](plugins/maxvideoai/docs/codex.md) · [OpenClaw setup](https://maxvideoai.com/integrations/openclaw) · [n8n setup](https://maxvideoai.com/integrations/n8n) · [MCP technical reference](https://maxvideoai.com/docs/mcp) · [Public plugin source](https://github.com/camgraphe/maxvideoai-plugin)
-
-OpenClaw is tested with limits and has a listed ClawHub skill. n8n is tested on self-hosted n8n through a manual setup of the deterministic MCP Client workflow; n8n Cloud and MCP Client Tool agent invocation are not claimed. Cursor, GitHub Copilot, Gemini CLI, and Microsoft Copilot remain in preparation and do not yet have public setup paths.
+Try a planning request before uploading a reference.
 
 ```text
-Brief → compare models → budget shots → prepare exact quote → approve one attempt → recover result
+I want to turn a product photo into a five-second video.
+Compare two models that can start from my photo. Keep the camera still
+and show me the price before I choose.
 ```
 
-The focused [plugin repository](https://github.com/camgraphe/maxvideoai-plugin) carries tagged, checksum-backed releases. Use its release page for the current installable package; this product repository remains the authored source of the application and plugin bundle.
+**Claude connects by custom remote MCP.** In Claude’s connector settings, add `https://api.maxvideoai.com/mcp`, choose **Connect** and authorize your MaxVideoAI account. The documented Claude Web Free check covered model discovery, a quote and recovery of an existing result. [Claude setup and tested scope](https://maxvideoai.com/integrations/claude)
+
+**Codex** uses the tagged MaxVideoAI package. Install it, start a new task and use `$maxvideoai:plan` to compare models. Use `$maxvideoai:generate` to prepare a quote for a specific shot. Approval covers one attempt. [Codex setup and first request](https://github.com/camgraphe/maxvideoai-plugin/blob/v0.3.8/docs/codex.md)
+
+| Other connections | Where to start |
+| --- | --- |
+| Another MCP client | Use an OAuth-capable client with remote Streamable HTTP support. The [MCP Registry record](https://registry.modelcontextprotocol.io/v0.1/servers/com.maxvideoai%2Fmaxvideoai/versions/latest) gives the generic endpoint and transport. |
+| OpenClaw | The tested connection has limits on private references and inline channel rendering. [OpenClaw setup](https://maxvideoai.com/integrations/openclaw) |
+| Self-hosted n8n | Configure the tested MCP Client workflow manually. [n8n setup](https://maxvideoai.com/integrations/n8n) |
+
+[Assistant integrations](https://maxvideoai.com/mcp?utm_source=github&utm_medium=repository&utm_campaign=maxvideoai_product&utm_content=plugin_callout) · [MCP technical reference](https://maxvideoai.com/docs/mcp) · [Plugin repository](https://github.com/camgraphe/maxvideoai-plugin) · [Plugin releases](https://github.com/camgraphe/maxvideoai-plugin/releases)
 
 ## How is MaxVideoAI built?
 
-This repository contains the production application, its public marketing and comparison surfaces, provider orchestration, billing controls, media workflows, model registry, remote MCP server, and the distributable MaxVideoAI plugin package.
-
-```mermaid
-flowchart LR
-  B[Creative brief] --> W[Next.js workspace]
-  B --> A[Assistant, agent or automation]
-  A --> M[Remote MCP + OAuth]
-  M --> W
-  W --> C[Capability-driven model catalogue]
-  W --> P[Server-owned provider orchestration]
-  P --> J[Jobs, billing and refunds]
-  J --> L[Private media Library]
-  L --> W
-```
-
-| Layer | Technology and ownership |
-| --- | --- |
-| Web product | Next.js App Router, React, TypeScript, Tailwind CSS |
-| Authentication | Supabase Auth |
-| Application data | Neon Postgres |
-| Media storage | Amazon S3 |
-| Billing | Stripe and server-owned price/approval controls |
-| Model execution | Capability-driven registry plus provider adapters owned by the server |
-| Assistant integration | Remote Streamable HTTP MCP, OAuth, checked-in Claude/Codex manifests and skills, plus documented OpenClaw and n8n paths |
-| Quality | Node test contracts, Playwright browser checks, lint, typecheck, exposure and asset gates |
+The web application uses Next.js App Router, React, TypeScript and Tailwind CSS. Supabase Auth handles sign-in, Neon Postgres stores application data, Amazon S3 stores media and Stripe handles billing. Server-side adapters submit jobs to model providers. The assistant integrations use remote Streamable HTTP MCP and OAuth.
 
 | Repository area | Responsibility |
 | --- | --- |
-| [`frontend/app`](frontend/app) | Routes, layouts, metadata, APIs, and route orchestration |
-| [`frontend/components`](frontend/components) | Shared product and marketing UI |
-| [`frontend/lib`](frontend/lib) | Browser-safe product, pricing, routing, and SEO logic |
-| [`frontend/server`](frontend/server) and [`frontend/src/server`](frontend/src/server) | Server orchestration, providers, jobs, billing, and MCP |
-| [`frontend/config/model-registry.json`](frontend/config/model-registry.json) | Authored model identity and publication policy |
-| [`plugins/maxvideoai`](plugins/maxvideoai) | Public plugin package, skills, host guides, examples, and release assets |
-| [`neon/migrations`](neon/migrations) | Application database migrations |
+| [Routes](frontend/app), [components](frontend/components) and [shared libraries](frontend/lib) | Workspace, public pages, APIs and product UI |
+| [Server orchestration](frontend/server) and [execution](frontend/src/server) | Provider adapters, jobs, billing and MCP |
+| [Model registry](frontend/config/model-registry.json) | Model identity and publication |
+| [Plugin source](plugins/maxvideoai) | Manifests, skills, setup guides, release assets |
+| [Migrations](neon/migrations) | Application database schema |
 
-Read the [project structure](docs/engineering/project-structure.md), [model registry workflow](docs/engineering/model-registry.md), [MCP mode coverage](docs/engineering/mcp-mode-coverage.md), and [private reference-import boundaries](docs/engineering/mcp-reference-imports.md) before changing those contracts.
+Read the [architecture guide](docs/engineering/project-structure.md), [model registry workflow](docs/engineering/model-registry.md), [MCP mode coverage](docs/engineering/mcp-mode-coverage.md) and [reference-import guide](docs/engineering/mcp-reference-imports.md) for the corresponding contracts.
 
 ## Local development
 
-The contributor path uses Node.js 22 and the repository-pinned pnpm version:
+Use Node.js 22 and the pnpm version pinned in this repository.
 
 ```bash
 pnpm install
@@ -144,7 +127,7 @@ cp frontend/.env.local.example frontend/.env.local
 pnpm dev
 ```
 
-Focused validation for public GitHub and plugin work:
+Use these checks for GitHub content and asset changes.
 
 ```bash
 pnpm github:content:check
@@ -154,21 +137,15 @@ npm run lint:exposure
 git diff --check
 ```
 
-Read [local development](docs/engineering/local-development.md) for the frontend, contract server, Docker, migrations, model onboarding, scheduled jobs, and validation commands. The [environment reference](docs/engineering/environment-reference.md) documents variables, health endpoints, and the Supabase/Neon/S3 ownership boundary.
-
-Before an architecture or model-policy change, start with [`AGENTS.md`](AGENTS.md), the [LLM working guide](docs/engineering/llm-working-guide.md), and the closest area-specific instructions.
+The [local development guide](docs/engineering/local-development.md) covers setup, migrations and validation, including Playwright browser checks. Consult the [environment reference](docs/engineering/environment-reference.md), [agent guide](AGENTS.md) and [working guide](docs/engineering/llm-working-guide.md) before changing application behavior.
 
 ## Contributing, security, and license
 
-Small, reviewable contributions are welcome when they preserve public URLs, the authored model registry, server/client boundaries, private-media handling, and the evidence contracts that keep public claims accurate.
-
-| Need | Start here |
+| Need | Destination |
 | --- | --- |
-| Propose or implement a change | [`CONTRIBUTING.md`](CONTRIBUTING.md) |
-| Report a vulnerability privately | Email [security@maxvideoai.com](mailto:security@maxvideoai.com); do not open a public issue. |
-| Ask for product or repository help | [Contact MaxVideoAI](https://maxvideoai.com/contact) |
-| Review public/private boundaries | [`docs/public-vs-private.md`](docs/public-vs-private.md) |
+| Contribute a change | [Contributor guide](CONTRIBUTING.md) and [public/private boundaries](docs/public-vs-private.md) |
+| Report a vulnerability privately | [Security contact](mailto:security@maxvideoai.com) |
+| Get product support | [Contact MaxVideoAI](https://maxvideoai.com/contact) |
+| License the code for commercial deployment | [Commercial licensing](docs/licensing/dual-license.md) and [licensing enquiries](mailto:licensing@maxvideo.ai) |
 
-The repository uses the [Business Source License 1.1](LICENSE), with its terms and change date defined in the license file. Commercial deployments require a separate licence; see the [dual-license guide](docs/licensing/dual-license.md), email [licensing@maxvideo.ai](mailto:licensing@maxvideo.ai), and review [`NOTICE`](NOTICE).
-
-Last reviewed: 2026-09-16.
+The source is licensed under the [Business Source License 1.1](LICENSE). Its use grant and change date are in the license file. See the [notices](NOTICE) for additional terms.
