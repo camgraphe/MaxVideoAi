@@ -198,4 +198,52 @@ test('Madrid boundaries, private media roles, final owner, credits and measured 
       }
     }
   });
+
+  await t.test('H3 replay requires attested ownership, eligible options and the reviewed native or WaveSpeed model', async () => {
+    const engine = 'minimax-h3';
+    const fal = 'minimax/h3/reference-to-video';
+    const waveSpeed = 'minimax/h3/wavespeed';
+    const base = basicSettings(engine);
+    const scenario = { engine, created: '2026-10-30T09:00:00Z', settings: {
+      ...base, inputMode: 'ref2v', core: { ...base.core, resolution: '480p', aspectRatio: '26:15' },
+      refs: { ...base.refs, referenceImages: ['private-a', 'private-b'] },
+    } };
+    const exact = { engineId: engine, mode: 'ref2v', resolution: '480p', aspectRatio: '21:9', durationSec: 15,
+      promptLength: 14, ownedReferenceImages: true, hasSeed: false, unreviewedOptions: false, audioEnabled: true,
+      promptExpansionMode: 'balanced', providerPromptExtend: true, hasStartImage: false, hasEndImage: false,
+      referenceImageCount: 2, referenceAudioCount: 0, referenceVideoCount: 0 };
+    const native = await insert(scenario);
+    await attempt(native, 1, 'fal', 'completed', exact, 'private-remote', fal);
+    const fallback = await insert(scenario);
+    await attempt(fallback, 1, 'videorouter', 'failed', exact, null, waveSpeed);
+    await attempt(fallback, 2, 'fal', 'completed', { fallbackFrom: 'videorouter' }, 'private-remote', fal);
+    const hosted = await insert({ ...scenario, provider: 'videorouter' });
+    await attempt(hosted, 1, 'videorouter', 'completed', exact, 'private-remote', waveSpeed);
+
+    const legacy = await insert({ ...scenario, settings: { ...scenario.settings, ownedReferenceImages: true, hasSeed: false } });
+    const wrongHost = await insert(scenario);
+    await attempt(wrongHost, 1, 'videorouter', 'failed', exact, null, 'minimax/h3/atlas-cloud');
+    await attempt(wrongHost, 2, 'fal', 'completed', {}, 'private-remote', fal);
+    for (const job of [legacy, wrongHost]) {
+      await execute('UPDATE app_jobs SET duration_sec=15 WHERE id=$1', [job]);
+      await execute("INSERT INTO fal_queue_log VALUES($1,$2,'fal','private-remote',$3)", [job, engine, { request: { aspectRatio: '21:9' } }]);
+    }
+    for (const change of [{ hasSeed: null }, { ownedReferenceImages: false }, { providerPromptExtend: null },
+      { promptExpansionMode: 'quality' }, { unreviewedOptions: true }, { audioEnabled: false }]) {
+      const id = await insert(scenario);
+      await attempt(id, 1, 'fal', 'completed', { ...exact, ...change }, 'private-remote', fal);
+    }
+    const groups = (await loadHistoricalReplayGroups('2026-10-02','2026-11-01',execute))
+      .filter(row => row.bucketAt === '2026-10-30T09:00:00Z');
+    assert.equal(groups.reduce((n, row) => n + row.jobs, 0), 11);
+    assert.doesNotMatch(JSON.stringify(groups), /private|https/);
+    const report = buildHistoricalReplay(groups);
+    const qualified = report.traces.filter(row => row.installed?.provider === 'videorouter');
+    assert.deepEqual(qualified.map(row => [row.historicalProvider, row.jobs, row.historicalMicros]).sort(),
+      [['fal', 2, 750_000], ['videorouter', 1, 615_000]]);
+    assert.ok(qualified.every(row => row.profile?.aspectRatio === '21:9' && row.profile.observedAspectRatio === '26:15' &&
+      row.installed?.costMicros === 615_000));
+    assert.equal(report.totals.installedSavingsMicros, 270_000);
+  });
+
 });

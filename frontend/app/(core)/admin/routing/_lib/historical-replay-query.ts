@@ -32,7 +32,9 @@ export const HISTORICAL_REPLAY_QUERY = `WITH population AS (
     first.provider_model AS adapter_model, fal_request.ratio AS queued_ratio
   FROM app_jobs j
   LEFT JOIN provider_attempts first ON first.job_id=j.id AND first.attempt_index=1
-    AND (first.provider IN ('alibaba_model_studio','apimart','videorouter','kling_direct')
+    AND ((j.engine_id<>'minimax-h3' AND first.provider IN ('alibaba_model_studio','apimart','videorouter','kling_direct'))
+      OR (j.engine_id='minimax-h3' AND ((first.provider='videorouter' AND first.provider_model='minimax/h3/wavespeed')
+        OR (first.provider='fal' AND first.provider_model='minimax/h3/reference-to-video')))
       OR (j.engine_id='kling-v4' AND first.provider='fal' AND first.provider_model='kling/v4/reference-to-video'))
   -- The completion webhook can replace core.aspectRatio with the delivered raster ratio.
   -- Use only a queue receipt for this exact provider task, rejecting conflicting values.
@@ -59,6 +61,9 @@ export const HISTORICAL_REPLAY_QUERY = `WITH population AS (
     engine='kling-v4' AND a->>'engineId'=engine AND a->>'mode'='ref2v'
       AND ((adapter='videorouter' AND adapter_model='kuaishou/kling-v4.0/sandbase')
         OR (adapter='fal' AND adapter_model='kling/v4/reference-to-video')) AS kling_v4_attempt,
+    engine='minimax-h3' AND a->>'engineId'=engine AND a->>'mode'='ref2v'
+      AND ((adapter='videorouter' AND adapter_model='minimax/h3/wavespeed')
+        OR (adapter='fal' AND adapter_model='minimax/h3/reference-to-video')) AS h3_attempt,
     CASE WHEN a->>'mode' = s->>'inputMode' OR s->>'inputMode' IS NULL THEN a->>'mode'
       WHEN a->>'mode' IS NULL THEN s->>'inputMode' END AS raw_mode,
     COALESCE(a->>'resolution', s#>>'{core,resolution}') AS raw_resolution,
@@ -69,7 +74,8 @@ export const HISTORICAL_REPLAY_QUERY = `WITH population AS (
     CASE WHEN upper(p->>'currency')='USD' THEN ${nonnegativeInt("p->'totalCents'")}::bigint * 10000 END AS ceiling
   FROM population
 ), evidence AS MATERIALIZED (
-  SELECT snapshots.*, CASE WHEN raw_mode ~ '^[a-z0-9_-]{1,30}$' THEN raw_mode END AS mode,
+  SELECT snapshots.*, (kling_v4_attempt OR h3_attempt) AS image_attempt,
+    CASE WHEN raw_mode ~ '^[a-z0-9_-]{1,30}$' THEN raw_mode END AS mode,
     CASE WHEN raw_resolution ~ '^[0-9]{1,4}[pPkK]$' THEN raw_resolution END AS res,
     CASE WHEN raw_ratio ~ '^([0-9]{1,3}:[0-9]{1,3}|auto|adaptive)$' THEN raw_ratio END AS ratio,
     s->'schemaVersion'='1'::jsonb AND s->>'surface'='video' AND s->>'engineId'=engine
@@ -116,17 +122,18 @@ export const HISTORICAL_REPLAY_QUERY = `WITH population AS (
   ) clips ON true
 ), facts AS MATERIALIZED (
   SELECT *,
-    CASE WHEN wan AND adapter IN ('alibaba_model_studio','apimart','videorouter') OR kling AND adapter='kling_direct' OR kling_v4_attempt THEN ${nonnegativeInt("a->'referenceImageCount'")}
+    CASE WHEN wan AND adapter IN ('alibaba_model_studio','apimart','videorouter') OR kling AND adapter='kling_direct' OR image_attempt THEN ${nonnegativeInt("a->'referenceImageCount'")}
       WHEN NOT wan AND refs_ok THEN settings_images END AS ref_images,
-    CASE WHEN wan OR kling AND adapter='kling_direct' OR kling_v4_attempt THEN ${bool("a->'hasStartImage'")}
+    CASE WHEN wan OR kling AND adapter='kling_direct' OR image_attempt THEN ${bool("a->'hasStartImage'")}
       WHEN refs_ok THEN start_frame OR (mode='i2v' AND image_present) END AS has_start,
-    CASE WHEN wan OR kling AND adapter='kling_direct' OR kling_v4_attempt THEN ${bool("a->'hasEndImage'")}
+    CASE WHEN wan OR kling AND adapter='kling_direct' OR image_attempt THEN ${bool("a->'hasEndImage'")}
       WHEN refs_ok THEN end_frame OR end_present END AS has_end,
-    CASE WHEN wan OR kling_v4_attempt THEN ${nonnegativeInt("a->'referenceVideoCount'")} > 0
+    CASE WHEN wan OR image_attempt THEN ${nonnegativeInt("a->'referenceVideoCount'")} > 0
       WHEN refs_ok THEN video_ref OR jsonb_array_length(${jsonArray("r->'videoUrls'")}) > 0 OR COALESCE(${bool("a->'hasSourceVideo'")},false) END AS has_video,
-    CASE WHEN wan OR kling_v4_attempt THEN ${nonnegativeInt("a->'referenceAudioCount'")} > 0
+    CASE WHEN wan OR image_attempt THEN ${nonnegativeInt("a->'referenceAudioCount'")} > 0
       WHEN refs_ok THEN audio_ref OR NULLIF(btrim(r->>'audioUrl'),'') IS NOT NULL END AS has_audio_ref,
-    CASE WHEN h3 AND mode IN ('t2v','i2v','ref2v') THEN true
+    CASE WHEN h3_attempt THEN ${bool("a->'audioEnabled'")}
+      WHEN h3 AND mode IN ('t2v','i2v','ref2v') THEN true
       ELSE COALESCE(${bool("a->'audioEnabled'")}, ${bool("cost->'generate_audio'")}, ${bool("core->'audio'")}) END AS output_audio,
     NULLIF(btrim(options->>'file_url'),'') IS NOT NULL OR NULLIF(btrim(options->>'web_url'),'') IS NOT NULL AS doc,
     CASE WHEN wan THEN COALESCE(${bool("a->'unreviewedWanOptions'")}, unreviewed_attachment
@@ -138,7 +145,7 @@ export const HISTORICAL_REPLAY_QUERY = `WITH population AS (
         OR (core->>'durationOption' IS NOT NULL AND regexp_replace(core->>'durationOption','s$','') <> sec::text)
         OR NULLIF(btrim(s->>'negativePrompt'),'') IS NOT NULL OR (r->>'elements' IS NOT NULL AND r->'elements' <> '[]'))
       OR options - ${wanExtras} <> '{}'::jsonb OR COALESCE(jsonb_typeof(options->'enable_prompt_expansion'),'null') NOT IN ('boolean','null')
-      WHEN kling_v4_attempt THEN ${bool("a->'unreviewedOptions'")}
+      WHEN image_attempt THEN ${bool("a->'unreviewedOptions'")}
       ELSE unreviewed_attachment OR NOT refs_ok OR
         (CASE WHEN h3 THEN options - 'prompt_expansion_mode' WHEN kling THEN options - ${directKeys} - 'generate_audio'
           WHEN engine='seedance-2-5' AND options->>'output_format'='mp4' THEN options - 'output_format' ELSE options END <> '{}'::jsonb)
@@ -153,9 +160,10 @@ export const HISTORICAL_REPLAY_QUERY = `WITH population AS (
     CASE WHEN kling THEN EXISTS (SELECT 1 FROM jsonb_each(options) extra WHERE key=ANY(${directKeys})
       AND value NOT IN ('false','null','""','[]','{}')) ELSE false END AS direct,
     COALESCE(CASE WHEN wan_attempt THEN ${nonnegativeInt("a->'trimmedPromptLength'")}
-      WHEN kling_v4_attempt THEN ${nonnegativeInt("a->'promptLength'")} END,
+      WHEN image_attempt THEN ${nonnegativeInt("a->'promptLength'")} END,
       CASE WHEN (h3 OR wan) AND jsonb_typeof(s->'prompt')='string' THEN char_length(btrim(s->>'prompt')) END) AS prompt_chars,
-    CASE WHEN h3 AND options->>'prompt_expansion_mode' IN ('disabled','fast','balanced','quality') THEN options->>'prompt_expansion_mode'
+    CASE WHEN h3_attempt THEN CASE WHEN a->>'promptExpansionMode'='balanced' AND a->'providerPromptExtend'='true'::jsonb THEN 'balanced' END
+      WHEN h3 AND options->>'prompt_expansion_mode' IN ('disabled','fast','balanced','quality') THEN options->>'prompt_expansion_mode'
       WHEN h3 AND NOT (options ? 'prompt_expansion_mode') THEN 'balanced' END AS expansion,
     CASE WHEN engine='seedance-2-5' AND owner='byteplus_modelark' AND cost->>'provider_cost_status'='list_estimate_from_provider_usage'
       THEN ${nonnegativeInt("cost->'provider_tokens'")} END AS tokens,
@@ -171,10 +179,10 @@ export const HISTORICAL_REPLAY_QUERY = `WITH population AS (
       'requestedRatioVerified',ratio IS NOT NULL,'observedAspectRatio',
       CASE WHEN observed_ratio ~ '^[0-9]{1,4}:[0-9]{1,4}$' THEN observed_ratio END,
       'audioEnabled',output_audio,'observedVideoTokens',tokens,'promptCharacters',prompt_chars,'h3PromptExpansion',expansion,
-      'hasSeed',COALESCE(CASE WHEN wan_attempt OR kling_v4_attempt THEN ${bool("a->'hasSeed'")} END,
+      'hasSeed',COALESCE(CASE WHEN wan_attempt OR image_attempt THEN ${bool("a->'hasSeed'")} END,
         CASE WHEN wan_attempt AND adv ? 'seed' AND jsonb_typeof(adv->'seed') IN ('null','number')
           THEN jsonb_typeof(adv->'seed')='number' END),
-      'ownedReferenceImages',CASE WHEN wan_attempt OR kling_v4_attempt THEN ${bool("a->'ownedReferenceImages'")} END,
+      'ownedReferenceImages',CASE WHEN wan_attempt OR image_attempt THEN ${bool("a->'ownedReferenceImages'")} END,
       'promptExpansionEnabled',CASE WHEN wan_attempt THEN COALESCE(${bool("a->'promptExpansionEnabled'")},
         ${bool("options->'enable_prompt_expansion'")}) END,
       'referenceVideoSeconds',CASE WHEN wan AND has_video AND total_secs>0 THEN CASE WHEN n_videos=1 THEN jsonb_build_array(total_secs)

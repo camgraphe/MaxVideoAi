@@ -4,8 +4,10 @@ import { markProviderAttemptFailed } from '../provider-attempts';
 
 type Stop = { jobId: string; userId: string; message: string; attemptId: number | null; errorCode: string; errorClass: 'invalid' | 'refused' };
 type Intent = { job_id: string; user_id: string; message: string; attempt_id: string | null };
-const eligible = `j.surface='video' AND j.engine_id='kling-v4' AND j.provider_job_id IS NULL AND j.payment_status='paid_wallet'`;
-const marker = "j.settings_snapshot->'klingV4WalletStop'";
+const eligible = `j.surface='video' AND j.engine_id IN ('kling-v4','minimax-h3') AND j.provider_job_id IS NULL AND j.payment_status='paid_wallet'`;
+// Keep the persisted Kling marker readable across deployments.
+const markerKey = "CASE j.engine_id WHEN 'kling-v4' THEN 'klingV4WalletStop' ELSE 'videoRouterWalletStop' END";
+const marker = `(j.settings_snapshot->(${markerKey}))`;
 const environment = () => process.env.VERCEL_ENV || 'local';
 
 function evidence(attempt: string) {
@@ -20,7 +22,7 @@ const pending = `${eligible} AND j.status='provider_polling_stalled' AND ${marke
   AND ${marker}->>'reason' IN ('invalid','refused') AND ${evidence(marker + "->>'attemptId'")}`;
 
 async function settle(row: Intent, settleWallet = withWalletFailureSettlement) {
-  const stale = new Error('Kling wallet settlement already handled.');
+  const stale = new Error('Video wallet settlement already handled.');
   try {
     await settleWallet(row.job_id, { failureOrigin: 'submission_rejected', failureMessage: row.message }, async tx => {
       const rows = await tx.query(`UPDATE app_jobs j SET status='failed', progress=0, provisional=FALSE,updated_at=NOW()
@@ -35,10 +37,10 @@ async function settle(row: Intent, settleWallet = withWalletFailureSettlement) {
   }
 }
 
-export async function stopKlingV4WalletPurchase(stop: Stop, settleWallet = withWalletFailureSettlement) {
+export async function stopFalBackedWalletPurchase(stop: Stop, settleWallet = withWalletFailureSettlement) {
   // Job-row locking serializes the empty-plan decision with every native or broker attempt.
   // Persist the refusal and its financial intent before the separate wallet transaction.
-  const stale = new Error('Kling purchase state changed.');
+  const stale = new Error('Video purchase state changed.');
   let intent: Intent | undefined;
   try {
     intent = await withDbTransaction(async tx => {
@@ -46,7 +48,7 @@ export async function stopKlingV4WalletPurchase(stop: Stop, settleWallet = withW
       if (stop.attemptId !== null) await markProviderAttemptFailed({ attemptId: stop.attemptId,
         errorClass: stop.errorClass, errorCode: stop.errorCode, fallbackEligible: false, queryFn: (sql, values) => tx.query(sql, values) });
       const [row] = await tx.query<Intent>(`UPDATE app_jobs j SET status='provider_polling_stalled',provisional=FALSE,
-        settings_snapshot=COALESCE(j.settings_snapshot,'{}'::jsonb) || jsonb_build_object('klingV4WalletStop',
+        settings_snapshot=COALESCE(j.settings_snapshot,'{}'::jsonb) || jsonb_build_object(${markerKey},
           jsonb_build_object('attemptId',$3::text,'reason',$5::text,'environment',$6::text)),
         message=$4,updated_at=NOW() WHERE j.job_id=$1 AND j.user_id=$2 AND ${eligible}
           AND j.status IN ('pending','queued','running','processing','in_progress') AND ${evidence('$3::text')}
@@ -62,7 +64,7 @@ export async function stopKlingV4WalletPurchase(stop: Stop, settleWallet = withW
   return settle(intent, settleWallet);
 }
 
-export async function reconcileKlingV4WalletStops() {
+export async function reconcileFalBackedWalletStops() {
   const rows = await query<Intent>(`SELECT j.job_id,j.user_id,j.message,${marker}->>'attemptId' AS attempt_id
     FROM app_jobs j WHERE ${pending} ORDER BY j.updated_at,j.id LIMIT 10`, [environment()]);
   let settled = 0, errors = 0;

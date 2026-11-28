@@ -103,7 +103,7 @@ function evaluate(group: HistoricalReplayGroup, options: ReplayOptions): ReplayT
   const retainFal = !verifiedRatio && !inheritedRatio && paidFalH3 != null &&
     quote.candidates.every(offer => offer.provider === 'fal' || (offer.excluded && offer.excludedAtEveryRatio));
   if (!verifiedRatio && !inheritedRatio && !retainFal) return exclude('Original requested aspect ratio is unverified');
-  if (retainFal) trace.basisNote = 'Delivered by Fal. Its tariff is independent of framing, and no additional supplier qualifies at any frame ratio.';
+  if (retainFal) trace.basisNote = 'Fal delivered this profile at a rate independent of framing. The recorded settings establish no other eligible supplier.';
   const ceiling = group.ceilingMicros;
   if (ceiling == null || !Number.isSafeInteger(ceiling) || ceiling < 0)
     return exclude('Trusted USD purchase ceiling is missing');

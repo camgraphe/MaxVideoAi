@@ -3,7 +3,7 @@ import { claimGenerationPoll } from '@/server/generation-poll-state';
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import { withWalletFailureSettlement, type WalletFailureSettlementDependencies } from '@/server/fal-webhook-refunds';
-import { KLING_V4_SANDBASE_MODEL } from '@/server/video-providers/videorouter/kling-v4';
+import { falBackedVideoRouterProfile } from '@/server/video-providers/videorouter/fal-backed-profiles';
 import {
   buildNextProviderVideoCopyState,
   getProviderVideoCopyState,
@@ -114,12 +114,11 @@ function costBreakdown(job: AlibabaPendingJob, task: NormalizedVideoProviderTask
   const estimate = costForJob(job, task);
   const route = resolveAlibabaModelRoute(job.engine_id, modeForJob(job));
   const provider = job.provider ?? ALIBABA_MODEL_STUDIO_PROVIDER;
+  const pinnedModel = provider === 'videorouter' ? falBackedVideoRouterProfile(job.engine_id)?.providerModel : undefined;
   return {
     provider,
     provider_cost_source: estimate.source,
-    provider_model: provider === 'videorouter' && job.engine_id === 'kling-v4'
-      ? KLING_V4_SANDBASE_MODEL
-      : route ? wanTransports[provider].modelId(route) : null,
+    provider_model: pinnedModel ?? (route ? wanTransports[provider].modelId(route) : null),
     mode: modeForJob(job),
     duration_sec: job.duration_sec,
     has_audio: job.has_audio === true,
