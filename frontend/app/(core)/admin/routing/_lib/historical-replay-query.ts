@@ -171,9 +171,12 @@ export const HISTORICAL_REPLAY_QUERY = `WITH population AS (
       'requestedRatioVerified',ratio IS NOT NULL,'observedAspectRatio',
       CASE WHEN observed_ratio ~ '^[0-9]{1,4}:[0-9]{1,4}$' THEN observed_ratio END,
       'audioEnabled',output_audio,'observedVideoTokens',tokens,'promptCharacters',prompt_chars,'h3PromptExpansion',expansion,
-      'hasSeed',CASE WHEN wan_attempt OR kling_v4_attempt THEN ${bool("a->'hasSeed'")} END,
+      'hasSeed',COALESCE(CASE WHEN wan_attempt OR kling_v4_attempt THEN ${bool("a->'hasSeed'")} END,
+        CASE WHEN wan_attempt AND adv ? 'seed' AND jsonb_typeof(adv->'seed') IN ('null','number')
+          THEN jsonb_typeof(adv->'seed')='number' END),
       'ownedReferenceImages',CASE WHEN wan_attempt OR kling_v4_attempt THEN ${bool("a->'ownedReferenceImages'")} END,
-      'promptExpansionEnabled',CASE WHEN wan_attempt THEN ${bool("a->'promptExpansionEnabled'")} END,
+      'promptExpansionEnabled',CASE WHEN wan_attempt THEN COALESCE(${bool("a->'promptExpansionEnabled'")},
+        ${bool("options->'enable_prompt_expansion'")}) END,
       'referenceVideoSeconds',CASE WHEN wan AND has_video AND total_secs>0 THEN CASE WHEN n_videos=1 THEN jsonb_build_array(total_secs)
         WHEN n_videos=nclips AND clip_total=total_secs THEN durations END END))
       || jsonb_build_object('aspectRatio',CASE WHEN h3 AND mode='i2v' THEN NULL ELSE ratio END,'inputVideoSeconds',

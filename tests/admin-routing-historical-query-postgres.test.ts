@@ -152,9 +152,14 @@ test('Madrid boundaries, private media roles, final owner, credits and measured 
       { ...wanSnapshot, ownedReferenceImages: true, hasSeed: false, promptExpansionEnabled: true }, 'private-remote', 'wan3.0-video');
     const wanLegacy = await insert(wanScenario);
     await attempt(wanLegacy, 1, wanScenario.provider, 'completed', wanSnapshot, 'private-remote', 'wan3.0-video');
+    const legacyText = await insert({ engine: 'wan-3-prime', created, provider: 'alibaba_model_studio',
+      settings: { ...basicSettings('wan-3-prime'), inputMode: 't2v', advanced: { seed: null, extraInputValues: { enable_prompt_expansion: true } } } });
+    await attempt(legacyText, 1, 'alibaba_model_studio', 'completed',
+      { ...wanSnapshot, engineId: 'wan-3-prime', mode:'t2v', resolution:'720p', aspectRatio:'16:9', referenceImageCount:0 },
+      'private-remote', 'wan3.0-video-prime');
     const rows = (await loadHistoricalReplayGroups('2026-10-02','2026-11-01',execute))
       .filter(row => row.bucketAt === '2026-10-29T15:00:00Z');
-    assert.equal(rows.reduce((n, row) => n + row.jobs, 0), 6);
+    assert.equal(rows.reduce((n, row) => n + row.jobs, 0), 7);
     assert.equal(rows.filter(row => row.engineId === 'kling-v4' && row.request?.ownedReferenceImages)
       .reduce((n, row) => n + row.jobs, 0), 3);
     assert.equal(rows.filter(row => row.engineId === 'wan-3' && row.request?.ownedReferenceImages).length, 1);
@@ -177,6 +182,10 @@ test('Madrid boundaries, private media roles, final owner, credits and measured 
           assert.deepEqual(trace.installed?.order, ['fal']);
           assert.equal(report.totals.installedSavingsMicros, 0);
         }
+      } else if (row.engineId === 'wan-3-prime') {
+        assert.equal(row.request?.hasSeed, false);
+        assert.equal(row.request?.promptExpansionEnabled, true);
+        assert.equal(trace.installed?.provider, 'videorouter');
       } else if (row.request?.ownedReferenceImages) {
         assert.equal(row.request.hasSeed, false);
         assert.equal(row.request.promptExpansionEnabled, true);
