@@ -26,7 +26,7 @@ const copy: Record<AppLocale, Record<'claude' | 'codex', EntryCopy>> = {
       cost: 'Media generation is paid from your MaxVideoAI wallet after you approve its exact quote. Codex access has its own requirements; no additional MaxVideoAI subscription is required.',
       scope: 'Published production checks cover Codex CLI. They do not establish the same behavior on every Codex surface or version.',
       steps: [
-        { title: 'Install and authorize', body: 'Add the MaxVideoAI plugin using the guide below. Authorize your MaxVideoAI account in the browser, then return to Codex.' },
+        { title: 'Open the project brief', body: 'Open the project containing your product brief. Select MaxVideoAI in the task where you want to make the clip.' },
         { title: 'Prepare one launch clip', body: 'Describe the visual you need for your project or site. Review the supported model, settings and exact current price before approving.' },
         { title: 'Approve and retrieve the asset', body: 'Confirm the quote to start the paid attempt. A completed clip is saved in your MaxVideoAI library, where you can open and download it.' },
       ],
@@ -48,7 +48,7 @@ const copy: Record<AppLocale, Record<'claude' | 'codex', EntryCopy>> = {
       cost: 'La génération de médias utilise votre portefeuille MaxVideoAI après validation du devis exact. L’accès à Codex a ses propres conditions ; aucun abonnement MaxVideoAI supplémentaire n’est requis.',
       scope: 'Les contrôles de production publiés portent sur Codex CLI. Ils ne prouvent pas un comportement identique sur toutes les interfaces ou versions de Codex.',
       steps: [
-        { title: 'Installez et autorisez', body: 'Ajoutez le plugin MaxVideoAI avec le guide ci-dessous. Autorisez votre compte MaxVideoAI dans le navigateur, puis revenez dans Codex.' },
+        { title: 'Ouvrez le brief du projet', body: 'Ouvrez le projet contenant votre brief produit et sélectionnez MaxVideoAI dans la tâche où vous préparez le clip.' },
         { title: 'Préparez un clip de lancement', body: 'Décrivez le visuel nécessaire pour votre projet ou votre site. Vérifiez le modèle compatible, les réglages et le prix exact actuel avant validation.' },
         { title: 'Validez et récupérez le média', body: 'Confirmez le devis pour lancer la tentative payante. Le clip terminé rejoint votre bibliothèque MaxVideoAI, où vous pouvez l’ouvrir et le télécharger.' },
       ],
@@ -70,7 +70,7 @@ const copy: Record<AppLocale, Record<'claude' | 'codex', EntryCopy>> = {
       cost: 'La generación de medios se paga desde tu monedero MaxVideoAI tras aprobar el precio exacto. El acceso a Codex tiene sus propias condiciones; no necesitas otra suscripción a MaxVideoAI.',
       scope: 'Las pruebas de producción publicadas cubren Codex CLI. No demuestran el mismo comportamiento en todas las interfaces o versiones de Codex.',
       steps: [
-        { title: 'Instala y autoriza', body: 'Añade el plugin MaxVideoAI con la guía de abajo. Autoriza tu cuenta MaxVideoAI en el navegador y vuelve a Codex.' },
+        { title: 'Abre el brief del proyecto', body: 'Abre el proyecto que contiene el brief del producto y selecciona MaxVideoAI en la tarea donde prepararás el clip.' },
         { title: 'Prepara un clip de lanzamiento', body: 'Describe el recurso visual que necesitas para tu proyecto o sitio. Revisa el modelo compatible, los ajustes y el precio exacto actual antes de aprobar.' },
         { title: 'Aprueba y recupera el recurso', body: 'Confirma el precio para iniciar el intento de pago. El clip terminado se guarda en tu biblioteca MaxVideoAI, donde puedes abrirlo y descargarlo.' },
       ],

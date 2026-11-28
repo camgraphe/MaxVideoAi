@@ -15,6 +15,8 @@ const routePath = 'frontend/app/api/mcp/acquisition/route.ts';
 const actionsPath =
   'frontend/app/(localized)/[locale]/(marketing)/mcp/_components/McpConnectActions.client.tsx';
 const integrationRegistryPath = 'frontend/lib/mcp-integration-registry.ts';
+const navigationPath = 'frontend/components/marketing/mcp/useMcpConnectNavigation.ts';
+const directoryHref = 'https://chatgpt.com/plugins/plugin_asdk_app_6af7c45d28c48191982cf5be6eb7e058';
 const reportPath = '.superpowers/sdd/task-5-report.md';
 const secret = 'task-5-test-signing-secret-with-32-bytes';
 const validInput = {
@@ -44,7 +46,8 @@ test('Task 5 has focused acquisition, route, and client-action owners', () => {
   const actions = requireFile(actionsPath);
   assert.match(actions, /^['"]use client['"];?/);
   assert.match(actions, /McpClientActions/);
-  assert.match(actions, /\/api\/mcp\/acquisition/);
+  assert.match(actions, /useMcpConnectNavigation/);
+  assert.match(requireFile(navigationPath), /\/api\/mcp\/acquisition/);
   assert.match(actions, /getMcpClientActionConfig/);
   assert.doesNotMatch(actions, /mcp-client-actions\.json/);
 });
@@ -92,7 +95,7 @@ test('the acquisition registry enables exactly the five live clients', async () 
   const { isEnabledMcpAcquisitionClient } = await import(
     '../frontend/lib/mcp-integration-registry.ts'
   );
-  for (const client of ['claude', 'chatgpt', 'codex', 'openclaw', 'n8n']) {
+  for (const client of ['chatgpt', 'claude', 'codex', 'openclaw', 'n8n']) {
     assert.equal(isEnabledMcpAcquisitionClient(client), true);
   }
   for (const value of ['cursor', 'githubCopilot', 'other', '', [], {}]) {
@@ -479,7 +482,7 @@ test('current audit storage fails closed instead of inventing an acquisition bin
 });
 
 test('CTA source contains no private fields or invented connection-success event', () => {
-  const source = requireFile(actionsPath);
+  const source = requireFile(actionsPath) + requireFile(navigationPath);
   assert.doesNotMatch(source, /mcp_connection_completed|connection_success|copy_success/i);
   assert.doesNotMatch(source, /authorization_id|access.?token|email|prompt/i);
 });
@@ -491,16 +494,16 @@ test('Task 5 reports durable Task 7 binding through acquisitionId rather than th
   assert.match(report, /deduplicat(?:e|ion).*acquisitionId.*(?:not|never).*raw signed (?:cookie|token)/is);
 });
 
-test('client deep links remain disabled and localized setup plus endpoint copy always render', async () => {
+test('the connect action uses the published ChatGPT listing and preserves the other setup guides and endpoint copy', async () => {
   const { getMcpClientActionConfig } = await import(
     '../frontend/lib/mcp-integration-registry.ts'
   );
   const flags = Object.fromEntries(
-    (['claude', 'chatgpt', 'codex', 'openclaw', 'n8n'] as const).map((id) => [id, getMcpClientActionConfig(id)]),
+    (['chatgpt', 'claude', 'codex', 'openclaw', 'n8n'] as const).map((id) => [id, getMcpClientActionConfig(id)]),
   );
   assert.deepEqual(flags, {
     claude: { deepLinkEnabled: false, deepLink: null },
-    chatgpt: { deepLinkEnabled: false, deepLink: null },
+    chatgpt: { deepLinkEnabled: true, deepLink: directoryHref },
     codex: { deepLinkEnabled: false, deepLink: null },
     openclaw: { deepLinkEnabled: false, deepLink: null },
     n8n: { deepLinkEnabled: false, deepLink: null },
@@ -514,9 +517,9 @@ test('client deep links remain disabled and localized setup plus endpoint copy a
     '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
   );
   for (const [locale, expectedHrefs] of [
-    ['en', ['/integrations/claude', '/integrations/chatgpt', '/integrations/codex', '/integrations/openclaw', '/integrations/n8n']],
-    ['fr', ['/fr/integrations/claude', '/fr/integrations/chatgpt', '/fr/integrations/codex', '/fr/integrations/openclaw', '/fr/integrations/n8n']],
-    ['es', ['/es/integraciones/claude', '/es/integraciones/chatgpt', '/es/integraciones/codex', '/es/integraciones/openclaw', '/es/integraciones/n8n']],
+    ['en', [directoryHref, '/integrations/claude', '/integrations/codex', '/integrations/openclaw', '/integrations/n8n']],
+    ['fr', [directoryHref, '/fr/integrations/claude', '/fr/integrations/codex', '/fr/integrations/openclaw', '/fr/integrations/n8n']],
+    ['es', [directoryHref, '/es/integraciones/claude', '/es/integraciones/codex', '/es/integraciones/openclaw', '/es/integraciones/n8n']],
   ] as const) {
     const copy = getMcpPageCopy(locale);
     const html = renderToStaticMarkup(React.createElement(McpConnectActions, {
@@ -550,4 +553,32 @@ test('the public GitHub source callout stays useful and untracked from the MCP w
     getMcpPageCopy('en').answers.repositoryLabel,
     'Inspect the public MaxVideoAI plugin source on GitHub',
   );
+});
+
+test('the live guide heroes offer the directory and keep the correct local setup when connections are unavailable', async () => {
+  const { IntegrationHeroSection } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/integrations/_components/IntegrationHeroSection.tsx'
+  );
+  const { getIntegrationCopy } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/integrations/_lib/integration-copy.ts'
+  );
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    for (const client of ['chatgpt', 'codex', 'claude'] as const) {
+      const copy = getIntegrationCopy(locale, client);
+      for (const connectionAvailable of [true, false]) {
+        const html = renderToStaticMarkup(React.createElement(IntegrationHeroSection, {
+          copy,
+          locale,
+          host: client,
+          publication: {
+            renderPublicPage: true, indexable: true, showTrialClaim: false, showReferenceClaim: true,
+            connectionAvailable, showPaidGenerationClaim: false,
+          },
+        }));
+        assert.equal(html.includes(`href="${directoryHref}"`), connectionAvailable && client !== 'claude');
+        const anchor = connectionAvailable && client === 'codex' ? '#advanced-setup' : '#setup';
+        assert.ok(html.includes(`href="${anchor}"`));
+      }
+    }
+  }
 });

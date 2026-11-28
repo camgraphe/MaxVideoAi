@@ -12,6 +12,7 @@ import {
   getMcpIntegration,
   getMcpIntegrationIds,
   getMcpPublicIntegrationPaths,
+  getMcpDirectoryGuidePaths,
 } from '@/lib/mcp-integration-registry';
 import compareConfig from '@/config/compare-config.json';
 import { getHubComparisonSlugsForSitemap } from '@/lib/compare-hub/data';
@@ -44,10 +45,11 @@ const IGNORED_ROUTE_TEMPLATES = new Set([
 const MCP_PUBLIC_INDEXABLE_PATHS = new Set<string>([
   '/mcp',
   ...getMcpPublicIntegrationPaths(),
+  ...getMcpDirectoryGuidePaths(true),
   '/docs/mcp',
 ]);
 const MCP_INTEGRATION_PATHS = new Set<string>(
-  getMcpIntegrationIds().map((id) => getMcpIntegration(id).englishPath),
+  [...getMcpIntegrationIds().map((id) => getMcpIntegration(id).englishPath), ...getMcpDirectoryGuidePaths()],
 );
 const MCP_INDEXABLE = getMcpPublicationState(mcpPublication).indexable;
 let cachedAppPathsManifest: Record<string, string> | null = null;

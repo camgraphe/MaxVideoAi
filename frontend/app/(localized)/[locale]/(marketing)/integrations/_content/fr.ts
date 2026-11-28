@@ -1,7 +1,7 @@
 import {
   MAXVIDEOAI_CODEX_MARKETPLACE_ADD_COMMAND,
   MAXVIDEOAI_CODEX_PLUGIN_ADD_COMMAND,
-  MAXVIDEOAI_PUBLIC_PLUGIN_VERSION,
+  MAXVIDEOAI_PUBLIC_PLUGIN_SOURCE_TAG,
 } from '@/config/maxvideoai-plugin-release';
 import { MCP_PRODUCTION_RESOURCE_URL } from '@/server/mcp/config';
 import type { McpClientId } from '../../mcp/_lib/mcp-page-types';
@@ -56,13 +56,13 @@ function buildFrenchGuides(client: McpClientId): IntegrationHostGuide[] {
     return [
       {
         "hostId": "chatgptWeb",
-        "title": "Connecter MaxVideoAI dans ChatGPT",
-        "intro": "Ajoutez MaxVideoAI dans ChatGPT, puis connectez le compte que vous utilisez sur le site.",
+        "title": "Connexion MCP personnalisée dans ChatGPT",
+        "intro": "Si votre espace utilise une connexion MCP personnalisée, ajoutez le serveur MaxVideoAI et autorisez-le via OAuth.",
         installInstruction: getIntegrationInstallInstruction('fr', 'chatgptWeb'),
         "steps": [
           {
             "title": "Ouvrir l’ajout MCP personnalisé",
-            "body": "Dans Plugins, choisissez Ajouter → Ajouter un serveur MCP personnalisé. Ce parcours actuel ne nécessite pas d’activer le mode développeur au préalable. Les permissions du compte et de l’espace restent applicables."
+            "body": "Si votre espace autorise les serveurs personnalisés, ouvrez Plugins → Ajouter → Ajouter un serveur MCP personnalisé."
           },
           {
             "title": "Créer MaxVideoAI et connecter le compte",
@@ -81,7 +81,7 @@ function buildFrenchGuides(client: McpClientId): IntegrationHostGuide[] {
           }
         ],
         "authTrigger": "Utilisez votre compte MaxVideoAI existant. Créez-en un seulement si nécessaire.",
-        "limitation": "Selon votre offre ChatGPT et les permissions de l’espace. Cette connexion directe ne nécessite pas de fiche dans le répertoire public."
+        "limitation": "Les connexions personnalisées dépendent des options activées pour votre espace de travail."
       }
     ];
   }
@@ -89,11 +89,11 @@ function buildFrenchGuides(client: McpClientId): IntegrationHostGuide[] {
   return [
     {
       hostId: 'codexCli',
-      title: 'Installer le plugin MaxVideoAI dans Codex',
-      intro: 'Ajoutez la marketplace MaxVideoAI taguée, installez le plugin puis autorisez votre compte depuis une nouvelle conversation Codex.',
+      title: "Installer le paquet versionné dans Codex CLI",
+      intro: "Dans le terminal, ajoutez le dépôt de plugins à la version indiquée, installez le paquet et autorisez votre compte dans une nouvelle tâche Codex.",
       installInstruction: getIntegrationInstallInstruction('fr', 'codexCli'),
       steps: [
-        { title: 'Ajouter la marketplace', body: `Enregistrez le dépôt public MaxVideoAI sur le tag de version ${MAXVIDEOAI_PUBLIC_PLUGIN_VERSION} contrôlé.` },
+        { title: 'Ajouter la marketplace', body: `Enregistrez le dépôt public MaxVideoAI sur le tag de version ${MAXVIDEOAI_PUBLIC_PLUGIN_SOURCE_TAG} contrôlé.` },
         { title: 'Installer le plugin', body: 'Installez MaxVideoAI une fois pour recevoir les skills plan et generate ainsi que la connexion MCP de production.' },
         { title: 'Démarrer une nouvelle tâche', body: 'Ouvrez une nouvelle conversation Codex, utilisez $maxvideoai:plan ou $maxvideoai:generate, puis terminez OAuth à la demande.' },
       ],
@@ -119,12 +119,12 @@ export function buildFrenchIntegrationCopy(client: McpClientId): IntegrationPage
       ? 'Connecteur MaxVideoAI'
       : 'Plugin MaxVideoAI';
   const setupDescription = client === 'chatgpt'
-    ? "Connectez MaxVideoAI à ChatGPT par une application MCP de production et OAuth ; comparez les modèles, vérifiez le prix et récupérez vos résultats."
+    ? "Installez le plugin MaxVideoAI dans ChatGPT pour comparer des modèles vidéo à partir d’une photo, vérifier le prix et retrouver le clip dans votre bibliothèque."
     : client === 'claude'
       ? 'Configurez le connecteur distant dans Claude pour préparer prompts et références, comparer les modèles vidéo IA, vérifier le devis et approuver la génération.'
       : 'Installez le plugin Codex pour préparer prompts et références, comparer les modèles vidéo IA, vérifier le devis exact et approuver la génération.';
   const setupIntro = client === 'chatgpt'
-    ? "Ajoutez le MCP MaxVideoAI de production dans ChatGPT et autorisez le compte que vous utilisez déjà sur maxvideoai.com. Ouvrez ensuite une nouvelle discussion avec MaxVideoAI sélectionné. Cette connexion directe est distincte de la publication au répertoire public."
+    ? "Sélectionnez MaxVideoAI dans ChatGPT. Apportez une photo ou un brief, comparez les modèles vidéo et retrouvez le clip terminé dans votre bibliothèque MaxVideoAI."
     : client === 'claude'
       ? 'Cette page Claude réunit la configuration du connecteur distant et le passage à la production : développez le brief, comparez modèles et budgets actuels, validez les références puis approuvez un devis MaxVideoAI exact lorsque la demande est prête.'
       : 'Cette page Codex réunit l’installation du plugin et le passage à la production : développez le brief, comparez modèles et budgets actuels, validez les références puis approuvez un devis MaxVideoAI exact lorsque la demande est prête.';
@@ -141,7 +141,7 @@ export function buildFrenchIntegrationCopy(client: McpClientId): IntegrationPage
       intro: setupIntro,
       unavailable: 'Préparez prompts et références, comparez les modèles, budgétez le projet et découvrez le parcours de production MaxVideoAI.',
       liveStatus: client === 'chatgpt'
-        ? "La connexion MCP personnalisée MaxVideoAI est gratuite. Utilisez votre compte existant sur maxvideoai.com ; les générations approuvées utilisent vos crédits MaxVideoAI. Aucune entrée n’est publiée au répertoire OpenAI."
+        ? "Rechargez votre compte MaxVideoAI sur maxvideoai.com. Le site et vos assistants connectés partagent le même solde et la même bibliothèque."
         : 'La connexion MaxVideoAI est gratuite, sans abonnement supplémentaire. Connectez-vous ou créez un compte ; seuls les rendus approuvés utilisent vos crédits MaxVideoAI à la consommation.',
       accountStatus: 'Un compte MaxVideoAI est requis et sa création est gratuite. La connexion n’ajoute aucun abonnement ; seuls les rendus approuvés utilisent vos crédits MaxVideoAI.',
       setupLabel: client === 'chatgpt' ? 'Connecter MaxVideoAI dans ChatGPT' : `Configurer MaxVideoAI dans ${clientLabel}`,
@@ -199,8 +199,8 @@ export function buildFrenchIntegrationCopy(client: McpClientId): IntegrationPage
       title: `Aide à la connexion ${clientLabel}`,
       intro: 'L’assistant peut expliquer la prochaine étape sûre sans inventer le solde, l’état du job ni une adresse de compte.',
       items: [
-        { question: "Je vois MaxVideoAI Staging ou mon mot de passe du site est refusé", answer: "Staging est un environnement de test avec des comptes distincts. Vérifiez le serveur de la connexion : utilisez https://api.maxvideoai.com/mcp et la connexion de production sur maxvideoai.com. Ne créez pas de compte de test pour retrouver celui du site. Si la connexion de production échoue, utilisez votre connexion Google habituelle ou la réinitialisation du mot de passe." },
-        { question: "L’assistant peut-il installer MaxVideoAI pour moi ?", answer: client === 'chatgpt' ? "ChatGPT peut vous guider pour ajouter le MCP personnalisé ; une demande dans le chat n’ajoute pas elle-même la connexion. Vous utilisez les réglages d’installation puis vous connectez votre compte MaxVideoAI dans le navigateur. Sélectionnez ensuite MaxVideoAI dans une nouvelle discussion." : client === 'claude' ? "Claude dans le chat vous guide dans Connectors. Claude Code peut exécuter la commande de configuration si vous lui donnez accès au terminal. Dans les deux cas, vous autorisez la connexion de votre compte dans le navigateur." : "Codex peut exécuter les commandes du plugin avec un accès au terminal et votre autorisation. Vous vous connectez et approuvez les accès dans le navigateur ; une nouvelle tâche charge ensuite le plugin." },
+        { question: "Je vois MaxVideoAI Staging ou mon mot de passe du site est refusé", answer: client === 'chatgpt' ? "Pour le plugin publié, choisissez MaxVideoAI dans l’annuaire et connectez le compte que vous utilisez sur maxvideoai.com. MaxVideoAI Staging correspond à un environnement de test distinct. Si vous utilisez habituellement la connexion Google sur le site, utilisez-la ici aussi." : "Staging est un environnement de test avec des comptes distincts. Vérifiez le serveur de la connexion : utilisez https://api.maxvideoai.com/mcp et la connexion de production sur maxvideoai.com. Ne créez pas de compte de test pour retrouver celui du site. Si la connexion de production échoue, utilisez votre connexion Google habituelle ou la réinitialisation du mot de passe." },
+        { question: "L’assistant peut-il installer MaxVideoAI pour moi ?", answer: client === 'chatgpt' ? "Ouvrez la fiche MaxVideoAI dans l’annuaire des plugins et choisissez Installer le plugin. Lors de la connexion, vérifiez les permissions dans le navigateur et connectez le compte MaxVideoAI de votre choix." : client === 'claude' ? "Claude dans le chat vous guide dans Connectors. Claude Code peut exécuter la commande de configuration si vous lui donnez accès au terminal. Dans les deux cas, vous autorisez la connexion de votre compte dans le navigateur." : "Dans une tâche Codex compatible, ouvrez Sources → Use plugins et sélectionnez MaxVideoAI après son installation. Dans le terminal, Codex peut exécuter les commandes du paquet avec votre accord." },
         { question: 'L’assistant me demande de me reconnecter', answer: 'Terminez OAuth dans le navigateur puis revenez dans la discussion. Ne collez jamais votre mot de passe ou une clé API dans le chat.' },
         { question: 'Mon solde est insuffisant', answer: 'Demandez un lien de recharge sécurisé. Le paiement reste sur MaxVideoAI ; rechargez, vérifiez le solde puis préparez un nouveau devis.' },
         { question: 'Je ne trouve pas un résultat terminé', answer: 'Demandez les générations récentes ou ouvrez la bibliothèque MaxVideoAI. Ne relancez pas un job payant en double.' },

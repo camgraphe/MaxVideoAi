@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useRef, useState, type MouseEvent } from 'react';
+import { useState } from 'react';
+import { recordMcpAcquisition, useMcpConnectNavigation } from '@/components/marketing/mcp/useMcpConnectNavigation';
 
 import { dispatchGaEvent } from '@/lib/analytics/ga-events';
 import type { AppLocale } from '@/i18n/locales';
@@ -12,7 +13,6 @@ import type {
 } from '../_lib/mcp-page-types';
 import { McpClientActions } from './McpClientActions';
 
-const NAVIGATION_WAIT_MS = 750;
 type CopyStatus = { client: McpClientId; state: 'copied' | 'error' } | null;
 
 function resolvedActions(actions: McpClientActionCopy[]): McpClientActionCopy[] {
@@ -24,46 +24,12 @@ function resolvedActions(actions: McpClientActionCopy[]): McpClientActionCopy[] 
   });
 }
 
-function isPlainPrimaryClick(event: MouseEvent<HTMLAnchorElement>): boolean {
-  const target = event.currentTarget.getAttribute('target');
-  return (
-    event.button === 0 &&
-    (!target || target === '_self') &&
-    !event.currentTarget.hasAttribute('download') &&
-    !event.altKey &&
-    !event.ctrlKey &&
-    !event.metaKey &&
-    !event.shiftKey
-  );
-}
-
-async function recordAcquisition(client: McpClientId, action: 'connect' | 'copy_endpoint') {
-  try {
-    return await fetch('/api/mcp/acquisition', {
-      method: 'POST',
-      cache: 'no-store',
-      credentials: 'same-origin',
-      keepalive: true,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action,
-        source: 'mcp_landing',
-        medium: 'owned',
-        campaign: 'mcp_connect',
-        client,
-      }),
-    });
-  } catch {
-    return null;
-  }
-}
-
 export function McpConnectActions({
   actions,
   copy,
   resourceUrl,
   locale,
-  navigate = (href) => window.location.assign(href),
+  navigate,
 }: {
   actions: McpClientActionCopy[];
   copy: McpConnectActionsCopy;
@@ -73,64 +39,11 @@ export function McpConnectActions({
 }) {
   const [copyStatus, setCopyStatus] = useState<CopyStatus>(null);
   const [instructionStatus, setInstructionStatus] = useState<CopyStatus>(null);
-  const mountedRef = useRef(true);
-  const pendingNavigationRef = useRef<{
-    href: string;
-    navigated: boolean;
-    timerId: number | null;
-  } | null>(null);
   const renderedActions = resolvedActions(actions);
-
-  useEffect(() => {
-    mountedRef.current = true;
-    return () => {
-      mountedRef.current = false;
-      const pending = pendingNavigationRef.current;
-      if (pending?.timerId !== null && pending?.timerId !== undefined) {
-        window.clearTimeout(pending.timerId);
-      }
-      pendingNavigationRef.current = null;
-    };
-  }, []);
-
-  function trackConnectAction(client: McpClientId) {
-    const flag = getMcpClientActionConfig(client);
-    const usesDeepLink = flag.deepLinkEnabled && Boolean(flag.deepLink);
-    void dispatchGaEvent('mcp_landing_cta_clicked', {
-      action: 'connect',
-      client,
-      destination: usesDeepLink ? 'verified_deep_link' : 'setup_guide',
-      locale,
-    });
-    return recordAcquisition(client, 'connect');
-  }
-
+  const onConnect = useMcpConnectNavigation(locale, navigate);
   function handleActionClick(action: McpClientActionCopy) {
-    return (event: MouseEvent<HTMLAnchorElement>) => {
-      if (!isPlainPrimaryClick(event)) {
-        void trackConnectAction(action.client);
-        return;
-      }
-
-      event.preventDefault();
-      if (pendingNavigationRef.current) return;
-
-      const pending = {
-        href: event.currentTarget.href,
-        navigated: false,
-        timerId: null as number | null,
-      };
-      pendingNavigationRef.current = pending;
-
-      const navigateOnce = () => {
-        if (!mountedRef.current || pending.navigated) return;
-        pending.navigated = true;
-        if (pending.timerId !== null) window.clearTimeout(pending.timerId);
-        navigate(pending.href);
-      };
-      pending.timerId = window.setTimeout(navigateOnce, NAVIGATION_WAIT_MS);
-      void trackConnectAction(action.client).finally(navigateOnce);
-    };
+    const destination = getMcpClientActionConfig(action.client).deepLinkEnabled ? 'verified_deep_link' : 'setup_guide';
+    return onConnect(action.client, destination);
   }
 
   async function copyEndpoint(client: McpClientId) {
@@ -141,7 +54,7 @@ export function McpConnectActions({
       destination: 'manual_setup',
       locale,
     });
-    void recordAcquisition(client, 'copy_endpoint');
+    void recordMcpAcquisition(client, 'copy_endpoint');
     try {
       await navigator.clipboard.writeText(resourceUrl);
       setCopyStatus({ client, state: 'copied' });

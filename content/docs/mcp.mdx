@@ -1,8 +1,8 @@
 ---
-title: "MaxVideoAI MCP: connectors, plugins and workflows"
-description: "Connect MaxVideoAI to Claude, ChatGPT, Codex, OpenClaw or self-hosted n8n. Setup, OAuth, exact quotes, approvals, references and recovery."
+title: "MaxVideoAI MCP documentation"
+description: "Use MaxVideoAI in ChatGPT or Codex, or connect an assistant to the MCP server. Find setup instructions, OAuth, shared credits and help with your media."
 date: "2026-07-14"
-updatedAt: "2026-10-19"
+updatedAt: "2026-11-28"
 authorId: "maxvideoai"
 image: "/og/brand-2026-09-25.png"
 keywords:
@@ -14,17 +14,28 @@ keywords:
 slug: "mcp"
 ---
 
-MaxVideoAI connects compatible assistants and automation tools to the models, credits and private media library of your MaxVideoAI account. Use it to compare current video models, prepare a quote, approve generation and recover the result.
+## [Use the plugin in ChatGPT or Codex](#setup)
 
-## Choose your integration
+The same MaxVideoAI plugin works in ChatGPT and Codex. [Install MaxVideoAI from the plugin directory](https://chatgpt.com/plugins/plugin_asdk_app_6af7c45d28c48191982cf5be6eb7e058). In ChatGPT, select MaxVideoAI in the conversation. In a supported Codex task, open **Sources → Use plugins** and select MaxVideoAI. For the standalone CLI, follow the [Codex package guide](/integrations/codex). [OpenAI’s plugin instructions](https://help.openai.com/en/articles/20001256-plugins-in-chatgpt).
+
+On first use, sign in to MaxVideoAI or create an account [on maxvideoai.com](/login?mode=signup&lang=en). Connect the same account wherever you work to use its media library and credits. [Add credits on maxvideoai.com](/billing).
+
+[Open the ChatGPT guide](/integrations/chatgpt#setup) or [choose the plugin for a Codex task](/integrations/codex#setup).
+
+> **Try this in your conversation**
+>
+> “Use MaxVideoAI to compare two models for animating my product photo.” Choose a model, review the settings and price, then approve the shot. [See how a finished video appears in ChatGPT](/integrations/chatgpt#real-result).
+
+## [Choose your integration](#other-clients)
 
 | Environment | Setup | What to know |
 | --- | --- | --- |
 | [Claude connector](/integrations/claude) | Custom remote MCP connector | Claude Web Free: production tested with limits on 2026-10-19. Claude Desktop: separate historical staging checkpoint. Claude Code: not tested. |
-| [ChatGPT MCP app](/integrations/chatgpt) | Plugins → custom MCP server | No public directory listing is claimed. Use Plugins to add a custom MCP server. OpenAI documents full MCP write support for eligible Business, Enterprise or Edu workspaces. On 19 October 2026, our tested Pro account also connected privately, prepared a quote and recovered an existing result. New paid generation was not tested; availability remains account-dependent. |
-| [Codex plugin](/integrations/codex) | MaxVideoAI plugin or remote MCP | Codex CLI tested. |
+| [ChatGPT plugin](/integrations/chatgpt) | [Install plugin](https://chatgpt.com/plugins/plugin_asdk_app_6af7c45d28c48191982cf5be6eb7e058) | Choose MaxVideoAI in a conversation and connect your MaxVideoAI account when prompted. |
+| [Codex plugin](/integrations/codex) | Select the installed plugin in a supported task, or install the versioned package in Codex CLI. | Open your project and ask MaxVideoAI to plan a shot from your brief. |
 | [OpenClaw skill](/integrations/openclaw) | Direct MCP or listed ClawHub skill | Tested with limits; private-reference import and inline channel rendering are unverified. |
 | [n8n video workflow](/integrations/n8n) | Manual, self-hosted MCP Client | Tested on 2.38.7 with an exact quote and human approval. [Public template 19591](https://n8n.io/workflows/19591-turn-creative-briefs-into-approved-maxvideoai-generations-with-human-review/) is available; configure OAuth manually. No n8n Cloud or AI Agent support is claimed. |
+| [Glama connector](/integrations/glama) | Connector directory | Inspect the server and its tools on Glama. Follow the connection instructions for the client where you want to create. |
 
 Cursor, GitHub Copilot, Gemini CLI and Microsoft Copilot are in preparation. Their MaxVideoAI setup pages are not published.
 
@@ -38,7 +49,7 @@ For a similar project, start with the intended result and references. Ask the as
 
 Ask `list_audio_capabilities` for the current Audio modes and settings. Prepare voice-over with `prepare_audio_generation`, review the exact quote, then approve before `confirm_audio_generation`. Recover the existing job after a timeout rather than submitting again. This is separate from a video model's native audio and from music composed with the assistant's local tools.
 
-## MCP server address
+## [MCP server address](#endpoint)
 
 ```text
 https://api.maxvideoai.com/mcp
@@ -96,11 +107,11 @@ Quote example: one Veo 3.1 text-to-video clip, 8 seconds, 720p, 9:16, `audio: fa
 | `get_generation_status` | Read a known job, completion, output, failure, and refund state. | No. |
 | `list_recent_generations` | Recover recent jobs instead of accidentally submitting duplicates. | No. |
 | `present_generation` | Present a completed owned image or playable video inline in compatible hosts. | No. Uses the result link and library as fallback. |
-| `create_topup_link` | Open a secure MaxVideoAI credit top-up handoff for the missing amount. | Payment happens only on MaxVideoAI. |
+| `create_topup_link` | Open a secure MaxVideoAI credit top-up handoff for the missing amount. | Available on compatible custom MCP connections. In the directory plugin, add credits on the MaxVideoAI website. |
 
 Production publication flags decide which write-capable tools are exposed. A client must not infer availability from this reference alone; its live `tools/list` response is authoritative.
 
-## Images, video, and audio references
+## [Images, video, and audio references](#reference)
 
 The assistant may help invent, create, or select reference media. MaxVideoAI accepts and stores the media but does not require the assistant to surrender its creative role.
 
@@ -112,7 +123,7 @@ Always call `get_model_details` for the selected mode. It returns the accepted m
 
 Seedance 2.5 is available through its working ModelArk route for text-to-video, image-to-video, reference-to-video, and extension. Direct video-to-video that depends on BytePlus LAS is not exposed until LAS access exists; that limitation does not disable the supported Seedance 2.5 modes.
 
-## Budget, exact price, and approval
+## [Budget, exact price, and approval](#approve)
 
 `calculate_project_budget` is free and useful early. It estimates a film from named proposals, shot durations, model choices, and explicit creative-attempt assumptions. It does not reserve capacity, debit credits, or create a job.
 
@@ -120,15 +131,14 @@ When the user chooses a concrete request, `prepare_generation` performs final va
 
 If credits are insufficient:
 
-1. call `create_topup_link` for that quote;
-2. send the user to the returned MaxVideoAI billing page;
-3. after the user says payment is complete, call `get_account_status` again;
-4. call `prepare_generation` again because the previous quote is no longer valid;
-5. show the fresh exact price and request approval again.
+1. open [MaxVideoAI billing](/billing) with the connected account. On custom connections that expose it, `create_topup_link` can open this page for the quote.
+2. after the user says payment is complete, call `get_account_status` again;
+3. call `prepare_generation` again because the previous quote is no longer valid;
+4. show the fresh exact price and request approval again.
 
 The plugin itself, model advice, and project budgets require no separate subscription. Paid generations use the existing pay-as-you-go MaxVideoAI credit balance.
 
-## Jobs, library, failures, and retries
+## [Jobs, library, failures, and retries](#recover)
 
 An accepted job is not yet a completed video. Poll `get_generation_status` for a known job or call `list_recent_generations` to recover it. Once it is completed, `present_generation` can render the image or playable video inline in an MCP Apps-compatible host. Other clients keep the returned result link and MaxVideoAI library destination as the universal fallback. Do not submit the same paid generation again merely because the first call timed out.
 
@@ -157,7 +167,15 @@ The external host keeps its conversation. MaxVideoAI receives the tool requests 
 - Quotes expire, paid submission is idempotent, and server-side account limits still apply.
 - The assistant cannot claim that generated content is automatically cleared for publication or commercial use.
 
-## Troubleshooting
+## [Troubleshooting](#troubleshoot)
+
+### My balance or library looks different
+
+Open [billing](/billing) or your [library](/app/library) with the same MaxVideoAI sign-in you connected to the assistant. If the accounts differ, reconnect the one that owns your media and credits.
+
+### My generation is taking longer than expected
+
+Ask for the status of the accepted job ID. If the job is complete, ask the assistant to retrieve its existing media.
 
 ### The browser returns to 127.0.0.1 and cannot connect
 
@@ -173,7 +191,7 @@ The request has no valid bearer grant. Let the client follow the `WWW-Authentica
 
 ### `INTERNAL_ERROR`
 
-Keep the returned `correlationId`, stop repeated submissions, and contact MaxVideoAI support if the failure persists.
+Keep the returned `correlationId`, stop repeated submissions, and [contact MaxVideoAI support](/contact) if the failure persists.
 
 ### A mode is missing
 
@@ -181,4 +199,4 @@ Ask for `get_model_details` again. A model can support several modes through dif
 
 ## Current boundaries
 
-This is not a general-purpose REST API and does not issue customer API keys. It does not control the Studio timeline, edit arbitrary source video, manage customer callback endpoints, collect payment details inside chat, expose hidden models, or automatically approve media for publication.
+Where the connected client exposes Studio tools, you can edit a MaxVideoAI montage and request subtitles for a clip in your library. Available actions appear in `tools/list`. This is not a general-purpose REST API and does not issue customer API keys. Payments take place on the MaxVideoAI website. Customer callbacks, hidden models, arbitrary external edits and automatic publication are outside the scope of this connection.

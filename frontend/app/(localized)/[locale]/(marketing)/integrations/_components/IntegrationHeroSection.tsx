@@ -1,36 +1,64 @@
+import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowDown, ArrowUpRight } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
+import { McpDirectoryInstallLink } from '@/components/marketing/mcp/McpDirectoryInstallLink.client';
 import { McpIntegrationMark } from '@/components/marketing/mcp/McpIntegrationMark';
-import { McpStoryVisual } from '@/components/marketing/mcp/McpStoryVisual.client';
 import type { AppLocale } from '@/i18n/locales';
+import { getMcpClientActionConfig, getMcpIntegration } from '@/lib/mcp-integration-registry';
+import { MCP_N8N_PUBLIC_TEMPLATE_URL } from '@/lib/mcp-n8n-template';
 import type { McpPublicationState } from '@/lib/mcp-publication';
-import { McpHostProofCard } from '../../mcp/_components/McpHostProofCard';
-import type { McpHostProof } from '../../mcp/_lib/mcp-host-proof';
-import { getIntegrationEntryCopy } from '../_content/entry';
 import type { IntegrationPageCopy } from '../_lib/integration-copy';
+import { guideLabels, guideMedia, guideMediaPath, guideText, type GuideHost } from '../_content/guide-presentation';
+import { IntegrationGuideAccount } from './IntegrationGuideAccount';
 
-export function IntegrationHeroSection({ copy, publication, locale, hostProof }: {
-  copy: IntegrationPageCopy; publication: McpPublicationState; locale: AppLocale; hostProof: McpHostProof | null;
+const hostDestinations = {
+  claude: 'https://claude.ai/customize/connectors',
+  openclaw: 'https://clawhub.ai/camgraphe/skills/maxvideoai',
+  n8n: MCP_N8N_PUBLIC_TEMPLATE_URL,
+};
+
+export function IntegrationHeroSection({ copy, publication, locale, host }: {
+  copy: IntegrationPageCopy; publication: McpPublicationState; locale: AppLocale; host: GuideHost;
 }) {
-  const live = publication.connectionAvailable && publication.showPaidGenerationClaim;
-  const entry = getIntegrationEntryCopy(locale, copy.client);
-  return <header className="mcp-hero mcp-integration-hero">
-    <div className="container-page mcp-hero-grid mcp-entry-hero-grid">
-      <div className="mcp-hero-copy">
-        <div className="mcp-integration-signature"><McpIntegrationMark integration={copy.client} size={38} className="h-[38px] w-[38px]" /><span>×</span><span>MaxVideoAI</span></div>
-        <p className="mcp-eyebrow">{copy.hero.eyebrow}</p>
-        <h1>{copy.hero.title}</h1>
-        <p className="mcp-lead">{publication.connectionAvailable ? copy.hero.intro : copy.hero.accountStatus}</p>
-        <div className="mcp-actions">
-          <Link href="#setup" className="mcp-button" data-analytics-event="cta_click" data-analytics-cta-name="mcp_setup_guide" data-analytics-cta-location="integration_hero" data-analytics-target-family="mcp">{copy.hero.setupLabel}<ArrowDown size={16} aria-hidden="true" /></Link>
+  const live = publication.connectionAvailable;
+  const label = guideLabels[locale];
+  const text = guideText[locale][host];
+  const capture = guideMedia[host];
+  const directory = getMcpClientActionConfig('chatgpt');
+  const directoryHost = host === 'chatgpt' || host === 'codex';
+  const listing = live && directoryHost && directory.deepLinkEnabled ? directory.deepLink : null;
+  const showGuide = !live || directoryHost || (host !== 'claude' && getMcpIntegration(host).store.status !== 'listed');
+  const destination = showGuide || directoryHost ? '#setup' : hostDestinations[host];
+
+  return <header className="guide-opening">
+    <div className="container-page">
+      <nav className="guide-crumb" aria-label={label.hub}><Link href={copy.hero.backHref}>{label.hub}</Link><span aria-hidden="true">/</span><span>{copy.clientLabel}</span></nav>
+      <div className="guide-opening-grid">
+        <div className="guide-intro">
+          <div className="guide-identity">{host === 'codex'
+            ? <Image src={`${guideMediaPath}/codex.png`} width={36} height={36} alt="" />
+            : <McpIntegrationMark integration={host} size={36} className="h-9 w-9" />}
+            <span>{text.kind}</span></div>
+          <h1>{copy.hero.title}</h1>
+          <p className="guide-lede">{live ? copy.hero.intro : copy.hero.accountStatus}</p>
+          <div className="guide-actions">{listing && directoryHost
+            ? <McpDirectoryInstallLink href={listing} client={host} locale={locale} className="mcp-button">{text.action}<ArrowUpRight size={16} aria-hidden="true"/></McpDirectoryInstallLink>
+            : <a href={destination} className="mcp-button" data-analytics-event="cta_click" data-analytics-cta-name="mcp_setup_guide" data-analytics-cta-location="integration_hero" data-analytics-target-family="mcp">{showGuide ? label.link : text.action}<ArrowUpRight size={16} aria-hidden="true"/></a>}
+            {live && (publication.showPaidGenerationClaim
+              ? <a href="#first-video" className="guide-text-link">{host === 'n8n' ? label.workflow : label.first} →</a>
+              : <a href={listing && host === 'codex' ? '#advanced-setup' : '#setup'} className="guide-text-link">{listing && host === 'codex' ? label.setupCli : label.link} →</a>)}
+          </div>
+          {live && <IntegrationGuideAccount locale={locale} plugin={directoryHost} />}
         </div>
-      </div>
-      {live && hostProof && copy.client === 'claude' ? <div className="mcp-hero-proof" id="real-result"><McpHostProofCard proof={hostProof} priority /></div>
-        : publication.showPaidGenerationClaim ? <div className="mcp-hero-visual"><McpStoryVisual locale={locale} client={copy.client} priority /></div> : null}
-      <div className="mcp-entry-hero-notes">
-        <Link href={copy.hero.backHref} className="mcp-text-link">{copy.hero.backLabel}<ArrowUpRight size={16} aria-hidden="true" /></Link>
-        {live && entry ? <p className="mcp-hero-cost">{entry.cost}</p> : null}
-        <p className="mcp-integration-availability"><span aria-hidden="true" />{publication.connectionAvailable ? copy.hero.liveStatus : copy.hero.unavailable}</p>
+        <figure className="guide-native-capture">
+          <a href={`${guideMediaPath}/${capture.image}`}>
+            {host === 'n8n'
+              ? <picture><source media="(max-width: 640px)" srcSet={`${guideMediaPath}/n8n-template-canvas-mobile.webp`} width={907} height={478}/>
+                <Image src={`${guideMediaPath}/${capture.image}`} width={capture.width} height={capture.height} alt={text.caption} priority unoptimized /></picture>
+              : <Image src={`${guideMediaPath}/${capture.image}`} width={capture.width} height={capture.height} alt={text.caption} priority sizes="(min-width: 1280px) 680px, (min-width: 851px) 54vw, 92vw"/>}
+          </a>
+          <figcaption><span>{text.caption}</span><a href={`${guideMediaPath}/${capture.image}`}>{label.enlarge} ↗</a></figcaption>
+        </figure>
       </div>
     </div>
   </header>;

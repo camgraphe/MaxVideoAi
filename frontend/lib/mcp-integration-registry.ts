@@ -1,6 +1,7 @@
 import registryJson from '@/config/mcp-integrations.json';
 
 export type McpIntegrationId = keyof typeof registryJson.integrations;
+export type McpDirectoryGuideId = keyof typeof registryJson.directoryGuides;
 export type McpHostId = keyof typeof registryJson.hosts;
 export type McpSitePublication = 'live' | 'preview_noindex' | 'hidden';
 export type McpHostEvidenceStatus = 'verified' | 'tested_with_limits' | 'not-run';
@@ -42,7 +43,15 @@ export type McpHostRecord = {
   };
 };
 
+type McpDirectoryGuide = {
+  label: string;
+  englishPath: `/integrations/${string}`;
+  listingUrl: string;
+  site: { publication: McpSitePublication; indexable: boolean };
+};
+
 type ParsedRegistry = {
+  directoryGuides: Readonly<Record<string, Readonly<McpDirectoryGuide>>>;
   schemaVersion: 1;
   integrations: Readonly<Record<string, Readonly<McpIntegrationRecord>>>;
   hosts: Readonly<Record<string, Readonly<McpHostRecord>>>;
@@ -203,10 +212,36 @@ export function parseMcpIntegrationRegistry(value: unknown): ParsedRegistry {
     if (!referencedHosts.has(hostId)) throw new Error(`orphan host ${hostId}`);
   }
 
-  return freezeDeep({ schemaVersion: 1, integrations, hosts });
+  const directoryGuides: Record<string, McpDirectoryGuide> = {};
+  for (const [id, value] of Object.entries(record(root.directoryGuides ?? {}, 'directoryGuides'))) {
+    const guide = record(value, `directory guide ${id}`);
+    const englishPath = `/integrations/${id}` as const;
+    if (!/^[a-z0-9-]+$/.test(id) || guide.englishPath !== englishPath || paths.has(englishPath)) {
+      throw new Error(`Invalid or duplicate directory guide path: ${id}`);
+    }
+    const site = record(guide.site, `directory guide ${id}.site`);
+    const publication = oneOf(site.publication, ['live', 'preview_noindex', 'hidden'] as const, `directory guide ${id}.site.publication`);
+    const indexable = boolean(site.indexable, `directory guide ${id}.site.indexable`);
+    if (publication !== 'live' && indexable) throw new Error(`directory guide ${id} cannot be indexed before publication`);
+    const listingUrl = string(guide.listingUrl, `directory guide ${id}.listingUrl`);
+    if (new URL(listingUrl).protocol !== 'https:') throw new Error(`directory guide ${id} requires an HTTPS listing`);
+    directoryGuides[id] = { label: string(guide.label, `directory guide ${id}.label`), englishPath, listingUrl, site: {publication, indexable} };
+  }
+
+  return freezeDeep({ schemaVersion: 1, integrations, hosts, directoryGuides });
 }
 
 const registry = parseMcpIntegrationRegistry(registryJson);
+
+export function getMcpDirectoryGuide(id: McpDirectoryGuideId): McpDirectoryGuide {
+  return registry.directoryGuides[id];
+}
+
+export function getMcpDirectoryGuidePaths(publicOnly = false): Array<`/integrations/${string}`> {
+  return Object.values(registry.directoryGuides)
+    .filter(({ site }) => !publicOnly || (site.publication === 'live' && site.indexable))
+    .map(({ englishPath }) => englishPath);
+}
 
 export function getMcpIntegrationIds(): McpIntegrationId[] {
   return Object.values(registry.integrations)
@@ -245,12 +280,19 @@ export function getMcpPublicIntegrationPaths(): Array<`/integrations/${string}`>
     .map((integration) => integration.englishPath);
 }
 
-export function getMcpClientActionConfig(id: McpIntegrationId): {
+export function getMcpClientActionConfig(
+  id: McpIntegrationId,
+  source: Pick<ParsedRegistry, 'integrations'> = registry,
+): {
   deepLinkEnabled: boolean;
   deepLink: string | null;
 } {
-  const { deepLinkEnabled, deepLink } = getMcpIntegration(id).installation;
-  return { deepLinkEnabled, deepLink };
+  const { installation, site, store } = source.integrations[id];
+  const directoryAvailable = store.target !== 'openai-plugin-directory' || store.status === 'listed';
+  if (site.publication !== 'live' || !directoryAvailable || !installation.deepLinkEnabled) {
+    return { deepLinkEnabled: false, deepLink: null };
+  }
+  return { deepLinkEnabled: true, deepLink: installation.deepLink };
 }
 
 export function isEnabledMcpAcquisitionClient(value: unknown): value is McpIntegrationId {

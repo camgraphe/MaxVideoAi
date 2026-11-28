@@ -240,6 +240,11 @@ export const routing = defineRouting({
       fr: '/integrations/openclaw',
       es: '/integraciones/openclaw',
     },
+    '/integrations/glama': {
+      en: '/integrations/glama',
+      fr: '/integrations/glama',
+      es: '/integraciones/glama',
+    },
     '/integrations/n8n': {
       en: '/integrations/n8n',
       fr: '/integrations/n8n',

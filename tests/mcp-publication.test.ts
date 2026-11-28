@@ -14,8 +14,8 @@ const frontendRequire = createRequire(new URL('../frontend/package.json', import
 
 test('public integration paths come from the indexable registry projection', () => {
   assert.deepEqual(getMcpPublicIntegrationPaths(), [
-    '/integrations/claude',
     '/integrations/chatgpt',
+    '/integrations/claude',
     '/integrations/codex',
     '/integrations/openclaw',
     '/integrations/n8n',
@@ -26,7 +26,7 @@ test('public integration paths come from the indexable registry projection', () 
   assert.match(discoverySource, /getMcpPublicIntegrationPaths/);
 });
 
-test('runtime sitemap discovery includes all five live integration routes', async () => {
+test('runtime sitemap discovery includes live integrations and the Glama directory guide', async () => {
   const react = frontendRequire('react') as {
     cache?: <TFunction extends (...args: never[]) => unknown>(fn: TFunction) => TFunction;
   };
@@ -46,6 +46,7 @@ test('runtime sitemap discovery includes all five live integration routes', asyn
   assert.ok(paths.includes('/integrations/codex'));
   assert.ok(paths.includes('/integrations/openclaw'));
   assert.ok(paths.includes('/integrations/n8n'));
+  assert.ok(paths.includes('/integrations/glama'));
 });
 
 test('public MCP previews do not become indexable before every public capability is live', () => {
@@ -111,7 +112,7 @@ test('integration publication keeps all five live clients intact and fails hidde
     referenceUploads: true,
   });
 
-  for (const id of ['claude', 'chatgpt', 'codex', 'openclaw', 'n8n'] as const) {
+  for (const id of ['chatgpt', 'claude', 'codex', 'openclaw', 'n8n'] as const) {
     assert.deepEqual(getMcpIntegrationPublicationState(id, liveGlobalState), liveGlobalState);
   }
   assert.equal(

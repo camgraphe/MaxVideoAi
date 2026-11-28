@@ -180,11 +180,12 @@ test('MCP metadata matches the approved intent and canonical locale routes', asy
   assert.equal(metadata[1]?.title, 'Vidéo IA par MCP : Claude, ChatGPT, Codex et n8n | MaxVideoAI');
   assert.equal(metadata[2]?.title, 'Video con IA por MCP: Claude, ChatGPT, Codex y n8n | MaxVideoAI');
   for (const meta of metadata) {
-    assert.match(meta.description, /Claude.*ChatGPT.*Codex.*OpenClaw.*n8n/);
+    for (const name of ['Claude', 'ChatGPT', 'Codex', 'OpenClaw', 'n8n', 'MCP']) assert.ok(meta.description.includes(name));
+    assert.match(meta.description, /plugin/i);
   }
-  assert.match(metadata[0]?.description ?? '', /self-hosted.*Compare.*exact quote.*approval/i);
-  assert.match(metadata[1]?.description ?? '', /auto-hébergé.*Comparez.*validez le prix.*génération/i);
-  assert.match(metadata[2]?.description ?? '', /autoalojado.*Compara.*aprueba el precio.*generar/i);
+  assert.match(metadata[0]?.description ?? '', /self-hosted.*Compare.*approve the price/i);
+  assert.match(metadata[1]?.description ?? '', /auto-hébergé.*Comparez.*validez le prix/i);
+  assert.match(metadata[2]?.description ?? '', /autoalojado.*Compara.*aprueba el precio/i);
   for (const meta of metadata) {
     assert.doesNotMatch(`${meta.title} ${meta.description}`, /preview|préversion|vista previa|host validation|local implementation/i);
   }
@@ -234,8 +235,8 @@ test('rendered editorial sections expose localized FAQs, account requirements, a
       assert.ok(html.includes(escapedText(item.question)), `${locale}: question must be server rendered`);
       assert.ok(html.includes(escapedText(item.answer)), `${locale}: complete answer must be present while collapsed`);
     }
-    assert.match(html, /Business.*Enterprise.*Edu/);
-    assert.match(html, /Pro/);
+    assert.match(html, /Sources → Use plugins/);
+    assert.match(html, /href="https:\/\/chatgpt\.com\/plugins\/plugin_asdk_app_6af7c45d28c48191982cf5be6eb7e058"/);
     assert.match(html, /n8n Cloud/);
     assert.match(html, /2\.38\.7/);
     assert.match(html, /<time[^>]*dateTime="2026-09-12"/);

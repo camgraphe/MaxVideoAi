@@ -1,0 +1,38 @@
+.mcp-manual { --manual-line: var(--border, #d7d3cc); --manual-ink: var(--text-primary, #232323); --manual-link: var(--link, #805126); padding-block: clamp(26px, 4vw, 66px); }
+.mcp-manual-article > nav { margin-bottom: 22px; }
+.mcp-manual-article > nav a, .mcp-manual-article > p a { color: var(--manual-link); }
+.mcp-manual-article > header { max-width: 860px; }
+.mcp-manual-article > header h1 { max-width: 20ch; margin: 12px 0; color: var(--manual-ink); font-size: clamp(2.55rem, 5vw, 5rem); line-height: 1.01; letter-spacing: -.055em; text-wrap: balance; }
+.mcp-manual-article > header p { max-width: 68ch; font-size: clamp(1rem, 1.5vw, 1.24rem); }
+.mcp-manual-layout { display: grid; grid-template-columns: minmax(165px, .3fr) minmax(0, 1fr); gap: clamp(30px, 5.5vw, 84px); border-top: 1px solid var(--manual-line); margin-block: clamp(24px, 4vw, 50px); padding-top: clamp(25px, 3vw, 48px); align-items: start; }
+.mcp-manual-nav { position: sticky; top: 100px; border-left: 2px solid var(--manual-line); padding-left: 17px; }
+.mcp-manual-nav strong { font-size: .95rem; color: var(--manual-ink); }
+.mcp-manual-nav ul { display: grid; gap: 9px; padding: 0; margin: 12px 0 0; list-style: none; }
+.mcp-manual-nav a { color: var(--manual-link); font-size: .94rem; }
+.mcp-manual-nav a:hover, .mcp-manual-nav a:focus-visible { text-decoration: underline; text-underline-offset: 3px; }
+.mcp-manual-chapters { min-width: 0; max-width: 850px; }
+.mcp-manual-chapter { min-width: 0; padding-block: clamp(23px, 3vw, 38px); border-top: 1px solid var(--manual-line); scroll-margin-top: 95px; }
+.mcp-manual-chapter:first-child { border-top: 0; padding-top: 0; }
+.mcp-manual-chapter .public-prose { color: var(--text-secondary, #565553); overflow-wrap: anywhere; }
+.mcp-manual-chapter .public-prose h2 { margin: 0 0 .6em; font-size: clamp(1.6rem, 2.4vw, 2.35rem); letter-spacing: -.035em; line-height: 1.14; color: var(--manual-ink); }
+.mcp-manual-chapter .public-prose h3 { font-size: 1.12rem; color: var(--manual-ink); }
+.mcp-manual-chapter .public-prose a { color: var(--manual-link); text-underline-offset: .15em; }
+.mcp-manual-chapter .public-prose > :last-child { margin-bottom: 0; }
+.mcp-manual-chapter .public-prose blockquote { border-inline-start: 3px solid var(--manual-link); padding: .9em 1.2em; margin: 1.3em 0; border-radius: 0 .5rem .5rem 0; background: var(--surface-2, #eae7e1); color: var(--manual-ink); font-style: normal; }
+.mcp-manual-chapter .public-prose blockquote p { margin: .25em 0; }
+.mcp-manual-chapter .public-prose blockquote p::before, .mcp-manual-chapter .public-prose blockquote p::after { content: none; }
+.mcp-manual-chapter .public-prose pre { max-width: 100%; white-space: pre-wrap; color: #fffaf3; background: #27241f; }
+.mcp-manual-chapter .public-prose details { padding-block: 12px; border-bottom: 1px solid var(--manual-line); }
+.mcp-manual-chapter .public-prose summary { color: var(--manual-ink); cursor: pointer; }
+.mcp-manual-chapter .public-prose summary h3 { display: inline; margin: 0; }
+.mcp-manual-chapter .public-prose summary:focus-visible { outline: 2px solid var(--manual-link); outline-offset: 3px; }
+.mcp-manual-chapter .public-prose details p:last-child { margin-bottom: 4px; }
+.mcp-manual-chapter > button { margin-top: 16px; }
+.mcp-manual-article > p { margin-top: 28px; }
+@media (max-width: 760px) {
+  .mcp-manual-layout { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  .mcp-manual-nav { position: static; border: 0; padding: 0 0 18px; border-bottom: 1px solid var(--manual-line); }
+  .mcp-manual-nav ul { display: flex; flex-wrap: wrap; gap: 7px 16px; }
+  .mcp-manual-nav a { display: inline-block; padding-block: 3px; }
+  .mcp-manual-chapter { scroll-margin-top: 78px; }
+}

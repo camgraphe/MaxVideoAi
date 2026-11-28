@@ -44,7 +44,7 @@
   },
   "deepLinks": {
     "claude": { "deepLinkEnabled": false, "deepLink": null },
-    "chatgpt": { "deepLinkEnabled": false, "deepLink": null },
+    "chatgpt": { "deepLinkEnabled": true, "deepLink": "https://chatgpt.com/plugins/plugin_asdk_app_6af7c45d28c48191982cf5be6eb7e058" },
     "codex": { "deepLinkEnabled": false, "deepLink": null }
   },
   "integrationCopy": {

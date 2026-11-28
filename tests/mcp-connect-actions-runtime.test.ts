@@ -37,6 +37,7 @@ type RuntimeHarness = {
 
 const actions = [
   { client: 'claude' as const, href: '#claude', label: 'Start with Claude', supportingLabel: 'Open setup guide' },
+  { client: 'chatgpt' as const, href: '#chatgpt', label: 'Install in ChatGPT', supportingLabel: 'Open directory' },
   { client: 'codex' as const, href: '#codex', label: 'Start with Codex', supportingLabel: 'Open setup guide' },
 ];
 
@@ -283,6 +284,29 @@ test('acquisition fetch failure still performs one guarded navigation', async ()
     assert.deepEqual(harness.navigateCalls, [link.href]);
     await harness.runTimers();
     assert.deepEqual(harness.navigateCalls, [link.href]);
+  } finally {
+    await harness.cleanup();
+  }
+});
+
+test('the directory link records the originating client before navigating to the exact public listing', async () => {
+  const harness = await createHarness();
+  try {
+    const link = harness.container.querySelector<HTMLAnchorElement>('a[data-client="chatgpt"]');
+    assert.ok(link);
+    assert.equal(link.href, 'https://chatgpt.com/plugins/plugin_asdk_app_6af7c45d28c48191982cf5be6eb7e058');
+    await dispatchClick(harness, link);
+    assert.deepEqual(JSON.parse(String(harness.fetchCalls[0]?.init?.body)), {
+      action: 'connect', source: 'mcp_landing', medium: 'owned', campaign: 'mcp_connect', client: 'chatgpt',
+    });
+    assert.equal((analyticsEvents(harness, 'mcp_landing_cta_clicked')[0]?.[2] as { destination: string }).destination, 'verified_deep_link');
+    harness.fetchDeferred.resolve(new Response(null, { status: 204 }));
+    await harness.flush();
+    assert.deepEqual(harness.navigateCalls, [link.href]);
+    harness.dom.window.dispatchEvent(new harness.dom.window.PageTransitionEvent('pageshow', { persisted: true }));
+    await dispatchClick(harness, link);
+    await harness.flush();
+    assert.deepEqual(harness.navigateCalls, [link.href, link.href]);
   } finally {
     await harness.cleanup();
   }

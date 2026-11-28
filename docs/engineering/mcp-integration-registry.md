@@ -21,7 +21,9 @@ Host records separately identify their integration, display label, evidence stat
 
 The current floor contains `/mcp`, `/docs/mcp`, and the Claude, ChatGPT, and Codex integration pages in English, French, and Spanish: fifteen localized public owners in total. Their canonical URLs, reciprocal hreflang, JSON-LD, sitemap inclusion, public-path recognition, installation actions, and localized copy must remain intact while the global publication gate is open.
 
-Claude Desktop and Codex CLI retain `verified`; Claude Code retains `not-run`. The 2026-10-19 production checkpoint records ChatGPT Web and the separate Claude Web host as `tested_with_limits`, covering OAuth, discovery, quotes and existing-result recovery only. All three current deep links remain disabled. Existing `verified` evidence cannot be weakened without a newer recorded checkpoint.
+Claude Desktop and Codex CLI retain `verified`. Claude Code retains `not-run`. The 2026-10-19 production checkpoint records ChatGPT Web and the separate Claude Web host as `tested_with_limits`, covering OAuth, discovery, quotes and existing-result recovery only. Existing `verified` evidence cannot be weakened without a newer recorded checkpoint.
+
+The 2026-11-27 publication unlocked the ChatGPT directory URL. The ChatGPT record owns that install URL and both ChatGPT and Codex refer to the same listed OpenAI directory plugin. In a compatible Codex task, users select their installed plugin under **Sources → Use plugins**. The Codex CLI keeps its tagged package instructions and has no terminal deep link. Claude keeps its manual connector guide. The directory CTA requires a live integration, an available connection, the enabled ChatGPT link and a listed directory record. Withdrawing the listing returns the guides to local setup. Host evidence and terminal package availability keep their independent states. [Publication evidence](../marketing/mcp-directory-submissions.md#openai-directory-publication-2728-november-2026)
 
 The immutable semantic fixture is `tests/fixtures/mcp-integration-public-baseline.json`. Update it only for a separately reviewed public behavior change, never as a shortcut to make a migration pass.
 
@@ -50,6 +52,10 @@ Publication and acquisition are separate decisions. Making an entry visible or i
 Adding a registry entry alone never authors a Next.js route or localized content. Keep explicit route owners and do not create a generic catch-all integration page.
 
 The application header projects the live, indexable integrations in registry order through `frontend/components/app/AppAssistantConnections.tsx`, using the shared `McpIntegrationMark` logos and localized page paths. Both global `renderPublicPage` and `indexable` gates must be open. `AppMcpShortcuts.client.tsx` owns one **Connect** disclosure at every viewport: desktop mouse hover opens a compact assistant list, while click/touch and ArrowDown/ArrowUp support deliberate opening. Provider logos appear only inside the panel. Leaving the hover area, moving keyboard focus outside, clicking outside or Escape dismisses it; keyboard dismissal and choosing an integration restore its trigger. `AppSiteMenu.client.tsx` retains the separate general application/account menu. These links describe installation pages, not the user's connection status. `tests/app-mcp-navigation.test.ts` covers publication withdrawal, localized destinations, keyboard/focus restoration, outside dismissal and mouse-versus-touch behavior.
+
+## Directory guides
+
+The registry’s `directoryGuides` collection owns the Glama discovery guide and its listing URL. These guides have localized routes, publication state and sitemap eligibility. A directory guide has no executable host, acquisition client or OAuth compatibility checkpoint. The hub links to its guide and the guide links to the directory.
 
 ## Evidence update procedure
 

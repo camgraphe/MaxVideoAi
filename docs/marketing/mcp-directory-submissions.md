@@ -1,5 +1,11 @@
 # MaxVideoAI MCP distribution packages
 
+## OpenAI directory publication, 27–28 November 2026
+
+MaxVideoAI 0.3.29 was published by its owner on 27 November. On 28 November the portal showed it publicly listed. A signed-out search returned the correct listing, and its install button opened ChatGPT sign-in with a return URL for that listing. The website field links to the MaxVideoAI MCP hub. This supersedes the September OpenAI submission assessment below. [Published listing](https://chatgpt.com/plugins/plugin_asdk_app_6af7c45d28c48191982cf5be6eb7e058)
+
+The same directory plugin can be selected in supported Codex task views under **Sources → Use plugins** when available in the user's workspace. Terminal users can install the publisher's tagged v0.3.8 package with the commands in the Codex guide. The versions identify their respective distributions. The available public evidence for first-time OAuth and tool execution remains scoped to the hosts in the compatibility matrix. [OpenAI usage guide](https://help.openai.com/en/articles/20001256-plugins-in-chatgpt) · [Tagged Codex guide](https://github.com/camgraphe/maxvideoai-plugin/blob/v0.3.8/docs/codex.md)
+
 Latest n8n checkpoint: [12 October approval, 18 October availability check](#n8n-approval--2026-10-12-availability-rechecked-2026-10-18).
 Latest package publication: [5 October 2026 plugin and Registry checkpoint](../operations/mcp-distribution-publication-2026-10-05.md).
 Earlier read-only checkpoint: [4 October 2026 distribution rollout](../operations/studio-mcp-distribution-rollout-2026-10-04.md).

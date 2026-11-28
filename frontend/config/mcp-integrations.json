@@ -1,10 +1,18 @@
 {
   "schemaVersion": 1,
+  "directoryGuides": {
+    "glama": {
+      "label": "Glama",
+      "englishPath": "/integrations/glama",
+      "listingUrl": "https://glama.ai/mcp/connectors/com.maxvideoai/maxvideoai",
+      "site": { "publication": "live", "indexable": true }
+    }
+  },
   "integrations": {
     "claude": {
       "label": "Claude",
       "category": "assistant",
-      "displayOrder": 10,
+      "displayOrder": 20,
       "englishPath": "/integrations/claude",
       "site": { "publication": "live", "indexable": true },
       "acquisition": { "enabled": true, "key": "claude" },
@@ -23,19 +31,19 @@
     "chatgpt": {
       "label": "ChatGPT",
       "category": "assistant",
-      "displayOrder": 20,
+      "displayOrder": 10,
       "englishPath": "/integrations/chatgpt",
       "site": { "publication": "live", "indexable": true },
       "acquisition": { "enabled": true, "key": "chatgpt" },
       "installation": {
         "directMcp": "available",
         "package": "unavailable",
-        "deepLinkEnabled": false,
-        "deepLink": null
+        "deepLinkEnabled": true,
+        "deepLink": "https://chatgpt.com/plugins/plugin_asdk_app_6af7c45d28c48191982cf5be6eb7e058"
       },
       "store": {
         "target": "openai-plugin-directory",
-        "status": "policy_blocked"
+        "status": "listed"
       },
       "hosts": ["chatgptWeb"]
     },
@@ -54,7 +62,7 @@
       },
       "store": {
         "target": "openai-plugin-directory",
-        "status": "policy_blocked"
+        "status": "listed"
       },
       "hosts": ["codexCli"]
     },
