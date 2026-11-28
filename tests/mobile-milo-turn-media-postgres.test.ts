@@ -111,6 +111,25 @@ test('Milo history keeps only submitted slots and reauthorizes owned visible ori
   const markers = slots.map((s, i) => ({ ...s, kind: refs[i].kind }));
   assert.deepEqual(session.result.turns[0].attachments, markers);
   assert.deepEqual(session.result.pending.attachments, [markers[1]]);
+  assert.deepEqual(session.result.turns[0].addedAttachmentIndexes, [0, 1, 2]);
+  assert.deepEqual(session.result.pending.addedAttachmentIndexes, []);
+  const { withMobileMiloAttachments } = await import('../frontend/src/server/mobile/milo-media');
+  const modified = randomUUID(), removed = randomUUID(), reattached = randomUUID();
+  for (const [id, currentRefs] of [
+    [modified, [references[0], { ...references[1], ref: { ...refs[1], assetId: 'replacement' } }]],
+    [removed, []],
+    [reattached, [references[1]]],
+  ] as const) {
+    await pg.pool.query(
+      'INSERT INTO prompt_assistance_requests(user_id,session_id,request_id,state,input_json) VALUES($1,$2,$3,$4,$5)',
+      ['alice', sessionId, id, 'complete', JSON.stringify({ draft: { references: currentRefs } })],
+    );
+  }
+  const projected = await withMobileMiloAttachments('alice', {
+    sessionId, scope: 'video:create', status: 'active', proposal: null, pending: null,
+    turns: [requestId, modified, removed, reattached].map(id => ({ requestId: id, message: 'Next', reply: 'OK' })),
+  });
+  assert.deepEqual(projected.turns.map(turn => turn.addedAttachmentIndexes), [[0, 1, 2], [1], undefined, [0]]);
   assert.doesNotMatch(JSON.stringify(session), /ma_|private draft|arbitrary label|https:/);
   const web = await (
     await handlePromptAssistance(request(), {
