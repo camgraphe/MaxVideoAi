@@ -8,6 +8,7 @@
     { "source": "/gallery", "destination": "/examples", "permanent": true }
   ],
   "crons": [
+    { "path": "/api/cron/mobile-notifications", "schedule": "*/2 * * * *" },
     { "path": "/api/cron/assistant-review-retention", "schedule": "19 * * * *" },
     { "path": "/api/cron/ga4-payments", "schedule": "*/5 * * * *" },
     { "path": "/api/cron/openai-conversions", "schedule": "*/5 * * * *" },

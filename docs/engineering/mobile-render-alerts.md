@@ -1,0 +1,13 @@
+# Mobile render alerts
+
+A signed-in creator can request an alert for a pending render. The app reads server availability through `GET /api/mobile/notifications`. Registrations and cancellations use the authenticated `POST` on that route. The worker checks the same owned result as Activity. Its notification contains a localized status message and the job ID. The mobile client fetches the result using the current account when opening the alert. Older clients open Activity.
+
+## Enable delivery
+
+1. Both apps use `com.maxvideoai.mobile` and the EAS project `@maxvideoai-mobile/maxvideoai`. The project UUID is public and linked in the app configuration.
+2. For iOS, configure Push Notifications and an APNs key for the Apple Developer team that owns this app. Set `MOBILE_IOS_REMOTE_NOTIFICATIONS=1` for builds signed by that team. For Android, register the package in the owning Firebase project, supply the matching `google-services.json` through `GOOGLE_SERVICES_FILE` in the build and configure FCM v1 credentials in EAS. Rebuild each platform with its configuration.
+3. Enable enhanced push security for the mobile Expo organization. Store the dedicated render-alert robot’s token as a server secret named `MOBILE_EXPO_PUSH_ACCESS_TOKEN`. The protected Vercel cron uses `CRON_SECRET`.
+4. Apply migration `108_mobile_job_notifications.sql` through the repository delivery process. Deploy the two notification routes and cron on a reviewed commit. Set `MOBILE_PUSH_ENABLED=1` in the target environment only when the credentials and schema are ready. Roll out the updated server configuration and verify `GET /api/mobile/notifications` returns `enabled: true`. Clearing the flag and redeploying disables new registrations and dispatch.
+5. On each test device, opt into one pending QA render, lock the screen and tap its alert. Check the result with the app open, in the background and after a cold start. Exercise permission denial, per-render cancellation, switching accounts and an expired or inaccessible result. Verify a terminal failure is distinguishable from a ready output. Check the Expo ticket and receipt privately. A receipt alone does not establish that a banner appeared on the device.
+
+The worker runs every two minutes, retries transient errors and expires watches after two days. The Expo payload carries no prompt or media URL. Menu counts and cancellations apply to the current account and device. Use [Expo’s push setup](https://docs.expo.dev/push-notifications/push-notifications-setup/), [FCM v1 credential setup](https://docs.expo.dev/push-notifications/fcm-credentials/) and [push receipts and access tokens](https://docs.expo.dev/push-notifications/sending-notifications/) for the dashboard steps.
