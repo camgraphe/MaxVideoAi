@@ -1,19 +1,18 @@
 import { FEATURES } from '@/content/feature-flags';
 import { applicationJobSql } from '../app-job-origin';
 import { libraryIdentityCtes } from './browse-identity-sql';
+import { libraryLegacyAssetSourceSql, librarySavedAssetSourceSql } from './organization-source-sql';
 /** $1 owner, $2 normalized scope, $3 escaped search. Shared by browse and snapshot creation. */
 export function libraryBrowseCtes(toolsEnabled: boolean = FEATURES.workflows.toolsSection): string {
     return `${libraryIdentityCtes()}, browse_candidates AS (
     SELECT i.*,m.id AS display_id,m.public_id,m.url AS display_url,m.thumb_url,m.preview_url,m.mime_type,m.width,m.height,m.size_bytes,
-      CASE WHEN m.source='import' AND (m.source_job_id IS NOT NULL OR m.metadata->>'jobId' IS NOT NULL OR m.metadata->>'sourceJobId' IS NOT NULL)
-        THEN 'saved_job_output' ELSE m.source END AS source,m.metadata,m.created_at,
+      ${librarySavedAssetSourceSql} AS source,m.metadata,m.created_at,
       0 AS priority,NULL::integer AS position,NULL::text AS job_prompt,NULL::integer AS job_duration_sec,NULL::text AS job_aspect_ratio
       FROM library_identities i JOIN media_assets m ON i.type='asset' AND m.id=i.id AND m.user_id=$1
       WHERE COALESCE(m.source,'')<>'storyboard_template_reference'
     UNION ALL
     SELECT i.*,u.asset_id,NULL::text,u.url,u.metadata->>'thumbUrl',u.metadata->>'previewUrl',u.mime_type,u.width,u.height,u.size_bytes,
-      CASE WHEN u.source IN('upload','storyboard','character','angle','upscale','background-removal') THEN u.source
-        WHEN u.source='generated' OR (u.source='import' AND (u.metadata->>'jobId' IS NOT NULL OR u.metadata->>'sourceJobId' IS NOT NULL)) THEN 'saved_job_output' ELSE 'import' END,
+      ${libraryLegacyAssetSourceSql},
       u.metadata,u.created_at,2,NULL::integer,NULL::text,NULL::integer,NULL::text
       FROM library_identities i JOIN user_assets u ON i.type='legacy' AND u.asset_id=i.id AND u.user_id=$1
       WHERE COALESCE(u.source,'')<>'storyboard_template_reference'

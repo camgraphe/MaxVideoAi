@@ -1,7 +1,7 @@
 import { query } from '@/lib/db';
 import type { LibraryMediaReference } from '@/lib/media-library-organization';
-import type { MediaAssetRecord } from '../media-library-records';
-import { assetProjection, legacyProjection, outputProjection, legacyKindSql } from './organization-source-sql';
+import { normalizeMediaAssetSource } from '../media-library-records';
+import { assetProjection, legacyProjection, outputProjection, legacyKindSql, libraryLegacyAssetSourceSql, librarySavedAssetSourceSql } from './organization-source-sql';
 import { unavailableOrganizationSourceUrls, type OrganizationSource } from './organization-sources';
 import { LibraryOrganizationError, validateLibraryReference, requireLibraryOwner } from './organization-validation';
 import { createLibraryMediaReadAccess, libraryReadRevision } from './read-access';
@@ -15,21 +15,22 @@ export async function loadLibraryMediaReadAsset(userId: string, reference: unkno
     throw new LibraryOrganizationError('INVALID_READ_REFERENCE');
   }
   const ref: LibraryMediaReference = reference;
-  type Row = OrganizationSource & { thumbUrl: string | null; previewUrl: string | null; metadata: Record<string, unknown>; source: MediaAssetRecord['source'] };
+  type Row = OrganizationSource & { thumbUrl: string | null; previewUrl: string | null; metadata: Record<string, unknown>; source: string };
   const rows = ref.type === 'asset'
-    ? await query<Row>(`SELECT ${assetProjection},m.thumb_url AS "thumbUrl",m.preview_url AS "previewUrl",m.metadata,m.source
+    ? await query<Row>(`SELECT ${assetProjection},m.thumb_url AS "thumbUrl",m.preview_url AS "previewUrl",m.metadata,${librarySavedAssetSourceSql} AS source
         FROM media_assets m WHERE m.user_id=$1 AND m.public_id=$2 AND m.kind=$3`, [userId, ref.assetId, ref.kind])
     : ref.type === 'legacy'
-      ? await query<Row>(`SELECT ${legacyProjection},u.metadata->>'thumbUrl' AS "thumbUrl",u.metadata->>'previewUrl' AS "previewUrl",u.metadata,'upload'::text AS source
+      ? await query<Row>(`SELECT ${legacyProjection},u.metadata->>'thumbUrl' AS "thumbUrl",u.metadata->>'previewUrl' AS "previewUrl",u.metadata,
+          CASE WHEN (${libraryLegacyAssetSourceSql})='saved_job_output' THEN 'saved_job_output' ELSE 'upload' END AS source
           FROM user_assets u WHERE u.user_id=$1 AND u.asset_id=$2 AND ${legacyKindSql()}=$3`, [userId, ref.assetId, ref.kind])
-      : await query<Row>(`SELECT ${outputProjection},o.thumb_url AS "thumbUrl",o.preview_url AS "previewUrl",o.metadata,'upload'::text AS source
+      : await query<Row>(`SELECT ${outputProjection},o.thumb_url AS "thumbUrl",o.preview_url AS "previewUrl",o.metadata,'saved_job_output'::text AS source
           FROM job_outputs o JOIN app_jobs j ON j.job_id=o.job_id AND j.user_id=$1 AND NOT j.hidden
           WHERE o.user_id=$1 AND o.id=$2 AND o.job_id=$3 AND o.kind=$4`, [userId, ref.outputId, ref.jobId, ref.kind]);
   const row = rows[0];
   if (!row?.available || (await unavailableOrganizationSourceUrls([row], { query }, false)).has(row.url)) {
     throw new LibraryOrganizationError('SOURCE_UNAVAILABLE', 404);
   }
-  const asset = { ...row, userId, metadata: row.metadata ?? {} };
+  const asset = { ...row, userId, source: normalizeMediaAssetSource(row.source), metadata: row.metadata ?? {} };
   return { asset, reference: ref };
 }
 

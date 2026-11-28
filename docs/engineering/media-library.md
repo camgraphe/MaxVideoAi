@@ -292,11 +292,13 @@ retire their local listing scope on the revision; accepted composer/Studio uses 
 not subscribe to visibility invalidation. Physical saved-asset DELETE remains
 separate from Trash and does not remove a surviving recent output.
 
-Private upload DTOs carry all four existing transient grant fields plus
+Private upload DTOs and generation files in the account's storage namespace
+carry the applicable transient grant fields plus
 `readAccessOwnerId`, `readAccessRef`, `readAccessRevision` and `readAccessExpiresAt`.
 `readAccessRevision` hashes the exact stored original/thumbnail/preview/playback
 URLs. It is separate from organization `sourceRevision`, and the read reference
-contains only exact source identity. Original URLs (including unknown-provider
+contains only exact source identity. Generated derivatives must independently
+match the account's storage namespace before signing. Original URLs (including unknown-provider
 queries), canonical refs and measured facts are unchanged. Projection helpers
 forward the complete access metadata through library, picker and selected-reference
 handoffs; renewed display state never writes back into the selected asset or draft.

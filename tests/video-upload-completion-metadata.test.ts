@@ -39,6 +39,7 @@ async function fixture(kind: 'multipart' | 'direct', corrupt = false, portrait =
     '@/lib/supabase-ssr': 'export const createSupabaseServerClient=()=>{throw Error("Unexpected auth")};export const getRouteAuthContext=async()=>({userId:fixture.owner});',
     '@/server/storage': `
       export const extractStorageKeyFromUrl=()=>null;
+      export const ownedMediaStorageKeyForUrl=()=>null;
       export const isStorageKeyWithinUserPrefix=({key,prefix,userId})=>key.startsWith(prefix+'/'+userId+'/');
       export const buildPublicStorageUrl=()=>fixture.url;
       export const getStorageObjectMetadata=async()=>({size:fixture.bytes.length,mime:'video/quicktime'});
