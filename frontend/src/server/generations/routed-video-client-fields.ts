@@ -189,7 +189,7 @@ export function routedVideoJobMessage(
   settings: unknown,
 ) {
   if (status === 'provider_polling_stalled')
-    return 'This render is being reviewed. Check its status before retrying.';
+    return 'Manual review is required for this render. Check its status before retrying.';
   if (['failed', 'error', 'errored', 'rejected', 'aborted', 'timed_out', 'expired'].includes(status ?? '')) {
     return (
       getKnownGenerationFailureMessage({
