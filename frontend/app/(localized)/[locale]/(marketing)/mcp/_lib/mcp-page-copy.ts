@@ -6,7 +6,7 @@ import {
 } from '@/config/maxvideoai-plugin-release';
 import { CANONICAL_PRODUCTION_ORIGIN } from '@/lib/siteOrigin';
 import { localizedSlugs } from '@/lib/i18nSlugs';
-import { getMcpClientActionConfig, getMcpPublicIntegrationIds, type McpIntegrationId } from '@/lib/mcp-integration-registry';
+import { getMcpClientActionConfig, getMcpIntegrationLabel, getMcpPublicIntegrationIds, type McpIntegrationId } from '@/lib/mcp-integration-registry';
 import { MCP_PRODUCTION_RESOURCE_URL } from '@/server/mcp/config';
 import type { McpClientActionCopy, McpPageCopy } from './mcp-page-types';
 
@@ -17,7 +17,7 @@ function localizedPath(locale: AppLocale, ...segments: string[]): string {
 
 export function buildMcpClientActions(
   locale: AppLocale,
-  labels: { claude: string; chatgpt: string; codex: string; openclaw: string; n8n: string; supporting: string },
+  labels: Partial<Record<McpIntegrationId, string>> & { supporting: string },
   publicIntegrationIds: readonly McpIntegrationId[] = getMcpPublicIntegrationIds(),
 ): McpClientActionCopy[] {
   const integrations = localizedSlugs[locale].integrations;
@@ -45,7 +45,7 @@ export function buildMcpClientActions(
       if (locale === 'es') return `Importa la plantilla pública de MaxVideoAI en n8n autoalojado, crea la credencial OAuth2 para ${MCP_PRODUCTION_RESOURCE_URL} y asígnala a cada nodo MCP Client.`;
       return `Import the public MaxVideoAI workflow template into self-hosted n8n, create the OAuth2 credential for ${MCP_PRODUCTION_RESOURCE_URL}, then assign it to every MCP Client node.`;
     }
-    const clientLabel = client === 'claude' ? 'Claude' : 'OpenClaw';
+    const clientLabel = getMcpIntegrationLabel(client);
     if (locale === 'fr') return `Connecte MaxVideoAI dans ${clientLabel} avec ce serveur MCP et guide-moi jusqu’à la connexion : ${MCP_PRODUCTION_RESOURCE_URL}`;
     if (locale === 'es') return `Conecta MaxVideoAI en ${clientLabel} con este servidor MCP y guíame hasta completar la conexión: ${MCP_PRODUCTION_RESOURCE_URL}`;
     return `Connect MaxVideoAI in ${clientLabel} with this MCP server and guide me through the connection: ${MCP_PRODUCTION_RESOURCE_URL}`;
@@ -53,7 +53,7 @@ export function buildMcpClientActions(
   return publicIntegrationIds.map((client) => ({
     client,
     href: localizedPath(locale, integrations, client),
-    label: labels[client],
+    label: labels[client] ?? getMcpIntegrationLabel(client),
     supportingLabel: labels.supporting,
     installInstruction: instruction(client),
     copyInstallInstruction: client !== 'n8n',
