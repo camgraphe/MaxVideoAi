@@ -1,0 +1,62 @@
+{
+  "en": {
+    "access": {
+      "question": "Where can I use MaxVideoAI?",
+      "answer": "Use the same MaxVideoAI plugin in ChatGPT and Codex. In Claude, add MaxVideoAI as a custom MCP connector. OpenClaw offers a skill, and self-hosted n8n has a workflow template with a human approval step."
+    },
+    "installation": {
+      "question": "How do I install MaxVideoAI in ChatGPT or Codex?",
+      "answer": "Install MaxVideoAI from the plugin directory. In ChatGPT, select it in the conversation. In a supported Codex task, open Sources → Use plugins and choose MaxVideoAI. On first use, sign in to MaxVideoAI or create your account on maxvideoai.com. For a standalone Codex CLI, follow the versioned package instructions in the Codex guide.",
+      "action": "Open the ChatGPT directory listing"
+    },
+    "automation": {
+      "question": "Can I automate video generation in n8n?",
+      "answer": "The approved public n8n template 19591 is available. Configure OAuth manually and use the tested self-hosted n8n 2.38.7 MCP Client workflow. Review a fresh quote, obtain human approval for that exact quote, then confirm generation. n8n Cloud and AI Agent invocation have not been validated here.",
+      "action": "Check the template on n8n."
+    },
+    "creation": {
+      "question": "Can I add sound or subtitles to a video?",
+      "answer": "Yes. With the MaxVideoAI plugin you can create a voice-over or sound effects, edit images and ask Studio to subtitle a clip from your library. In other MCP clients, the tools available for that connection determine which steps you can run."
+    }
+  },
+  "fr": {
+    "access": {
+      "question": "Où puis-je utiliser MaxVideoAI ?",
+      "answer": "Le même plugin MaxVideoAI s’utilise dans ChatGPT et dans Codex. Dans Claude, ajoutez MaxVideoAI comme connecteur MCP personnalisé. OpenClaw propose un skill et n8n auto-hébergé un modèle de workflow avec validation humaine."
+    },
+    "installation": {
+      "question": "Comment installer MaxVideoAI dans ChatGPT ou Codex ?",
+      "answer": "Installez MaxVideoAI depuis l’annuaire des plugins. Dans ChatGPT, sélectionnez-le dans la conversation. Dans une tâche Codex compatible, ouvrez Sources → Use plugins et choisissez MaxVideoAI. À la première utilisation, connectez-vous à MaxVideoAI ou créez votre compte sur maxvideoai.com. Pour Codex en ligne de commande, le guide Codex indique comment installer le paquet versionné.",
+      "action": "Ouvrir la fiche dans l’annuaire ChatGPT"
+    },
+    "automation": {
+      "question": "Peut-on automatiser la génération vidéo dans n8n ?",
+      "answer": "Le modèle public n8n 19591 est approuvé et disponible. Configurez OAuth manuellement et utilisez le parcours MCP Client testé sur n8n 2.38.7 auto-hébergé. Vérifiez un devis frais, obtenez l’accord humain sur ce devis exact, puis confirmez la génération. n8n Cloud et l’invocation via AI Agent n’ont pas été validés ici.",
+      "action": "Consulter le modèle sur n8n."
+    },
+    "creation": {
+      "question": "Puis-je ajouter du son ou des sous-titres à une vidéo ?",
+      "answer": "Oui. Le plugin MaxVideoAI permet de créer une voix off ou des bruitages, de retoucher des images et de demander à Studio de sous-titrer un clip de votre bibliothèque. Dans les autres clients MCP, les étapes disponibles dépendent des outils exposés à la connexion."
+    }
+  },
+  "es": {
+    "access": {
+      "question": "¿Dónde puedo usar MaxVideoAI?",
+      "answer": "El mismo plugin de MaxVideoAI funciona en ChatGPT y en Codex. En Claude, añade MaxVideoAI como conector MCP personalizado. OpenClaw ofrece una skill y n8n autoalojado dispone de una plantilla de flujo de trabajo con aprobación humana."
+    },
+    "installation": {
+      "question": "¿Cómo instalo MaxVideoAI en ChatGPT o en Codex?",
+      "answer": "Instala MaxVideoAI desde el directorio de plugins. En ChatGPT, selecciónalo en la conversación. En una tarea compatible de Codex, abre Sources → Use plugins y elige MaxVideoAI. La primera vez, inicia sesión en MaxVideoAI o crea tu cuenta en maxvideoai.com. Si trabajas con Codex en el terminal, la guía de Codex explica cómo instalar el paquete versionado.",
+      "action": "Abrir la ficha en el directorio de ChatGPT"
+    },
+    "automation": {
+      "question": "¿Puedo automatizar la generación de video en n8n?",
+      "answer": "La plantilla pública n8n 19591 está aprobada y disponible. Configura OAuth manualmente y usa el flujo MCP Client probado en n8n 2.38.7 autoalojado. Revisa una cotización nueva, obtén la aprobación humana de esa cotización exacta y confirma la generación. n8n Cloud y la invocación mediante AI Agent no se han validado aquí.",
+      "action": "Consultar la plantilla en n8n."
+    },
+    "creation": {
+      "question": "¿Puedo añadir sonido o subtítulos a un vídeo?",
+      "answer": "Sí. Con el plugin de MaxVideoAI puedes crear una voz en off o efectos de sonido, editar imágenes y pedir a Studio que subtitule un clip de tu biblioteca. En otros clientes MCP, las acciones disponibles dependen de las herramientas que ofrezca la conexión."
+    }
+  }
+}

@@ -25,7 +25,7 @@ test('Connect opens one localized assistant list and restores its trigger after 
   const root = createRoot(dom.window.document.getElementById('root')!);
   try {
     const { AppMcpShortcuts } = await import('../frontend/components/app/AppMcpShortcuts.client');
-    const expected = ['claude', 'chatgpt', 'codex', 'openclaw', 'n8n'];
+    const expected = ['chatgpt', 'claude', 'codex', 'openclaw', 'n8n'];
     for (const locale of ['en', 'fr', 'es'] as const) {
       await act(async () => root.render(React.createElement(AppMcpShortcuts, { locale })));
       const trigger = dom.window.document.querySelector<HTMLButtonElement>('button[aria-controls]')!;

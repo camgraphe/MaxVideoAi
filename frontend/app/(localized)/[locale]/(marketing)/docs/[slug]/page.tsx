@@ -20,6 +20,7 @@ import {
   filterDocsEntriesForStaticParams,
   resolveDocsEntryPublication,
 } from '../_lib/docs-index-data';
+import { McpDocsManual } from '../_components/McpDocsManual';
 import { DocsArticleAttribution } from '../_components/DocsArticleAttribution';
 import { DocsArticleJsonLdScripts } from '../_components/DocsArticleJsonLdScripts';
 
@@ -242,9 +243,12 @@ export default async function DocPage(props: { params: Promise<Params> }) {
     ],
   };
 
+  const isMcpDoc = doc.slug === 'mcp';
+  const articleHtml = doc.slug === 'mcp' ? wrapMcpDocsTables(doc.content, locale) : doc.content;
+
   return (
-    <div className="container-page max-w-3xl section">
-      <article className="stack-gap-lg">
+    <div className={isMcpDoc ? 'mcp-manual container-page' : 'container-page max-w-3xl section'}>
+      <article className={isMcpDoc ? 'mcp-manual-article' : 'stack-gap-lg'}>
         <nav aria-label="Breadcrumb" className="text-sm text-text-muted">
           <Link href="/docs" className="underline underline-offset-2 hover:text-text-primary">
             {overviewLabel}
@@ -264,9 +268,9 @@ export default async function DocPage(props: { params: Promise<Params> }) {
           <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{doc.title}</h1>
           <p className="text-base leading-relaxed text-text-secondary">{doc.description}</p>
         </header>
-        <div className="public-prose prose" dangerouslySetInnerHTML={{
-          __html: doc.slug === 'mcp' ? wrapMcpDocsTables(doc.content, locale) : doc.content,
-        }} />
+        {isMcpDoc
+          ? <McpDocsManual html={articleHtml} locale={locale} />
+          : <div className="public-prose prose" dangerouslySetInnerHTML={{ __html: articleHtml }} />}
         {relatedDocs.length ? (
           <p className="text-sm text-text-muted">
             <Link href="/docs" className="underline underline-offset-2 hover:text-text-primary">

@@ -56,20 +56,17 @@ test('the commercial copy leads with the outcome and removes stale internal prev
   }
 });
 
-test('Claude, ChatGPT, and Codex stay first while OpenClaw and n8n are public actions', async () => {
-  const copy = source(copyPath);
+test('ChatGPT leads the ordered, localized acquisition routes for published integrations', async () => {
   const { getMcpPageCopy } = await import(
     '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
   );
-  assert.deepEqual(
-    getMcpPageCopy('en').hero.actions.map((action: { client: string }) => action.client),
-    ['claude', 'chatgpt', 'codex', 'openclaw', 'n8n'],
-  );
-  assert.match(copy, /integrations, 'chatgpt'/);
-  assert.match(copy, /integrations, 'claude'/);
-  assert.match(copy, /integrations, 'codex'/);
-  assert.match(copy, /integrations, 'openclaw'/);
-  assert.match(copy, /integrations, 'n8n'/);
+  const clients = ['chatgpt', 'claude', 'codex', 'openclaw', 'n8n'];
+  const paths = { en: '/integrations', fr: '/fr/integrations', es: '/es/integraciones' } as const;
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    const links = getMcpPageCopy(locale).hero.actions;
+    assert.deepEqual(links.map((action) => action.client), clients);
+    assert.deepEqual(links.map((action) => action.href), clients.map((client) => `${paths[locale]}/${client}`));
+  }
 
   const actions = source(`${marketingRoot}/mcp/_components/McpClientActions.tsx`);
   const marks = source('frontend/components/marketing/mcp/McpIntegrationMark.tsx');

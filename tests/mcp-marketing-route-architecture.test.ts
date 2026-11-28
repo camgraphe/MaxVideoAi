@@ -80,7 +80,7 @@ test('MCP acquisition routes have focused server-rendered owners', () => {
   const view = requireFile(`${mcpRoot}/_components/McpPageView.tsx`);
   for (const owner of [
     'McpHeroSection',
-    'McpIntegrationCards',
+    'McpHubGallery',
     'McpEditorialSections',
     'McpTrustStrip',
     'McpFaqResourcesSection',
@@ -88,6 +88,9 @@ test('MCP acquisition routes have focused server-rendered owners', () => {
     assert.match(view, new RegExp(owner));
   }
   assert.doesNotMatch(view, /['"]use client['"]/);
+  const hero = requireFile(`${mcpRoot}/_components/McpHeroSection.tsx`);
+  assert.match(hero, /McpHubDirectory/);
+  assert.match(hero, /McpDirectoryInstallLink/);
 });
 
 test('ChatGPT, Claude, and Codex guides are equal thin server orchestrators', () => {
@@ -558,7 +561,8 @@ test('the ChatGPT setup renders its machine compatibility state discreetly', asy
   }));
 
   assert.match(html, />tested_with_limits</);
-  assert.match(html, /Developer.*MCP|MCP.*developer/is);
-  assert.match(html, /direct connection does not require a public directory listing/i);
-  assert.doesNotMatch(html, /public listing.*approval|OpenAI approval.*public listing/is);
+  assert.match(html, /Custom MCP connection for ChatGPT/i);
+  assert.match(html, /api\.maxvideoai\.com\/mcp/);
+  assert.match(html, /workspace.*custom/i);
+  assert.doesNotMatch(html, /no public (?:OpenAI )?directory listing|directory submission pending/i);
 });

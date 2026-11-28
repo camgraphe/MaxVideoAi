@@ -14,6 +14,7 @@ import { getMcpPageCopy } from '../frontend/app/(localized)/[locale]/(marketing)
 import { getIntegrationCopy } from '../frontend/app/(localized)/[locale]/(marketing)/integrations/_lib/integration-copy';
 import { getMcpCompatibilityEvidence } from '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-compatibility';
 import { getMcpHostProof } from '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-host-proof';
+import { GlamaDirectoryGuide } from '../frontend/app/(localized)/[locale]/(marketing)/integrations/_components/GlamaDirectoryGuide';
 import { getMcpPublicIntegrationIds } from '../frontend/lib/mcp-integration-registry';
 
 (globalThis as typeof globalThis & { React: typeof React }).React = React;
@@ -31,12 +32,12 @@ test('real MCP views retain their computed layout when route CSS arrives after t
     content: tailwindConfig.content.map(path => join(frontend, path)) })]).process(source, { from: undefined })).css;
   const common = (await Promise.all(['marketing-redesign', 'marketing-cinema', 'marketing-navigation']
     .map(style => readFile(join(frontend, `src/styles/${style}.css`), 'utf8')))).join('\n');
-  const mcp = await readFile(join(frontend, 'src/styles/marketing-mcp.css'), 'utf8');
+  const mcp = (await Promise.all(['marketing-mcp', 'marketing-mcp-hub', 'marketing-integration-guides'].map(style => readFile(join(frontend, `src/styles/${style}.css`), 'utf8')))).join('\n');
   const compatibility = getMcpCompatibilityEvidence();
   const browser = await chromium.launch({ headless: true });
   let scenarios = 0;
-  let proofHeadings = 0;
-  let storyCaptions = 0;
+  let nativeGuideScreens = 0;
+  let hubScreens = 0;
   try {
     for (const width of [390, 1440]) {
       const context = await browser.newContext({ viewport: { width, height: 844 }, reducedMotion: 'reduce' });
@@ -53,7 +54,8 @@ test('real MCP views retain their computed layout when route CSS arrives after t
           locale, publication, hostProof: getMcpHostProof('claude', locale) }),
         ...getMcpPublicIntegrationIds().map(client => React.createElement(IntegrationPageView, {
           copy: getIntegrationCopy(locale, client), compatibility: compatibility.clients[client]!,
-          locale, publication, hostProof: getMcpHostProof(client, locale) }))];
+          locale, publication, hostProof: getMcpHostProof(client, locale) })),
+          React.createElement(GlamaDirectoryGuide, { locale, connectionAvailable: true })];
         for (const [index, view] of views.entries()) {
           const markup = renderToStaticMarkup(view);
           await page.setContent(`<html lang="${locale}"><head><style>${base}</style><style id="cascade"></style></head><body><div class="marketing-site"><main>${markup}</main></div></body></html>`);
@@ -73,29 +75,26 @@ test('real MCP views retain their computed layout when route CSS arrives after t
             }));
           }
           assert.deepEqual(snapshots[1], snapshots[0], `${locale}/${index} at ${width}px: direct and retained-shared CSS orders differ`);
-          const specific = await page.evaluate(() => {
-            const proof = [...document.querySelectorAll('.mcp-hero-proof [data-mcp-host-proof] h2')].map(el => {
-              const style = getComputedStyle(el);
-              return { lineHeight: parseFloat(style.lineHeight) / parseFloat(style.fontSize), letterSpacing: parseFloat(style.letterSpacing) / parseFloat(style.fontSize) };
-            });
-            const captions = [...document.querySelectorAll('.mcp-story-caption h3')].map(el => {
-              const style = getComputedStyle(el);
-              return parseFloat(style.lineHeight) / parseFloat(style.fontSize);
-            });
-            return { proof, captions };
+          const screen = await page.evaluate(() => {
+            const native = document.querySelector('.guide-native-capture');
+            const hub = document.querySelector('.hub-screenshot');
+            const el = native ?? hub;
+            if (!el) return null;
+            const box = el.getBoundingClientRect();
+            return { kind: native ? 'guide' : 'hub', width: box.width, right: box.right, left: box.left };
           });
-          for (const heading of specific.proof) {
-            assert.ok(Math.abs(heading.lineHeight - 1.4) < 0.001);
-            assert.ok(Math.abs(heading.letterSpacing + 0.02) < 0.001);
-            proofHeadings++;
+          if (screen) {
+            assert.ok(screen.width > 100 && screen.left >= 0 && screen.right <= width + 1, 'native proof should fit the viewport');
+            if (screen.kind === 'guide') nativeGuideScreens++;
+            else hubScreens++;
           }
-          for (const lineHeight of specific.captions) { assert.ok(Math.abs(lineHeight - 1.1) < 0.001); storyCaptions++; }
           scenarios++;
         }
       }
       await context.close();
     }
-    assert.equal(scenarios, 36);
-    assert.ok(proofHeadings > 0 && storyCaptions > 0, 'more specific proof/caption typography must be exercised');
+    assert.equal(scenarios, 42);
+    assert.equal(nativeGuideScreens, 30);
+    assert.equal(hubScreens, 6);
   } finally { await browser.close(); }
 });

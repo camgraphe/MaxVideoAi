@@ -3,8 +3,9 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import * as React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { JSDOM } from 'jsdom';
 import { getMcpEditorialCopy } from '../frontend/components/marketing/mcp/mcp-editorial-copy';
-import { getMcpPublicIntegrationIds } from '../frontend/lib/mcp-integration-registry';
+import { getMcpClientActionConfig, getMcpPublicIntegrationIds } from '../frontend/lib/mcp-integration-registry';
 import { getIntegrationCopy } from '../frontend/app/(localized)/[locale]/(marketing)/integrations/_lib/integration-copy';
 import { getMcpPageCopy } from '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy';
 import { getMcpCompatibilityEvidence } from '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-compatibility';
@@ -16,12 +17,34 @@ import { getIntegrationInstallInstruction } from '../frontend/app/(localized)/[l
 const locales=['en','fr','es'] as const;
 const live={renderPublicPage:true,connectionAvailable:true,indexable:true,showTrialClaim:false,showPaidGenerationClaim:true,showReferenceClaim:true};
 
-test('the hub exposes five localized setup routes and four unlinked preparation labels',()=>{
+test('the hub puts the installation, account and six localized guides ahead of creative examples',()=>{
  for(const locale of locales){
   const html=renderToStaticMarkup(React.createElement(McpPageView,{compatibility:getMcpCompatibilityEvidence(),copy:getMcpPageCopy(locale),locale,publication:live}));
   const prefix=locale==='en'?'':`/${locale}`;
   for(const client of getMcpPublicIntegrationIds()) assert.ok(html.includes(`href="${prefix}/${locale==='es'?'integraciones':'integrations'}/${client}"`));
   for(const client of ['cursor','github-copilot','gemini-cli','microsoft-copilot']) assert.ok(!html.includes(`/integrations/${client}"`));
+  const dom = new JSDOM(html);
+  const doc = dom.window.document;
+  const hero = doc.querySelector('.hub-opening')!;
+  const listing = getMcpClientActionConfig('chatgpt').deepLink!;
+  assert.equal(hero.querySelectorAll('a.mcp-button').length, 1);
+  assert.equal(hero.querySelector('a.mcp-button')?.getAttribute('href'), listing);
+  for (const mode of ['signup','signin']) assert.ok(hero.querySelector(`a[href^="/login?mode=${mode}"]`));
+  assert.ok(hero.querySelector('a[href="/billing"]'));
+  assert.equal(hero.querySelectorAll('#integrations .hub-tile').length, 6);
+  assert.equal(hero.querySelector('[data-client="glama"]')?.getAttribute('href'), `${prefix}/${locale === 'es' ? 'integraciones' : 'integrations'}/glama`);
+  const maya = hero.querySelector('img[alt*="Maya"]');
+  assert.equal(maya?.getAttribute('loading'), 'lazy');
+  const desktopPreload = doc.querySelector('link[rel="preload"][media="(min-width: 700px)"]');
+  assert.equal(desktopPreload?.getAttribute('imagesrcset'), maya?.getAttribute('srcset'));
+  assert.equal(desktopPreload?.getAttribute('imagesizes'), maya?.getAttribute('sizes'));
+  assert.equal(doc.querySelectorAll('.hub-example').length, 4);
+  assert.equal(doc.querySelector('.hub-example video, .hub-example audio'), null);
+  const gallery = doc.querySelector('.hub-gallery')!;
+  assert.ok(hero.compareDocumentPosition(gallery) & 4);
+  const duplicates = [...doc.querySelectorAll('[id]')].map(el=>el.id);
+  assert.equal(new Set(duplicates).size,duplicates.length);
+  dom.window.close();
   assert.equal((html.match(/<h1\b/g)??[]).length,1);
   assert.equal((html.match(/data-faq-item="true"/g)??[]).length,8);
   assert.match(html,/19591-turn-creative-briefs-into-approved-maxvideoai-generations-with-human-review/);
@@ -37,9 +60,50 @@ test('each integration has a distinct searchable title and truthful installation
    assert.ok(copy.meta.title.length<75);assert.ok(copy.hero.title.length<80);
    assert.ok(copy.setup.hostGuides.length>0);
    for(const guide of copy.setup.hostGuides)assert.ok(guide.installInstruction.length>40);
-   assert.match(copy.hero.liveStatus,client==='chatgpt'?/Pro.*(?:test|prob)/:client==='n8n'?/2\.38\.7/:client==='openclaw'?/ClawHub/:/test|prob/i);
+   if (client === 'chatgpt' || client === 'codex') {
+    assert.match(copy.meta.title, /plugin/i);
+    assert.match(copy.compatibility.statuses[client === 'chatgpt' ? 'chatgptWeb' : 'codexCli'] ?? '', /OAuth/);
+   } else {
+    assert.match(copy.hero.liveStatus,client==='n8n'?/2\.38\.7/:client==='openclaw'?/ClawHub/:/test|prob/i);
+   }
   }
   assert.equal(titles.size,5);
+ }
+});
+
+test('ChatGPT and Codex show localized directory setup, first request and the manual alternative in that order', () => {
+ const evidence = getMcpCompatibilityEvidence();
+ const listing = getMcpClientActionConfig('chatgpt');
+ assert.ok(listing.deepLinkEnabled && listing.deepLink);
+ for (const locale of locales) {
+  for (const client of ['chatgpt', 'codex'] as const) {
+   const html = renderToStaticMarkup(React.createElement(IntegrationPageView, {
+    compatibility: evidence.clients[client]!, copy: getIntegrationCopy(locale, client), locale, publication: live,
+   }));
+   const document = new JSDOM(html).window.document;
+   const native = document.querySelector('#setup');
+   const workflow = document.querySelector('.mcp-integration-workflow');
+   const advanced = document.querySelector('#advanced-setup');
+   assert.ok(native && workflow && advanced);
+   assert.equal(native.querySelector('a')?.getAttribute('href'), listing.deepLink);
+   const setup = native.textContent ?? '';
+   assert.match(setup, /maxvideoai\.com/);
+   assert.match(setup, /top up|recharges|recarga/i);
+   assert.match(setup, /create an account|créez votre compte|crea tu cuenta/i);
+   assert.match(setup, client === 'codex' ? /Sources → Use plugins/ : /@MaxVideoAI/);
+   assert.ok(native.compareDocumentPosition(workflow) & 4);
+   assert.ok(workflow.compareDocumentPosition(advanced) & 4);
+   assert.equal(advanced.querySelector('details')?.open, false);
+   assert.match(advanced.textContent ?? '', client === 'codex'
+    ? /codex plugin marketplace add camgraphe\/maxvideoai-plugin --ref v0\.3\.8.*codex plugin add maxvideoai@maxvideoai/s
+    : /api\.maxvideoai\.com\/mcp/);
+   const disabled = renderToStaticMarkup(React.createElement(IntegrationPageView, {
+    compatibility: evidence.clients[client]!, copy: getIntegrationCopy(locale, client), locale,
+    publication: {...live, connectionAvailable: false, showPaidGenerationClaim: false},
+   }));
+   assert.doesNotMatch(disabled, /id="directory-setup-title"|id="advanced-setup"/);
+   assert.match(disabled, /id="setup"/);
+  }
  }
 });
 test('host eligibility is visible and automation never becomes a generic one-click install',()=>{
@@ -55,7 +119,7 @@ test('host eligibility is visible and automation never becomes a generic one-cli
   assert.match(n8n.troubleshooting.items[0].answer,/approved|approuvé|aprobada/);
   assert.doesNotMatch(html,/awaiting n8n review|en cours de revue|en revisión/);
   const faq=getMcpEditorialCopy(locale).faq.map(item=>item.answer).join(' ');
-  assert.match(faq,/Business.*Enterprise.*Edu/);assert.match(faq,/Pro/);assert.match(faq,/2\.38\.7/);assert.match(faq,/Cloud/);assert.match(faq,/19591/);assert.match(faq,/manual|manuelle/i);
+  assert.match(faq,/ChatGPT.*Codex/);assert.match(faq,/Sources → Use plugins/);assert.match(faq,/2\.38\.7/);assert.match(faq,/Cloud/);assert.match(faq,/19591/);assert.match(faq,/manual|manuelle/i);
   assert.doesNotMatch(faq,/awaiting n8n review|en cours de revue|en revisión/);
   for (const answer of [n8n.troubleshooting.items[0].answer, getMcpEditorialCopy(locale).faq[2].answer]) {
     assert.match(answer,/approved|approuvé|aprobada/);
@@ -72,8 +136,8 @@ test('gated views do not show paid workflow, historical proof or price examples'
  const html=renderToStaticMarkup(React.createElement(McpPageView,{compatibility:getMcpCompatibilityEvidence(),copy:getMcpPageCopy('en'),locale:'en',publication:{...live,connectionAvailable:false,indexable:false,showPaidGenerationClaim:false,showReferenceClaim:false},hostProof:getMcpHostProof('claude','en')}));
  assert.doesNotMatch(html,/data-mcp-host-proof|mcp-story-scene|data-assistant-first-request|mcp-price-context/);
 });
-test('capability answers distinguish images and voice-over from gated montage',()=>{
- for(const locale of locales){const answer=getMcpEditorialCopy(locale).faq[3].answer;assert.match(answer,/image|imágenes/);assert.match(answer,/audio/);assert.match(answer,/not publicly available|ne sont pas disponibles|no están disponibles/);}
+test('capability answers identify Studio subtitles in the plugin and qualify other MCP clients',()=>{
+ for(const locale of locales){const answer=getMcpEditorialCopy(locale).faq[3].answer;assert.match(answer,/image|imágenes/);assert.match(answer,/voice-over|voix off|voz en off/i);assert.match(answer,/Studio.*(?:subtitle|sous-titr|subtitule)/i);assert.match(answer,/other MCP clients|autres clients MCP|otros clientes MCP/i);}
 });
 test('historical Claude evidence stays separate from the illustrated workflow',()=>{
  for(const locale of locales){const proof=getMcpHostProof('claude',locale);assert.ok(proof);assert.match(proof.caption,/not a current quote|pas.*devis actuel|no.*precio actual/);assert.ok(getMcpEditorialCopy(locale).visualLabel);}

@@ -21,9 +21,10 @@ test('only MCP tables scroll, preserving localized desktop columns and keyboard 
   const docs = Object.fromEntries(await Promise.all(['en', 'fr', 'es'].map(async locale => [locale,
     await parseMarkdownFile(`content/${locale === 'en' ? '' : locale + '/'}docs/mcp.mdx`)])));
   const witness = await parseMarkdownFile('content/fr/docs/get-started.mdx');
-  const [global, prose, marketing] = await Promise.all([
+  const [global, prose, marketing, manual] = await Promise.all([
     compileBlogStyles('app/globals.css'), compileBlogStyles(publicProseStylesPath),
     readFile('frontend/src/styles/marketing-redesign.css', 'utf8'),
+    readFile('frontend/app/(localized)/[locale]/(marketing)/docs/_components/mcp-docs-manual.css', 'utf8'),
   ]);
   const requireFrontend = createRequire(join(process.cwd(), 'frontend/package.json'));
   const beforeProse = requireFrontend('postcss').parse(prose);
@@ -34,10 +35,12 @@ test('only MCP tables scroll, preserving localized desktop columns and keyboard 
     const params = new URL(request.url ?? '/', 'http://fixture').searchParams;
     const locale = (params.get('locale') ?? 'en') as keyof typeof toolsLabels;
     const before = params.has('before'), other = params.has('witness');
+    const manualChapter = params.has('manual');
     const doc = other ? witness : docs[locale];
     const content = before || other ? doc.content : wrapMcpDocsTables(doc.content, locale);
+    const styles = [global, marketing, before ? beforeProse.toString() : prose, manualChapter ? manual : ''].join('\n');
     response.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
-    response.end(`<!doctype html><html lang="${locale}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>${global}\n${marketing}\n${before ? beforeProse.toString() : prose}</style></head><body><div class="marketing-site"><main class="container-page max-w-3xl section"><article class="stack-gap-lg"><a href="#exit">Keyboard entry</a><header><h1>${doc.title}</h1><p>${doc.description}</p></header><div class="public-prose prose">${content}</div><a id="exit" href="#top">Keyboard exit</a></article></main></div></body></html>`);
+    response.end(`<!doctype html><html lang="${locale}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>${styles}</style></head><body><div class="marketing-site"><main class="container-page max-w-3xl section"><article class="stack-gap-lg ${manualChapter ? 'mcp-manual-chapter' : ''}"><a href="#exit">Keyboard entry</a><header><h1>${doc.title}</h1><p>${doc.description}</p></header><div class="public-prose prose">${content}</div><a id="exit" href="#top">Keyboard exit</a></article></main></div></body></html>`);
   });
   await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve));
   const address = server.address();
@@ -100,13 +103,18 @@ test('only MCP tables scroll, preserving localized desktop columns and keyboard 
             // WebKit's native scroll needs a non-zero key-down interval.
             await page.keyboard.press('ArrowRight', { delay: 150 });
             await expect.poll(() => tools.evaluate(element => element.scrollLeft)).toBeGreaterThan(0);
-            // Native smooth scrolling may finish after a key-up; repeat the
-            // input while polling the reachable edge, not each animation step.
+            // Native keyboard scrolling animates after key-up. Measure the actual
+            // cell edge on every attempt; scrollWidth and clientWidth are rounded.
             await expect.poll(async () => {
               await page.keyboard.press('ArrowRight', { delay: 150 });
-              return tools.evaluate(element => element.scrollWidth - element.clientWidth - element.scrollLeft);
-            }).toBeLessThan(2);
-            assert.equal(await tools.evaluate(element => element.querySelector('tr:last-child td:last-child')!.getBoundingClientRect().right <= element.getBoundingClientRect().right + 1), true);
+              return tools.evaluate(element => {
+                const cell = element.querySelector('tbody tr:last-child td:last-child')!;
+                return cell.getBoundingClientRect().right - element.getBoundingClientRect().right;
+              });
+            }, {
+              intervals: [100],
+              message: `${name} ${locale} ${width}px: last cell's right edge is visible`,
+            }).toBeLessThanOrEqual(1);
             assert.equal(await page.evaluate(() => scrollX), 0);
             await page.keyboard.press('Tab');
             assert.equal(await tools.evaluate(element => element.contains(document.activeElement)), false, 'Tab leaves the region without a focus trap');
@@ -120,6 +128,12 @@ test('only MCP tables scroll, preserving localized desktop columns and keyboard 
               element.previousElementSibling!.scrollIntoView({ block: 'start' });
             });
             await page.screenshot({ path: `${evidence}/${name}-${locale}-${width}-after.png` });
+          }
+          if (width < 700) {
+            await page.goto(`${origin}/?locale=${locale}&manual`);
+            assert.ok(await tools.evaluate(element => element.scrollWidth > element.clientWidth),
+              'the actual manual stylesheet keeps tool identifiers readable in their scrollable region');
+            assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1));
           }
           assert.deepEqual(scripts, [], 'server presentation adds no client script');
           assert.deepEqual(errors, []);

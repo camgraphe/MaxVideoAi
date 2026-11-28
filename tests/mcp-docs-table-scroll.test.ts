@@ -3,6 +3,7 @@ import test from 'node:test';
 import { readFileSync } from 'node:fs';
 import { JSDOM } from 'jsdom';
 import { parseMarkdownFile } from '../frontend/lib/content/markdown';
+import { getMcpManualSections } from '../frontend/app/(localized)/[locale]/(marketing)/docs/_lib/mcp-manual-sections';
 import { wrapMcpDocsTables } from '../frontend/app/(localized)/[locale]/(marketing)/docs/_lib/docs-table-scroll';
 
 const labels = {
@@ -59,4 +60,22 @@ test('plain prose and escaped table examples remain unchanged', () => {
 test('only the MCP document route opts into the table presentation helper', () => {
   const source = readFileSync('frontend/app/(localized)/[locale]/(marketing)/docs/[slug]/page.tsx', 'utf8');
   assert.match(source, /doc\.slug === 'mcp'\s*\? wrapMcpDocsTables\(doc\.content, locale\)\s*: doc\.content/);
+});
+
+test('localized manual keeps the full reference and exposes the same seven stable navigation targets', async () => {
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    const doc = await parseMarkdownFile(`content/${locale === 'en' ? '' : locale + '/'}docs/mcp.mdx`);
+    const html = wrapMcpDocsTables(doc.content, locale);
+    const sections = getMcpManualSections(html, locale);
+    const linked = sections.filter(section => section.navLabel);
+    assert.deepEqual(linked.map(section => section.id), ['setup', 'other-clients', 'endpoint', 'reference', 'approve', 'recover', 'troubleshoot']);
+    const before = new JSDOM(html);
+    const after = new JSDOM(sections.map(section => section.html).join(''));
+    try {
+      assert.equal(after.window.document.body.textContent?.trim(), before.window.document.body.textContent?.trim());
+      assert.match(linked.find(section => section.id === 'endpoint')!.html, /https:\/\/api\.maxvideoai\.com\/mcp/);
+      assert.match(linked.find(section => section.id === 'troubleshoot')!.html, /-32001/);
+      assert.match(linked.find(section => section.id === 'troubleshoot')!.html, /href="[^"]*\/contact"/);
+    } finally { before.window.close(); after.window.close(); }
+  }
 });

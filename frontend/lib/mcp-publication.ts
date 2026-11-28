@@ -1,6 +1,7 @@
 import {
   getMcpIntegration,
   getMcpPublicIntegrationPaths,
+  getMcpDirectoryGuidePaths,
   type McpIntegrationId,
 } from '@/lib/mcp-integration-registry';
 
@@ -24,11 +25,12 @@ type McpPublicationInputs = {
   referenceUploads: boolean;
 };
 
+const publicGuidePaths = [...getMcpPublicIntegrationPaths(), ...getMcpDirectoryGuidePaths(true)];
 const MCP_PUBLIC_SOURCE_PATHS = new Set([
   '/mcp',
   '/docs/mcp',
-  ...getMcpPublicIntegrationPaths(),
-  ...getMcpPublicIntegrationPaths().map((path) =>
+  ...publicGuidePaths,
+  ...publicGuidePaths.map((path) =>
     path.replace('/integrations/', '/integraciones/'),
   ),
 ]);

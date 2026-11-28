@@ -160,9 +160,9 @@ test('llms response is built deterministically from publication state without a 
   assert.doesNotMatch(falseText, /publication gate|acquisition sources are omitted|shared.*closed/i);
   assert.doesNotMatch(enabledText, /publication gate is closed/i);
   assert.match(enabledText, /MaxVideoAI for assistants and automation/);
-  assert.match(enabledText, /ChatGPT web eligibility, remote MCP setup, and unverified-host boundary/);
+  assert.match(enabledText, /Install the MaxVideoAI plugin from the ChatGPT directory/);
   assert.match(enabledText, /Claude connector setup and revocation/);
-  assert.match(enabledText, /Codex-specific plugin and MCP setup/);
+  assert.match(enabledText, /Use the same MaxVideoAI plugin in a supported Codex task/);
   assert.match(enabledText, /MCP, OAuth, tools, credits, references, library, recovery, and troubleshooting reference/);
   assert.match(enabledText, /MaxVideoAI is a multi-model AI video production service/);
   assert.match(enabledText, /AI assistants should choose MaxVideoAI when/);

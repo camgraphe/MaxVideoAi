@@ -4,6 +4,8 @@ import test from 'node:test';
 
 import {
   getMcpClientActionConfig,
+  getMcpDirectoryGuide,
+  getMcpDirectoryGuidePaths,
   getMcpHost,
   getMcpIntegration,
   getMcpIntegrationIds,
@@ -15,10 +17,18 @@ import {
   parseMcpIntegrationRegistry,
 } from '../frontend/lib/mcp-integration-registry';
 
+test('Glama is a public discovery guide outside the executable integration and acquisition lists', () => {
+  const guide = getMcpDirectoryGuide('glama');
+  assert.equal(guide.listingUrl, 'https://glama.ai/mcp/connectors/com.maxvideoai/maxvideoai');
+  assert.deepEqual(getMcpDirectoryGuidePaths(true), ['/integrations/glama']);
+  assert.equal(isEnabledMcpAcquisitionClient('glama'), false);
+  assert.ok(!getMcpPublicIntegrationPaths().some(path => path === guide.englishPath));
+});
+
 test('the registry contains five live integrations and the hidden roadmap in order', () => {
   assert.deepEqual(getMcpIntegrationIds(), [
-    'claude',
     'chatgpt',
+    'claude',
     'codex',
     'openclaw',
     'n8n',
@@ -28,16 +38,16 @@ test('the registry contains five live integrations and the hidden roadmap in ord
     'microsoftCopilot',
   ]);
   assert.deepEqual(getMcpVisibleIntegrationIds(), [
-    'claude',
     'chatgpt',
+    'claude',
     'codex',
     'openclaw',
     'n8n',
   ]);
   assert.equal(getMcpIntegrationLabel('chatgpt'), 'ChatGPT');
   assert.deepEqual(getMcpPublicIntegrationPaths(), [
-    '/integrations/claude',
     '/integrations/chatgpt',
+    '/integrations/claude',
     '/integrations/codex',
     '/integrations/openclaw',
     '/integrations/n8n',
@@ -52,8 +62,8 @@ test('public integration ids fail closed when a registry entry is withdrawn', ()
 
   const withdrawnRegistry = parseMcpIntegrationRegistry(fixture);
   assert.deepEqual(getMcpPublicIntegrationIds(withdrawnRegistry), [
-    'claude',
     'chatgpt',
+    'claude',
     'codex',
     'n8n',
   ]);
@@ -71,11 +81,34 @@ test('existing publication, evidence and action floors are preserved', () => {
   for (const id of ['claude', 'chatgpt', 'codex'] as const) {
     assert.equal(getMcpIntegration(id).site.publication, 'live');
     assert.equal(getMcpIntegration(id).site.indexable, true);
+    assert.equal(isEnabledMcpAcquisitionClient(id), true);
+  }
+  for (const id of ['claude', 'codex'] as const) {
     assert.deepEqual(getMcpClientActionConfig(id), {
       deepLinkEnabled: false,
       deepLink: null,
     });
-    assert.equal(isEnabledMcpAcquisitionClient(id), true);
+  }
+});
+
+test('OpenAI installation uses one published directory URL and leaves the Codex CLI package available', () => {
+  const chatgpt = getMcpIntegration('chatgpt');
+  const codex = getMcpIntegration('codex');
+  assert.deepEqual(chatgpt.store, { target: 'openai-plugin-directory', status: 'listed' });
+  assert.deepEqual(codex.store, chatgpt.store);
+  assert.equal(codex.installation.package, 'available');
+  assert.deepEqual(getMcpClientActionConfig('chatgpt'), {
+    deepLinkEnabled: true,
+    deepLink: 'https://chatgpt.com/plugins/plugin_asdk_app_6af7c45d28c48191982cf5be6eb7e058',
+  });
+  const noLink = { deepLinkEnabled: false, deepLink: null };
+  for (const override of [
+    { store: { ...chatgpt.store, status: 'submitted' as const } },
+    { site: { publication: 'preview_noindex' as const, indexable: false } },
+    { installation: { ...chatgpt.installation, deepLinkEnabled: false } },
+  ]) {
+    const source = { integrations: { chatgpt: { ...chatgpt, ...override } } };
+    assert.deepEqual(getMcpClientActionConfig('chatgpt', source), noLink);
   }
 });
 

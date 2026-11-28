@@ -36,7 +36,7 @@ test('localized guides expose current metadata, OAuth, and the copyable producti
     assert.match(markdown, /^title:\s*['"].+['"]$/m);
     assert.match(markdown, /^description:\s*['"].+['"]$/m);
     assert.match(markdown, /^date:\s*['"]2026-07-14['"]$/m);
-    assert.match(markdown, /^updatedAt:\s*['"]2026-10-19['"]$/m);
+    assert.match(markdown, /^updatedAt:\s*['"]2026-11-28['"]$/m);
     assert.match(markdown, /^authorId:\s*['"]maxvideoai['"]$/m);
     assert.match(markdown, /^slug:\s*['"]mcp['"]$/m);
     assert.match(markdown, /```text\s+https:\/\/api\.maxvideoai\.com\/mcp\s+```/);
@@ -159,12 +159,18 @@ test('docs routes remain owned by the shared publication gate and technical sche
   assert.match(index, /discoverable:\s*publication\.indexable/);
 });
 
-test('guides avoid static prices, directory approval, and general API-key claims', () => {
-  for (const path of Object.values(DOCS)) {
+test('guides link the published plugin and distinguish Codex task access from CLI setup', () => {
+  for (const [locale, path] of Object.entries(DOCS)) {
     const markdown = source(path);
+    const intro = markdown.slice(markdown.indexOf('\n---\n', 4) + 5, markdown.indexOf('](#other-clients)'));
+    assert.ok(intro.includes('https://chatgpt.com/plugins/plugin_asdk_app_6af7c45d28c48191982cf5be6eb7e058'));
+    assert.ok(intro.includes('Sources → Use plugins'));
+    const codexGuide = locale === 'es' ? '/es/integraciones/codex' : locale === 'fr' ? '/fr/integrations/codex' : '/integrations/codex';
+    assert.ok(intro.includes('](' + codexGuide + ')'));
+    assert.ok(intro.includes('](/billing)'));
+    assert.doesNotMatch(markdown, /No public directory listing is claimed|Aucune présence dans le répertoire public n’est revendiquée|No se afirma que exista una ficha pública/i);
     assert.doesNotMatch(markdown, /(?:[$€£]\s*\d|(?:USD|EUR|GBP)\s*\d)/);
-    assert.doesNotMatch(markdown, /one[- ]click|(?:approved|available|listed) in (?:the )?(?:OpenAI|ChatGPT) directory/i);
-    assert.match(markdown, /No public directory listing is claimed|Aucune présence dans le répertoire public n’est revendiquée|No se afirma.*ficha pública/i);
+    assert.doesNotMatch(markdown, /one[- ]click/i);
     assert.match(markdown, /not a general-purpose REST API|n’est pas une API REST généraliste|No es una API REST de uso general/i);
     assert.match(markdown, /API (?:keys?|key)|clé API|claves API/i);
   }

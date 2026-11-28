@@ -442,7 +442,7 @@ test('each distribution evidence record is sourced, dated, qualified, and owner-
   const anthropicUrls = urls.filter((url) => /anthropic|claude/i.test(url));
   assert.ok(openAiUrls.length >= 3, 'expected direct OpenAI sources');
   assert.ok(
-    openAiUrls.every((url) => /https:\/\/(?:developers\.openai\.com|learn\.chatgpt\.com|platform\.openai\.com)\//.test(url)),
+    openAiUrls.every((url) => ['https://chatgpt.com', 'https://developers.openai.com', 'https://help.openai.com', 'https://learn.chatgpt.com', 'https://platform.openai.com'].includes(new URL(url).origin)),
     `OpenAI claims must use official sources: ${openAiUrls.join(', ')}`
   );
   assert.ok(anthropicUrls.length >= 3, 'expected direct Anthropic sources');

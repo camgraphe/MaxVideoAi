@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { PublicVideoQualitySelect } from './PublicVideoQualitySelect.client';
 import { usePublicVideoControls } from './usePublicVideoControls';
 
@@ -11,13 +11,14 @@ const labels = {
 };
 
 /** Native comparison player: original fidelity remains the default. */
-export function PublicVideoPlayer({ src, poster, title, className, locale = 'en', deferPoster = false }: {
+export function PublicVideoPlayer({ src, poster, title, className, locale = 'en', deferPoster = false, children }: {
   src: string;
   poster?: string | null;
   title: string;
   className?: string;
   locale?: string;
   deferPoster?: boolean;
+  children?: ReactNode;
 }) {
   const { videoRef, events, quality, changeQuality, hasQualityChoice, terminalError, togglePlayback } =
     usePublicVideoControls(src, 'comparison', 'original');
@@ -47,10 +48,10 @@ export function PublicVideoPlayer({ src, poster, title, className, locale = 'en'
     <>
       <video key={src} ref={videoRef} src={src} data-deferred-poster={deferred ? '' : undefined}
         poster={!deferred || visiblePoster === posterIdentity ? poster ?? undefined : undefined} controls preload="none"
-        playsInline aria-label={title} className={className} {...events} />
+        playsInline aria-label={title} className={className} {...events}>{children}</video>
       {deferred ? <noscript>
         <style>{'[data-deferred-poster] { display: none; }'}</style>
-        <video src={src} poster={poster ?? undefined} controls preload="none" playsInline aria-label={title} className={className} />
+        <video src={src} poster={poster ?? undefined} controls preload="none" playsInline aria-label={title} className={className}>{children}</video>
       </noscript> : null}
       {hasQualityChoice ? (
         <div className="absolute right-2 top-2 z-10">
