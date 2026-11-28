@@ -55,7 +55,10 @@ export type RoutingScenario = ReturnType<typeof scenario>;
 
 export function routingScenarios(): RoutingScenario[] {
   return [
-    scenario('text', 'Text to video', wan),
+    scenario('text', 'Text to video', { ...wan, hasSeed: false, promptExpansionEnabled: true }),
+    scenario('botSmart-short', 'Two-second text pilot · BotSmart', {
+      ...wan, durationSec: 2, hasSeed: false, promptExpansionEnabled: true,
+    }),
     scenario('reference', 'One reference image', {
       ...wan,
       mode: 'ref2v',

@@ -8,6 +8,8 @@ import {
 import type { VideoProviderKey } from './types';
 import type { PurchaseRequest, PurchaseOffer } from './purchase/types';
 import { isReviewedWanPilotRequest, WAN_OFFERS } from './purchase/wan';
+import { eligibleVideoRouterCanary } from './purchase/wan';
+import { botSmartCostMicros } from './videorouter/wan-prime';
 import type { WanPurchaseCanary } from './router';
 import { H3_FAL_OFFER, SEEDANCE_25_BYTEPLUS_OFFER } from './purchase/h3-seedance';
 import { KLING_PRO_OFFERS } from './purchase/kling-pro';
@@ -60,10 +62,17 @@ export function rankPurchaseOffers(
 }
 
 /** Retain raw capability/price facts so the simulator can reapply availability, budget and ordering. */
+function videoRouterOffer(request: PurchaseRequest): PurchaseCandidate {
+  return { provider: 'videorouter', tariff: 'BotSmart Wan Prime 480p incl. standard fee',
+    excluded: null, costMicros: botSmartCostMicros(request.durationSec), pilotOnly: true,
+    sourceUrl: 'https://videorouter.sh/video/alibaba/wan-3.0-prime/botsmart' };
+}
+
 export function quoteVideoPurchase(request: PurchaseRequest, purpose: 'routing' | 'comparison' = 'routing') {
   const policy = policies.get(request.engineId);
   if (!policy) return null;
   const candidates = quoteOffers(request, policy.offers, purpose);
+  if (purpose === 'comparison' && eligibleVideoRouterCanary(request)) candidates.unshift(videoRouterOffer(request));
   const baseline = candidates.find((row) => row.provider === policy.baseline);
   return {
     engineId: request.engineId,
@@ -97,6 +106,7 @@ export function planVideoPurchase(request: PurchaseRequest, limits: Partial<Purc
 // Adding an offer or transport never enrolls it in an existing pilot.
 const pilotSuppliers: Record<WanPurchaseCanary, ReadonlySet<VideoProviderKey>> = {
   'alibaba-fal': new Set(['alibaba_model_studio', 'fal']),
+  'with-videorouter': new Set(['videorouter', 'alibaba_model_studio', 'fal']),
   'with-apimart': new Set(['alibaba_model_studio', 'fal', 'apimart']),
 };
 
@@ -107,6 +117,7 @@ export function planWanPurchase(
   const quote = policies.get(request.engineId) === wan ? quoteVideoPurchase(request) : null;
   if (!quote) return { ...rankQuotedOffers<VideoProviderKey>([], { ceilingMicros: -1 }), canaryEligible: false };
   const installedOnly = pilot === 'alibaba-fal';
+  if (pilot === 'with-videorouter' && eligibleVideoRouterCanary(request)) quote.candidates.unshift(videoRouterOffer(request));
   const unavailable = { ...limits.unavailable };
   if (pilot) {
     for (const offer of quote.candidates) {
@@ -115,7 +126,7 @@ export function planWanPurchase(
   }
   const plan = selectPurchasePlan(quote, { ...limits, unavailable });
   const permitted = request.engineId === 'wan-3-prime' || (request.engineId === 'wan-3' && installedOnly);
-  return { ...plan, canaryEligible: permitted && isReviewedWanPilotRequest(request) };
+  return { ...plan, canaryEligible: permitted && (pilot === 'with-videorouter' ? eligibleVideoRouterCanary(request) : isReviewedWanPilotRequest(request)) };
 }
 
 export function planWanPrimePurchase(request: PurchaseRequest, limits: Partial<PurchaseLimits> = {}) {

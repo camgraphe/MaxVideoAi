@@ -135,7 +135,8 @@ export async function createProviderAttempt(params: {
        status = EXCLUDED.status,
        started_at = COALESCE(provider_attempts.started_at, EXCLUDED.started_at),
        request_snapshot = EXCLUDED.request_snapshot,
-       updated_at = NOW()`}
+       updated_at = NOW()
+       WHERE provider_attempts.request_snapshot #>> '{purchaseRouting,mode}' IS DISTINCT FROM 'canary'`}
      RETURNING id, attempt_index`,
     [
       params.publicJobId,
@@ -148,15 +149,14 @@ export async function createProviderAttempt(params: {
   );
   const row = rows[0];
   if (!row) {
-    if (params.claimOnce) {
-      const existing = await queryFn<{ id: number }>(
-        `SELECT j.id FROM app_jobs j WHERE j.job_id = $1
-            AND (j.provider_job_id IS NOT NULL OR j.status NOT IN ('pending','queued','running','processing','in_progress')
-                 OR EXISTS (SELECT 1 FROM provider_attempts a WHERE a.job_id = j.id AND a.attempt_index = $2))`,
-        [params.publicJobId, params.attemptIndex],
-      );
-      if (existing.length) throw new ProviderAttemptAlreadyClaimed();
-    }
+    // Also protect an already claimed routing attempt after a flag change or credential rotation.
+    const existing = await queryFn<{ id: number }>(
+      `SELECT j.id FROM app_jobs j WHERE j.job_id = $1
+          AND (j.provider_job_id IS NOT NULL OR j.status NOT IN ('pending','queued','running','processing','in_progress')
+               OR EXISTS (SELECT 1 FROM provider_attempts a WHERE a.job_id = j.id AND a.attempt_index = $2))`,
+      [params.publicJobId, params.attemptIndex],
+    );
+    if (existing.length) throw new ProviderAttemptAlreadyClaimed();
     throw new Error(`Unable to create provider attempt for missing job ${params.publicJobId}.`);
   }
   return { id: Number(row.id), attemptIndex: Number(row.attempt_index) };

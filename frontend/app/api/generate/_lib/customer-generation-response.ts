@@ -9,8 +9,8 @@ const publicFields = [
   'batchId', 'groupId', 'iterationIndex', 'iterationCount', 'heroRenderId', 'localKey', 'etaSeconds', 'etaLabel',
   'requiredCents', 'balanceCents', 'refundedAmountCents', 'field', 'value', 'durationSec', 'maxDurationSec',
 ] as const;
-const transportName = /(?:\b(?:apimart|wavespeed|dashscope|alibaba|fal(?:\.ai)?|byteplus|modelark|vertex|provider|purchase)(?:\b|_)|kling[ _-]?direct|supplier cost)/i;
-const upstreamCode = /^(?:Arrearage|PrepaidBillOverdue|InsufficientBalance|INSUFFICIENT_BALANCE|Throttling\.|SUBMISSION_UNCONFIRMED|NO_ELIGIBLE_VIDEO_PROVIDER)|^(?:APIMART|FAL|ALIBABA|BYTEPLUS|KLING_DIRECT|GOOGLE_VERTEX|LUMA_AGENTS)_/i;
+const transportName = /(?:\b(?:videorouter|botsmart|apimart|wavespeed|dashscope|alibaba|fal(?:\.ai)?|byteplus|modelark|vertex|provider|purchase)(?:\b|_)|kling[ _-]?direct|supplier cost)/i;
+const upstreamCode = /^(?:Arrearage|PrepaidBillOverdue|InsufficientBalance|INSUFFICIENT_BALANCE|Throttling\.|SUBMISSION_UNCONFIRMED|NO_ELIGIBLE_VIDEO_PROVIDER)|^(?:VIDEOROUTER|APIMART|FAL|ALIBABA|BYTEPLUS|KLING_DIRECT|GOOGLE_VERTEX|LUMA_AGENTS)_/i;
 
 const knownFailures = new Set<string>(Object.values(videoFailureCodes).filter(value => typeof value === 'string'));
 const customerErrorCodes = new Set(['CONTENT_FLAGGED', 'CONTENT_POLICY_VIOLATION', 'POLICY_VIOLATION', 'SAFETY', 'RATE_LIMITED', 'IMAGE_UNREACHABLE']);

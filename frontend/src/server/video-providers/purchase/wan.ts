@@ -6,6 +6,8 @@ import { estimateAlibabaProviderCost } from '../alibaba-model-studio/cost';
 import { isAlibabaFalFallbackCompatible } from '../alibaba-model-studio/model-map';
 import type { PurchaseOffer, PurchaseRequest } from './types';
 
+import { reviewedBotSmartDuration } from '../videorouter/wan-prime';
+
 export const APIMART_PRIME_MICROS_PER_SECOND: Readonly<Record<string, number>> = {
   '480p': 51_430,
   '720p': 102_860,
@@ -52,6 +54,12 @@ function wanPilotExclusion(r: PurchaseRequest): string | null {
 
 export function isReviewedWanPilotRequest(request: PurchaseRequest): boolean {
   return requestIsPriced(request) && wanPilotExclusion(request) === null;
+}
+
+export function eligibleVideoRouterCanary(r: PurchaseRequest) {
+  return r.engineId === 'wan-3-prime' && r.mode === 't2v' && reviewedBotSmartDuration(r.durationSec) &&
+    r.resolution.toLowerCase() === '480p' && r.aspectRatio === '16:9' && r.audioEnabled === true &&
+    r.promptExpansionEnabled === true && r.hasSeed === false && isReviewedWanPilotRequest(r);
 }
 
 export const WAN_OFFERS: readonly PurchaseOffer[] = [

@@ -15,6 +15,8 @@ export type PurchaseRequest = {
   hasStartFrame?: boolean;
   observedVideoTokens?: number;
   audioEnabled?: boolean;
+  hasSeed?: boolean;
+  promptExpansionEnabled?: boolean;
   requiresDirectControls?: boolean;
   hasUnpricedOptions?: boolean;
 };

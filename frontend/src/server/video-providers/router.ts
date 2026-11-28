@@ -38,13 +38,17 @@ export type VideoProviderRoutingEnv = Readonly<Partial<Record<
   string | undefined
 >>>;
 
-export type WanPurchaseCanary = 'alibaba-fal' | 'with-apimart';
+export type WanPurchaseCanary = 'alibaba-fal' | 'with-apimart' | 'with-videorouter';
 
 export function isWanPilotEnvironment(): boolean {
   return process.env.VERCEL_ENV === 'preview' || (!process.env.VERCEL_ENV && process.env.NODE_ENV !== 'production');
 }
 
-export function configuredWanPurchaseCanary(engineId: string): WanPurchaseCanary | undefined {
+export function configuredWanPurchaseCanary(engineId: string, isAdmin = true): WanPurchaseCanary | undefined {
+  const audience = process.env.WAN_PRIME_VIDEOROUTER_CANARY;
+  if (engineId === 'wan-3-prime' && process.env.VIDEOROUTER_API_KEY?.trim() &&
+      (audience === 'public' || (isAdmin && audience === 'admin'))) return 'with-videorouter';
+  if (!isAdmin) return;
   if (!isWanPilotEnvironment()) return;
   if (engineId === 'wan-3') {
     return process.env.WAN_STANDARD_EXISTING_PROVIDERS_ADMIN_CANARY === '1' ? 'alibaba-fal' : undefined;
@@ -154,7 +158,7 @@ export function resolveVideoProviderRoutingPlan(params: {
         : { kind: 'alibaba_model_studio_unavailable', reason: 'public_routing_disabled' };
     }
 
-    const canary = params.isAdmin ? configuredWanPurchaseCanary(params.engineId) : undefined;
+    const canary = configuredWanPurchaseCanary(params.engineId, params.isAdmin);
     return {
       kind: 'alibaba_model_studio_primary',
       ...(canary ? { purchaseCanary: canary } : {}),

@@ -125,7 +125,7 @@ function costBreakdown(job: AlibabaPendingJob, task: NormalizedVideoProviderTask
     input_video_duration_sec: estimate.inputVideoDurationSec,
     output_video_duration_sec: estimate.outputVideoDurationSec,
     provider_cost_usd: estimate.providerCostUsd,
-    provider_cost_usd_effective: null,
+    provider_cost_usd_effective: estimate.status === 'provider_reported' ? estimate.providerCostUsd : null,
     vendor_cost_usd: estimate.providerCostUsd,
   };
 }
@@ -251,7 +251,7 @@ async function markJobStalled(job: AlibabaPendingJob, queryFn: QueryFn) {
     job,
     attempt: await findAttempt(job, queryFn),
     status: 'polling_stalled',
-    errorCode: job.provider === 'apimart' ? 'APIMART_POLLING_STALLED' : 'ALIBABA_MODEL_STUDIO_POLLING_STALLED',
+    errorCode: (job.provider ?? ALIBABA_MODEL_STUDIO_PROVIDER).toUpperCase() + '_POLLING_STALLED',
     errorClass: 'polling_stalled',
     responseSnapshot: { message: STALLED_MESSAGE },
     queryFn,

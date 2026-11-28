@@ -1,4 +1,5 @@
 import { query, withDbTransaction, type TransactionQueryExecutor } from '@/lib/db';
+import { isWanPilotEnvironment } from '@/server/video-providers/router';
 import { withWalletFailureSettlement } from '@/server/fal-webhook-refunds';
 
 type Stop = {
@@ -25,7 +26,7 @@ function hasEvidence(attemptId: string) {
         AND NOT EXISTS (SELECT 1 FROM provider_attempts later WHERE later.job_id=j.id AND later.attempt_index>a.attempt_index))
       AND NOT EXISTS (SELECT 1 FROM provider_attempts a WHERE a.job_id=j.id AND (
         a.status <> 'failed' OR a.accepted_at IS NOT NULL OR a.provider_job_id IS NOT NULL
-        OR a.provider NOT IN ('apimart','alibaba_model_studio') OR COALESCE(a.error_class,'') NOT IN ('refused','invalid')
+        OR a.provider NOT IN ('videorouter','apimart','alibaba_model_studio') OR COALESCE(a.error_class,'') NOT IN ('refused','invalid')
         OR a.request_snapshot #>> '{purchaseRouting,mode}' IS DISTINCT FROM 'canary'))
     )
   )`;
@@ -68,13 +69,14 @@ export async function stopWanPilotWalletJob(stop: Stop): Promise<boolean> {
     const [intent] = await tx.query<PendingStop>(
       `UPDATE app_jobs j SET status='provider_polling_stalled', provisional=FALSE,
       settings_snapshot=COALESCE(settings_snapshot,'{}'::jsonb) || jsonb_build_object('wanPilotWalletStop',
-        jsonb_build_object('kind',CASE WHEN $3::text IS NULL THEN 'empty_route' ELSE 'terminal_refusal' END,'attemptId',$3::text)),
+        jsonb_build_object('kind',CASE WHEN $3::text IS NULL THEN 'empty_route' ELSE 'terminal_refusal' END,'attemptId',$3::text,'runtime',$5::text)),
       message=$4,updated_at=NOW()
       WHERE j.job_id=$1 AND j.user_id=$2 AND ${eligibleJob}
         AND j.status IN ('pending','queued','running','processing','in_progress')
         AND ${hasEvidence('$3::text')}
       RETURNING j.job_id,j.user_id,$3::text AS attempt_id,j.message`,
-      [stop.jobId, stop.userId, stop.attemptId === null ? null : String(stop.attemptId), stop.message],
+      [stop.jobId, stop.userId, stop.attemptId === null ? null : String(stop.attemptId), stop.message,
+        isWanPilotEnvironment() ? 'preview' : 'production'],
     );
     if (!intent) throw stale;
     return intent;
@@ -87,7 +89,8 @@ export async function stopWanPilotWalletJob(stop: Stop): Promise<boolean> {
 
 export async function reconcileWanPilotWalletStops() {
   const rows = await query<PendingStop>(`SELECT j.job_id,j.user_id,${marker}->>'attemptId' AS attempt_id,j.message
-    FROM app_jobs j WHERE ${pending} ORDER BY j.updated_at,j.id LIMIT 10`);
+    FROM app_jobs j WHERE ${pending} AND COALESCE(${marker}->>'runtime','preview')=$1
+    ORDER BY j.updated_at,j.id LIMIT 10`, [isWanPilotEnvironment() ? 'preview' : 'production']);
   let settled = 0,
     errors = 0;
   for (const row of rows) {

@@ -89,7 +89,7 @@ export async function loadWanPrimeReplay() {
         coalesce(jsonb_typeof(j.settings_snapshot#>'{advanced,extraInputValues,enable_prompt_expansion}'), 'null') NOT IN ('boolean','null')
         ELSE false END AS unreviewed,
       j.pricing_snapshot->'totalCents' AS cents, j.pricing_snapshot->>'currency' AS currency
-    FROM app_jobs j LEFT JOIN provider_attempts a ON a.job_id=j.id AND a.attempt_index=1 AND a.provider IN ('alibaba_model_studio','apimart')
+    FROM app_jobs j LEFT JOIN provider_attempts a ON a.job_id=j.id AND a.attempt_index=1 AND a.provider IN ('alibaba_model_studio','apimart','videorouter')
     WHERE j.created_at >= ($1::date::timestamp AT TIME ZONE 'Europe/Madrid')
       AND j.created_at < ($2::date::timestamp AT TIME ZONE 'Europe/Madrid')
       AND j.user_id <> ALL($3::text[]) AND j.surface='video' AND j.engine_id='wan-3-prime'

@@ -31,7 +31,7 @@ export const HISTORICAL_REPLAY_QUERY = `WITH population AS (
     j.duration_sec AS duration, first.request_snapshot AS a, first.provider AS adapter, fal_request.ratio AS queued_ratio
   FROM app_jobs j
   LEFT JOIN provider_attempts first ON first.job_id=j.id AND first.attempt_index=1
-    AND first.provider IN ('alibaba_model_studio','apimart','kling_direct')
+    AND first.provider IN ('alibaba_model_studio','apimart','videorouter','kling_direct')
   -- The completion webhook can replace core.aspectRatio with the delivered raster ratio.
   -- Use only a queue receipt for this exact provider task, rejecting conflicting values.
   LEFT JOIN LATERAL (
@@ -109,7 +109,7 @@ export const HISTORICAL_REPLAY_QUERY = `WITH population AS (
   ) clips ON true
 ), facts AS MATERIALIZED (
   SELECT *,
-    CASE WHEN wan AND adapter IN ('alibaba_model_studio','apimart') OR kling AND adapter='kling_direct' THEN ${nonnegativeInt("a->'referenceImageCount'")}
+    CASE WHEN wan AND adapter IN ('alibaba_model_studio','apimart','videorouter') OR kling AND adapter='kling_direct' THEN ${nonnegativeInt("a->'referenceImageCount'")}
       WHEN NOT wan AND refs_ok THEN settings_images END AS ref_images,
     CASE WHEN wan OR kling AND adapter='kling_direct' THEN ${bool("a->'hasStartImage'")}
       WHEN refs_ok THEN start_frame OR (mode='i2v' AND image_present) END AS has_start,

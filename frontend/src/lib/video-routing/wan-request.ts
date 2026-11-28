@@ -31,7 +31,8 @@ export function wanRequestFacts(payload: GeneratePayload, media: ReturnType<type
   return {
     engineId: payload.engineId, mode, durationSec: payload.durationSec ?? NaN,
     resolution: payload.resolution ?? '', aspectRatio: payload.aspectRatio ?? null,
-    audioEnabled: payload.audio, promptCharacters,
+    audioEnabled: payload.audio, promptCharacters, hasSeed: payload.seed != null,
+    promptExpansionEnabled: typeof extras?.enable_prompt_expansion === 'boolean' ? extras.enable_prompt_expansion : mode !== 'v2v',
     images: media.referenceImages.length + Number(Boolean(media.startImageUrl)),
     hasStartFrame: Boolean(media.startImageUrl), hasEndFrame: Boolean(media.endImageUrl),
     hasAudioReference: media.referenceAudio.length > 0, hasVideo: clips.length > 0,

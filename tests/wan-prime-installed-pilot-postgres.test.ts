@@ -13,6 +13,8 @@ import { getFalClient } from '../frontend/src/lib/fal-client';
 import { getWalletBalanceCents } from '../frontend/src/lib/wallet';
 import { AlibabaModelStudioError } from '../frontend/src/server/video-providers/alibaba-model-studio/errors';
 import type { AlibabaVideoPayload } from '../frontend/src/server/video-providers/alibaba-model-studio/types';
+import { createVideoRouterClient } from '../frontend/src/server/video-providers/videorouter/wan-prime';
+import type { NormalizedVideoProviderTask } from '../frontend/src/server/video-providers/types';
 import { resolveVideoProviderRoutingPlan } from '../frontend/src/server/video-providers/router';
 import { createPaidGenerationTestSchema, startDisposablePostgres } from './helpers/disposable-postgres';
 
@@ -24,7 +26,7 @@ const reference = {
   supplierMicros: 560_000,
   quoteCents: 85,
 } as const;
-type Profile = (typeof text | typeof reference) & { audio?: boolean };
+type Profile = { mode: 't2v' | 'ref2v'; seconds: number; resolution: string; supplierMicros: number; quoteCents: number; audio?: boolean };
 const engineId = 'wan-3-prime';
 const userId = 'pilot-owner';
 const refUrl = 'https://example.test/reference.png';
@@ -187,7 +189,8 @@ test(
       return Response.json({ request_id: 'fal-' + body.metadata.app_job_id }, { status: 202 });
     });
 
-    function request(jobId: string, profile: Profile, direct: (payload: AlibabaVideoPayload) => Promise<never>) {
+    function request(jobId: string, profile: Profile, direct: (payload: AlibabaVideoPayload) => Promise<NormalizedVideoProviderTask>,
+      routerFetch?: typeof fetch) {
       const { initial, pricing, receipt } = initialJob(jobId, profile);
       const plan = resolveVideoProviderRoutingPlan({
         engineId,
@@ -196,7 +199,7 @@ test(
         env: { ALIBABA_MODEL_STUDIO_ENABLED: '1', ALIBABA_MODEL_STUDIO_FALLBACK_TO_FAL_ENABLED: '1' },
       });
       assert.equal(plan.kind, 'alibaba_model_studio_primary');
-      assert.ok(plan.kind === 'alibaba_model_studio_primary' && plan.purchaseCanary === 'alibaba-fal');
+      assert.ok(plan.kind === 'alibaba_model_studio_primary' && plan.purchaseCanary === (routerFetch ? 'with-videorouter' : 'alibaba-fal'));
       const hasImage = profile.mode === 'ref2v';
       const submit = () =>
         submitAlibabaModelStudioGenerateTask({
@@ -228,7 +231,7 @@ test(
             resolution: profile.resolution,
             aspectRatio: '16:9',
             audio: profile.audio ?? true,
-            seed: 0, extraInputValues: { enable_prompt_expansion: false },
+            ...(routerFetch ? {} : { seed: 0, extraInputValues: { enable_prompt_expansion: false } }),
             referenceImages: hasImage ? [refUrl] : [],
           },
           falInputSummary: {
@@ -252,6 +255,7 @@ test(
           logMetricFn() {},
           deps: {
             queryFn: read,
+            getVideoRouterClientFn: () => createVideoRouterClient('offline', routerFetch),
             getApimartClientFn: () => assert.fail('APIMart is disabled'),
             createOwnedMediaReadUrlFn: async (input) => input.url,
             getAlibabaModelStudioClientFn: () => ({
@@ -262,6 +266,58 @@ test(
         });
       return { submit, pricing, reserve: () => createAtomicInitialVideoJob(initial) };
     }
+
+    await t.test('VideoRouter pre-acceptance quota refusal hands off once to Alibaba; a lost response preserves the reservation', async () => {
+      const existingMode = process.env.WAN_PRIME_VIDEOROUTER_CANARY;
+      const existingKey = process.env.VIDEOROUTER_API_KEY;
+      process.env.WAN_PRIME_VIDEOROUTER_CANARY = 'admin';
+      process.env.VIDEOROUTER_API_KEY = 'offline';
+      try {
+        for (const uncertain of [false, true]) {
+          const id = 'pilot-videorouter-' + (uncertain ? 'unknown' : 'quota');
+          const seconds = uncertain ? 2 : 15;
+          const profile: Profile = { ...text, seconds, supplierMicros: seconds * 68000, quoteCents: seconds * 10 };
+          let alibaba = 0;
+          const paths: string[] = [];
+          const run = request(id, profile, async () => {
+            alibaba++;
+            return { providerJobId: 'accepted-alibaba', status: 'queued', rawStatus: 'PENDING',
+              videoUrl: null, message: null, usage: null, raw: {} };
+          }, async (input, init) => {
+            const url = new URL(String(input));
+            assert.equal(url.origin, 'https://videorouter.sh');
+            paths.push(url.pathname);
+            const body = JSON.parse(String(init?.body));
+            assert.deepEqual(body.provider, { only: ['botsmart'], allow_fallbacks: false });
+            assert.equal(body.generate_audio, true);
+            assert.equal(body.prompt_extend, true);
+            if (url.pathname === '/v1/pricing/estimate') return Response.json({
+              object: 'pricing.estimate', type: 'video', currency: 'USD', model: 'botsmart/wan-3.0-prime',
+              assumptions: { duration_secs: seconds, resolution: '480p', aspect_ratio: '16:9' },
+              estimated_cost_usd: seconds * 0.0402, max_cost_usd: seconds * 0.0402,
+            });
+            assert.equal(url.pathname, '/v1/videos');
+            if (uncertain) throw new Error('response lost after POST');
+            return Response.json({ error: { code: 'concurrency_limit', type: 'rate_limit_error' } }, { status: 429 });
+          });
+          assert.equal((await run.reserve()).kind, 'created');
+          await Promise.all([run.submit(), run.submit()]);
+          assert.deepEqual(paths, ['/v1/pricing/estimate', '/v1/videos']);
+          assert.equal(alibaba, uncertain ? 0 : 1);
+          const ledger = await attempts(id);
+          assert.deepEqual(ledger.map(a => [a.provider, a.status]), uncertain ? [['videorouter', 'polling_stalled']] :
+            [['videorouter', 'failed'], ['alibaba_model_studio', 'accepted']]);
+          if (!uncertain) assert.equal(ledger[0].fallback_to_attempt_id, ledger[1].id);
+          assert.deepEqual(await receipts(id), [{ type: 'charge', amount_cents: profile.quoteCents }]);
+          assert.equal((await job(id)).final_price_cents, profile.quoteCents);
+        }
+      } finally {
+        if (existingMode === undefined) delete process.env.WAN_PRIME_VIDEOROUTER_CANARY;
+        else process.env.WAN_PRIME_VIDEOROUTER_CANARY = existingMode;
+        if (existingKey === undefined) delete process.env.VIDEOROUTER_API_KEY;
+        else process.env.VIDEOROUTER_API_KEY = existingKey;
+      }
+    });
 
     const profiles: Profile[] = [text, reference, { ...reference, audio: false }];
     for (const profile of profiles) {

@@ -11,6 +11,7 @@ export function isPurchaseRoutingEngine(engineId: unknown): engineId is Purchase
 }
 
 export const PROVIDER_LABELS = {
+  videorouter: 'VideoRouter · BotSmart',
   wavespeed: 'WaveSpeedAI',
   apimart: 'APIMart Gold',
   alibaba_model_studio: 'Alibaba Model Studio',

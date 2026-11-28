@@ -1,4 +1,5 @@
 import { getWanSubmissionClient, isWanDirectProvider, wanTransports, type WanDirectProvider } from '@/server/video-providers/wan-transports';
+import type { createVideoRouterClient } from '@/server/video-providers/videorouter/wan-prime';
 import type { createApimartClient } from '@/server/video-providers/apimart/wan-prime';
 import type { WanPurchaseCanary } from '@/server/video-providers/router';
 import { nextPurchaseProvider, purchaseRoutingSnapshot, type PurchaseDecision } from '@/lib/video-purchase-decision';
@@ -50,6 +51,7 @@ type LogMetricFn = (
 
 type AlibabaSubmissionClient = Pick<ReturnType<typeof getAlibabaModelStudioClient>, 'createVideo' | 'getTask'>;
 type AlibabaSubmissionDeps = {
+  getVideoRouterClientFn?: typeof createVideoRouterClient;
   getApimartClientFn?: typeof createApimartClient;
   createOwnedMediaReadUrlFn?: typeof createOwnedMediaReadUrl;
   getAlibabaModelStudioClientFn?: () => AlibabaSubmissionClient;
@@ -329,6 +331,7 @@ export async function submitAlibabaModelStudioGenerateTask(params: WanSubmission
   const facts = route.family === 'wan3' ? wanRequestFacts(wanPayload, media, params.negativePrompt) : null;
   const decision = facts ? buildWanPurchaseDecision(params, facts) : null;
   const active = Boolean(params.purchaseCanary && decision?.canaryEligible);
+  if (params.purchaseCanary === 'with-videorouter' && !active) params = { ...params, purchaseCanary: undefined };
   if (active) params = { ...params, audioEnabled: wanPayload.audio, falPayload: { ...wanPayload, reviewedWanPilot: true } };
   const selected = active ? decision?.order[0] : ALIBABA_MODEL_STUDIO_PROVIDER;
   const stopPilot = deps.stopWanPilotWalletJobFn ?? stopWanPilotWalletJob;
@@ -445,7 +448,7 @@ async function submitWanAttempt(
     const transport = await createWanMediaTransport({ payload, userId: params.userId }, { read: deps.createOwnedMediaReadUrlFn });
     sanitizeDiagnostics = transport.sanitize;
     const client = getWanSubmissionClient(provider, {
-      apimart: deps.getApimartClientFn, alibaba_model_studio: deps.getAlibabaModelStudioClientFn,
+      videorouter: deps.getVideoRouterClientFn, apimart: deps.getApimartClientFn, alibaba_model_studio: deps.getAlibabaModelStudioClientFn,
     });
     sent = true;
     const task = await client.createVideo(transport.payload);

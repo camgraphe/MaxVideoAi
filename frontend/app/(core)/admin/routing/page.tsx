@@ -23,6 +23,7 @@ export default async function AdminVideoRoutingPage({ searchParams }: { searchPa
   const [jobs, params] = await Promise.all([recentRoutingJobs().catch(() => null), searchParams]);
   const pilotLabels = {
     'alibaba-fal': 'Alibaba pilot · Fal backup when enabled',
+    'with-videorouter': 'BotSmart 480p text · Alibaba backup',
     'with-apimart': 'APIMart pilot · installed suppliers eligible for fallback',
     shadow: 'Price simulation only',
   };

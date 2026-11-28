@@ -22,6 +22,7 @@ export type NormalizedVideoProviderTask = {
 
 export type VideoProviderKey =
   | 'apimart'
+  | 'videorouter'
   | 'fal'
   | 'alibaba_model_studio'
   | 'kling_direct'

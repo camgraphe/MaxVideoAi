@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { runAlibabaModelStudioPoll } from '@/server/alibaba-model-studio-poll';
 import { enabledWanPollProviders } from '@/server/video-providers/wan-transports';
-import { isWanPilotEnvironment } from '@/server/video-providers/router';
 import { reconcileWanPilotWalletStops } from '@/server/wan-pilot-refunds';
 import { authorizeCronRequest } from '@/server/vercel-cron';
 
@@ -33,10 +32,10 @@ async function triggerPoll(req: Request) {
   });
   if (!auth.ok) return unauthorized(auth.reason, req);
 
-  // Financial recovery runs independently of media polling, including when its preview flags are off.
-  const recovery = isWanPilotEnvironment() ? reconcileWanPilotWalletStops().then(result => {
+  // Financial recovery runs independently of media polling, including after new purchases have been switched off.
+  const recovery = reconcileWanPilotWalletStops().then(result => {
     if (result.errors) console.warn('[wan-purchase] refund reconciliation incomplete', result);
-  }).catch(() => console.warn('[wan-purchase] refund reconciliation unavailable')) : undefined;
+  }).catch(() => console.warn('[wan-purchase] refund reconciliation unavailable'));
   try {
     const additional = enabledWanPollProviders().filter(provider => provider !== 'alibaba_model_studio');
     if (!additional.length) return await runAlibabaModelStudioPoll();
