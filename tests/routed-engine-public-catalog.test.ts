@@ -38,6 +38,9 @@ for (const degraded of [false, true]) {
       assert.equal(engine.provider, canonical.provider, id);
       assert.deepEqual(engine.resolutions, canonical.resolutions, id);
       assert.ok(engine.modes.includes('t2v') && engine.inputSchema, id);
+      for (const availability of Object.values(engine.modeAvailability ?? {})) {
+        assert.equal(availability.reason, availability.available ? 'available' : 'unavailable', id);
+      }
       assert.doesNotMatch(JSON.stringify(engine), /"(pricing|pricingDetails|providerMeta|vendorAccountId|transport|endpoint)"|provider cost|platform margin|private-account/i, id);
     }
     for (const [id, operation] of [

@@ -40,6 +40,7 @@ for (const [name, lasEnabled, lasKey, available] of [
     const projected = result.engines[0];
     assert.deepEqual(projected.modes, modes);
     assert.equal(projected.modeAvailability?.v2v?.available, available);
+    assert.equal(projected.modeAvailability?.v2v?.reason, available ? 'available' : 'unavailable');
     for (const mode of ['t2v', 'i2v', 'ref2v', 'extend']) {
       assert.equal(projected.modeAvailability?.[mode]?.available, true, mode);
       assert.deepEqual(projected.modeCaps[mode].resolution, ['480p', '720p', '1080p', '4k']);

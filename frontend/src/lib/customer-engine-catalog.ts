@@ -23,7 +23,13 @@ export function customerEngineCatalogEntry(engine: EngineCaps): EngineCaps {
     timingCells: engine.timingCells,
     durationSource: engine.durationSource,
     modes: engine.modes,
-    modeAvailability: engine.modeAvailability,
+    modeAvailability: engine.modeAvailability && Object.fromEntries(
+      Object.entries(engine.modeAvailability).map(([mode, state]) => [mode, {
+        available: state.available,
+        reason: state.available ? 'available' : 'unavailable',
+        inheritsSourceVideo: state.inheritsSourceVideo,
+      }]),
+    ),
     modeCaps: engine.modeCaps,
     activeVideoOperation: engine.activeVideoOperation,
     operationCaps: engine.operationCaps && Object.fromEntries(
