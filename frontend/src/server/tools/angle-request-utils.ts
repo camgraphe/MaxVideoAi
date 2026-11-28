@@ -213,13 +213,13 @@ export function buildAngleFalInput(
 ) {
   const horizontalAngle = Math.round(normalizeRotation(params.rotation));
   const verticalAngle = Math.round(mapTiltForEngine(engine.id, params.tilt));
-  const zoomAmount = Number(params.zoom.toFixed(1));
+  const zoom = Number(params.zoom.toFixed(1));
 
   return {
     image_urls: [imageUrl],
     horizontal_angle: horizontalAngle,
     vertical_angle: verticalAngle,
-    zoom_amount: zoomAmount,
+    zoom,
     num_images: 1,
   };
 }
