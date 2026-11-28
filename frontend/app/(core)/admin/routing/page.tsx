@@ -1,4 +1,5 @@
 import { klingV4VideoRouterEnabled } from '@/server/video-providers/videorouter/kling-v4';
+import { minimaxH3VideoRouterEnabled } from '@/server/video-providers/videorouter/minimax-h3';
 import Link from 'next/link';
 import { AdminPageHeader } from '@/components/admin-system/shell/AdminPageHeader';
 import { requireAdmin } from '@/server/admin';
@@ -46,6 +47,8 @@ export default async function AdminVideoRoutingPage({ searchParams }: { searchPa
         ))}
         <span><strong>Kling V4</strong> · {klingV4VideoRouterEnabled()
           ? 'SandBase for three reference images · fal backup' : 'fal direct'}</span>
+        <span><strong>MiniMax H3</strong> · {minimaxH3VideoRouterEnabled()
+          ? 'WaveSpeed for the qualified two-image profile · Fal backup' : 'Fal direct'}</span>
       </div>
       <WanReplay requested={params.replay === 'wan-prime'} />
       <RoutingHistory jobs={jobs} />

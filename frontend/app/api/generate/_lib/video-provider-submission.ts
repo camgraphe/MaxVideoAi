@@ -10,7 +10,7 @@ import { submitLumaAgentsGenerateTask } from './luma-agents-submission';
 import type { FalInputSummary } from './fal-request';
 import type { PaymentMode, PendingReceipt } from './initial-video-job';
 import { createProviderJobTracker } from './provider-job-tracker';
-import { tryKlingV4VideoRouter } from './kling-v4-videorouter-submission';
+import { tryFalBackedVideoRouter } from './fal-backed-videorouter-submission';
 
 type LogMetricFn = Parameters<typeof submitFalGenerateTask>[0]['logMetricFn'];
 
@@ -277,8 +277,8 @@ export async function submitGenerateProviderTask(params: GenerateProviderSubmiss
     return { kind: 'accepted_response', body: googleSubmission.body };
   }
 
-  if (params.engineId === 'kling-v4' && params.providerRoutingPlan.kind === 'fal_only') {
-    const routed = await tryKlingV4VideoRouter(params, (onAccepted) => submitQueuedFal(params, onAccepted));
+  if (params.providerRoutingPlan.kind === 'fal_only') {
+    const routed = await tryFalBackedVideoRouter(params, (onAccepted) => submitQueuedFal(params, onAccepted));
     if (routed) return routed;
   }
   return submitQueuedFal(params);

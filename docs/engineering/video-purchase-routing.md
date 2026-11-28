@@ -155,10 +155,11 @@ The server checks the submitted options against these paid profiles. Wan uses Bo
 | Wan Prime | 480p 16:9 text, 2–5 s or exactly 15 s | $0.0406925 | Alibaba, then eligible fal |
 | Wan Prime | 720p 16:9 text or one reference image, 2–30 s | $0.081385 | Alibaba, then eligible fal |
 | Wan Standard | 480p 9:16, one reference image, 2–30 s | $0.0226525 | Alibaba, then eligible fal |
+| MiniMax H3 | 480p 21:9, 15 s, native audio, two ordered image references, Balanced | $0.041 | fal |
 | Kling V4 | SDR 720p 16:9 with three ordered reference images, 3–30 s | $0.13678625 | fal |
 
-The production switches are `WAN_PRIME_VIDEOROUTER_CANARY`, `WAN_STANDARD_VIDEOROUTER_CANARY` and `KLING_V4_VIDEOROUTER_CANARY`. Set each to `public` to admit its qualifying wallet purchases. Wan also requires the existing Alibaba route to admit the request. Clearing a switch stops new purchases on that path. Keep `VIDEOROUTER_API_KEY` valid to poll accepted jobs. Traffic continues without a trial clock or request quota.
+The production switches are `WAN_PRIME_VIDEOROUTER_CANARY`, `WAN_STANDARD_VIDEOROUTER_CANARY`, `KLING_V4_VIDEOROUTER_CANARY` and `MINIMAX_H3_VIDEOROUTER_CANARY`. Set each to `public` to admit its qualifying wallet purchases. Wan also requires the existing Alibaba route to admit the request. Clearing a switch stops new purchases on that path. Keep `VIDEOROUTER_API_KEY` valid to poll accepted jobs. Traffic continues without a trial clock or request quota.
 
 Each job gets one customer quote and wallet charge. A free supplier estimate must match the pinned host and request and stay within the qualified tariff, incumbent purchase cost and customer ceiling. Internal supplier fallback is disabled. An ambiguous acknowledgement goes to reconciliation. An accepted job stays with its owner through delivery to Media. Terminal failure and a wallet refund settle atomically. A delayed supplier charge can be reconciled from the existing job ID after delivery. Supplier costs and routing decisions are internal.
 
-MiniMax H3 with two image references remains an admin comparison. Its public duration range is 5–15 seconds. A supplier diagnostic requested four seconds and delivered 4.46 seconds. Equivalence with the public Balanced optimization setting still needs evidence on a sellable duration.
+MiniMax H3 maps Balanced (including its default) to WaveSpeed’s enabled prompt expansion. This is an approved approximation. The free estimate pins the WaveSpeed host and must fit $0.615 for the full 15-second clip. Direct Fal costs $0.75 for this profile and preserves the original Balanced setting on fallback. Other H3 durations, shapes, optimization levels, and H3 Max continue on their existing paths.
