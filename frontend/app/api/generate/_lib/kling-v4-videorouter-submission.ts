@@ -3,12 +3,13 @@ import { KLING_V4_ENDPOINTS } from '@/lib/kling-v4';
 import { nextPurchaseProvider, purchaseRoutingSnapshot } from '@/lib/video-purchase-decision';
 import type { withWalletFailureSettlement } from '@/server/fal-webhook-refunds';
 import { createOwnedMediaReadUrl } from '@/server/owned-media-read-access';
+import { ownedMediaStorageKeyForUrl } from '@/server/storage-read';
 import { createProviderAttempt, linkProviderFallbackAttempt, markProviderAttemptAccepted, markProviderAttemptFailed,
   ProviderAttemptAlreadyClaimed, syncProviderAttemptTerminalStatus } from '@/server/video-providers/provider-attempts';
 import { customerPurchaseCeiling } from '@/server/video-providers/purchase-router';
 import { createPinnedVideoRouterClient, VideoRouterSubmitError } from '@/server/video-providers/videorouter/client';
 import { stopKlingV4WalletPurchase } from '@/server/video-providers/videorouter/kling-v4-wallet-stop';
-import { KLING_V4_SANDBASE_MODEL, klingV4SandBasePlan, klingV4SandBaseReferences, klingV4SandBaseRequest } from '@/server/video-providers/videorouter/kling-v4';
+import { KLING_V4_SANDBASE_MODEL, klingV4VideoRouterEnabled, klingV4SandBasePlan, klingV4SandBaseReferences, klingV4SandBaseRequest } from '@/server/video-providers/videorouter/kling-v4';
 import { buildPersistedVideoJobResponse, type PersistedVideoJob } from './persisted-video-job';
 import { persistDirectProviderAcceptance } from './direct-provider-acceptance';
 import type { GenerateProviderSubmissionParams, GenerateProviderSubmissionResult } from './video-provider-submission';
@@ -72,10 +73,16 @@ Promise<GenerateProviderSubmissionResult | null> {
     !params.imageUrl && params.cfgScale == null && params.prompt === params.falPayload.prompt &&
     params.durationSec === params.falPayload.durationSec && params.effectiveResolution === '720p' && params.aspectRatio === '16:9';
   const images = matches ? klingV4SandBaseReferences(params.falPayload) : null;
-  if (!images || process.env.KLING_V4_VIDEOROUTER_CANARY !== 'public' || !process.env.VIDEOROUTER_API_KEY?.trim()) {
+  const verifiedFacts = images?.every(url => Boolean(ownedMediaStorageKeyForUrl({ url, userId }))) ? {
+    engineId: params.engineId, mode: params.mode, durationSec: params.durationSec, promptLength: params.prompt.trim().length,
+    resolution: params.effectiveResolution, aspectRatio: params.aspectRatio, referenceImageCount: images.length,
+    ownedReferenceImages: true, hasSeed: false, unreviewedOptions: false, audioEnabled: true,
+    hasStartImage: false, hasEndImage: false, referenceVideoCount: 0, referenceAudioCount: 0,
+  } : null;
+  if (!images || !verifiedFacts || !klingV4VideoRouterEnabled()) {
     // Every paid Kling V4 request claims the same first slot before dispatch, including native-only settings.
     const providerModel = KLING_V4_ENDPOINTS[params.mode as keyof typeof KLING_V4_ENDPOINTS];
-    const native = await claim({ attemptIndex: 1, provider: 'fal', providerModel });
+    const native = await claim({ attemptIndex: 1, provider: 'fal', providerModel, requestSnapshot: verifiedFacts });
     if (!native || !await bindProvider('fal')) return deferred(jobId);
     return sendFal(native.id);
   }
@@ -93,10 +100,7 @@ Promise<GenerateProviderSubmissionResult | null> {
     }
   }
   if (plan.order[0] !== 'videorouter') return stop('No compatible provider fits the purchase ceiling.', null, 'PURCHASE_CEILING', 'refused');
-  const requestSnapshot = { engineId: params.engineId, mode: params.mode, durationSec: params.durationSec,
-    resolution: params.effectiveResolution, aspectRatio: params.aspectRatio, referenceImageCount: images.length,
-    audioEnabled: true, hasStartImage: false, hasEndImage: false, referenceVideoCount: 0, referenceAudioCount: 0,
-    estimatedProviderCostUsd: plan.candidates[0].costMicros! / 1e6, purchaseRouting: snapshot };
+  const requestSnapshot = { ...verifiedFacts, estimatedProviderCostUsd: plan.candidates[0].costMicros! / 1e6, purchaseRouting: snapshot };
   const attempt = await claim({ attemptIndex: 1, provider: 'videorouter', providerModel: KLING_V4_SANDBASE_MODEL, requestSnapshot });
   if (!attempt || !await bindProvider('videorouter')) return deferred(jobId);
 

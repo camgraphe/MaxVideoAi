@@ -6,6 +6,10 @@ import type { VideoProviderKey } from '../types';
 import type { PinnedVideoRequest } from './client';
 
 export const KLING_V4_SANDBASE_MODEL = 'kuaishou/kling-v4.0/sandbase';
+export function klingV4VideoRouterEnabled() {
+  return process.env.KLING_V4_VIDEOROUTER_CANARY === 'public' && Boolean(process.env.VIDEOROUTER_API_KEY?.trim());
+}
+
 const reviewedFields = new Set(['engineId', 'mode', 'prompt', 'durationSec', 'durationOption', 'aspectRatio', 'resolution',
   'audio', 'inputs', 'referenceImages', 'idempotencyKey', 'jobId', 'localKey', 'submissionMode']);
 const referenceSlots = new Set(['image_urls', 'reference_image_urls', 'reference_images']);
@@ -13,7 +17,7 @@ const referenceSlots = new Set(['image_urls', 'reference_image_urls', 'reference
 export function klingV4SandBasePlan(durationSec: number, ceilingMicros: number) {
   const fal = klingV4PricingUsage({ mode: 'ref2v', resolution: '720p', durationSec, hasVideoInput: false });
   const baselineMicros = Math.round(fal.supplierExactCents * 10_000);
-  const publishedMicros = Math.ceil(133_500 * durationSec * 1025 / 1000);
+  const publishedMicros = Math.ceil(133_450 * durationSec * 1025 / 1000);
   const plan = rankQuotedOffers<VideoProviderKey>([
     { provider: 'videorouter', tariff: 'SandBase 720p with standard fee', costMicros: publishedMicros, excluded: null },
     { provider: 'fal', tariff: 'Fal Kling V4 SDR 720p, image references', costMicros: baselineMicros, excluded: null },

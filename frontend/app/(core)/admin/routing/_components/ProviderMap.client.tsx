@@ -13,13 +13,13 @@ export function ProviderMap({ routes }: { routes: InstalledRoute[] }) {
   const [configured, setConfigured] = useState(false);
   const [selected, setSelected] = useState<Selection | null>(null);
   const standby = new Map(routes.filter((r) => r.standbyReason).map((r) => [String(r.provider), r.standbyReason]));
-  const providers = [...new Set(routes.flatMap((r) => [r.provider, ...r.targets]))].sort((a, b) =>
+  const providers = [...new Set(routes.flatMap((r) => [...r.installedTargets, ...r.targets]))].sort((a, b) =>
     name(a).localeCompare(name(b), 'en'),
   );
   const height = Math.max(routes.length, providers.length, 1) * 66;
   const y = (index: number, count: number) => ((index + 0.5) * height) / count;
   const links = routes.flatMap((row, engineIndex) =>
-    (configured ? row.targets : [row.provider]).map((provider, rank) => ({
+    (configured ? row.targets : row.installedTargets).map((provider, rank) => ({
       engineIndex,
       engine: row.engineId,
       provider,
@@ -98,7 +98,7 @@ export function ProviderMap({ routes }: { routes: InstalledRoute[] }) {
             >
               <span className={s.port} />
               <strong>{row.label}</strong>
-              <small>{row.mode}</small>
+              <small>{[row.mode, row.profile].filter(Boolean).join(' · ')}</small>
             </button>
           );
         })}

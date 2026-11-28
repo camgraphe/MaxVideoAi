@@ -1,9 +1,8 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
-import { submitGenerateProviderTask, type GenerateProviderSubmissionParams } from '../frontend/app/api/generate/_lib/video-provider-submission';
+import type { GenerateProviderSubmissionParams } from '../frontend/app/api/generate/_lib/video-provider-submission';
 import { customerGenerationResponse } from '../frontend/app/api/generate/_lib/customer-generation-response';
-import { runAlibabaModelStudioPoll } from '../frontend/server/alibaba-model-studio-poll';
 import { reconcileKlingV4WalletStops } from '../frontend/src/server/video-providers/videorouter/kling-v4-wallet-stop';
 import { reconcileVideoRouterCosts } from '../frontend/src/server/video-providers/videorouter/settlement';
 import { createPinnedVideoRouterClient, VideoRouterSubmitError } from '../frontend/src/server/video-providers/videorouter/client';
@@ -13,7 +12,24 @@ import { ENV } from '../frontend/src/lib/env';
 import { klingV4SandBasePlan, klingV4SandBaseReferences } from '../frontend/src/server/video-providers/videorouter/kling-v4';
 import { createPaidGenerationTestSchema, startDisposablePostgres } from './helpers/disposable-postgres';
 
-const images = [1, 2, 3].map(n => 'https://fixture.example/' + n + '.jpg');
+const storageOrigin = 'https://kling-read-fixture.s3.us-east-1.amazonaws.com';
+const images = [1, 2, 3].map(n => storageOrigin + '/media-assets/fixture-user/' + n + '.jpg');
+const externalImage = 'https://external-fixture.example/media-assets/fixture-user/2.jpg';
+
+function assertReferenceTransport(urls: string[], originals: string[]) {
+  assert.equal(urls.length, originals.length);
+  originals.forEach((original, i) => {
+    if (original === externalImage) {
+      assert.equal(urls[i], original);
+      return;
+    }
+    const signed = new URL(urls[i]);
+    assert.equal(signed.origin + signed.pathname, original);
+    assert.equal(signed.searchParams.get('X-Amz-Expires'), '3600');
+    assert.ok(signed.searchParams.get('X-Amz-Signature'));
+  });
+}
+
 function request(jobId: string, totalCents = 70): GenerateProviderSubmissionParams {
   const prompt = 'Use the ordered reference images in a three-second shot.';
   const inputs = images.map((url, i) => ({ name: i + '.jpg', type: 'image/jpeg', size: 5000, kind: 'image' as const,
@@ -35,7 +51,7 @@ function request(jobId: string, totalCents = 70): GenerateProviderSubmissionPara
 }
 
 test('Kling profiles preserve original requests and admit only the reviewed contract', async () => {
-  assert.equal(klingV4SandBasePlan(30, 50_000_000).candidates[0].costMicros, 4_105_125);
+  assert.equal(klingV4SandBasePlan(30, 50_000_000).candidates[0].costMicros, 4_103_588);
   assert.equal(klingV4SandBasePlan(30, 50_000_000).baselineMicros, 4_710_000);
   const valid = request('fixture').falPayload;
   assert.deepEqual(klingV4SandBaseReferences(valid), images);
@@ -74,11 +90,16 @@ test('Kling price preflight checks the quoted host, each requested dimension and
 
 test('Kling wallet purchases reconcile SandBase, direct Fal fallback receipts and ambiguous submissions', async t => {
   const pg = await startDisposablePostgres('kling-v4-videorouter');
-  const env = { DATABASE_URL: pg.databaseUrl, KLING_V4_VIDEOROUTER_CANARY: 'public', VIDEOROUTER_API_KEY: 'offline' };
+  const env = { DATABASE_URL: pg.databaseUrl, KLING_V4_VIDEOROUTER_CANARY: 'public', VIDEOROUTER_API_KEY: 'offline',
+    S3_BUCKET: 'kling-read-fixture', S3_REGION: 'us-east-1', S3_PUBLIC_BASE_URL: storageOrigin,
+    S3_ACCESS_KEY_ID: 'fixture-access', S3_SECRET_ACCESS_KEY: 'fixture-secret' };
   const previous = Object.fromEntries(Object.keys(env).map(key => [key, process.env[key]]));
   const previousFal = ENV.FAL_API_KEY;
   Object.assign(process.env, env);
   ENV.FAL_API_KEY = 'offline';
+  // Storage reads configuration on import. Use the real local signer with synthetic credentials.
+  const { submitGenerateProviderTask } = await import('../frontend/app/api/generate/_lib/video-provider-submission');
+  const { runAlibabaModelStudioPoll } = await import('../frontend/server/alibaba-model-studio-poll');
   t.after(async () => {
     await getDb().end();
     ENV.FAL_API_KEY = previousFal;
@@ -90,11 +111,17 @@ test('Kling wallet purchases reconcile SandBase, direct Fal fallback receipts an
   await createPaidGenerationTestSchema(pg.pool);
   await pg.pool.query(readFileSync('neon/migrations/21_provider_attempts.sql', 'utf8'));
   await pg.pool.query('CREATE TABLE fal_queue_log(job_id text,provider text,provider_job_id text,engine_id text,status text,payload jsonb)');
-  for (const scenario of ['success', 'quota', 'timeout', 'invalid', 'budget', 'estimate', 'over-budget-fallback', 'flag-off', 'other-settings', 'refund-outage', 'budget-outage']) {
+  for (const scenario of ['success', 'quota', 'timeout', 'invalid', 'budget', 'estimate', 'over-budget-fallback', 'flag-off', 'other-settings', 'external-image', 'refund-outage', 'budget-outage']) {
     await t.test(scenario, async sub => {
       const budget = scenario === 'budget' || scenario === 'budget-outage';
       const refundOutage = scenario.endsWith('-outage');
       const params = request(scenario, budget ? 35 : scenario === 'over-budget-fallback' ? 42 : 70);
+      const nativeOnly = ['other-settings', 'flag-off', 'external-image'].includes(scenario);
+      if (scenario === 'external-image') {
+        // Same user-looking prefix, slot and asset ID, but a different host.
+        params.falPayload.inputs![1].url = externalImage;
+        params.falPayload.referenceImages![1] = externalImage;
+      }
       if (scenario === 'other-settings') {
         // This valid setting is native-only. Direct Fal must receive the exact original shape.
         params.falPayload.resolution = '1080p';
@@ -121,7 +148,7 @@ test('Kling wallet purchases reconcile SandBase, direct Fal fallback receipts an
         if (url.hostname === 'queue.fal.run') {
           falPosts++;
           assert.equal(url.pathname, '/kling/v4/reference-to-video');
-          assert.deepEqual(body.image_urls, images);
+          assertReferenceTransport(body.image_urls, original.referenceImages!);
           assert.equal(body.resolution, params.effectiveResolution);
           assert.equal(body.aspect_ratio, params.aspectRatio);
           const id = 'fal-fixture';
@@ -132,7 +159,7 @@ test('Kling wallet purchases reconcile SandBase, direct Fal fallback receipts an
         assert.deepEqual(body.provider, { only: ['sandbase'], allow_fallbacks: false });
         assert.equal(body.strict_duration, true);
         assert.equal(body.generate_audio, undefined);
-        assert.deepEqual(body.input_references.map((item: {image_url: {url:string}}) => item.image_url.url), images);
+        assertReferenceTransport(body.input_references.map((item: {image_url: {url:string}}) => item.image_url.url), images);
         if (url.pathname === '/v1/pricing/estimate') {
           quotes++;
           return Response.json({ object: 'pricing.estimate', type: 'video', model: 'sandbase/kling-v4.0', currency: 'USD',
@@ -148,9 +175,9 @@ test('Kling wallet purchases reconcile SandBase, direct Fal fallback receipts an
       });
       const [response] = await Promise.all([submitGenerateProviderTask(params), submitGenerateProviderTask(params)]);
       assert.deepEqual(params.falPayload, original);
-      assert.equal(quotes, (budget || ['flag-off', 'other-settings'].includes(scenario)) ? 0 : 1);
-      assert.equal(routerPosts, (budget || ['estimate', 'flag-off', 'other-settings'].includes(scenario)) ? 0 : 1);
-      assert.equal(falPosts, ['quota', 'estimate', 'flag-off', 'other-settings'].includes(scenario) ? 1 : 0);
+      assert.equal(quotes, (budget || nativeOnly) ? 0 : 1);
+      assert.equal(routerPosts, (budget || scenario === 'estimate' || nativeOnly) ? 0 : 1);
+      assert.equal(falPosts, (nativeOnly || ['quota', 'estimate'].includes(scenario)) ? 1 : 0);
       if (refundOutage) {
         const held = (await pg.pool.query('SELECT * FROM app_jobs WHERE job_id=$1', [scenario])).rows[0];
         assert.equal(held.status, 'provider_polling_stalled');
@@ -183,7 +210,12 @@ test('Kling wallet purchases reconcile SandBase, direct Fal fallback receipts an
         assert.equal(job.provider, 'videorouter');
         assert.equal(job.provider_job_id, 'sandbase:opaque-id');
         assert.equal(attempts[0].status, 'accepted');
-        assert.equal(attempts[0].request_snapshot.purchaseRouting.baselineProvider, 'fal');
+        const snapshot = attempts[0].request_snapshot;
+        assert.equal(snapshot.purchaseRouting.baselineProvider, 'fal');
+        assert.equal(snapshot.ownedReferenceImages, true);
+        assert.equal(snapshot.hasSeed, false);
+        assert.equal(snapshot.unreviewedOptions, false);
+        assert.doesNotMatch(JSON.stringify(snapshot), /X-Amz-|fixture-user/);
         await pg.pool.query("UPDATE app_jobs SET updated_at=NOW()-INTERVAL '2 minutes' WHERE job_id=$1", [scenario]);
         let reads = 0;
         const readTask = createPinnedVideoRouterClient('offline', async (input, init) => {
@@ -223,7 +255,13 @@ test('Kling wallet purchases reconcile SandBase, direct Fal fallback receipts an
       if (falPosts) {
         assert.equal(job.provider, 'fal');
         assert.equal(job.provider_job_id, 'fal-fixture');
-        if (scenario === 'flag-off' || scenario === 'other-settings') {
+        if (nativeOnly) {
+          assert.deepEqual(attempts.map(a => a.provider), ['fal']);
+          if (scenario === 'flag-off') {
+            assert.equal(attempts[0].request_snapshot.ownedReferenceImages, true);
+            assert.equal(attempts[0].request_snapshot.hasSeed, false);
+            assert.equal(attempts[0].request_snapshot.unreviewedOptions, false);
+          } else assert.equal(attempts[0].request_snapshot, null);
           process.env.KLING_V4_VIDEOROUTER_CANARY = 'public';
           await submitGenerateProviderTask(params);
           assert.equal(quotes, 0);

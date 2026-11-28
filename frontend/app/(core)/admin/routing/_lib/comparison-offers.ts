@@ -11,13 +11,16 @@ const catalogueCards: readonly CatalogueCard[] = [waveSpeedWan, apimartH3, video
 
 function baselineOffers(request: ComparisonRequest) {
   if (request.engineId === 'kling-v4') {
-    if (request.mode !== 'ref2v' || request.images !== 3 || !request.ownedReferenceImages ||
+    if (request.mode !== 'ref2v' || request.images !== 3 ||
         request.resolution !== '720p' || request.aspectRatio !== '16:9' || request.hasStartFrame || request.hasEndFrame ||
-        request.hasVideo || request.hasAudioReference || request.hasDocument || request.hasSeed !== false ||
+        request.hasVideo || request.hasAudioReference || request.hasDocument || request.hasSeed === true ||
         request.audioEnabled === false || request.requiresDirectControls || request.hasUnpricedOptions ||
         !Number.isInteger(request.durationSec) || request.durationSec < 3 || request.durationSec > 30) return null;
     const plan = klingV4SandBasePlan(request.durationSec, Number.MAX_SAFE_INTEGER);
-    return { strategy: 'lowest-cost' as const, baselineMicros: plan.baselineMicros, candidates: plan.candidates };
+    // Fal's rate for this image-only profile is independent of image ownership and seed.
+    const candidates = request.ownedReferenceImages === true && request.hasSeed === false
+      ? plan.candidates : plan.candidates.filter(candidate => candidate.provider === 'fal');
+    return { strategy: 'lowest-cost' as const, baselineMicros: plan.baselineMicros, candidates };
   }
   if (request.engineId !== 'minimax-h3-max') return quoteVideoPurchase(request, 'comparison');
   const baseline = h3MaxFalQuote(request);

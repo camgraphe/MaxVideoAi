@@ -65,7 +65,7 @@ function videoRouterOffer(request: PurchaseRequest): PurchaseCandidate {
   const profile = findBotSmartProfile(request);
   if (!profile) throw new Error('Missing reviewed BotSmart profile');
   return { provider: 'videorouter', tariff: 'BotSmart ' + request.resolution + ' incl. standard fee',
-    excluded: null, costMicros: profile.costMicros, pilotOnly: true,
+    excluded: null, costMicros: profile.costMicros,
     sourceUrl: 'https://videorouter.sh/video/' + profile.model };
 }
 

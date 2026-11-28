@@ -1,3 +1,4 @@
+import { klingV4VideoRouterEnabled } from '@/server/video-providers/videorouter/kling-v4';
 import Link from 'next/link';
 import { AdminPageHeader } from '@/components/admin-system/shell/AdminPageHeader';
 import { requireAdmin } from '@/server/admin';
@@ -43,7 +44,7 @@ export default async function AdminVideoRoutingPage({ searchParams }: { searchPa
         {([['wan-3', 'Wan Standard'], ['wan-3-prime', 'Wan Prime']] as const).map(([engine, label]) => (
           <span key={engine}><strong>{label}</strong> · {pilotLabels[configuredWanPurchaseCanary(engine) ?? 'shadow']}</span>
         ))}
-        <span><strong>Kling V4</strong> · {process.env.KLING_V4_VIDEOROUTER_CANARY === 'public' && process.env.VIDEOROUTER_API_KEY?.trim()
+        <span><strong>Kling V4</strong> · {klingV4VideoRouterEnabled()
           ? 'SandBase for three reference images · fal backup' : 'fal direct'}</span>
       </div>
       <WanReplay requested={params.replay === 'wan-prime'} />
