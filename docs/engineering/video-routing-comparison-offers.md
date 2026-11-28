@@ -20,3 +20,18 @@ The APIMart Gold quote uses the USD equivalent of the published credits. H3 supp
 [APIMart H3](https://apimart.ai/model/minimax-h3) · [APIMart H3 Max](https://apimart.ai/model/minimax-h3-max) · [Fal H3 text](https://fal.ai/models/minimax/h3/text-to-video) · [Fal H3 references](https://fal.ai/models/minimax/h3/reference-to-video) · [Fal H3 Max text](https://fal.ai/models/minimax/h3-max/text-to-video) · [Fal H3 Max frames](https://fal.ai/models/minimax/h3-max/image-to-video).
 
 Fal exposes several prompt expansion modes. The APIMart comparison requires evidence that Fal prompt expansion was disabled. The H3 simulator profiles with a Gold quote make this assumption explicit. [Fal H3 image input schema](https://fal.ai/models/minimax/h3/image-to-video/api) · [APIMart H3 generation schema](https://docs.apimart.ai/en/api-reference/videos/minimax-h3/generation) · [APIMart H3 Max generation schema](https://docs.apimart.ai/en/api-reference/videos/minimax-h3/max).
+
+## VideoRouter quote pilot
+
+Run `node scripts/videorouter-estimates.mjs` to preview four synthetic requests offline. Run `node scripts/videorouter-estimates.mjs --estimate` with `VIDEOROUTER_API_KEY` in the local environment to ask for four free quotes. The only network operation in the script is a POST to VideoRouter's pricing estimate endpoint. The script pins the host, disables provider fallback, requires the exact duration and uses public MaxVideoAI demo stills for image references. The JSON keeps the published calculation and the authenticated response separate.
+
+| Model and host | Request | Published estimate in USD |
+| --- | --- | ---: |
+| Wan 3 Prime · BotSmart | Text, native audio, 15 s, 480p, 16:9 | 0.61039 |
+| Wan 3 Standard · BotSmart | One reference image, native audio, 30 s, 480p, 9:16 | 0.67958 |
+| Kling V4 · SandBase | Three reference images, 30 s, 720p, 16:9 | 4.10513 |
+| MiniMax H3 · Atlas Cloud | Two reference images, 15 s, 480p, 21:9 | 0.58425 |
+
+Published rates were checked on 2026-11-28. These estimates include the 2.5% service fee. The Wan cases explicitly request prompt expansion. The Kling case uses native audio behavior. The H3 case requests the available expansion switch. Confirm that the host preserves Fal's balanced expansion and returns the requested framing before qualifying H3. A quote measures the purchase price offered for a request. Delivery time, media parity and actual billed cost need a separate generation test.
+
+[Pricing estimate](https://videorouter.sh/docs/api-reference) · [Pinned video requests](https://videorouter.sh/docs/video-generation) · [Wan Prime](https://videorouter.sh/video/alibaba/wan-3.0-prime/botsmart) · [Wan Standard](https://videorouter.sh/video/alibaba/wan-3.0/botsmart) · [Kling V4](https://videorouter.sh/video/kuaishou/kling-v4.0/sandbase) · [H3](https://videorouter.sh/video/minimax/h3/atlas-cloud)
