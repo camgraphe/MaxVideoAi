@@ -59,11 +59,13 @@ export function routingScenarios(): RoutingScenario[] {
     scenario('botSmart-short', 'Two-second text pilot · BotSmart', {
       ...wan, durationSec: 2, hasSeed: false, promptExpansionEnabled: true,
     }),
+    scenario('botsmart-720-text', '720p text · BotSmart', { ...wan, resolution: '720p', durationSec: 30, hasSeed: false, promptExpansionEnabled: true }),
     scenario('reference', 'One reference image', {
       ...wan,
       mode: 'ref2v',
       durationSec: 4,
       resolution: '720p',
+      hasSeed: false, promptExpansionEnabled: true, ownedReferenceImages: true,
       images: 1,
     }),
     scenario('start-frame', 'Start image', { ...wan, mode: 'i2v', images: 1, hasStartFrame: true }),
@@ -90,6 +92,7 @@ export function routingScenarios(): RoutingScenario[] {
     }),
     scenario('standard-reference', 'One reference image · list prices', {
       ...wan, engineId: 'wan-3', mode: 'ref2v', images: 1, durationSec: 30, aspectRatio: '9:16',
+      hasSeed: false, promptExpansionEnabled: true, ownedReferenceImages: true,
     }),
     scenario('standard-image', 'Start image · list prices', {
       ...wan, engineId: 'wan-3', mode: 'i2v', images: 1, hasStartFrame: true, durationSec: 5,
@@ -99,6 +102,10 @@ export function routingScenarios(): RoutingScenario[] {
     scenario('standard-source', 'Five-second source video', {
       ...wan, engineId: 'wan-3', mode: 'ref2v', durationSec: 5, resolution: '720p',
       hasVideo: true, inputVideoSeconds: 5, referenceVideoSeconds: [5],
+    }),
+    scenario('h3-balanced-wavespeed', 'Two references · balanced expansion · WaveSpeed comparison', {
+      ...wan, engineId: 'minimax-h3', mode: 'ref2v', images: 2, resolution: '480p', durationSec: 15,
+      aspectRatio: '21:9', h3PromptExpansion: 'balanced', audioEnabled: undefined, hasSeed: false,
     }),
     scenario('h3-2k', '2K text to video', {
       ...wan, engineId: 'minimax-h3', resolution: '2K', durationSec: 5, aspectRatio: '21:9', promptCharacters: 120, h3PromptExpansion: 'disabled',
@@ -134,6 +141,10 @@ export function routingScenarios(): RoutingScenario[] {
       durationSec: 10,
       images: 2,
       aspectRatio: '1:1',
+    }),
+    scenario('kling-v4-sandbase', 'Three reference images · SandBase', {
+      ...wan, engineId: 'kling-v4', mode: 'ref2v', images: 3, resolution: '720p', durationSec: 30,
+      aspectRatio: '16:9', hasSeed: false, ownedReferenceImages: true,
     }),
     scenario('kling-text', 'Text to video', kling),
     scenario('kling-image', 'Start image', { ...kling, mode: 'i2v', images: 1, audioEnabled: false }),

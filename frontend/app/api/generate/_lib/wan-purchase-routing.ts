@@ -13,7 +13,7 @@ export function buildWanPurchaseDecision(
   request: WanRequestFacts
 ) {
   const ceiling = params.engineId === 'wan-3-prime' ? process.env.WAN_PRIME_PURCHASE_CEILING_USD
-    : params.purchaseCanary === 'alibaba-fal' ? process.env.WAN_STANDARD_PURCHASE_CEILING_USD : undefined;
+    : params.engineId === 'wan-3' && params.purchaseCanary ? process.env.WAN_STANDARD_PURCHASE_CEILING_USD : undefined;
   const configured = ceiling?.trim();
   const serverCap = configured ? Math.floor(Number(configured) * 1e6) : Number.MAX_SAFE_INTEGER;
   const cap = Math.min(serverCap, customerPurchaseCeiling(params.pricing));

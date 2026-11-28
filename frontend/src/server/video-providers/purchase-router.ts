@@ -7,9 +7,8 @@ import {
 } from '@/lib/video-purchase-decision';
 import type { VideoProviderKey } from './types';
 import type { PurchaseRequest, PurchaseOffer } from './purchase/types';
-import { isReviewedWanPilotRequest, WAN_OFFERS } from './purchase/wan';
-import { eligibleVideoRouterCanary } from './purchase/wan';
-import { botSmartCostMicros } from './videorouter/wan-prime';
+import { eligibleVideoRouterCanary, isReviewedWanPilotRequest, WAN_OFFERS } from './purchase/wan';
+import { findBotSmartProfile } from './videorouter/wan-profiles';
 import type { WanPurchaseCanary } from './router';
 import { H3_FAL_OFFER, SEEDANCE_25_BYTEPLUS_OFFER } from './purchase/h3-seedance';
 import { KLING_PRO_OFFERS } from './purchase/kling-pro';
@@ -63,9 +62,11 @@ export function rankPurchaseOffers(
 
 /** Retain raw capability/price facts so the simulator can reapply availability, budget and ordering. */
 function videoRouterOffer(request: PurchaseRequest): PurchaseCandidate {
-  return { provider: 'videorouter', tariff: 'BotSmart Wan Prime 480p incl. standard fee',
-    excluded: null, costMicros: botSmartCostMicros(request.durationSec), pilotOnly: true,
-    sourceUrl: 'https://videorouter.sh/video/alibaba/wan-3.0-prime/botsmart' };
+  const profile = findBotSmartProfile(request);
+  if (!profile) throw new Error('Missing reviewed BotSmart profile');
+  return { provider: 'videorouter', tariff: 'BotSmart ' + request.resolution + ' incl. standard fee',
+    excluded: null, costMicros: profile.costMicros, pilotOnly: true,
+    sourceUrl: 'https://videorouter.sh/video/' + profile.model };
 }
 
 export function quoteVideoPurchase(request: PurchaseRequest, purpose: 'routing' | 'comparison' = 'routing') {
@@ -125,7 +126,7 @@ export function planWanPurchase(
     }
   }
   const plan = selectPurchasePlan(quote, { ...limits, unavailable });
-  const permitted = request.engineId === 'wan-3-prime' || (request.engineId === 'wan-3' && installedOnly);
+  const permitted = request.engineId === 'wan-3-prime' || (request.engineId === 'wan-3' && (installedOnly || pilot === 'with-videorouter'));
   return { ...plan, canaryEligible: permitted && (pilot === 'with-videorouter' ? eligibleVideoRouterCanary(request) : isReviewedWanPilotRequest(request)) };
 }
 

@@ -251,6 +251,9 @@ export function mapGenerationStatusRecordToWeb(
         message: record.message,
       }) ?? record.message
     : record.message;
+  const observation: GenerationObservation = overrides.observation ?? {
+    stage: generationStage(override('status', record.status ?? undefined), Boolean((record.settings_snapshot as { providerVideoCopy?: unknown } | null)?.providerVideoCopy)),
+  };
   return {
     ok: true,
     jobId: record.job_id,
@@ -259,7 +262,10 @@ export function mapGenerationStatusRecordToWeb(
     createdAt: record.created_at,
     status: override('status', record.status ?? undefined),
     progress: override('progress', record.progress ?? undefined),
-    observation: overrides.observation ?? { stage: generationStage(override('status', record.status ?? undefined), Boolean((record.settings_snapshot as { providerVideoCopy?: unknown } | null)?.providerVideoCopy)) },
+    observation: routed && observation.providerPercent ? {
+      ...observation,
+      providerPercent: { value: observation.providerPercent.value, source: observation.providerPercent.source },
+    } : observation,
     videoUrl: normalizeMediaUrl(override('videoUrl', record.video_url)) ?? undefined,
     outputPreparationState: generatedImageOutputPreparationState(record.provider, override('status', record.status ?? undefined))
       ?? generatedVideoOutputPreparationState(record.settings_snapshot, override('videoUrl', record.video_url), record.provider_job_id, override('status', record.status ?? undefined)),

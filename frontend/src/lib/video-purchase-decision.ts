@@ -1,7 +1,7 @@
 import type { VideoProviderKey } from '../server/video-providers/types';
 
 export const PURCHASE_ROUTING_ENGINE_IDS = [
-  'wan-3', 'wan-3-prime', 'minimax-h3', 'minimax-h3-max', 'seedance-2-5', 'kling-3-pro', 'kling-o3-pro',
+  'wan-3', 'wan-3-prime', 'minimax-h3', 'minimax-h3-max', 'seedance-2-5', 'kling-3-pro', 'kling-o3-pro', 'kling-v4',
 ] as const;
 export type PurchaseRoutingEngineId = (typeof PURCHASE_ROUTING_ENGINE_IDS)[number];
 const purchaseRoutingEngines = new Set<string>(PURCHASE_ROUTING_ENGINE_IDS);
@@ -11,8 +11,9 @@ export function isPurchaseRoutingEngine(engineId: unknown): engineId is Purchase
 }
 
 export const PROVIDER_LABELS = {
-  videorouter: 'VideoRouter · BotSmart',
+  videorouter: 'VideoRouter',
   wavespeed: 'WaveSpeedAI',
+  videorouter_wavespeed: 'VideoRouter · WaveSpeed',
   apimart: 'APIMart Gold',
   alibaba_model_studio: 'Alibaba Model Studio',
   fal: 'Fal',
