@@ -86,12 +86,19 @@ test('each connector shows its own screenshot and first action before the detail
       assert.equal(setup.querySelectorAll('li').length, 3);
       assert.ok(setup.compareDocumentPosition(prompt) & 4);
       assert.ok(prompt.compareDocumentPosition(advanced) & 4);
+      if (client === 'n8n') {
+        const fallback = document.querySelector('header picture img')!.getAttribute('src')!;
+        assert.equal([...document.querySelectorAll('link[rel="preload"]')].some(link => link.getAttribute('href') === fallback), false);
+      }
       if (client === 'chatgpt') {
+        assert.equal(document.querySelector('header figure img')?.getAttribute('fetchpriority'), 'high');
         const video = document.querySelector<HTMLVideoElement>('#real-result video')!;
         assert.equal(video.getAttribute('preload'), 'none');
         assert.ok(video.hasAttribute('controls'));
         assert.equal(video.hasAttribute('autoplay'), false);
-        assert.match(video.querySelector('source')!.getAttribute('src')!, /atelier-chatgpt-window\.mp4$/);
+        assert.equal(video.hasAttribute('data-deferred-poster'), true);
+        assert.equal(video.hasAttribute('poster'), false);
+        assert.match(video.getAttribute('src')!, /atelier-chatgpt-window\.mp4$/);
         assert.equal(video.querySelector('track')?.getAttribute('kind'), 'captions');
       }
     }

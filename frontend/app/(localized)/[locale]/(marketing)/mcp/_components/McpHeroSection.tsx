@@ -1,4 +1,4 @@
-import Image from 'next/image';
+import Image, { getImageProps } from 'next/image';
 import Link from 'next/link';
 import { ArrowDown, ArrowUpRight } from 'lucide-react';
 import type { AppLocale } from '@/i18n/locales';
@@ -20,9 +20,15 @@ export function McpHeroSection({ locale, publication, copy }: {
   const live = publication.connectionAvailable && publication.showPaidGenerationClaim;
   const nextPath = locale === 'en' ? '/mcp' : `/${locale}/mcp`;
   const screenshot = '/media/mcp/hub-redesign/maya-chatgpt.webp';
+  const image = {
+    src: screenshot, alt: labels.alt, width: 2048, height: 1050,
+    sizes: '(min-width: 1280px) 600px, (min-width: 700px) 46vw, 94vw',
+  };
+  const { srcSet, sizes } = getImageProps(image).props;
 
   return (
     <header className="hub-opening">
+      {live && <link rel="preload" as="image" media="(min-width: 700px)" imageSrcSet={srcSet} imageSizes={sizes} fetchPriority="high" />}
       <div className="container-page hub-opening-grid">
         <div className="hub-arrival">
           <h1>{labels.brandFirst ? <>MaxVideoAI <span>{labels.title}</span></> : <><span>{labels.title}</span> MaxVideoAI</>}</h1>
@@ -41,7 +47,7 @@ export function McpHeroSection({ locale, publication, copy }: {
         {live && <figure className="hub-screenshot">
           <div className="hub-screenshot-label"><McpIntegrationMark integration="chatgpt" size={20} className="h-5 w-5"/>{labels.inside}</div>
           <a href={screenshot} aria-label={labels.capture}>
-            <Image src={screenshot} alt={labels.alt} width={2048} height={1050} sizes="(min-width: 1280px) 600px, (min-width: 700px) 46vw, 94vw" priority />
+            <Image {...image} alt={labels.alt} loading="lazy" />
           </a>
           <figcaption><span>{labels.caption}</span><a href={screenshot}>{labels.capture} ↗</a></figcaption>
         </figure>}

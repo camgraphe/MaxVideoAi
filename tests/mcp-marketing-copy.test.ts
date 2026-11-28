@@ -33,7 +33,11 @@ test('the hub puts the installation, account and six localized guides ahead of c
   assert.ok(hero.querySelector('a[href="/billing"]'));
   assert.equal(hero.querySelectorAll('#integrations .hub-tile').length, 6);
   assert.equal(hero.querySelector('[data-client="glama"]')?.getAttribute('href'), `${prefix}/${locale === 'es' ? 'integraciones' : 'integrations'}/glama`);
-  assert.ok(hero.querySelector('img[alt*="Maya"]'));
+  const maya = hero.querySelector('img[alt*="Maya"]');
+  assert.equal(maya?.getAttribute('loading'), 'lazy');
+  const desktopPreload = doc.querySelector('link[rel="preload"][media="(min-width: 700px)"]');
+  assert.equal(desktopPreload?.getAttribute('imagesrcset'), maya?.getAttribute('srcset'));
+  assert.equal(desktopPreload?.getAttribute('imagesizes'), maya?.getAttribute('sizes'));
   assert.equal(doc.querySelectorAll('.hub-example').length, 4);
   assert.equal(doc.querySelector('.hub-example video, .hub-example audio'), null);
   const gallery = doc.querySelector('.hub-gallery')!;

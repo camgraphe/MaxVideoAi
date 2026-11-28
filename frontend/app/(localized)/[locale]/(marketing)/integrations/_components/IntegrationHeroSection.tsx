@@ -36,7 +36,7 @@ export function IntegrationHeroSection({ copy, publication, locale, host }: {
       <div className="guide-opening-grid">
         <div className="guide-intro">
           <div className="guide-identity">{host === 'codex'
-            ? <Image src={`${guideMediaPath}/codex.png`} width={36} height={36} alt="" />
+            ? <Image src={`${guideMediaPath}/codex.png`} width={36} height={36} alt="" aria-hidden="true" />
             : <McpIntegrationMark integration={host} size={36} className="h-9 w-9" />}
             <span>{text.kind}</span></div>
           <h1>{copy.hero.title}</h1>
@@ -54,8 +54,8 @@ export function IntegrationHeroSection({ copy, publication, locale, host }: {
           <a href={`${guideMediaPath}/${capture.image}`}>
             {host === 'n8n'
               ? <picture><source media="(max-width: 640px)" srcSet={`${guideMediaPath}/n8n-template-canvas-mobile.webp`} width={907} height={478}/>
-                <Image src={`${guideMediaPath}/${capture.image}`} width={capture.width} height={capture.height} alt={text.caption} priority unoptimized /></picture>
-              : <Image src={`${guideMediaPath}/${capture.image}`} width={capture.width} height={capture.height} alt={text.caption} priority sizes="(min-width: 1280px) 680px, (min-width: 851px) 54vw, 92vw"/>}
+                <Image src={`${guideMediaPath}/${capture.image}`} width={capture.width} height={capture.height} alt={text.caption} loading="eager" unoptimized /></picture>
+              : <Image src={`${guideMediaPath}/${capture.image}`} width={capture.width} height={capture.height} alt={text.caption} priority fetchPriority={host === 'chatgpt' ? 'high' : undefined} sizes="(min-width: 1280px) 680px, (min-width: 851px) 54vw, 92vw"/>}
           </a>
           <figcaption><span>{text.caption}</span><a href={`${guideMediaPath}/${capture.image}`}>{label.enlarge} ↗</a></figcaption>
         </figure>

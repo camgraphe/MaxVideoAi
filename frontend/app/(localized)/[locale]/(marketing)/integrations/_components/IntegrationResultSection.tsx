@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import { PublicVideoPlayer } from '@/components/media/PublicVideoPlayer.client';
 import type { AppLocale } from '@/i18n/locales';
 import { localizePathFromEnglish } from '@/lib/i18n/paths';
 import { McpHostProofCard } from '../../mcp/_components/McpHostProofCard';
@@ -23,10 +24,11 @@ export function IntegrationResultSection({ host, locale, proof }: {host: GuideHo
         <a className="guide-text-link" href={href}>{text.proofLink} ↗</a>
         <div className="guide-resources"><a href={localizePathFromEnglish(locale,'/examples')}>{label.examples}</a><a href={localizePathFromEnglish(locale,'/ai-video-engines')}>{label.compare}</a></div>
       </div>
-      {host === 'chatgpt' ? <video controls playsInline preload="none" width={1804} height={1022} poster={`${guideMediaPath}/atelier-chatgpt-window-poster.webp`} aria-label={text.proofTitle}>
-        <source src={`${guideMediaPath}/atelier-chatgpt-window.mp4`} type="video/mp4"/>
-        <track kind="captions" src={`${guideMediaPath}/atelier.vtt`} label="English" srcLang="en"/>
-      </video> : host === 'claude' && proof ? <McpHostProofCard proof={proof}/> : asset && <a className="guide-result-image" href={`${guideMediaPath}/${asset.image}`}>
+      {host === 'chatgpt' ? <div className="guide-chatgpt-recording">
+        <PublicVideoPlayer src={`${guideMediaPath}/atelier-chatgpt-window.mp4`} poster={`${guideMediaPath}/atelier-chatgpt-window-poster.webp`} title={text.proofTitle} locale={locale} deferPoster>
+          <track kind="captions" src={`${guideMediaPath}/atelier.vtt`} label="English" srcLang="en"/>
+        </PublicVideoPlayer>
+      </div> : host === 'claude' && proof ? <McpHostProofCard proof={proof}/> : asset && <a className="guide-result-image" href={`${guideMediaPath}/${asset.image}`}>
         <Image src={`${guideMediaPath}/${asset.image}`} width={asset.width} height={asset.height} sizes="(min-width: 900px) 55vw, 92vw" loading="lazy" alt={text.proofBody}/>
       </a>}
     </div>

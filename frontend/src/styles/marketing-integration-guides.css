@@ -42,8 +42,10 @@
 .mcp-guide .guide-prompt-card, .mcp-guide .guide-inspector { background: #fffefa; border: 1px solid var(--mcp-line); border-radius: 16px; padding: clamp(18px,3vw,36px); }
 .mcp-guide .guide-prompt-card blockquote { font-size: clamp(21px,2.2vw,34px); line-height: 1.25; letter-spacing: -.035em; margin: 16px 0 20px; }
 .mcp-guide .guide-prompt-card :is(strong,code) { display: block; color: var(--mcp-accent); }
-.mcp-guide .guide-result video, .mcp-guide .guide-result-image { width: 100%; display: block; height: auto; border: 1px solid var(--mcp-line); border-radius: 13px; overflow: hidden; background: #eae7e1; }
-.mcp-guide .guide-result-image { padding: 10px; }
+.mcp-guide .guide-result video, .mcp-guide .guide-result-image { width: 100%; height: auto; border: 1px solid var(--mcp-line); border-radius: 13px; overflow: hidden; background: #eae7e1; }
+.mcp-guide .guide-chatgpt-recording { position: relative; }
+.mcp-guide .guide-chatgpt-recording video { aspect-ratio: 1804 / 1022; }
+.mcp-guide .guide-result-image { display: block; padding: 10px; }
 .mcp-guide .guide-result-image img { margin: auto; max-height: 540px; width: 100%; height: auto; object-fit: contain; }
 .mcp-guide .guide-result .guide-text-link { margin-top: 12px; }
 .mcp-guide .guide-resources { margin-top: 16px; display: flex; gap: 10px 20px; flex-wrap: wrap; font-size: 13px; }

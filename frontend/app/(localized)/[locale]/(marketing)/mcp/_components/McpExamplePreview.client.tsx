@@ -31,8 +31,8 @@ export function McpExamplePreview({ children, kind, src, poster, captions, title
       <div className="hub-dialog-panel">
         <div className="hub-dialog-bar"><h3>{title}</h3><button type="button" onClick={() => dialog.current?.close()}>{close} ×</button></div>
         {open && (kind === 'video'
-          ? <video src={src} poster={poster} controls playsInline autoPlay>{captions && <track kind="captions" src={captions} srcLang="en" label="English"/>}</video>
-          : kind === 'audio' ? <audio controls autoPlay src={src}/> : <Image src={src} alt={alt} width={960} height={540} sizes="85vw"/>)}
+          ? <video aria-label={title} src={src} poster={poster} controls playsInline autoPlay>{captions && <track kind="captions" src={captions} srcLang="en" label="English"/>}</video>
+          : kind === 'audio' ? <audio aria-label={title} controls autoPlay src={src}/> : <Image src={src} alt={alt} width={960} height={540} sizes="85vw"/>)}
       </div>
     </dialog>
   </>;

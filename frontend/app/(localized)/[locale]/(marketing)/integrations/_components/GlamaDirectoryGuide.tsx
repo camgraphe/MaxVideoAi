@@ -22,7 +22,7 @@ export function GlamaDirectoryGuide({ locale, connectionAvailable }: {locale: Ap
   return <div className="mcp-redesign mcp-guide"><header className="guide-opening"><div className="container-page">
     <nav aria-label={label.hub} className="guide-crumb"><Link href={localizePathFromEnglish(locale,'/mcp')}>{label.hub}</Link><span>/</span><span>Glama</span></nav>
     <div className="guide-opening-grid"><div className="guide-intro">
-      <div className="guide-identity"><Image src={`${guideMediaPath}/glama.svg`} width={36} height={36} alt=""/><span>{text.kind}</span></div>
+      <div className="guide-identity"><Image src={`${guideMediaPath}/glama.svg`} width={36} height={36} alt="" aria-hidden="true"/><span>{text.kind}</span></div>
       <h1>{text.heading}</h1><p className="guide-lede">{text.intro}</p><div className="guide-actions">
         <a className="mcp-button" href={listing.listingUrl}>{text.action} ↗</a><a className="guide-text-link" href="#first-video">{label.inspect} →</a>
       </div>{connectionAvailable && <IntegrationGuideAccount locale={locale}/>}</div>

@@ -20,14 +20,14 @@ export function McpHubDirectory({ locale, publication }: { locale: AppLocale; pu
       id, name: integration.label, href: localizePathFromEnglish(locale, integration.englishPath),
       type: editorial.modes[id as keyof typeof editorial.modes],
       icon: id === 'codex'
-        ? <Image src="/media/mcp/hub-redesign/codex.png" width={25} height={25} alt=""/>
+        ? <Image src="/media/mcp/hub-redesign/codex.png" width={25} height={25} alt="" aria-hidden="true"/>
         : <McpIntegrationMark integration={id} size={23} className="h-[23px] w-[23px]"/>,
     };
   });
   const glama = getMcpDirectoryGuide('glama');
   const guides = glama.site.publication === 'hidden' ? cards : [
     ...cards, { id: 'glama', name: glama.label, type: labels.glama, href: localizePathFromEnglish(locale, glama.englishPath),
-      icon: <Image src="/media/mcp/hub-redesign/glama.svg" width={24} height={24} alt=""/> },
+      icon: <Image src="/media/mcp/hub-redesign/glama.svg" width={24} height={24} alt="" aria-hidden="true"/> },
   ];
   return <section id="integrations" className="hub-directory">
     <div className="hub-directory-title"><h2>{labels.directory}</h2>{docs && <Link href={docs.href}>{labels.docs} ↗</Link>}</div>

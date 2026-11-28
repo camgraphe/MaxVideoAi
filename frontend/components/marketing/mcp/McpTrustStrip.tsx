@@ -12,7 +12,7 @@ export function McpTrustStrip({ locale }: {locale: AppLocale}) {
   const nextPath = localizePathFromEnglish(locale, '/mcp');
   return <section id="credits" className="container-page hub-wallet">
     <div className="hub-wallet-panel">
-      <div><Image src="/assets/branding/logo-mark.svg" width={32} height={32} alt=""/>
+      <div><Image src="/assets/branding/logo-mark.svg" width={32} height={32} alt="" aria-hidden="true"/>
         <h2>{labels.wallet}</h2><p>{labels.balance}</p>
         <div className="hub-resource-links"><Link href={buildLoginHref({mode:'signin', nextPath, locale})}>{labels.signIn}</Link><Link href={buildLoginHref({mode:'signup', nextPath, locale})}>{labels.signUp}</Link></div>
       </div>
