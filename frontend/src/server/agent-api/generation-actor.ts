@@ -34,7 +34,13 @@ export type ToolboxGenerationActor = {
   userId: string;
   clientId: null;
 };
-export type GenerationActor = AgentPrincipal | StudioGenerationActor | ToolboxGenerationActor;
+export type MobileGenerationActor = {
+  authMethod: 'mobile-session';
+  confirmationPlatform?: NativeGenerationPlatform;
+  userId: string;
+  clientId: null;
+};
+export type GenerationActor = AgentPrincipal | StudioGenerationActor | ToolboxGenerationActor | MobileGenerationActor;
 
 function identifier(value: unknown, limit: number): value is string {
   return (
@@ -51,7 +57,7 @@ export function requireGenerationActor(actor: GenerationActor): void {
     !identifier(actor.userId, 128) ||
     !(actor.authMethod === "oauth"
       ? actor.clientId === null || identifier(actor.clientId, 256)
-      : actor.authMethod === 'toolbox-session'
+      : (actor.authMethod === 'toolbox-session' || actor.authMethod === 'mobile-session')
         ? actor.clientId === null
         : actor.authMethod === "studio-session" &&
         actor.clientId === null &&
@@ -83,15 +89,15 @@ export function quoteMatchesActor<Request>(
     quote.oauthClientId === actor.clientId &&
     (actor.authMethod === "oauth"
       ? (quote.authOrigin ?? "oauth") === "oauth" && !quote.studioProjectId
-      : actor.authMethod === 'toolbox-session'
-        ? quote.authOrigin === 'toolbox-session' && !quote.studioProjectId && quote.fundingMode === 'wallet'
+      : (actor.authMethod === 'toolbox-session' || actor.authMethod === 'mobile-session')
+        ? quote.authOrigin === actor.authMethod && !quote.studioProjectId && quote.fundingMode === 'wallet'
         : quote.authOrigin === "studio-session" &&
         quote.studioProjectId === actor.projectId &&
         quote.fundingMode === "wallet")
   );
 }
 
-/** Audio OAuth clients remain mandatory; a server-authorized Studio session has its own scope. */
+/** First-party sessions keep their own scope. OAuth Audio always requires a client. */
 export function requireAudioGenerationActor(actor: GenerationActor): void {
   requireGenerationActor(actor);
   if (actor.authMethod === 'oauth' && actor.clientId === null)
@@ -117,6 +123,9 @@ export function bindStudioReferenceSnapshot(
   actor: GenerationActor,
   references: readonly ResolvedReference[],
 ): Record<string, unknown> {
+  if (actor.authMethod === 'mobile-session') {
+    return { ...snapshot, mobileReferenceFingerprint: studioReferenceFingerprint(references) };
+  }
   if (actor.authMethod === 'toolbox-session') {
     return { ...snapshot, toolboxReferenceFingerprint: studioReferenceFingerprint(references) };
   }

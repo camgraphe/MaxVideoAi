@@ -65,6 +65,9 @@ export async function verifyResolvedGenerationReferencesForActor(
   request: CanonicalGenerationRequest, principal: GenerationActor, resolved: ResolvedReference[],
   klingV4MediaDependencies?: KlingV4OwnedMediaDependencies,
 ): Promise<ResolvedReference[]> {
+  if (request.orderedImageReferences && (resolved.length !== request.references.length || resolved.some(ref => ref.mediaKind !== 'image'))) {
+    throw new AgentApiError('REFERENCE_INVALID', 'Select an owned image for each reference slot.');
+  }
   if (isKlingV4FalQueueEngineId(request.engineId) && resolved.length) {
     if (request.references.some(reference=>reference.kind!=='asset')) throw new AgentApiError('REFERENCE_INVALID','Kling 4 requires owned original references.');
     const subjectSlots = new Set(request.subjects?.flatMap(subject => subject.kind === 'video' ? [subject.referenceSlot] : []) ?? []);

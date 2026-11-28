@@ -63,6 +63,8 @@ const ROLE_ORDER: Record<CanonicalGenerationReferenceRole, number> = {
 };
 const TOP_LEVEL_FIELDS = new Set([
   'schemaVersion',
+  'orderedImageReferences',
+  'orderedMediaReferences',
   'operation',
   'sourceJobId',
   'sourceOutputId',
@@ -80,6 +82,7 @@ const TOP_LEVEL_FIELDS = new Set([
 const ASSET_REFERENCE_FIELDS = new Set(['kind', 'assetId', 'role']);
 const HTTPS_REFERENCE_FIELDS = new Set(['kind', 'url', 'role', 'mediaKind']);
 const ORDERED_ASSET_REFERENCE_FIELDS = new Set([...ASSET_REFERENCE_FIELDS, 'slot']);
+const FIELD_BOUND_ASSET_FIELDS = new Set([...ORDERED_ASSET_REFERENCE_FIELDS, 'mediaKind', 'fieldId']);
 const ORDERED_HTTPS_REFERENCE_FIELDS = new Set([...HTTPS_REFERENCE_FIELDS, 'slot']);
 const SAFE_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:-]*$/;
 const SAFE_SETTING_KEY_PATTERN = /^[A-Za-z][A-Za-z0-9._-]*$/;
@@ -99,6 +102,9 @@ const VIDEO_SETTING_KEYS = new Set([
   'watermark',
   'aspectRatio',
   'audio',
+  'resizeMode',
+  'promptOptimizer',
+  'cameraMotion',
   'cameraFixed',
   'cfgScale',
   'contextSec',
@@ -446,12 +452,20 @@ function normalizeReference(
   value: unknown,
   index: number,
   orderedRole: CanonicalGenerationReferenceRole | null,
+  boundRole: CanonicalGenerationReferenceRole | null,
 ): CanonicalGenerationReference {
   const field = `references[${index}]`;
   assertPlainDataObject(value, field);
   const kind = normalizeToken(value.kind, `${field}.kind`);
   const role = normalizeReferenceRole(value.role, index);
   if (kind === 'asset') {
+    if (role === boundRole) {
+      assertExactFields(value, FIELD_BOUND_ASSET_FIELDS, field);
+      const fieldId = normalizeToken(value.fieldId, field + '.fieldId');
+      if (!/^[a-z][a-z0-9_]{0,63}$/u.test(fieldId)) fail(field, 'Invalid media field.');
+      return { kind, assetId: normalizeAssetId(value.assetId, index), role,
+        fieldId, mediaKind: normalizeReferenceMediaKind(value.mediaKind, index) };
+    }
     assertExactFields(
       value,
       role === orderedRole ? ORDERED_ASSET_REFERENCE_FIELDS : ASSET_REFERENCE_FIELDS,
@@ -460,6 +474,7 @@ function normalizeReference(
     return { kind, assetId: normalizeAssetId(value.assetId, index), role };
   }
   if (kind === 'https') {
+    if (boundRole) fail(field, 'Field-bound media requires owned assets.');
     assertExactFields(
       value,
       role === orderedRole ? ORDERED_HTTPS_REFERENCE_FIELDS : HTTPS_REFERENCE_FIELDS,
@@ -513,6 +528,7 @@ function normalizeReferences(
   mode: CanonicalGenerationMode,
   engineId: string,
   explicitReferenceOrder = false,
+  boundMedia = false,
 ): CanonicalGenerationReference[] {
   if (value === undefined) return [];
   assertDenseDataArray(value, 'references', MAX_CANONICAL_REFERENCES);
@@ -523,12 +539,13 @@ function normalizeReferences(
     && !explicitReferenceOrder && !value.some(reference => reference !== null
       && typeof reference === 'object' && Object.hasOwn(reference, 'slot'));
   const orderedRole = legacyWanReferences ? null : orderedGenerationReferenceRole(mode,engineId,explicitReferenceOrder);
-  let nextOrderedSlot = 0;
+  const boundRole = boundMedia ? mode === 'a2v' ? 'source' : 'reference' : null;
+  const nextSlots = new Map<CanonicalGenerationReferenceRole, number>();
   const references = value.map((reference, index) => {
-    const normalized = normalizeReference(reference, index, orderedRole);
-    if (normalized.role !== orderedRole) return normalized;
-    const slot = nextOrderedSlot;
-    nextOrderedSlot += 1;
+    const normalized = normalizeReference(reference, index, orderedRole, boundRole);
+    if (normalized.role !== orderedRole && normalized.role !== boundRole) return normalized;
+    const slot = nextSlots.get(normalized.role) ?? 0;
+    nextSlots.set(normalized.role, slot + 1);
     const authoredSlot = (reference as Record<string, unknown>).slot;
     if (authoredSlot !== undefined && authoredSlot !== slot) {
       fail(`references[${index}].slot`, 'ordered reference slot does not match caller order.');
@@ -664,13 +681,29 @@ function normalizeGenerationInput(input: unknown,comparison = false): CanonicalG
     settings.resolution = '480p';
     if (settings.audio === undefined) settings.audio = true;
   }
-  const references = normalizeReferences(input.references, mode, engineId, comparison || (engineId === 'minimax-h3-max' && typeof (input.settings as Record<string, unknown> | undefined)?.referenceOrder === 'string'));
+  // Only explicitly authored ordered image sets change canonical order. Historical quotes keep their original hashes.
+  const orderedAssets = input.orderedImageReferences;
+  if (orderedAssets !== undefined && (orderedAssets !== true || !['i2i','ref2v'].includes(mode)))
+    fail('orderedImageReferences','An ordered reference set requires image editing or reference-guided video.');
+  const boundMedia = input.orderedMediaReferences;
+  if (boundMedia !== undefined && (boundMedia !== true || orderedAssets || surface !== 'video'
+    || !['ref2v','v2v','extend','i2v','i2v_standard','t2v','a2v'].includes(mode) || input.elements || input.subjects))
+    fail('orderedMediaReferences','Invalid mode for field-bound reference media.');
+  const references = normalizeReferences(input.references, mode, engineId, orderedAssets === true || comparison || (engineId === 'minimax-h3-max' && typeof (input.settings as Record<string, unknown> | undefined)?.referenceOrder === 'string'), boundMedia === true);
+  if (boundMedia && (!references.some(ref => ref.kind === 'asset' && ref.fieldId && (ref.mediaKind === 'video' || ref.mediaKind === 'audio'))
+    || new Set(references.map(ref => ref.kind === 'asset' && ref.assetId)).size !== references.length))
+    fail('references', 'Field-bound reference media requires distinct owned inputs.');
+  if (orderedAssets && (!references.length || references.some(ref => ref.kind !== 'asset' || ref.role !== 'reference') ||
+      new Set(references.map(ref => ref.kind === 'asset' && ref.assetId)).size !== references.length))
+    fail('references','An ordered image set requires distinct owned reference assets.');
   const subjects = normalizeSubjects(input.subjects, engineId, mode, references);
   let elements;
   try { elements = input.elements === undefined ? undefined : klingOwnedElementsSchema.parse(input.elements); }
   catch { fail('elements', 'Invalid owned Kling Element composition.'); }
   const result: CanonicalGenerationRequest = {
     schemaVersion: 1,
+    ...(orderedAssets === true ? {orderedImageReferences:true as const} : {}),
+    ...(boundMedia === true ? {orderedMediaReferences:true as const} : {}),
     ...(subjects ? {subjects} : {}),
     ...(sourceJobId ? { sourceJobId } : {}),
     ...(sourceOutputId ? { sourceOutputId } : {}),

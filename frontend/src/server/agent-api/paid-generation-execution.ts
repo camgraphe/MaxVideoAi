@@ -184,6 +184,12 @@ function preferredCurrency(currency: string): Currency {
   return normalized;
 }
 
+function receiptProductLabel({ quote, candidate }: ReservePaidGenerationInput) {
+  const source = quote.authOrigin === 'mobile-session' ? 'Mobile'
+    : quote.authOrigin === 'studio-session' ? 'Studio' : 'MCP';
+  return `${source} ${candidate.engine.label}`;
+}
+
 function videoInitialParams(
   input: ReservePaidGenerationInput,
   pricing: Record<string, unknown>,
@@ -222,7 +228,7 @@ function videoInitialParams(
       userId: quote.userId,
       amountCents: quote.priceCents,
       currency: quote.currency,
-      description: `${input.customerProductLabel ?? `${quote.authOrigin === 'studio-session' ? 'Studio' : 'MCP'} ${candidate.engine.label}`} - ${durationSec}s`,
+      description: `${input.customerProductLabel ?? receiptProductLabel(input)} - ${durationSec}s`,
       jobId: quote.quoteId,
       snapshot: pricing,
       applicationFeeCents: fee,
@@ -283,7 +289,7 @@ function imageInitialParams(
     jobId: quote.quoteId,
     surface: input.imageJob?.surface ?? 'image',
     billingProductKey: null,
-    description: `${quote.authOrigin === 'studio-session' ? 'Studio' : 'MCP'} ${candidate.engine.label} image generation`,
+    description: `${receiptProductLabel(input)} image generation`,
     amountCents: quote.priceCents,
     currency: quote.currency,
     pricingSnapshotJson: JSON.stringify(pricing),
