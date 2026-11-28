@@ -146,8 +146,19 @@ The expanded suite passed 256 checks locally with simulated supplier responses a
 
 To resume, open branch `codex/video-provider-router` and the **Preproduction operation** section above. APIMart pricing and rights discussions are tracked in OUTREACH as `INB-012`. A proposed first paid comparison is the same four-second, 720p Wan Prime request with one reference image and audio on Alibaba and Fal. Its two list-price estimates total $1.12. Record the delivered media, serving model when exposed, latency and actual supplier charge for each completed render.
 
-## VideoRouter on Wan Prime
+## Qualified VideoRouter routes · November 28, 2026
 
-`WAN_PRIME_VIDEOROUTER_CANARY=public` permits BotSmart on paid Wan Prime text requests when Alibaba direct routing already admits the caller. `admin` restricts this route to administrators. An unset switch disables new submissions. The server credential is `VIDEOROUTER_API_KEY`. Keep it valid for polling jobs already accepted. The admission profile is 2–5 seconds or exactly 15 seconds, native 480p, 16:9, with generated audio and prompt expansion, without a seed, source media or extra controls. Other requests keep their existing routing. There is no time window or request-count cutoff.
+The server checks the submitted options against these paid profiles. Wan uses BotSmart with generated audio and prompt expansion. Kling uses SandBase's native sound. Reference inputs must be owned by the caller and readable through a signed MaxVideoAI media URL. Other settings follow the existing route for the selected engine.
 
-A free authenticated estimate must identify BotSmart and the requested output within its regular purchase tariff before the app submits a paid job. The request disables VideoRouter's internal fallback. An explicit concurrency, rate-limit, balance or spend-cap refusal hands off within the original customer ceiling to Alibaba, then to the configured fal path. A missing acknowledgement after a paid POST goes to reconciliation. Accepted jobs remain with their recorded owner. The completed job's reported USD cost is saved for accounting. The admin scenario lab includes the two-second profile and the historical 15-second text profile.
+| Engine | Admitted request | Supplier ceiling per generated second, including the regular fee | Fallback on an explicit capacity or funds refusal |
+| --- | --- | ---: | --- |
+| Wan Prime | 480p 16:9 text, 2–5 s or exactly 15 s | $0.0406925 | Alibaba, then eligible fal |
+| Wan Prime | 720p 16:9 text or one reference image, 2–30 s | $0.081385 | Alibaba, then eligible fal |
+| Wan Standard | 480p 9:16, one reference image, 2–30 s | $0.0226525 | Alibaba, then eligible fal |
+| Kling V4 | SDR 720p 16:9 with three ordered reference images, 3–30 s | $0.13678625 | fal |
+
+The production switches are `WAN_PRIME_VIDEOROUTER_CANARY`, `WAN_STANDARD_VIDEOROUTER_CANARY` and `KLING_V4_VIDEOROUTER_CANARY`. Set each to `public` to admit its qualifying wallet purchases. Wan also requires the existing Alibaba route to admit the request. Clearing a switch stops new purchases on that path. Keep `VIDEOROUTER_API_KEY` valid to poll accepted jobs. Traffic continues without a trial clock or request quota.
+
+Each job gets one customer quote and wallet charge. A free supplier estimate must match the pinned host and request and stay within the qualified tariff, incumbent purchase cost and customer ceiling. Internal supplier fallback is disabled. An ambiguous acknowledgement goes to reconciliation. An accepted job stays with its owner through delivery to Media. Terminal failure and a wallet refund settle atomically. A delayed supplier charge can be reconciled from the existing job ID after delivery. Supplier costs and routing decisions are internal.
+
+MiniMax H3 with two image references remains an admin comparison. Its public duration range is 5–15 seconds. A supplier diagnostic requested four seconds and delivered 4.46 seconds. Equivalence with the public Balanced optimization setting still needs evidence on a sellable duration.

@@ -34,7 +34,9 @@ for (const degraded of [false, true]) {
       const engine = engines.find((entry) => entry.id === id);
       const canonical = catalog.find((entry) => entry.id === id);
       assert.ok(engine && canonical, id);
-      assert.ok(canonical.pricingDetails, id);
+      // Kling V4 uses the reviewed customer tariff, without catalog pricingDetails.
+      if (id === 'kling-v4') assert.equal(canonical.pricingDetails, undefined);
+      else assert.ok(canonical.pricingDetails, id);
       assert.equal(engine.provider, canonical.provider, id);
       assert.deepEqual(engine.resolutions, canonical.resolutions, id);
       assert.ok(engine.modes.includes('t2v') && engine.inputSchema, id);

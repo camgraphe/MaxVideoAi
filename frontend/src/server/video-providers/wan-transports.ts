@@ -8,7 +8,9 @@ import type { AlibabaVideoPayload } from './alibaba-model-studio/types';
 import { ApimartSubmitError, createApimartClient } from './apimart/wan-prime';
 import { APIMART_PRIME_MICROS_PER_SECOND } from './purchase/wan';
 import type { NormalizedVideoProviderTask, VideoProviderKey } from './types';
-import { createVideoRouterClient, VideoRouterSubmitError, VIDEOROUTER_PRIME_MODEL } from './videorouter/wan-prime';
+import { createVideoRouterClient, VideoRouterSubmitError } from './videorouter/wan-prime';
+
+import { botSmartModelForWan } from './videorouter/wan-profiles';
 
 type WanSubmissionClient = { createVideo(payload: AlibabaVideoPayload): Promise<NormalizedVideoProviderTask> };
 type AccountingJob = Parameters<typeof estimateAlibabaJobCost>[0];
@@ -42,7 +44,7 @@ export const wanTransports = {
     classifyFailure: classifyAlibabaPurchaseFailure,
   },
   videorouter: {
-    modelId: route => route.model === 'wan3.0-video-prime' ? VIDEOROUTER_PRIME_MODEL : null,
+    modelId: route => botSmartModelForWan(route.model),
     createClient: createVideoRouterClient,
     readTask: (id, _isWan, overrides) => (overrides.getVideoRouterClientFn ?? createVideoRouterClient)().getTask(id),
     pollEnabled: () => Boolean(process.env.VIDEOROUTER_API_KEY?.trim()),

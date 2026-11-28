@@ -5,7 +5,7 @@ import { routingScenarios } from '../frontend/app/(core)/admin/routing/_lib/rout
 import type { RoutingTrafficSnapshot } from '../frontend/app/(core)/admin/routing/_lib/routing-traffic-types';
 import type { InstalledRoute } from '../frontend/app/(core)/admin/routing/_lib/installed-routes';
 
-const standby: InstalledRoute = { provider: 'kling_direct', engineId: 'kling-o3-pro', label: 'Kling O3 Pro', mode: 'ref2v', targets: ['fal'], standbyReason: 'out of funds' };
+const standby: InstalledRoute = { provider: 'kling_direct', engineId: 'kling-o3-pro', label: 'Kling O3 Pro', mode: 'ref2v', targets: ['fal'], installedTargets: ['kling_direct'], profile: '', standbyReason: 'out of funds' };
 
 test('the traffic tour visits the different engine families before repeating and honors standby through a simulated refusal', () => {
   const scenarios = routingScenarios();

@@ -27,13 +27,14 @@ const reference = {
   supplierMicros: 560_000,
   quoteCents: 85,
 } as const;
-type Profile = { mode: 't2v' | 'ref2v'; seconds: number; resolution: string; supplierMicros: number; quoteCents: number; audio?: boolean };
+type Profile = { mode: 't2v' | 'ref2v'; seconds: number; resolution: string; supplierMicros: number; quoteCents: number; audio?: boolean; engine?: 'wan-3' | 'wan-3-prime'; ratio?: string; ownedRef?: boolean };
 const engineId = 'wan-3-prime';
 const userId = 'pilot-owner';
 const refUrl = 'https://example.test/reference.png';
 const prompt = 'Offline Wan Prime preview';
 
 function initialJob(jobId: string, profile: Profile) {
+  const profileEngine = profile.engine ?? engineId;
   const totalCents = profile.quoteCents;
   const baseCents = profile.supplierMicros / 10_000;
   const pricing: PricingSnapshot = {
@@ -68,12 +69,12 @@ function initialJob(jobId: string, profile: Profile) {
     jobInsert: {
       jobId,
       userId,
-      engineId,
-      engineLabel: 'Wan 3 Prime',
+      engineId: profileEngine,
+      engineLabel: profileEngine === 'wan-3' ? 'Wan 3' : 'Wan 3 Prime',
       durationSec: profile.seconds,
       prompt,
       thumbUrl: '/thumb.svg',
-      aspectRatio: '16:9',
+      aspectRatio: profile.ratio ?? '16:9',
       hasAudio: profile.audio ?? true,
       canUpscale: false,
       previewFrame: '/thumb.svg',
@@ -192,9 +193,11 @@ test(
 
     function request(jobId: string, profile: Profile, direct: (payload: AlibabaVideoPayload) => Promise<NormalizedVideoProviderTask>,
       routerFetch?: typeof fetch) {
+      const profileEngine = profile.engine ?? engineId;
+      const ratio = profile.ratio ?? '16:9';
       const { initial, pricing, receipt } = initialJob(jobId, profile);
       const plan = resolveVideoProviderRoutingPlan({
-        engineId,
+        engineId: profileEngine,
         mode: profile.mode,
         isAdmin: true,
         env: { ALIBABA_MODEL_STUDIO_ENABLED: '1', ALIBABA_MODEL_STUDIO_FALLBACK_TO_FAL_ENABLED: '1' },
@@ -206,12 +209,12 @@ test(
         submitAlibabaModelStudioGenerateTask({
           jobId,
           userId,
-          engineId,
-          engineLabel: 'Wan 3 Prime',
+          engineId: profileEngine,
+          engineLabel: profileEngine === 'wan-3' ? 'Wan 3' : 'Wan 3 Prime',
           mode: profile.mode,
           prompt,
           durationSec: profile.seconds,
-          aspectRatio: '16:9',
+          aspectRatio: ratio,
           audioEnabled: profile.audio ?? true,
           effectiveResolution: profile.resolution,
           imageUrl: null,
@@ -225,12 +228,12 @@ test(
           purchaseCanary: plan.purchaseCanary,
           falPayload: {
             jobId,
-            engineId,
+            engineId: profileEngine,
             mode: profile.mode,
             prompt,
             durationSec: profile.seconds,
             resolution: profile.resolution,
-            aspectRatio: '16:9',
+            aspectRatio: ratio,
             audio: profile.audio ?? true,
             ...(routerFetch ? {} : { seed: 0, extraInputValues: { enable_prompt_expansion: false } }),
             referenceImages: hasImage ? [refUrl] : [],
@@ -258,7 +261,8 @@ test(
             queryFn: read,
             getVideoRouterClientFn: () => createVideoRouterClient('offline', routerFetch),
             getApimartClientFn: () => assert.fail('APIMart is disabled'),
-            createOwnedMediaReadUrlFn: async (input) => input.url,
+            ownedMediaStorageKeyForUrlFn: ({ url, userId: owner }) => profile.ownedRef && owner === userId && url === refUrl ? 'owner/image.png' : null,
+            createOwnedMediaReadUrlFn: async (input) => profile.ownedRef ? 'https://storage.example.test/grant' : input.url,
             getAlibabaModelStudioClientFn: () => ({
               createVideo: direct,
               getTask: () => assert.fail('no polling at submission'),
@@ -317,6 +321,43 @@ test(
         else process.env.WAN_PRIME_VIDEOROUTER_CANARY = existingMode;
         if (existingKey === undefined) delete process.env.VIDEOROUTER_API_KEY;
         else process.env.VIDEOROUTER_API_KEY = existingKey;
+      }
+    });
+
+    await t.test('production-sized Prime text and both owned reference profiles persist one accepted job and one wallet debit', async t => {
+      const flags = ['WAN_PRIME_VIDEOROUTER_CANARY', 'WAN_STANDARD_VIDEOROUTER_CANARY', 'VIDEOROUTER_API_KEY'];
+      const values = flags.map(flag => process.env[flag]);
+      flags.forEach(flag => { process.env[flag] = flag === 'VIDEOROUTER_API_KEY' ? 'offline' : 'public'; });
+      t.after(() => flags.forEach((flag,index) => {
+        const value = values[index];
+        if (value === undefined) delete process.env[flag]; else process.env[flag] = value;
+      }));
+      const cases: Profile[] = [
+        {mode:'t2v',seconds:30,resolution:'720p',supplierMicros:4200000,quoteCents:500},
+        { ...reference, ownedRef:true },
+        {mode:'ref2v',seconds:30,resolution:'480p',supplierMicros:1500000,quoteCents:190,engine:'wan-3',ratio:'9:16',ownedRef:true},
+      ];
+      for (const [i,profile] of cases.entries()) {
+        const id = 'extended-wan-' + i;
+        const standard = profile.engine === 'wan-3';
+        const paths: string[] = [];
+        const run = request(id, profile, async () => assert.fail('Alibaba should be the backup'), async (input, init) => {
+          const path = new URL(String(input)).pathname;
+          paths.push(path);
+          const body = JSON.parse(String(init?.body));
+          assert.equal(body.model, 'alibaba/' + (standard ? 'wan-3.0' : 'wan-3.0-prime') + '/botsmart');
+          assert.deepEqual(body.input_references, profile.ownedRef ? [{type:'image_url',image_url:{url:'https://storage.example.test/grant'}}] : undefined);
+          if (path === '/v1/pricing/estimate') return Response.json({ object:'pricing.estimate', type:'video', currency:'USD',
+            model:body.model, estimated_cost_usd:0.30, max_cost_usd:0.30, assumptions:{duration_secs:profile.seconds, resolution:profile.resolution,
+              aspect_ratio:profile.ratio ?? '16:9', reference_images:profile.ownedRef ? 1 : 0} });
+          return Response.json({id:'botsmart:paid-' + i});
+        });
+        assert.equal((await run.reserve()).kind,'created');
+        await Promise.all([run.submit(),run.submit()]);
+        assert.deepEqual(paths,['/v1/pricing/estimate','/v1/videos']);
+        assert.deepEqual((await attempts(id)).map(a=>[a.provider,a.status]),[['videorouter','accepted']]);
+        assert.deepEqual(await receipts(id),[{type:'charge',amount_cents:profile.quoteCents}]);
+        assert.equal((await job(id)).provider_job_id,'botsmart:paid-' + i);
       }
     });
 

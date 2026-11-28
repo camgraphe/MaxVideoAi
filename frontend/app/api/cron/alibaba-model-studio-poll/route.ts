@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { runAlibabaModelStudioPoll } from '@/server/alibaba-model-studio-poll';
 import { enabledWanPollProviders } from '@/server/video-providers/wan-transports';
 import { reconcileVideoRouterCosts } from '@/server/video-providers/videorouter/settlement';
+import { reconcileKlingV4WalletStops } from '@/server/video-providers/videorouter/kling-v4-wallet-stop';
 import { reconcileWanPilotWalletStops } from '@/server/wan-pilot-refunds';
 import { authorizeCronRequest } from '@/server/vercel-cron';
 
@@ -34,6 +35,9 @@ async function triggerPoll(req: Request) {
   if (!auth.ok) return unauthorized(auth.reason, req);
 
   // Financial recovery runs independently of media polling, including after new purchases have been switched off.
+  const klingRecovery = reconcileKlingV4WalletStops().then(result => {
+    if (result.errors) console.warn('[kling-v4-routing] refund reconciliation incomplete', result);
+  }).catch(() => console.warn('[kling-v4-routing] refund reconciliation unavailable'));
   const recovery = reconcileWanPilotWalletStops().then(result => {
     if (result.errors) console.warn('[wan-purchase] refund reconciliation incomplete', result);
   }).catch(() => console.warn('[wan-purchase] refund reconciliation unavailable'));
@@ -53,7 +57,7 @@ async function triggerPoll(req: Request) {
     console.error('[cron-alibaba-model-studio-poll] failed to run poll', error);
     return NextResponse.json({ ok: false, error: 'Failed to run direct video poll' }, { status: 500 });
   } finally {
-    await recovery;
+    await Promise.all([recovery, klingRecovery]);
   }
 }
 

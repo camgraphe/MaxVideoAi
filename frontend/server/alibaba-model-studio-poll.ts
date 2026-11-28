@@ -2,6 +2,8 @@ import { wanTransports, type WanDirectProvider, type WanPollOverrides } from '@/
 import { claimGenerationPoll } from '@/server/generation-poll-state';
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
+import { withWalletFailureSettlement, type WalletFailureSettlementDependencies } from '@/server/fal-webhook-refunds';
+import { KLING_V4_SANDBASE_MODEL } from '@/server/video-providers/videorouter/kling-v4';
 import {
   buildNextProviderVideoCopyState,
   getProviderVideoCopyState,
@@ -17,7 +19,6 @@ import { upsertLegacyJobOutputs } from '@/server/media-library';
 import { detectVideoDimensions } from '@/server/media/detect-has-audio';
 import { formatAspectRatioLabel } from '@/server/fal-webhook-media';
 import {
-  buildUserFacingRefundDescription,
   toUserFacingFailureMessage,
 } from '@/server/user-facing-failure-messages';
 import { classifyAlibabaModelStudioError } from '@/server/video-providers/alibaba-model-studio/errors';
@@ -60,6 +61,7 @@ type AlibabaPendingJob = {
 
 type AlibabaPollDeps = WanPollOverrides & {
   queryFn?: QueryFn;
+  settlement?: WalletFailureSettlementDependencies;
   claimPollFn?: typeof claimGenerationPoll;
   ensureFastStartVideoFn?: typeof ensureFastStartVideo;
   detectVideoDimensionsFn?: typeof detectVideoDimensions;
@@ -115,7 +117,9 @@ function costBreakdown(job: AlibabaPendingJob, task: NormalizedVideoProviderTask
   return {
     provider,
     provider_cost_source: estimate.source,
-    provider_model: route ? wanTransports[provider].modelId(route) : null,
+    provider_model: provider === 'videorouter' && job.engine_id === 'kling-v4'
+      ? KLING_V4_SANDBASE_MODEL
+      : route ? wanTransports[provider].modelId(route) : null,
     mode: modeForJob(job),
     duration_sec: job.duration_sec,
     has_audio: job.has_audio === true,
@@ -137,40 +141,6 @@ async function findAttempt(job: AlibabaPendingJob, queryFn: QueryFn) {
     providerJobId: job.provider_job_id,
     queryFn,
   });
-}
-
-async function recordWalletRefundOnce(job: AlibabaPendingJob, reason: string, queryFn: QueryFn) {
-  if (job.payment_status !== 'paid_wallet' || !job.user_id || !job.final_price_cents) return false;
-  const inserted = await queryFn<{ id: string }>(
-    `INSERT INTO app_receipts (
-       user_id, type, amount_cents, currency, description, job_id, surface,
-       billing_product_key, pricing_snapshot, application_fee_cents,
-       vendor_account_id, stripe_payment_intent_id, stripe_charge_id,
-       platform_revenue_cents, destination_acct
-     )
-     VALUES ($1,'refund',$2,$3,$4,$5,'video',NULL,$6::jsonb,NULL,NULL,NULL,NULL,NULL,NULL)
-     ON CONFLICT DO NOTHING
-     RETURNING id`,
-    [
-      job.user_id,
-      job.final_price_cents,
-      (job.currency ?? 'USD').toUpperCase(),
-      buildUserFacingRefundDescription({
-        engineLabel: job.engine_label,
-        durationSec: job.duration_sec,
-        reason,
-      }),
-      job.job_id,
-      JSON.stringify(job.pricing_snapshot ?? {}),
-    ]
-  );
-  if (!inserted.length) return false;
-  await queryFn(
-    `UPDATE app_jobs SET payment_status = 'refunded_wallet', updated_at = NOW()
-      WHERE job_id = $1 AND payment_status = 'paid_wallet'`,
-    [job.job_id]
-  );
-  return true;
 }
 
 async function finishFailedAttempt(params: {
@@ -208,33 +178,34 @@ async function markJobFailed(
   message: string,
   errorCode: string | null,
   responseSnapshot: unknown,
-  queryFn: QueryFn
+  queryFn: QueryFn,
+  settlement: AlibabaPollDeps['settlement']
 ) {
+  const provider = job.provider ?? ALIBABA_MODEL_STUDIO_PROVIDER;
   const userMessage = toUserFacingFailureMessage(message);
-  const rows = await queryFn<{ job_id: string }>(
-    `UPDATE app_jobs
-        SET status = 'failed', progress = 0, message = $2, provisional = FALSE, updated_at = NOW()
-      WHERE job_id = $1 AND status = ANY($3::text[])
-      RETURNING job_id`,
-    [job.job_id, userMessage, ACTIVE_JOB_STATUSES]
-  );
-  if (!rows.length) return false;
-  const refunded = await recordWalletRefundOnce(job, userMessage, queryFn);
-  await queryFn(
-    `UPDATE app_jobs
-        SET payment_status = CASE WHEN $2 THEN 'refunded_wallet' ELSE payment_status END, updated_at = NOW()
-      WHERE job_id = $1`,
-    [job.job_id, refunded]
-  );
-  await finishFailedAttempt({
-    job,
-    attempt: await findAttempt(job, queryFn),
-    errorCode,
-    errorClass: 'provider_terminal_failure',
-    responseSnapshot,
-    queryFn,
-  });
-  return true;
+  const attempt = await findAttempt(job, queryFn);
+  const obsolete = new Error('The accepted provider job has changed or already finished.');
+  try {
+    return await withWalletFailureSettlement(job.job_id, {
+      engineLabel: job.engine_label, providerJobId: job.provider_job_id,
+      failureMessage: userMessage, failureOrigin: 'provider_terminal_failure',
+    }, async (tx) => {
+      const rows = await tx.query(
+        `UPDATE app_jobs SET status = 'failed', progress = 0, message = $2, provisional = FALSE, updated_at = NOW()
+          WHERE job_id = $1 AND status = ANY($3::text[]) AND provider = $4 AND provider_job_id = $5
+          RETURNING job_id`,
+        [job.job_id, userMessage, ACTIVE_JOB_STATUSES, provider, job.provider_job_id],
+      );
+      if (!rows.length) throw obsolete;
+      await finishFailedAttempt({
+        job, attempt, errorCode, errorClass: 'provider_terminal_failure', responseSnapshot, queryFn: tx.query,
+      });
+      return true;
+    }, settlement);
+  } catch (error) {
+    if (error === obsolete) return false;
+    throw error;
+  }
 }
 
 async function markJobStalled(job: AlibabaPendingJob, queryFn: QueryFn) {
@@ -242,9 +213,9 @@ async function markJobStalled(job: AlibabaPendingJob, queryFn: QueryFn) {
     `UPDATE app_jobs
         SET status = 'provider_polling_stalled', progress = GREATEST(progress, 90),
             message = $2, provisional = FALSE, updated_at = NOW()
-      WHERE job_id = $1 AND status = ANY($3::text[])
+      WHERE job_id = $1 AND status = ANY($3::text[]) AND provider = $4 AND provider_job_id = $5
       RETURNING job_id`,
-    [job.job_id, STALLED_MESSAGE, ACTIVE_JOB_STATUSES]
+    [job.job_id, STALLED_MESSAGE, ACTIVE_JOB_STATUSES, job.provider ?? ALIBABA_MODEL_STUDIO_PROVIDER, job.provider_job_id]
   );
   if (!rows.length) return false;
   await finishFailedAttempt({
@@ -262,7 +233,8 @@ async function markJobStalled(job: AlibabaPendingJob, queryFn: QueryFn) {
 async function deferStorageCopyRetry(
   job: AlibabaPendingJob,
   task: NormalizedVideoProviderTask,
-  queryFn: QueryFn
+  queryFn: QueryFn,
+  settlement: AlibabaPollDeps['settlement']
 ) {
   const nextCopyState = buildNextProviderVideoCopyState(job.settings_snapshot, {
     providerStatus: task.rawStatus,
@@ -274,7 +246,7 @@ async function deferStorageCopyRetry(
       `The output video could not be prepared for download after ${nextCopyState.attempts} attempts.`,
       task.errorCode ?? task.rawStatus,
       task.raw,
-      queryFn
+      queryFn, settlement
     );
     return;
   }
@@ -283,8 +255,8 @@ async function deferStorageCopyRetry(
         SET status = 'processing', progress = GREATEST(progress, 90), message = $2,
             settings_snapshot = jsonb_set(COALESCE(settings_snapshot, '{}'::jsonb), '{providerVideoCopy}', $3::jsonb, true),
             updated_at = NOW()
-      WHERE job_id = $1 AND status = ANY($4::text[])`,
-    [job.job_id, PROVIDER_VIDEO_COPY_RETRY_MESSAGE, JSON.stringify(nextCopyState), ACTIVE_JOB_STATUSES]
+      WHERE job_id = $1 AND status = ANY($4::text[]) AND provider = $5 AND provider_job_id = $6`,
+    [job.job_id, PROVIDER_VIDEO_COPY_RETRY_MESSAGE, JSON.stringify(nextCopyState), ACTIVE_JOB_STATUSES, job.provider ?? ALIBABA_MODEL_STUDIO_PROVIDER, job.provider_job_id]
   );
 }
 
@@ -343,14 +315,14 @@ export async function runAlibabaModelStudioPoll(options: { jobId?: string; provi
         const progressRows = await queryFn<{ job_id: string }>(
           `UPDATE app_jobs
               SET status = $2, progress = GREATEST(progress, $3), message = $4, updated_at = NOW()
-            WHERE job_id = $1 AND status = ANY($5::text[])
+            WHERE job_id = $1 AND status = ANY($5::text[]) AND provider = $6 AND provider_job_id = $7
             RETURNING job_id`,
           [
             job.job_id,
             task.status === 'running' ? 'running' : 'queued',
             task.status === 'running' ? 50 : 15,
             'Render is in progress.',
-            ACTIVE_JOB_STATUSES,
+            ACTIVE_JOB_STATUSES, provider, job.provider_job_id,
           ]
         );
         if (!progressRows.length) continue;
@@ -373,12 +345,12 @@ export async function runAlibabaModelStudioPoll(options: { jobId?: string; provi
           task.message ?? 'The render failed before producing a usable output.',
           task.errorCode ?? task.rawStatus,
           task.raw,
-          queryFn
+          queryFn, deps.settlement
         )) updates += 1;
         continue;
       }
       if (!task.videoUrl) {
-        if (await markJobFailed(job, 'The render completed but returned no video URL.', task.rawStatus, task.raw, queryFn)) {
+        if (await markJobFailed(job, 'The render completed but returned no video URL.', task.rawStatus, task.raw, queryFn, deps.settlement)) {
           updates += 1;
         }
         continue;
@@ -392,7 +364,7 @@ export async function runAlibabaModelStudioPoll(options: { jobId?: string; provi
         videoUrl: task.videoUrl,
       });
       if (!copiedVideoUrl) {
-        await deferStorageCopyRetry(job, task, queryFn);
+        await deferStorageCopyRetry(job, task, queryFn, deps.settlement);
         updates += 1;
         continue;
       }
@@ -423,7 +395,7 @@ export async function runAlibabaModelStudioPoll(options: { jobId?: string; provi
                   ELSE settings_snapshot
                 END,
                 provisional = FALSE, updated_at = NOW()
-          WHERE job_id = $1 AND status = ANY($6::text[])
+          WHERE job_id = $1 AND status = ANY($6::text[]) AND provider = $7 AND provider_job_id = $8
           RETURNING job_id`,
         [
           job.job_id,
@@ -431,7 +403,7 @@ export async function runAlibabaModelStudioPoll(options: { jobId?: string; provi
           thumb,
           JSON.stringify(costBreakdown(job, task)),
           detectedAspectRatio,
-          ACTIVE_JOB_STATUSES,
+          ACTIVE_JOB_STATUSES, provider, job.provider_job_id,
         ]
       );
       if (!completedRows.length) continue;
@@ -485,8 +457,8 @@ export async function runAlibabaModelStudioPoll(options: { jobId?: string; provi
       });
       // Rotate failed attempts without claiming a successful provider observation.
       await queryFn(
-        'UPDATE app_jobs SET updated_at = NOW() WHERE job_id = $1 AND status = ANY($2::text[])',
-        [job.job_id, ACTIVE_JOB_STATUSES]
+        'UPDATE app_jobs SET updated_at = NOW() WHERE job_id = $1 AND status = ANY($2::text[]) AND provider = $3 AND provider_job_id = $4',
+        [job.job_id, ACTIVE_JOB_STATUSES, provider, job.provider_job_id]
       );
     } finally {
       await pollClaim.release();

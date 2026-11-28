@@ -1,3 +1,4 @@
+import { klingV4VideoRouterEnabled } from '@/server/video-providers/videorouter/kling-v4';
 import Link from 'next/link';
 import { AdminPageHeader } from '@/components/admin-system/shell/AdminPageHeader';
 import { requireAdmin } from '@/server/admin';
@@ -23,7 +24,7 @@ export default async function AdminVideoRoutingPage({ searchParams }: { searchPa
   const [jobs, params] = await Promise.all([recentRoutingJobs().catch(() => null), searchParams]);
   const pilotLabels = {
     'alibaba-fal': 'Alibaba pilot · Fal backup when enabled',
-    'with-videorouter': 'BotSmart 480p text · Alibaba backup',
+    'with-videorouter': 'BotSmart on eligible Wan profiles · Alibaba backup',
     'with-apimart': 'APIMart pilot · installed suppliers eligible for fallback',
     shadow: 'Price simulation only',
   };
@@ -43,6 +44,8 @@ export default async function AdminVideoRoutingPage({ searchParams }: { searchPa
         {([['wan-3', 'Wan Standard'], ['wan-3-prime', 'Wan Prime']] as const).map(([engine, label]) => (
           <span key={engine}><strong>{label}</strong> · {pilotLabels[configuredWanPurchaseCanary(engine) ?? 'shadow']}</span>
         ))}
+        <span><strong>Kling V4</strong> · {klingV4VideoRouterEnabled()
+          ? 'SandBase for three reference images · fal backup' : 'fal direct'}</span>
       </div>
       <WanReplay requested={params.replay === 'wan-prime'} />
       <RoutingHistory jobs={jobs} />

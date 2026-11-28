@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { normalizeGenerationObservation } from '../frontend/lib/generation-observation';
 
 import {
   getGenerationStatus,
@@ -55,6 +56,19 @@ function generationRecord(overrides: Partial<GenerationStatusRecord> = {}): Gene
 
 const FAILED_ATTEMPT_BOUNDARY =
   'No new generation was started after this failure. A refund or recredit does not restore the previous authorization. To try again, prepare a fresh exact quote and wait for explicit user approval.';
+
+test('routed web polling preserves verified progress without disclosing the executing supplier', () => {
+  const observation = {
+    stage: 'processing', providerPercent: { value: 0, source: 'provider', provider: 'fal' }, checkedAt: 10_000, degraded: true,
+  } as const;
+  const expected = { ...observation, providerPercent: { value: 0, source: 'provider' } };
+  const record = generationRecord({ engine_id: 'kling-v4', status: 'running', provider: 'fal' });
+  const routed = mapGenerationStatusRecordToWeb(record, { observation });
+  assert.deepEqual(routed.observation, expected);
+  assert.deepEqual(normalizeGenerationObservation(routed.observation), expected);
+  assert.doesNotMatch(JSON.stringify(routed), /"fal"|provider-secret-1|acct_private|provider\.example/);
+  assert.deepEqual(mapGenerationStatusRecordToWeb(generationRecord(), { observation }).observation, observation);
+});
 
 test('recorded input safety refusals remain actionable in web and agent status without exposing provider text', () => {
   for (const [message, subject] of [

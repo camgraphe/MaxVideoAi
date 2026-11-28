@@ -10,6 +10,7 @@ import { submitLumaAgentsGenerateTask } from './luma-agents-submission';
 import type { FalInputSummary } from './fal-request';
 import type { PaymentMode, PendingReceipt } from './initial-video-job';
 import { createProviderJobTracker } from './provider-job-tracker';
+import { tryKlingV4VideoRouter } from './kling-v4-videorouter-submission';
 
 type LogMetricFn = Parameters<typeof submitFalGenerateTask>[0]['logMetricFn'];
 
@@ -28,7 +29,7 @@ export type GenerateProviderSubmissionResult =
       body: Record<string, unknown>;
     };
 
-export async function submitGenerateProviderTask(params: {
+export type GenerateProviderSubmissionParams = {
   lumaGenerationSource?: import('@/server/agent-api/generation-luma-lineage').OwnedLumaGenerationSource;
   providerRoutingPlan: VideoProviderRoutingPlan;
   providerKey: string;
@@ -63,7 +64,9 @@ export async function submitGenerateProviderTask(params: {
   localKey: string | null;
   logMetricFn: LogMetricFn;
   clientErrorPolicy?: ProviderClientErrorPolicy;
-}): Promise<GenerateProviderSubmissionResult> {
+};
+
+export async function submitGenerateProviderTask(params: GenerateProviderSubmissionParams): Promise<GenerateProviderSubmissionResult> {
   if (params.providerRoutingPlan.kind === 'alibaba_model_studio_primary') {
     const alibabaSubmission = await submitAlibabaModelStudioGenerateTask({
       jobId: params.jobId,
@@ -274,6 +277,14 @@ export async function submitGenerateProviderTask(params: {
     return { kind: 'accepted_response', body: googleSubmission.body };
   }
 
+  if (params.engineId === 'kling-v4' && params.providerRoutingPlan.kind === 'fal_only') {
+    const routed = await tryKlingV4VideoRouter(params, (onAccepted) => submitQueuedFal(params, onAccepted));
+    if (routed) return routed;
+  }
+  return submitQueuedFal(params);
+}
+
+async function submitQueuedFal(params: GenerateProviderSubmissionParams, onAccepted?: (id: string) => Promise<void>): Promise<GenerateProviderSubmissionResult> {
   const providerJobTracker = createProviderJobTracker({
     jobId: params.jobId,
     providerKey: params.providerKey,
@@ -295,7 +306,10 @@ export async function submitGenerateProviderTask(params: {
     walletChargeReserved: params.walletChargeReserved,
     getLastProviderJobId: providerJobTracker.getLastProviderJobId,
     setLastProviderJobId: providerJobTracker.setLastProviderJobId,
-    persistProviderJobId: providerJobTracker.persistProviderJobId,
+    persistProviderJobId: onAccepted ? async (id, proof, receipt) => {
+      await providerJobTracker.persistProviderJobId(id, proof, receipt);
+      await onAccepted(id);
+    } : providerJobTracker.persistProviderJobId,
     logMetricFn: params.logMetricFn,
     clientErrorPolicy: params.clientErrorPolicy,
   });

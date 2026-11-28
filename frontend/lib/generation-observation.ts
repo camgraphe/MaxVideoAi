@@ -2,7 +2,7 @@
 export type GenerationStage = 'submitting' | 'queued' | 'processing' | 'finalizing' | 'pending' | 'completed' | 'failed';
 export type GenerationObservation = {
   stage: GenerationStage;
-  providerPercent?: { value: number; source: 'provider'; provider: string };
+  providerPercent?: { value: number; source: 'provider'; provider?: string };
   checkedAt?: number;
   degraded?: boolean;
 };
@@ -25,9 +25,10 @@ export function normalizeGenerationObservation(value: unknown): GenerationObserv
   const percent = input.providerPercent;
   return {
     stage: input.stage!,
-    ...(percent?.source === 'provider' && typeof percent.provider === 'string' && percent.provider.trim()
+    ...(percent?.source === 'provider' && (percent.provider === undefined || (typeof percent.provider === 'string' && percent.provider.trim()))
       && typeof percent.value === 'number' && Number.isFinite(percent.value)
-      ? { providerPercent: { value: Math.max(0, Math.min(100, percent.value)), source: 'provider' as const, provider: percent.provider } } : {}),
+      ? { providerPercent: { value: Math.max(0, Math.min(100, percent.value)), source: 'provider' as const,
+          ...(percent.provider === undefined ? {} : { provider: percent.provider }) } } : {}),
     ...(typeof input.checkedAt === 'number' && Number.isFinite(input.checkedAt) && input.checkedAt > 0 ? { checkedAt: input.checkedAt } : {}),
     ...(input.degraded === true ? { degraded: true } : {}),
   };
