@@ -61,23 +61,13 @@ export const apimartH3: CatalogueCard = {
   quote: h3GoldQuote,
 };
 
-export const videoRouterWaveSpeedH3: CatalogueCard = {
-  provider: 'videorouter_wavespeed',
-  engines: ['minimax-h3'],
-  quote(request) {
-    const quotedProfile = !h3Profile(request) && request.mode === 'ref2v' && request.images === 2 &&
-      request.durationSec === 15 && request.resolution.toLowerCase() === '480p' && request.aspectRatio === '21:9' &&
-      request.h3PromptExpansion === 'balanced' && !request.hasSeed && request.inputVideoSeconds === 0 &&
-      !request.referenceVideoSeconds?.length && request.promptExpansionEnabled !== false;
-    // VideoRouter quoted a $0.60 subtotal with prompt_extend=true. Neither API specifies Fal's balanced mode.
-    return {
-      tariff: 'VideoRouter · WaveSpeed native H3 · $0.60 plus 2.5% standard fee · 2026-11-28',
-      sourceUrl: 'https://videorouter.sh/video/minimax/h3/wavespeed',
-      costMicros: quotedProfile ? 615_000 : null,
-      excluded: quotedProfile
-        ? 'Balanced expansion unverified. The 4 s test delivered 4.46 s. Account quote $0.6075 at 1.25%, displayed price at 2.5%.'
-        : 'Outside the quoted WaveSpeed H3 profile',
-      excludedAtEveryRatio: true,
-    };
-  },
-};
+/** The replay must have the same evidence as the paid adapter before it can price a substitution. */
+export function h3WaveSpeedInputsMatch(request: ComparisonRequest) {
+  return request.engineId === 'minimax-h3' && request.mode === 'ref2v' && request.images === 2 &&
+    request.ownedReferenceImages === true && request.durationSec === 15 && request.resolution.toLowerCase() === '480p' &&
+    request.hasStartFrame === false && request.hasEndFrame === false && request.hasVideo === false &&
+    request.inputVideoSeconds === 0 && !request.referenceVideoSeconds?.length && request.hasAudioReference === false &&
+    request.hasDocument === false && request.audioEnabled === true && request.hasSeed === false &&
+    request.hasUnpricedOptions === false && !request.requiresDirectControls && request.h3PromptExpansion === 'balanced' &&
+    request.promptExpansionEnabled === undefined;
+}

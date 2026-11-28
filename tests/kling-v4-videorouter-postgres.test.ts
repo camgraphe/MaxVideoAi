@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import type { GenerateProviderSubmissionParams } from '../frontend/app/api/generate/_lib/video-provider-submission';
 import { customerGenerationResponse } from '../frontend/app/api/generate/_lib/customer-generation-response';
-import { reconcileKlingV4WalletStops } from '../frontend/src/server/video-providers/videorouter/kling-v4-wallet-stop';
+import { reconcileFalBackedWalletStops } from '../frontend/src/server/video-providers/videorouter/fal-backed-wallet-stop';
 import { reconcileVideoRouterCosts } from '../frontend/src/server/video-providers/videorouter/settlement';
 import { createPinnedVideoRouterClient, VideoRouterSubmitError } from '../frontend/src/server/video-providers/videorouter/client';
 import { klingV4SandBaseRequest } from '../frontend/src/server/video-providers/videorouter/kling-v4';
@@ -88,9 +88,20 @@ test('Kling price preflight checks the quoted host, each requested dimension and
   }
 });
 
-test('Kling wallet purchases reconcile SandBase, direct Fal fallback receipts and ambiguous submissions', async t => {
+const purchaseProfiles = [
+  { engineId: 'kling-v4', label: 'Kling V4', resolution: '720p', ratio: '16:9', count: 3, duration: 3,
+    flag: 'KLING_V4_VIDEOROUTER_CANARY', host: 'sandbase', model: 'kuaishou/kling-v4.0/sandbase', hostModel: 'sandbase/kling-v4.0',
+    falModel: 'kling/v4/reference-to-video', slot: 'image_urls', estimate: 0.4, finalCost: 0.405354,
+    marker: 'klingV4WalletStop', partialBudget: 42 },
+  { engineId: 'minimax-h3', label: 'MiniMax H3', resolution: '480P', ratio: '21:9', count: 2, duration: 15,
+    flag: 'MINIMAX_H3_VIDEOROUTER_CANARY', host: 'wavespeed', model: 'minimax/h3/wavespeed', hostModel: 'wavespeed/minimax-h3-native',
+    falModel: 'minimax/h3/reference-to-video', slot: 'reference_image_urls', estimate: 0.615, finalCost: 0.6075,
+    marker: 'videoRouterWalletStop', partialBudget: 67 },
+] as const;
+
+test('Fal-backed purchases reconcile pinned video jobs, fallback receipts and ambiguous submissions', async t => {
   const pg = await startDisposablePostgres('kling-v4-videorouter');
-  const env = { DATABASE_URL: pg.databaseUrl, KLING_V4_VIDEOROUTER_CANARY: 'public', VIDEOROUTER_API_KEY: 'offline',
+  const env = { DATABASE_URL: pg.databaseUrl, KLING_V4_VIDEOROUTER_CANARY: 'public', MINIMAX_H3_VIDEOROUTER_CANARY: 'public', VIDEOROUTER_API_KEY: 'offline',
     S3_BUCKET: 'kling-read-fixture', S3_REGION: 'us-east-1', S3_PUBLIC_BASE_URL: storageOrigin,
     S3_ACCESS_KEY_ID: 'fixture-access', S3_SECRET_ACCESS_KEY: 'fixture-secret' };
   const previous = Object.fromEntries(Object.keys(env).map(key => [key, process.env[key]]));
@@ -111,12 +122,34 @@ test('Kling wallet purchases reconcile SandBase, direct Fal fallback receipts an
   await createPaidGenerationTestSchema(pg.pool);
   await pg.pool.query(readFileSync('neon/migrations/21_provider_attempts.sql', 'utf8'));
   await pg.pool.query('CREATE TABLE fal_queue_log(job_id text,provider text,provider_job_id text,engine_id text,status text,payload jsonb)');
-  for (const scenario of ['success', 'quota', 'timeout', 'invalid', 'budget', 'estimate', 'over-budget-fallback', 'flag-off', 'other-settings', 'external-image', 'refund-outage', 'budget-outage']) {
-    await t.test(scenario, async sub => {
+  await pg.pool.query(`CREATE TABLE user_assets(asset_id text PRIMARY KEY, user_id text, url text, mime_type text);
+    CREATE TABLE media_assets(id text PRIMARY KEY, public_id text, user_id text, url text, mime_type text, kind text, status text, deleted_at timestamptz)`);
+  await pg.pool.query('INSERT INTO user_assets VALUES ($1,$2,$3,$4)', ['asset-0', 'fixture-user', images[0], 'image/jpeg']);
+  await pg.pool.query("INSERT INTO media_assets VALUES ('internal-id',$1,$2,$3,'image/jpeg','image','ready',NULL)",
+    ['asset-1', 'fixture-user', images[1]]);
+  const scenarios = ['success', 'quota', 'timeout', 'invalid', 'budget', 'estimate', 'over-budget-fallback', 'flag-off', 'other-settings', 'external-image', 'refund-outage', 'budget-outage'];
+  const cases = purchaseProfiles.flatMap(profile => {
+    const profileScenarios = profile.engineId === 'minimax-h3' ? [...scenarios, 'mismatched-asset'] : scenarios;
+    return profileScenarios.map(scenario => ({ profile, scenario }));
+  });
+  for (const { profile, scenario } of cases) {
+    await t.test(profile.engineId + ' ' + scenario, async sub => {
+      const jobId = profile.engineId + '-' + scenario;
+      const taskId = profile.host + ':opaque-id';
       const budget = scenario === 'budget' || scenario === 'budget-outage';
       const refundOutage = scenario.endsWith('-outage');
-      const params = request(scenario, budget ? 35 : scenario === 'over-budget-fallback' ? 42 : 70);
-      const nativeOnly = ['other-settings', 'flag-off', 'external-image'].includes(scenario);
+      const params = request(jobId, budget ? 35 : scenario === 'over-budget-fallback' ? profile.partialBudget : 100);
+      Object.assign(params, { engineId: profile.engineId, engineLabel: profile.label, durationSec: profile.duration,
+        effectiveResolution: profile.resolution, aspectRatio: profile.ratio });
+      const orderedImages = images.slice(0, profile.count);
+      Object.assign(params.falPayload, { engineId: profile.engineId, durationSec: profile.duration, durationOption: String(profile.duration),
+        resolution: profile.resolution, aspectRatio: profile.ratio, referenceImages: orderedImages.slice(),
+        inputs: params.falPayload.inputs!.slice(0, profile.count).map(input => ({ ...input, slotId: profile.slot })),
+        ...(profile.engineId === 'minimax-h3' ? { extraInputValues: { prompt_expansion_mode: 'balanced' } } : {}) });
+      params.falInputSummary.referenceImageCount = profile.count;
+      params.pricing.base.seconds = profile.duration;
+      if (scenario === 'mismatched-asset') params.falPayload.inputs![0].assetId = 'unrelated-asset';
+      const nativeOnly = ['other-settings', 'flag-off', 'external-image', 'mismatched-asset'].includes(scenario);
       if (scenario === 'external-image') {
         // Same user-looking prefix, slot and asset ID, but a different host.
         params.falPayload.inputs![1].url = externalImage;
@@ -132,46 +165,49 @@ test('Kling wallet purchases reconcile SandBase, direct Fal fallback receipts an
       const original = structuredClone(params.falPayload);
       await pg.pool.query(`INSERT INTO app_jobs(job_id,user_id,surface,engine_id,engine_label,duration_sec,provider,status,
         currency,final_price_cents,has_audio,payment_status,settings_snapshot,pricing_snapshot)
-        VALUES($1,$2,'video','kling-v4','Kling V4',3,'fal','queued','USD',$3,true,'paid_wallet','{}',$4)`,
-      [scenario, params.userId, params.pricing.totalCents, JSON.stringify(params.pricing)]);
+        VALUES($1,$2,'video',$5,$6,$7,'fal','queued','USD',$3,true,'paid_wallet','{}',$4)`,
+      [jobId, params.userId, params.pricing.totalCents, JSON.stringify(params.pricing), profile.engineId, profile.label, profile.duration]);
       await pg.pool.query("INSERT INTO app_receipts(job_id,user_id,type,amount_cents,currency,surface) VALUES($1,$2,'charge',$3,'USD','video')",
-        [scenario, params.userId, params.pricing.totalCents]);
+        [jobId, params.userId, params.pricing.totalCents]);
       if (refundOutage) await pg.pool.query(`CREATE OR REPLACE FUNCTION reject_test_refund() RETURNS trigger LANGUAGE plpgsql
         AS $$ BEGIN IF NEW.type='refund' THEN RAISE EXCEPTION 'simulated temporary refund outage'; END IF; RETURN NEW; END $$;
         CREATE TRIGGER reject_test_refund BEFORE INSERT ON app_receipts FOR EACH ROW EXECUTE FUNCTION reject_test_refund();`);
       let quotes = 0, routerPosts = 0, falPosts = 0;
-      if (scenario === 'flag-off') delete process.env.KLING_V4_VIDEOROUTER_CANARY;
+      if (scenario === 'flag-off') delete process.env[profile.flag];
       sub.mock.method(globalThis, 'fetch', async (input: string | URL | Request, init?: RequestInit) => {
         const url = new URL(String(input));
         assert.equal(init?.method, 'POST');
         const body = JSON.parse(String(init.body));
         if (url.hostname === 'queue.fal.run') {
           falPosts++;
-          assert.equal(url.pathname, '/kling/v4/reference-to-video');
-          assertReferenceTransport(body.image_urls, original.referenceImages!);
+          assert.equal(url.pathname, '/' + profile.falModel);
+          if (profile.engineId === 'minimax-h3') assert.equal(body.prompt_expansion_mode, 'balanced');
+          assertReferenceTransport(body[profile.slot], original.referenceImages!);
           assert.equal(body.resolution, params.effectiveResolution);
           assert.equal(body.aspect_ratio, params.aspectRatio);
           const id = 'fal-fixture';
-          const base = 'https://queue.fal.run/kling/v4/requests/' + id;
+          const base = 'https://queue.fal.run/' + profile.falModel.split('/').slice(0, 2).join('/') + '/requests/' + id;
           return Response.json({ request_id: id, status_url: base + '/status', response_url: base, cancel_url: base + '/cancel' });
         }
         assert.equal(url.hostname, 'videorouter.sh');
-        assert.deepEqual(body.provider, { only: ['sandbase'], allow_fallbacks: false });
+        assert.deepEqual(body.provider, { only: [profile.host], allow_fallbacks: false });
         assert.equal(body.strict_duration, true);
         assert.equal(body.generate_audio, undefined);
-        assertReferenceTransport(body.input_references.map((item: {image_url: {url:string}}) => item.image_url.url), images);
+        assert.equal(body.model, profile.model);
+        assert.equal(body.prompt_extend, profile.engineId === 'minimax-h3' ? true : undefined);
+        assertReferenceTransport(body.input_references.map((item: {image_url: {url:string}}) => item.image_url.url), orderedImages);
         if (url.pathname === '/v1/pricing/estimate') {
           quotes++;
-          return Response.json({ object: 'pricing.estimate', type: 'video', model: 'sandbase/kling-v4.0', currency: 'USD',
-            estimated_cost_usd: 0.4, max_cost_usd: scenario === 'estimate' ? 5 : 0.4,
-            assumptions: { duration_secs: 3, resolution: '720p', reference_images: 3, aspect_ratio: '16:9' } });
+          return Response.json({ object: 'pricing.estimate', type: 'video', model: profile.hostModel, currency: 'USD',
+            estimated_cost_usd: profile.estimate, max_cost_usd: scenario === 'estimate' ? profile.estimate + 0.02 : profile.estimate,
+            assumptions: { duration_secs: profile.duration, resolution: profile.resolution, reference_images: profile.count, aspect_ratio: profile.ratio } });
         }
         assert.equal(url.pathname, '/v1/videos');
         routerPosts++;
         if (scenario === 'timeout') throw new Error('lost ACK');
         if (scenario === 'invalid' || scenario === 'refund-outage') return Response.json({ error: { code: 'policy_violation' } }, { status: 422 });
         if (scenario === 'quota' || scenario === 'over-budget-fallback') return Response.json({ error: { code: 'insufficient_credits' } }, { status: 402 });
-        return Response.json({ id: 'sandbase:opaque-id' });
+        return Response.json({ id: taskId });
       });
       const [response] = await Promise.all([submitGenerateProviderTask(params), submitGenerateProviderTask(params)]);
       assert.deepEqual(params.falPayload, original);
@@ -179,28 +215,28 @@ test('Kling wallet purchases reconcile SandBase, direct Fal fallback receipts an
       assert.equal(routerPosts, (budget || scenario === 'estimate' || nativeOnly) ? 0 : 1);
       assert.equal(falPosts, (nativeOnly || ['quota', 'estimate'].includes(scenario)) ? 1 : 0);
       if (refundOutage) {
-        const held = (await pg.pool.query('SELECT * FROM app_jobs WHERE job_id=$1', [scenario])).rows[0];
+        const held = (await pg.pool.query('SELECT * FROM app_jobs WHERE job_id=$1', [jobId])).rows[0];
         assert.equal(held.status, 'provider_polling_stalled');
         assert.equal(held.payment_status, 'paid_wallet');
-        assert.equal(held.settings_snapshot.klingV4WalletStop.reason, budget ? 'refused' : 'invalid');
-        const prior = (await pg.pool.query('SELECT a.status,a.error_class,a.accepted_at FROM provider_attempts a JOIN app_jobs j ON j.id=a.job_id WHERE j.job_id=$1', [scenario])).rows;
+        assert.equal(held.settings_snapshot[profile.marker].reason, budget ? 'refused' : 'invalid');
+        const prior = (await pg.pool.query('SELECT a.status,a.error_class,a.accepted_at FROM provider_attempts a JOIN app_jobs j ON j.id=a.job_id WHERE j.job_id=$1', [jobId])).rows;
         assert.deepEqual(prior, budget ? [] : [{ status: 'failed', error_class: 'invalid', accepted_at: null }]);
         // The same job, a different profile and a disabled canary must never become a new purchase.
-        process.env.KLING_V4_VIDEOROUTER_CANARY = '';
+        process.env[profile.flag] = '';
         try {
           await submitGenerateProviderTask({ ...params, effectiveResolution: '1080p',
             falPayload: { ...params.falPayload, resolution: '1080p' } });
           assert.equal(falPosts, 0);
           assert.equal(routerPosts, budget ? 0 : 1);
           await pg.pool.query('DROP TRIGGER reject_test_refund ON app_receipts');
-          const concurrent = await Promise.all([reconcileKlingV4WalletStops(), reconcileKlingV4WalletStops()]);
+          const concurrent = await Promise.all([reconcileFalBackedWalletStops(), reconcileFalBackedWalletStops()]);
           assert.equal(concurrent.reduce((sum, r) => sum + r.settled, 0), 1);
-          assert.deepEqual(await reconcileKlingV4WalletStops(), { checked: 0, settled: 0, errors: 0 });
-        } finally { process.env.KLING_V4_VIDEOROUTER_CANARY = 'public'; }
+          assert.deepEqual(await reconcileFalBackedWalletStops(), { checked: 0, settled: 0, errors: 0 });
+        } finally { process.env[profile.flag] = 'public'; }
       }
-      const [job] = (await pg.pool.query('SELECT * FROM app_jobs WHERE job_id=$1', [scenario])).rows;
-      const attempts = (await pg.pool.query('SELECT a.* FROM provider_attempts a JOIN app_jobs j ON j.id=a.job_id WHERE j.job_id=$1 ORDER BY a.attempt_index', [scenario])).rows;
-      const receipts = (await pg.pool.query('SELECT type,amount_cents FROM app_receipts WHERE job_id=$1 ORDER BY id', [scenario])).rows;
+      const [job] = (await pg.pool.query('SELECT * FROM app_jobs WHERE job_id=$1', [jobId])).rows;
+      const attempts = (await pg.pool.query('SELECT a.* FROM provider_attempts a JOIN app_jobs j ON j.id=a.job_id WHERE j.job_id=$1 ORDER BY a.attempt_index', [jobId])).rows;
+      const receipts = (await pg.pool.query('SELECT type,amount_cents FROM app_receipts WHERE job_id=$1 ORDER BY id', [jobId])).rows;
       const refused = budget || refundOutage || ['invalid', 'over-budget-fallback'].includes(scenario);
       assert.equal(job.payment_status, refused ? 'refunded_wallet' : 'paid_wallet');
       assert.equal(receipts[0].amount_cents, params.pricing.totalCents);
@@ -208,23 +244,28 @@ test('Kling wallet purchases reconcile SandBase, direct Fal fallback receipts an
       if (refused) assert.equal(receipts[1].amount_cents, params.pricing.totalCents);
       if (scenario === 'success') {
         assert.equal(job.provider, 'videorouter');
-        assert.equal(job.provider_job_id, 'sandbase:opaque-id');
+        assert.equal(job.provider_job_id, taskId);
         assert.equal(attempts[0].status, 'accepted');
+        assert.equal(attempts[0].provider_model, profile.model);
         const snapshot = attempts[0].request_snapshot;
+        if (profile.engineId === 'minimax-h3') {
+          assert.equal(snapshot.promptExpansionMode, 'balanced');
+          assert.equal(snapshot.providerPromptExtend, true);
+        }
         assert.equal(snapshot.purchaseRouting.baselineProvider, 'fal');
         assert.equal(snapshot.ownedReferenceImages, true);
         assert.equal(snapshot.hasSeed, false);
         assert.equal(snapshot.unreviewedOptions, false);
         assert.doesNotMatch(JSON.stringify(snapshot), /X-Amz-|fixture-user/);
-        await pg.pool.query("UPDATE app_jobs SET updated_at=NOW()-INTERVAL '2 minutes' WHERE job_id=$1", [scenario]);
+        await pg.pool.query("UPDATE app_jobs SET updated_at=NOW()-INTERVAL '2 minutes' WHERE job_id=$1", [jobId]);
         let reads = 0;
         const readTask = createPinnedVideoRouterClient('offline', async (input, init) => {
           assert.equal(init?.method, 'GET');
-          assert.equal(new URL(String(input)).pathname, '/v1/videos/sandbase%3Aopaque-id');
-          return Response.json({ id: 'sandbase:opaque-id', status: 'completed', data: [{ url: 'https://fixture.example/output.mp4' }],
-            ...(reads++ ? { cost_usd: 0.405354 } : {}) });
+          assert.equal(new URL(String(input)).pathname, '/v1/videos/' + encodeURIComponent(taskId));
+          return Response.json({ id: taskId, status: 'completed', data: [{ url: 'https://fixture.example/output.mp4' }],
+            ...(reads++ ? { cost_usd: profile.finalCost } : {}) });
         });
-        const poll = await runAlibabaModelStudioPoll({ provider: 'videorouter', jobId: scenario, deps: {
+        const poll = await runAlibabaModelStudioPoll({ provider: 'videorouter', jobId, deps: {
           queryFn: async (sql, args) => (await pg.pool.query(sql, args)).rows,
           claimPollFn: async () => ({ checked: async () => {}, release: async () => {} }),
           getVideoRouterClientFn: () => ({ getTask: readTask.getTask, createVideo: async () => assert.fail('no generation on poll') }),
@@ -235,21 +276,22 @@ test('Kling wallet purchases reconcile SandBase, direct Fal fallback receipts an
         assert.equal((await poll.json()).updates, 1);
         const settlement = await reconcileVideoRouterCosts(async (sql, args) => (await pg.pool.query(sql, args)).rows, readTask);
         assert.deepEqual(settlement, { checked: 1, errors: 0 });
-        const completed = (await pg.pool.query('SELECT status,video_url,cost_breakdown_usd FROM app_jobs WHERE job_id=$1', [scenario])).rows[0];
+        const completed = (await pg.pool.query('SELECT status,video_url,cost_breakdown_usd FROM app_jobs WHERE job_id=$1', [jobId])).rows[0];
         assert.equal(completed.status, 'completed');
         assert.equal(completed.video_url, 'https://media.example/owned.mp4');
-        assert.equal(completed.cost_breakdown_usd.provider_cost_usd_effective, 0.405354);
+        assert.equal(completed.cost_breakdown_usd.provider_model, profile.model);
+        assert.equal(completed.cost_breakdown_usd.provider_cost_usd_effective, profile.finalCost);
         assert.ok(response.kind !== 'generation_result');
-        assert.doesNotMatch(JSON.stringify(customerGenerationResponse(response.body, 'kling-v4')), /sandbase|videorouter|quotedUsd|providerJobId/i);
+        assert.doesNotMatch(JSON.stringify(customerGenerationResponse(response.body, profile.engineId)), /sandbase|wavespeed|videorouter|quotedUsd|providerJobId/i);
       }
       if (scenario === 'timeout') {
         assert.equal(job.status, 'provider_polling_stalled');
         assert.equal(attempts[0].status, 'polling_stalled');
-        process.env.KLING_V4_VIDEOROUTER_CANARY = '';
+        process.env[profile.flag] = '';
         try {
           await submitGenerateProviderTask({ ...params, effectiveResolution: '1080p',
             falPayload: { ...params.falPayload, resolution: '1080p' } });
-        } finally { process.env.KLING_V4_VIDEOROUTER_CANARY = 'public'; }
+        } finally { process.env[profile.flag] = 'public'; }
         assert.equal(falPosts, 0);
       }
       if (falPosts) {
@@ -262,7 +304,7 @@ test('Kling wallet purchases reconcile SandBase, direct Fal fallback receipts an
             assert.equal(attempts[0].request_snapshot.hasSeed, false);
             assert.equal(attempts[0].request_snapshot.unreviewedOptions, false);
           } else assert.equal(attempts[0].request_snapshot, null);
-          process.env.KLING_V4_VIDEOROUTER_CANARY = 'public';
+          process.env[profile.flag] = 'public';
           await submitGenerateProviderTask(params);
           assert.equal(quotes, 0);
           assert.equal(falPosts, 1);
@@ -271,8 +313,11 @@ test('Kling wallet purchases reconcile SandBase, direct Fal fallback receipts an
           assert.equal(attempts[0].fallback_to_attempt_id, attempts[1].id);
           assert.equal(attempts[1].status, 'accepted');
         }
-        const logs = await pg.pool.query("SELECT payload->'falQueueReceipt' AS receipt FROM fal_queue_log WHERE job_id=$1 AND status='enqueue'", [scenario]);
-        assert.equal(logs.rows[0].receipt.metadataState, 'verified');
+        const logs = await pg.pool.query(`SELECT provider_job_id, payload->'falQueueReceipt' AS receipt FROM fal_queue_log
+          WHERE job_id=$1 AND engine_id=$2 AND provider='fal' AND status='enqueue'`, [jobId, profile.engineId]);
+        assert.equal(logs.rows[0].provider_job_id, job.provider_job_id);
+        // Kling queue reads bind the host's status URL. H3 uses the existing Fal ID-based status path.
+        if (profile.engineId === 'kling-v4') assert.equal(logs.rows[0].receipt.metadataState, 'verified');
       }
     });
   }

@@ -3,6 +3,7 @@ import { resolveTrustedPaidGenerateRouteContext } from '@/app/api/generate/_lib/
 import type { VideoProviderKey } from '@/server/video-providers/types';
 import { isKlingDirectV3Funded } from '@/server/video-providers/router';
 import { klingV4VideoRouterEnabled } from '@/server/video-providers/videorouter/kling-v4';
+import { minimaxH3VideoRouterEnabled } from '@/server/video-providers/videorouter/minimax-h3';
 import type { Mode } from '@/types/engines';
 
 // Use the same non-submitting resolver as prepared paid requests. Examples cover every installed path.
@@ -24,13 +25,16 @@ export function installedRoutes() {
       engine && resolveTrustedPaidGenerateRouteContext({ engine, body: {}, mode, jobId: 'routing-preview' });
     const wan = engineId === 'wan-3' || engineId === 'wan-3-prime';
     const sandbase = engineId === 'kling-v4';
-    const installedTargets = wan ? ['videorouter', 'alibaba_model_studio'] : sandbase ? ['videorouter', 'fal'] : [provider];
-    const profile = sandbase ? '720p · three images' : engineId === 'wan-3' ? '480p portrait · one image' : wan ? '720p landscape · text' : '';
+    const h3 = engineId === 'minimax-h3';
+    const installedTargets = wan ? ['videorouter', 'alibaba_model_studio']
+      : sandbase || h3 ? ['videorouter', 'fal'] : [provider];
+    const profile = h3 ? '15 s · 480p · 21:9 · two owned images · native audio · Balanced'
+      : sandbase ? '720p · three images' : engineId === 'wan-3' ? '480p portrait · one image' : wan ? '720p landscape · text' : '';
     const targets: string[] = [];
     if (result?.ok) {
       const { providerRoutingPlan: plan, providerKey } = result.context;
       if (plan.kind === 'alibaba_model_studio_primary' && plan.purchaseCanary === 'with-videorouter' ||
-          sandbase && plan.kind === 'fal_only' && klingV4VideoRouterEnabled()) targets.push('videorouter');
+          plan.kind === 'fal_only' && (sandbase && klingV4VideoRouterEnabled() || h3 && minimaxH3VideoRouterEnabled())) targets.push('videorouter');
       targets.push(providerKey);
       if ('fallbackEnabled' in plan && plan.fallbackEnabled && providerKey !== 'fal') targets.push('fal');
     }

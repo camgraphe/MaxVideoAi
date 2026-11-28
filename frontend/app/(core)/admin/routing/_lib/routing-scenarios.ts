@@ -31,7 +31,7 @@ function scenario(id: string, label: string, request: ComparisonRequest) {
     request.resolution,
     request.aspectRatio,
     typeof request.audioEnabled === 'boolean' ? (request.audioEnabled ? 'audio on' : 'audio off') : '',
-    request.h3PromptExpansion === 'disabled' ? 'prompt expansion off' : '',
+    request.h3PromptExpansion === 'disabled' ? 'prompt expansion off' : request.h3PromptExpansion === 'balanced' ? 'Balanced expansion' : '',
     request.observedVideoTokens ? request.observedVideoTokens.toLocaleString('en-US') + ' observed tokens' : '',
   ]
     .filter(Boolean)
@@ -45,7 +45,9 @@ function scenario(id: string, label: string, request: ComparisonRequest) {
     engineLabel: getBaseEngineIncludingHidden(request.engineId)?.label ?? request.engineId,
     priceAssumption: request.engineId === 'wan-3'
       ? 'If the 30% Alibaba account discount applies, its estimate for this request is $' + (quote.baselineMicros * 0.7 / 1e6).toFixed(2) + '.'
-      : null,
+      : id === 'h3-balanced-wavespeed'
+        ? 'WaveSpeed uses prompt_extend=true as a proxy for Balanced. The standard rate including fees is $0.041/s ($0.615 for 15 s). The promotional account quote was $0.6075. Fal direct costs $0.05/s ($0.75).'
+        : null,
     strategy: quote.strategy,
     candidates: quote.candidates,
     ceiling: quote.baselineMicros,
@@ -103,9 +105,10 @@ export function routingScenarios(): RoutingScenario[] {
       ...wan, engineId: 'wan-3', mode: 'ref2v', durationSec: 5, resolution: '720p',
       hasVideo: true, inputVideoSeconds: 5, referenceVideoSeconds: [5],
     }),
-    scenario('h3-balanced-wavespeed', 'Two references · balanced expansion · WaveSpeed comparison', {
+    scenario('h3-balanced-wavespeed', 'Two owned references · WaveSpeed via VideoRouter', {
       ...wan, engineId: 'minimax-h3', mode: 'ref2v', images: 2, resolution: '480p', durationSec: 15,
-      aspectRatio: '21:9', h3PromptExpansion: 'balanced', audioEnabled: undefined, hasSeed: false,
+      aspectRatio: '21:9', h3PromptExpansion: 'balanced', hasStartFrame: false, hasSeed: false,
+      hasUnpricedOptions: false, ownedReferenceImages: true,
     }),
     scenario('h3-2k', '2K text to video', {
       ...wan, engineId: 'minimax-h3', resolution: '2K', durationSec: 5, aspectRatio: '21:9', promptCharacters: 120, h3PromptExpansion: 'disabled',
