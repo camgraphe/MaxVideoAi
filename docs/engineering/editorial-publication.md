@@ -138,7 +138,9 @@ The controlled video block uses `youtube-nocookie.com` with
 through the HTTP Referer header; `no-referrer` causes player error 153. Keep the
 private admin path and query out of that header. The browser regression in
 `tests/editorial-reader-media.test.ts` verifies the actual request from the
-rendered article. Preserve lazy loading and the collapsed player. A passed layout
+rendered article. Preserve lazy loading and the collapsed player by default.
+The optional inline and portrait contract, export behavior and separate preview
+handoff are documented in [editorial-video-presentation.md](editorial-video-presentation.md). A passed layout
 check or a working watch URL does not establish embedded playback: check the
 actual player before releasing a video-led article.
 
