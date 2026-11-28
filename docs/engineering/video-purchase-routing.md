@@ -88,7 +88,9 @@ Actual Fal fallback requires `ALIBABA_MODEL_STUDIO_FALLBACK_TO_FAL_ENABLED`. The
 
 APIMart accepts `POST /v1/videos/generations` and returns a task ID. The same authenticated cron as Alibaba and the authorized per-job refresher poll `GET /v1/tasks/{id}`, copy the completed video to owned storage, and use the existing delivery and terminal-failure paths. Disable the canary switch to stop new submissions. Keep the credential until accepted tasks have drained. The purchase estimate at completion is marked as a list estimate.
 
-A known balance or throttling refusal can start the next eligible attempt under the ceiling. Invalid inputs or moderation stop the chain. A timeout or unreadable acknowledgement after sending moves the job to reconciliation. Keep the reservation until the first submission can be accounted for. An accepted task is polled only at its owning provider. The ledger claims each canary attempt once using the existing unique job/attempt index. It links each definitive rejection to the next attempt.
+The Wan pilot relies on each provider to enforce its own rate and concurrency limits. Submit to the first eligible route in the purchase plan. When the adapter confirms a pre-acceptance quota or balance refusal, proceed immediately to the next eligible route within the purchase ceiling, using the same job and wallet reservation. A task accepted into the provider’s queue stays with that provider, even during a traffic spike.
+
+Invalid inputs or moderation stop the chain. A timeout or unreadable acknowledgement after sending moves the job to reconciliation. Keep the reservation until the first submission can be accounted for. The ledger claims each canary attempt once using the existing unique job/attempt index. It links each definitive rejection to the next attempt.
 
 ### Wan Prime rollout and accounting
 
